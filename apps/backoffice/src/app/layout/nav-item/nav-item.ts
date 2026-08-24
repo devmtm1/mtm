@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, output, signal } from '@angular/core';
+import { Component, computed, inject, input, OnInit, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   ActivatedRoute,
@@ -28,7 +28,7 @@ import type { NavItem as NavItemConfig } from '../navigation-config';
     '[class.nav-collapsed]': 'collapsed()',
   },
 })
-export class NavItem {
+export class NavItem implements OnInit {
   private readonly router = inject(Router);
   private readonly activatedRoute = inject(ActivatedRoute);
 
@@ -53,7 +53,10 @@ export class NavItem {
         this.updateChildActive();
       }
     });
-    // État initial après le premier rendu (URL déjà résolue).
+  }
+
+  ngOnInit(): void {
+    // L'input requis est disponible après l'initialisation du composant.
     this.updateChildActive();
   }
 

@@ -149,3 +149,21 @@
   font-size: 0.72rem;
   color: rgba(255, 255, 255, 0.55);
 }
+
+[data-theme='dark'] {
+  .login-card {
+    background-color: var(--mtm-card-bg) !important;
+    border-color: var(--mtm-border) !important;
+  }
+
+  .login-card-header {
+    h2 {
+      color: var(--mtm-text-dark);
+    }
+
+    p,
+    .login-2fa-hint {
+      color: var(--mtm-text-muted);
+    }
+  }
+}

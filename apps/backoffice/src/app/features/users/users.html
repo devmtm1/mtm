@@ -1,22 +1,45 @@
 <div class="users-page">
   <div class="users-header">
-    <h1>Utilisateurs</h1>
-    @if (canCreate()) {
-      <button mat-flat-button color="primary" class="btn-mtm-accent" (click)="openCreateDialog()">
-        <svg lucideUserPlus class="btn-icon"></svg>
-        Nouvel utilisateur
-      </button>
-    }
+    <div class="users-heading">
+      <span class="users-eyebrow">Administration</span>
+      <h1>Utilisateurs</h1>
+      <p>Gérez les comptes, les rôles et l’accès au back-office.</p>
+    </div>
+    <div class="users-header__actions">
+      <span class="users-count" aria-live="polite">
+        {{ rowData().length }} utilisateur{{ rowData().length > 1 ? 's' : '' }}
+      </span>
+      @if (canCreate()) {
+        <button mat-flat-button color="primary" class="btn-mtm-primary" (click)="openCreateDialog()">
+          <svg lucideUserPlus class="btn-icon" aria-hidden="true"></svg>
+          Nouvel utilisateur
+        </button>
+      }
+    </div>
   </div>
 
-  <ag-grid-angular
-    class="users-grid"
-    [theme]="theme"
-    [rowData]="rowData()"
-    [columnDefs]="columnDefs"
-    [loading]="loading()"
-    [animateRows]="true"
-    [pagination]="true"
-    [paginationPageSize]="20"
-  />
+  <section class="users-table-shell" aria-labelledby="users-list-title">
+    <div class="users-table-toolbar">
+      <div>
+        <h2 id="users-list-title">Liste des comptes</h2>
+        <p>Comptes autorisés à accéder à l’espace back-office.</p>
+      </div>
+      <span class="users-table-toolbar__status">{{ rowData().length }} résultat{{ rowData().length > 1 ? 's' : '' }}</span>
+    </div>
+
+    <ag-grid-angular
+      class="users-grid"
+      [theme]="theme"
+      [rowData]="rowData()"
+      [defaultColDef]="defaultColDef"
+      [columnDefs]="columnDefs"
+      [loading]="loading()"
+      [animateRows]="true"
+      domLayout="autoHeight"
+      [pagination]="true"
+      [paginationPageSize]="20"
+      [headerHeight]="46"
+      [rowHeight]="52"
+    />
+  </section>
 </div>

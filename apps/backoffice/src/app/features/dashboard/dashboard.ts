@@ -30,29 +30,25 @@ import {
   ],
   template: `
     <div class="dashboard-page">
-      <!-- Banner Header Executive -->
-      <div class="dashboard-hero-card">
-        <div class="dashboard-hero-content">
-          <div class="dashboard-brand-pill">
-            <span class="dot"></span>
-            CABINET MTM IMMOBILIER
-          </div>
-          <h1>Tableau de bord de Gestion ERP</h1>
+      <header class="dashboard-page-header">
+        <div class="dashboard-page-header__content">
+          <span class="dashboard-eyebrow">Cabinet MTM Immobilier</span>
+          <h1>Tableau de bord</h1>
           <p>
-            Supervision globale des opérations d'Achat, Vente, Gérance Immobilière, BTP &amp; Lotissements.
+            Vue d'ensemble de l'activité Achat, Vente, Gérance Immobilière, BTP et Lotissements.
           </p>
         </div>
-        <div class="dashboard-hero-contacts">
-          <div class="contact-chip">
-            <svg lucidePhoneCall class="icon-sm"></svg>
-            <span>78 522 65 65 / 78 366 26 51</span>
-          </div>
-          <div class="contact-chip">
-            <svg lucideMail class="icon-sm"></svg>
-            <span>cabinetmtm1&#64;gmail.com</span>
-          </div>
+        <div class="dashboard-contact-summary" aria-label="Coordonnées du cabinet">
+          <span>
+            <svg lucidePhoneCall class="icon-sm" aria-hidden="true"></svg>
+            78 522 65 65 / 78 366 26 51
+          </span>
+          <span>
+            <svg lucideMail class="icon-sm" aria-hidden="true"></svg>
+            cabinetmtm1&#64;gmail.com
+          </span>
         </div>
-      </div>
+      </header>
 
       <!-- KPI Metrics Cards Grid -->
       <div class="kpi-grid">

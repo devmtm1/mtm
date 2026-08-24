@@ -12,16 +12,18 @@ import {
   LucideBellOff,
   LucideChevronDown,
   LucideChevronRight,
-  LucideDynamicIcon,
   LucideLogOut,
+  LucideMoon,
   LucidePanelLeftClose,
   LucidePanelLeftOpen,
   LucideSearch,
   LucideSettings,
+  LucideSun,
   LucideUser,
 } from '@lucide/angular';
 import { AuthService } from '../../core/services/auth.service';
 import { SessionService } from '../../core/services/session.service';
+import { ThemeService } from '../../core/services/theme.service';
 import { NAVIGATION_SECTIONS } from '../navigation-config';
 
 interface Breadcrumb {
@@ -44,24 +46,29 @@ interface Breadcrumb {
     MatMenuModule,
     MatBadgeModule,
     MatTooltipModule,
-    LucideDynamicIcon,
     LucideBell,
     LucideBellOff,
     LucideChevronDown,
     LucideChevronRight,
     LucideLogOut,
+    LucideMoon,
     LucidePanelLeftClose,
     LucidePanelLeftOpen,
     LucideSearch,
     LucideSettings,
+    LucideSun,
     LucideUser,
   ],
   templateUrl: './header.html',
   styleUrl: './header.scss',
+  host: {
+    '(document:keydown)': 'onSearchShortcut($event)',
+  },
 })
 export class Header {
   private readonly authService = inject(AuthService);
   private readonly sessionService = inject(SessionService);
+  private readonly themeService = inject(ThemeService);
   private readonly router = inject(Router);
 
   /** Sidebar replié (adapte l'icône de bascule). */
@@ -73,6 +80,7 @@ export class Header {
   private readonly searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
 
   protected readonly user = this.sessionService.user;
+  protected readonly isDark = this.themeService.isDark;
 
   /**
    * Compteur de notifications non lues. Activement à 0 : le composant est
@@ -117,7 +125,8 @@ export class Header {
   }
 
   /** Raccourci clavier Ctrl+K / Cmd+K : focalise la recherche globale. */
-  onSearchShortcut(event: Event): void {
+  onSearchShortcut(event: KeyboardEvent): void {
+    if ((!event.ctrlKey && !event.metaKey) || event.key.toLowerCase() !== 'k') return;
     event.preventDefault();
     this.searchInput()?.nativeElement.focus();
   }
@@ -127,6 +136,10 @@ export class Header {
       next: () => void this.router.navigate(['/login']),
       error: () => void this.router.navigate(['/login']),
     });
+  }
+
+  protected toggleTheme(): void {
+    this.themeService.toggle();
   }
 
   private updateBreadcrumb(): void {

@@ -25,6 +25,7 @@
 .shell__content {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   background-color: var(--mtm-bg-surface);
 }
 

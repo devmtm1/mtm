@@ -33,20 +33,35 @@ export class Users implements OnInit {
     this.sessionService.hasPermission('users:modifier'),
   );
 
+  protected readonly defaultColDef: ColDef<UserListItem> = {
+    resizable: true,
+    minWidth: 90,
+    tooltipValueGetter: (params) => String(params.value ?? ''),
+  };
+
   protected readonly columnDefs: ColDef<UserListItem>[] = [
-    { field: 'email', headerName: 'E-mail', flex: 2, sortable: true, filter: true },
-    { field: 'firstName', headerName: 'Prénom', flex: 1, sortable: true, filter: true },
-    { field: 'lastName', headerName: 'Nom', flex: 1, sortable: true, filter: true },
+    {
+      field: 'email',
+      headerName: 'E-mail',
+      flex: 2,
+      minWidth: 180,
+      sortable: true,
+      filter: true,
+    },
+    { field: 'firstName', headerName: 'Prénom', flex: 1, minWidth: 95, sortable: true, filter: true },
+    { field: 'lastName', headerName: 'Nom', flex: 1, minWidth: 95, sortable: true, filter: true },
     {
       field: 'roles',
       headerName: 'Rôles',
       flex: 1.5,
+      minWidth: 120,
       valueFormatter: (params) => (params.value as string[]).join(', '),
     },
     {
       field: 'isActive',
       headerName: 'Statut',
       flex: 0.8,
+      minWidth: 88,
       cellRenderer: (params: ICellRendererParams<UserListItem>) =>
         params.value
           ? '<span class="mtm-badge mtm-badge--success">Actif</span>'
@@ -56,12 +71,14 @@ export class Users implements OnInit {
       field: 'twoFactorEnabled',
       headerName: '2FA',
       flex: 0.6,
+      minWidth: 60,
       cellRenderer: (params: ICellRendererParams<UserListItem>) =>
         params.value ? 'Oui' : 'Non',
     },
     {
       headerName: 'Actions',
       flex: 0.8,
+      minWidth: 90,
       sortable: false,
       filter: false,
       cellRenderer: (params: ICellRendererParams<UserListItem>) => {

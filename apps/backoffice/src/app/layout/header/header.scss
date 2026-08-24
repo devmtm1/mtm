@@ -80,7 +80,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0;
+  min-width: 0;
+  flex: 1 1 auto;
+  justify-content: flex-end;
 }
 
 /* Recherche globale */
@@ -88,7 +90,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 300px;
+  width: min(300px, 100%);
+  min-width: 0;
+  flex: 1 1 300px;
   height: 36px;
   padding: 0 10px;
   margin-right: 4px;
