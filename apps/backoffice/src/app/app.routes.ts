@@ -34,10 +34,34 @@ export const routes: Routes = [
           import('./features/security/security').then((m) => m.Security),
       },
       {
-        path: 'users',
-        canActivate: [permissionsGuard(['users:consulter'])],
+        path: 'terrains/nouveau',
+        canActivate: [permissionsGuard(['terrains:creer'])],
         loadComponent: () =>
-          import('./features/users/users').then((m) => m.Users),
+          import('./features/terrains/terrain-form/terrain-form').then(
+            (m) => m.TerrainForm,
+          ),
+      },
+      {
+        path: 'terrains/:id/modifier',
+        canActivate: [permissionsGuard(['terrains:modifier'])],
+        loadComponent: () =>
+          import('./features/terrains/terrain-form/terrain-form').then(
+            (m) => m.TerrainForm,
+          ),
+      },
+      {
+        path: 'terrains/:id',
+        canActivate: [permissionsGuard(['terrains:consulter'])],
+        loadComponent: () =>
+          import('./features/terrains/terrain-detail/terrain-detail').then(
+            (m) => m.TerrainDetail,
+          ),
+      },
+      {
+        path: 'terrains',
+        canActivate: [permissionsGuard(['terrains:consulter'])],
+        loadComponent: () =>
+          import('./features/terrains/terrains').then((m) => m.Terrains),
       },
       {
         path: 'roles',

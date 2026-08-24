@@ -6,6 +6,7 @@ import {
   LucideShield,
   LucideSettings,
   LucideFileClock,
+  LucideLandPlot,
 } from '@lucide/angular';
 
 /**
@@ -59,6 +60,12 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         label: 'Tableau de bord',
         route: '/dashboard',
         icon: LucideLayoutDashboard,
+      },
+      {
+        label: 'Terrains',
+        route: '/terrains',
+        icon: LucideLandPlot,
+        permission: 'terrains:consulter',
       },
     ],
   },

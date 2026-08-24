@@ -1,0 +1,32 @@
+.terrains-page { display: grid; gap: 24px; }
+.terrains-header, .section-heading, .terrains-toolbar, .form-actions { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.terrains-header h1, .section-heading h2, .terrains-toolbar h2 { margin: 4px 0; color: var(--mtm-text-dark); }
+.terrains-header p, .terrains-toolbar p { margin: 0; color: var(--mtm-text-muted); }
+.terrains-eyebrow { display: inline-flex; align-items: center; gap: 7px; color: var(--mtm-purple-primary); font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.terrains-eyebrow svg { width: 16px; height: 16px; }
+.terrains-create-button { display: inline-flex !important; align-items: center; justify-content: center; gap: 8px; width: 150px; min-width: 150px; min-height: 42px; padding: 0 14px !important; white-space: nowrap; }
+:host ::ng-deep .terrains-create-button .mdc-button__label { display: inline-flex !important; align-items: center; gap: 8px; white-space: nowrap; }
+:host ::ng-deep .terrains-create-button .mdc-button__label > span { white-space: nowrap; }
+.terrains-create-icon { display: block; width: 18px; height: 18px; flex: 0 0 18px; margin: 0; }
+.terrains-table-shell { padding: 20px 24px 24px; border: 1px solid var(--mtm-border); border-radius: 12px; background: var(--mtm-card-bg); }
+.terrains-toolbar { align-items: center; margin-bottom: 14px; }
+.filters { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: nowrap; min-width: 0; }
+.filters mat-form-field { width: 190px; margin: 0; }
+.filters__search { width: 220px !important; }
+.filters__submit { height: 42px; min-width: 86px; padding: 0 16px; border-color: var(--mtm-border); color: var(--mtm-purple-primary); }
+.filters ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none; }
+.filters ::ng-deep .mat-mdc-text-field-wrapper { height: 42px; }
+.filters ::ng-deep .mat-mdc-form-field-flex { height: 42px; align-items: center; }
+.filters ::ng-deep .mat-mdc-form-field-infix { min-height: 42px; padding-top: 9px; padding-bottom: 8px; display: flex; align-items: center; }
+.filters ::ng-deep .mat-mdc-form-field-icon-prefix { display: inline-flex; align-items: center; align-self: center; height: 42px; padding-left: 8px; padding-right: 4px; }
+.filters ::ng-deep .mat-mdc-form-field-icon-prefix svg { width: 18px; height: 18px; }
+.filters ::ng-deep .filters__search-icon { display: block; flex: 0 0 18px; margin: 0; transform: translateY(-2px); }
+.filters ::ng-deep .mat-mdc-input-element { align-self: center; line-height: 24px; }
+.terrains-grid { width: 100%; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 16px; margin-top: 20px; }
+.form-grid__wide { grid-column: 1 / -1; }
+.form-actions { justify-content: flex-end; margin-top: 12px; }
+.asset-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--mtm-border); color: var(--mtm-text-muted); font-size: 13px; }
+.asset-button { display: inline-flex; align-items: center; padding: 10px 14px; border: 1px solid var(--mtm-border); border-radius: 8px; color: var(--mtm-purple-primary); font-weight: 700; cursor: pointer; }
+.asset-button input { display: none; }
+@media (max-width: 800px) { .terrains-header, .terrains-toolbar { align-items: flex-start; flex-direction: column; } .filters { justify-content: flex-start; width: 100%; flex-wrap: wrap; } .filters mat-form-field, .filters__search { flex: 1 1 180px; width: auto !important; min-width: 0; } .filters__submit { flex: 0 0 auto; } .form-grid { grid-template-columns: 1fr; } .form-grid__wide { grid-column: auto; } }

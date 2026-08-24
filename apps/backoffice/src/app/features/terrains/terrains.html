@@ -1,0 +1,24 @@
+<div class="terrains-page">
+  <header class="terrains-header">
+    <div>
+      <span class="terrains-eyebrow"><svg lucideLandPlot aria-hidden="true"></svg> Cœur commercial</span>
+      <h1>Terrains</h1>
+      <p>Référentiel foncier et commercial de MTM Immobilier.</p>
+    </div>
+    @if (canCreate()) {
+      <button mat-flat-button color="primary" class="btn-mtm-primary terrains-create-button" (click)="openCreate()"><svg class="terrains-create-icon" lucidePlus aria-hidden="true"></svg> <span>Nouveau terrain</span></button>
+    }
+  </header>
+
+  <section class="terrains-table-shell" aria-labelledby="terrains-list-title">
+    <div class="terrains-toolbar">
+      <div><h2 id="terrains-list-title">Référentiel des terrains</h2><p>{{ total() }} résultat{{ total() > 1 ? 's' : '' }}</p></div>
+      <form class="filters" [formGroup]="filters" (ngSubmit)="applyFilters()">
+        <mat-form-field class="filters__search" appearance="outline"><mat-label>Rechercher</mat-label><svg class="filters__search-icon" matPrefix lucideSearch aria-hidden="true"></svg><input id="terrain-search" matInput formControlName="search"></mat-form-field>
+        <mat-form-field class="filters__status" appearance="outline"><mat-label>Statut commercial</mat-label><mat-select formControlName="statutCommercial"><mat-option value="">Tous</mat-option><mat-option value="Brouillon">Brouillon</mat-option><mat-option value="Disponible">Disponible</mat-option><mat-option value="Réservé">Réservé</mat-option><mat-option value="Vendu">Vendu</mat-option></mat-select></mat-form-field>
+        <button class="filters__submit" mat-stroked-button type="submit">Filtrer</button>
+      </form>
+    </div>
+    <ag-grid-angular class="terrains-grid" [theme]="theme" [rowData]="rowData()" [columnDefs]="columnDefs" [loading]="loading()" domLayout="autoHeight" [pagination]="true" [paginationPageSize]="25" [rowHeight]="52" />
+  </section>
+</div>
