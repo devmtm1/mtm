@@ -1,0 +1,21 @@
+# Dockerfile de développement — API NestJS
+# Utilisé par docker-compose.yml (service "api")
+# Devient pleinement fonctionnel une fois le projet NestJS scaffoldé (étape 3)
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+# On copie d'abord les manifests pour profiter du cache Docker
+COPY package.json package-lock.json* ./
+COPY apps/api/package.json ./apps/api/package.json
+
+RUN npm install --workspace=apps/api
+
+COPY apps/api ./apps/api
+
+WORKDIR /app/apps/api
+
+EXPOSE 3000
+
+CMD ["npm", "run", "start:dev"]

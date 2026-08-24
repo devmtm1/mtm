@@ -1,0 +1,22 @@
+<div class="users-page">
+  <div class="users-header">
+    <h1>Utilisateurs</h1>
+    @if (canCreate()) {
+      <button mat-flat-button color="primary" class="btn-mtm-accent" (click)="openCreateDialog()">
+        <svg lucideUserPlus class="btn-icon"></svg>
+        Nouvel utilisateur
+      </button>
+    }
+  </div>
+
+  <ag-grid-angular
+    class="users-grid"
+    [theme]="theme"
+    [rowData]="rowData()"
+    [columnDefs]="columnDefs"
+    [loading]="loading()"
+    [animateRows]="true"
+    [pagination]="true"
+    [paginationPageSize]="20"
+  />
+</div>

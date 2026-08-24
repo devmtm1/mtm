@@ -1,0 +1,52 @@
+@if (hasChildren()) {
+  <div class="nav-group">
+    <button
+      type="button"
+      class="nav-item nav-item--group"
+      [class.nav-item--active]="childActive()"
+      [matTooltip]="collapsed() ? item().label : ''"
+      matTooltipPosition="right"
+      [attr.aria-expanded]="!collapsed() && open()"
+      (click)="toggleOpen()"
+    >
+      <svg [lucideIcon]="item().icon" class="nav-item__icon" aria-hidden="true"></svg>
+      @if (!collapsed()) {
+        <span class="nav-item__label">{{ item().label }}</span>
+        <svg lucideChevronDown class="nav-item__chevron" [class.nav-item__chevron--open]="open()" aria-hidden="true"></svg>
+      }
+    </button>
+
+    @if (!collapsed() && open()) {
+      <div class="nav-group__children">
+        @for (child of item().children; track child.route) {
+          <a
+            class="nav-child"
+            [routerLink]="child.route"
+            routerLinkActive="nav-child--active"
+            #rla="routerLinkActive"
+            [attr.aria-current]="rla.isActive ? 'page' : null"
+            (click)="navigate.emit()"
+          >
+            {{ child.label }}
+          </a>
+        }
+      </div>
+    }
+  </div>
+} @else {
+  <a
+    class="nav-item"
+    [routerLink]="item().route"
+    routerLinkActive="nav-item--active"
+    #rla="routerLinkActive"
+    [matTooltip]="collapsed() ? item().label : ''"
+    matTooltipPosition="right"
+    [attr.aria-current]="rla.isActive ? 'page' : null"
+    (click)="navigate.emit()"
+  >
+    <svg [lucideIcon]="item().icon" class="nav-item__icon" aria-hidden="true"></svg>
+    @if (!collapsed()) {
+      <span class="nav-item__label">{{ item().label }}</span>
+    }
+  </a>
+}

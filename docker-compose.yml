@@ -1,0 +1,74 @@
+name: mtm-immobilier
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mtm-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mtm_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_in_local_env}
+      POSTGRES_DB: ${POSTGRES_DB:-mtm_immobilier}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - mtm_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mtm_user} -d ${POSTGRES_DB:-mtm_immobilier}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - mtm-network
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile.dev
+    container_name: mtm-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    ports:
+      - "${API_PORT:-3000}:3000"
+    volumes:
+      - ./apps/api:/app/apps/api
+      - /app/apps/api/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    networks:
+      - mtm-network
+
+  backoffice:
+    build:
+      context: .
+      dockerfile: apps/backoffice/Dockerfile.dev
+    container_name: mtm-backoffice
+    restart: unless-stopped
+    environment:
+      API_URL: ${BACKOFFICE_API_URL:-http://localhost:3000/api}
+    ports:
+      - "${BACKOFFICE_PORT:-4200}:4200"
+    volumes:
+      - ./apps/backoffice:/app/apps/backoffice
+      - /app/apps/backoffice/node_modules
+    depends_on:
+      - api
+    networks:
+      - mtm-network
+
+networks:
+  mtm-network:
+    driver: bridge
+
+volumes:
+  mtm_postgres_data:

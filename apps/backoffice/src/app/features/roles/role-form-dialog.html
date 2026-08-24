@@ -1,0 +1,33 @@
+<h2 mat-dialog-title>Nouveau rôle</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <mat-dialog-content class="role-dialog-content">
+    <mat-form-field appearance="outline">
+      <mat-label>Nom technique</mat-label>
+      <input matInput formControlName="name" placeholder="ex: responsable_marketing" />
+      <mat-hint>Minuscules, chiffres et underscores uniquement.</mat-hint>
+      @if (form.controls.name.hasError('required') && form.controls.name.touched) {
+        <mat-error>Le nom est requis.</mat-error>
+      }
+      @if (form.controls.name.hasError('pattern') && form.controls.name.touched) {
+        <mat-error>Format invalide (ex: responsable_marketing).</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Description</mat-label>
+      <input matInput formControlName="description" />
+    </mat-form-field>
+
+    @if (errorMessage()) {
+      <p class="role-dialog-error">{{ errorMessage() }}</p>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="cancel()">Annuler</button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+      Créer
+    </button>
+  </mat-dialog-actions>
+</form>

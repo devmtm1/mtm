@@ -1,0 +1,22 @@
+<div class="roles-page">
+  <div class="roles-header">
+    <h1>Rôles &amp; permissions</h1>
+    @if (canCreate()) {
+      <button mat-flat-button color="primary" class="btn-mtm-accent" (click)="openCreateDialog()">
+        <svg lucideShieldPlus class="btn-icon"></svg>
+        Nouveau rôle
+      </button>
+    }
+  </div>
+
+  <ag-grid-angular
+    class="roles-grid"
+    [theme]="theme"
+    [rowData]="rowData()"
+    [columnDefs]="columnDefs"
+    [loading]="loading()"
+    [animateRows]="true"
+    [pagination]="true"
+    [paginationPageSize]="20"
+  />
+</div>

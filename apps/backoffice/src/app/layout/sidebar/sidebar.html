@@ -1,0 +1,44 @@
+<div class="sidebar">
+  <!-- Marque -->
+  <div class="sidebar__brand">
+    <div class="sidebar__logo" aria-hidden="true">
+      <svg lucideBuilding2 class="sidebar__logo-icon"></svg>
+    </div>
+    @if (!collapsed()) {
+      <div class="sidebar__brand-text">
+        <span class="sidebar__brand-name">MTM IMMOBILIER</span>
+        <span class="sidebar__brand-subtext">Portail ERP & BTP</span>
+      </div>
+    }
+  </div>
+
+  <!-- Navigation -->
+  <nav class="sidebar__nav" aria-label="Navigation principale">
+    @for (section of sections(); track section.title) {
+      <div class="sidebar__section">
+        @if (!collapsed()) {
+          <p class="sidebar__section-title">{{ section.title }}</p>
+        }
+        <ul class="sidebar__list" role="list">
+          @for (item of section.items; track item.route) {
+            <li class="sidebar__list-item">
+              <app-nav-item
+                [item]="item"
+                [collapsed]="collapsed()"
+                (navigate)="navigate.emit()"
+              />
+            </li>
+          }
+        </ul>
+      </div>
+    }
+  </nav>
+
+  <!-- Pied sobre : les coordonnées complètes restent disponibles sur la page
+       de connexion et seront exposées via Paramètres → Informations entreprise -->
+  <div class="sidebar__footer">
+    @if (!collapsed()) {
+      <span class="sidebar__footer-text">MTM Immobilier · ERP</span>
+    }
+  </div>
+</div>

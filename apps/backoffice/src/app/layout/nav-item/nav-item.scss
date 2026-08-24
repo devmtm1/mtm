@@ -1,0 +1,159 @@
+/* ==========================================================================
+   Item de navigation du sidebar — état actif discret :
+   fond violet très léger + barre verticale violette + texte/icône violet.
+   ========================================================================== */
+
+:host {
+  display: block;
+}
+
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--mtm-text-muted);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    background-color: var(--mtm-bg-hover);
+    color: var(--mtm-text-dark);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mtm-purple-light);
+    outline-offset: -2px;
+  }
+
+  /* Barre verticale de l'état actif */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    bottom: 10px;
+    width: 3px;
+    border-radius: 9999px;
+    background-color: transparent;
+    transition: background-color 0.15s ease;
+  }
+}
+
+.nav-item--active {
+  background-color: var(--mtm-purple-subtle);
+  color: var(--mtm-purple-primary);
+  font-weight: 600;
+
+  &::before {
+    background-color: var(--mtm-purple-primary);
+  }
+
+  &:hover {
+    background-color: var(--mtm-purple-subtle);
+    color: var(--mtm-purple-primary);
+  }
+}
+
+.nav-item__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.nav-item__label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-item__chevron {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: transform 0.15s ease;
+
+  &--open {
+    transform: rotate(180deg);
+  }
+}
+
+/* Sidebar compact : icône centrée (classe posée sur le host par le composant) */
+:host(.nav-collapsed) .nav-item {
+  justify-content: center;
+  padding: 0;
+}
+
+/* ==========================================================================
+   Sous-modules d'un groupe dépliable
+   ========================================================================== */
+
+.nav-group__children {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 4px;
+  padding-left: 14px;
+  position: relative;
+}
+
+/* Ligne de liaison verticale discrète */
+.nav-group__children::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 4px;
+  bottom: 4px;
+  width: 1px;
+  background-color: var(--mtm-border);
+}
+
+.nav-child {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px 0 30px;
+  border-radius: 6px;
+  color: var(--mtm-text-muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    background-color: var(--mtm-bg-hover);
+    color: var(--mtm-text-dark);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mtm-purple-light);
+    outline-offset: -2px;
+  }
+
+  &--active {
+    background-color: var(--mtm-purple-subtle);
+    color: var(--mtm-purple-primary);
+    font-weight: 600;
+  }
+}

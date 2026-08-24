@@ -1,0 +1,55 @@
+<h2 mat-dialog-title>Nouvel utilisateur</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <mat-dialog-content class="user-dialog-content">
+    <mat-form-field appearance="outline">
+      <mat-label>Adresse e-mail</mat-label>
+      <input matInput type="email" formControlName="email" />
+      @if (form.controls.email.hasError('required') && form.controls.email.touched) {
+        <mat-error>L'adresse e-mail est requise.</mat-error>
+      }
+      @if (form.controls.email.hasError('email') && form.controls.email.touched) {
+        <mat-error>Adresse e-mail invalide.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Prénom</mat-label>
+      <input matInput formControlName="firstName" />
+      @if (form.controls.firstName.hasError('required') && form.controls.firstName.touched) {
+        <mat-error>Le prénom est requis.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Nom</mat-label>
+      <input matInput formControlName="lastName" />
+      @if (form.controls.lastName.hasError('required') && form.controls.lastName.touched) {
+        <mat-error>Le nom est requis.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Mot de passe provisoire</mat-label>
+      <input matInput type="password" formControlName="password" />
+      <mat-hint>Au moins 12 caractères. À faire changer à la première connexion.</mat-hint>
+      @if (form.controls.password.hasError('required') && form.controls.password.touched) {
+        <mat-error>Le mot de passe est requis.</mat-error>
+      }
+      @if (form.controls.password.hasError('minlength') && form.controls.password.touched) {
+        <mat-error>Le mot de passe doit contenir au moins 12 caractères.</mat-error>
+      }
+    </mat-form-field>
+
+    @if (errorMessage()) {
+      <p class="user-dialog-error">{{ errorMessage() }}</p>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="cancel()">Annuler</button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+      Créer
+    </button>
+  </mat-dialog-actions>
+</form>

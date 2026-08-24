@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+.npm/
+
+# Build outputs
+dist/
+build/
+.angular/
+*.tsbuildinfo
+
+# Environment files (never commit real secrets)
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+logs/
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Prisma
+apps/api/prisma/*.db
+
+# Docker volumes data (if bind-mounted locally)
+docker-data/
+
+# Backups générés localement
+backups/*.sql
+backups/*.dump

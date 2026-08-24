@@ -1,0 +1,36 @@
+<h2 mat-dialog-title>Permissions — {{ data.role.name }}</h2>
+
+<mat-dialog-content class="permissions-dialog-content">
+  @if (loading()) {
+    <p>Chargement...</p>
+  } @else {
+    @for (group of groups(); track group.resource) {
+      <div class="permissions-group">
+        <h3 class="permissions-group-title">{{ group.resource }}</h3>
+        <div class="permissions-group-items">
+          @for (permission of group.permissions; track permission.id) {
+            <mat-checkbox
+              [checked]="isChecked(permission.name)"
+              (change)="toggle(permission.name)"
+            >
+              {{ permission.action }}
+            </mat-checkbox>
+          }
+        </div>
+      </div>
+    }
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="cancel()">Annuler</button>
+  <button
+    mat-flat-button
+    color="primary"
+    type="button"
+    [disabled]="saving() || loading()"
+    (click)="save()"
+  >
+    Enregistrer
+  </button>
+</mat-dialog-actions>

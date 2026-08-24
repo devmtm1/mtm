@@ -1,0 +1,46 @@
+.audit-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+.audit-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 18px 20px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.03);
+
+  h1 {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--mtm-purple-primary);
+    letter-spacing: -0.02em;
+  }
+}
+
+.audit-total {
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.85rem;
+}
+
+.audit-filters {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.audit-filter-field {
+  width: 220px;
+}
+
+.audit-grid {
+  flex: 1;
+  min-height: 480px;
+  width: 100%;
+}

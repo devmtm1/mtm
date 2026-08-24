@@ -1,0 +1,134 @@
+/* ==========================================================================
+   Sidebar MTM Immobilier — surface blanche unie, bordure fine, sobre.
+   Largeur pilotée par le shell (--sidebar-width : 248px / 72px replié).
+   ========================================================================== */
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--mtm-card-bg);
+}
+
+/* --------------------------------------------------------------------------
+   Marque
+   -------------------------------------------------------------------------- */
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--mtm-border);
+  flex-shrink: 0;
+}
+
+.sidebar__logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background-color: var(--mtm-purple-primary);
+  flex-shrink: 0;
+}
+
+.sidebar__logo-icon {
+  width: 20px;
+  height: 20px;
+  stroke: #ffffff;
+}
+
+.sidebar__brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sidebar__brand-name {
+  font-family: var(--mtm-font-display);
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--mtm-purple-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.sidebar__brand-subtext {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mtm-text-muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --------------------------------------------------------------------------
+   Navigation
+   -------------------------------------------------------------------------- */
+.sidebar__nav {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px 12px;
+
+  /* Scrollbar discrète */
+  scrollbar-width: thin;
+  scrollbar-color: var(--mtm-border) transparent;
+}
+
+.sidebar__section + .sidebar__section {
+  margin-top: 12px;
+}
+
+.sidebar__section-title {
+  margin: 0;
+  padding: 10px 8px 6px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mtm-text-muted);
+}
+
+.sidebar__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Pied — mention minimale (les coordonnées complètes ne sont plus ici)
+   -------------------------------------------------------------------------- */
+.sidebar__footer {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border-top: 1px solid var(--mtm-border);
+  text-align: center;
+}
+
+.sidebar__footer-text {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--mtm-text-muted);
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   Mode replié : marque centrée, libellés masqués (géré par le template),
+   tooltips fournis par NavItem.
+   -------------------------------------------------------------------------- */
+:host(.sidebar--collapsed) .sidebar__brand {
+  justify-content: center;
+  padding: 14px 0;
+}

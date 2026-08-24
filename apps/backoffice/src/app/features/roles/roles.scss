@@ -1,0 +1,31 @@
+.roles-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+}
+
+.roles-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.03);
+
+  h1 {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--mtm-purple-primary);
+    letter-spacing: -0.02em;
+  }
+}
+
+.roles-grid {
+  flex: 1;
+  min-height: 480px;
+  width: 100%;
+}

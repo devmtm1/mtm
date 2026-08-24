@@ -1,0 +1,145 @@
+<div class="login-page">
+  <div class="login-container">
+    <div class="login-header-branding">
+      <div class="login-logo-wrapper">
+        <svg class="login-logo-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 4L6 14V34L24 44L42 34V14L24 4Z" fill="#2D1552" stroke="#3E1E70" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M24 4V24L42 14" stroke="#542B93" stroke-width="1.5"/>
+          <path d="M24 24L6 14" stroke="#542B93" stroke-width="1.5"/>
+          <path d="M24 24V44" stroke="#1C0B36" stroke-width="1.5"/>
+          <path d="M24 14L14 20V28L24 34L34 28V20L24 14Z" fill="#C8102E"/>
+          <path d="M24 14V24L34 19" fill="#E5231B"/>
+          <path d="M24 24L14 19" fill="#9E0B22"/>
+          <path d="M24 24V34" stroke="#7A0617" stroke-width="1"/>
+        </svg>
+      </div>
+      <h1 class="login-title">MTM IMMOBILIER</h1>
+      <p class="login-tagline">Achat • Vente • Gérance Immobilière &amp; BTP</p>
+      <div class="login-badge-pill">Espace Back-office &amp; ERP</div>
+    </div>
+
+    <mat-card class="login-card">
+      <mat-card-content class="login-card-content">
+        @if (!awaitingTwoFactor()) {
+          <div class="login-card-header">
+            <h2>Connexion Sécurisée</h2>
+            <p>Entrez vos identifiants pour accéder au système ERP.</p>
+          </div>
+
+          <form
+            class="login-form"
+            [formGroup]="credentialsForm"
+            (ngSubmit)="submitCredentials()"
+          >
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Adresse e-mail</mat-label>
+              <input matInput type="email" formControlName="email" autocomplete="username" placeholder="exemple@mtm-immobilier.sn" />
+              @if (credentialsForm.controls.email.hasError('required') && credentialsForm.controls.email.touched) {
+                <mat-error>L'adresse e-mail est requise.</mat-error>
+              }
+              @if (credentialsForm.controls.email.hasError('email') && credentialsForm.controls.email.touched) {
+                <mat-error>Adresse e-mail invalide.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Mot de passe</mat-label>
+              <input
+                matInput
+                type="password"
+                formControlName="password"
+                autocomplete="current-password"
+                placeholder="••••••••••••"
+              />
+              @if (credentialsForm.controls.password.hasError('required') && credentialsForm.controls.password.touched) {
+                <mat-error>Le mot de passe est requis.</mat-error>
+              }
+            </mat-form-field>
+
+            @if (errorMessage()) {
+              <div class="login-error-box">
+                <svg lucideAlertCircle class="btn-icon"></svg>
+                <span>{{ errorMessage() }}</span>
+              </div>
+            }
+
+            <button
+              mat-flat-button
+              type="submit"
+              class="login-submit btn-mtm-primary"
+              [disabled]="loading()"
+            >
+              @if (loading()) {
+                <mat-spinner diameter="20" />
+              } @else {
+                <svg lucideLogIn class="btn-icon"></svg>
+                Se Connecter
+              }
+            </button>
+          </form>
+        } @else {
+          <div class="login-card-header">
+            <h2>
+              <svg lucideShieldCheck class="btn-icon"></svg>
+              Double Authentification (2FA)
+            </h2>
+            <p class="login-2fa-hint">
+              Saisissez le code à 6 chiffres généré par votre application d'authentification.
+            </p>
+          </div>
+
+          <form
+            class="login-form"
+            [formGroup]="twoFactorForm"
+            (ngSubmit)="submitTwoFactor()"
+          >
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Code de vérification 2FA</mat-label>
+              <input
+                matInput
+                type="text"
+                inputmode="numeric"
+                maxlength="6"
+                formControlName="code"
+                autocomplete="one-time-code"
+                placeholder="000 000"
+              />
+              @if (twoFactorForm.controls.code.invalid && twoFactorForm.controls.code.touched) {
+                <mat-error>Le code doit contenir 6 chiffres.</mat-error>
+              }
+            </mat-form-field>
+
+            @if (errorMessage()) {
+              <div class="login-error-box">
+                <svg lucideAlertCircle class="btn-icon"></svg>
+                <span>{{ errorMessage() }}</span>
+              </div>
+            }
+
+            <button
+              mat-flat-button
+              type="submit"
+              class="login-submit btn-mtm-accent"
+              [disabled]="loading()"
+            >
+              @if (loading()) {
+                <mat-spinner diameter="20" />
+              } @else {
+                <svg lucideShieldCheck class="btn-icon"></svg>
+                Valider le code
+              }
+            </button>
+          </form>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <div class="login-footer-info">
+      <span>
+        <svg lucidePhoneCall class="btn-icon"></svg>
+        Cabinet MTM Immobilier — 78 522 65 65 / 78 366 26 51
+      </span>
+      <span>cabinetmtm1&#64;gmail.com</span>
+    </div>
+  </div>
+</div>

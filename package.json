@@ -1,0 +1,30 @@
+{
+  "name": "mtm-immobilier",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MTM Immobilier — Plateforme numérique intégrée (monorepo)",
+  "workspaces": [
+    "apps/api",
+    "apps/backoffice"
+  ],
+  "overrides": {
+    "deepmerge-ts": "^8.0.1"
+  },
+  "scripts": {
+    "api:dev": "npm run start:dev --workspace=apps/api",
+    "api:build": "npm run build --workspace=apps/api",
+    "api:test": "npm run test --workspace=apps/api",
+    "api:test:e2e": "npm run test:e2e --workspace=apps/api",
+    "api:lint": "npm run lint --workspace=apps/api",
+    "backoffice:dev": "npm run start --workspace=apps/backoffice",
+    "backoffice:build": "npm run build --workspace=apps/backoffice",
+    "backoffice:lint": "npm run lint --workspace=apps/backoffice",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}

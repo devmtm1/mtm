@@ -1,0 +1,116 @@
+<header class="header">
+  <div class="header__left">
+    <button
+      mat-icon-button
+      type="button"
+      class="header__toggle"
+      (click)="toggleSidenav.emit()"
+      [matTooltip]="collapsed() ? 'Déplier le menu' : 'Plier le menu'"
+      aria-label="Basculer le menu latéral"
+    >
+      @if (collapsed()) {
+        <svg lucidePanelLeftOpen class="header__icon-svg" aria-hidden="true"></svg>
+      } @else {
+        <svg lucidePanelLeftClose class="header__icon-svg" aria-hidden="true"></svg>
+      }
+    </button>
+
+    <!-- Fil d'Ariane : section › module (dérivé de la configuration de navigation) -->
+    @if (breadcrumb(); as bc) {
+      <nav class="header__breadcrumb" aria-label="Fil d'Ariane">
+        <span class="header__breadcrumb-section">{{ bc.section }}</span>
+        <svg lucideChevronRight class="header__breadcrumb-sep" aria-hidden="true"></svg>
+        <span class="header__breadcrumb-current">{{ bc.label }}</span>
+      </nav>
+    }
+  </div>
+
+  <div class="header__right">
+    <!-- Recherche globale ERP — raccourci Ctrl+K / Cmd+K -->
+    <div class="header__search" role="search">
+      <svg lucideSearch class="header__search-icon" aria-hidden="true"></svg>
+      <input
+        #searchInput
+        type="text"
+        class="header__search-input"
+        placeholder="Rechercher un dossier, un bien, un client…"
+        aria-label="Recherche globale"
+      />
+      <kbd class="header__search-kbd" aria-hidden="true">Ctrl K</kbd>
+    </div>
+
+    <!-- Notifications — structure prête pour les futurs flux
+         (système, métier, alertes, tâches, documents à valider) -->
+    <button
+      mat-icon-button
+      type="button"
+      class="header__icon-btn"
+      [matMenuTriggerFor]="notificationsMenu"
+      [matBadge]="notificationCount()"
+      [matBadgeHidden]="notificationCount() === 0"
+      matBadgeSize="small"
+      matBadgeColor="warn"
+      matTooltip="Notifications"
+      aria-label="Notifications"
+    >
+      <svg lucideBell class="header__icon-svg" aria-hidden="true"></svg>
+    </button>
+
+    <mat-menu #notificationsMenu="matMenu" xPosition="before" panelClass="mtm-menu-panel">
+      <div class="menu-header">Notifications</div>
+      <mat-divider />
+      <div class="menu-empty">
+        <svg lucideBellOff class="menu-empty__icon" aria-hidden="true"></svg>
+        <p class="menu-empty__title">Aucune notification</p>
+        <p class="menu-empty__hint">
+          Les alertes système et métier apparaîtront ici.
+        </p>
+      </div>
+    </mat-menu>
+
+    <!-- Profil utilisateur (données réelles de la session) -->
+    @if (user(); as u) {
+      <button
+        type="button"
+        class="header__profile"
+        [matMenuTriggerFor]="userMenu"
+        aria-label="Menu du profil utilisateur"
+      >
+        <span class="header__avatar" aria-hidden="true">{{ initials() }}</span>
+        <span class="header__profile-text">
+          <span class="header__profile-name">{{ fullName() }}</span>
+          @if (primaryRole()) {
+            <span class="header__profile-role">{{ primaryRole() }}</span>
+          }
+        </span>
+        <svg lucideChevronDown class="header__profile-chevron" aria-hidden="true"></svg>
+      </button>
+
+      <mat-menu #userMenu="matMenu" xPosition="before" panelClass="mtm-menu-panel">
+        <div class="menu-user">
+          <span class="menu-user__avatar" aria-hidden="true">{{ initials() }}</span>
+          <div class="menu-user__text">
+            <span class="menu-user__name">{{ fullName() }}</span>
+            <span class="menu-user__email">{{ u.email }}</span>
+          </div>
+        </div>
+        <mat-divider />
+        <button mat-menu-item type="button" disabled>
+          <svg lucideUser class="menu-item-icon" aria-hidden="true"></svg>
+          Mon profil
+        </button>
+        @if (canAccessSettings()) {
+          <a mat-menu-item routerLink="/settings">
+            <svg lucideSettings class="menu-item-icon" aria-hidden="true"></svg>
+            Paramètres
+          </a>
+        }
+        <mat-divider />
+        <button mat-menu-item type="button" (click)="logout()">
+          <svg lucideLogOut class="menu-item-icon menu-item-icon--danger" aria-hidden="true"></svg>
+          Déconnexion
+        </button>
+      </mat-menu>
+    }
+  </div>
+</header>

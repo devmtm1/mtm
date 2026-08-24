@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  api:
+    name: API (NestJS)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: mtm_test
+          POSTGRES_PASSWORD: mtm_test
+          POSTGRES_DB: mtm_immobilier_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U mtm_test -d mtm_immobilier_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://mtm_test:mtm_test@localhost:5432/mtm_immobilier_test?schema=public
+      JWT_ACCESS_SECRET: ci-access-secret-min-32-characters-long
+      JWT_REFRESH_SECRET: ci-refresh-secret-min-32-characters-long
+      CORS_ORIGIN: http://localhost:4200
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # GitHub Actions dispose d'un accès réseau complet (contrairement à
+      # certains environnements de développement restreints) : cette étape
+      # peut donc réellement télécharger les moteurs Prisma.
+      - name: Generate Prisma client
+        working-directory: apps/api
+        run: npx prisma generate
+
+      - name: Apply database migrations
+        working-directory: apps/api
+        run: npx prisma migrate deploy
+
+      - name: Lint
+        working-directory: apps/api
+        run: npx eslint "src/**/*.ts" "test/**/*.ts"
+
+      - name: Type check & build
+        working-directory: apps/api
+        run: npm run build
+
+      - name: Unit tests
+        working-directory: apps/api
+        run: npm run test
+
+      - name: E2E tests (critical path)
+        working-directory: apps/api
+        run: npm run test:e2e
+
+  backoffice:
+    name: Back-office (Angular)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        working-directory: apps/backoffice
+        run: npm run lint
+
+      - name: Build
+        working-directory: apps/backoffice
+        run: npm run build
+
+      - name: Unit tests
+        working-directory: apps/backoffice
+        run: npm run test -- --watch=false

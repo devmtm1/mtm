@@ -1,0 +1,22 @@
+<div class="settings-page">
+  <div class="settings-header">
+    <h1>Paramètres</h1>
+    @if (canCreate()) {
+      <button mat-flat-button color="primary" class="btn-mtm-accent" (click)="openCreateDialog()">
+        <svg lucideSlidersHorizontal class="btn-icon"></svg>
+        Nouveau paramètre
+      </button>
+    }
+  </div>
+
+  <ag-grid-angular
+    class="settings-grid"
+    [theme]="theme"
+    [rowData]="rowData()"
+    [columnDefs]="columnDefs"
+    [loading]="loading()"
+    [animateRows]="true"
+    [pagination]="true"
+    [paginationPageSize]="20"
+  />
+</div>

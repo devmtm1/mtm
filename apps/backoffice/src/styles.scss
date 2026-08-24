@@ -1,0 +1,260 @@
+// Design System - MTM IMMOBILIER (Couleurs officielles de l'entreprise)
+// Violet Impérial / Sombre : #2D1552 (Domination, professionnalisme, sobriété)
+// Rouge Crimson / Accent : #C8102E (Dynamisme, boutons d'action, icônes, alertes)
+// Blanc Pur & Gris Slate : #FFFFFF / #F8FAFC / #1E1B2E
+
+@use '@angular/material' as mat;
+
+:root {
+  // Couleurs de marque MTM Immobilier
+  --mtm-purple-dark: #1C0B36;
+  --mtm-purple-primary: #2D1552;
+  --mtm-purple-medium: #3E1E70;
+  --mtm-purple-light: #542B93;
+  --mtm-purple-subtle: #F3EEFC;
+
+  --mtm-red-primary: #C8102E;
+  --mtm-red-hover: #A00B22;
+  --mtm-red-subtle: #FFF0F2;
+
+  --mtm-text-dark: #191528;
+  --mtm-text-muted: #64748B;
+  --mtm-border: #E2E8F0;
+  --mtm-bg-surface: #F8FAFC;
+  --mtm-bg-hover: #F1F5F9;
+  --mtm-card-bg: #FFFFFF;
+
+  // Statuts sémantiques (succès / avertissement) — le rouge MTM reste la
+  // couleur d'erreur/destructif de la marque, pas besoin d'un second rouge.
+  --mtm-success: #059669;
+  --mtm-success-bg: #ECFDF5;
+  --mtm-warning: #D97706;
+  --mtm-warning-bg: #FFFBEB;
+
+  // Typographie
+  --mtm-font-body: 'Plus Jakarta Sans', 'Inter', 'Roboto', system-ui, -apple-system, sans-serif;
+  --mtm-font-display: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+
+  // Surcharge des variables Material System CSS
+  --mat-sys-primary: var(--mtm-purple-primary);
+  --mat-sys-on-primary: #ffffff;
+  --mat-sys-primary-container: var(--mtm-purple-subtle);
+  --mat-sys-on-primary-container: var(--mtm-purple-dark);
+
+  --mat-sys-secondary: var(--mtm-red-primary);
+  --mat-sys-on-secondary: #ffffff;
+  --mat-sys-tertiary: var(--mtm-red-primary);
+
+  --mat-sys-surface: var(--mtm-bg-surface);
+  --mat-sys-surface-container: #ffffff;
+  --mat-sys-surface-container-low: #fafafa;
+  --mat-sys-surface-container-lowest: #f1edf7;
+
+  --mat-sys-on-surface: var(--mtm-text-dark);
+  --mat-sys-on-surface-variant: var(--mtm-text-muted);
+}
+
+html {
+  height: 100%;
+  font-family: 'Plus Jakarta Sans', 'Inter', 'Roboto', system-ui, -apple-system, sans-serif;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$violet-palette,
+        tertiary: mat.$red-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
+
+body {
+  color-scheme: light;
+  background-color: var(--mtm-bg-surface);
+  color: var(--mtm-text-dark);
+  margin: 0;
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Style uniforme des icônes Lucide dans les boutons d'action */
+.btn-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+  vertical-align: middle;
+  stroke: currentColor;
+  display: inline-block;
+}
+
+/* Suppression globale du scroll horizontal sur la barre latérale Material */
+.mat-drawer-inner-container,
+.mat-sidenav-container,
+.mat-drawer {
+  overflow-x: hidden !important;
+}
+
+/* Boutons principaux avec la couleur rouge d'accentuation MTM pour un contrat visuel sobre et net */
+.mat-mdc-unelevated-button.mat-primary,
+.mat-mdc-raised-button.mat-primary,
+.btn-mtm-primary {
+  --mdc-filled-button-container-color: var(--mtm-purple-primary) !important;
+  --mdc-filled-button-label-text-color: #ffffff !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+
+  &:hover {
+    background-color: var(--mtm-purple-medium) !important;
+    box-shadow: 0 4px 12px rgba(45, 21, 82, 0.25) !important;
+  }
+}
+
+.btn-mtm-accent,
+.mat-mdc-unelevated-button.mat-tertiary,
+.mat-mdc-raised-button.mat-tertiary {
+  background-color: var(--mtm-red-primary) !important;
+  color: #ffffff !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+
+  &:hover {
+    background-color: var(--mtm-red-hover) !important;
+    box-shadow: 0 4px 12px rgba(200, 16, 46, 0.3) !important;
+  }
+}
+
+/* Style uniforme des cartes Material */
+.mat-mdc-card {
+  border-radius: 12px !important;
+  border: 1px solid var(--mtm-border) !important;
+  box-shadow: 0 2px 10px rgba(25, 21, 40, 0.04) !important;
+  background-color: var(--mtm-card-bg) !important;
+}
+
+/* AG Grid Link styling & Brand Overrides */
+.users-action-link,
+.grid-action-link {
+  background: none;
+  border: none;
+  color: var(--mtm-purple-primary);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  padding: 0;
+  text-decoration: underline;
+
+  &:hover {
+    color: var(--mtm-red-primary);
+  }
+}
+
+/* Boutons d'action sous forme d'icônes Lucide dans les tableaux AG-Grid */
+.grid-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--mtm-border);
+  background-color: #ffffff;
+  color: var(--mtm-purple-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+  margin-right: 6px;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2px;
+    stroke: currentColor;
+    fill: none;
+  }
+
+  &:hover {
+    background-color: var(--mtm-purple-subtle);
+    border-color: var(--mtm-purple-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(45, 21, 82, 0.12);
+  }
+
+  &.danger {
+    color: var(--mtm-red-primary);
+
+    &:hover {
+      background-color: var(--mtm-red-subtle);
+      border-color: var(--mtm-red-primary);
+      box-shadow: 0 2px 6px rgba(200, 16, 46, 0.15);
+    }
+  }
+
+  &.success {
+    color: #047857;
+
+    &:hover {
+      background-color: #ECFDF5;
+      border-color: #047857;
+      box-shadow: 0 2px 6px rgba(4, 120, 87, 0.15);
+    }
+  }
+}
+
+.ag-theme-alpine,
+.ag-theme-quartz,
+.ag-theme-balham {
+  --ag-header-background-color: #F8FAFC !important;
+  --ag-header-foreground-color: var(--mtm-text-dark) !important;
+  --ag-header-font-weight: 600 !important;
+  --ag-row-hover-color: #F3EEFC !important;
+  --ag-selected-row-background-color: #ECE5F8 !important;
+  --ag-font-family: 'Plus Jakarta Sans', sans-serif !important;
+  --ag-font-size: 13px !important;
+  --ag-border-color: #E2E8F0 !important;
+
+  .ag-header-cell-text {
+    font-weight: 600;
+    color: var(--mtm-text-dark);
+  }
+
+  .ag-cell {
+    display: flex;
+    align-items: center;
+  }
+}
+
+/* Micro badge de statut sobre */
+.mtm-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+
+  &--purple {
+    background-color: var(--mtm-purple-subtle);
+    color: var(--mtm-purple-primary);
+  }
+
+  &--red {
+    background-color: var(--mtm-red-subtle);
+    color: var(--mtm-red-primary);
+  }
+
+  &--success {
+    background-color: var(--mtm-success-bg);
+    color: var(--mtm-success);
+  }
+
+  &--warning {
+    background-color: var(--mtm-warning-bg);
+    color: var(--mtm-warning);
+  }
+}

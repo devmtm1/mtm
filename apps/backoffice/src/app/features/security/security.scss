@@ -1,0 +1,72 @@
+.security-page {
+  max-width: 720px;
+
+  h1 {
+    margin: 0 0 20px;
+    font-size: 1.4rem;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    color: var(--mtm-purple-primary);
+  }
+}
+
+.security-card {
+  max-width: 480px;
+  padding: 8px;
+}
+
+.security-card-title {
+  margin: 0 0 16px;
+  font-size: 1.05rem;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  color: var(--mtm-text-dark);
+}
+
+.security-status {
+  font-size: 0.9rem;
+  margin: 0 0 16px;
+}
+
+.security-status--on {
+  color: var(--mat-sys-primary);
+}
+
+.security-status--off {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.security-hint {
+  font-size: 0.85rem;
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0 0 16px;
+}
+
+.security-qr {
+  display: block;
+  width: 180px;
+  height: 180px;
+  margin: 0 auto 20px;
+  border: 1px solid var(--mtm-border);
+  border-radius: 10px;
+  padding: 8px;
+  background: #ffffff;
+}
+
+.security-error {
+  color: var(--mat-sys-error);
+  font-size: 0.85rem;
+  margin: 0 0 8px;
+}
+
+.security-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}

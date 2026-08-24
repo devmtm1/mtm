@@ -1,0 +1,13 @@
+.setting-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 380px;
+  padding-top: 4px;
+}
+
+.setting-dialog-error {
+  color: var(--mat-sys-error);
+  font-size: 0.85rem;
+  margin: 0;
+}

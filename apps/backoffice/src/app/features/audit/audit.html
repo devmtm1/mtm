@@ -1,0 +1,41 @@
+<div class="audit-page">
+  <div class="audit-header">
+    <h1>Journal d'audit</h1>
+    <span class="audit-total">{{ total() }} entrée(s)</span>
+  </div>
+
+  <div class="audit-filters">
+    <mat-form-field appearance="outline" class="audit-filter-field">
+      <mat-label>Type d'entité</mat-label>
+      <mat-select [(ngModel)]="entityTypeFilter" (selectionChange)="applyFilters()">
+        <mat-option value="">Tous</mat-option>
+        @for (type of entityTypes; track type) {
+          <mat-option [value]="type">{{ type }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="audit-filter-field">
+      <mat-label>Action</mat-label>
+      <input
+        matInput
+        [(ngModel)]="actionFilter"
+        placeholder="ex: user.created"
+        (keyup.enter)="applyFilters()"
+      />
+    </mat-form-field>
+
+    <button mat-stroked-button (click)="applyFilters()">Filtrer</button>
+  </div>
+
+  <ag-grid-angular
+    class="audit-grid"
+    [theme]="theme"
+    [rowData]="rowData()"
+    [columnDefs]="columnDefs"
+    [loading]="loading()"
+    [animateRows]="true"
+    [pagination]="true"
+    [paginationPageSize]="25"
+  />
+</div>

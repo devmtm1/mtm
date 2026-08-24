@@ -1,0 +1,179 @@
+// MTM Immobilier — Schéma Prisma
+// Phase 0 uniquement : socle technique (identité, RBAC, audit, paramétrage).
+// Aucune table métier (terrains, mandats, CRM, ventes...) — voir docs/PHASE_0.md
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// Identité & authentification
+// ============================================================
+
+model User {
+  id       String @id @default(uuid())
+  email    String @unique
+  password String // hash bcrypt, jamais en clair
+
+  firstName String
+  lastName  String
+
+  isActive Boolean @default(true) // comptes actifs/inactifs (section 24/27 CDC)
+
+  // Force le changement de mot de passe à la prochaine connexion —
+  // activé par défaut sur les comptes créés par un admin (mot de passe
+  // provisoire) et sur le compte admin seedé.
+  mustChangePassword Boolean @default(false)
+
+  // --- Sécurité / brute-force ---
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime? // verrouillage temporaire après N échecs
+
+  // --- 2FA (TOTP) ---
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String? // chiffré côté application avant stockage
+
+  lastLoginAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  roles         UserRole[]
+  refreshTokens RefreshToken[]
+  auditLogs     AuditLog[]         @relation("AuditLogUser")
+  settingsEdits SystemSetting[]    @relation("SystemSettingEditor")
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  tokenHash String   @unique // le token brut n'est jamais stocké
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expiresAt DateTime
+  revokedAt DateTime? // révocation explicite (logout, rotation, compromission)
+
+  userAgent String?
+  ipAddress String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ============================================================
+// RBAC — Rôles & permissions génériques
+// ============================================================
+// Modèle volontairement générique (resource:action) pour être réutilisable
+// par les futurs modules métier sans refactorisation (exigence CDC section 24).
+
+model Role {
+  id          String  @id @default(uuid())
+  name        String  @unique // ex: "administrateur", "commercial", "comptable"
+  description String?
+  isSystem    Boolean @default(false) // rôle non supprimable (ex: administrateur)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users       UserRole[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String  @id @default(uuid())
+  // Convention "resource:action", actions alignées sur la section 24 du CDC :
+  // consulter, creer, modifier, valider, supprimer, exporter, payer, publier, administrer
+  name        String  @unique
+  resource    String // ex: "users", "settings", "audit" — extensible aux modules métier futurs
+  action      String // ex: "consulter", "creer", "modifier"...
+  description String?
+
+  createdAt DateTime @default(now())
+
+  roles RolePermission[]
+
+  @@index([resource])
+  @@map("permissions")
+}
+
+model UserRole {
+  userId String
+  roleId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  assignedAt DateTime @default(now())
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  assignedAt DateTime @default(now())
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// ============================================================
+// Audit — journal générique et réutilisable (section 24 CDC)
+// ============================================================
+
+model AuditLog {
+  id     String  @id @default(uuid())
+  userId String? // nullable : actions système sans utilisateur identifié
+  user   User?   @relation("AuditLogUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  action     String // ex: "user.created", "role.assigned", "settings.updated"
+  entityType String // ex: "User", "Role", "SystemSetting" — générique pour futurs modules
+  entityId   String?
+
+  oldValue Json?
+  newValue Json?
+
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ============================================================
+// Paramétrage général (section 25 CDC)
+// ============================================================
+
+model SystemSetting {
+  id    String @id @default(uuid())
+  key   String @unique
+  value Json
+
+  description String?
+  isSensitive Boolean @default(false) // permissions renforcées si true (section 25)
+
+  updatedById String?
+  updatedBy   User?    @relation("SystemSettingEditor", fields: [updatedById], references: [id], onDelete: SetNull)
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  @@map("system_settings")
+}

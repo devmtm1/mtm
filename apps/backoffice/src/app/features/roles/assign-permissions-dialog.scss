@@ -1,0 +1,22 @@
+.permissions-dialog-content {
+  min-width: 420px;
+  max-height: 60vh;
+}
+
+.permissions-group {
+  margin-bottom: 16px;
+}
+
+.permissions-group-title {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.permissions-group-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
