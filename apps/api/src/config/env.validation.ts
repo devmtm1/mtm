@@ -27,4 +27,7 @@ export const envValidationSchema = Joi.object({
   ACCOUNT_LOCK_DURATION_MINUTES: Joi.number().default(15),
 
   TWO_FACTOR_APP_NAME: Joi.string().default('MTM Immobilier'),
+  CLOUDINARY_CLOUD_NAME: Joi.string().optional(),
+  CLOUDINARY_API_KEY: Joi.string().optional(),
+  CLOUDINARY_API_SECRET: Joi.string().optional(),
 });

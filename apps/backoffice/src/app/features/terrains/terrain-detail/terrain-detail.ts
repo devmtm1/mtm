@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -9,7 +10,7 @@ import type { TerrainDetail as TerrainDetailModel } from '../../../core/models/t
 
 @Component({
   selector: 'app-terrain-detail',
-  imports: [MatButtonModule, LucideArrowLeft, LucidePencil, LucideFileText, LucideMapPin, LucideImage],
+  imports: [DatePipe, MatButtonModule, LucideArrowLeft, LucidePencil, LucideFileText, LucideMapPin, LucideImage],
   templateUrl: './terrain-detail.html',
   styleUrl: './terrain-detail.scss',
 })
@@ -34,4 +35,21 @@ export class TerrainDetail implements OnInit {
   protected edit(): void { if (this.terrain) this.router.navigate(['/terrains', this.terrain.id, 'modifier']); }
   protected formatMoney(value: number | string | null): string { return value === null ? '—' : `${Number(value).toLocaleString('fr-FR')} FCFA`; }
   protected formatNumber(value: number | string | null): string { return value === null ? '—' : Number(value).toLocaleString('fr-FR'); }
+  protected primaryImage(): string | null { return this.terrain?.medias.find((media) => media.resourceType === 'image' && media.secureUrl)?.secureUrl ?? null; }
+  protected isImage(resourceType: string): boolean { return resourceType === 'image'; }
+  protected scrollToSection(sectionId: string): void {
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  protected uploadAsset(event: Event, kind: 'media' | 'documents'): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file || !this.terrain) return;
+    this.api.upload(this.terrain.id, kind, file, kind === 'media' ? 'photo' : 'document').subscribe({
+      next: () => {
+        this.snackBar.open('Fichier ajouté', 'Fermer', { duration: 3000 });
+        this.api.findOne(this.terrain!.id).subscribe((terrain) => { this.terrain = terrain; });
+      },
+      error: () => this.snackBar.open('Impossible d’ajouter le fichier', 'Fermer', { duration: 4000 }),
+    });
+  }
 }

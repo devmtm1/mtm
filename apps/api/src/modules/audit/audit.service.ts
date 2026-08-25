@@ -8,6 +8,7 @@ export interface RecordAuditInput {
   entityId?: string | null;
   oldValue?: unknown;
   newValue?: unknown;
+  justification?: string;
   ipAddress?: string;
   userAgent?: string;
 }
@@ -53,6 +54,7 @@ export class AuditService {
           entityId: input.entityId ?? undefined,
           oldValue: this.toJson(input.oldValue),
           newValue: this.toJson(input.newValue),
+          justification: input.justification,
           ipAddress: input.ipAddress,
           userAgent: input.userAgent,
         },

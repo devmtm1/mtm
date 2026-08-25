@@ -11,6 +11,7 @@ export interface TerrainListItem {
   superficie: number | string | null;
   prixPublic: number | string | null;
   statutCommercial: string;
+  medias?: TerrainMedia[];
 }
 
 export interface TerrainDetail extends TerrainListItem {
@@ -40,6 +41,8 @@ export interface TerrainMedia {
   title: string | null;
   isPublic: boolean;
   storageKey: string;
+  resourceType: string;
+  secureUrl: string;
 }
 
 export interface TerrainDocument {
@@ -48,6 +51,8 @@ export interface TerrainDocument {
   title: string | null;
   isPublic: boolean;
   storageKey: string;
+  resourceType: string;
+  secureUrl: string;
   version: number;
 }
 
@@ -67,6 +72,12 @@ export interface TerrainQuery {
   pageSize?: number;
 }
 
+export interface TerrainOptions {
+  statutJuridique: string[];
+  niveauVerification: string[];
+  statutCommercial: string[];
+}
+
 export interface CreateTerrainPayload {
   referenceInterne: string;
   nom: string;
@@ -81,6 +92,7 @@ export interface CreateTerrainPayload {
   longitude?: number;
   superficie?: number;
   uniteSuperficie?: string;
+  dimensions?: Record<string, unknown>;
   prixAcquisition?: number;
   prixPublic?: number;
   marge?: number;

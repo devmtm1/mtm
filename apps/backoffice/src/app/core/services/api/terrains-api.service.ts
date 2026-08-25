@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import type { CreateTerrainPayload, TerrainDetail, TerrainPage, TerrainQuery } from '../../models/terrain.model';
+import type { CreateTerrainPayload, TerrainDetail, TerrainOptions, TerrainPage, TerrainQuery } from '../../models/terrain.model';
 
 @Injectable({ providedIn: 'root' })
 export class TerrainsApiService {
@@ -21,6 +21,10 @@ export class TerrainsApiService {
     return this.http.get<TerrainDetail>(`${this.baseUrl}/${id}`);
   }
 
+  getOptions(): Observable<TerrainOptions> {
+    return this.http.get<TerrainOptions>(`${this.baseUrl}/options`);
+  }
+
   create(payload: CreateTerrainPayload): Observable<TerrainDetail> {
     return this.http.post<TerrainDetail>(this.baseUrl, payload);
   }
@@ -29,10 +33,12 @@ export class TerrainsApiService {
     return this.http.patch<TerrainDetail>(`${this.baseUrl}/${id}`, payload);
   }
 
-  upload(id: string, kind: 'media' | 'documents', file: File, type: string): Observable<unknown> {
+  upload(id: string, kind: 'media' | 'documents', file: File, type: string, title?: string, isPublic = false): Observable<unknown> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('type', type);
+    if (title) formData.append('title', title);
+    formData.append('isPublic', String(isPublic));
     return this.http.post<unknown>(`${this.baseUrl}/${id}/${kind}`, formData);
   }
 }

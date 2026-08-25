@@ -34,6 +34,9 @@ export class Terrains implements OnInit {
   protected readonly viewMode = signal<'table' | 'grid'>('table');
   protected readonly canCreate = computed(() => this.sessionService.hasPermission('terrains:creer'));
   protected readonly canModify = computed(() => this.sessionService.hasPermission('terrains:modifier'));
+    protected readonly availableCount = computed(() => this.rowData().filter((terrain) => terrain.statutCommercial === 'Disponible').length);
+    protected readonly reservedCount = computed(() => this.rowData().filter((terrain) => terrain.statutCommercial === 'Réservé').length);
+    protected readonly soldCount = computed(() => this.rowData().filter((terrain) => terrain.statutCommercial === 'Vendu').length);
   protected readonly filters = this.formBuilder.nonNullable.group({ search: [''], statutJuridique: [''], niveauVerification: [''], statutCommercial: [''] });
 
   protected readonly columnDefs: ColDef<TerrainListItem>[] = [
@@ -82,6 +85,7 @@ export class Terrains implements OnInit {
   protected setViewMode(mode: 'table' | 'grid'): void { this.viewMode.set(mode); }
   protected formatMoney(value: number | string | null): string { return value == null ? '—' : `${Number(value).toLocaleString('fr-FR')} FCFA`; }
   protected formatLocation(terrain: TerrainListItem): string { return [terrain.commune, terrain.region].filter((value): value is string => Boolean(value)).join(', ') || 'Localisation non renseignée'; }
+  protected thumbnail(terrain: TerrainListItem): string | null { return terrain.medias?.find((media) => media.type === 'photo' && media.isPublic)?.secureUrl ?? null; }
 
   private load(): void {
     this.loading.set(true);

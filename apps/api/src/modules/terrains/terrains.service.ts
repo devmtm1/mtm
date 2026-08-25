@@ -3,11 +3,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateTerrainDto } from './dto/create-terrain.dto';
 import { QueryTerrainDto } from './dto/query-terrain.dto';
 import { UpdateTerrainDto } from './dto/update-terrain.dto';
 import { CreateTerrainAssetDto } from './dto/create-terrain-asset.dto';
+import { CloudinaryService } from '../../common/storage/cloudinary.service';
+import { SettingsService } from '../settings/settings.service';
 
 const terrainInclude = {
   proprietaire: true,
@@ -20,7 +23,11 @@ const terrainInclude = {
 
 @Injectable()
 export class TerrainsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cloudinary: CloudinaryService,
+    private readonly settings: SettingsService,
+  ) {}
 
   async findAll(query: QueryTerrainDto) {
     const page = query.page > 0 ? query.page : 1;
@@ -118,7 +125,7 @@ export class TerrainsService {
     if (existing)
       throw new ConflictException('Une référence terrain existe déjà');
     const terrain = await this.prisma.terrain.create({
-      data: dto,
+      data: dto as unknown as Prisma.TerrainUncheckedCreateInput,
       include: terrainInclude,
     });
     return this.toInternal(terrain);
@@ -126,9 +133,10 @@ export class TerrainsService {
 
   async update(id: string, dto: UpdateTerrainDto) {
     await this.ensureExists(id);
+    const { justification: _justification, ...terrainData } = dto;
     const terrain = await this.prisma.terrain.update({
       where: { id },
-      data: dto,
+      data: terrainData as unknown as Prisma.TerrainUncheckedUpdateInput,
       include: terrainInclude,
     });
     return this.toInternal(terrain);
@@ -148,26 +156,47 @@ export class TerrainsService {
     return this.toInternal(terrain);
   }
 
-  async addMedia(id: string, dto: CreateTerrainAssetDto, storageKey: string) {
+  async getOptions() {
+    const [legal, verification, commercial] = await Promise.all([
+      this.settings.getRawValue('terrains.statutJuridique'),
+      this.settings.getRawValue('terrains.niveauVerification'),
+      this.settings.getRawValue('terrains.statutCommercial'),
+    ]);
+    return {
+      statutJuridique: this.asOptions(legal, ['Titre foncier', 'Bail', 'Délibération', 'Morcellement', 'Régularisation en cours']),
+      niveauVerification: this.asOptions(verification, ['Non vérifié', 'En cours', 'Vérifié', 'À compléter']),
+      statutCommercial: this.asOptions(commercial, ['Brouillon', 'Disponible', 'Réservé', 'Vendu', 'Suspendu']),
+    };
+  }
+
+  async addMedia(id: string, dto: CreateTerrainAssetDto, file: Express.Multer.File) {
     await this.ensureExists(id);
+    const uploaded = await this.cloudinary.upload(file, `mtm/terrains/${id}/media`, dto.isPublic ?? false);
     return this.prisma.terrainMedia.create({
-      data: { terrainId: id, type: dto.type, title: dto.title, isPublic: dto.isPublic ?? false, storageKey },
+      data: { terrainId: id, type: dto.type, title: dto.title, isPublic: dto.isPublic ?? false, storageKey: uploaded.publicId, resourceType: uploaded.resourceType },
     });
   }
 
-  async addDocument(id: string, dto: CreateTerrainAssetDto, storageKey: string) {
+  async addDocument(id: string, dto: CreateTerrainAssetDto, file: Express.Multer.File) {
     await this.ensureExists(id);
+    const uploaded = await this.cloudinary.upload(file, `mtm/terrains/${id}/documents`, dto.isPublic ?? false);
     return this.prisma.terrainDocument.create({
-      data: { terrainId: id, type: dto.type, title: dto.title, isPublic: dto.isPublic ?? false, storageKey },
+      data: { terrainId: id, type: dto.type, title: dto.title, isPublic: dto.isPublic ?? false, storageKey: uploaded.publicId, resourceType: uploaded.resourceType },
     });
   }
 
   async removeMedia(id: string, mediaId: string): Promise<void> {
-    await this.prisma.terrainMedia.deleteMany({ where: { id: mediaId, terrainId: id } });
+    const media = await this.prisma.terrainMedia.findFirst({ where: { id: mediaId, terrainId: id } });
+    if (!media) return;
+    await this.prisma.terrainMedia.delete({ where: { id: mediaId } });
+    await this.cloudinary.destroy(media.storageKey, media.resourceType, media.isPublic);
   }
 
   async removeDocument(id: string, documentId: string): Promise<void> {
-    await this.prisma.terrainDocument.deleteMany({ where: { id: documentId, terrainId: id } });
+    const document = await this.prisma.terrainDocument.findFirst({ where: { id: documentId, terrainId: id } });
+    if (!document) return;
+    await this.prisma.terrainDocument.delete({ where: { id: documentId } });
+    await this.cloudinary.destroy(document.storageKey, document.resourceType, document.isPublic);
   }
 
   toPublic(terrain: Record<string, unknown>) {
@@ -189,6 +218,34 @@ export class TerrainsService {
   }
 
   private toInternal<T extends Record<string, unknown>>(terrain: T): T {
-    return terrain;
+    const value = terrain as T & {
+      medias?: Array<Record<string, unknown>>;
+      documents?: Array<Record<string, unknown>>;
+    };
+    return {
+      ...terrain,
+      medias: value.medias?.map((asset) => ({
+        ...asset,
+        secureUrl: this.cloudinary.url(
+          String(asset.storageKey),
+          typeof asset.resourceType === 'string' ? asset.resourceType : 'image',
+          Boolean(asset.isPublic),
+        ),
+      })),
+      documents: value.documents?.map((asset) => ({
+        ...asset,
+        secureUrl: this.cloudinary.url(
+          String(asset.storageKey),
+          typeof asset.resourceType === 'string' ? asset.resourceType : 'raw',
+          Boolean(asset.isPublic),
+        ),
+      })),
+    } as T;
+  }
+
+  private asOptions(value: unknown, fallback: string[]): string[] {
+    return Array.isArray(value) && value.every((item) => typeof item === 'string')
+      ? value
+      : fallback;
   }
 }

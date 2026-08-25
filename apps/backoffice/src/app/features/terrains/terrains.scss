@@ -4,6 +4,18 @@
 .terrains-header p, .terrains-toolbar p { margin: 0; color: var(--mtm-text-muted); }
 .terrains-eyebrow { display: inline-flex; align-items: center; gap: 7px; color: var(--mtm-purple-primary); font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 .terrains-eyebrow svg { width: 16px; height: 16px; }
+.terrain-statistics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.terrain-stat { display: flex; align-items: center; gap: 14px; min-height: 92px; padding: 16px 18px; border: 1px solid var(--mtm-border); border-radius: 10px; background: var(--mtm-card-bg); }
+.terrain-stat__icon { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; flex: 0 0 38px; border-radius: 9px; font-size: 19px; font-weight: 800; }
+.terrain-stat__icon svg { width: 19px; height: 19px; }
+.terrain-stat div { display: grid; gap: 2px; min-width: 0; }
+.terrain-stat strong { color: var(--mtm-text-dark); font-size: 21px; line-height: 1.1; }
+.terrain-stat span:not(.terrain-stat__icon) { color: var(--mtm-text-dark); font-size: 12px; font-weight: 700; }
+.terrain-stat small { color: var(--mtm-text-muted); font-size: 11px; }
+.terrain-stat--total .terrain-stat__icon { background: #eaf1ff; color: #2563eb; }
+.terrain-stat--available .terrain-stat__icon { background: #e5f8ef; color: #059669; }
+.terrain-stat--reserved .terrain-stat__icon { background: #fff1df; color: #d97706; }
+.terrain-stat--sold .terrain-stat__icon { background: #f2eafa; color: var(--mtm-purple-primary); }
 .terrains-create-button { display: inline-flex !important; align-items: center; justify-content: center; gap: 8px; width: 150px; min-width: 150px; min-height: 42px; padding: 0 14px !important; white-space: nowrap; }
 :host ::ng-deep .terrains-create-button .mdc-button__label { display: inline-flex !important; align-items: center; gap: 8px; white-space: nowrap; }
 :host ::ng-deep .terrains-create-button .mdc-button__label > span { white-space: nowrap; }
@@ -30,6 +42,7 @@
 .terrain-row-actions { display: flex; align-items: center; gap: 6px; }
 .terrains-grid-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
 .terrain-card { display: flex; flex-direction: column; min-height: 190px; padding: 18px; border: 1px solid var(--mtm-border); border-radius: 8px; background: var(--mtm-card-bg); }
+.terrain-card__image { width: 100%; height: 112px; object-fit: cover; margin-top: 12px; border-radius: 6px; background: var(--mtm-bg-surface); }
 .terrain-card__topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .terrain-card__reference { color: var(--mtm-text-muted); font-size: 11px; font-weight: 700; letter-spacing: .05em; }
 .terrain-card__status { padding: 4px 8px; border-radius: 999px; background: var(--mtm-purple-subtle); color: var(--mtm-purple-primary); font-size: 11px; font-weight: 700; }
@@ -50,4 +63,6 @@
 .asset-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--mtm-border); color: var(--mtm-text-muted); font-size: 13px; }
 .asset-button { display: inline-flex; align-items: center; padding: 10px 14px; border: 1px solid var(--mtm-border); border-radius: 8px; color: var(--mtm-purple-primary); font-weight: 700; cursor: pointer; }
 .asset-button input { display: none; }
+@media (max-width: 1050px) { .terrain-statistics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 800px) { .terrains-header, .terrains-toolbar { align-items: flex-start; flex-direction: column; } .filters { justify-content: flex-start; width: 100%; flex-wrap: wrap; } .filters mat-form-field, .filters__search { flex: 1 1 180px; width: auto !important; min-width: 0; } .filters__submit { flex: 0 0 auto; } .form-grid { grid-template-columns: 1fr; } .form-grid__wide { grid-column: auto; } }
+@media (max-width: 520px) { .terrain-statistics { grid-template-columns: 1fr; } .terrain-stat { min-height: 76px; } }

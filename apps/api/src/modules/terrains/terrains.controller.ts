@@ -41,6 +41,10 @@ export class TerrainsController {
     return this.terrains.findAll(query);
   }
 
+  @Get('options') @RequirePermissions('terrains:consulter') getOptions() {
+    return this.terrains.getOptions();
+  }
+
   @Get(':id') @RequirePermissions('terrains:consulter') findOne(
     @Param('id', ParseUUIDPipe) id: string,
   ) {
@@ -80,6 +84,7 @@ export class TerrainsController {
       entityId: id,
       oldValue: before,
       newValue: terrain,
+      justification: dto.justification,
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });
@@ -94,7 +99,7 @@ export class TerrainsController {
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    return this.updateStatus(id, 'statutJuridique', dto.value, user, req);
+    return this.updateStatus(id, 'statutJuridique', dto.value, dto.justification, user, req);
   }
   @Patch(':id/verification-status')
   @RequirePermissions('terrains:valider')
@@ -104,7 +109,7 @@ export class TerrainsController {
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    return this.updateStatus(id, 'niveauVerification', dto.value, user, req);
+    return this.updateStatus(id, 'niveauVerification', dto.value, dto.justification, user, req);
   }
   @Patch(':id/commercial-status')
   @RequirePermissions('terrains:modifier')
@@ -114,13 +119,14 @@ export class TerrainsController {
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    return this.updateStatus(id, 'statutCommercial', dto.value, user, req);
+    return this.updateStatus(id, 'statutCommercial', dto.value, dto.justification, user, req);
   }
 
   private async updateStatus(
     id: string,
     field: 'statutJuridique' | 'niveauVerification' | 'statutCommercial',
     value: string,
+    justification: string | undefined,
     user: AuthenticatedUser,
     req: Request,
   ) {
@@ -133,6 +139,7 @@ export class TerrainsController {
       entityId: id,
       oldValue: { [field]: before[field] },
       newValue: { [field]: value },
+      justification,
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });
@@ -141,30 +148,30 @@ export class TerrainsController {
 
   @Post(':id/media')
   @RequirePermissions('terrains:modifier')
-  @UseInterceptors(FileInterceptor('file', { dest: './uploads/terrains' }))
+  @UseInterceptors(FileInterceptor('file'))
   async addMedia(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateTerrainAssetDto,
-    @UploadedFile() file: { filename: string } | undefined,
+    @UploadedFile() file: Express.Multer.File | undefined,
     @CurrentUser() user: AuthenticatedUser,
   ) {
     if (!file) throw new BadRequestException('Un fichier média est obligatoire');
-    const media = await this.terrains.addMedia(id, dto, file.filename);
+    const media = await this.terrains.addMedia(id, dto, file);
     await this.audit.record({ userId: user.id, action: 'terrain.media.created', entityType: 'TerrainMedia', entityId: media.id, newValue: { terrainId: id, type: dto.type } });
     return media;
   }
 
   @Post(':id/documents')
   @RequirePermissions('terrains:modifier')
-  @UseInterceptors(FileInterceptor('file', { dest: './uploads/terrains' }))
+  @UseInterceptors(FileInterceptor('file'))
   async addDocument(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateTerrainAssetDto,
-    @UploadedFile() file: { filename: string } | undefined,
+    @UploadedFile() file: Express.Multer.File | undefined,
     @CurrentUser() user: AuthenticatedUser,
   ) {
     if (!file) throw new BadRequestException('Un document est obligatoire');
-    const document = await this.terrains.addDocument(id, dto, file.filename);
+    const document = await this.terrains.addDocument(id, dto, file);
     await this.audit.record({ userId: user.id, action: 'terrain.document.created', entityType: 'TerrainDocument', entityId: document.id, newValue: { terrainId: id, type: dto.type } });
     return document;
   }

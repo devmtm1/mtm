@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
   IsNumber,
+  IsObject,
   IsOptional,
   IsString,
   IsUUID,
@@ -39,6 +40,7 @@ export class CreateTerrainDto {
   longitude?: number;
   @ApiPropertyOptional() @IsOptional() @IsNumber() @Min(0) superficie?: number;
   @ApiPropertyOptional() @IsOptional() @IsString() uniteSuperficie?: string;
+  @ApiPropertyOptional() @IsOptional() @IsObject() dimensions?: Record<string, unknown>;
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()

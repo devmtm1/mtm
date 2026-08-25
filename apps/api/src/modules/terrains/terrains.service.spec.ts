@@ -1,6 +1,7 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { TerrainsService } from './terrains.service';
+import { CloudinaryService } from '../../common/storage/cloudinary.service';
 
 describe('TerrainsService', () => {
   let service: TerrainsService;
@@ -12,9 +13,10 @@ describe('TerrainsService', () => {
       create: jest.Mock;
       update: jest.Mock;
     };
-    terrainMedia: { create: jest.Mock; deleteMany: jest.Mock };
-    terrainDocument: { create: jest.Mock; deleteMany: jest.Mock };
+    terrainMedia: { create: jest.Mock; findFirst: jest.Mock; delete: jest.Mock };
+    terrainDocument: { create: jest.Mock; findFirst: jest.Mock; delete: jest.Mock };
   };
+  let cloudinaryMock: { upload: jest.Mock; url: jest.Mock; destroy: jest.Mock };
 
   beforeEach(() => {
     prismaMock = {
@@ -25,10 +27,23 @@ describe('TerrainsService', () => {
         create: jest.fn(),
         update: jest.fn(),
       },
-      terrainMedia: { create: jest.fn(), deleteMany: jest.fn() },
-      terrainDocument: { create: jest.fn(), deleteMany: jest.fn() },
+      terrainMedia: { create: jest.fn(), findFirst: jest.fn(), delete: jest.fn() },
+      terrainDocument: { create: jest.fn(), findFirst: jest.fn(), delete: jest.fn() },
     };
-    service = new TerrainsService(prismaMock as unknown as PrismaService);
+    cloudinaryMock = {
+      upload: jest.fn().mockResolvedValue({
+        publicId: 'terrains/t1/image',
+        resourceType: 'image',
+        secureUrl: 'https://cloudinary.test/terrains/t1/image',
+      }),
+      url: jest.fn((id: string) => `https://cloudinary.test/${id}`),
+      destroy: jest.fn(),
+    };
+    service = new TerrainsService(
+      prismaMock as unknown as PrismaService,
+      cloudinaryMock as unknown as CloudinaryService,
+      { getRawValue: jest.fn() } as unknown as import('../settings/settings.service').SettingsService,
+    );
   });
 
   it('refuse une référence interne déjà utilisée', async () => {
@@ -76,7 +91,7 @@ describe('TerrainsService', () => {
     const result = await service.addMedia(
       't1',
       { type: 'photo', title: 'Vue principale' },
-      'upload-1',
+      { buffer: Buffer.from('image') } as Express.Multer.File,
     );
 
     expect(result).toEqual({ id: 'm1', terrainId: 't1' });
@@ -86,7 +101,8 @@ describe('TerrainsService', () => {
         type: 'photo',
         title: 'Vue principale',
         isPublic: false,
-        storageKey: 'upload-1',
+        storageKey: 'terrains/t1/image',
+        resourceType: 'image',
       },
     });
   });

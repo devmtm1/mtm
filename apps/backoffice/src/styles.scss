@@ -134,6 +134,18 @@ body {
   overflow-x: hidden !important;
 }
 
+/* La fiche détail reste défilable sans afficher la barre du navigateur. */
+body:has(.detail-page) .shell__main {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+body:has(.detail-page) .shell__main::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 /* Boutons principaux avec la couleur rouge d'accentuation MTM pour un contrat visuel sobre et net */
 .mat-mdc-unelevated-button.mat-primary,
 .mat-mdc-raised-button.mat-primary,
