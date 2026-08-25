@@ -23,7 +23,7 @@
     "api:test:e2e": "npm run test:e2e --workspace=apps/api",
     "api:lint": "npm run lint --workspace=apps/api",
     "backoffice:dev": "npm run start --workspace=apps/backoffice",
-    "backoffice:build": "npm run build --workspace=apps/backoffice",
+    "backoffice:build": "npm install --workspace=apps/backoffice && npm run build --workspace=apps/backoffice",
     "backoffice:lint": "npm run lint --workspace=apps/backoffice",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",

@@ -18,6 +18,17 @@ services:
       - key: PORT
         value: 3000
 
+  - type: web
+    name: mtm-backoffice
+    runtime: static
+    plan: starter
+    buildCommand: npm run backoffice:build
+    staticPublishPath: apps/backoffice/dist/backoffice/browser
+    rootDir: .
+    envVars:
+      - key: NODE_ENV
+        value: production
+
 databases:
   - name: mtm-db
     plan: starter
