@@ -15,6 +15,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { RbacModule } from './modules/rbac/rbac.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { TerrainsModule } from './modules/terrains/terrains.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { SettingsModule } from './modules/settings/settings.module';
     RbacModule,
     AuditModule,
     SettingsModule,
+    TerrainsModule,
     HealthModule,
   ],
   providers: [

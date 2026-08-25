@@ -1,6 +1,6 @@
-<h2 mat-dialog-title>{{ isEdit ? 'Modifier le paramètre' : 'Nouveau paramètre' }}</h2>
+<h2 mat-dialog-title class="setting-dialog-title">{{ isEdit ? 'Modifier le paramètre' : 'Nouveau paramètre' }}</h2>
 
-<form [formGroup]="form" (ngSubmit)="submit()">
+<form class="setting-dialog-form" [formGroup]="form" (ngSubmit)="submit()">
   <mat-dialog-content class="setting-dialog-content">
     <mat-form-field appearance="outline">
       <mat-label>Clé</mat-label>
@@ -39,7 +39,7 @@
     }
   </mat-dialog-content>
 
-  <mat-dialog-actions align="end">
+  <mat-dialog-actions class="setting-dialog-actions" align="end">
     <button mat-button type="button" (click)="cancel()">Annuler</button>
     <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
       {{ isEdit ? 'Enregistrer' : 'Créer' }}

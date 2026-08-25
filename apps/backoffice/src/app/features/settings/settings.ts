@@ -95,7 +95,11 @@ export class Settings implements OnInit {
   }
 
   openCreateDialog(): void {
-    const ref = this.dialog.open(SettingFormDialog, { width: '460px', data: {} });
+    const ref = this.dialog.open(SettingFormDialog, {
+      width: '520px',
+      maxWidth: 'calc(100vw - 32px)',
+      data: {},
+    });
     ref.afterClosed().subscribe((created: SettingListItem | undefined) => {
       if (created) {
         this.snackBar.open('Paramètre créé', 'Fermer', { duration: 3000 });
@@ -106,7 +110,8 @@ export class Settings implements OnInit {
 
   private openEditDialog(setting: SettingListItem): void {
     const ref = this.dialog.open(SettingFormDialog, {
-      width: '460px',
+      width: '520px',
+      maxWidth: 'calc(100vw - 32px)',
       data: { setting },
     });
     ref.afterClosed().subscribe((updated: SettingListItem | undefined) => {

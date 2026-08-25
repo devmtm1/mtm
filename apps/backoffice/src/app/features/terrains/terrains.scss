@@ -10,6 +10,10 @@
 .terrains-create-icon { display: block; width: 18px; height: 18px; flex: 0 0 18px; margin: 0; }
 .terrains-table-shell { padding: 20px 24px 24px; border: 1px solid var(--mtm-border); border-radius: 12px; background: var(--mtm-card-bg); }
 .terrains-toolbar { align-items: center; margin-bottom: 14px; }
+.view-switch { display: inline-flex; align-items: center; gap: 2px; padding: 3px; border: 1px solid var(--mtm-border); border-radius: 8px; background: var(--mtm-bg-surface); }
+.view-switch button { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 30px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: var(--mtm-text-muted); cursor: pointer; }
+.view-switch button:hover, .view-switch button.is-active { background: var(--mtm-card-bg); color: var(--mtm-purple-primary); }
+.view-switch svg { width: 16px; height: 16px; }
 .filters { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: nowrap; min-width: 0; }
 .filters mat-form-field { width: 190px; margin: 0; }
 .filters__search { width: 220px !important; }
@@ -18,11 +22,28 @@
 .filters ::ng-deep .mat-mdc-text-field-wrapper { height: 42px; }
 .filters ::ng-deep .mat-mdc-form-field-flex { height: 42px; align-items: center; }
 .filters ::ng-deep .mat-mdc-form-field-infix { min-height: 42px; padding-top: 9px; padding-bottom: 8px; display: flex; align-items: center; }
-.filters ::ng-deep .mat-mdc-form-field-icon-prefix { display: inline-flex; align-items: center; align-self: center; height: 42px; padding-left: 8px; padding-right: 4px; }
+.filters ::ng-deep .mat-mdc-form-field-icon-prefix { display: inline-flex; align-items: center; align-self: center; height: 24px; padding-left: 8px; padding-right: 4px; }
 .filters ::ng-deep .mat-mdc-form-field-icon-prefix svg { width: 18px; height: 18px; }
-.filters ::ng-deep .filters__search-icon { display: block; flex: 0 0 18px; margin: 0; transform: translateY(-2px); }
-.filters ::ng-deep .mat-mdc-input-element { align-self: center; line-height: 24px; }
+.filters ::ng-deep .filters__search-icon { display: block; flex: 0 0 18px; width: 18px; height: 18px; margin: 0; position: relative; top: 2px; }
+.filters ::ng-deep .mat-mdc-input-element { align-self: center; height: 24px; padding: 0; line-height: 24px; transform: none; }
 .terrains-grid { width: 100%; }
+.terrain-row-actions { display: flex; align-items: center; gap: 6px; }
+.terrains-grid-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+.terrain-card { display: flex; flex-direction: column; min-height: 190px; padding: 18px; border: 1px solid var(--mtm-border); border-radius: 8px; background: var(--mtm-card-bg); }
+.terrain-card__topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.terrain-card__reference { color: var(--mtm-text-muted); font-size: 11px; font-weight: 700; letter-spacing: .05em; }
+.terrain-card__status { padding: 4px 8px; border-radius: 999px; background: var(--mtm-purple-subtle); color: var(--mtm-purple-primary); font-size: 11px; font-weight: 700; }
+.terrain-card h3 { margin: 14px 0 6px; color: var(--mtm-text-dark); font-size: 17px; }
+.terrain-card__location { display: flex; align-items: center; gap: 6px; min-height: 20px; margin: 0; color: var(--mtm-text-muted); font-size: 12px; }
+.terrain-card__location svg { width: 15px; height: 15px; color: var(--mtm-purple-primary); flex-shrink: 0; }
+.terrain-card__details { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 18px 0; padding-top: 14px; border-top: 1px solid var(--mtm-border); }
+.terrain-card__details div { display: grid; gap: 4px; }
+.terrain-card__details dt { color: var(--mtm-text-muted); font-size: 11px; }
+.terrain-card__details dd { margin: 0; color: var(--mtm-text-dark); font-size: 13px; font-weight: 700; }
+.terrain-card__actions { display: flex; gap: 6px; margin-top: auto; }
+.terrain-card__actions .grid-icon-btn { margin-right: 0; }
+.terrain-card__actions svg { width: 16px; height: 16px; }
+.terrains-empty { grid-column: 1 / -1; margin: 20px 0; color: var(--mtm-text-muted); text-align: center; }
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 16px; margin-top: 20px; }
 .form-grid__wide { grid-column: 1 / -1; }
 .form-actions { justify-content: flex-end; margin-top: 12px; }

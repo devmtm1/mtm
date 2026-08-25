@@ -2,7 +2,6 @@ import { Component, computed, inject, input, output } from '@angular/core';
 import { SessionService } from '../../core/services/session.service';
 import { NAVIGATION_SECTIONS } from '../navigation-config';
 import { NavItem } from '../nav-item/nav-item';
-import { LucideBuilding2 } from '@lucide/angular';
 
 /**
  * Barre latérale principale : marque, navigation par sections (filtrée par
@@ -13,7 +12,7 @@ import { LucideBuilding2 } from '@lucide/angular';
  */
 @Component({
   selector: 'app-sidebar',
-  imports: [NavItem, LucideBuilding2],
+  imports: [NavItem],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.scss',
   host: {

@@ -36,10 +36,11 @@
   flex-shrink: 0;
 }
 
-.sidebar__logo-icon {
+.sidebar__logo-image {
   width: 20px;
   height: 20px;
-  stroke: #ffffff;
+  object-fit: cover;
+  border-radius: 5px;
 }
 
 .sidebar__brand-text {

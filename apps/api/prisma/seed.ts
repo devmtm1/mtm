@@ -19,7 +19,14 @@ const ACTIONS = [
 // Ressources couvertes par la Phase 0 uniquement.
 // Les modules métier futurs ajouteront leurs propres ressources sans
 // modifier ce modèle (RBAC générique resource:action).
-const PHASE_0_RESOURCES = ['users', 'roles', 'permissions', 'settings', 'audit'];
+const PHASE_0_RESOURCES = [
+  'users',
+  'roles',
+  'permissions',
+  'settings',
+  'audit',
+  'terrains',
+];
 
 // Rôles initiaux recommandés par la section 24 du CDC.
 const INITIAL_ROLES = [

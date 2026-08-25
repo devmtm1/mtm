@@ -1,0 +1,15 @@
+<h2 mat-dialog-title class="delete-user-dialog__title">
+  <span class="delete-user-dialog__icon"><svg lucideTrash2 aria-hidden="true"></svg></span>
+  Supprimer l’utilisateur
+</h2>
+
+<mat-dialog-content class="delete-user-dialog__content">
+  <p>Vous êtes sur le point de supprimer définitivement cet utilisateur :</p>
+  <strong>{{ email }}</strong>
+  <p class="delete-user-dialog__warning">Cette action est irréversible.</p>
+</mat-dialog-content>
+
+<mat-dialog-actions class="delete-user-dialog__actions" align="end">
+  <button mat-button type="button" (click)="cancel()">Annuler</button>
+  <button mat-flat-button class="delete-user-dialog__confirm" type="button" (click)="confirm()">Supprimer</button>
+</mat-dialog-actions>

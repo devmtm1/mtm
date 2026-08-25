@@ -109,7 +109,8 @@ export class Roles implements OnInit {
 
   private openPermissionsDialog(role: RoleListItem): void {
     const ref = this.dialog.open(AssignPermissionsDialog, {
-      width: '520px',
+      width: '680px',
+      maxWidth: 'calc(100vw - 32px)',
       data: { role },
     });
     ref.afterClosed().subscribe((changed: boolean | undefined) => {

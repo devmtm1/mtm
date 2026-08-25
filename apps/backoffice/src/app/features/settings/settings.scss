@@ -2,30 +2,114 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  height: 100%;
+  max-width: 1380px;
+  margin: 0 auto;
 }
 
 .settings-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 20px;
-  border: 1px solid var(--mtm-border);
-  border-radius: 14px;
-  background: var(--mtm-card-bg);
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.03);
+  padding: 4px 0 18px;
+  border-bottom: 1px solid var(--mtm-border);
 
   h1 {
-    margin: 0;
-    font-size: 1.35rem;
+    margin: 4px 0 5px;
+    font-family: var(--mtm-font-display);
+    font-size: 1.6rem;
     font-weight: 700;
-    color: var(--mtm-purple-primary);
-    letter-spacing: -0.02em;
+    color: var(--mtm-text-dark);
+  }
+
+  p {
+    margin: 0;
+    color: var(--mtm-text-muted);
+    font-size: 0.84rem;
   }
 }
 
+.settings-eyebrow {
+  color: var(--mtm-purple-primary);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .settings-grid {
-  flex: 1;
-  min-height: 480px;
   width: 100%;
+}
+
+.settings-table-shell {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--mtm-border);
+  border-radius: 8px;
+  background: var(--mtm-card-bg);
+}
+
+.settings-table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--mtm-border);
+
+  h2 {
+    margin: 0 0 3px;
+    color: var(--mtm-text-dark);
+    font-family: var(--mtm-font-display);
+    font-size: 0.92rem;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+    color: var(--mtm-text-muted);
+    font-size: 0.74rem;
+  }
+}
+
+.settings-table-toolbar__hint {
+  color: var(--mtm-text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+:host ::ng-deep .settings-grid .ag-cell {
+  display: flex;
+  align-items: center;
+}
+
+:host ::ng-deep .settings-grid .ag-cell[col-id='isSensitive'],
+:host ::ng-deep .settings-grid .ag-cell[col-id='actions'] {
+  justify-content: center;
+}
+
+:host ::ng-deep .settings-grid .mtm-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  height: 26px;
+  padding: 0 9px;
+  border-radius: 999px;
+  box-sizing: border-box;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+@media (max-width: 720px) {
+  .settings-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .settings-table-toolbar {
+    align-items: flex-start;
+  }
 }

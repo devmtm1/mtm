@@ -43,19 +43,121 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  roles         UserRole[]
-  refreshTokens RefreshToken[]
-  auditLogs     AuditLog[]         @relation("AuditLogUser")
-  settingsEdits SystemSetting[]    @relation("SystemSettingEditor")
+  roles            UserRole[]
+  refreshTokens    RefreshToken[]
+  auditLogs        AuditLog[]      @relation("AuditLogUser")
+  settingsEdits    SystemSetting[] @relation("SystemSettingEditor")
+  assignedTerrains Terrain[]       @relation("TerrainCommercial")
 
   @@map("users")
 }
 
-model RefreshToken {
+// ============================================================
+// Terrains — Phase 1 / J1.1
+// ============================================================
+
+model Proprietaire {
   id        String   @id @default(uuid())
-  tokenHash String   @unique // le token brut n'est jamais stocké
+  firstName String
+  lastName  String
+  email     String?
+  phone     String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  terrains Terrain[]
+
+  @@index([lastName, firstName])
+  @@map("proprietaires")
+}
+
+model Terrain {
+  id                      String            @id @default(uuid())
+  referenceInterne        String            @unique
+  nom                     String
+  parcelleMatricule       String?
+  informationsCadastrales Json?
+  proprietaireId          String?
+  proprietaire            Proprietaire?     @relation(fields: [proprietaireId], references: [id], onDelete: SetNull)
+  statutJuridique         String
+  typeDocumentFoncier     String?
+  niveauVerification      String
+  region                  String?
+  commune                 String?
+  localisationDetail      String?
+  latitude                Decimal?          @db.Decimal(10, 7)
+  longitude               Decimal?          @db.Decimal(10, 7)
+  superficie              Decimal?          @db.Decimal(14, 2)
+  uniteSuperficie         String?
+  dimensions              Json?
+  prixAcquisition         Decimal?          @db.Decimal(15, 2)
+  prixPublic              Decimal?          @db.Decimal(15, 2)
+  marge                   Decimal?          @db.Decimal(15, 2)
+  commission              Decimal?          @db.Decimal(15, 2)
+  statutCommercial        String
+  accesRoutier            String?
+  eauDisponible           Boolean?
+  electriciteDisponible   Boolean?
+  voisinage               String?
+  vocation                String?
+  proximiteAxes           String?
+  pointsInteret           Json?
+  notesInternes           String?
+  commercialResponsableId String?
+  commercialResponsable   User?             @relation("TerrainCommercial", fields: [commercialResponsableId], references: [id], onDelete: SetNull)
+  medias                  TerrainMedia[]
+  documents               TerrainDocument[]
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+
+  @@index([statutJuridique])
+  @@index([niveauVerification])
+  @@index([statutCommercial])
+  @@index([proprietaireId])
+  @@index([commercialResponsableId])
+  @@index([region, commune])
+  @@index([superficie])
+  @@index([prixPublic])
+  @@map("terrains")
+}
+
+model TerrainMedia {
+  id         String    @id @default(uuid())
+  terrainId  String
+  terrain    Terrain   @relation(fields: [terrainId], references: [id], onDelete: Cascade)
+  type       String
+  storageKey String
+  title      String?
+  isPublic   Boolean   @default(false)
+  sortOrder  Int       @default(0)
+  capturedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([terrainId, sortOrder])
+  @@map("terrain_medias")
+}
+
+model TerrainDocument {
+  id         String   @id @default(uuid())
+  terrainId  String
+  terrain    Terrain  @relation(fields: [terrainId], references: [id], onDelete: Cascade)
+  type       String
+  storageKey String
+  title      String?
+  isPublic   Boolean  @default(false)
+  version    Int      @default(1)
+  createdAt  DateTime @default(now())
+
+  @@index([terrainId, type])
+  @@map("terrain_documents")
+}
+
+model RefreshToken {
+  id        String @id @default(uuid())
+  tokenHash String @unique // le token brut n'est jamais stocké
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   expiresAt DateTime
   revokedAt DateTime? // révocation explicite (logout, rotation, compromission)

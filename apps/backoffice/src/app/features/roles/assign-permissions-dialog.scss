@@ -1,22 +1,77 @@
+.permissions-dialog-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 24px 24px 10px;
+  color: var(--mtm-text-dark);
+  font-family: var(--mtm-font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.permissions-dialog-title small {
+  padding: 0;
+  color: var(--mtm-text-muted);
+  font-family: var(--mtm-font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
 .permissions-dialog-content {
-  min-width: 420px;
-  max-height: 60vh;
+  max-height: min(560px, calc(100vh - 170px));
+  padding: 8px 24px 16px;
+  box-sizing: border-box;
 }
 
 .permissions-group {
-  margin-bottom: 16px;
+  padding: 14px 0 16px;
+  border-bottom: 1px solid var(--mtm-border);
+}
+
+.permissions-group:last-child {
+  border-bottom: 0;
 }
 
 .permissions-group-title {
-  margin: 0 0 8px;
-  font-size: 0.9rem;
+  margin: 0 0 12px;
+  color: var(--mtm-purple-primary);
+  font-size: 0.72rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--mat-sys-on-surface-variant);
+  letter-spacing: 0.08em;
 }
 
 .permissions-group-items {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 20px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px 10px;
+}
+
+.permissions-group-items mat-checkbox {
+  min-width: 0;
+  color: var(--mtm-text-dark);
+  font-size: 0.78rem;
+}
+
+.permissions-dialog-loading {
+  margin: 16px 0;
+  color: var(--mtm-text-muted);
+}
+
+.permissions-dialog-actions {
+  min-height: 64px;
+  padding: 12px 24px 20px;
+  border-top: 1px solid var(--mtm-border);
+}
+
+.permissions-dialog-actions button {
+  min-width: 88px;
+}
+
+@media (max-width: 560px) {
+  .permissions-dialog-title { padding: 20px 20px 10px; }
+  .permissions-dialog-content { padding-right: 20px; padding-left: 20px; }
+  .permissions-group-items { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .permissions-dialog-actions { padding-right: 20px; padding-left: 20px; }
 }

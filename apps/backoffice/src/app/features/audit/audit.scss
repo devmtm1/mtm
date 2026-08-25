@@ -1,46 +1,128 @@
 .audit-page {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  height: 100%;
+  gap: 16px;
+  max-width: 1380px;
+  margin: 0 auto;
+}
+
+.audit-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--mtm-border);
+  border-radius: 8px;
+  background: var(--mtm-card-bg);
 }
 
 .audit-header {
   display: flex;
-  align-items: baseline;
-  gap: 12px;
-  padding: 18px 20px;
-  border: 1px solid var(--mtm-border);
-  border-radius: 14px;
-  background: var(--mtm-card-bg);
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.03);
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--mtm-border);
 
   h1 {
-    margin: 0;
-    font-size: 1.35rem;
+    margin: 4px 0;
+    font-family: var(--mtm-font-display);
+    font-size: 1.6rem;
     font-weight: 700;
-    color: var(--mtm-purple-primary);
-    letter-spacing: -0.02em;
+    color: var(--mtm-text-dark);
+  }
+
+  p {
+    margin: 0;
+    color: var(--mtm-text-muted);
+    font-size: 0.84rem;
   }
 }
 
+.audit-eyebrow {
+  color: var(--mtm-purple-primary);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .audit-total {
-  color: var(--mat-sys-on-surface-variant);
-  font-size: 0.85rem;
+  padding-top: 6px;
+  color: var(--mtm-text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .audit-filters {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
+  padding: 14px 20px 6px;
 }
 
 .audit-filter-field {
-  width: 220px;
+  width: 190px;
+  margin: 0;
+}
+
+.audit-filter-field--action {
+  width: 240px;
+}
+
+.audit-filters ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
+.audit-filters ::ng-deep .mat-mdc-text-field-wrapper {
+  height: 42px;
+}
+
+.audit-filters ::ng-deep .mat-mdc-form-field-flex {
+  height: 42px;
+  align-items: center;
+}
+
+.audit-filters ::ng-deep .mat-mdc-form-field-infix {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.audit-filters ::ng-deep .mat-mdc-input-element {
+  line-height: 24px;
+}
+
+.audit-filters button {
+  height: 42px;
 }
 
 .audit-grid {
-  flex: 1;
-  min-height: 480px;
   width: 100%;
+}
+
+:host ::ng-deep .audit-grid .ag-cell {
+  display: flex;
+  align-items: center;
+}
+
+:host ::ng-deep .audit-grid .ag-cell-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .audit-filters {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 14px 16px 6px;
+  }
+
+  .audit-filter-field,
+  .audit-filter-field--action {
+    width: 100%;
+  }
 }

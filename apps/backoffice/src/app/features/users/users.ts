@@ -9,6 +9,7 @@ import { mtmGridTheme } from '../../core/ag-grid.config';
 import { SessionService } from '../../core/services/session.service';
 import { UsersApiService } from '../../core/services/api/users-api.service';
 import type { UserListItem } from '../../core/models/user.model';
+import { DeleteUserDialog } from './delete-user-dialog';
 import { UserFormDialog } from './user-form-dialog';
 
 @Component({
@@ -31,6 +32,9 @@ export class Users implements OnInit {
   );
   protected readonly canModify = computed(() =>
     this.sessionService.hasPermission('users:modifier'),
+  );
+  protected readonly canDelete = computed(() =>
+    this.sessionService.hasPermission('users:supprimer'),
   );
 
   protected readonly defaultColDef: ColDef<UserListItem> = {
@@ -82,17 +86,37 @@ export class Users implements OnInit {
       sortable: false,
       filter: false,
       cellRenderer: (params: ICellRendererParams<UserListItem>) => {
-        if (!this.canModify() || !params.data) return '';
-        const button = document.createElement('button');
-        button.className = params.data.isActive ? 'grid-icon-btn danger' : 'grid-icon-btn success';
-        button.title = params.data.isActive ? 'Désactiver l\'utilisateur' : 'Activer l\'utilisateur';
-
-        button.innerHTML = params.data.isActive
+        if (!params.data) return '';
+        const container = document.createElement('div');
+        container.className = 'users-row-actions';
+        if (this.canModify()) {
+          const toggle = document.createElement('button');
+          toggle.className = params.data.isActive ? 'grid-icon-btn danger' : 'grid-icon-btn success';
+          toggle.title = params.data.isActive ? 'Désactiver l\'utilisateur' : 'Activer l\'utilisateur';
+          toggle.setAttribute('aria-label', toggle.title);
+          toggle.innerHTML = params.data.isActive
           ? `<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="17" y1="8" x2="22" y2="13"/><line x1="22" y1="8" x2="17" y2="13"/></svg>`
           : `<svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>`;
-
-        button.addEventListener('click', () => this.toggleActive(params.data!));
-        return button;
+          toggle.addEventListener('click', () => this.toggleActive(params.data!));
+          container.appendChild(toggle);
+          const edit = document.createElement('button');
+          edit.className = 'grid-icon-btn';
+          edit.title = 'Modifier l\'utilisateur';
+          edit.setAttribute('aria-label', edit.title);
+          edit.innerHTML = `<svg viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>`;
+          edit.addEventListener('click', () => this.openEditDialog(params.data!));
+          container.appendChild(edit);
+        }
+        if (this.canDelete()) {
+          const remove = document.createElement('button');
+          remove.className = 'grid-icon-btn danger';
+          remove.title = 'Supprimer l\'utilisateur';
+          remove.setAttribute('aria-label', remove.title);
+          remove.innerHTML = `<svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 15H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>`;
+          remove.addEventListener('click', () => this.removeUser(params.data!));
+          container.appendChild(remove);
+        }
+        return container;
       },
     },
   ];
@@ -118,12 +142,47 @@ export class Users implements OnInit {
   }
 
   openCreateDialog(): void {
-    const ref = this.dialog.open(UserFormDialog, { width: '420px' });
+    const ref = this.dialog.open(UserFormDialog, {
+      width: '520px',
+      maxWidth: 'calc(100vw - 32px)',
+    });
     ref.afterClosed().subscribe((created: UserListItem | undefined) => {
       if (created) {
         this.snackBar.open('Utilisateur créé', 'Fermer', { duration: 3000 });
         this.load();
       }
+    });
+  }
+
+  private openEditDialog(user: UserListItem): void {
+    const ref = this.dialog.open(UserFormDialog, {
+      width: '520px',
+      maxWidth: 'calc(100vw - 32px)',
+      data: { user },
+    });
+    ref.afterClosed().subscribe((updated: UserListItem | undefined) => {
+      if (updated) {
+        this.snackBar.open('Utilisateur mis à jour', 'Fermer', { duration: 3000 });
+        this.load();
+      }
+    });
+  }
+
+  private removeUser(user: UserListItem): void {
+    const ref = this.dialog.open(DeleteUserDialog, {
+      width: '440px',
+      maxWidth: 'calc(100vw - 32px)',
+      data: user.email,
+    });
+    ref.afterClosed().subscribe((confirmed: boolean | undefined) => {
+      if (!confirmed) return;
+      this.usersApi.remove(user.id).subscribe({
+        next: () => {
+          this.snackBar.open('Utilisateur supprimé', 'Fermer', { duration: 3000 });
+          this.load();
+        },
+        error: () => this.snackBar.open('Suppression impossible', 'Fermer', { duration: 4000 }),
+      });
     });
   }
 

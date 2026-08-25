@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
@@ -16,6 +17,7 @@ import type { AuthenticatedUser } from '../auth/auth.types';
 import { AuditService } from '../audit/audit.service';
 import { AssignRoleDto } from '../rbac/dto/assign-role.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
 
 @ApiTags('users')
@@ -55,6 +57,31 @@ export class UsersController {
       userAgent: req.headers['user-agent'],
     });
     return this.toSafeUser(user);
+  }
+
+  @Patch(':id')
+  @RequirePermissions('users:modifier')
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateUserDto,
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    const user = await this.usersService.update(id, dto);
+    await this.auditService.record({ userId: currentUser.id, action: 'user.updated', entityType: 'User', entityId: id, ipAddress: req.ip, userAgent: req.headers['user-agent'] });
+    return this.toSafeUser(user);
+  }
+
+  @Delete(':id')
+  @RequirePermissions('users:supprimer')
+  async remove(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    await this.usersService.remove(id);
+    await this.auditService.record({ userId: currentUser.id, action: 'user.deleted', entityType: 'User', entityId: id, ipAddress: req.ip, userAgent: req.headers['user-agent'] });
+    return { success: true };
   }
 
   @Patch(':id/activate')

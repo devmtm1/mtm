@@ -8,6 +8,7 @@ describe('CreateUserDto (validation)', () => {
     password: 'MotDePasseSecurise123!',
     firstName: 'Fatou',
     lastName: 'Diop',
+    roleId: '8d7c6b5a-4e3f-2d1c-8b9a-887766554433',
   };
 
   it('accepte un payload valide', async () => {

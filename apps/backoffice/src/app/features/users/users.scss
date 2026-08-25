@@ -44,14 +44,22 @@
 .users-header__actions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   flex-shrink: 0;
 }
 
-.users-count {
-  color: var(--mtm-text-muted);
-  font-size: 0.78rem;
-  font-weight: 600;
+.users-create-button {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+:host ::ng-deep .users-create-button .mdc-button__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   white-space: nowrap;
 }
 
@@ -65,7 +73,7 @@
   flex-direction: column;
   overflow: hidden;
   border: 1px solid var(--mtm-border);
-  border-radius: 10px;
+  border-radius: 8px;
   background: var(--mtm-card-bg);
 }
 
@@ -97,6 +105,71 @@
   color: var(--mtm-text-muted);
   font-size: 0.75rem;
   font-weight: 600;
+}
+
+:host ::ng-deep .users-grid .ag-header-cell-label {
+  align-items: center;
+}
+
+:host ::ng-deep .users-grid .ag-cell {
+  display: flex;
+  align-items: center;
+}
+
+:host ::ng-deep .users-grid .ag-cell[col-id='isActive'],
+:host ::ng-deep .users-grid .ag-cell[col-id='twoFactorEnabled'],
+:host ::ng-deep .users-grid .ag-cell[col-id='actions'] {
+  justify-content: center;
+}
+
+:host ::ng-deep .users-grid .mtm-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  box-sizing: border-box;
+  font-size: 0.7rem;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+:host ::ng-deep .users-grid .mtm-badge::before {
+  width: 5px;
+  height: 5px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  content: '';
+}
+
+:host ::ng-deep .users-grid .mtm-badge--success {
+  border-color: rgba(5, 150, 105, 0.2);
+}
+
+:host ::ng-deep .users-grid .mtm-badge--red {
+  border-color: rgba(184, 47, 57, 0.2);
+}
+
+:host ::ng-deep .users-grid .ag-cell[col-id='isActive'] {
+  justify-content: center;
+}
+
+:host ::ng-deep .users-grid .mtm-badge {
+  justify-content: center;
+}
+
+.users-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.users-row-actions .grid-icon-btn {
+  margin-right: 0;
 }
 
 @media (max-width: 720px) {

@@ -4,7 +4,7 @@
   justify-content: center;
   height: 100vh;
   padding: 16px;
-  background: radial-gradient(circle at 50% 20%, var(--mtm-purple-primary) 0%, var(--mtm-purple-dark) 60%, #0F0520 100%);
+  background: radial-gradient(circle at 50% 20%, var(--mtm-purple-primary) 0%, var(--mtm-purple-dark) 60%, #0D263A 100%);
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
@@ -16,7 +16,7 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #C8102E 0%, #E5231B 50%, #2D1552 100%);
+    background: linear-gradient(90deg, var(--mtm-red-primary) 0%, var(--mtm-red-hover) 50%, var(--mtm-purple-primary) 100%);
   }
 }
 
@@ -37,15 +37,23 @@
 }
 
 .login-logo-wrapper {
-  width: 52px;
-  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
   margin-bottom: 8px;
+  overflow: hidden;
+  border: 3px solid var(--mtm-purple-light);
+  border-radius: 12px;
+  background: #ffffff;
   filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
 }
 
-.login-logo-svg {
+.login-logo-image {
   width: 100%;
   height: 100%;
+  object-fit: cover;
 }
 
 .login-title {
@@ -70,9 +78,9 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  background-color: rgba(200, 16, 46, 0.2);
-  color: #FF6B81;
-  border: 1px solid rgba(200, 16, 46, 0.4);
+  background-color: rgba(184, 47, 57, 0.2);
+  color: var(--mtm-red-primary);
+  border: 1px solid rgba(184, 47, 57, 0.4);
   padding: 3px 10px;
   border-radius: 9999px;
 }
@@ -82,7 +90,7 @@
   border-radius: 14px !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   background-color: #ffffff !important;
-  box-shadow: 0 18px 42px rgba(15, 5, 32, 0.38) !important;
+  box-shadow: 0 18px 42px rgba(13, 38, 58, 0.38) !important;
 }
 
 .login-card-content {
@@ -115,6 +123,39 @@
 
 .full-width {
   width: 100%;
+}
+
+:host ::ng-deep .login-form {
+  .mat-mdc-form-field {
+    --mdc-outlined-text-field-container-color: var(--mtm-card-bg);
+    --mdc-outlined-text-field-input-text-color: var(--mtm-text-dark);
+    --mdc-outlined-text-field-label-text-color: var(--mtm-text-muted);
+    --mdc-outlined-text-field-hover-label-text-color: var(--mtm-purple-primary);
+    --mdc-outlined-text-field-focus-label-text-color: var(--mtm-purple-primary);
+    --mdc-outlined-text-field-outline-color: var(--mtm-border);
+    --mdc-outlined-text-field-hover-outline-color: var(--mtm-purple-primary);
+    --mdc-outlined-text-field-focus-outline-color: var(--mtm-purple-primary);
+    --mdc-outlined-text-field-input-text-color: #191528;
+    --mdc-outlined-text-field-label-text-color: #64748B;
+  }
+
+  .mat-mdc-input-element {
+    color: #191528 !important;
+    caret-color: var(--mtm-purple-primary) !important;
+
+    &::placeholder {
+      color: #64748B !important;
+      opacity: 1;
+    }
+  }
+
+  .mdc-floating-label {
+    color: #64748B !important;
+  }
+
+  .mdc-text-field--focused .mdc-floating-label {
+    color: var(--mtm-purple-primary) !important;
+  }
 }
 
 .login-submit {

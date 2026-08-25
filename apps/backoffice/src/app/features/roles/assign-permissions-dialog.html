@@ -1,12 +1,15 @@
-<h2 mat-dialog-title>Permissions — {{ data.role.name }}</h2>
+<h2 mat-dialog-title class="permissions-dialog-title">
+  <span>Permissions</span>
+  <small>{{ data.role.name }}</small>
+</h2>
 
 <mat-dialog-content class="permissions-dialog-content">
   @if (loading()) {
-    <p>Chargement...</p>
+    <p class="permissions-dialog-loading">Chargement des permissions...</p>
   } @else {
     @for (group of groups(); track group.resource) {
-      <div class="permissions-group">
-        <h3 class="permissions-group-title">{{ group.resource }}</h3>
+      <section class="permissions-group" [attr.aria-labelledby]="'permission-group-' + group.resource">
+        <h3 class="permissions-group-title" [id]="'permission-group-' + group.resource">{{ group.resource }}</h3>
         <div class="permissions-group-items">
           @for (permission of group.permissions; track permission.id) {
             <mat-checkbox
@@ -17,12 +20,12 @@
             </mat-checkbox>
           }
         </div>
-      </div>
+      </section>
     }
   }
 </mat-dialog-content>
 
-<mat-dialog-actions align="end">
+<mat-dialog-actions class="permissions-dialog-actions" align="end">
   <button mat-button type="button" (click)="cancel()">Annuler</button>
   <button
     mat-flat-button

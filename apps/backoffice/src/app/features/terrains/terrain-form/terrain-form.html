@@ -1,21 +1,61 @@
 <section class="terrain-form-page" aria-labelledby="terrain-form-title">
-  <header class="page-header"><div><button mat-button type="button" (click)="goBack()"><svg lucideArrowLeft aria-hidden="true"></svg> Retour aux terrains</button><span class="eyebrow">Cœur commercial</span><h1 id="terrain-form-title">{{ terrainId ? 'Modifier le terrain' : 'Nouveau terrain' }}</h1><p>{{ terrainId ? terrain?.nom : 'Créer une fiche foncière complète.' }}</p></div></header>
+  <header class="page-header"><div><button mat-button class="page-header__back" type="button" (click)="goBack()"><svg lucideArrowLeft aria-hidden="true"></svg><span>Retour aux terrains</span></button></div></header>
   <form class="form-shell" [formGroup]="form" (ngSubmit)="submit()">
-    <div class="form-grid">
-      <mat-form-field appearance="outline"><mat-label>Référence interne</mat-label><input id="terrain-reference" matInput formControlName="referenceInterne"><mat-error>La référence est obligatoire.</mat-error></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Nom du terrain</mat-label><input id="terrain-name" matInput formControlName="nom"><mat-error>Le nom est obligatoire.</mat-error></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Parcelle / matricule</mat-label><input id="terrain-parcel" matInput formControlName="parcelleMatricule"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Type de document foncier</mat-label><input id="terrain-document-type" matInput formControlName="typeDocumentFoncier"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Statut juridique</mat-label><mat-select formControlName="statutJuridique"><mat-option value="Titre foncier">Titre foncier</mat-option><mat-option value="Bail">Bail</mat-option><mat-option value="Délibération">Délibération</mat-option><mat-option value="Morcellement">Morcellement</mat-option><mat-option value="Régularisation en cours">Régularisation en cours</mat-option></mat-select></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Niveau de vérification</mat-label><mat-select formControlName="niveauVerification"><mat-option value="Non vérifié">Non vérifié</mat-option><mat-option value="En cours">En cours</mat-option><mat-option value="Vérifié">Vérifié</mat-option><mat-option value="À compléter">À compléter</mat-option></mat-select></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Région</mat-label><input id="terrain-region" matInput formControlName="region"></mat-form-field><mat-form-field appearance="outline"><mat-label>Commune</mat-label><input id="terrain-commune" matInput formControlName="commune"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Localisation détaillée</mat-label><input id="terrain-location" matInput formControlName="localisationDetail"></mat-form-field><mat-form-field appearance="outline"><mat-label>Superficie (m²)</mat-label><input id="terrain-area" matInput type="number" formControlName="superficie"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Latitude</mat-label><input id="terrain-latitude" matInput type="number" formControlName="latitude"></mat-form-field><mat-form-field appearance="outline"><mat-label>Longitude</mat-label><input id="terrain-longitude" matInput type="number" formControlName="longitude"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Prix d’acquisition (FCFA)</mat-label><input id="terrain-acquisition-price" matInput type="number" formControlName="prixAcquisition"></mat-form-field><mat-form-field appearance="outline"><mat-label>Prix public (FCFA)</mat-label><input id="terrain-public-price" matInput type="number" formControlName="prixPublic"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Marge / majoration</mat-label><input id="terrain-margin" matInput type="number" formControlName="marge"></mat-form-field><mat-form-field appearance="outline"><mat-label>Commission</mat-label><input id="terrain-commission" matInput type="number" formControlName="commission"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Statut commercial</mat-label><mat-select formControlName="statutCommercial"><mat-option value="Brouillon">Brouillon</mat-option><mat-option value="Disponible">Disponible</mat-option><mat-option value="Réservé">Réservé</mat-option><mat-option value="Vendu">Vendu</mat-option><mat-option value="Suspendu">Suspendu</mat-option></mat-select></mat-form-field>
-      <mat-form-field appearance="outline" class="wide"><mat-label>Accès routier</mat-label><textarea id="terrain-road-access" matInput rows="3" formControlName="accesRoutier"></textarea></mat-form-field><mat-form-field appearance="outline" class="wide"><mat-label>Voisinage et vocation</mat-label><textarea id="terrain-neighborhood" matInput rows="3" formControlName="voisinage"></textarea></mat-form-field><mat-form-field appearance="outline" class="wide"><mat-label>Notes internes</mat-label><textarea id="terrain-internal-notes" matInput rows="3" formControlName="notesInternes"></textarea></mat-form-field>
-    </div>
+    <section class="form-section" aria-labelledby="identity-section-title">
+      <div class="form-section__heading">
+        <h2 id="identity-section-title">Identification</h2>
+        <p>Les informations de référence du terrain.</p>
+      </div>
+      <div class="form-grid">
+        <mat-form-field appearance="outline"><mat-label>Référence interne</mat-label><input id="terrain-reference" matInput formControlName="referenceInterne"><mat-error>La référence est obligatoire.</mat-error></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Nom du terrain</mat-label><input id="terrain-name" matInput formControlName="nom"><mat-error>Le nom est obligatoire.</mat-error></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Parcelle / matricule</mat-label><input id="terrain-parcel" matInput formControlName="parcelleMatricule"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Type de document foncier</mat-label><input id="terrain-document-type" matInput formControlName="typeDocumentFoncier"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Statut juridique</mat-label><mat-select formControlName="statutJuridique"><mat-option value="Titre foncier">Titre foncier</mat-option><mat-option value="Bail">Bail</mat-option><mat-option value="Délibération">Délibération</mat-option><mat-option value="Morcellement">Morcellement</mat-option><mat-option value="Régularisation en cours">Régularisation en cours</mat-option></mat-select></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Niveau de vérification</mat-label><mat-select formControlName="niveauVerification"><mat-option value="Non vérifié">Non vérifié</mat-option><mat-option value="En cours">En cours</mat-option><mat-option value="Vérifié">Vérifié</mat-option><mat-option value="À compléter">À compléter</mat-option></mat-select></mat-form-field>
+      </div>
+    </section>
+
+    <section class="form-section" aria-labelledby="location-section-title">
+      <div class="form-section__heading">
+        <h2 id="location-section-title">Localisation</h2>
+        <p>La situation géographique et les accès.</p>
+      </div>
+      <div class="form-grid">
+        <mat-form-field appearance="outline"><mat-label>Région</mat-label><input id="terrain-region" matInput formControlName="region"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Commune</mat-label><input id="terrain-commune" matInput formControlName="commune"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Localisation détaillée</mat-label><input id="terrain-location" matInput formControlName="localisationDetail"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Superficie (m²)</mat-label><input id="terrain-area" matInput type="number" formControlName="superficie"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Latitude</mat-label><input id="terrain-latitude" matInput type="number" formControlName="latitude"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Longitude</mat-label><input id="terrain-longitude" matInput type="number" formControlName="longitude"></mat-form-field>
+      </div>
+    </section>
+
+    <section class="form-section" aria-labelledby="commercial-section-title">
+      <div class="form-section__heading">
+        <h2 id="commercial-section-title">Commercialisation</h2>
+        <p>Les éléments financiers et le statut de mise en vente.</p>
+      </div>
+      <div class="form-grid">
+        <mat-form-field appearance="outline"><mat-label>Prix d’acquisition (FCFA)</mat-label><input id="terrain-acquisition-price" matInput type="number" formControlName="prixAcquisition"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Prix public (FCFA)</mat-label><input id="terrain-public-price" matInput type="number" formControlName="prixPublic"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Marge / majoration</mat-label><input id="terrain-margin" matInput type="number" formControlName="marge"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Commission</mat-label><input id="terrain-commission" matInput type="number" formControlName="commission"></mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>Statut commercial</mat-label><mat-select formControlName="statutCommercial"><mat-option value="Brouillon">Brouillon</mat-option><mat-option value="Disponible">Disponible</mat-option><mat-option value="Réservé">Réservé</mat-option><mat-option value="Vendu">Vendu</mat-option><mat-option value="Suspendu">Suspendu</mat-option></mat-select></mat-form-field>
+      </div>
+    </section>
+
+    <section class="form-section" aria-labelledby="details-section-title">
+      <div class="form-section__heading">
+        <h2 id="details-section-title">Informations complémentaires</h2>
+        <p>Les détails utiles à l’étude et au suivi du dossier.</p>
+      </div>
+      <div class="form-grid">
+        <mat-form-field appearance="outline" class="wide"><mat-label>Accès routier</mat-label><textarea id="terrain-road-access" matInput rows="3" formControlName="accesRoutier"></textarea></mat-form-field>
+        <mat-form-field appearance="outline" class="wide"><mat-label>Voisinage et vocation</mat-label><textarea id="terrain-neighborhood" matInput rows="3" formControlName="voisinage"></textarea></mat-form-field>
+        <mat-form-field appearance="outline" class="wide"><mat-label>Notes internes</mat-label><textarea id="terrain-internal-notes" matInput rows="3" formControlName="notesInternes"></textarea></mat-form-field>
+      </div>
+    </section>
     <footer class="form-actions"><button mat-button type="button" (click)="goBack()">Annuler</button><button mat-flat-button color="primary" type="submit"><svg lucideSave aria-hidden="true"></svg> {{ terrainId ? 'Enregistrer les modifications' : 'Créer la fiche' }}</button></footer>
   </form>
 </section>

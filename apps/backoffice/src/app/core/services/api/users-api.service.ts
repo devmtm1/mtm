@@ -17,6 +17,14 @@ export class UsersApiService {
     return this.http.post<UserListItem>(this.baseUrl, payload);
   }
 
+  update(id: string, payload: Partial<CreateUserPayload>): Observable<UserListItem> {
+    return this.http.patch<UserListItem>(`${this.baseUrl}/${id}`, payload);
+  }
+
+  remove(id: string): Observable<{ success: boolean }> {
+    return this.http.delete<{ success: boolean }>(`${this.baseUrl}/${id}`);
+  }
+
   activate(id: string): Observable<UserListItem> {
     return this.http.patch<UserListItem>(`${this.baseUrl}/${id}/activate`, {});
   }

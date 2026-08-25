@@ -1,0 +1,77 @@
+.delete-user-dialog__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 24px 24px 10px;
+  color: var(--mtm-text-dark);
+  font-family: var(--mtm-font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.delete-user-dialog__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--mtm-red-subtle);
+  color: var(--mtm-red-primary);
+}
+
+.delete-user-dialog__icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.delete-user-dialog__content {
+  display: grid;
+  gap: 8px;
+  padding: 8px 24px 20px;
+  color: var(--mtm-text-muted);
+  font-size: 0.85rem;
+}
+
+.delete-user-dialog__content p,
+.delete-user-dialog__content strong {
+  margin: 0;
+}
+
+.delete-user-dialog__content strong {
+  color: var(--mtm-text-dark);
+  overflow-wrap: anywhere;
+}
+
+.delete-user-dialog__warning {
+  color: var(--mtm-red-primary) !important;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.delete-user-dialog__actions {
+  min-height: 64px;
+  gap: 8px;
+  padding: 12px 24px 20px;
+  border-top: 1px solid var(--mtm-border);
+}
+
+.delete-user-dialog__actions button {
+  min-width: 88px;
+}
+
+.delete-user-dialog__confirm {
+  background: var(--mtm-red-primary) !important;
+  color: #ffffff !important;
+}
+
+.delete-user-dialog__confirm:hover {
+  background: var(--mtm-red-hover) !important;
+}
+
+@media (max-width: 520px) {
+  .delete-user-dialog__title { padding-right: 20px; padding-left: 20px; }
+  .delete-user-dialog__content { padding-right: 20px; padding-left: 20px; }
+  .delete-user-dialog__actions { padding-right: 20px; padding-left: 20px; }
+}

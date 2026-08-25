@@ -3,6 +3,7 @@ import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 export type UserWithRoles = User & {
   roles: {
@@ -154,7 +155,7 @@ export class UsersService {
   // CRUD utilisateurs (administration)
   // ============================================================
 
-  async create(dto: CreateUserDto): Promise<User> {
+  async create(dto: CreateUserDto): Promise<UserWithRoles> {
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -165,7 +166,7 @@ export class UsersService {
     const bcryptSaltRounds = 12;
     const hashedPassword = await bcrypt.hash(dto.password, bcryptSaltRounds);
 
-    return this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: {
         email: dto.email,
         password: hashedPassword,
@@ -174,8 +175,13 @@ export class UsersService {
         // Mot de passe provisoire fixé par un admin : l'utilisateur doit
         // le changer dès sa première connexion.
         mustChangePassword: true,
+        roles: {
+          create: { roleId: dto.roleId },
+        },
       },
     });
+
+    return (await this.findById(user.id))!;
   }
 
   async findAll(): Promise<UserWithRoles[]> {
@@ -193,6 +199,24 @@ export class UsersService {
       },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  async update(userId: string, dto: UpdateUserDto): Promise<UserWithRoles> {
+    const data: { email?: string; firstName?: string; lastName?: string; password?: string } = {};
+    if (dto.email) data.email = dto.email;
+    if (dto.firstName) data.firstName = dto.firstName;
+    if (dto.lastName) data.lastName = dto.lastName;
+    if (dto.password) data.password = await bcrypt.hash(dto.password, 12);
+    await this.prisma.user.update({ where: { id: userId }, data });
+    if (dto.roleId) {
+      await this.prisma.userRole.deleteMany({ where: { userId } });
+      await this.prisma.userRole.create({ data: { userId, roleId: dto.roleId } });
+    }
+    return (await this.findById(userId))!;
+  }
+
+  async remove(userId: string): Promise<void> {
+    await this.prisma.user.delete({ where: { id: userId } });
   }
 
   async setActive(userId: string, isActive: boolean): Promise<User> {

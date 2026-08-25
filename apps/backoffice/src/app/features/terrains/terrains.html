@@ -13,12 +13,32 @@
   <section class="terrains-table-shell" aria-labelledby="terrains-list-title">
     <div class="terrains-toolbar">
       <div><h2 id="terrains-list-title">Référentiel des terrains</h2><p>{{ total() }} résultat{{ total() > 1 ? 's' : '' }}</p></div>
+      <div class="view-switch" role="group" aria-label="Mode d’affichage">
+        <button type="button" [class.is-active]="viewMode() === 'table'" (click)="setViewMode('table')" aria-label="Afficher en tableau" title="Tableau"><svg lucideList aria-hidden="true"></svg></button>
+        <button type="button" [class.is-active]="viewMode() === 'grid'" (click)="setViewMode('grid')" aria-label="Afficher en grille" title="Grille"><svg lucideGrid2X2 aria-hidden="true"></svg></button>
+      </div>
       <form class="filters" [formGroup]="filters" (ngSubmit)="applyFilters()">
         <mat-form-field class="filters__search" appearance="outline"><mat-label>Rechercher</mat-label><svg class="filters__search-icon" matPrefix lucideSearch aria-hidden="true"></svg><input id="terrain-search" matInput formControlName="search"></mat-form-field>
         <mat-form-field class="filters__status" appearance="outline"><mat-label>Statut commercial</mat-label><mat-select formControlName="statutCommercial"><mat-option value="">Tous</mat-option><mat-option value="Brouillon">Brouillon</mat-option><mat-option value="Disponible">Disponible</mat-option><mat-option value="Réservé">Réservé</mat-option><mat-option value="Vendu">Vendu</mat-option></mat-select></mat-form-field>
         <button class="filters__submit" mat-stroked-button type="submit">Filtrer</button>
       </form>
     </div>
-    <ag-grid-angular class="terrains-grid" [theme]="theme" [rowData]="rowData()" [columnDefs]="columnDefs" [loading]="loading()" domLayout="autoHeight" [pagination]="true" [paginationPageSize]="25" [rowHeight]="52" />
+    @if (viewMode() === 'table') {
+      <ag-grid-angular class="terrains-grid" [theme]="theme" [rowData]="rowData()" [columnDefs]="columnDefs" [loading]="loading()" domLayout="autoHeight" [pagination]="true" [paginationPageSize]="10" [rowHeight]="52" />
+    } @else {
+      <div class="terrains-grid-view" aria-label="Terrains en grille">
+        @for (terrain of rowData(); track terrain.id) {
+          <article class="terrain-card">
+            <div class="terrain-card__topline"><span class="terrain-card__reference">{{ terrain.referenceInterne }}</span><span class="terrain-card__status">{{ terrain.statutCommercial }}</span></div>
+            <h3>{{ terrain.nom }}</h3>
+            <p class="terrain-card__location"><svg lucideLandPlot aria-hidden="true"></svg>{{ formatLocation(terrain) }}</p>
+            <dl class="terrain-card__details"><div><dt>Superficie</dt><dd>{{ terrain.superficie == null ? '—' : terrain.superficie + ' m²' }}</dd></div><div><dt>Prix public</dt><dd>{{ formatMoney(terrain.prixPublic) }}</dd></div></dl>
+            <div class="terrain-card__actions"><button type="button" class="grid-icon-btn" (click)="openDetail(terrain.id)" aria-label="Voir les détails" title="Voir les détails"><svg lucideEye aria-hidden="true"></svg></button>@if (canModify()) {<button type="button" class="grid-icon-btn" (click)="openEdit(terrain.id)" aria-label="Modifier le terrain" title="Modifier le terrain"><svg lucidePencil aria-hidden="true"></svg></button>}</div>
+          </article>
+        } @empty {
+          <p class="terrains-empty">Aucun terrain trouvé.</p>
+        }
+      </div>
+    }
   </section>
 </div>

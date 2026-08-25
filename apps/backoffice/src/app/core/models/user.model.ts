@@ -15,4 +15,5 @@ export interface CreateUserPayload {
   password: string;
   firstName: string;
   lastName: string;
+  roleId: string;
 }

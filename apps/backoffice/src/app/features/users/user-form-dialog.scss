@@ -1,13 +1,61 @@
+.user-dialog-title {
+  margin: 0;
+  padding: 24px 24px 8px;
+  color: var(--mtm-text-dark);
+  font-family: var(--mtm-font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.user-dialog-form {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .user-dialog-content {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 360px;
-  padding-top: 4px;
+  gap: 8px;
+  max-height: min(560px, calc(100vh - 170px));
+  padding: 8px 24px 16px;
+  box-sizing: border-box;
+}
+
+.user-dialog-content mat-form-field {
+  width: 100%;
+}
+
+.user-dialog-content mat-hint {
+  color: var(--mtm-text-muted);
+  font-size: 0.7rem;
 }
 
 .user-dialog-error {
+  padding: 10px 12px;
+  border: 1px solid var(--mtm-red-primary);
+  border-radius: 6px;
+  background: var(--mtm-red-subtle);
   color: var(--mat-sys-error);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   margin: 0;
+}
+
+.user-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  min-height: 64px;
+  padding: 12px 24px 20px;
+  border-top: 1px solid var(--mtm-border);
+}
+
+.user-dialog-actions button {
+  min-width: 88px;
+}
+
+@media (max-width: 520px) {
+  .user-dialog-title { padding: 20px 20px 8px; }
+  .user-dialog-content { padding-right: 20px; padding-left: 20px; }
+  .user-dialog-actions { padding-right: 20px; padding-left: 20px; }
 }

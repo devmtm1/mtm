@@ -1,21 +1,20 @@
 // Design System - MTM IMMOBILIER (Couleurs officielles de l'entreprise)
-// Violet Impérial / Sombre : #2D1552 (Domination, professionnalisme, sobriété)
-// Rouge Crimson / Accent : #C8102E (Dynamisme, boutons d'action, icônes, alertes)
-// Blanc Pur & Gris Slate : #FFFFFF / #F8FAFC / #1E1B2E
+// Bleu institutionnel / Rouge carmin : couleurs extraites du logo MTM Immobilier
+// Blanc et gris neutres : surfaces et contrastes de l'interface
 
 @use '@angular/material' as mat;
 
 :root {
   // Couleurs de marque MTM Immobilier
-  --mtm-purple-dark: #1C0B36;
-  --mtm-purple-primary: #2D1552;
-  --mtm-purple-medium: #3E1E70;
-  --mtm-purple-light: #542B93;
-  --mtm-purple-subtle: #F3EEFC;
+  --mtm-purple-dark: #12324E;
+  --mtm-purple-primary: #1C4B75;
+  --mtm-purple-medium: #2A6A96;
+  --mtm-purple-light: #63B9D6;
+  --mtm-purple-subtle: #EAF5F9;
 
-  --mtm-red-primary: #C8102E;
-  --mtm-red-hover: #A00B22;
-  --mtm-red-subtle: #FFF0F2;
+  --mtm-red-primary: #B82F39;
+  --mtm-red-hover: #82191D;
+  --mtm-red-subtle: #FBECEF;
 
   --mtm-text-dark: #191528;
   --mtm-text-muted: #64748B;
@@ -57,15 +56,15 @@
 [data-theme='dark'] {
   color-scheme: dark;
 
-  --mtm-purple-dark: #E9D5FF;
-  --mtm-purple-primary: #B88ADD;
-  --mtm-purple-medium: #C9A7E8;
-  --mtm-purple-light: #D8B4FE;
-  --mtm-purple-subtle: #2A1D38;
+  --mtm-purple-dark: #C9E8F3;
+  --mtm-purple-primary: #63B9D6;
+  --mtm-purple-medium: #8BCFE0;
+  --mtm-purple-light: #B7E4EC;
+  --mtm-purple-subtle: #19354D;
 
-  --mtm-red-primary: #FB7185;
-  --mtm-red-hover: #FDA4AF;
-  --mtm-red-subtle: #3A2028;
+  --mtm-red-primary: #E56A73;
+  --mtm-red-hover: #F18B91;
+  --mtm-red-subtle: #4A252B;
 
   --mtm-text-dark: #F4F4F5;
   --mtm-text-muted: #A1A1AA;
@@ -147,7 +146,7 @@ body {
 
   &:hover {
     background-color: var(--mtm-purple-medium) !important;
-    box-shadow: 0 4px 12px rgba(45, 21, 82, 0.25) !important;
+    box-shadow: 0 4px 12px rgba(28, 75, 117, 0.25) !important;
   }
 }
 
@@ -162,7 +161,7 @@ body {
 
   &:hover {
     background-color: var(--mtm-red-hover) !important;
-    box-shadow: 0 4px 12px rgba(200, 16, 46, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(184, 47, 57, 0.3) !important;
   }
 }
 
@@ -240,7 +239,7 @@ body {
     background-color: var(--mtm-purple-subtle);
     border-color: var(--mtm-purple-primary);
     transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(45, 21, 82, 0.12);
+    box-shadow: 0 2px 6px rgba(28, 75, 117, 0.12);
   }
 
   &.danger {
@@ -249,7 +248,7 @@ body {
     &:hover {
       background-color: var(--mtm-red-subtle);
       border-color: var(--mtm-red-primary);
-      box-shadow: 0 2px 6px rgba(200, 16, 46, 0.15);
+      box-shadow: 0 2px 6px rgba(184, 47, 57, 0.15);
     }
   }
 
@@ -270,8 +269,8 @@ body {
   --ag-header-background-color: #F8FAFC !important;
   --ag-header-foreground-color: var(--mtm-text-dark) !important;
   --ag-header-font-weight: 600 !important;
-  --ag-row-hover-color: #F3EEFC !important;
-  --ag-selected-row-background-color: #ECE5F8 !important;
+  --ag-row-hover-color: var(--mtm-purple-subtle) !important;
+  --ag-selected-row-background-color: #D9EEF5 !important;
   --ag-font-family: 'Plus Jakarta Sans', sans-serif !important;
   --ag-font-size: 13px !important;
   --ag-border-color: #E2E8F0 !important;
