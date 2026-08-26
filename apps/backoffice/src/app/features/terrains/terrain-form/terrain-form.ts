@@ -8,13 +8,13 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin, of } from 'rxjs';
-import { LucideArrowLeft, LucideFileText, LucideImage, LucideSave, LucideTrash2, LucideUploadCloud } from '@lucide/angular';
+import { LucideArrowLeft, LucideFileText, LucideImage, LucideSave, LucideTrash2, LucideUpload } from '@lucide/angular';
 import { TerrainsApiService } from '../../../core/services/api/terrains-api.service';
 import type { CreateTerrainPayload, TerrainDetail } from '../../../core/models/terrain.model';
 
 @Component({
   selector: 'app-terrain-form',
-  imports: [FormsModule, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, LucideArrowLeft, LucideFileText, LucideImage, LucideSave, LucideTrash2, LucideUploadCloud],
+  imports: [FormsModule, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, LucideArrowLeft, LucideFileText, LucideImage, LucideSave, LucideTrash2, LucideUpload],
   templateUrl: './terrain-form.html',
   styleUrl: './terrain-form.scss',
 })
