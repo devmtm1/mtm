@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin, of } from 'rxjs';
 import { LucideArrowLeft, LucideSave } from '@lucide/angular';
 import { TerrainsApiService } from '../../../core/services/api/terrains-api.service';
@@ -31,7 +32,7 @@ export class TerrainForm implements OnInit {
   protected selectedAssets: SelectedAsset[] = [];
   protected readonly currentStep = signal(1);
   protected readonly form = this.formBuilder.group({
-    referenceInterne: ['', [Validators.required, Validators.maxLength(100)]], nom: ['', [Validators.required, Validators.maxLength(200)]], parcelleMatricule: [''], statutJuridique: ['Régularisation en cours', Validators.required], typeDocumentFoncier: [''], niveauVerification: ['Non vérifié', Validators.required], region: [''], commune: [''], localisationDetail: [''], latitude: [null as number | null], longitude: [null as number | null], superficie: [null as number | null], uniteSuperficie: ['m²'], dimensions: [''], prixAcquisition: [null as number | null], prixPublic: [null as number | null], marge: [null as number | null], commission: [null as number | null], statutCommercial: ['Brouillon', Validators.required], accesRoutier: [''], eauDisponible: [null as boolean | null], electriciteDisponible: [null as boolean | null], voisinage: [''], vocation: [''], proximiteAxes: [''], notesInternes: [''],
+    referenceInterne: ['', [Validators.required, Validators.maxLength(100)]], nom: ['', [Validators.required, Validators.maxLength(200)]], parcelleMatricule: [''], statutJuridique: ['Régularisation en cours', Validators.required], typeDocumentFoncier: [''], niveauVerification: ['Non vérifié', Validators.required], region: [''], commune: [''], localisationDetail: [''], latitude: [null as number | null, [Validators.min(-90), Validators.max(90)]], longitude: [null as number | null, [Validators.min(-180), Validators.max(180)]], superficie: [null as number | null, Validators.min(0)], uniteSuperficie: ['m²'], dimensions: [''], prixAcquisition: [null as number | null, Validators.min(0)], prixPublic: [null as number | null, Validators.min(0)], marge: [null as number | null], commission: [null as number | null, Validators.min(0)], statutCommercial: ['Brouillon', Validators.required], accesRoutier: [''], eauDisponible: [null as boolean | null], electriciteDisponible: [null as boolean | null], voisinage: [''], vocation: [''], proximiteAxes: [''], notesInternes: [''],
   });
 
   ngOnInit(): void {
@@ -46,7 +47,7 @@ export class TerrainForm implements OnInit {
     if (this.form.invalid || this.saving) { this.form.markAllAsTouched(); return; }
     this.saving = true;
     const value = this.form.getRawValue();
-    const payload = { ...value, dimensions: this.parseDimensions(value.dimensions) } as CreateTerrainPayload;
+    const payload = this.cleanPayload(value);
     const request$ = this.terrainId ? this.api.update(this.terrainId, payload) : this.api.create(payload);
     request$.subscribe({ next: (terrain) => {
       const uploads = this.selectedAssets.map((asset) => this.api.upload(terrain.id, asset.kind, asset.file, asset.type, asset.title, asset.isPublic));
@@ -54,7 +55,7 @@ export class TerrainForm implements OnInit {
         next: () => { this.saving = false; this.snackBar.open(this.selectedAssets.length ? 'Terrain et fichiers enregistrés' : (this.terrainId ? 'Terrain mis à jour' : 'Terrain créé'), 'Fermer', { duration: 3000 }); this.router.navigate(['/terrains', terrain.id]); },
         error: () => { this.saving = false; this.snackBar.open('Terrain enregistré, mais un fichier n’a pas pu être envoyé', 'Fermer', { duration: 5000 }); this.router.navigate(['/terrains', terrain.id]); },
       });
-    }, error: () => { this.saving = false; this.snackBar.open('Impossible d’enregistrer le terrain', 'Fermer', { duration: 4000 }); } });
+    }, error: (error: HttpErrorResponse) => { this.saving = false; this.snackBar.open(this.getApiErrorMessage(error), 'Fermer', { duration: 4000 }); } });
   }
 
   protected nextStep(): void {
@@ -85,6 +86,24 @@ export class TerrainForm implements OnInit {
 
   private toNumber(value: number | string | null): number | null { return value === null ? null : Number(value); }
   private parseDimensions(value: string | null): Record<string, unknown> | undefined { if (!value?.trim()) return undefined; try { return JSON.parse(value) as Record<string, unknown>; } catch { return { description: value }; } }
+  private cleanPayload(value: ReturnType<typeof this.form.getRawValue>): CreateTerrainPayload {
+    const dimensions = this.parseDimensions(value.dimensions);
+    const stringFields = ['parcelleMatricule', 'typeDocumentFoncier', 'region', 'commune', 'localisationDetail', 'accesRoutier', 'voisinage', 'vocation', 'proximiteAxes', 'notesInternes', 'uniteSuperficie'] as const;
+    const cleaned = { ...value, dimensions } as Record<string, unknown>;
+    for (const field of stringFields) {
+      if (typeof cleaned[field] === 'string' && cleaned[field].trim() === '') {
+        cleaned[field] = undefined;
+      }
+    }
+    return cleaned as unknown as CreateTerrainPayload;
+  }
+
+  private getApiErrorMessage(error: HttpErrorResponse): string {
+    const message = error.error?.message;
+    if (Array.isArray(message)) return message.join(' ');
+    if (typeof message === 'string' && message.trim()) return message;
+    return 'Impossible d’enregistrer le terrain';
+  }
 }
 
 interface SelectedAsset {
