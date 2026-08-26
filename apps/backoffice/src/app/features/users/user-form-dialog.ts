@@ -58,7 +58,7 @@ export class UserFormDialog {
     }),
     password: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.required, Validators.minLength(12)],
+      validators: [Validators.required, Validators.minLength(6)],
     }),
     roleId: new FormControl('', {
       nonNullable: true,

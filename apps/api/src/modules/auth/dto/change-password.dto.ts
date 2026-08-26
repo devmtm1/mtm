@@ -7,10 +7,10 @@ export class ChangePasswordDto {
   @Length(1, 200)
   currentPassword!: string;
 
-  @ApiProperty({ description: 'Au moins 12 caractères' })
+  @ApiProperty({ description: 'Au moins 6 caractères' })
   @IsString()
-  @Length(12, 200, {
-    message: 'Le nouveau mot de passe doit contenir au moins 12 caractères',
+  @Length(6, 200, {
+    message: 'Le nouveau mot de passe doit contenir au moins 6 caractères',
   })
   newPassword!: string;
 }

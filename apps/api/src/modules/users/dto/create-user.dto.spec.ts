@@ -19,10 +19,10 @@ describe('CreateUserDto (validation)', () => {
     expect(errors).toHaveLength(0);
   });
 
-  it('rejette un mot de passe trop court (< 12 caractères)', async () => {
+  it('rejette un mot de passe trop court (< 6 caractères)', async () => {
     const dto = plainToInstance(CreateUserDto, {
       ...validPayload,
-      password: 'court1!',
+      password: 'court',
     });
 
     const errors = await validate(dto);

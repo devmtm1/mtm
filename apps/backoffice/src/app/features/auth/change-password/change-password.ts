@@ -46,7 +46,7 @@ export class ChangePassword {
       }),
       newPassword: new FormControl('', {
         nonNullable: true,
-        validators: [Validators.required, Validators.minLength(12)],
+        validators: [Validators.required, Validators.minLength(6)],
       }),
       confirmPassword: new FormControl('', {
         nonNullable: true,

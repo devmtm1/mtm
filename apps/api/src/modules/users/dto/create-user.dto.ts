@@ -8,8 +8,8 @@ export class CreateUserDto {
 
   @ApiProperty({ example: 'MotDePasseSecurise123!' })
   @IsString()
-  @Length(12, 200, {
-    message: 'Le mot de passe doit contenir au moins 12 caractères',
+  @Length(6, 200, {
+    message: 'Le mot de passe doit contenir au moins 6 caractères',
   })
   password!: string;
 

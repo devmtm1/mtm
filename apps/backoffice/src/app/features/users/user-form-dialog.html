@@ -33,13 +33,13 @@
       <mat-label>{{ isEdit ? 'Nouveau mot de passe (optionnel)' : 'Mot de passe provisoire' }}</mat-label>
       <input matInput type="password" formControlName="password" />
       @if (!isEdit) {
-        <mat-hint>Au moins 12 caractères. À faire changer à la première connexion.</mat-hint>
+        <mat-hint>Au moins 6 caractères. À faire changer à la première connexion.</mat-hint>
       }
       @if (!isEdit && form.controls.password.hasError('required') && form.controls.password.touched) {
         <mat-error>Le mot de passe est requis.</mat-error>
       }
       @if (form.controls.password.hasError('minlength') && form.controls.password.touched) {
-        <mat-error>Le mot de passe doit contenir au moins 12 caractères.</mat-error>
+        <mat-error>Le mot de passe doit contenir au moins 6 caractères.</mat-error>
       }
     </mat-form-field>
 
