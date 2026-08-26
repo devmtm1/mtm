@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://mtm-api.onrender.com/api',
+  apiUrl: 'https://mtm-2-v2wo.onrender.com/api',
 };
