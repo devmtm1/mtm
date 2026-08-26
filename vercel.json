@@ -1,0 +1,12 @@
+{
+  "buildCommand": "npm run backoffice:build",
+  "outputDirectory": "apps/backoffice/dist/backoffice/browser",
+  "installCommand": "npm install",
+  "framework": "angular",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
