@@ -17,6 +17,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Public } from '../auth/decorators/public.decorator';
 import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AuditService } from '../audit/audit.service';
@@ -34,6 +35,18 @@ export class TerrainsController {
     private readonly terrains: TerrainsService,
     private readonly audit: AuditService,
   ) {}
+
+  @Public()
+  @Get('public')
+  findPublic(@Query() query: QueryTerrainDto) {
+    return this.terrains.findPublic(query);
+  }
+
+  @Public()
+  @Get('public/:id')
+  findPublicOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.terrains.findPublicOne(id);
+  }
 
   @Get() @RequirePermissions('terrains:consulter') findAll(
     @Query() query: QueryTerrainDto,

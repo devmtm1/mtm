@@ -21,6 +21,38 @@ const terrainInclude = {
   documents: { orderBy: { createdAt: 'desc' as const } },
 };
 
+const publicTerrainSelect = {
+  id: true,
+  referenceInterne: true,
+  nom: true,
+  statutJuridique: true,
+  niveauVerification: true,
+  region: true,
+  commune: true,
+  localisationDetail: true,
+  latitude: true,
+  longitude: true,
+  superficie: true,
+  uniteSuperficie: true,
+  dimensions: true,
+  prixPublic: true,
+  accesRoutier: true,
+  eauDisponible: true,
+  electriciteDisponible: true,
+  voisinage: true,
+  vocation: true,
+  proximiteAxes: true,
+  pointsInteret: true,
+  medias: {
+    where: { isPublic: true },
+    orderBy: { sortOrder: 'asc' as const },
+  },
+  documents: {
+    where: { isPublic: true },
+    orderBy: { createdAt: 'desc' as const },
+  },
+} as const;
+
 @Injectable()
 export class TerrainsService {
   constructor(
@@ -118,6 +150,38 @@ export class TerrainsService {
     return this.toInternal(terrain);
   }
 
+  async findPublic(query: QueryTerrainDto) {
+    const page = query.page > 0 ? query.page : 1;
+    const pageSize = Math.min(query.pageSize > 0 ? query.pageSize : 25, 200);
+    const where = {
+      statutCommercial: 'Disponible',
+      ...(query.statutJuridique ? { statutJuridique: query.statutJuridique } : {}),
+      ...(query.niveauVerification ? { niveauVerification: query.niveauVerification } : {}),
+      ...(query.region ? { region: query.region } : {}),
+      ...(query.commune ? { commune: query.commune } : {}),
+      ...(query.superficieMin !== undefined || query.superficieMax !== undefined
+        ? { superficie: { ...(query.superficieMin !== undefined ? { gte: query.superficieMin } : {}), ...(query.superficieMax !== undefined ? { lte: query.superficieMax } : {}) } }
+        : {}),
+      ...(query.prixPublicMin !== undefined || query.prixPublicMax !== undefined
+        ? { prixPublic: { ...(query.prixPublicMin !== undefined ? { gte: query.prixPublicMin } : {}), ...(query.prixPublicMax !== undefined ? { lte: query.prixPublicMax } : {}) } }
+        : {}),
+    };
+    const [items, total] = await Promise.all([
+      this.prisma.terrain.findMany({ where, select: publicTerrainSelect, orderBy: { [query.sortBy]: query.sortOrder }, skip: (page - 1) * pageSize, take: pageSize }),
+      this.prisma.terrain.count({ where }),
+    ]);
+    return { items: items.map((item) => this.toPublic(item)), total, page, pageSize };
+  }
+
+  async findPublicOne(id: string) {
+    const terrain = await this.prisma.terrain.findFirst({
+      where: { id, statutCommercial: 'Disponible' },
+      select: publicTerrainSelect,
+    });
+    if (!terrain) throw new NotFoundException('Terrain introuvable');
+    return this.toPublic(terrain);
+  }
+
   async create(dto: CreateTerrainDto) {
     const existing = await this.prisma.terrain.findUnique({
       where: { referenceInterne: dto.referenceInterne },
@@ -206,6 +270,18 @@ export class TerrainsService {
     delete safe.commission;
     delete safe.notesInternes;
     delete safe.proprietaire;
+    if (Array.isArray(safe.medias)) {
+      safe.medias = safe.medias.map((media) => ({
+        ...media,
+        secureUrl: this.cloudinary.url(String(media.storageKey), String(media.resourceType ?? 'image'), true),
+      }));
+    }
+    if (Array.isArray(safe.documents)) {
+      safe.documents = safe.documents.map((document) => ({
+        ...document,
+        secureUrl: this.cloudinary.url(String(document.storageKey), String(document.resourceType ?? 'raw'), true),
+      }));
+    }
     return safe;
   }
 

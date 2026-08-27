@@ -5,10 +5,14 @@
   "description": "MTM Immobilier — Plateforme numérique intégrée (monorepo)",
   "workspaces": [
     "apps/api",
-    "apps/backoffice"
+    "apps/backoffice",
+    "apps/public-web"
   ],
   "overrides": {
     "deepmerge-ts": "^8.0.1"
+  },
+  "devDependencies": {
+    "vite": "^7.3.6"
   },
   "scripts": {
     "build": "npm run api:build && npm run backoffice:build",
@@ -25,6 +29,8 @@
     "backoffice:dev": "npm run start --workspace=apps/backoffice",
     "backoffice:build": "npm install --workspace=apps/backoffice && npm run build --workspace=apps/backoffice",
     "backoffice:lint": "npm run lint --workspace=apps/backoffice",
+    "public-web:dev": "npm run dev --workspace=apps/public-web",
+    "public-web:build": "npm run build --workspace=apps/public-web",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f"

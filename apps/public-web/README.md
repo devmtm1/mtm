@@ -1,11 +1,25 @@
-# public-web (site public MTM Immobilier)
+# public-web
 
-**Non développé à ce stade.**
+Site public MTM Immobilier, implemente avec React, TypeScript, Vite, Tailwind
+CSS et Lucide React.
 
-Ce dossier est un placeholder préparé pour accueillir le futur site public
-(section 5 du cahier des charges — Jalon J1.2 du planning d'exécution).
+## Developpement
 
-Il ne contient volontairement aucun code en Phase 0, conformément au
-périmètre validé : la Phase 0 ne couvre que le socle technique
-(authentification, rôles/permissions, audit, paramétrage) et non les
-fonctionnalités métier ou le site public.
+Depuis la racine du monorepo :
+
+```bash
+npm run public-web:dev
+```
+
+Le site est disponible sur `http://localhost:5173`.
+
+## Donnees publiques
+
+Le catalogue appelle `GET /api/terrains/public`. Cette API ne renvoie que les
+terrains disponibles et exclut les donnees internes (prix d'acquisition,
+marges, commissions, notes et proprietaires). En l'absence d'API disponible,
+le site utilise des donnees locales de demonstration pour permettre le travail
+UI.
+
+La variable `VITE_API_URL` permet de remplacer l'URL par defaut
+(`http://localhost:3001/api`).

@@ -27,6 +27,9 @@ async function bootstrap(): Promise<void> {
         return;
       }
       const allowed = appCfg.corsOrigin.split(',').map((s) => s.trim());
+      if (appCfg.nodeEnv !== 'production') {
+        allowed.push('http://localhost:5173', 'http://127.0.0.1:5173');
+      }
       if (allowed.includes(origin)) {
         callback(null, true);
       } else {
