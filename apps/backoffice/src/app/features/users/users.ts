@@ -36,6 +36,9 @@ export class Users implements OnInit {
   protected readonly canDelete = computed(() =>
     this.sessionService.hasPermission('users:supprimer'),
   );
+  protected readonly canResetTwoFactor = computed(() =>
+    this.sessionService.hasPermission('users:administrer'),
+  );
 
   protected readonly defaultColDef: ColDef<UserListItem> = {
     resizable: true,
@@ -106,6 +109,15 @@ export class Users implements OnInit {
           edit.innerHTML = `<svg viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>`;
           edit.addEventListener('click', () => this.openEditDialog(params.data!));
           container.appendChild(edit);
+        }
+        if (this.canResetTwoFactor() && params.data.twoFactorEnabled) {
+          const resetTwoFactor = document.createElement('button');
+          resetTwoFactor.className = 'grid-icon-btn warning';
+          resetTwoFactor.title = 'Réinitialiser le 2FA';
+          resetTwoFactor.setAttribute('aria-label', resetTwoFactor.title);
+          resetTwoFactor.innerHTML = `<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 4 3 10 9 10"/><path d="M12 8v4l2.5 1.5"/></svg>`;
+          resetTwoFactor.addEventListener('click', () => this.resetTwoFactor(params.data!));
+          container.appendChild(resetTwoFactor);
         }
         if (this.canDelete()) {
           const remove = document.createElement('button');
@@ -202,6 +214,25 @@ export class Users implements OnInit {
       },
       error: () => {
         this.snackBar.open('Action impossible', 'Fermer', { duration: 4000 });
+      },
+    });
+  }
+
+  private resetTwoFactor(user: UserListItem): void {
+    const confirmed = window.confirm(
+      `Réinitialiser le 2FA de ${user.email} ? Cette action désactivera sa configuration actuelle.`,
+    );
+    if (!confirmed) return;
+
+    this.usersApi.resetTwoFactor(user.id).subscribe({
+      next: () => {
+        this.snackBar.open('2FA réinitialisée', 'Fermer', { duration: 3000 });
+        this.load();
+      },
+      error: () => {
+        this.snackBar.open('Réinitialisation du 2FA impossible', 'Fermer', {
+          duration: 4000,
+        });
       },
     });
   }

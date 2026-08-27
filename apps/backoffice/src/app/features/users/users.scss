@@ -172,6 +172,10 @@
   margin-right: 0;
 }
 
+.users-row-actions .grid-icon-btn.warning {
+  color: var(--mtm-warning, #d97706);
+}
+
 @media (max-width: 720px) {
   .users-header {
     align-items: flex-start;

@@ -33,6 +33,10 @@ export class UsersApiService {
     return this.http.patch<UserListItem>(`${this.baseUrl}/${id}/deactivate`, {});
   }
 
+  resetTwoFactor(id: string): Observable<UserListItem> {
+    return this.http.post<UserListItem>(`${this.baseUrl}/${id}/2fa/reset`, {});
+  }
+
   assignRole(userId: string, roleId: string): Observable<{ success: boolean }> {
     return this.http.post<{ success: boolean }>(`${this.baseUrl}/${userId}/roles`, {
       roleId,
