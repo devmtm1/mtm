@@ -122,6 +122,11 @@
   justify-content: center;
 }
 
+:host ::ng-deep .users-grid .ag-cell[col-id='actions'] {
+  overflow: visible;
+  z-index: 1;
+}
+
 :host ::ng-deep .users-grid .mtm-badge {
   display: inline-flex;
   align-items: center;
@@ -165,10 +170,15 @@
 .users-row-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  flex-wrap: nowrap;
+  gap: 6px;
+  width: max-content;
 }
 
 .users-row-actions .grid-icon-btn {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
   margin-right: 0;
 }
 

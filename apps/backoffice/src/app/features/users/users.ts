@@ -84,8 +84,8 @@ export class Users implements OnInit {
     },
     {
       headerName: 'Actions',
-      flex: 0.8,
-      minWidth: 90,
+      flex: 1.4,
+      minWidth: 156,
       sortable: false,
       filter: false,
       cellRenderer: (params: ICellRendererParams<UserListItem>) => {
