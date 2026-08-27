@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
 import {
   ArrowRight,
-  Check,
   ChevronDown,
   Compass,
   FileCheck2,
@@ -841,158 +840,80 @@ export function App() {
       </footer>
 
       {selectedTerrain && (
-        <div className="terrain-detail-page fixed inset-0 z-50 overflow-y-auto bg-mist">
-          <div className="mx-auto min-h-full max-w-7xl px-5 pb-16 pt-24 lg:px-10">
+        <div className="fixed inset-0 z-50 grid place-items-center bg-ink/65 p-5 backdrop-blur-sm">
+          <div className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
             <button
-              type="button"
-              className="detail-back"
-              aria-label="Retour au catalogue des terrains"
+              className="absolute right-5 top-5 z-10 rounded-full bg-white/90 p-2 text-slate-500 hover:text-ink"
+              aria-label="Fermer la fiche terrain"
               onClick={() => setSelectedTerrain(null)}
             >
-              <ArrowRight className="rotate-180" size={17} /> Retour au
-              catalogue
+              <X size={19} />
             </button>
-            <div className="detail-hero-grid mt-7">
-              <div className="detail-gallery">
-                <img
-                  className="detail-main-image"
-                  src={selectedTerrain.image}
-                  alt={selectedTerrain.name}
-                />
-                {selectedTerrain.media && selectedTerrain.media.length > 0 && (
-                  <div className="detail-thumbnails">
-                    {selectedTerrain.media
-                      .slice(0, 4)
-                      .map(
-                        (media) =>
-                          media.secureUrl && (
-                            <img
-                              key={media.secureUrl}
-                              src={media.secureUrl}
-                              alt={media.title ?? selectedTerrain.name}
-                            />
-                          ),
-                      )}
-                  </div>
-                )}
-              </div>
-              <div className="detail-intro">
-                <p className="eyebrow">
-                  {selectedTerrain.id} · {selectedTerrain.status}
-                </p>
-                <h1>{selectedTerrain.name}</h1>
-                <p className="detail-location">
-                  <MapPin size={17} /> {selectedTerrain.location}
-                </p>
-                <p className="detail-price">{selectedTerrain.price}</p>
-                <div className="detail-actions">
-                  <button
-                    type="button"
-                    className="detail-primary"
-                    onClick={() => {
-                      setSelectedTerrain(null);
-                      setContactOpen(true);
-                    }}
-                  >
-                    Demander une visite <ArrowRight size={16} />
-                  </button>
-                  <button
-                    type="button"
-                    className="detail-secondary"
-                    onClick={() => {
-                      setSelectedTerrain(null);
-                      setContactOpen(true);
-                    }}
-                  >
-                    Réserver
-                  </button>
+            <img
+              className="h-56 w-full object-cover sm:h-72"
+              src={selectedTerrain.image}
+              alt={selectedTerrain.name}
+            />
+            <div className="p-7 sm:p-9">
+              <p className="eyebrow">
+                {selectedTerrain.id} · {selectedTerrain.status}
+              </p>
+              <h2 className="mt-2 font-display text-3xl sm:text-4xl">
+                {selectedTerrain.name}
+              </h2>
+              <p className="mt-3 text-sm text-slate-500">
+                <MapPin className="mr-1 inline" size={15} />
+                {selectedTerrain.location}
+              </p>
+              <div className="mt-7 grid gap-3 sm:grid-cols-3">
+                <div className="detail-item">
+                  <small>Superficie</small>
+                  <strong>{selectedTerrain.size}</strong>
+                </div>
+                <div className="detail-item">
+                  <small>Statut juridique</small>
+                  <strong>{selectedTerrain.legalStatus}</strong>
+                </div>
+                <div className="detail-item">
+                  <small>Prix public</small>
+                  <strong>{selectedTerrain.price}</strong>
                 </div>
               </div>
-            </div>
-            <div className="detail-content-grid mt-10">
-              <div>
-                <p className="eyebrow">À propos de ce terrain</p>
-                <h2 className="detail-section-title">
-                  Un emplacement pensé
-                  <br />
-                  <i>pour votre projet.</i>
-                </h2>
-                <p className="mt-5 max-w-2xl leading-7 text-slate-600">
-                  Terrain sélectionné par MTM Immobilier, avec informations
-                  publiques, accès et statut juridique présentés de manière
-                  transparente. La localisation et les documents publiables sont
-                  communiqués lors de l'étude de votre demande.
-                </p>
-                <div className="mt-8 grid gap-4 sm:grid-cols-3">
-                  <div className="detail-item">
-                    <small>Superficie</small>
-                    <strong>{selectedTerrain.size}</strong>
-                  </div>
-                  <div className="detail-item">
-                    <small>Statut juridique</small>
-                    <strong>{selectedTerrain.legalStatus}</strong>
-                  </div>
-                  <div className="detail-item">
-                    <small>Prix public</small>
-                    <strong>{selectedTerrain.price}</strong>
-                  </div>
-                </div>
-                <div className="detail-location-panel mt-8">
-                  <div>
-                    <MapPin size={19} />
-                    <div>
-                      <strong>Localisation</strong>
-                      <span>
-                        {selectedTerrain.detail ?? selectedTerrain.location}
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <Compass size={19} />
-                    <div>
-                      <strong>Accès</strong>
-                      <span>
-                        {selectedTerrain.access ??
-                          'Informations communiquées sur demande'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <aside className="detail-side-panel">
-                <p className="eyebrow">Caractéristiques</p>
-                <h2>
-                  Tout commence
-                  <br />
-                  par un bon emplacement.
-                </h2>
-                <ul>
-                  <li>
-                    <Check size={16} /> Statut juridique:{' '}
-                    {selectedTerrain.legalStatus}
-                  </li>
-                  <li>
-                    <Check size={16} /> Eau disponible:{' '}
-                    {selectedTerrain.waterAvailable ? 'Oui' : 'À confirmer'}
-                  </li>
-                  <li>
-                    <Check size={16} /> Électricité:{' '}
-                    {selectedTerrain.electricityAvailable
-                      ? 'Oui'
-                      : 'À confirmer'}
-                  </li>
-                </ul>
+              <p className="mt-7 leading-7 text-slate-600">
+                Terrain sélectionné par MTM Immobilier, avec informations
+                publiques, accès et statut juridique présentés de manière
+                transparente. La localisation et les documents publiables sont
+                communiqués lors de l'étude de votre demande.
+              </p>
+              <div className="mt-7 flex flex-wrap gap-3">
                 <button
-                  type="button"
-                  className="detail-contact-link"
+                  className="rounded-xl bg-coral px-5 py-3 text-sm font-bold text-white hover:bg-[#8f3f2b]"
                   onClick={() => {
                     setSelectedTerrain(null);
                     setContactOpen(true);
                   }}
                 >
-                  Demander des informations <ArrowRight size={16} />
+                  Demander une visite
                 </button>
-              </aside>
+                <button
+                  className="rounded-xl border border-primary px-5 py-3 text-sm font-bold text-primary hover:bg-sand"
+                  onClick={() => {
+                    setSelectedTerrain(null);
+                    setContactOpen(true);
+                  }}
+                >
+                  Demander des informations
+                </button>
+                <button
+                  className="rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white hover:bg-ink"
+                  onClick={() => {
+                    setSelectedTerrain(null);
+                    setContactOpen(true);
+                  }}
+                >
+                  Réserver
+                </button>
+              </div>
             </div>
           </div>
         </div>
