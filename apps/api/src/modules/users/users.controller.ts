@@ -67,8 +67,29 @@ export class UsersController {
     @CurrentUser() currentUser: AuthenticatedUser,
     @Req() req: Request,
   ) {
+    const before = await this.usersService.findById(id);
     const user = await this.usersService.update(id, dto);
-    await this.auditService.record({ userId: currentUser.id, action: 'user.updated', entityType: 'User', entityId: id, ipAddress: req.ip, userAgent: req.headers['user-agent'] });
+    await this.auditService.record({
+      userId: currentUser.id,
+      action: 'user.updated',
+      entityType: 'User',
+      entityId: id,
+      oldValue: before
+        ? {
+            email: before.email,
+            firstName: before.firstName,
+            lastName: before.lastName,
+          }
+        : undefined,
+      newValue: {
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      },
+      justification: 'Modification administrative du compte',
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
     return this.toSafeUser(user);
   }
 
@@ -80,7 +101,14 @@ export class UsersController {
     @Req() req: Request,
   ) {
     await this.usersService.remove(id);
-    await this.auditService.record({ userId: currentUser.id, action: 'user.deleted', entityType: 'User', entityId: id, ipAddress: req.ip, userAgent: req.headers['user-agent'] });
+    await this.auditService.record({
+      userId: currentUser.id,
+      action: 'user.deleted',
+      entityType: 'User',
+      entityId: id,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
     return { success: true };
   }
 
@@ -116,6 +144,30 @@ export class UsersController {
       action: 'user.deactivated',
       entityType: 'User',
       entityId: id,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    return this.toSafeUser(user);
+  }
+
+  @Post(':id/2fa/reset')
+  @RequirePermissions('users:administrer')
+  async resetTwoFactor(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() currentUser: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    const before = await this.usersService.findById(id);
+    const user = await this.usersService.resetTwoFactor(id);
+    await this.auditService.record({
+      userId: currentUser.id,
+      action: 'user.2fa_reset',
+      entityType: 'User',
+      entityId: id,
+      oldValue: { twoFactorEnabled: before?.twoFactorEnabled ?? false },
+      newValue: { twoFactorEnabled: false },
+      justification:
+        'Réinitialisation administrative pour récupération de compte',
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });

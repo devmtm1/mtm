@@ -21,7 +21,10 @@ async function bootstrap(): Promise<void> {
 
   // CORS restreint au back-office
   app.enableCors({
-    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
       if (!origin || appCfg.corsOrigin === '*') {
         callback(null, true);
         return;

@@ -144,6 +144,10 @@ export class SettingsService {
   }
 
   private toJson(value: unknown) {
-    return JSON.parse(JSON.stringify(value)) as object;
+    if (value === undefined) {
+      return {} as object;
+    }
+
+    return structuredClone(value) as object;
   }
 }

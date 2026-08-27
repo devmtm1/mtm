@@ -35,12 +35,12 @@ défaut) sont automatiquement supprimées à chaque exécution.
 0 3 * * * cd /chemin/vers/apps/api && ./scripts/backup.sh >> /var/log/mtm-backup.log 2>&1
 ```
 
-**Avec Docker** : ajouter un service dédié à `docker-compose.yml` avec la
-même image que `postgres`, un volume monté sur `BACKUP_DIR`, et une
-commande planifiée (ex: image `postgres` + un `cron` dans le conteneur,
-ou un conteneur `mcuadros/ofelia`/équivalent en superviseur externe). Non
-implémenté dans cette Phase 0 — le script `backup.sh` est prêt à être
-appelé par n'importe quel ordonnanceur.
+**Avec Docker** : le service `backup` de `docker-compose.yml` exécute le
+script toutes les `BACKUP_INTERVAL_SECONDS` secondes (24 heures par défaut),
+conserve les dumps selon `BACKUP_RETENTION_DAYS` et les place dans le volume
+Docker `mtm_backups`. En production, ce volume doit être répliqué vers un
+stockage externe ou un service de sauvegarde managé : un volume local seul ne
+protège pas contre la perte de l'hôte.
 
 ## Restauration
 

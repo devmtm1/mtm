@@ -155,22 +155,55 @@ export class TerrainsService {
     const pageSize = Math.min(query.pageSize > 0 ? query.pageSize : 25, 200);
     const where = {
       statutCommercial: 'Disponible',
-      ...(query.statutJuridique ? { statutJuridique: query.statutJuridique } : {}),
-      ...(query.niveauVerification ? { niveauVerification: query.niveauVerification } : {}),
+      ...(query.statutJuridique
+        ? { statutJuridique: query.statutJuridique }
+        : {}),
+      ...(query.niveauVerification
+        ? { niveauVerification: query.niveauVerification }
+        : {}),
       ...(query.region ? { region: query.region } : {}),
       ...(query.commune ? { commune: query.commune } : {}),
       ...(query.superficieMin !== undefined || query.superficieMax !== undefined
-        ? { superficie: { ...(query.superficieMin !== undefined ? { gte: query.superficieMin } : {}), ...(query.superficieMax !== undefined ? { lte: query.superficieMax } : {}) } }
+        ? {
+            superficie: {
+              ...(query.superficieMin !== undefined
+                ? { gte: query.superficieMin }
+                : {}),
+              ...(query.superficieMax !== undefined
+                ? { lte: query.superficieMax }
+                : {}),
+            },
+          }
         : {}),
       ...(query.prixPublicMin !== undefined || query.prixPublicMax !== undefined
-        ? { prixPublic: { ...(query.prixPublicMin !== undefined ? { gte: query.prixPublicMin } : {}), ...(query.prixPublicMax !== undefined ? { lte: query.prixPublicMax } : {}) } }
+        ? {
+            prixPublic: {
+              ...(query.prixPublicMin !== undefined
+                ? { gte: query.prixPublicMin }
+                : {}),
+              ...(query.prixPublicMax !== undefined
+                ? { lte: query.prixPublicMax }
+                : {}),
+            },
+          }
         : {}),
     };
     const [items, total] = await Promise.all([
-      this.prisma.terrain.findMany({ where, select: publicTerrainSelect, orderBy: { [query.sortBy]: query.sortOrder }, skip: (page - 1) * pageSize, take: pageSize }),
+      this.prisma.terrain.findMany({
+        where,
+        select: publicTerrainSelect,
+        orderBy: { [query.sortBy]: query.sortOrder },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
       this.prisma.terrain.count({ where }),
     ]);
-    return { items: items.map((item) => this.toPublic(item)), total, page, pageSize };
+    return {
+      items: items.map((item) => this.toPublic(item)),
+      total,
+      page,
+      pageSize,
+    };
   }
 
   async findPublicOne(id: string) {
@@ -197,7 +230,8 @@ export class TerrainsService {
 
   async update(id: string, dto: UpdateTerrainDto) {
     await this.ensureExists(id);
-    const { justification: _justification, ...terrainData } = dto;
+    const terrainData = { ...dto };
+    delete terrainData.justification;
     const terrain = await this.prisma.terrain.update({
       where: { id },
       data: terrainData as unknown as Prisma.TerrainUncheckedUpdateInput,
@@ -227,40 +261,99 @@ export class TerrainsService {
       this.settings.getRawValue('terrains.statutCommercial'),
     ]);
     return {
-      statutJuridique: this.asOptions(legal, ['Titre foncier', 'Bail', 'Délibération', 'Morcellement', 'Régularisation en cours']),
-      niveauVerification: this.asOptions(verification, ['Non vérifié', 'En cours', 'Vérifié', 'À compléter']),
-      statutCommercial: this.asOptions(commercial, ['Brouillon', 'Disponible', 'Réservé', 'Vendu', 'Suspendu']),
+      statutJuridique: this.asOptions(legal, [
+        'Titre foncier',
+        'Bail',
+        'Délibération',
+        'Morcellement',
+        'Régularisation en cours',
+      ]),
+      niveauVerification: this.asOptions(verification, [
+        'Non vérifié',
+        'En cours',
+        'Vérifié',
+        'À compléter',
+      ]),
+      statutCommercial: this.asOptions(commercial, [
+        'Brouillon',
+        'Disponible',
+        'Réservé',
+        'Vendu',
+        'Suspendu',
+      ]),
     };
   }
 
-  async addMedia(id: string, dto: CreateTerrainAssetDto, file: Express.Multer.File) {
+  async addMedia(
+    id: string,
+    dto: CreateTerrainAssetDto,
+    file: Express.Multer.File,
+  ) {
     await this.ensureExists(id);
-    const uploaded = await this.cloudinary.upload(file, `mtm/terrains/${id}/media`, dto.isPublic ?? false);
+    const uploaded = await this.cloudinary.upload(
+      file,
+      `mtm/terrains/${id}/media`,
+      dto.isPublic ?? false,
+    );
     return this.prisma.terrainMedia.create({
-      data: { terrainId: id, type: dto.type, title: dto.title, isPublic: dto.isPublic ?? false, storageKey: uploaded.publicId, resourceType: uploaded.resourceType },
+      data: {
+        terrainId: id,
+        type: dto.type,
+        title: dto.title,
+        isPublic: dto.isPublic ?? false,
+        storageKey: uploaded.publicId,
+        resourceType: uploaded.resourceType,
+      },
     });
   }
 
-  async addDocument(id: string, dto: CreateTerrainAssetDto, file: Express.Multer.File) {
+  async addDocument(
+    id: string,
+    dto: CreateTerrainAssetDto,
+    file: Express.Multer.File,
+  ) {
     await this.ensureExists(id);
-    const uploaded = await this.cloudinary.upload(file, `mtm/terrains/${id}/documents`, dto.isPublic ?? false);
+    const uploaded = await this.cloudinary.upload(
+      file,
+      `mtm/terrains/${id}/documents`,
+      dto.isPublic ?? false,
+    );
     return this.prisma.terrainDocument.create({
-      data: { terrainId: id, type: dto.type, title: dto.title, isPublic: dto.isPublic ?? false, storageKey: uploaded.publicId, resourceType: uploaded.resourceType },
+      data: {
+        terrainId: id,
+        type: dto.type,
+        title: dto.title,
+        isPublic: dto.isPublic ?? false,
+        storageKey: uploaded.publicId,
+        resourceType: uploaded.resourceType,
+      },
     });
   }
 
   async removeMedia(id: string, mediaId: string): Promise<void> {
-    const media = await this.prisma.terrainMedia.findFirst({ where: { id: mediaId, terrainId: id } });
+    const media = await this.prisma.terrainMedia.findFirst({
+      where: { id: mediaId, terrainId: id },
+    });
     if (!media) return;
     await this.prisma.terrainMedia.delete({ where: { id: mediaId } });
-    await this.cloudinary.destroy(media.storageKey, media.resourceType, media.isPublic);
+    await this.cloudinary.destroy(
+      media.storageKey,
+      media.resourceType,
+      media.isPublic,
+    );
   }
 
   async removeDocument(id: string, documentId: string): Promise<void> {
-    const document = await this.prisma.terrainDocument.findFirst({ where: { id: documentId, terrainId: id } });
+    const document = await this.prisma.terrainDocument.findFirst({
+      where: { id: documentId, terrainId: id },
+    });
     if (!document) return;
     await this.prisma.terrainDocument.delete({ where: { id: documentId } });
-    await this.cloudinary.destroy(document.storageKey, document.resourceType, document.isPublic);
+    await this.cloudinary.destroy(
+      document.storageKey,
+      document.resourceType,
+      document.isPublic,
+    );
   }
 
   toPublic(terrain: Record<string, unknown>): Record<string, unknown> {
@@ -273,20 +366,30 @@ export class TerrainsService {
     if (Array.isArray(safe.medias)) {
       safe.medias = safe.medias.map((media: unknown) => {
         const asset = media as Record<string, unknown>;
-        const resourceType = typeof asset.resourceType === 'string' ? asset.resourceType : 'image';
+        const resourceType =
+          typeof asset.resourceType === 'string' ? asset.resourceType : 'image';
         return {
           ...asset,
-          secureUrl: this.cloudinary.url(String(asset.storageKey), resourceType, true),
+          secureUrl: this.cloudinary.url(
+            String(asset.storageKey),
+            resourceType,
+            true,
+          ),
         };
       });
     }
     if (Array.isArray(safe.documents)) {
       safe.documents = safe.documents.map((document: unknown) => {
         const asset = document as Record<string, unknown>;
-        const resourceType = typeof asset.resourceType === 'string' ? asset.resourceType : 'raw';
+        const resourceType =
+          typeof asset.resourceType === 'string' ? asset.resourceType : 'raw';
         return {
           ...asset,
-          secureUrl: this.cloudinary.url(String(asset.storageKey), resourceType, true),
+          secureUrl: this.cloudinary.url(
+            String(asset.storageKey),
+            resourceType,
+            true,
+          ),
         };
       });
     }
@@ -328,7 +431,8 @@ export class TerrainsService {
   }
 
   private asOptions(value: unknown, fallback: string[]): string[] {
-    return Array.isArray(value) && value.every((item) => typeof item === 'string')
+    return Array.isArray(value) &&
+      value.every((item) => typeof item === 'string')
       ? value
       : fallback;
   }

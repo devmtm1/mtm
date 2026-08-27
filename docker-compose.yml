@@ -66,9 +66,31 @@ services:
     networks:
       - mtm-network
 
+  backup:
+    image: postgres:16-alpine
+    container_name: mtm-backup
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-mtm_user}:${POSTGRES_PASSWORD:-change_me_in_local_env}@postgres:5432/${POSTGRES_DB:-mtm_immobilier}
+      BACKUP_DIR: /backups
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+    volumes:
+      - mtm_backups:/backups
+      - ./apps/api/scripts/backup.sh:/usr/local/bin/mtm-backup:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command: >-
+      "while true; do /usr/local/bin/mtm-backup;
+      sleep ${BACKUP_INTERVAL_SECONDS:-86400}; done"
+    networks:
+      - mtm-network
+
 networks:
   mtm-network:
     driver: bridge
 
 volumes:
   mtm_postgres_data:
+  mtm_backups:

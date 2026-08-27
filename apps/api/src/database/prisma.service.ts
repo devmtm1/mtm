@@ -21,13 +21,12 @@ export class PrismaService
   async onModuleInit(): Promise<void> {
     // $connect est typé `any` dans ce sandbox faute de `prisma generate`
     // (accès réseau bloqué, voir prisma/PRISMA_NOTES.md).
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
     await this.$connect();
     this.logger.log('Connexion à PostgreSQL établie');
   }
 
   async onModuleDestroy(): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     await this.$disconnect();
   }
 

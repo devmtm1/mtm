@@ -13,10 +13,14 @@ services:
         fromDatabase:
           name: mtm-db
           property: connectionString
-      - key: JWT_SECRET
+      - key: JWT_ACCESS_SECRET
         generateValue: true
-      - key: PORT
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: API_PORT
         value: 3000
+      - key: CORS_ORIGIN
+        sync: false
 
   - type: web
     name: mtm-backoffice
@@ -25,9 +29,6 @@ services:
     buildCommand: npm run backoffice:build
     staticPublishPath: apps/backoffice/dist/backoffice/browser
     rootDir: .
-    envVars:
-      - key: NODE_ENV
-        value: production
 
 databases:
   - name: mtm-db

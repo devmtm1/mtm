@@ -29,7 +29,7 @@ export class HealthService {
     try {
       // $queryRaw est typé `any` dans ce sandbox faute de `prisma generate`
       // (accès réseau bloqué, voir prisma/PRISMA_NOTES.md).
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
       await this.prisma.$queryRaw`SELECT 1`;
       return 'up';
     } catch (error) {

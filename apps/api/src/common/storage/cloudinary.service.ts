@@ -46,8 +46,7 @@ export class CloudinaryService {
         (error, uploaded) => {
           if (error || !uploaded) {
             reject(new Error(error?.message ?? 'Upload Cloudinary échoué'));
-          }
-          else resolve(uploaded);
+          } else resolve(uploaded);
         },
       );
       stream.end(file.buffer);
@@ -60,7 +59,11 @@ export class CloudinaryService {
     };
   }
 
-  async destroy(publicId: string, resourceType: string, isPublic: boolean): Promise<void> {
+  async destroy(
+    publicId: string,
+    resourceType: string,
+    isPublic: boolean,
+  ): Promise<void> {
     if (!this.isConfigured()) return;
     await cloudinary.uploader.destroy(publicId, {
       resource_type: resourceType,
@@ -81,8 +84,8 @@ export class CloudinaryService {
   private isConfigured(): boolean {
     return Boolean(
       this.config.get('CLOUDINARY_CLOUD_NAME') &&
-        this.config.get('CLOUDINARY_API_KEY') &&
-        this.config.get('CLOUDINARY_API_SECRET'),
+      this.config.get('CLOUDINARY_API_KEY') &&
+      this.config.get('CLOUDINARY_API_SECRET'),
     );
   }
 }

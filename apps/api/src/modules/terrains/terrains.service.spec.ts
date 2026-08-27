@@ -13,8 +13,16 @@ describe('TerrainsService', () => {
       create: jest.Mock;
       update: jest.Mock;
     };
-    terrainMedia: { create: jest.Mock; findFirst: jest.Mock; delete: jest.Mock };
-    terrainDocument: { create: jest.Mock; findFirst: jest.Mock; delete: jest.Mock };
+    terrainMedia: {
+      create: jest.Mock;
+      findFirst: jest.Mock;
+      delete: jest.Mock;
+    };
+    terrainDocument: {
+      create: jest.Mock;
+      findFirst: jest.Mock;
+      delete: jest.Mock;
+    };
   };
   let cloudinaryMock: { upload: jest.Mock; url: jest.Mock; destroy: jest.Mock };
 
@@ -27,8 +35,16 @@ describe('TerrainsService', () => {
         create: jest.fn(),
         update: jest.fn(),
       },
-      terrainMedia: { create: jest.fn(), findFirst: jest.fn(), delete: jest.fn() },
-      terrainDocument: { create: jest.fn(), findFirst: jest.fn(), delete: jest.fn() },
+      terrainMedia: {
+        create: jest.fn(),
+        findFirst: jest.fn(),
+        delete: jest.fn(),
+      },
+      terrainDocument: {
+        create: jest.fn(),
+        findFirst: jest.fn(),
+        delete: jest.fn(),
+      },
     };
     cloudinaryMock = {
       upload: jest.fn().mockResolvedValue({
@@ -42,7 +58,9 @@ describe('TerrainsService', () => {
     service = new TerrainsService(
       prismaMock as unknown as PrismaService,
       cloudinaryMock as unknown as CloudinaryService,
-      { getRawValue: jest.fn() } as unknown as import('../settings/settings.service').SettingsService,
+      {
+        getRawValue: jest.fn(),
+      } as unknown as import('../settings/settings.service').SettingsService,
     );
   });
 
@@ -64,9 +82,9 @@ describe('TerrainsService', () => {
   it('lève une erreur si le terrain à modifier est introuvable', async () => {
     prismaMock.terrain.findUnique.mockResolvedValue(null);
 
-    await expect(service.update('missing', { nom: 'Nouveau nom' })).rejects.toThrow(
-      NotFoundException,
-    );
+    await expect(
+      service.update('missing', { nom: 'Nouveau nom' }),
+    ).rejects.toThrow(NotFoundException);
   });
 
   it('retire les champs internes de la projection publique', () => {
@@ -81,12 +99,19 @@ describe('TerrainsService', () => {
       proprietaire: { lastName: 'Sensible' },
     });
 
-    expect(result).toEqual({ id: 't1', nom: 'Terrain public', prixPublic: 1000000 });
+    expect(result).toEqual({
+      id: 't1',
+      nom: 'Terrain public',
+      prixPublic: 1000000,
+    });
   });
 
   it('rattache un média au terrain existant', async () => {
     prismaMock.terrain.findUnique.mockResolvedValue({ id: 't1' });
-    prismaMock.terrainMedia.create.mockResolvedValue({ id: 'm1', terrainId: 't1' });
+    prismaMock.terrainMedia.create.mockResolvedValue({
+      id: 'm1',
+      terrainId: 't1',
+    });
 
     const result = await service.addMedia(
       't1',

@@ -40,8 +40,8 @@ export class AuthController {
   @Public()
   @Throttle({
     default: {
-      limit: parseInt(process.env.LOGIN_RATE_LIMIT_MAX ?? '5', 10),
-      ttl: parseInt(process.env.LOGIN_RATE_LIMIT_TTL ?? '60', 10) * 1000,
+      limit: Number.parseInt(process.env.LOGIN_RATE_LIMIT_MAX ?? '5', 10),
+      ttl: Number.parseInt(process.env.LOGIN_RATE_LIMIT_TTL ?? '60', 10) * 1000,
     },
   })
   @Post('login')

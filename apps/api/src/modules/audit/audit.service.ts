@@ -111,8 +111,6 @@ export class AuditService {
 
   private toJson(value: unknown) {
     if (value === undefined || value === null) return undefined;
-    // Prisma attend un JSON sérialisable ; on passe par JSON.stringify/parse
-    // pour éliminer les valeurs non sérialisables (undefined imbriqués, etc.)
-    return JSON.parse(JSON.stringify(value)) as object;
+    return structuredClone(value);
   }
 }

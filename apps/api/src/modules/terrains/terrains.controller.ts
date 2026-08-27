@@ -112,7 +112,14 @@ export class TerrainsController {
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    return this.updateStatus(id, 'statutJuridique', dto.value, dto.justification, user, req);
+    return this.updateStatus(
+      id,
+      'statutJuridique',
+      dto.value,
+      dto.justification,
+      user,
+      req,
+    );
   }
   @Patch(':id/verification-status')
   @RequirePermissions('terrains:valider')
@@ -122,7 +129,14 @@ export class TerrainsController {
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    return this.updateStatus(id, 'niveauVerification', dto.value, dto.justification, user, req);
+    return this.updateStatus(
+      id,
+      'niveauVerification',
+      dto.value,
+      dto.justification,
+      user,
+      req,
+    );
   }
   @Patch(':id/commercial-status')
   @RequirePermissions('terrains:modifier')
@@ -132,7 +146,14 @@ export class TerrainsController {
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    return this.updateStatus(id, 'statutCommercial', dto.value, dto.justification, user, req);
+    return this.updateStatus(
+      id,
+      'statutCommercial',
+      dto.value,
+      dto.justification,
+      user,
+      req,
+    );
   }
 
   private async updateStatus(
@@ -168,9 +189,16 @@ export class TerrainsController {
     @UploadedFile() file: Express.Multer.File | undefined,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    if (!file) throw new BadRequestException('Un fichier média est obligatoire');
+    if (!file)
+      throw new BadRequestException('Un fichier média est obligatoire');
     const media = await this.terrains.addMedia(id, dto, file);
-    await this.audit.record({ userId: user.id, action: 'terrain.media.created', entityType: 'TerrainMedia', entityId: media.id, newValue: { terrainId: id, type: dto.type } });
+    await this.audit.record({
+      userId: user.id,
+      action: 'terrain.media.created',
+      entityType: 'TerrainMedia',
+      entityId: media.id,
+      newValue: { terrainId: id, type: dto.type },
+    });
     return media;
   }
 
@@ -185,23 +213,47 @@ export class TerrainsController {
   ) {
     if (!file) throw new BadRequestException('Un document est obligatoire');
     const document = await this.terrains.addDocument(id, dto, file);
-    await this.audit.record({ userId: user.id, action: 'terrain.document.created', entityType: 'TerrainDocument', entityId: document.id, newValue: { terrainId: id, type: dto.type } });
+    await this.audit.record({
+      userId: user.id,
+      action: 'terrain.document.created',
+      entityType: 'TerrainDocument',
+      entityId: document.id,
+      newValue: { terrainId: id, type: dto.type },
+    });
     return document;
   }
 
   @Delete(':id/media/:mediaId')
   @RequirePermissions('terrains:modifier')
-  async removeMedia(@Param('id', ParseUUIDPipe) id: string, @Param('mediaId', ParseUUIDPipe) mediaId: string, @CurrentUser() user: AuthenticatedUser) {
+  async removeMedia(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('mediaId', ParseUUIDPipe) mediaId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
     await this.terrains.removeMedia(id, mediaId);
-    await this.audit.record({ userId: user.id, action: 'terrain.media.deleted', entityType: 'TerrainMedia', entityId: mediaId });
+    await this.audit.record({
+      userId: user.id,
+      action: 'terrain.media.deleted',
+      entityType: 'TerrainMedia',
+      entityId: mediaId,
+    });
     return { success: true };
   }
 
   @Delete(':id/documents/:documentId')
   @RequirePermissions('terrains:modifier')
-  async removeDocument(@Param('id', ParseUUIDPipe) id: string, @Param('documentId', ParseUUIDPipe) documentId: string, @CurrentUser() user: AuthenticatedUser) {
+  async removeDocument(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('documentId', ParseUUIDPipe) documentId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
     await this.terrains.removeDocument(id, documentId);
-    await this.audit.record({ userId: user.id, action: 'terrain.document.deleted', entityType: 'TerrainDocument', entityId: documentId });
+    await this.audit.record({
+      userId: user.id,
+      action: 'terrain.document.deleted',
+      entityType: 'TerrainDocument',
+      entityId: documentId,
+    });
     return { success: true };
   }
 }

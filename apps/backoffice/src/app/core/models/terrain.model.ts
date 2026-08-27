@@ -8,20 +8,22 @@ export interface TerrainListItem {
   niveauVerification: string;
   region: string | null;
   commune: string | null;
-  superficie: number | string | null;
-  prixPublic: number | string | null;
+  superficie: NumericOrString;
+  prixPublic: NumericOrString;
   statutCommercial: string;
   medias?: TerrainMedia[];
 }
 
+export type NumericOrString = number | string | null;
+
 export interface TerrainDetail extends TerrainListItem {
   localisationDetail: string | null;
-  latitude: number | string | null;
-  longitude: number | string | null;
+  latitude: NumericOrString;
+  longitude: NumericOrString;
   dimensions: unknown;
-  prixAcquisition: number | string | null;
-  marge: number | string | null;
-  commission: number | string | null;
+  prixAcquisition: NumericOrString;
+  marge: NumericOrString;
+  commission: NumericOrString;
   accesRoutier: string | null;
   eauDisponible: boolean | null;
   electriciteDisponible: boolean | null;

@@ -8,6 +8,6 @@ export interface AppConfig {
 
 export default registerAs('app', (): AppConfig => ({
   nodeEnv: process.env.NODE_ENV ?? 'development',
-  port: parseInt(process.env.API_PORT ?? '3001', 10),
+  port: Number.parseInt(process.env.API_PORT ?? process.env.PORT ?? '3001', 10),
   corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:4200',
 }));

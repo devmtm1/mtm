@@ -7,6 +7,7 @@
 | `postgres` | Base de données PostgreSQL 16 | 5432 |
 | `api` | Backend NestJS (dev, hot-reload) | 3000 |
 | `backoffice` | Back-office Angular (dev, hot-reload) | 4200 |
+| `backup` | Sauvegarde PostgreSQL planifiée | aucun |
 
 ## Démarrage
 
@@ -36,6 +37,8 @@ docker compose down -v       # supprime aussi les volumes (⚠️ perte des donn
   conteneur lancé.
 - Le healthcheck de `api` interroge `/api/health` (endpoint mis en place
   à l'étape 3 — bootstrap NestJS).
+- Le service `backup` exécute une sauvegarde toutes les 24 heures par défaut.
+  Ajuster `BACKUP_INTERVAL_SECONDS` et `BACKUP_RETENTION_DAYS` dans `.env`.
 - **Avant l'étape 3 (NestJS) et l'étape 10 (Angular)**, les services `api`
   et `backoffice` ne peuvent pas encore être construits : leurs
   `Dockerfile.dev` référencent un `package.json` d'application qui n'existe

@@ -40,7 +40,10 @@ export class CreateTerrainDto {
   longitude?: number;
   @ApiPropertyOptional() @IsOptional() @IsNumber() @Min(0) superficie?: number;
   @ApiPropertyOptional() @IsOptional() @IsString() uniteSuperficie?: string;
-  @ApiPropertyOptional() @IsOptional() @IsObject() dimensions?: Record<string, unknown>;
+  @ApiPropertyOptional() @IsOptional() @IsObject() dimensions?: Record<
+    string,
+    unknown
+  >;
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()

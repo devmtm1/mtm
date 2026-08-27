@@ -144,6 +144,10 @@ export class UsersService {
     });
   }
 
+  async resetTwoFactor(userId: string): Promise<User> {
+    return await this.disableTwoFactor(userId);
+  }
+
   async changePassword(userId: string, hashedPassword: string): Promise<User> {
     return await this.prisma.user.update({
       where: { id: userId },
@@ -202,7 +206,12 @@ export class UsersService {
   }
 
   async update(userId: string, dto: UpdateUserDto): Promise<UserWithRoles> {
-    const data: { email?: string; firstName?: string; lastName?: string; password?: string } = {};
+    const data: {
+      email?: string;
+      firstName?: string;
+      lastName?: string;
+      password?: string;
+    } = {};
     if (dto.email) data.email = dto.email;
     if (dto.firstName) data.firstName = dto.firstName;
     if (dto.lastName) data.lastName = dto.lastName;
@@ -210,7 +219,9 @@ export class UsersService {
     await this.prisma.user.update({ where: { id: userId }, data });
     if (dto.roleId) {
       await this.prisma.userRole.deleteMany({ where: { userId } });
-      await this.prisma.userRole.create({ data: { userId, roleId: dto.roleId } });
+      await this.prisma.userRole.create({
+        data: { userId, roleId: dto.roleId },
+      });
     }
     return (await this.findById(userId))!;
   }

@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { createHash, randomBytes } from 'node:crypto';
 import * as bcrypt from 'bcrypt';
-import * as crypto from 'crypto';
 import type { AuthConfig } from '../../config/auth.config';
 import { parseDurationToMs } from '../../common/utils/duration.util';
 import { PrismaService } from '../../database/prisma.service';
@@ -58,7 +58,7 @@ export class AuthService {
       throw new UnauthorizedException(invalidCredentialsMessage);
     }
 
-    if (!user.isActive) {
+    if (!user?.isActive) {
       await this.recordAudit(user.id, 'auth.login.rejected_inactive', context);
       throw new ForbiddenException('Ce compte a été désactivé');
     }
@@ -134,7 +134,7 @@ export class AuthService {
     }
 
     const user = await this.usersService.findById(existing.userId);
-    if (!user || !user.isActive) {
+    if (!user?.isActive) {
       throw new UnauthorizedException('Compte introuvable ou désactivé');
     }
 
@@ -274,7 +274,7 @@ export class AuthService {
     userId: string,
     context: RequestContext,
   ): Promise<string> {
-    const rawToken = crypto.randomBytes(64).toString('hex');
+    const rawToken = randomBytes(64).toString('hex');
     const tokenHash = this.hashToken(rawToken);
     const expiresAt = new Date(
       Date.now() + parseDurationToMs(this.authConfig.jwtRefreshExpiresIn),
@@ -294,7 +294,7 @@ export class AuthService {
   }
 
   private hashToken(rawToken: string): string {
-    return crypto.createHash('sha256').update(rawToken).digest('hex');
+    return createHash('sha256').update(rawToken).digest('hex');
   }
 
   private toAuthenticatedUser(user: UserWithRoles) {
