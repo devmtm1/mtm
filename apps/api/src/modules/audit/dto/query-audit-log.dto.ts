@@ -19,6 +19,13 @@ export class QueryAuditLogDto {
   @IsString()
   entityType?: string;
 
+  @ApiPropertyOptional({
+    description: 'Identifiant de l’entité (ex: terrain UUID)',
+  })
+  @IsOptional()
+  @IsString()
+  entityId?: string;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()

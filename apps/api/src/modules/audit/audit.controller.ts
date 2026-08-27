@@ -16,6 +16,7 @@ export class AuditController {
       {
         userId: query.userId,
         entityType: query.entityType,
+        entityId: query.entityId,
         action: query.action,
         from: query.from ? new Date(query.from) : undefined,
         to: query.to ? new Date(query.to) : undefined,

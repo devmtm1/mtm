@@ -16,6 +16,7 @@ export interface RecordAuditInput {
 export interface AuditQueryFilters {
   userId?: string;
   entityType?: string;
+  entityId?: string;
   action?: string;
   from?: Date;
   to?: Date;
@@ -74,6 +75,7 @@ export class AuditService {
     const where = {
       ...(filters.userId ? { userId: filters.userId } : {}),
       ...(filters.entityType ? { entityType: filters.entityType } : {}),
+      ...(filters.entityId ? { entityId: filters.entityId } : {}),
       ...(filters.action ? { action: filters.action } : {}),
       ...(filters.from || filters.to
         ? {

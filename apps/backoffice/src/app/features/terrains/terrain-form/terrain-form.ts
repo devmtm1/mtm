@@ -6,15 +6,17 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin, of } from 'rxjs';
 import { LucideArrowLeft, LucideFileText, LucideImage, LucideSave, LucideTrash2, LucideUpload } from '@lucide/angular';
 import { TerrainsApiService } from '../../../core/services/api/terrains-api.service';
-import type { CreateTerrainPayload, TerrainDetail } from '../../../core/models/terrain.model';
+import type { CreateTerrainPayload, ProprietaireSummary, TerrainDetail } from '../../../core/models/terrain.model';
+import { ProprietaireDialog } from '../proprietaire-dialog';
 
 @Component({
   selector: 'app-terrain-form',
-  imports: [FormsModule, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, LucideArrowLeft, LucideFileText, LucideImage, LucideSave, LucideTrash2, LucideUpload],
+  imports: [FormsModule, ReactiveFormsModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule, LucideArrowLeft, LucideFileText, LucideImage, LucideSave, LucideTrash2, LucideUpload],
   templateUrl: './terrain-form.html',
   styleUrl: './terrain-form.scss',
 })
@@ -24,19 +26,22 @@ export class TerrainForm implements OnInit {
   private readonly api = inject(TerrainsApiService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly dialog = inject(MatDialog);
 
   protected terrainId: string | null = null;
   protected terrain: TerrainDetail | null = null;
   protected saving = false;
   protected options = { statutJuridique: [], niveauVerification: [], statutCommercial: [] } as { statutJuridique: string[]; niveauVerification: string[]; statutCommercial: string[] };
+  protected proprietaires: ProprietaireSummary[] = [];
   protected selectedAssets: SelectedAsset[] = [];
   protected readonly currentStep = signal(1);
   protected readonly form = this.formBuilder.group({
-    referenceInterne: ['', [Validators.required, Validators.maxLength(100)]], nom: ['', [Validators.required, Validators.maxLength(200)]], parcelleMatricule: [''], statutJuridique: ['Régularisation en cours', Validators.required], typeDocumentFoncier: [''], niveauVerification: ['Non vérifié', Validators.required], region: [''], commune: [''], localisationDetail: [''], latitude: [null as number | null, [Validators.min(-90), Validators.max(90)]], longitude: [null as number | null, [Validators.min(-180), Validators.max(180)]], superficie: [null as number | null, Validators.min(0)], uniteSuperficie: ['m²'], dimensions: [''], prixAcquisition: [null as number | null, Validators.min(0)], prixPublic: [null as number | null, Validators.min(0)], marge: [null as number | null], commission: [null as number | null, Validators.min(0)], statutCommercial: ['Brouillon', Validators.required], accesRoutier: [''], eauDisponible: [null as boolean | null], electriciteDisponible: [null as boolean | null], voisinage: [''], vocation: [''], proximiteAxes: [''], notesInternes: [''],
+    referenceInterne: ['', [Validators.required, Validators.maxLength(100)]], nom: ['', [Validators.required, Validators.maxLength(200)]], parcelleMatricule: [''], proprietaireId: [''], statutJuridique: ['Régularisation en cours', Validators.required], typeDocumentFoncier: [''], niveauVerification: ['Non vérifié', Validators.required], region: [''], commune: [''], localisationDetail: [''], latitude: [null as number | null, [Validators.min(-90), Validators.max(90)]], longitude: [null as number | null, [Validators.min(-180), Validators.max(180)]], superficie: [null as number | null, Validators.min(0)], uniteSuperficie: ['m²'], dimensions: [''], prixAcquisition: [null as number | null, Validators.min(0)], prixPublic: [null as number | null, Validators.min(0)], marge: [null as number | null], commission: [null as number | null, Validators.min(0)], statutCommercial: ['Brouillon', Validators.required], accesRoutier: [''], eauDisponible: [null as boolean | null], electriciteDisponible: [null as boolean | null], voisinage: [''], vocation: [''], proximiteAxes: [''], notesInternes: [''],
   });
 
   ngOnInit(): void {
     this.api.getOptions().subscribe({ next: (options) => { this.options = options; } });
+    this.api.getProprietaires().subscribe({ next: (proprietaires) => { this.proprietaires = proprietaires; } });
     this.terrainId = this.route.snapshot.paramMap.get('id');
     if (this.terrainId) {
       this.api.findOne(this.terrainId).subscribe({ next: (terrain) => { this.terrain = terrain; this.form.patchValue(this.toFormValue(terrain)); }, error: () => this.goBack() });
@@ -78,17 +83,28 @@ export class TerrainForm implements OnInit {
 
   protected removeAsset(index: number): void { this.selectedAssets.splice(index, 1); }
 
+  protected addProprietaire(): void {
+    const ref = this.dialog.open(ProprietaireDialog, { width: '520px', maxWidth: 'calc(100vw - 32px)' });
+    ref.afterClosed().subscribe((payload: Omit<ProprietaireSummary, 'id'> | undefined) => {
+      if (!payload) return;
+      this.api.createProprietaire(payload).subscribe({
+        next: (proprietaire) => { this.proprietaires = [...this.proprietaires, proprietaire].sort((a, b) => `${a.lastName}${a.firstName}`.localeCompare(`${b.lastName}${b.firstName}`)); this.form.controls.proprietaireId.setValue(proprietaire.id); this.snackBar.open('Propriétaire ajouté', 'Fermer', { duration: 3000 }); },
+        error: () => this.snackBar.open('Impossible d’ajouter le propriétaire', 'Fermer', { duration: 4000 }),
+      });
+    });
+  }
+
   protected goBack(): void { this.router.navigate(['/terrains']); }
 
   private toFormValue(terrain: TerrainDetail) {
-    return { referenceInterne: terrain.referenceInterne, nom: terrain.nom, parcelleMatricule: terrain.parcelleMatricule, statutJuridique: terrain.statutJuridique, typeDocumentFoncier: terrain.typeDocumentFoncier, niveauVerification: terrain.niveauVerification, region: terrain.region, commune: terrain.commune, localisationDetail: terrain.localisationDetail, latitude: this.toNumber(terrain.latitude), longitude: this.toNumber(terrain.longitude), superficie: this.toNumber(terrain.superficie), uniteSuperficie: 'm²', dimensions: terrain.dimensions ? JSON.stringify(terrain.dimensions) : '', prixAcquisition: this.toNumber(terrain.prixAcquisition), prixPublic: this.toNumber(terrain.prixPublic), marge: this.toNumber(terrain.marge), commission: this.toNumber(terrain.commission), statutCommercial: terrain.statutCommercial, accesRoutier: terrain.accesRoutier, eauDisponible: terrain.eauDisponible, electriciteDisponible: terrain.electriciteDisponible, voisinage: terrain.voisinage, vocation: terrain.vocation, proximiteAxes: terrain.proximiteAxes, notesInternes: terrain.notesInternes };
+    return { referenceInterne: terrain.referenceInterne, nom: terrain.nom, parcelleMatricule: terrain.parcelleMatricule, proprietaireId: terrain.proprietaire?.id ?? '', statutJuridique: terrain.statutJuridique, typeDocumentFoncier: terrain.typeDocumentFoncier, niveauVerification: terrain.niveauVerification, region: terrain.region, commune: terrain.commune, localisationDetail: terrain.localisationDetail, latitude: this.toNumber(terrain.latitude), longitude: this.toNumber(terrain.longitude), superficie: this.toNumber(terrain.superficie), uniteSuperficie: 'm²', dimensions: terrain.dimensions ? JSON.stringify(terrain.dimensions) : '', prixAcquisition: this.toNumber(terrain.prixAcquisition), prixPublic: this.toNumber(terrain.prixPublic), marge: this.toNumber(terrain.marge), commission: this.toNumber(terrain.commission), statutCommercial: terrain.statutCommercial, accesRoutier: terrain.accesRoutier, eauDisponible: terrain.eauDisponible, electriciteDisponible: terrain.electriciteDisponible, voisinage: terrain.voisinage, vocation: terrain.vocation, proximiteAxes: terrain.proximiteAxes, notesInternes: terrain.notesInternes };
   }
 
   private toNumber(value: number | string | null): number | null { return value === null ? null : Number(value); }
   private parseDimensions(value: string | null): Record<string, unknown> | undefined { if (!value?.trim()) return undefined; try { return JSON.parse(value) as Record<string, unknown>; } catch { return { description: value }; } }
   private cleanPayload(value: ReturnType<typeof this.form.getRawValue>): CreateTerrainPayload {
     const dimensions = this.parseDimensions(value.dimensions);
-    const stringFields = ['parcelleMatricule', 'typeDocumentFoncier', 'region', 'commune', 'localisationDetail', 'accesRoutier', 'voisinage', 'vocation', 'proximiteAxes', 'notesInternes', 'uniteSuperficie'] as const;
+    const stringFields = ['parcelleMatricule', 'proprietaireId', 'typeDocumentFoncier', 'region', 'commune', 'localisationDetail', 'accesRoutier', 'voisinage', 'vocation', 'proximiteAxes', 'notesInternes', 'uniteSuperficie'] as const;
     const cleaned = { ...value, dimensions } as Record<string, unknown>;
     for (const field of stringFields) {
       if (typeof cleaned[field] === 'string' && cleaned[field].trim() === '') {

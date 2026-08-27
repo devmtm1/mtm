@@ -1,0 +1,43 @@
+.proprietaire-form {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
+
+.proprietaire-form mat-form-field {
+  width: 100%;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.dialog-title {
+  margin: 0 0 16px;
+  color: var(--mtm-text-dark);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--mtm-border);
+  margin-top: 8px;
+}
+
+.error-message {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--mtm-red-primary);
+  font-size: 12px;
+}
+
+@media (min-width: 520px) {
+  .proprietaire-form mat-form-field:first-child,
+  .proprietaire-form mat-form-field:nth-child(2) {
+    width: calc(50% - 6px);
+  }
+}

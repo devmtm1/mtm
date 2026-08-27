@@ -1,0 +1,39 @@
+<h2 class="dialog-title">Historique du terrain</h2>
+
+<div class="history-body">
+  @if (loading()) {
+    <div class="history-loading">Chargement de l’historique…</div>
+  } @else if (errorMessage()) {
+    <div class="history-error">{{ errorMessage() }}</div>
+  } @else if (history().length === 0) {
+    <div class="history-empty">
+      Aucune action enregistrée dans le journal d’audit pour ce terrain.
+    </div>
+  } @else {
+    <ul class="history-list">
+      @for (entry of history(); track entry.id) {
+        <li class="history-item">
+          <div class="history-item__action">{{ formatAction(entry.action) }}</div>
+          <div class="history-item__meta">
+            <span class="history-item__date">{{ entry.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+            @if (entry.user) {
+              <span class="history-item__user">{{ entry.user.firstName }} {{ entry.user.lastName }}</span>
+            } @else {
+              <span class="history-item__user">Système</span>
+            }
+          </div>
+          @if (entry.justification) {
+            <div class="history-item__justification">{{ entry.justification }}</div>
+          }
+        </li>
+      }
+    </ul>
+  }
+</div>
+
+<footer class="dialog-actions">
+  <button mat-button type="button" (click)="close()">
+    <svg lucideX aria-hidden="true"></svg>
+    Fermer
+  </button>
+</footer>

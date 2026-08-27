@@ -1,3 +1,14 @@
+export type NumericOrString = number | string | null;
+
+export interface ProprietaireSummary {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  phone: string | null;
+  notes: string | null;
+}
+
 export interface TerrainListItem {
   id: string;
   referenceInterne: string;
@@ -14,8 +25,6 @@ export interface TerrainListItem {
   medias?: TerrainMedia[];
 }
 
-export type NumericOrString = number | string | null;
-
 export interface TerrainDetail extends TerrainListItem {
   localisationDetail: string | null;
   latitude: NumericOrString;
@@ -31,6 +40,8 @@ export interface TerrainDetail extends TerrainListItem {
   vocation: string | null;
   proximiteAxes: string | null;
   notesInternes: string | null;
+  proprietaire: ProprietaireSummary | null;
+  commercialResponsable: { id: string; firstName: string; lastName: string } | null;
   createdAt: string;
   updatedAt: string;
   medias: TerrainMedia[];
@@ -84,6 +95,7 @@ export interface CreateTerrainPayload {
   referenceInterne: string;
   nom: string;
   parcelleMatricule?: string;
+  proprietaireId?: string;
   statutJuridique: string;
   typeDocumentFoncier?: string;
   niveauVerification: string;

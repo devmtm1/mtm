@@ -2,15 +2,17 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { LucideArrowLeft, LucidePencil, LucideFileText, LucideMapPin, LucideImage } from '@lucide/angular';
+import { LucideArrowLeft, LucidePencil, LucideFileText, LucideMapPin, LucideImage, LucideClock } from '@lucide/angular';
 import { TerrainsApiService } from '../../../core/services/api/terrains-api.service';
 import { SessionService } from '../../../core/services/session.service';
+import { TerrainHistoryDialog } from '../terrain-history-dialog';
 import type { TerrainDetail as TerrainDetailModel } from '../../../core/models/terrain.model';
 
 @Component({
   selector: 'app-terrain-detail',
-  imports: [DatePipe, MatButtonModule, LucideArrowLeft, LucidePencil, LucideFileText, LucideMapPin, LucideImage],
+  imports: [DatePipe, MatButtonModule, MatDialogModule, LucideArrowLeft, LucidePencil, LucideFileText, LucideMapPin, LucideImage, LucideClock],
   templateUrl: './terrain-detail.html',
   styleUrl: './terrain-detail.scss',
 })
@@ -20,6 +22,7 @@ export class TerrainDetail implements OnInit {
   private readonly api = inject(TerrainsApiService);
   private readonly session = inject(SessionService);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly dialog = inject(MatDialog);
 
   protected terrain: TerrainDetailModel | null = null;
   protected readonly loading = signal(true);
@@ -33,6 +36,14 @@ export class TerrainDetail implements OnInit {
 
   protected goBack(): void { this.router.navigate(['/terrains']); }
   protected edit(): void { if (this.terrain) this.router.navigate(['/terrains', this.terrain.id, 'modifier']); }
+  protected openHistory(): void {
+    if (!this.terrain) return;
+    this.dialog.open(TerrainHistoryDialog, {
+      width: '600px',
+      maxWidth: 'calc(100vw - 32px)',
+      data: { terrainId: this.terrain.id },
+    });
+  }
   protected formatMoney(value: number | string | null): string { return value === null ? '—' : `${Number(value).toLocaleString('fr-FR')} FCFA`; }
   protected formatNumber(value: number | string | null): string { return value === null ? '—' : Number(value).toLocaleString('fr-FR'); }
   protected primaryImage(): string | null { return this.terrain?.medias.find((media) => media.resourceType === 'image' && media.secureUrl)?.secureUrl ?? null; }

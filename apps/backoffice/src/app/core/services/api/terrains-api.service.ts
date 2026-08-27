@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import type { CreateTerrainPayload, TerrainDetail, TerrainOptions, TerrainPage, TerrainQuery } from '../../models/terrain.model';
+import type { CreateTerrainPayload, TerrainDetail, TerrainOptions, TerrainPage, TerrainQuery, ProprietaireSummary } from '../../models/terrain.model';
 
 @Injectable({ providedIn: 'root' })
 export class TerrainsApiService {
@@ -25,6 +25,24 @@ export class TerrainsApiService {
     return this.http.get<TerrainOptions>(`${this.baseUrl}/options`);
   }
 
+  getProprietaires(): Observable<ProprietaireSummary[]> {
+    return this.http.get<ProprietaireSummary[]>(`${environment.apiUrl}/proprietaires`);
+  }
+
+  createProprietaire(payload: Omit<ProprietaireSummary, 'id'>): Observable<ProprietaireSummary> {
+    return this.http.post<ProprietaireSummary>(`${environment.apiUrl}/proprietaires`, payload);
+  }
+
+  updateProprietaire(id: string, payload: Partial<Omit<ProprietaireSummary, 'id'>>): Observable<ProprietaireSummary> {
+    return this.http.patch<ProprietaireSummary>(`${environment.apiUrl}/proprietaires/${id}`, payload);
+  }
+
+  getHistory(id: string): Observable<{ items: AuditHistoryItem[] }> {
+    return this.http.get<{ items: AuditHistoryItem[] }>(`${environment.apiUrl}/audit`, {
+      params: { entityType: 'Terrain', entityId: id, pageSize: '100' },
+    });
+  }
+
   create(payload: CreateTerrainPayload): Observable<TerrainDetail> {
     return this.http.post<TerrainDetail>(this.baseUrl, payload);
   }
@@ -41,4 +59,14 @@ export class TerrainsApiService {
     formData.append('isPublic', String(isPublic));
     return this.http.post<unknown>(`${this.baseUrl}/${id}/${kind}`, formData);
   }
+}
+
+export interface AuditHistoryItem {
+  id: string;
+  action: string;
+  oldValue: unknown;
+  newValue: unknown;
+  justification: string | null;
+  createdAt: string;
+  user: { firstName: string; lastName: string } | null;
 }
