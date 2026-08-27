@@ -140,6 +140,9 @@ describe('Parcours critique Phase 0 (e2e)', () => {
   let createdUserId: string;
 
   it('étape 2 — création d’un nouvel utilisateur', async () => {
+    const commercialRole = fakePrisma.seedRole('commercial_test');
+    commercialRoleId = commercialRole.id;
+
     const response = await request(app.getHttpServer())
       .post('/api/users')
       .set('Authorization', `Bearer ${accessToken}`)
@@ -148,6 +151,7 @@ describe('Parcours critique Phase 0 (e2e)', () => {
         password: 'MotDePasseSecurise123!',
         firstName: 'Fatou',
         lastName: 'Diop',
+        roleId: commercialRoleId,
       });
 
     expect(response.status).toBe(201);
@@ -180,10 +184,7 @@ describe('Parcours critique Phase 0 (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .send({ name: 'commercial_test', description: 'Rôle de test e2e' });
 
-    if (roleResponse.status === 403) {
-      const role = fakePrisma.seedRole('commercial_test');
-      commercialRoleId = role.id;
-    } else {
+    if (roleResponse.status === 201) {
       commercialRoleId = roleResponse.body.id;
     }
 

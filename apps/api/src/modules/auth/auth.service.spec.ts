@@ -319,7 +319,7 @@ describe('AuthService', () => {
         ...baseUser,
         password: hashedPassword,
       });
-      usersService.changePassword.mockResolvedValue({});
+      usersService.changePassword.mockResolvedValue(baseUser);
 
       await service.changePassword(
         baseUser.id,
@@ -354,7 +354,7 @@ describe('AuthService', () => {
         ...baseUser,
         password: hashedPassword,
       });
-      usersService.disableTwoFactor.mockResolvedValue({});
+      usersService.disableTwoFactor.mockResolvedValue(baseUser);
 
       await service.disableTwoFactor(baseUser.id, 'bon-mot-de-passe');
 

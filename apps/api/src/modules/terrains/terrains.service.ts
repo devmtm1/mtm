@@ -263,7 +263,7 @@ export class TerrainsService {
     await this.cloudinary.destroy(document.storageKey, document.resourceType, document.isPublic);
   }
 
-  toPublic(terrain: Record<string, unknown>) {
+  toPublic(terrain: Record<string, unknown>): Record<string, unknown> {
     const safe = { ...terrain };
     delete safe.prixAcquisition;
     delete safe.marge;
@@ -271,16 +271,24 @@ export class TerrainsService {
     delete safe.notesInternes;
     delete safe.proprietaire;
     if (Array.isArray(safe.medias)) {
-      safe.medias = safe.medias.map((media) => ({
-        ...media,
-        secureUrl: this.cloudinary.url(String(media.storageKey), String(media.resourceType ?? 'image'), true),
-      }));
+      safe.medias = safe.medias.map((media: unknown) => {
+        const asset = media as Record<string, unknown>;
+        const resourceType = typeof asset.resourceType === 'string' ? asset.resourceType : 'image';
+        return {
+          ...asset,
+          secureUrl: this.cloudinary.url(String(asset.storageKey), resourceType, true),
+        };
+      });
     }
     if (Array.isArray(safe.documents)) {
-      safe.documents = safe.documents.map((document) => ({
-        ...document,
-        secureUrl: this.cloudinary.url(String(document.storageKey), String(document.resourceType ?? 'raw'), true),
-      }));
+      safe.documents = safe.documents.map((document: unknown) => {
+        const asset = document as Record<string, unknown>;
+        const resourceType = typeof asset.resourceType === 'string' ? asset.resourceType : 'raw';
+        return {
+          ...asset,
+          secureUrl: this.cloudinary.url(String(asset.storageKey), resourceType, true),
+        };
+      });
     }
     return safe;
   }
@@ -294,10 +302,10 @@ export class TerrainsService {
   }
 
   private toInternal<T extends Record<string, unknown>>(terrain: T): T {
-    const value = terrain as T & {
+    const value: T & {
       medias?: Array<Record<string, unknown>>;
       documents?: Array<Record<string, unknown>>;
-    };
+    } = terrain;
     return {
       ...terrain,
       medias: value.medias?.map((asset) => ({
@@ -316,7 +324,7 @@ export class TerrainsService {
           Boolean(asset.isPublic),
         ),
       })),
-    } as T;
+    };
   }
 
   private asOptions(value: unknown, fallback: string[]): string[] {

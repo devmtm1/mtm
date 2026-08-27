@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: starter
     buildCommand: npm run api:build
-    startCommand: node apps/api/dist/main
+    startCommand: node apps/api/dist/main.js
     rootDir: .
     envVars:
       - key: NODE_ENV

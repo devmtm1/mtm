@@ -32,7 +32,8 @@ export class ThemeService {
       // Le thème système reste la valeur de repli si le stockage est indisponible.
     }
 
-    return this.document.defaultView?.matchMedia('(prefers-color-scheme: dark)').matches
+    const prefersDark = this.document.defaultView?.matchMedia?.('(prefers-color-scheme: dark)').matches;
+    return prefersDark
       ? 'dark'
       : 'light';
   }

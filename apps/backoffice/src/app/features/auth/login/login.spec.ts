@@ -168,7 +168,7 @@ describe('Login', () => {
     fillCredentials(fixture, 'admin@mtm-immobilier.sn', 'mauvais');
     submitForm(fixture);
 
-    const errorEl = fixture.debugElement.query(By.css('.login-error'));
+    const errorEl = fixture.debugElement.query(By.css('.login-error-box'));
     expect(errorEl.nativeElement.textContent).toContain('Identifiants invalides');
   });
 
@@ -181,7 +181,7 @@ describe('Login', () => {
     fillCredentials(fixture, 'admin@mtm-immobilier.sn', 'x');
     submitForm(fixture);
 
-    const errorEl = fixture.debugElement.query(By.css('.login-error'));
+    const errorEl = fixture.debugElement.query(By.css('.login-error-box'));
     expect(errorEl.nativeElement.textContent).toContain('Trop de tentatives');
   });
 });
