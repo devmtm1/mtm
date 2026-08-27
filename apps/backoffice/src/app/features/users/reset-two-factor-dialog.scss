@@ -1,0 +1,97 @@
+.reset-two-factor-dialog__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 24px 24px 10px;
+  color: var(--mtm-text-dark);
+  font-family: var(--mtm-font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.reset-two-factor-dialog__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  border-radius: 50%;
+  background: rgba(217, 119, 6, 0.12);
+  color: var(--mtm-warning, #d97706);
+}
+
+.reset-two-factor-dialog__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.reset-two-factor-dialog__content {
+  display: grid;
+  gap: 10px;
+  padding: 8px 24px 22px;
+  color: var(--mtm-text-muted);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.reset-two-factor-dialog__content p,
+.reset-two-factor-dialog__content strong {
+  margin: 0;
+}
+
+.reset-two-factor-dialog__content strong {
+  color: var(--mtm-text-dark);
+  overflow-wrap: anywhere;
+}
+
+.reset-two-factor-dialog__notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 4px;
+  padding: 11px 12px;
+  border: 1px solid rgba(217, 119, 6, 0.24);
+  border-radius: 8px;
+  background: rgba(217, 119, 6, 0.07);
+  color: var(--mtm-text-dark);
+  font-size: 0.78rem;
+}
+
+.reset-two-factor-dialog__notice svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  margin-top: 2px;
+  color: var(--mtm-warning, #d97706);
+}
+
+.reset-two-factor-dialog__actions {
+  min-height: 64px;
+  gap: 8px;
+  padding: 12px 24px 20px;
+  border-top: 1px solid var(--mtm-border);
+}
+
+.reset-two-factor-dialog__actions button {
+  min-width: 96px;
+}
+
+.reset-two-factor-dialog__confirm {
+  background: var(--mtm-warning, #d97706) !important;
+  color: #ffffff !important;
+}
+
+.reset-two-factor-dialog__confirm:hover {
+  background: #b45309 !important;
+}
+
+@media (max-width: 520px) {
+  .reset-two-factor-dialog__title,
+  .reset-two-factor-dialog__content,
+  .reset-two-factor-dialog__actions {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+}

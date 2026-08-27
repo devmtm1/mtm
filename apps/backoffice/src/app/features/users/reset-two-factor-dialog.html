@@ -1,0 +1,23 @@
+<h2 mat-dialog-title class="reset-two-factor-dialog__title">
+  <span class="reset-two-factor-dialog__icon">
+    <svg lucideShieldCheck aria-hidden="true"></svg>
+  </span>
+  <span>Réinitialiser le 2FA</span>
+</h2>
+
+<mat-dialog-content class="reset-two-factor-dialog__content">
+  <p>La configuration de double authentification du compte suivant sera désactivée :</p>
+  <strong>{{ email }}</strong>
+
+  <div class="reset-two-factor-dialog__notice" role="note">
+    <svg lucideShieldCheck aria-hidden="true"></svg>
+    <span>L’utilisateur pourra configurer un nouveau 2FA lors de sa prochaine connexion.</span>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions class="reset-two-factor-dialog__actions" align="end">
+  <button mat-button type="button" (click)="cancel()">Annuler</button>
+  <button mat-flat-button class="reset-two-factor-dialog__confirm" type="button" (click)="confirm()">
+    Réinitialiser
+  </button>
+</mat-dialog-actions>

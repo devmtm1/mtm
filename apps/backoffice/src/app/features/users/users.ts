@@ -10,6 +10,7 @@ import { SessionService } from '../../core/services/session.service';
 import { UsersApiService } from '../../core/services/api/users-api.service';
 import type { UserListItem } from '../../core/models/user.model';
 import { DeleteUserDialog } from './delete-user-dialog';
+import { ResetTwoFactorDialog } from './reset-two-factor-dialog';
 import { UserFormDialog } from './user-form-dialog';
 
 @Component({
@@ -219,21 +220,26 @@ export class Users implements OnInit {
   }
 
   private resetTwoFactor(user: UserListItem): void {
-    const confirmed = window.confirm(
-      `Réinitialiser le 2FA de ${user.email} ? Cette action désactivera sa configuration actuelle.`,
-    );
-    if (!confirmed) return;
+    const ref = this.dialog.open(ResetTwoFactorDialog, {
+      width: '480px',
+      maxWidth: 'calc(100vw - 32px)',
+      data: user.email,
+    });
 
-    this.usersApi.resetTwoFactor(user.id).subscribe({
-      next: () => {
-        this.snackBar.open('2FA réinitialisée', 'Fermer', { duration: 3000 });
-        this.load();
-      },
-      error: () => {
-        this.snackBar.open('Réinitialisation du 2FA impossible', 'Fermer', {
-          duration: 4000,
-        });
-      },
+    ref.afterClosed().subscribe((confirmed: boolean | undefined) => {
+      if (!confirmed) return;
+
+      this.usersApi.resetTwoFactor(user.id).subscribe({
+        next: () => {
+          this.snackBar.open('2FA réinitialisée', 'Fermer', { duration: 3000 });
+          this.load();
+        },
+        error: () => {
+          this.snackBar.open('Réinitialisation du 2FA impossible', 'Fermer', {
+            duration: 4000,
+          });
+        },
+      });
     });
   }
 }
