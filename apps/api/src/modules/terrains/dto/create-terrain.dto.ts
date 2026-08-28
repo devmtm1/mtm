@@ -53,6 +53,7 @@ export class CreateTerrainDto {
   @ApiPropertyOptional() @IsOptional() @IsNumber() marge?: number;
   @ApiPropertyOptional() @IsOptional() @IsNumber() @Min(0) commission?: number;
   @ApiProperty() @IsString() statutCommercial!: string;
+  @ApiPropertyOptional() @IsOptional() @IsBoolean() misEnAvant?: boolean;
   @ApiPropertyOptional() @IsOptional() @IsString() accesRoutier?: string;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() eauDisponible?: boolean;
   @ApiPropertyOptional()

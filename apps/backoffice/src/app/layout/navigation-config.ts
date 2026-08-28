@@ -7,6 +7,7 @@ import {
   LucideSettings,
   LucideFileClock,
   LucideLandPlot,
+  LucideFileText,
 } from '@lucide/angular';
 
 /**
@@ -66,6 +67,17 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         route: '/terrains',
         icon: LucideLandPlot,
         permission: 'terrains:consulter',
+      },
+    ],
+  },
+  {
+    title: 'Contenu',
+    items: [
+      {
+        label: 'Contenus du site',
+        route: '/content',
+        icon: LucideFileText,
+        permission: 'settings:consulter',
       },
     ],
   },

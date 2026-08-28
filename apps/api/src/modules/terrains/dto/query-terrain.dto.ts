@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import {
+  IsBoolean,
   IsIn,
   IsInt,
   IsNumber,
@@ -15,6 +16,7 @@ export class QueryTerrainDto {
   @IsOptional() @IsString() statutJuridique?: string;
   @IsOptional() @IsString() niveauVerification?: string;
   @IsOptional() @IsString() statutCommercial?: string;
+  @IsOptional() @IsBoolean() misEnAvant?: boolean;
   @IsOptional() @IsString() region?: string;
   @IsOptional() @IsString() commune?: string;
   @IsOptional() @IsUUID() proprietaireId?: string;

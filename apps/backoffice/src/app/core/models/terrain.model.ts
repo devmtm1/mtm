@@ -21,7 +21,8 @@ export interface TerrainListItem {
   commune: string | null;
   superficie: NumericOrString;
   prixPublic: NumericOrString;
-  statutCommercial: string;
+   statutCommercial: string;
+  misEnAvant: boolean;
   medias?: TerrainMedia[];
 }
 
@@ -112,7 +113,8 @@ export interface CreateTerrainPayload {
   marge?: number;
   commission?: number;
   statutCommercial: string;
-  accesRoutier?: string;
+   accesRoutier?: string;
+  misEnAvant?: boolean;
   eauDisponible?: boolean;
   electriciteDisponible?: boolean;
   voisinage?: string;

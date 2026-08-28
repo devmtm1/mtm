@@ -16,6 +16,8 @@ import { AuditModule } from './modules/audit/audit.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { TerrainsModule } from './modules/terrains/terrains.module';
 import { ProprietairesModule } from './modules/proprietaires/proprietaires.module';
+import { ContactModule } from './modules/contact/contact.module';
+import { ContentBlockModule } from './modules/content/content-block.module';
 
 @Module({
   imports: [
@@ -42,6 +44,8 @@ import { ProprietairesModule } from './modules/proprietaires/proprietaires.modul
     SettingsModule,
     TerrainsModule,
     ProprietairesModule,
+    ContactModule,
+    ContentBlockModule,
     HealthModule,
   ],
   providers: [

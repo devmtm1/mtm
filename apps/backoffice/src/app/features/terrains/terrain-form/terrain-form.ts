@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -16,7 +17,7 @@ import { ProprietaireDialog } from '../proprietaire-dialog';
 
 @Component({
   selector: 'app-terrain-form',
-  imports: [FormsModule, ReactiveFormsModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule, LucideArrowLeft, LucideFileText, LucideImage, LucideSave, LucideTrash2, LucideUpload],
+  imports: [FormsModule, ReactiveFormsModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatCheckboxModule, LucideArrowLeft, LucideFileText, LucideImage, LucideSave, LucideTrash2, LucideUpload],
   templateUrl: './terrain-form.html',
   styleUrl: './terrain-form.scss',
 })
@@ -36,7 +37,7 @@ export class TerrainForm implements OnInit {
   protected selectedAssets: SelectedAsset[] = [];
   protected readonly currentStep = signal(1);
   protected readonly form = this.formBuilder.group({
-    referenceInterne: ['', [Validators.required, Validators.maxLength(100)]], nom: ['', [Validators.required, Validators.maxLength(200)]], parcelleMatricule: [''], proprietaireId: [''], statutJuridique: ['Régularisation en cours', Validators.required], typeDocumentFoncier: [''], niveauVerification: ['Non vérifié', Validators.required], region: [''], commune: [''], localisationDetail: [''], latitude: [null as number | null, [Validators.min(-90), Validators.max(90)]], longitude: [null as number | null, [Validators.min(-180), Validators.max(180)]], superficie: [null as number | null, Validators.min(0)], uniteSuperficie: ['m²'], dimensions: [''], prixAcquisition: [null as number | null, Validators.min(0)], prixPublic: [null as number | null, Validators.min(0)], marge: [null as number | null], commission: [null as number | null, Validators.min(0)], statutCommercial: ['Brouillon', Validators.required], accesRoutier: [''], eauDisponible: [null as boolean | null], electriciteDisponible: [null as boolean | null], voisinage: [''], vocation: [''], proximiteAxes: [''], notesInternes: [''],
+    referenceInterne: ['', [Validators.required, Validators.maxLength(100)]], nom: ['', [Validators.required, Validators.maxLength(200)]], parcelleMatricule: [''], proprietaireId: [''], statutJuridique: ['Régularisation en cours', Validators.required], typeDocumentFoncier: [''], niveauVerification: ['Non vérifié', Validators.required], region: [''], commune: [''], localisationDetail: [''], latitude: [null as number | null, [Validators.min(-90), Validators.max(90)]], longitude: [null as number | null, [Validators.min(-180), Validators.max(180)]], superficie: [null as number | null, Validators.min(0)], uniteSuperficie: ['m²'], dimensions: [''], prixAcquisition: [null as number | null, Validators.min(0)], prixPublic: [null as number | null, Validators.min(0)], marge: [null as number | null], commission: [null as number | null, Validators.min(0)],      statutCommercial: ['Brouillon', Validators.required], misEnAvant: [false], accesRoutier: [''], eauDisponible: [null as boolean | null], electriciteDisponible: [null as boolean | null], voisinage: [''], vocation: [''], proximiteAxes: [''], notesInternes: [''],
   });
 
   ngOnInit(): void {
@@ -97,7 +98,7 @@ export class TerrainForm implements OnInit {
   protected goBack(): void { this.router.navigate(['/terrains']); }
 
   private toFormValue(terrain: TerrainDetail) {
-    return { referenceInterne: terrain.referenceInterne, nom: terrain.nom, parcelleMatricule: terrain.parcelleMatricule, proprietaireId: terrain.proprietaire?.id ?? '', statutJuridique: terrain.statutJuridique, typeDocumentFoncier: terrain.typeDocumentFoncier, niveauVerification: terrain.niveauVerification, region: terrain.region, commune: terrain.commune, localisationDetail: terrain.localisationDetail, latitude: this.toNumber(terrain.latitude), longitude: this.toNumber(terrain.longitude), superficie: this.toNumber(terrain.superficie), uniteSuperficie: 'm²', dimensions: terrain.dimensions ? JSON.stringify(terrain.dimensions) : '', prixAcquisition: this.toNumber(terrain.prixAcquisition), prixPublic: this.toNumber(terrain.prixPublic), marge: this.toNumber(terrain.marge), commission: this.toNumber(terrain.commission), statutCommercial: terrain.statutCommercial, accesRoutier: terrain.accesRoutier, eauDisponible: terrain.eauDisponible, electriciteDisponible: terrain.electriciteDisponible, voisinage: terrain.voisinage, vocation: terrain.vocation, proximiteAxes: terrain.proximiteAxes, notesInternes: terrain.notesInternes };
+    return { referenceInterne: terrain.referenceInterne, nom: terrain.nom, parcelleMatricule: terrain.parcelleMatricule, proprietaireId: terrain.proprietaire?.id ?? '', statutJuridique: terrain.statutJuridique, typeDocumentFoncier: terrain.typeDocumentFoncier, niveauVerification: terrain.niveauVerification, region: terrain.region, commune: terrain.commune, localisationDetail: terrain.localisationDetail, latitude: this.toNumber(terrain.latitude), longitude: this.toNumber(terrain.longitude), superficie: this.toNumber(terrain.superficie), uniteSuperficie: 'm²', dimensions: terrain.dimensions ? JSON.stringify(terrain.dimensions) : '', prixAcquisition: this.toNumber(terrain.prixAcquisition), prixPublic: this.toNumber(terrain.prixPublic), marge: this.toNumber(terrain.marge), commission: this.toNumber(terrain.commission), statutCommercial: terrain.statutCommercial,     accesRoutier: terrain.accesRoutier, misEnAvant: !!terrain.misEnAvant, eauDisponible: terrain.eauDisponible, electriciteDisponible: terrain.electriciteDisponible, voisinage: terrain.voisinage, vocation: terrain.vocation, proximiteAxes: terrain.proximiteAxes, notesInternes: terrain.notesInternes };
   }
 
   private toNumber(value: number | string | null): number | null { return value === null ? null : Number(value); }

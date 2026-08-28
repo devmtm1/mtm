@@ -36,6 +36,7 @@ const publicTerrainSelect = {
   uniteSuperficie: true,
   dimensions: true,
   prixPublic: true,
+  misEnAvant: true,
   accesRoutier: true,
   eauDisponible: true,
   electriciteDisponible: true,
@@ -155,6 +156,9 @@ export class TerrainsService {
     const pageSize = Math.min(query.pageSize > 0 ? query.pageSize : 25, 200);
     const where = {
       statutCommercial: 'Disponible',
+      ...(query.misEnAvant !== undefined
+        ? { misEnAvant: query.misEnAvant }
+        : {}),
       ...(query.statutJuridique
         ? { statutJuridique: query.statutJuridique }
         : {}),

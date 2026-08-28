@@ -87,6 +87,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/audit/audit').then((m) => m.Audit),
       },
+      {
+        path: 'content',
+        canActivate: [permissionsGuard(['settings:consulter'])],
+        loadComponent: () =>
+          import('./features/content/content-blocks').then((m) => m.ContentBlocks),
+      },
     ],
   },
   { path: '**', redirectTo: 'dashboard' },

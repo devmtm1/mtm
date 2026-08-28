@@ -144,6 +144,71 @@ async function main(): Promise<void> {
     },
   });
 
+  // --- Statuts juridiques configurables (J1.1) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'terrains.statutJuridique' },
+    update: {},
+    create: {
+      key: 'terrains.statutJuridique',
+      value: ['Titre foncier', 'Bail', 'Délibération', 'Morcellement', 'Régularisation en cours'],
+      description: 'Liste des statuts juridiques configurables pour les terrains',
+      isSensitive: false,
+    },
+  });
+
+  // --- Niveaux de vérification configurables (J1.1) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'terrains.niveauVerification' },
+    update: {},
+    create: {
+      key: 'terrains.niveauVerification',
+      value: ['Non vérifié', 'En cours', 'Vérifié', 'À compléter'],
+      description: 'Liste des niveaux de vérification configurables pour les terrains',
+      isSensitive: false,
+    },
+  });
+
+  // --- Statuts commerciaux configurables (J1.1) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'terrains.statutCommercial' },
+    update: {},
+    create: {
+      key: 'terrains.statutCommercial',
+      value: ['Brouillon', 'Disponible', 'Réservé', 'Vendu', 'Suspendu'],
+      description: 'Liste des statuts commerciaux configurables pour les terrains',
+      isSensitive: false,
+    },
+   });
+
+  // --- Contenus marketing (J1.2) ---
+  const contentBlocks = [
+    { key: 'home.hero.title', title: 'Hero principal', content: 'Votre projet.\nNotre engagement.', type: 'hero', ordre: 0 },
+    { key: 'home.hero.subtitle', title: 'Sous-titre hero', content: 'Terrains vérifiés, accompagnement transparent et solutions concrètes pour investir, construire et transmettre au Sénégal.', type: 'hero', ordre: 1 },
+    { key: 'home.cta.title', title: 'CTA principal', content: 'Découvrir nos terrains', type: 'stat', ordre: 2 },
+    { key: 'about.title', title: 'Titre À propos', content: 'Une présence locale,\nune vision ouverte.', type: 'text', ordre: 10 },
+    { key: 'about.text', title: 'Texte À propos', content: 'MTM Immobilier accompagne les particuliers, les investisseurs et la diaspora dans leurs projets immobiliers au Sénégal avec une approche fondée sur la proximité et la transparence.', type: 'text', ordre: 11 },
+    { key: 'testimonial.1', title: 'Témoignage 1', content: '"Terrain idéale pour mon projet de construction. L\'équipe MTM a été à l\'écoute tout au long du processus." — Aminata D. · Dakar', type: 'testimonial', ordre: 20 },
+    { key: 'testimonial.2', title: 'Témoignage 2', content: '"Grâce à MTM Immobilier, j\'ai pu acquérir mon terrain à Saly en toute confiance." — Mamadou S. · Saly', type: 'testimonial', ordre: 21 },
+    { key: 'testimonial.3', title: 'Témoignage 3', content: '"Professionnels et réactifs. Je recommande vivement MTM pour toute démarche foncière." — Fatou N. · Thiès', type: 'testimonial', ordre: 22 },
+    { key: 'news.1.title', title: 'Actualité 1', content: 'Étapes essentielles avant d\'acheter un terrain', type: 'text', ordre: 30 },
+    { key: 'news.1.tag', title: 'Tag actualité 1', content: 'Investissement', type: 'stat', ordre: 31 },
+    { key: 'news.1.excerpt', title: 'Extrait actualité 1', content: 'Les points à vérifier pour avancer avec clarté.', type: 'text', ordre: 32 },
+    { key: 'news.2.title', title: 'Actualité 2', content: 'Investir depuis la diaspora, simplement', type: 'text', ordre: 33 },
+    { key: 'news.2.tag', title: 'Tag actualité 2', content: 'Conseil', type: 'stat', ordre: 34 },
+    { key: 'news.2.excerpt', title: 'Extrait actualité 2', content: 'Les bons réflexes pour piloter un projet à distance.', type: 'text', ordre: 35 },
+    { key: 'news.3.title', title: 'Actualité 3', content: 'Comprendre les statuts fonciers', type: 'text', ordre: 36 },
+    { key: 'news.3.tag', title: 'Tag actualité 3', content: 'Territoire', type: 'stat', ordre: 37 },
+    { key: 'news.3.excerpt', title: 'Extrait actualité 3', content: 'Un éclairage pour mieux lire les documents d\'un bien.', type: 'text', ordre: 38 },
+  ];
+
+  for (const block of contentBlocks) {
+    await prisma.contentBlock.upsert({
+      where: { key: block.key },
+      update: block,
+      create: block,
+    });
+  }
+
   console.log('Seed Phase 0 — terminé');
 }
 
