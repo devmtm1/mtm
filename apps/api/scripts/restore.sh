@@ -36,8 +36,10 @@ fi
 # Voir backup.sh : "schema" n'est pas un paramètre d'URI reconnu par
 # pg_restore (extension propre à Prisma).
 PG_URL="$(echo "$DATABASE_URL" | sed -E 's/[?&]schema=[^&]*//')"
+DB_NAME="$(echo "$PG_URL" | sed -E 's#.*/([^/?]+).*#\1#')"
 
 BACKUP_DIR="${BACKUP_DIR:-$SCRIPT_DIR/../../../backups}"
+DOCKER_POSTGRES_CONTAINER="${DOCKER_POSTGRES_CONTAINER:-mtm-postgres}"
 
 FORCE=false
 DUMP_FILE=""
@@ -75,6 +77,15 @@ if [ "$FORCE" != true ]; then
 fi
 
 echo "Restauration en cours..."
-pg_restore --clean --if-exists --no-owner --dbname="$PG_URL" "$DUMP_FILE"
+if command -v docker >/dev/null 2>&1 && docker inspect "$DOCKER_POSTGRES_CONTAINER" >/dev/null 2>&1; then
+  docker exec -i "$DOCKER_POSTGRES_CONTAINER" pg_restore \
+    --clean \
+    --if-exists \
+    --no-owner \
+    --username="${POSTGRES_USER:-mtm_user}" \
+    --dbname="$DB_NAME" < "$DUMP_FILE"
+else
+  pg_restore --clean --if-exists --no-owner --dbname="$PG_URL" "$DUMP_FILE"
+fi
 
 echo "Restauration terminée."

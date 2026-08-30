@@ -45,6 +45,7 @@ model User {
 
   roles            UserRole[]
   refreshTokens    RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
   auditLogs        AuditLog[]      @relation("AuditLogUser")
    settingsEdits    SystemSetting[] @relation("SystemSettingEditor")
    contentEdits     ContentBlock[]  @relation("ContentBlockEditor")
@@ -174,6 +175,20 @@ model RefreshToken {
 
   @@index([userId])
   @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
 }
 
 // ============================================================

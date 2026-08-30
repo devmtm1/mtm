@@ -9,13 +9,16 @@ export class ContentBlockService {
 
   async findAll() {
     return this.prisma.contentBlock.findMany({
+      where: { isActive: true },
+      select: this.publicSelect,
       orderBy: [{ type: 'asc' }, { ordre: 'asc' }],
     });
   }
 
   async findByKey(key: string) {
     const block = await this.prisma.contentBlock.findUnique({
-      where: { key },
+      where: { key, isActive: true },
+      select: this.publicSelect,
     });
     if (!block) throw new NotFoundException('Bloc de contenu introuvable');
     return block;
@@ -23,10 +26,18 @@ export class ContentBlockService {
 
   async findByType(type: string) {
     return this.prisma.contentBlock.findMany({
-      where: { type },
+      where: { type, isActive: true },
+      select: this.publicSelect,
       orderBy: { ordre: 'asc' },
     });
   }
+
+  private readonly publicSelect = {
+    key: true,
+    title: true,
+    content: true,
+    type: true,
+  } as const;
 
   async create(dto: CreateContentBlockDto, userId: string) {
     return this.prisma.contentBlock.create({

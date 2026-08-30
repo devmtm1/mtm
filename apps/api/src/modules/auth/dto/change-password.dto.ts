@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, Length } from 'class-validator';
+import { IsString, Length, Matches } from 'class-validator';
 
 export class ChangePasswordDto {
   @ApiProperty()
@@ -7,10 +7,17 @@ export class ChangePasswordDto {
   @Length(1, 200)
   currentPassword!: string;
 
-  @ApiProperty({ description: 'Au moins 6 caractères' })
+  @ApiProperty({
+    description:
+      'Au moins 12 caractères avec majuscule, minuscule, chiffre et caractère spécial',
+  })
   @IsString()
-  @Length(6, 200, {
-    message: 'Le nouveau mot de passe doit contenir au moins 6 caractères',
+  @Length(12, 200, {
+    message: 'Le nouveau mot de passe doit contenir au moins 12 caractères',
+  })
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/, {
+    message:
+      'Le nouveau mot de passe doit contenir une majuscule, une minuscule, un chiffre et un caractère spécial',
   })
   newPassword!: string;
 }

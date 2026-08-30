@@ -17,9 +17,12 @@ import { AuthService } from './auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
 import { SkipPasswordCheck } from './decorators/skip-password-check.decorator';
+import { SkipTwoFactorRequirement } from './decorators/skip-two-factor-requirement.decorator';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { DisableTwoFactorDto } from './dto/disable-two-factor.dto';
 import { LoginDto } from './dto/login.dto';
+import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { VerifyTwoFactorDto } from './dto/verify-two-factor.dto';
 import type { AuthenticatedUser } from './auth.types';
 
@@ -96,8 +99,34 @@ export class AuthController {
     return { accessToken: result.accessToken };
   }
 
+  @Public()
+  @Throttle({
+    default: { limit: 3, ttl: 60000 },
+  })
+  @Post('password-reset/request')
+  requestPasswordReset(
+    @Body() dto: RequestPasswordResetDto,
+    @Req() req: Request,
+  ) {
+    return this.authService.requestPasswordReset(dto.email, {
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+  }
+
+  @Public()
+  @Post('password-reset/confirm')
+  async resetPassword(@Body() dto: ResetPasswordDto, @Req() req: Request) {
+    await this.authService.resetPassword(dto.token, dto.newPassword, {
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    return { success: true };
+  }
+
   @Post('logout')
   @SkipPasswordCheck()
+  @SkipTwoFactorRequirement()
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const rawRefreshToken = (
       req.cookies as Record<string, string> | undefined
@@ -117,6 +146,7 @@ export class AuthController {
    */
   @Get('me')
   @SkipPasswordCheck()
+  @SkipTwoFactorRequirement()
   me(@CurrentUser() user: AuthenticatedUser): AuthenticatedUser {
     return user;
   }
@@ -127,6 +157,7 @@ export class AuthController {
    */
   @Post('change-password')
   @SkipPasswordCheck()
+  @SkipTwoFactorRequirement()
   async changePassword(
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: ChangePasswordDto,
@@ -140,11 +171,13 @@ export class AuthController {
   }
 
   @Post('2fa/setup')
+  @SkipTwoFactorRequirement()
   async setupTwoFactor(@CurrentUser() user: AuthenticatedUser) {
     return this.authService.setupTwoFactor(user.id, user.email);
   }
 
   @Post('2fa/confirm')
+  @SkipTwoFactorRequirement()
   async confirmTwoFactor(
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: VerifyTwoFactorDto,

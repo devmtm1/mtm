@@ -1,4 +1,4 @@
-# Phase 0 — Fondations techniques (Jalon J0.1) — Rapport de clôture
+# Phase 0 — Fondations techniques (Jalon J0.1) — Rapport de clôture historique
 
 Référence : section 30 du cahier des charges + planning d'exécution
 (Jalon J0.1, 3 semaines). Ce document remplace la checklist initiale et
@@ -44,11 +44,19 @@ requêtes contre l'application NestJS complète (routing, guards,
 validation, contrôleurs, services). Voir anomalie #1 pour la réserve
 concernant la couche de persistance réelle.
 
-## Explicitement hors périmètre (confirmé respecté)
+## Périmètre métier après clôture de Phase 0
 
-Terrains, propriétaires, mandats, CRM, réservations, ventes, paiements,
-commissions, gestion locative, construction, comptabilité, RH métier,
-reporting métier, site public. Aucun de ces éléments n'a été développé.
+La Phase 0 a été clôturée comme socle technique. Les travaux métier ont
+ensuite commencé conformément au planning : J1.1 (terrains) et J1.2 (site
+public) sont en cours et leurs migrations/modules ne doivent plus être
+évalués comme des éléments de Phase 0.
+
+## Périmètre métier de Phase 0 (au moment de sa clôture)
+
+Mandats, CRM, réservations, ventes, paiements, commissions, gestion locative,
+construction, comptabilité, RH métier et reporting métier étaient hors
+périmètre de la Phase 0. Les terrains, propriétaires, contacts, contenus
+marketing et site public relèvent désormais des jalons J1.1 et J1.2.
 
 ---
 
@@ -101,23 +109,32 @@ compilation et le lint ont été vérifiés. La logique métier
 correspondante côté backend, elle, est testée (66 tests unitaires + 9
 e2e).
 
+### #6 — Livraison du token de récupération à raccorder en production
+
+Le backend génère désormais des tokens de récupération à usage unique,
+expirant après 30 minutes, et révoque les sessions existantes après
+réinitialisation. En développement et en test, le token est retourné pour
+permettre la recette. En production, la réponse reste générique et le token
+doit être transmis par un fournisseur email/SMS à intégrer avant ouverture
+du parcours aux utilisateurs.
+
 ---
 
 ## Chiffres de vérification (dernière exécution)
 
-| Vérification | Résultat |
-|---|---|
-| Tests unitaires backend | 78/78 ✅ |
-| Tests e2e backend (parcours critique) | avec double Prisma ✅ |
-| Tests unitaires frontend | présents, recette complète à confirmer |
-| Build backend | ✅ propre |
-| Build frontend (production) | ✅ propre, bundle initial dans le budget |
-| Lint backend | 0 erreur, avertissements de typage de tests à réduire |
-| Lint frontend | ✅ 0 erreur |
-| Migration SQL appliquée contre PostgreSQL réel | ✅ 8 tables, 7 clés étrangères conformes |
-| **Cycle sauvegarde/restauration** | ✅ **Testé réellement** — 9/9 tables identiques après restauration (script automatisé reproductible) |
-| Workflow CI — schéma GitHub Actions | ✅ validé (0 erreur) |
-| Workflow CI — exécution réelle sur runner | ⏳ non testée (voir anomalie #3) |
+| Vérification                                   | Résultat                                                                                             |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Tests unitaires backend                        | 78/78 ✅                                                                                             |
+| Tests e2e backend (parcours critique)          | avec double Prisma ✅                                                                                |
+| Tests unitaires frontend                       | présents, recette complète à confirmer                                                               |
+| Build backend                                  | ✅ propre                                                                                            |
+| Build frontend (production)                    | ✅ propre, bundle initial dans le budget                                                             |
+| Lint backend                                   | 0 erreur, avertissements de typage de tests à réduire                                                |
+| Lint frontend                                  | ✅ 0 erreur                                                                                          |
+| Migration SQL appliquée contre PostgreSQL réel | ✅ 8 tables, 7 clés étrangères conformes                                                             |
+| **Cycle sauvegarde/restauration**              | ✅ **Testé réellement** — 9/9 tables identiques après restauration (script automatisé reproductible) |
+| Workflow CI — schéma GitHub Actions            | ✅ validé (0 erreur)                                                                                 |
+| Workflow CI — exécution réelle sur runner      | ⏳ non testée (voir anomalie #3)                                                                     |
 
 ## Actions restant à votre charge
 

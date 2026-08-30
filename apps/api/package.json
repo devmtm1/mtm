@@ -4,7 +4,8 @@
   "private": true,
   "description": "MTM Immobilier — Backend API (NestJS)",
   "scripts": {
-    "build": "prisma generate && prisma migrate deploy && prisma db seed && tsc -p tsconfig.build.json",
+    "build": "prisma generate && tsc -p tsconfig.build.json",
+    "deploy:prepare": "prisma migrate deploy && prisma db seed",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -20,7 +21,8 @@
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:seed": "ts-node prisma/seed.ts",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "audit:purge": "./scripts/purge-audit-logs.sh"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",

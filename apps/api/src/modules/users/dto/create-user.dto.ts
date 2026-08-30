@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsUUID, IsString, Length } from 'class-validator';
+import { IsEmail, IsUUID, IsString, Length, Matches } from 'class-validator';
 
 export class CreateUserDto {
   @ApiProperty({ example: 'commercial@mtm-immobilier.sn' })
@@ -8,8 +8,12 @@ export class CreateUserDto {
 
   @ApiProperty({ example: 'MotDePasseSecurise123!' })
   @IsString()
-  @Length(6, 200, {
-    message: 'Le mot de passe doit contenir au moins 6 caractères',
+  @Length(12, 200, {
+    message: 'Le mot de passe doit contenir au moins 12 caractères',
+  })
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/, {
+    message:
+      'Le mot de passe doit contenir une majuscule, une minuscule, un chiffre et un caractère spécial',
   })
   password!: string;
 

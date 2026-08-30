@@ -3,6 +3,7 @@ import { Shell } from './layout/shell';
 import { authGuard } from './core/guards/auth.guard';
 import { passwordChangeGuard } from './core/guards/password-change.guard';
 import { permissionsGuard } from './core/guards/permissions.guard';
+import { twoFactorGuard } from './core/guards/two-factor.guard';
 
 export const routes: Routes = [
   {
@@ -21,6 +22,7 @@ export const routes: Routes = [
     path: '',
     component: Shell,
     canActivate: [authGuard, passwordChangeGuard],
+    canActivateChild: [twoFactorGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {

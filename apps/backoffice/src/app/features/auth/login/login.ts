@@ -24,6 +24,13 @@ interface TwoFactorForm {
   code: FormControl<string>;
 }
 
+const SENSITIVE_ROLES = new Set([
+  'administrateur',
+  'direction',
+  'comptable',
+  'rh',
+]);
+
 @Component({
   selector: 'app-login',
   imports: [
@@ -104,9 +111,13 @@ export class Login {
           this.awaitingTwoFactor.set(true);
           return;
         }
-        const destination = response.user?.mustChangePassword
+        const user = response.user;
+        const destination = user?.mustChangePassword
           ? '/change-password'
-          : '/dashboard';
+          : user?.roles?.some((role) => SENSITIVE_ROLES.has(role)) &&
+              !user.twoFactorEnabled
+            ? '/security'
+            : '/dashboard';
         void this.router.navigate([destination]);
       },
       error: (error: unknown) => {

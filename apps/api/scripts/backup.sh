@@ -44,9 +44,11 @@ fi
 # PostgreSQL standard) : on le retire avant de l'utiliser avec les
 # outils PostgreSQL natifs.
 PG_URL="$(echo "$DATABASE_URL" | sed -E 's/[?&]schema=[^&]*//')"
+DB_NAME="$(echo "$PG_URL" | sed -E 's#.*/([^/?]+).*#\1#')"
 
 BACKUP_DIR="${BACKUP_DIR:-$SCRIPT_DIR/../../../backups}"
 BACKUP_RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-14}"
+DOCKER_POSTGRES_CONTAINER="${DOCKER_POSTGRES_CONTAINER:-mtm-postgres}"
 
 mkdir -p "$BACKUP_DIR"
 
@@ -54,7 +56,14 @@ TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 DUMP_FILE="$BACKUP_DIR/mtm_immobilier_${TIMESTAMP}.dump"
 
 echo "Sauvegarde en cours -> $DUMP_FILE"
-pg_dump --format=custom --file="$DUMP_FILE" "$PG_URL"
+if command -v docker >/dev/null 2>&1 && docker inspect "$DOCKER_POSTGRES_CONTAINER" >/dev/null 2>&1; then
+  docker exec "$DOCKER_POSTGRES_CONTAINER" pg_dump \
+    --username="${POSTGRES_USER:-mtm_user}" \
+    --dbname="$DB_NAME" \
+    --format=custom > "$DUMP_FILE"
+else
+  pg_dump --format=custom --file="$DUMP_FILE" "$PG_URL"
+fi
 
 DUMP_SIZE="$(du -h "$DUMP_FILE" | cut -f1)"
 echo "Sauvegarde terminée ($DUMP_SIZE)."

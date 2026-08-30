@@ -26,6 +26,11 @@ export interface RefreshResult {
   refreshToken: string;
 }
 
+export interface PasswordResetResult {
+  accepted: true;
+  developmentToken?: string;
+}
+
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -85,10 +90,10 @@ export class AuthService {
           message: 'Code de double authentification requis',
         };
       }
-      const codeValid = this.twoFactorService.verifyCode(
-        twoFactorCode,
+      const secret = this.twoFactorService.decryptSecret(
         user.twoFactorSecret ?? '',
       );
+      const codeValid = this.twoFactorService.verifyCode(twoFactorCode, secret);
       if (!codeValid) {
         await this.recordAudit(
           user.id,
@@ -160,6 +165,76 @@ export class AuthService {
     });
   }
 
+  async requestPasswordReset(
+    email: string,
+    context: RequestContext,
+  ): Promise<PasswordResetResult> {
+    const user = await this.usersService.findByEmail(email);
+    if (!user || !user.isActive) return { accepted: true };
+
+    const rawToken = randomBytes(32).toString('hex');
+    await this.prisma.passwordResetToken.deleteMany({
+      where: { userId: user.id, usedAt: null },
+    });
+    await this.prisma.passwordResetToken.create({
+      data: {
+        userId: user.id,
+        tokenHash: this.hashToken(rawToken),
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+      },
+    });
+    await this.recordAudit(user.id, 'auth.password_reset.requested', context);
+
+    // A mail/SMS provider will replace this development-only handoff.
+    return process.env.NODE_ENV === 'production'
+      ? { accepted: true }
+      : { accepted: true, developmentToken: rawToken };
+  }
+
+  async resetPassword(
+    rawToken: string,
+    newPassword: string,
+    context: RequestContext,
+  ): Promise<void> {
+    const token = await this.prisma.passwordResetToken.findUnique({
+      where: { tokenHash: this.hashToken(rawToken) },
+    });
+    if (!token || token.usedAt || token.expiresAt < new Date()) {
+      throw new UnauthorizedException(
+        'Jeton de récupération invalide ou expiré',
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(
+      newPassword,
+      this.authConfig.bcryptSaltRounds,
+    );
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: token.userId },
+        data: {
+          password: hashedPassword,
+          mustChangePassword: false,
+          failedLoginAttempts: 0,
+          lockedUntil: null,
+        },
+      }),
+      this.prisma.refreshToken.updateMany({
+        where: { userId: token.userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      }),
+      this.prisma.passwordResetToken.update({
+        where: { id: token.id },
+        data: { usedAt: new Date() },
+      }),
+    ]);
+    await this.recordAudit(
+      token.userId,
+      'auth.password_reset.completed',
+      context,
+    );
+  }
+
   // ============================================================
   // 2FA — activation
   // ============================================================
@@ -168,7 +243,10 @@ export class AuthService {
     const setup = await this.twoFactorService.generateSetup(email);
     // Le secret est stocké mais 2FA reste désactivé tant que l'utilisateur
     // n'a pas confirmé un code valide via confirmTwoFactorSetup().
-    await this.usersService.setTwoFactorSecret(userId, setup.secret);
+    await this.usersService.setTwoFactorSecret(
+      userId,
+      this.twoFactorService.encryptSecret(setup.secret),
+    );
     return {
       otpauthUrl: setup.otpauthUrl,
       qrCodeDataUrl: setup.qrCodeDataUrl,
@@ -183,7 +261,10 @@ export class AuthService {
       );
     }
 
-    const valid = this.twoFactorService.verifyCode(code, user.twoFactorSecret);
+    const valid = this.twoFactorService.verifyCode(
+      code,
+      this.twoFactorService.decryptSecret(user.twoFactorSecret),
+    );
     if (!valid) {
       throw new UnauthorizedException('Code invalide');
     }

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -52,6 +53,18 @@ const publicTerrainSelect = {
     where: { isPublic: true },
     orderBy: { createdAt: 'desc' as const },
   },
+} as const;
+
+const DEFAULT_TERRAIN_OPTIONS = {
+  statutJuridique: [
+    'Titre foncier',
+    'Bail',
+    'Délibération',
+    'Morcellement',
+    'Régularisation en cours',
+  ],
+  niveauVerification: ['Non vérifié', 'En cours', 'Vérifié', 'À compléter'],
+  statutCommercial: ['Brouillon', 'Disponible', 'Réservé', 'Vendu', 'Suspendu'],
 } as const;
 
 @Injectable()
@@ -225,6 +238,7 @@ export class TerrainsService {
     });
     if (existing)
       throw new ConflictException('Une référence terrain existe déjà');
+    await this.validateStatuses(dto);
     const terrain = await this.prisma.terrain.create({
       data: dto as unknown as Prisma.TerrainUncheckedCreateInput,
       include: terrainInclude,
@@ -234,6 +248,7 @@ export class TerrainsService {
 
   async update(id: string, dto: UpdateTerrainDto) {
     await this.ensureExists(id);
+    await this.validateStatuses(dto);
     const terrainData = { ...dto };
     delete terrainData.justification;
     const terrain = await this.prisma.terrain.update({
@@ -250,6 +265,7 @@ export class TerrainsService {
     value: string,
   ) {
     await this.ensureExists(id);
+    await this.validateStatuses({ [field]: value });
     const terrain = await this.prisma.terrain.update({
       where: { id },
       data: { [field]: value },
@@ -294,6 +310,7 @@ export class TerrainsService {
     file: Express.Multer.File,
   ) {
     await this.ensureExists(id);
+    this.validateFileSize(file);
     const uploaded = await this.cloudinary.upload(
       file,
       `mtm/terrains/${id}/media`,
@@ -317,6 +334,7 @@ export class TerrainsService {
     file: Express.Multer.File,
   ) {
     await this.ensureExists(id);
+    this.validateFileSize(file);
     const uploaded = await this.cloudinary.upload(
       file,
       `mtm/terrains/${id}/documents`,
@@ -406,6 +424,40 @@ export class TerrainsService {
       select: { id: true },
     });
     if (!exists) throw new NotFoundException('Terrain introuvable');
+  }
+
+  private async validateStatuses(
+    data: Partial<
+      Pick<
+        CreateTerrainDto,
+        'statutJuridique' | 'niveauVerification' | 'statutCommercial'
+      >
+    >,
+  ): Promise<void> {
+    const fields = [
+      'statutJuridique',
+      'niveauVerification',
+      'statutCommercial',
+    ] as const;
+
+    for (const field of fields) {
+      const value = data[field];
+      if (value === undefined) continue;
+      const configured = await this.settings.getRawValue(`terrains.${field}`);
+      const allowed: string[] = Array.isArray(configured)
+        ? configured.filter((item): item is string => typeof item === 'string')
+        : [...DEFAULT_TERRAIN_OPTIONS[field]];
+      if (!allowed.includes(value)) {
+        throw new BadRequestException(`Statut de terrain invalide : ${field}`);
+      }
+    }
+  }
+
+  private validateFileSize(file: Express.Multer.File): void {
+    const maxFileSize = 10 * 1024 * 1024;
+    if (file.size > maxFileSize) {
+      throw new BadRequestException('Le fichier ne doit pas dépasser 10 Mo');
+    }
   }
 
   private toInternal<T extends Record<string, unknown>>(terrain: T): T {

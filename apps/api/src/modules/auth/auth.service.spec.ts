@@ -1,4 +1,5 @@
 import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import { createHash } from 'node:crypto';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -33,6 +34,14 @@ describe('AuthService', () => {
       update: jest.Mock;
       updateMany: jest.Mock;
     };
+    passwordResetToken: {
+      deleteMany: jest.Mock;
+      create: jest.Mock;
+      findUnique: jest.Mock;
+      update: jest.Mock;
+    };
+    user: { update: jest.Mock };
+    $transaction: jest.Mock;
   };
 
   const baseUser = {
@@ -86,6 +95,14 @@ describe('AuthService', () => {
         update: jest.fn(),
         updateMany: jest.fn(),
       },
+      passwordResetToken: {
+        deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
+        create: jest.fn().mockResolvedValue({}),
+        findUnique: jest.fn(),
+        update: jest.fn().mockResolvedValue({}),
+      },
+      user: { update: jest.fn().mockResolvedValue({}) },
+      $transaction: jest.fn().mockResolvedValue([]),
     };
 
     const configService = {
@@ -110,6 +127,8 @@ describe('AuthService', () => {
     const twoFactorService = {
       verifyCode: jest.fn(),
       generateSetup: jest.fn(),
+      encryptSecret: jest.fn((secret: string) => `enc:${secret}`),
+      decryptSecret: jest.fn((secret: string) => secret),
     } as unknown as TwoFactorService;
 
     const auditService = {
@@ -359,6 +378,50 @@ describe('AuthService', () => {
       await service.disableTwoFactor(baseUser.id, 'bon-mot-de-passe');
 
       expect(usersService.disableTwoFactor).toHaveBeenCalledWith(baseUser.id);
+    });
+  });
+
+  describe('récupération de compte', () => {
+    it('répond de façon générique pour un email inconnu', async () => {
+      usersService.findByEmail.mockResolvedValue(null);
+
+      await expect(
+        service.requestPasswordReset('inconnu@mtm.sn', {}),
+      ).resolves.toEqual({ accepted: true });
+      expect(prismaMock.passwordResetToken.create).not.toHaveBeenCalled();
+    });
+
+    it('crée un token temporaire pour un compte actif hors production', async () => {
+      usersService.findByEmail.mockResolvedValue(baseUser);
+
+      const result = await service.requestPasswordReset(baseUser.email, {});
+
+      expect(result.accepted).toBe(true);
+      expect(result.developmentToken).toHaveLength(64);
+      expect(prismaMock.passwordResetToken.create).toHaveBeenCalled();
+    });
+
+    it('réinitialise le mot de passe et invalide les sessions', async () => {
+      const rawToken = 'a'.repeat(64);
+      prismaMock.passwordResetToken.findUnique.mockResolvedValue({
+        id: 'reset-1',
+        userId: baseUser.id,
+        tokenHash: createHash('sha256').update(rawToken).digest('hex'),
+        expiresAt: new Date(Date.now() + 60_000),
+        usedAt: null,
+      });
+
+      await service.resetPassword(rawToken, 'NouveauMotDePasse123!', {});
+
+      expect(prismaMock.$transaction).toHaveBeenCalled();
+      expect(prismaMock.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: baseUser.id } }),
+      );
+      expect(prismaMock.refreshToken.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { userId: baseUser.id, revokedAt: null },
+        }),
+      );
     });
   });
 });

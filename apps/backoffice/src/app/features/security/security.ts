@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { AuthService } from '../../core/services/auth.service';
 import { SessionService } from '../../core/services/session.service';
+import { Router } from '@angular/router';
 
 type TwoFactorStep = 'status' | 'setup' | 'disable';
 
@@ -32,6 +33,7 @@ interface DisableForm {
 })
 export class Security {
   private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
   protected readonly sessionService = inject(SessionService);
 
   protected readonly step = signal<TwoFactorStep>('status');
@@ -88,6 +90,7 @@ export class Security {
         this.sessionService.patchUser({ twoFactorEnabled: true });
         this.step.set('status');
         this.confirmForm.reset();
+        void this.router.navigate(['/dashboard']);
       },
       error: () => {
         this.loading.set(false);

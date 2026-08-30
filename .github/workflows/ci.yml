@@ -83,6 +83,10 @@ jobs:
         working-directory: apps/api
         run: npm run test:e2e
 
+      - name: Verify PostgreSQL-backed e2e
+        working-directory: apps/api
+        run: npm run test:e2e -- --runInBand postgres.e2e-spec.ts
+
   backoffice:
     name: Back-office (Angular)
     runs-on: ubuntu-latest

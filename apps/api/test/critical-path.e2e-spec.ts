@@ -2,6 +2,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcrypt';
 import cookieParser from 'cookie-parser';
+import { authenticator } from 'otplib';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/database/prisma.service';
@@ -28,6 +29,7 @@ describe('Parcours critique Phase 0 (e2e)', () => {
   let fakePrisma: FakePrismaService;
 
   const ADMIN_PASSWORD = 'AdminPassword123!';
+  const ADMIN_2FA_SECRET = 'JBSWY3DPEHPK3PXP';
   let adminEmail: string;
   let accessToken: string;
 
@@ -84,6 +86,8 @@ describe('Parcours critique Phase 0 (e2e)', () => {
       password: hashedPassword,
       firstName: 'Admin',
       lastName: 'MTM',
+      twoFactorEnabled: true,
+      twoFactorSecret: ADMIN_2FA_SECRET,
     });
     fakePrisma.linkUserRole(adminUser.id, adminRole.id);
   });
@@ -108,7 +112,11 @@ describe('Parcours critique Phase 0 (e2e)', () => {
   it('étape 1 — connexion de l’administrateur', async () => {
     const response = await request(app.getHttpServer())
       .post('/api/auth/login')
-      .send({ email: adminEmail, password: ADMIN_PASSWORD });
+      .send({
+        email: adminEmail,
+        password: ADMIN_PASSWORD,
+        twoFactorCode: authenticator.generate(ADMIN_2FA_SECRET),
+      });
 
     expect(response.status).toBe(201);
     expect(response.body.requiresTwoFactor).toBe(false);

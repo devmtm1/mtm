@@ -211,11 +211,19 @@ export class UsersService {
       firstName?: string;
       lastName?: string;
       password?: string;
+      mustChangePassword?: boolean;
     } = {};
     if (dto.email) data.email = dto.email;
     if (dto.firstName) data.firstName = dto.firstName;
     if (dto.lastName) data.lastName = dto.lastName;
-    if (dto.password) data.password = await bcrypt.hash(dto.password, 12);
+    if (dto.password) {
+      data.password = await bcrypt.hash(dto.password, 12);
+      data.mustChangePassword = true;
+      await this.prisma.refreshToken.updateMany({
+        where: { userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+    }
     await this.prisma.user.update({ where: { id: userId }, data });
     if (dto.roleId) {
       await this.prisma.userRole.deleteMany({ where: { userId } });

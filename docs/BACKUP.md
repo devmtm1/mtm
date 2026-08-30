@@ -8,10 +8,10 @@ premier test de restauration » et à la section 27 du cahier des charges
 
 Tous dans `apps/api/scripts/`, exécutables (`chmod +x` déjà appliqué) :
 
-| Script | Rôle |
-|---|---|
-| `backup.sh` | Sauvegarde la base (`pg_dump`, format custom compressé) |
-| `restore.sh` | Restaure une sauvegarde (`pg_restore`) |
+| Script                   | Rôle                                                                                      |
+| ------------------------ | ----------------------------------------------------------------------------------------- |
+| `backup.sh`              | Sauvegarde la base (`pg_dump`, format custom compressé)                                   |
+| `restore.sh`             | Restaure une sauvegarde (`pg_restore`)                                                    |
 | `test-backup-restore.sh` | Test de bout en bout : sauvegarde → restaure dans une base temporaire → compare → nettoie |
 
 ## Sauvegarde manuelle
@@ -31,6 +31,7 @@ défaut) sont automatiquement supprimées à chaque exécution.
 ## Sauvegarde automatique (planifiée)
 
 **Hors Docker (cron)** :
+
 ```cron
 0 3 * * * cd /chemin/vers/apps/api && ./scripts/backup.sh >> /var/log/mtm-backup.log 2>&1
 ```
@@ -63,6 +64,7 @@ cd apps/api
 ```
 
 Ce script :
+
 1. Sauvegarde la base actuelle (**sans la modifier**)
 2. Crée une base temporaire `<nom>_restore_test`
 3. Y restaure la sauvegarde
@@ -71,6 +73,7 @@ Ce script :
 6. Échoue explicitement (`exit 1`) si la comparaison ne correspond pas
 
 **Résultat de la dernière exécution (environnement de développement)** :
+
 ```
 Tables — original : 9 / restauré : 9
 ✅ Test de restauration réussi : 9 tables, structure identique.
@@ -87,3 +90,30 @@ format d'URI PostgreSQL standard) — les scripts le retirent
 automatiquement avant d'appeler les outils PostgreSQL natifs. Aucune
 action requise de votre part, mais bon à savoir si vous adaptez ces
 scripts.
+
+## Rétention des journaux d'audit
+
+La durée par défaut est de 365 jours et se configure avec
+`AUDIT_RETENTION_DAYS`. Le script suivant permet d'abord de simuler la purge :
+
+```bash
+cd apps/api
+DRY_RUN=true ./scripts/purge-audit-logs.sh
+./scripts/purge-audit-logs.sh
+```
+
+La purge est définitive et doit être planifiée selon la politique de
+conservation validée par MTM. Le mode simulation doit être utilisé avant la
+première exécution en production.
+
+Avec Docker Compose, le service `audit-retention` exécute cette purge chaque
+jour par défaut. L'intervalle se règle avec
+`AUDIT_RETENTION_INTERVAL_SECONDS`.
+
+## Récupération de compte
+
+Les endpoints `POST /api/auth/password-reset/request` et
+`POST /api/auth/password-reset/confirm` utilisent des tokens hachés, uniques
+et expirables. Le premier endpoint ne révèle jamais si l'adresse existe.
+Le token est retourné uniquement hors production pour la recette locale ; un
+fournisseur email ou SMS doit être raccordé avant la mise en production.

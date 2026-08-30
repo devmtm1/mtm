@@ -1,22 +1,23 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, ElementRef, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { LucideArrowLeft, LucidePencil, LucideFileText, LucideMapPin, LucideImage, LucideClock } from '@lucide/angular';
+import { LucideArrowLeft, LucidePencil, LucideFileText, LucideMapPin, LucideImage, LucideClock, LucideExternalLink } from '@lucide/angular';
 import { TerrainsApiService } from '../../../core/services/api/terrains-api.service';
 import { SessionService } from '../../../core/services/session.service';
 import { TerrainHistoryDialog } from '../terrain-history-dialog';
 import type { TerrainDetail as TerrainDetailModel } from '../../../core/models/terrain.model';
+import * as L from 'leaflet';
 
 @Component({
   selector: 'app-terrain-detail',
-  imports: [DatePipe, MatButtonModule, MatDialogModule, LucideArrowLeft, LucidePencil, LucideFileText, LucideMapPin, LucideImage, LucideClock],
+  imports: [DatePipe, MatButtonModule, MatDialogModule, LucideArrowLeft, LucidePencil, LucideFileText, LucideMapPin, LucideImage, LucideClock, LucideExternalLink],
   templateUrl: './terrain-detail.html',
   styleUrl: './terrain-detail.scss',
 })
-export class TerrainDetail implements OnInit {
+export class TerrainDetail implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly api = inject(TerrainsApiService);
@@ -27,11 +28,49 @@ export class TerrainDetail implements OnInit {
   protected terrain: TerrainDetailModel | null = null;
   protected readonly loading = signal(true);
   protected readonly canModify = this.session.hasPermission('terrains:modifier');
+  protected mapUrl: string | null = null;
+
+  @ViewChild('mapContainer') private mapContainer?: ElementRef<HTMLDivElement>;
+  private map: L.Map | null = null;
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) { this.goBack(); return; }
-    this.api.findOne(id).subscribe({ next: (terrain) => { this.terrain = terrain; this.loading.set(false); }, error: () => { this.loading.set(false); this.snackBar.open('Terrain introuvable', 'Fermer', { duration: 4000 }); this.goBack(); } });
+    this.api.findOne(id).subscribe({ next: (terrain) => { this.terrain = terrain; this.loading.set(false); this.prepareMap(); }, error: () => { this.loading.set(false); this.snackBar.open('Terrain introuvable', 'Fermer', { duration: 4000 }); this.goBack(); } });
+  }
+
+  ngOnDestroy(): void {
+    this.map?.remove();
+    this.map = null;
+  }
+
+  private prepareMap(): void {
+    const terrain = this.terrain;
+    if (!terrain) return;
+    const lat = Number(terrain.latitude);
+    const lng = Number(terrain.longitude);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) { this.mapUrl = null; return; }
+    this.mapUrl = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=15/${lat}/${lng}`;
+    setTimeout(() => this.renderMap(lat, lng), 0);
+  }
+
+  private renderMap(lat: number, lng: number): void {
+    if (!this.mapContainer?.nativeElement || this.map) return;
+    const map = L.map(this.mapContainer.nativeElement).setView([lat, lng], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap',
+      maxZoom: 19,
+    }).addTo(map);
+    const icon = L.divIcon({
+      className: 'mtm-map-pin',
+      html: '<span class="mtm-map-pin-dot" style="--pin-color:#e2603f"></span>',
+      iconSize: [22, 22],
+      iconAnchor: [11, 11],
+    });
+    L.marker([lat, lng], { icon })
+      .addTo(map)
+      .bindPopup(`<strong>${this.terrain?.nom ?? ''}</strong>`);
+    this.map = map;
   }
 
   protected goBack(): void { this.router.navigate(['/terrains']); }

@@ -87,6 +87,25 @@ services:
     networks:
       - mtm-network
 
+  audit-retention:
+    image: postgres:16-alpine
+    container_name: mtm-audit-retention
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-mtm_user}:${POSTGRES_PASSWORD:-change_me_in_local_env}@postgres:5432/${POSTGRES_DB:-mtm_immobilier}
+      AUDIT_RETENTION_DAYS: ${AUDIT_RETENTION_DAYS:-365}
+    volumes:
+      - ./apps/api/scripts/purge-audit-logs.sh:/usr/local/bin/mtm-purge-audit:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command: >-
+      "while true; do /usr/local/bin/mtm-purge-audit;
+      sleep ${AUDIT_RETENTION_INTERVAL_SECONDS:-86400}; done"
+    networks:
+      - mtm-network
+
 networks:
   mtm-network:
     driver: bridge

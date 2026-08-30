@@ -10,7 +10,7 @@
 .terrain-stat__icon svg { width: 19px; height: 19px; }
 .terrain-stat div { display: grid; gap: 2px; min-width: 0; }
 .terrain-stat strong { color: var(--mtm-text-dark); font-size: 21px; line-height: 1.1; }
-.terrain-stat span:not(.terrain-stat__icon) { color: var(--mtm-text-dark); font-size: 12px; font-weight: 700; }
+.terrain-stat span:not(.terrain-stat__icon) { color: var(--mtm-text-dark); font-size: 12px; font-weight: 700; } 
 .terrain-stat small { color: var(--mtm-text-muted); font-size: 11px; }
 .terrain-stat--total .terrain-stat__icon { background: #eaf1ff; color: #2563eb; }
 .terrain-stat--available .terrain-stat__icon { background: #e5f8ef; color: #059669; }

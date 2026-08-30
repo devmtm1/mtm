@@ -104,6 +104,26 @@ describe('Login', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/dashboard']);
   });
 
+  it('redirige un compte sensible sans 2FA vers /security', () => {
+    authServiceMock.login.mockReturnValue(
+      of({
+        requiresTwoFactor: false,
+        accessToken: 't',
+        user: {
+          roles: ['administrateur'],
+          twoFactorEnabled: false,
+          mustChangePassword: false,
+        },
+      }),
+    );
+    const fixture = createComponent();
+
+    fillCredentials(fixture, 'admin@mtm-immobilier.sn', 'MotDePasse123!');
+    submitForm(fixture);
+
+    expect(router.navigate).toHaveBeenCalledWith(['/security']);
+  });
+
   it('redirige vers /change-password si mustChangePassword=true', () => {
     authServiceMock.login.mockReturnValue(
       of({

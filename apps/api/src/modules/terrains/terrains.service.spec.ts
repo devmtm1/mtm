@@ -1,4 +1,8 @@
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { TerrainsService } from './terrains.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
@@ -79,6 +83,21 @@ describe('TerrainsService', () => {
     expect(prismaMock.terrain.create).not.toHaveBeenCalled();
   });
 
+  it('refuse un statut commercial absent du paramétrage', async () => {
+    prismaMock.terrain.findUnique.mockResolvedValue(null);
+
+    await expect(
+      service.create({
+        referenceInterne: 'T-001',
+        nom: 'Terrain test',
+        statutJuridique: 'Bail',
+        niveauVerification: 'Non vérifié',
+        statutCommercial: 'Statut inconnu',
+      }),
+    ).rejects.toThrow(BadRequestException);
+    expect(prismaMock.terrain.create).not.toHaveBeenCalled();
+  });
+
   it('lève une erreur si le terrain à modifier est introuvable', async () => {
     prismaMock.terrain.findUnique.mockResolvedValue(null);
 
@@ -130,5 +149,17 @@ describe('TerrainsService', () => {
         resourceType: 'image',
       },
     });
+  });
+
+  it('refuse un média dépassant la limite de 10 Mo', async () => {
+    prismaMock.terrain.findUnique.mockResolvedValue({ id: 't1' });
+
+    await expect(
+      service.addMedia('t1', { type: 'photo' }, {
+        buffer: Buffer.from('image'),
+        size: 10 * 1024 * 1024 + 1,
+      } as Express.Multer.File),
+    ).rejects.toThrow(BadRequestException);
+    expect(cloudinaryMock.upload).not.toHaveBeenCalled();
   });
 });

@@ -13,6 +13,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { PermissionsGuard } from './guards/permissions.guard';
 import { MustChangePasswordGuard } from './guards/must-change-password.guard';
+import { SensitiveTwoFactorGuard } from './guards/sensitive-two-factor.guard';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { MustChangePasswordGuard } from './guards/must-change-password.guard';
     // permissions si @RequirePermissions est déclaré.
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: MustChangePasswordGuard },
+    { provide: APP_GUARD, useClass: SensitiveTwoFactorGuard },
     { provide: APP_GUARD, useClass: PermissionsGuard },
   ],
   exports: [AuthService],
