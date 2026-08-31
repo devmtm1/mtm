@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: starter
     buildCommand: npm run api:build
-    releaseCommand: npx prisma migrate deploy
+    releaseCommand: npx prisma db push --accept-data-loss
     startCommand: node apps/api/dist/main.js
     rootDir: .
     envVars:
