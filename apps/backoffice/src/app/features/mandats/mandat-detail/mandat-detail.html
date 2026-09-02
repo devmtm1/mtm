@@ -1,0 +1,64 @@
+@if (loading()) { <div class="state">Chargement de la fiche mandat...</div> } @else if (mandat) {
+<section class="detail-page">
+  <header class="detail-header"><div class="detail-heading"><button mat-button class="back-button" type="button" (click)="goBack()"><svg lucideArrowLeft aria-hidden="true"></svg></button><div><div class="detail-title-line"><h1>{{ mandat.referenceInterne }}</h1><span class="status-badge">{{ mandat.statut }}</span></div><p class="detail-subtitle">{{ mandat.proprietaire.lastName }} {{ mandat.proprietaire.firstName }} · {{ mandat.typeMandat }} · {{ mandat.dateDebut | date:'dd/MM/yyyy' }} → {{ mandat.dateFin | date:'dd/MM/yyyy' }}</p></div></div><div class="header-actions">@if (canModify) { <button mat-stroked-button type="button"><span>Plus d’actions</span></button><button mat-flat-button color="primary" (click)="edit()"><svg lucidePencil aria-hidden="true"></svg><span>Modifier</span></button> }</div></header>
+
+  <section class="hero-grid">
+    <section class="summary-panel"><div class="panel-heading"><div><span class="eyebrow">Fiche mandat</span><h2>{{ mandat.referenceInterne }}</h2></div><svg lucideFileText aria-hidden="true"></svg></div><p class="location"><svg lucideUser aria-hidden="true"></svg>{{ mandat.proprietaire.lastName }} {{ mandat.proprietaire.firstName }} @if (mandat.proprietaire.email) { <small>({{ mandat.proprietaire.email }})</small> }</p><p class="description">@if (mandat.exclusivite) { <strong>Exclusivité</strong> · } Commercial responsable : {{ mandat.commercialResponsable ? mandat.commercialResponsable.firstName + ' ' + mandat.commercialResponsable.lastName : 'Non assigné' }}</p><div class="fact-grid"><div><span>Type de mandat</span><strong>{{ mandat.typeMandat }}</strong></div><div><span>Date de début</span><strong>{{ mandat.dateDebut | date:'dd/MM/yyyy' }}</strong></div><div><span>Date de fin</span><strong>{{ mandat.dateFin | date:'dd/MM/yyyy' }}</strong></div><div><span>Alerte avant échéance</span><strong>{{ mandat.alerteEcheanceJours ?? 30 }} jours</strong></div></div></section>
+    <section class="finance-panel"><h2>Suivi commercial</h2><dl><div><dt>Lots confiés</dt><dd class="price">{{ lotsParStatut()['Confie'] || 0 }}</dd></div><div><dt>Disponibles</dt><dd>{{ lotsParStatut()['Disponible'] || 0 }}</dd></div><div><dt>Réservés</dt><dd>{{ lotsParStatut()['Réservé'] || 0 }}</dd></div><div><dt>Vendus</dt><dd class="price">{{ lotsParStatut()['Vendu'] || 0 }}</dd></div></dl><div class="finance-divider"></div><dl><div><dt>Chiffre d’affaires</dt><dd class="price">{{ formatMoney(financial()?.chiffreAffaires || 0) }}</dd></div><div><dt>Commissions estimées</dt><dd>{{ formatMoney(financial()?.commissionsEstimees || 0) }}</dd></div><div><dt>Reste à commercialiser</dt><dd>{{ formatMoney(financial()?.resteACommercialiser || 0) }}</dd></div></dl></section>
+  </section>
+
+  <nav class="detail-tabs" aria-label="Sections de la fiche"><button type="button" class="is-active" (click)="scrollToSection('general')">Informations générales</button><button type="button" (click)="scrollToSection('lots')">Lots</button><button type="button" (click)="scrollToSection('conditions')">Conditions & clauses</button><button type="button" (click)="scrollToSection('documents')">Documents</button><button type="button" (click)="scrollToSection('history')">Historique</button></nav>
+  <section class="content-grid">
+    <section class="detail-section" id="general"><h2>Informations générales</h2><dl class="info-list"><div><dt>Référence interne</dt><dd>{{ mandat.referenceInterne }}</dd></div><div><dt>Propriétaire</dt><dd>{{ mandat.proprietaire.lastName }} {{ mandat.proprietaire.firstName }}</dd></div><div><dt>Commercial responsable</dt><dd>{{ mandat.commercialResponsable ? mandat.commercialResponsable.firstName + ' ' + mandat.commercialResponsable.lastName : 'Non assigné' }}</dd></div><div><dt>Type de mandat</dt><dd>{{ mandat.typeMandat }}</dd></div><div><dt>Exclusivité</dt><dd>{{ mandat.exclusivite ? 'Oui' : 'Non' }}</dd></div><div><dt>Statut</dt><dd>{{ mandat.statut }}</dd></div><div><dt>Créé le</dt><dd>{{ mandat.createdAt | date:'dd/MM/yyyy HH:mm' }}</dd></div><div><dt>Dernière mise à jour</dt><dd>{{ mandat.updatedAt | date:'dd/MM/yyyy HH:mm' }}</dd></div></dl></section>
+    <section class="detail-section" id="lots"><h2>Lots confiés</h2>
+      @if (canModify) {
+        <button mat-stroked-button type="button" (click)="openAddLot()"><svg lucidePlus aria-hidden="true"></svg> Ajouter un lot</button>
+      }
+      @if (mandat.lots.length) {
+        <div class="lots-table-shell">
+          <table class="mtm-table">
+            <thead><tr><th>Référence</th><th>Nom</th><th>Localisation</th><th>Superficie</th><th>Prix public</th><th>Statut terrain</th><th>Statut lot</th><th>Date attribution</th>@if (canModify) { <th>Actions</th> }</tr></thead>
+            <tbody>@for (lot of mandat.lots; track lot.id) { <tr><td>{{ lot.terrain.referenceInterne }}</td><td>{{ lot.terrain.nom }}</td><td>{{ formatLocation(lot) }}</td><td>{{ lot.terrain.superficie === null ? '—' : lot.terrain.superficie + ' m²' }}</td><td>{{ lot.terrain.prixPublic === null ? '—' : lot.terrain.prixPublic + ' FCFA' }}</td><td>{{ lot.terrain.statutCommercial }}</td><td><span class="status-badge">{{ lot.statutLot }}</span></td><td>{{ lot.dateAttribution | date:'dd/MM/yyyy' }}</td>@if (canModify) { <td><button mat-button type="button" (click)="editLot(lot)">Modifier</button></td> }</tr> }</tbody>
+          </table>
+        </div>
+      } @else { <p class="muted">Aucun lot rattaché à ce mandat.</p> }
+    </section>
+    <section class="detail-section" id="conditions"><h2>Conditions & clauses</h2><dl class="info-list"><div><dt>Prix / conditions</dt><dd>{{ mandat.prixConditions || '—' }}</dd></div><div><dt>Commissions</dt><dd>{{ mandat.commissions || '—' }}</dd></div><div><dt>Clauses particulières</dt><dd>{{ mandat.clauses || '—' }}</dd></div><div><dt>Restrictions contractuelles</dt><dd>@if (mandat.restrictionsContractuelles) { <pre class="json-block">{{ restrictionsJson() }}</pre> } @else { <span>—</span> }</dd></div><div><dt>Objectifs de commercialisation</dt><dd>{{ mandat.objectifsCommercialisation || '—' }}</dd></div></dl></section>
+    <section class="detail-section" id="documents">
+      <h2><svg lucideFileText aria-hidden="true"></svg> Documents contractuels</h2>
+      @if (canModify) {
+        <div class="asset-actions">
+          <label class="asset-button">
+            <span class="asset-button__icon"><svg lucideFileText aria-hidden="true"></svg></span>
+            <span><strong>Document contractuel</strong><small>PDF, images, DOC · 1 fichier</small></span>
+            <svg class="asset-button__upload" lucideUpload aria-hidden="true"></svg>
+            <input type="file" accept="application/pdf,image/*,.doc,.docx" (change)="selectDocument($event)">
+          </label>
+        </div>
+        <p class="asset-hint"><svg lucideUpload aria-hidden="true"></svg> Le fichier sera envoyé vers Cloudinary immédiatement.</p>
+      }
+      @if (mandat.documents.length || pendingDocuments().length) {
+        <div class="asset-list">
+          <div class="asset-list__header"><strong>Documents</strong><span>{{ mandat.documents.length + pendingDocuments().length }} élément{{ mandat.documents.length + pendingDocuments().length > 1 ? 's' : '' }}</span></div>
+          @for (doc of mandat.documents; track doc.id) {
+            <div class="asset-row">
+              <span class="asset-row__type">DOCUMENT</span>
+              <span class="asset-row__name">{{ doc.title || doc.type }}</span>
+              <small>v{{ doc.version }} · {{ doc.isPublic ? 'Public' : 'Interne' }}</small>
+              @if (canModify) { <button mat-icon-button type="button" aria-label="Supprimer le document" (click)="removeDocument(doc.id)"><svg lucideTrash aria-hidden="true"></svg></button> }
+            </div>
+          }
+          @for (pending of pendingDocuments(); track pending.file.name) {
+            <div class="asset-row asset-row--pending">
+              <span class="asset-row__type">ENVOI</span>
+              <span class="asset-row__name">{{ pending.file.name }}</span>
+              <small>Envoi en cours...</small>
+            </div>
+          }
+        </div>
+      } @else { <p class="muted">Aucun document associé.</p> }
+    </section>
+    <section class="detail-section" id="history"><h2>Historique</h2><dl class="info-list"><div><dt>Créé le</dt><dd>{{ mandat.createdAt | date:'dd/MM/yyyy HH:mm' }}</dd></div><div><dt>Dernière mise à jour</dt><dd>{{ mandat.updatedAt | date:'dd/MM/yyyy HH:mm' }}</dd></div></dl><button mat-stroked-button type="button" (click)="openHistory()"><svg lucideClock aria-hidden="true"></svg>Voir l'historique complet du journal d'audit</button><p class="muted">Les modifications sensibles sont conservées dans le journal d'audit MTM.</p></section>
+  </section>
+</section>
+}

@@ -1,0 +1,16 @@
+<h2 mat-dialog-title>Historique du mandat</h2>
+<mat-dialog-content>
+  @if (loading()) { <p class="muted">Chargement...</p> } @else if (errorMessage()) { <p class="error">{{ errorMessage() }}</p> } @else if (history().length) {
+    <div class="history-list">
+      @for (item of history(); track item.id) {
+        <div class="history-item">
+          <div class="history-item__header"><strong>{{ formatAction(item.action) }}</strong><time>{{ item.createdAt | date:'dd/MM/yyyy HH:mm' }}</time></div>
+          <div class="history-item__meta">@if (item.user) { Par {{ item.user.firstName }} {{ item.user.lastName }} } @if (item.justification) { <span class="history-item__justification">Justification : {{ item.justification }}</span> }</div>
+        </div>
+      }
+    </div>
+  } @else { <p class="muted">Aucun historique disponible.</p> }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="close()">Fermer</button>
+</mat-dialog-actions>

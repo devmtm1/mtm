@@ -53,8 +53,8 @@ export class AuditService {
           action: input.action,
           entityType: input.entityType,
           entityId: input.entityId ?? undefined,
-          oldValue: this.toJson(input.oldValue),
-          newValue: this.toJson(input.newValue),
+          oldValue: this.toJson(input.oldValue) as any,
+          newValue: this.toJson(input.newValue) as any,
           justification: input.justification,
           ipAddress: input.ipAddress,
           userAgent: input.userAgent,
@@ -113,6 +113,25 @@ export class AuditService {
 
   private toJson(value: unknown) {
     if (value === undefined || value === null) return undefined;
-    return structuredClone(value);
+    try {
+      return structuredClone(value);
+    } catch {
+      return this.serialize(value);
+    }
+  }
+
+  private serialize(value: unknown): unknown {
+    if (value === null || typeof value !== 'object') return value;
+    if (value instanceof Date) return value.toISOString();
+    if (Array.isArray(value)) return value.map((item) => this.serialize(item));
+    const record = value as Record<string, unknown>;
+    if (typeof record.toJSON === 'function') {
+      return this.serialize(record.toJSON());
+    }
+    const plain: Record<string, unknown> = {};
+    for (const key of Object.keys(record)) {
+      plain[key] = this.serialize(record[key]);
+    }
+    return plain;
   }
 }

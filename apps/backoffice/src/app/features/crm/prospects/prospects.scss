@@ -1,0 +1,342 @@
+.prospects-page {
+  display: grid;
+  gap: 20px;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.prospects-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+
+  h1 {
+    margin: 8px 0 6px;
+    font-size: clamp(26px, 3vw, 34px);
+    letter-spacing: -0.02em;
+    color: var(--mtm-text-dark);
+  }
+
+  p {
+    margin: 0;
+    color: var(--mtm-text-muted);
+    font-size: 13px;
+  }
+}
+
+.prospects-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--mtm-red-primary);
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.prospects-create-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding-inline: 16px;
+}
+
+.prospects-create-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.prospect-statistics {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.prospect-stat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 88px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(25, 21, 40, 0.03);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(25, 21, 40, 0.08);
+  }
+  border-radius: 8px;
+  background: var(--mtm-card-bg);
+  border: 1px solid var(--mtm-border);
+
+  &__icon {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 7px;
+    background: var(--mtm-red-subtle);
+    color: var(--mtm-red-primary);
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  > div {
+    display: grid;
+    gap: 2px;
+  }
+
+  strong {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--mtm-text-dark);
+    line-height: 1.1;
+  }
+
+  span {
+    font-size: 12px;
+    color: var(--mtm-text-muted);
+    font-weight: 500;
+  }
+
+  small {
+    font-size: 11px;
+    color: var(--mtm-text-muted);
+  }
+
+  &--total .prospect-stat__icon { background: var(--mtm-purple-subtle); color: var(--mtm-purple-primary); }
+  &--new .prospect-stat__icon { background: #e8f4ef; color: var(--mtm-success, #059669); }
+  &--tasks .prospect-stat__icon { background: #fff4df; color: var(--mtm-warning, #d97706); }
+  &--pipeline-a .prospect-stat__icon { background: #eee9f5; color: var(--mtm-purple-primary); }
+  &--pipeline-b .prospect-stat__icon { background: #e8f4ef; color: var(--mtm-success, #059669); }
+  &--pipeline-c .prospect-stat__icon { background: #fff4df; color: var(--mtm-warning, #d97706); }
+}
+
+.prospects-table-shell {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid var(--mtm-border);
+  border-radius: 12px;
+  background: var(--mtm-card-bg);
+  box-shadow: 0 4px 16px rgba(25, 21, 40, 0.04);
+}
+
+.prospects-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  h2 {
+    margin: 0;
+    font-size: 16px;
+    color: var(--mtm-text-dark);
+  }
+
+  p {
+    margin: 2px 0 0;
+    color: var(--mtm-text-muted);
+    font-size: 12px;
+  }
+}
+
+.prospects-toolbar__title { min-width: 180px; }
+
+.prospects-section-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--mtm-red-primary);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 560px;
+  justify-content: flex-end;
+  min-width: min(100%, 560px);
+}
+
+.filters__search-icon { width: 16px; height: 16px; color: var(--mtm-text-muted); }
+
+.filters__search {
+  width: min(340px, 100%);
+}
+
+.filters__status {
+  width: 180px;
+}
+
+.filters__submit {
+  height: 40px;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  svg { width: 15px; height: 15px; }
+}
+
+.prospects-view-switch {
+  display: inline-flex;
+  justify-self: end;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--mtm-border);
+  border-radius: 8px;
+  background: var(--mtm-bg-surface);
+
+  legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 30px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--mtm-text-muted);
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+
+    &.is-active { background: var(--mtm-card-bg); color: var(--mtm-purple-primary); box-shadow: 0 1px 4px rgba(25, 21, 40, 0.1); }
+    svg { width: 15px; height: 15px; }
+  }
+}
+
+.prospects-grid {
+  display: block;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.prospects-grid-view {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.prospect-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 170px;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--mtm-card-bg);
+  border: 1px solid var(--mtm-border);
+
+  &__topline {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  &__avatar { display: grid; place-items: center; flex: 0 0 38px; width: 38px; height: 38px; border-radius: 10px; background: var(--mtm-purple-subtle); color: var(--mtm-purple-primary); font-size: 12px; font-weight: 800; text-transform: uppercase; }
+  &__identity { display: grid; flex: 1; min-width: 0; gap: 3px; }
+
+  &__name {
+    font-weight: 700;
+    color: var(--mtm-text-dark);
+    font-size: 13px;
+  }
+
+  &__contact { overflow: hidden; color: var(--mtm-text-muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+
+  &__status {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--mtm-purple-subtle);
+    color: var(--mtm-purple-primary);
+  }
+
+  &__meta {
+    margin: 0;
+    font-size: 12px;
+    color: var(--mtm-text-muted);
+  }
+
+  &__details { display: flex; gap: 12px; margin-top: 12px; padding: 10px 0; border-top: 1px solid var(--mtm-border); border-bottom: 1px solid var(--mtm-border); color: var(--mtm-text-muted); font-size: 11px; }
+  &__details strong { color: var(--mtm-text-dark); font-size: 13px; }
+  &__owner { overflow: hidden; margin: 0; color: var(--mtm-text-muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+.prospect-card__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.prospects-empty {
+  color: var(--mtm-text-muted);
+  font-size: 13px;
+}
+
+.prospect-row-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.grid-icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--mtm-bg-surface);
+  color: var(--mtm-text-muted);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--mtm-bg-hover);
+  }
+}
+
+@media (max-width: 900px) {
+  .prospect-statistics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .filters { flex-wrap: wrap; }
+  .filters__search { width: 100%; }
+  .filters__status { width: 160px; flex: 1; }
+  .filters { min-width: 0; }
+  .prospects-table-shell { padding: 14px; }
+}
+
+@media (min-width: 901px) and (max-width: 1120px) {
+  .prospect-statistics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 600px) {
+  .prospects-header { flex-direction: column; }
+  .prospects-create-button { width: 100%; justify-content: center; }
+  .prospect-statistics { grid-template-columns: 1fr; }
+  .prospects-grid-view { grid-template-columns: 1fr; }
+  .prospects-toolbar { align-items: stretch; }
+  .filters { width: 100%; }
+  .filters__status { width: 100%; flex: auto; }
+  .filters__submit { width: 100%; justify-content: center; }
+  .prospects-view-switch { justify-self: stretch; }
+  .prospects-view-switch button { flex: 1; justify-content: center; }
+}

@@ -1,0 +1,47 @@
+<div class="mandats-page">
+  <header class="mandats-header">
+    <div>
+      <span class="mandats-eyebrow"><svg lucideFileText aria-hidden="true"></svg> Cœur commercial</span>
+      <h1>Mandats</h1>
+      <p>Portefeuille propriétaire et contrats de commercialisation.</p>
+    </div>
+    @if (canCreate()) { <button mat-flat-button color="primary" class="btn-mtm-primary mandats-create-button" (click)="openCreate()"><svg class="mandats-create-icon" lucidePlus aria-hidden="true"></svg><span>Nouveau mandat</span></button> }
+  </header>
+
+  <section class="mandat-statistics" aria-label="Synthèse des mandats">
+    <article class="mandat-stat"><span class="mandat-stat__icon"><svg lucideFileText aria-hidden="true"></svg></span><div><strong>{{ stats().totalMandats }}</strong><span>Mandats</span><small>Référencés</small></div></article>
+    <article class="mandat-stat"><span class="mandat-stat__icon">✓</span><div><strong>{{ stats().actifs }}</strong><span>Actifs</span><small>En cours</small></div></article>
+    <article class="mandat-stat"><span class="mandat-stat__icon">!</span><div><strong>{{ stats().expirant30Jours }}</strong><span>Expirants sous 30 jours</span><small>À renouveler</small></div></article>
+    <article class="mandat-stat"><span class="mandat-stat__icon">◆</span><div><strong>{{ stats().totalLots }}</strong><span>Lots</span><small>Confies aux mandats</small></div></article>
+    <article class="mandat-stat"><span class="mandat-stat__icon">F</span><div><strong>{{ formatMoney(stats().financial.chiffreAffaires) }}</strong><span>Chiffre d’affaires</span><small>FCFA</small></div></article>
+    <article class="mandat-stat"><span class="mandat-stat__icon">%</span><div><strong>{{ formatMoney(stats().financial.commissionsEstimees) }}</strong><span>Commissions estimées</span><small>FCFA</small></div></article>
+    <article class="mandat-stat"><span class="mandat-stat__icon">↗</span><div><strong>{{ formatMoney(stats().financial.resteACommercialiser) }}</strong><span>Reste à commercialiser</span><small>FCFA</small></div></article>
+  </section>
+
+  <section class="mandats-table-shell" aria-labelledby="mandats-list-title">
+    <div class="mandats-toolbar">
+      <div class="mandats-toolbar__title"><span class="mandats-section-label">Portefeuille</span><h2 id="mandats-list-title">Tous les mandats</h2><p>{{ total() }} résultat{{ total() > 1 ? 's' : '' }} · triés par échéance</p></div>
+      <form class="filters" [formGroup]="filters" (ngSubmit)="applyFilters()">
+        <mat-form-field class="filters__search" appearance="outline"><mat-label>Rechercher un mandat</mat-label><svg class="filters__search-icon" matPrefix lucideSearch aria-hidden="true"></svg><input id="mandat-search" matInput formControlName="search" aria-label="Rechercher un mandat par référence ou propriétaire" placeholder="Référence ou propriétaire"></mat-form-field>
+        <mat-form-field class="filters__status" appearance="outline"><mat-label>Statut</mat-label><mat-select formControlName="statut"><mat-option value="">Tous</mat-option>@for (s of options().statut; track s) { <mat-option [value]="s">{{ s }}</mat-option> }</mat-select></mat-form-field>
+        <button class="filters__submit" mat-flat-button color="primary" type="submit"><svg lucideSearch aria-hidden="true"></svg><span>Rechercher</span></button>
+      </form>
+    </div>
+    <fieldset class="mandats-view-switch">
+      <legend>Mode d'affichage</legend>
+      <button type="button" [class.is-active]="viewMode() === 'table'" (click)="setViewMode('table')"><svg lucideList aria-hidden="true"></svg>Liste</button>
+      <button type="button" [class.is-active]="viewMode() === 'grid'" (click)="setViewMode('grid')"><svg lucideGrid2X2 aria-hidden="true"></svg>Cartes</button>
+    </fieldset>
+    @if (viewMode() === 'table') { <ag-grid-angular class="mandats-grid" [theme]="theme" [rowData]="rowData()" [columnDefs]="columnDefs" [loading]="loading()" domLayout="autoHeight" [pagination]="true" [paginationPageSize]="10" [rowHeight]="52" /> } @else {
+      <div class="mandats-grid-view" aria-label="Mandats en grille">
+        @for (mandat of rowData(); track mandat.id) { <article class="mandat-card">
+          <div class="mandat-card__topline"><span class="mandat-card__reference">{{ mandat.referenceInterne }}</span><span class="mandat-card__status" [class.status-{{ mandat.statut | lowercase }}]="true">{{ mandat.statut }}</span></div>
+          <h3>{{ mandat.proprietaire.lastName }} {{ mandat.proprietaire.firstName }}</h3>
+          <p class="mandat-card__meta">{{ mandat.typeMandat }} · {{ mandat.dateDebut | date:'dd/MM/yyyy' }} → {{ mandat.dateFin | date:'dd/MM/yyyy' }}</p>
+          <p class="mandat-card__meta">@if (mandat.exclusivite) { <strong>Exclusivité</strong> · } {{ mandat._count.lots }} lot(s)</p>
+          <div class="mandat-card__actions"><button type="button" class="grid-icon-btn" (click)="openDetail(mandat.id)" aria-label="Voir les détails" title="Voir les détails"><svg lucideEye aria-hidden="true"></svg></button>@if (canModify()) {<button type="button" class="grid-icon-btn" (click)="openEdit(mandat.id)" aria-label="Modifier le mandat" title="Modifier le mandat"><svg lucidePencil aria-hidden="true"></svg></button>}</div>
+        </article> } @empty { <p class="mandats-empty">Aucun mandat trouvé.</p> }
+      </div>
+    }
+  </section>
+</div>

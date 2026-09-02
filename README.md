@@ -3,11 +3,10 @@
 Monorepo du projet MTM Immobilier : backend API (NestJS), back-office
 (Angular) et futur site public.
 
-> **État actuel : Phase 0 — Fondations techniques terminée** (Jalon J0.1
-> du planning d'exécution). Aucune fonctionnalité métier n'est développée
-> à ce stade. Voir `docs/PHASE_0.md` pour le rapport de clôture complet,
-> les anomalies connues et les actions restant à faire avant validation
-> écrite et passage à la Phase 1.
+> **État actuel : Phase 1 — Cœur commercial en cours** (Jalon J1.5 du
+> planning d'exécution). Le socle technique Phase 0 est terminé. Le module
+> CRM prospects/clients est implémenté. Voir `docs/PHASE_0.md` pour le
+> rapport de clôture de la Phase 0.
 
 ## Structure du monorepo
 

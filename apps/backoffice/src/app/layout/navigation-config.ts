@@ -6,8 +6,10 @@ import {
   LucideShield,
   LucideSettings,
   LucideFileClock,
-  LucideLandPlot,
   LucideFileText,
+  LucideLandPlot,
+  LucideScrollText,
+  LucideUserSearch,
 } from '@lucide/angular';
 
 /**
@@ -67,6 +69,18 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         route: '/terrains',
         icon: LucideLandPlot,
         permission: 'terrains:consulter',
+      },
+      {
+        label: 'Mandats',
+        route: '/mandats',
+        icon: LucideScrollText,
+        permission: 'mandats:consulter',
+      },
+      {
+        label: 'Prospects',
+        route: '/crm/prospects',
+        icon: LucideUserSearch,
+        permission: 'crm:consulter',
       },
     ],
   },

@@ -18,6 +18,8 @@ import { TerrainsModule } from './modules/terrains/terrains.module';
 import { ProprietairesModule } from './modules/proprietaires/proprietaires.module';
 import { ContactModule } from './modules/contact/contact.module';
 import { ContentBlockModule } from './modules/content/content-block.module';
+import { MandatsModule } from './modules/mandats/mandats.module';
+import { CrmModule } from './modules/crm/crm.module';
 
 @Module({
   imports: [
@@ -33,7 +35,7 @@ import { ContentBlockModule } from './modules/content/content-block.module';
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
-        limit: 100, // limite globale généreuse ; /auth/login aura sa propre limite stricte
+        limit: 100,
       },
     ]),
     PrismaModule,
@@ -46,6 +48,8 @@ import { ContentBlockModule } from './modules/content/content-block.module';
     ProprietairesModule,
     ContactModule,
     ContentBlockModule,
+    MandatsModule,
+    CrmModule,
     HealthModule,
   ],
   providers: [

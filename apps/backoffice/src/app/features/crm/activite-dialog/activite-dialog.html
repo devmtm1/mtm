@@ -1,0 +1,80 @@
+<h2 mat-dialog-title>
+  @switch (data.mode) {
+    @case ('add') { Ajouter une activité }
+    @case ('edit') { Modifier l'activité }
+    @case ('history') { Historique des activités }
+  }
+</h2>
+
+@if (data.mode === 'history') {
+  <mat-dialog-content>
+    @if (activities && activities.length) {
+      <div class="history-list">
+        @for (a of activities; track a.id) {
+          <div class="activite-row">
+            <div class="activite-row__head">
+              <span class="activite-row__type">{{ label(a.type) }}</span>
+              <span class="activite-row__date">{{ a.dateEcheance ? (a.dateEcheance | date:'dd/MM/yyyy') : '—' }}</span>
+            </div>
+            <p class="activite-row__title">{{ a.titre }}</p>
+            <p class="activite-row__desc">{{ a.description || '—' }}</p>
+            <div class="activite-row__footer">
+              <span class="status-badge">{{ label(a.statut) }}</span>
+              <span class="activite-row__priorite">{{ label(a.priorite) }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <p class="muted">Aucune activité.</p>
+    }
+  </mat-dialog-content>
+  <mat-dialog-actions><button mat-stroked-button mat-dialog-close>Fermer</button></mat-dialog-actions>
+}
+
+@if (data.mode === 'add' || data.mode === 'edit') {
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <mat-dialog-content>
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Type</mat-label>
+          <mat-select formControlName="type" required>
+            @for (t of activiteTypes(); track t) {
+              <mat-option [value]="t">{{ label(t) }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Priorité</mat-label>
+          <mat-select formControlName="priorite">
+            @for (p of priorites(); track p) { <mat-option [value]="p">{{ label(p) }}</mat-option> }
+          </mat-select>
+        </mat-form-field>
+        @if (data.mode === 'edit') {
+          <mat-form-field appearance="outline">
+            <mat-label>Statut</mat-label>
+            <mat-select formControlName="statut">
+              @for (s of statuts(); track s) { <mat-option [value]="s">{{ label(s) }}</mat-option> }
+            </mat-select>
+          </mat-form-field>
+        }
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Titre</mat-label>
+          <input matInput formControlName="titre" required>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Échéance</mat-label>
+          <input matInput formControlName="dateEcheance" type="date">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Description</mat-label>
+          <textarea matInput rows="3" formControlName="description"></textarea>
+        </mat-form-field>
+      </div>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+      <button mat-stroked-button type="button" mat-dialog-close>Annuler</button>
+      <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid">Enregistrer</button>
+    </mat-dialog-actions>
+  </form>
+}

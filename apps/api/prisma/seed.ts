@@ -16,23 +16,18 @@ const ACTIONS = [
   'administrer',
 ] as const;
 
-// Ressources couvertes par la Phase 0 uniquement.
-// Les modules métier futurs ajouteront leurs propres ressources sans
-// modifier ce modèle (RBAC générique resource:action).
-const PHASE_0_RESOURCES = [
-  'users',
-  'roles',
-  'permissions',
-  'settings',
-  'audit',
+// Ressources couvertes par la Phase 1.
+const PHASE_1_RESOURCES = [
   'terrains',
-];
+  'mandats',
+  'crm',
+] as const;
 
 // Rôles initiaux recommandés par la section 24 du CDC.
 const INITIAL_ROLES = [
   { name: 'administrateur', description: 'Accès complet au système', isSystem: true },
   { name: 'direction', description: 'Direction MTM Immobilier' },
-  { name: 'manager', description: 'Manager d’équipe' },
+  { name: 'manager', description: "Manager d'équipe" },
   { name: 'responsable_commercial', description: 'Responsable commercial' },
   { name: 'commercial', description: 'Commercial' },
   { name: 'comptable', description: 'Comptabilité' },
@@ -47,7 +42,7 @@ async function main(): Promise<void> {
 
   // --- Permissions ---
   const permissions = [];
-  for (const resource of PHASE_0_RESOURCES) {
+  for (const resource of PHASE_1_RESOURCES) {
     for (const action of ACTIONS) {
       permissions.push({
         name: `${resource}:${action}`,
@@ -66,6 +61,21 @@ async function main(): Promise<void> {
     });
   }
   console.log(`  ${permissions.length} permissions créées/à jour`);
+
+  // --- Permissions CRM (J1.5) ---
+  const crmPermissions = [
+    { name: 'crm:consulter', resource: 'crm', action: 'consulter', description: 'Consulter les prospects et le pipeline' },
+    { name: 'crm:creer', resource: 'crm', action: 'creer', description: 'Créer des prospects et activités' },
+    { name: 'crm:modifier', resource: 'crm', action: 'modifier', description: 'Modifier des prospects et activités' },
+    { name: 'crm:supprimer', resource: 'crm', action: 'supprimer', description: 'Supprimer des prospects et activités' },
+  ];
+  for (const permission of crmPermissions) {
+    await prisma.permission.upsert({
+      where: { name: permission.name },
+      update: {},
+      create: permission,
+    });
+  }
 
   // --- Rôles ---
   for (const role of INITIAL_ROLES) {
@@ -96,6 +106,34 @@ async function main(): Promise<void> {
     });
   }
   console.log('  Rôle administrateur : toutes permissions attribuées');
+
+  // --- Permissions CRM par rôle métier ---
+  const crmPermissionNames = ['crm:consulter', 'crm:creer', 'crm:modifier', 'crm:supprimer'];
+  const commercialPermissionNames = ['crm:consulter', 'crm:creer', 'crm:modifier'];
+
+  for (const roleName of ['manager', 'responsable_commercial']) {
+    const role = await prisma.role.findUniqueOrThrow({ where: { name: roleName } });
+    for (const permissionName of crmPermissionNames) {
+      const permission = await prisma.permission.findUniqueOrThrow({ where: { name: permissionName } });
+      await prisma.rolePermission.upsert({
+        where: { roleId_permissionId: { roleId: role.id, permissionId: permission.id } },
+        update: {},
+        create: { roleId: role.id, permissionId: permission.id },
+      });
+    }
+    console.log(`  Rôle ${roleName} : permissions CRM attribuées`);
+  }
+
+  const commercialRole = await prisma.role.findUniqueOrThrow({ where: { name: 'commercial' } });
+  for (const permissionName of commercialPermissionNames) {
+    const permission = await prisma.permission.findUniqueOrThrow({ where: { name: permissionName } });
+    await prisma.rolePermission.upsert({
+      where: { roleId_permissionId: { roleId: commercialRole.id, permissionId: permission.id } },
+      update: {},
+      create: { roleId: commercialRole.id, permissionId: permission.id },
+    });
+  }
+  console.log('  Rôle commercial : permissions CRM limitées attribuées');
 
   // --- Utilisateur administrateur par défaut ---
   const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@mtm-immobilier.sn';
@@ -178,7 +216,138 @@ async function main(): Promise<void> {
       description: 'Liste des statuts commerciaux configurables pour les terrains',
       isSensitive: false,
     },
-   });
+  });
+
+  // --- Types de mandats configurables (J1.4) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'mandats.typeMandat' },
+    update: {},
+    create: {
+      key: 'mandats.typeMandat',
+      value: ['Vente', 'Location', 'Gestion'],
+      description: 'Liste des types de mandats configurables',
+      isSensitive: false,
+    },
+  });
+
+  // --- Statuts de mandats configurables (J1.4) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'mandats.statut' },
+    update: {},
+    create: {
+      key: 'mandats.statut',
+      value: ['Brouillon', 'Actif', 'Expiré', 'Résilié', 'Clôturé'],
+      description: 'Liste des statuts configurables pour les mandats',
+      isSensitive: false,
+    },
+  });
+
+  // --- Statuts de lots de mandats configurables (J1.4) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'mandats.statutLot' },
+    update: {},
+    create: {
+      key: 'mandats.statutLot',
+      value: ['Confie', 'Disponible', 'Réservé', 'Vendu'],
+      description: 'Liste des statuts configurables pour les lots de mandats',
+      isSensitive: false,
+    },
+  });
+
+  // --- Types de documents de mandats configurables (J1.4) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'mandats.documentTypes' },
+    update: {},
+    create: {
+      key: 'mandats.documentTypes',
+      value: [
+        'contrat',
+        'avenant',
+        'preuve_signature',
+        'correspondance',
+        'justificatif',
+        'autre',
+      ],
+      description: 'Liste des types de documents contractuels pour les mandats',
+      isSensitive: false,
+    },
+  });
+
+  // --- Pipeline CRM configurable (J1.5) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'crm.pipelineStages' },
+    update: {},
+    create: {
+      key: 'crm.pipelineStages',
+      value: [
+        'nouveau_contact',
+        'qualification',
+        'proposition',
+        'visite',
+        'negociation',
+        'reservation',
+        'vente',
+        'perdu',
+      ],
+      description: 'Étapes configurables du pipeline commercial CRM',
+      isSensitive: false,
+    },
+  });
+
+  // --- Types d'activités CRM configurables (J1.5) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'crm.activiteTypes' },
+    update: {},
+    create: {
+      key: 'crm.activiteTypes',
+      value: ['appel', 'rendez-vous', 'tache', 'relance', 'email', 'note'],
+      description: 'Types d\'activités CRM disponibles',
+      isSensitive: false,
+    },
+  });
+
+  // --- Statuts d'activités CRM configurables (J1.5) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'crm.activiteStats' },
+    update: {},
+    create: {
+      key: 'crm.activiteStats',
+      value: ['a_faire', 'realise', 'reporte', 'annule'],
+      description: 'Statuts disponibles pour les activités CRM',
+      isSensitive: false,
+    },
+  });
+
+  // --- Priorités d'activités CRM configurables (J1.5) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'crm.priorites' },
+    update: {},
+    create: {
+      key: 'crm.priorites',
+      value: ['basse', 'moyenne', 'haute'],
+      description: 'Niveaux de priorité pour les activités CRM',
+      isSensitive: false,
+    },
+  });
+
+  // --- Types de documents CRM (J1.5) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'crm.documentTypes' },
+    update: {},
+    create: {
+      key: 'crm.documentTypes',
+      value: [
+        'contrat',
+        'avenant',
+        'preuve_signature',
+        'correspondance',
+        'justificatif',
+        'autre',
+      ],
+      description: 'Types de documents CRM disponibles',
+      isSensitive: false,
+    },
+  });
 
   // --- Contenus marketing (J1.2) ---
   const contentBlocks = [

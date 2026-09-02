@@ -1,0 +1,43 @@
+<div class="prospects-page">
+  <header class="prospects-header">
+    <div>
+      <span class="prospects-eyebrow"><svg lucideUserSearch aria-hidden="true"></svg> CRM</span>
+      <h1>Prospects</h1>
+      <p>Une vue claire de vos contacts, de leur potentiel et des prochaines actions.</p>
+    </div>
+    @if (canCreate()) { <button mat-flat-button color="primary" class="btn-mtm-primary prospects-create-button" (click)="openCreate()"><svg class="prospects-create-icon" lucidePlus aria-hidden="true"></svg><span>Nouveau prospect</span></button> }
+  </header>
+
+  <section class="prospect-statistics" aria-label="Synthèse CRM">
+    <article class="prospect-stat prospect-stat--total"><span class="prospect-stat__icon"><svg lucideUserSearch aria-hidden="true"></svg></span><div><strong>{{ stats().totalProspects }}</strong><span>Prospects</span><small>Portefeuille total</small></div></article>
+    <article class="prospect-stat prospect-stat--new"><span class="prospect-stat__icon">N</span><div><strong>{{ stats().nouveaux }}</strong><span>Nouveaux</span><small>Ajoutés aujourd'hui</small></div></article>
+    <article class="prospect-stat prospect-stat--tasks"><span class="prospect-stat__icon">!</span><div><strong>{{ stats().upcomingTasksCount }}</strong><span>Tâches à venir</span><small>À traiter prochainement</small></div></article>
+    @for (entry of pipelineEntries(); track entry.statut; let index = $index) { <article class="prospect-stat" [class.prospect-stat--pipeline-a]="index % 3 === 0" [class.prospect-stat--pipeline-b]="index % 3 === 1" [class.prospect-stat--pipeline-c]="index % 3 === 2"><span class="prospect-stat__icon">{{ entry.statut.charAt(0).toUpperCase() }}</span><div><strong>{{ entry.count }}</strong><span>{{ entry.label }}</span><small>Dans le pipeline</small></div></article> }
+  </section>
+
+  <section class="prospects-table-shell" aria-labelledby="prospects-list-title">
+    <div class="prospects-toolbar">
+      <div class="prospects-toolbar__title"><span class="prospects-section-label">Portefeuille</span><h2 id="prospects-list-title">Tous les prospects</h2><p>{{ total() }} résultat{{ total() > 1 ? 's' : '' }} · triés par nom</p></div>
+      <form class="filters" [formGroup]="filters" (ngSubmit)="applyFilters()">
+        <mat-form-field class="filters__search" appearance="outline"><mat-label>Rechercher un prospect</mat-label><svg class="filters__search-icon" matPrefix lucideSearch aria-hidden="true"></svg><input id="prospect-search" matInput formControlName="search" aria-label="Rechercher un prospect par nom, email ou téléphone" placeholder="Nom, email ou téléphone"></mat-form-field>
+        <mat-form-field class="filters__status" appearance="outline"><mat-label>Statut pipeline</mat-label><mat-select formControlName="statutPipeline"><mat-option value="">Tous</mat-option>@for (s of options().pipelineStages; track s) { <mat-option [value]="s">{{ s }}</mat-option> }</mat-select></mat-form-field>
+        <button class="filters__submit" mat-flat-button color="primary" type="submit"><svg lucideSearch aria-hidden="true"></svg><span>Rechercher</span></button>
+      </form>
+    </div>
+    <fieldset class="prospects-view-switch">
+      <legend>Mode d'affichage</legend>
+      <button type="button" [class.is-active]="viewMode() === 'table'" (click)="setViewMode('table')"><svg lucideList aria-hidden="true"></svg>Liste</button>
+      <button type="button" [class.is-active]="viewMode() === 'grid'" (click)="setViewMode('grid')"><svg lucideGrid2X2 aria-hidden="true"></svg>Cartes</button>
+    </fieldset>
+    @if (viewMode() === 'table') { <ag-grid-angular class="prospects-grid" [theme]="theme" [rowData]="rowData()" [columnDefs]="columnDefs" [loading]="loading()" domLayout="autoHeight" [pagination]="true" [paginationPageSize]="10" [rowHeight]="56" /> } @else {
+      <div class="prospects-grid-view" aria-label="Prospects en grille">
+        @for (prospect of rowData(); track prospect.id) { <article class="prospect-card">
+          <div class="prospect-card__topline"><span class="prospect-card__avatar">{{ prospect.nom.charAt(0) }}{{ prospect.prenom?.charAt(0) || '' }}</span><div class="prospect-card__identity"><span class="prospect-card__name">{{ prospect.nom }} {{ prospect.prenom }}</span><span class="prospect-card__contact">{{ prospect.email || prospect.telephone || 'Coordonnées non renseignées' }}</span></div><span class="prospect-card__status">{{ label(prospect.statutPipeline) }}</span></div>
+          <div class="prospect-card__details"><span><strong>{{ prospect.score ?? '—' }}</strong> score</span><span><strong>{{ prospect._count.activites }}</strong> activité{{ prospect._count.activites > 1 ? 's' : '' }}</span><span><strong>{{ prospect._count.dossiers }}</strong> dossier{{ prospect._count.dossiers > 1 ? 's' : '' }}</span></div>
+          <p class="prospect-card__owner">{{ prospect.commercialResponsable ? 'Responsable : ' + prospect.commercialResponsable.firstName + ' ' + prospect.commercialResponsable.lastName : 'Aucun commercial assigné' }}</p>
+          <div class="prospect-card__actions"><button type="button" class="grid-icon-btn" (click)="openDetail(prospect.id)" aria-label="Voir les détails" title="Voir les détails"><svg lucideEye aria-hidden="true"></svg></button>@if (canModify()) {<button type="button" class="grid-icon-btn" (click)="openEdit(prospect.id)" aria-label="Modifier" title="Modifier"><svg lucidePencil aria-hidden="true"></svg></button>}</div>
+        </article> } @empty { <p class="prospects-empty">Aucun prospect trouvé.</p> }
+      </div>
+    }
+  </section>
+</div>

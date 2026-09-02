@@ -1,6 +1,6 @@
 // MTM Immobilier — Schéma Prisma
-// Phase 0 uniquement : socle technique (identité, RBAC, audit, paramétrage).
-// Aucune table métier (terrains, mandats, CRM, ventes...) — voir docs/PHASE_0.md
+// Phase 0 : socle technique (identité, RBAC, audit, paramétrage).
+// Phase 1 / J1.1-J1.4 : tables métier terrains et mandats.
 
 generator client {
   provider = "prisma-client-js"
@@ -50,6 +50,8 @@ model User {
    settingsEdits    SystemSetting[] @relation("SystemSettingEditor")
    contentEdits     ContentBlock[]  @relation("ContentBlockEditor")
    assignedTerrains Terrain[]       @relation("TerrainCommercial")
+  mandatsResponsable Mandat[]     @relation("MandatCommercial")
+  prospectsCommercial  Prospect[] @relation("ProspectCommercial")
 
   @@map("users")
 }
@@ -69,6 +71,7 @@ model Proprietaire {
   updatedAt DateTime @updatedAt
 
   terrains Terrain[]
+  mandats Mandat[]
 
   @@index([lastName, firstName])
   @@map("proprietaires")
@@ -112,6 +115,8 @@ model Terrain {
   commercialResponsable   User?             @relation("TerrainCommercial", fields: [commercialResponsableId], references: [id], onDelete: SetNull)
   medias                  TerrainMedia[]
   documents               TerrainDocument[]
+  mandatLots              MandatLot[]
+  dossiers                DossierVente[]
   createdAt               DateTime          @default(now())
   updatedAt               DateTime          @updatedAt
 
@@ -151,12 +156,85 @@ model TerrainDocument {
   storageKey String
   resourceType String @default("raw")
   title      String?
-  isPublic   Boolean  @default(false)
+  isPublic  Boolean  @default(false)
   version    Int      @default(1)
   createdAt  DateTime @default(now())
 
   @@index([terrainId, type])
   @@map("terrain_documents")
+}
+
+// ============================================================
+// Mandats de commercialisation — Phase 1 / J1.4
+// ============================================================
+
+model Mandat {
+  id                      String   @id @default(uuid())
+  proprietaireId          String
+  proprietaire            Proprietaire @relation(fields: [proprietaireId], references: [id], onDelete: Restrict)
+  commercialResponsableId String?
+  commercialResponsable   User?     @relation("MandatCommercial", fields: [commercialResponsableId], references: [id], onDelete: SetNull)
+
+  referenceInterne        String   @unique
+  typeMandat              String
+  dateDebut               DateTime
+  dateFin                 DateTime
+  exclusivite             Boolean  @default(false)
+  prixConditions          String?
+  commissions             String?
+  clauses                 String?
+  restrictionsContractuelles Json?
+  objectifsCommercialisation String?
+  alerteEcheanceJours     Int?     @default(30)
+  statut                  String   @default("Brouillon")
+
+  lots                    MandatLot[]
+  documents               MandatDocument[]
+  dossiers                DossierVente[]
+  auditLogs               AuditLog[] @relation("MandatAuditLog")
+
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  @@index([proprietaireId])
+  @@index([commercialResponsableId])
+  @@index([statut])
+  @@index([dateFin])
+  @@map("mandats")
+}
+
+model MandatLot {
+  id         String   @id @default(uuid())
+  mandatId   String
+  mandat     Mandat   @relation(fields: [mandatId], references: [id], onDelete: Cascade)
+  terrainId  String
+  terrain    Terrain  @relation(fields: [terrainId], references: [id], onDelete: Restrict)
+
+  statutLot  String   @default("Confie")
+  dateAttribution DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([mandatId])
+  @@index([terrainId])
+  @@index([statutLot])
+  @@map("mandat_lots")
+}
+
+model MandatDocument {
+  id          String   @id @default(uuid())
+  mandatId    String
+  mandat      Mandat   @relation(fields: [mandatId], references: [id], onDelete: Cascade)
+  type        String
+  storageKey  String
+  resourceType String @default("raw")
+  title       String?
+  isPublic    Boolean @default(false)
+  version     Int      @default(1)
+  createdAt   DateTime @default(now())
+
+  @@index([mandatId, type])
+  @@map("mandat_documents")
 }
 
 model RefreshToken {
@@ -272,11 +350,17 @@ model AuditLog {
 
   ipAddress String?
   userAgent String?
+  mandatId  String?
+  mandat    Mandat? @relation("MandatAuditLog", fields: [mandatId], references: [id], onDelete: SetNull)
+  prospectId String?
+  prospect   Prospect? @relation("ProspectAuditLog", fields: [prospectId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([entityType, entityId])
+  @@index([mandatId])
+  @@index([prospectId])
   @@index([createdAt])
   @@map("audit_logs")
 }
@@ -317,10 +401,98 @@ model Contact {
   lu        Boolean   @default(false)
   createdAt DateTime  @default(now())
 
+   @@index([terrainId])
+   @@index([lu])
+    @@index([createdAt])
+   @@map("contacts")
+}
+
+// ============================================================
+// CRM — prospects et clients (Phase 1 / J1.5)
+// ============================================================
+
+model Prospect {
+  id                     String   @id @default(uuid())
+  nom                    String
+  prenom                 String?
+  email                  String?
+  telephone              String?
+  paysResidence          String?
+  sourceAcquisition      String?
+  besoins                String?
+  budgetMin              Decimal? @db.Decimal(15, 2)
+  budgetMax              Decimal? @db.Decimal(15, 2)
+  preferences            String?
+  commercialResponsableId String?
+  commercialResponsable   User?    @relation("ProspectCommercial", fields: [commercialResponsableId], references: [id], onDelete: SetNull)
+  statutPipeline         String   @default("nouveau_contact")
+  score                  Int?     @default(0)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  activites              ActiviteCrm[]
+  documents              DocumentCrm[]
+  dossiers               DossierVente[]
+  auditLogs              AuditLog[] @relation("ProspectAuditLog")
+
+  @@index([commercialResponsableId])
+  @@index([statutPipeline])
+  @@index([createdAt])
+  @@map("prospects")
+}
+
+model DossierVente {
+  id          String   @id @default(uuid())
+  prospectId  String
+  prospect    Prospect @relation(fields: [prospectId], references: [id], onDelete: Restrict)
+  terrainId   String?
+  terrain     Terrain? @relation(fields: [terrainId], references: [id], onDelete: SetNull)
+  mandatId    String?
+  mandat      Mandat?  @relation(fields: [mandatId], references: [id], onDelete: SetNull)
+  statut      String   @default("en_cours")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([prospectId])
   @@index([terrainId])
-  @@index([lu])
-   @@index([createdAt])
-  @@map("contacts")
+  @@index([mandatId])
+  @@map("dossiers_vente")
+}
+
+model ActiviteCrm {
+  id          String   @id @default(uuid())
+  prospectId  String
+  prospect    Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+  type        String   // appel, rendez-vous, tache, relance, email, note
+  titre       String
+  description String?
+  dateEcheance DateTime?
+  dateRealisation DateTime?
+  statut      String   @default("a_faire") // a_faire, realise, reporte, annule
+  priorite   String   @default("moyenne") // basse, moyenne, haute
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([prospectId])
+  @@index([statut])
+  @@map("activites_crm")
+}
+
+model DocumentCrm {
+  id          String   @id @default(uuid())
+  prospectId  String
+  prospect    Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+  type        String
+  storageKey  String
+  resourceType String @default("raw")
+  title       String?
+  isPublic    Boolean  @default(false)
+  url         String?
+  version     Int      @default(1)
+  createdAt   DateTime @default(now())
+
+  @@index([prospectId, type])
+  @@map("documents_crm")
 }
 
 // ============================================================

@@ -1,0 +1,43 @@
+<section class="detail-page">
+  <header class="detail-header">
+    <div class="detail-heading">
+      <button mat-button class="back-button" type="button" (click)="goBack()"><svg lucideArrowLeft aria-hidden="true"></svg></button>
+      <div>
+        <div class="detail-title-line"><h1>{{ prospect?.nom }} {{ prospect?.prenom }}</h1><span class="status-badge">{{ prospect?.statutPipeline }}</span></div>
+        <p class="detail-subtitle">{{ prospect?.email || '—' }} · {{ prospect?.telephone || '—' }} · {{ prospect?.paysResidence || '—' }}</p>
+      </div>
+    </div>
+    <div class="header-actions">@if (canModify) { <button mat-flat-button color="primary" (click)="edit()"><svg lucidePencil aria-hidden="true"></svg><span>Modifier</span></button> }</div>
+  </header>
+
+  <section class="hero-grid">
+    <section class="summary-panel"><div class="panel-heading"><div><span class="eyebrow">Prospect</span><h2>Informations générales</h2></div><svg lucideUser aria-hidden="true"></svg></div><div class="fact-grid"><div><span>Source</span><strong>{{ prospect?.sourceAcquisition || '—' }}</strong></div><div><span>Budget min</span><strong>{{ formatMoney(prospect?.budgetMin) }}</strong></div><div><span>Budget max</span><strong>{{ formatMoney(prospect?.budgetMax) }}</strong></div><div><span>Score</span><strong>{{ prospect?.score ?? '—' }}</strong></div></div></section>
+    <section class="finance-panel">
+      <h2>Pipeline commercial</h2>
+      <div class="pipeline-stages">
+        @for (stage of pipelineStages(); track stage) {
+          <span class="pipeline-stage" [class.is-active]="stage === prospect?.statutPipeline" [class.is-past]="pipelineStages().indexOf(stage) < currentStageIndex()">{{ stage }}</span>
+        }
+      </div>
+      @if (canModify && nextStages().length) {
+        <div class="pipeline-actions">
+          <span class="pipeline-actions__label">Faire avancer :</span>
+          <div class="pipeline-actions__buttons">
+            @for (stage of nextStages(); track stage) {
+              <button mat-stroked-button color="primary" type="button" (click)="transitionPipeline(stage)" [disabled]="transitioning()">{{ stage }}</button>
+            }
+          </div>
+        </div>
+      }
+    </section>
+  </section>
+
+  <nav class="detail-tabs" aria-label="Sections de la fiche"><button type="button" class="is-active" (click)="scrollToSection('general')">Général</button><button type="button" (click)="scrollToSection('activites')">Activités</button><button type="button" (click)="scrollToSection('documents')">Documents</button><button type="button" (click)="scrollToSection('dossiers')">Dossiers</button><button type="button" (click)="scrollToSection('history')">Historique</button></nav>
+  <section class="content-grid">
+    <section class="detail-section" id="general"><h2>Informations générales</h2>@if (prospect) { <dl class="info-list"><div><dt>Nom</dt><dd>{{ prospect.nom }} {{ prospect.prenom || '' }}</dd></div><div><dt>Email</dt><dd>{{ prospect.email || '—' }}</dd></div><div><dt>Téléphone</dt><dd>{{ prospect.telephone || '—' }}</dd></div><div><dt>Pays de résidence</dt><dd>{{ prospect.paysResidence || '—' }}</dd></div><div><dt>Source d'acquisition</dt><dd>{{ prospect.sourceAcquisition || '—' }}</dd></div><div><dt>Commercial responsable</dt><dd>{{ prospect.commercialResponsable ? prospect.commercialResponsable.firstName + ' ' + prospect.commercialResponsable.lastName : 'Non assigné' }}</dd></div></dl><div class="detail-section__full"><h3>Besoins & préférences</h3><p>{{ prospect.besoins || '—' }}</p><p>{{ prospect.preferences || '—' }}</p></div> }</section>
+    <section class="detail-section" id="activites"><h2>Activités</h2>@if (canModify) { <button mat-stroked-button type="button" (click)="openAddActivite()"><svg lucidePlus aria-hidden="true"></svg> Ajouter une activité</button> } @if (activites.length) { <div class="activites-list">@for (activite of activites; track activite.id) { <div class="activite-item"><div class="activite-item__header"><span class="activite-item__type">{{ activite.type }}</span><span class="activite-item__priorite">{{ activite.priorite }}</span>@if (canModify) { <button mat-button color="primary" type="button" (click)="openEditActivite(activite.id)" aria-label="Modifier l'activité">Modifier</button> }</div><p class="activite-item__title">{{ activite.titre }}</p><p class="activite-item__desc">{{ activite.description || '—' }}</p><div class="activite-item__footer"><small>Échéance : {{ activite.dateEcheance ? (activite.dateEcheance | date:'dd/MM/yyyy') : '—' }}</small><span class="status-badge">{{ activite.statut }}</span></div></div> }</div> } @else { <p class="muted">Aucune activité.</p> }</section>
+     <section class="detail-section" id="documents"><h2>Documents</h2>@if (canModify) { <label class="asset-upload">Ajouter un document<input type="file" accept="application/pdf,image/*,.doc,.docx" (change)="uploadDocument($event)"></label> } @if (documents.length) { <ul class="asset-list">@for (doc of documents; track doc.id) { <li><a [href]="doc.url" target="_blank" rel="noopener">{{ doc.title || doc.type }}</a><small>v{{ doc.version }} · {{ doc.isPublic ? 'Public' : 'Interne' }}</small>@if (canModify) { <button mat-button color="warn" type="button" (click)="removeDocument(doc.id)">Supprimer</button> }</li> }</ul> } @else { <p class="muted">Aucun document.</p> }</section>
+    <section class="detail-section" id="dossiers"><h2>Dossiers liés</h2>@if (dossiers.length) { <div class="dossiers-list">@for (dossier of dossiers; track dossier.id) { <div class="dossier-item"><strong>{{ dossier.terrain?.referenceInterne || dossier.mandat?.referenceInterne || 'Dossier' }}</strong><small>Créé le {{ dossier.createdAt | date:'dd/MM/yyyy' }}</small><span class="status-badge">{{ dossier.statut }}</span></div> }</div> } @else { <p class="muted">Aucun dossier lié.</p> }</section>
+    <section class="detail-section" id="history"><h2>Historique</h2><button mat-stroked-button type="button" (click)="openHistory()"><svg lucideClock aria-hidden="true"></svg>Voir l'historique</button></section>
+  </section>
+</section>

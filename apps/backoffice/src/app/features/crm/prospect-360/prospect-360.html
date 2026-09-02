@@ -1,0 +1,76 @@
+<section class="p360">
+  <header class="p360-header">
+    <div>
+      <span class="eyebrow">Vue 360°</span>
+      <h1>{{ prospect?.nom }} {{ prospect?.prenom }}</h1>
+      <p>{{ prospect?.email || '—' }} · {{ prospect?.telephone || '—' }}</p>
+    </div>
+    <div class="p360-actions"><button mat-stroked-button type="button" (click)="openActivity()"><svg lucidePlus aria-hidden="true"></svg>Nouvelle activité</button><button mat-stroked-button type="button" (click)="uploadDoc()"><svg lucideUpload aria-hidden="true"></svg>Document</button><button mat-flat-button color="primary" type="button" (click)="edit()">Modifier</button></div>
+  </header>
+
+  <section class="p360-grid">
+    <section class="panel"><h2>Pipeline</h2><div class="pipeline-stages">@for (stage of pipelineStages(); track stage) { <span class="pipeline-stage" [class.is-active]="stage === prospect?.statutPipeline">{{ label(stage) }}</span> }</div></section>
+    <section class="panel"><h2>Contacts</h2><div class="fact"><span>Téléphone</span><strong>{{ prospect?.telephone || '—' }}</strong></div><div class="fact"><span>Email</span><strong>{{ prospect?.email || '—' }}</strong></div><div class="fact"><span>Pays</span><strong>{{ prospect?.paysResidence || '—' }}</strong></div></section>
+    <section class="panel"><h2>Budget</h2><div class="fact"><span>Min</span><strong>{{ formatMoney(prospect?.budgetMin) }}</strong></div><div class="fact"><span>Max</span><strong>{{ formatMoney(prospect?.budgetMax) }}</strong></div></section>
+
+    <section class="panel panel--warn">
+      <h2>À venir</h2>
+      @if (upcoming.length) {
+        <ul class="mini-list">
+          @for (a of upcoming; track a.id) {
+            <li class="mini-item"><span>{{ a.titre }}</span><span class="status-badge">{{ label(a.priorite) }} · {{ a.dateEcheance ? (a.dateEcheance | date:'dd/MM/yyyy') : '—' }}</span></li>
+          }
+        </ul>
+      } @else { <p class="muted">Aucune tâche à venir.</p> }
+    </section>
+
+    <section class="panel panel--danger">
+      <h2>En retard</h2>
+      @if (overdue.length) {
+        <ul class="mini-list">
+          @for (a of overdue; track a.id) {
+            <li class="mini-item"><span>{{ a.titre }}</span><span class="status-badge status-badge--danger">{{ a.dateEcheance ? (a.dateEcheance | date:'dd/MM/yyyy') : '—' }}</span></li>
+          }
+        </ul>
+      } @else { <p class="muted">Aucune tâche en retard.</p> }
+    </section>
+
+    <section class="panel">
+      <h2>Documents</h2>
+      @if (documents.length) {
+        <ul class="mini-list">
+          @for (d of documents; track d.id) { <li><a [href]="d.url" target="_blank" rel="noopener">{{ d.title || d.type }}</a><small>v{{ d.version }}</small></li> }
+        </ul>
+      } @else { <p class="muted">Aucun document.</p> }
+    </section>
+
+    <section class="panel">
+      <h2>Dossiers</h2>
+      @if (dossiers.length) {
+        <div class="mini-list">
+          @for (d of dossiers; track d.id) { <div class="mini-item"><strong>{{ d.terrain?.referenceInterne || d.mandat?.referenceInterne || 'Dossier' }}</strong><span class="status-badge">{{ d.statut }}</span></div> }
+        </div>
+      } @else { <p class="muted">Aucun dossier lié.</p> }
+    </section>
+
+    <section class="panel panel--full">
+      <h2>Activités</h2>
+      @if (activites.length) {
+        <div class="mini-list">
+          @for (a of activites; track a.id) { <div class="mini-item"><span>{{ a.titre }}</span><span class="status-badge">{{ label(a.statut) }}</span></div> }
+        </div>
+      } @else { <p class="muted">Aucune activité.</p> }
+    </section>
+
+    <section class="panel panel--full">
+      <h2>Historique récent</h2>
+      @if (audits.length) {
+        <ul class="mini-list">
+          @for (audit of audits; track audit.id) {
+            <li class="mini-item audit-item"><span>{{ audit.action }}</span><small>{{ audit.createdAt | date:'dd/MM/yyyy HH:mm' }} · {{ audit.user ? audit.user.firstName + ' ' + audit.user.lastName : 'Système' }}</small></li>
+          }
+        </ul>
+      } @else { <p class="muted">Aucun historique.</p> }
+    </section>
+  </section>
+</section>

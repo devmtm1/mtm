@@ -1,0 +1,49 @@
+<header class="form-header">
+  <button mat-button type="button" (click)="goBack()"><svg lucideArrowLeft aria-hidden="true"></svg></button>
+  <h1>{{ isEdit() ? 'Modifier le prospect' : 'Nouveau prospect' }}</h1>
+</header>
+
+<form class="prospect-form" [formGroup]="form" (ngSubmit)="submit()">
+  <section class="form-section">
+    <h2>Identité</h2>
+    <div class="grid">
+      <mat-form-field appearance="outline"><mat-label>Nom</mat-label><input matInput formControlName="nom" required></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Prénom</mat-label><input matInput formControlName="prenom"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Email</mat-label><input matInput formControlName="email" type="email"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Téléphone</mat-label><input matInput formControlName="telephone"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Pays de résidence</mat-label><input matInput formControlName="paysResidence"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Source</mat-label><input matInput formControlName="sourceAcquisition"></mat-form-field>
+    </div>
+  </section>
+
+  <section class="form-section">
+    <h2>Besoins & budget</h2>
+    <div class="grid">
+      <mat-form-field appearance="outline"><mat-label>Budget min (FCFA)</mat-label><input matInput formControlName="budgetMin" type="number"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Budget max (FCFA)</mat-label><input matInput formControlName="budgetMax" type="number"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Score (0-100)</mat-label><input matInput formControlName="score" type="number" min="0" max="100"></mat-form-field>
+      <mat-form-field appearance="outline" class="full"><mat-label>Besoins</mat-label><textarea matInput rows="4" formControlName="besoins"></textarea></mat-form-field>
+      <mat-form-field appearance="outline" class="full"><mat-label>Préférences</mat-label><textarea matInput rows="3" formControlName="preferences"></textarea></mat-form-field>
+    </div>
+  </section>
+
+  <section class="form-section">
+    <h2>Commercial</h2>
+    <div class="grid">
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Commercial responsable</mat-label>
+        <mat-select formControlName="commercialResponsableId">
+          <mat-option value="">Non assigné</mat-option>
+          @for (c of commercials(); track c.id) {
+            <mat-option [value]="c.id">{{ c.firstName }} {{ c.lastName }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </section>
+
+  <div class="form-actions">
+    <button mat-stroked-button type="button" (click)="goBack()">Annuler</button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid">{{ isEdit() ? 'Enregistrer' : 'Créer le prospect' }}</button>
+  </div>
+</form>

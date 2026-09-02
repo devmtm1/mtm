@@ -1,0 +1,98 @@
+<div class="mandat-form-page">
+  <header class="mandat-form-header">
+    <div class="detail-heading">
+      <button mat-button class="back-button" type="button" (click)="goBack()"><svg lucideArrowLeft aria-hidden="true"></svg></button>
+      <div><div class="detail-title-line"><h1>{{ mandatId ? 'Modifier le mandat' : 'Nouveau mandat' }}</h1></div><p class="detail-subtitle">{{ mandatId ? mandat?.referenceInterne : 'Créer une fiche mandat complète' }}</p></div>
+    </div>
+  </header>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <section class="form-grid">
+      <section class="form-section">
+        <h2>Identification</h2>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Référence interne *</mat-label>
+          <input matInput formControlName="referenceInterne">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Propriétaire *</mat-label>
+          <mat-select formControlName="proprietaireId">
+            <mat-option value="">Sélectionner un propriétaire</mat-option>
+            @for (p of proprietaires; track p.id) {
+              <mat-option [value]="p.id">{{ p.lastName }} {{ p.firstName }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Commercial responsable</mat-label>
+          <mat-select formControlName="commercialResponsableId">
+            <mat-option value="">Non assigné</mat-option>
+            <mat-option value="__none__">Aucun</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </section>
+
+      <section class="form-section">
+        <h2>Durée & type</h2>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Type de mandat *</mat-label>
+          <mat-select formControlName="typeMandat">
+            @for (t of options.typeMandat; track t) { <mat-option [value]="t">{{ t }}</mat-option> }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Date de début *</mat-label>
+          <input matInput type="date" formControlName="dateDebut">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Date de fin *</mat-label>
+          <input matInput type="date" formControlName="dateFin">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Statut *</mat-label>
+          <mat-select formControlName="statut">
+            @for (s of options.statut; track s) { <mat-option [value]="s">{{ s }}</mat-option> }
+          </mat-select>
+        </mat-form-field>
+      </section>
+
+      <section class="form-section">
+        <h2>Conditions commerciales</h2>
+        <mat-checkbox formControlName="exclusivite">Exclusivité</mat-checkbox>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Prix / conditions</mat-label>
+          <textarea matInput formControlName="prixConditions" rows="3"></textarea>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Commissions</mat-label>
+          <textarea matInput formControlName="commissions" rows="3"></textarea>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Clauses particulières</mat-label>
+          <textarea matInput formControlName="clauses" rows="3"></textarea>
+        </mat-form-field>
+      </section>
+
+      <section class="form-section">
+        <h2>Suivi & alertes</h2>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Objectifs de commercialisation</mat-label>
+          <textarea matInput formControlName="objectifsCommercialisation" rows="3"></textarea>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Alerte avant échéance (jours)</mat-label>
+          <input matInput type="number" formControlName="alerteEcheanceJours" min="1">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Restrictions contractuelles (JSON)</mat-label>
+          <textarea matInput formControlName="restrictionsContractuelles" rows="4"></textarea>
+        </mat-form-field>
+      </section>
+    </section>
+
+    <div class="form-actions">
+      <button mat-button type="button" (click)="goBack()">Annuler</button>
+      <button mat-flat-button color="primary" type="submit" [disabled]="saving || form.invalid">{{ saving ? 'Enregistrement...' : 'Enregistrer' }}</button>
+    </div>
+  </form>
+</div>

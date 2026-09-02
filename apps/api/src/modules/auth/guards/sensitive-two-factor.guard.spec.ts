@@ -44,9 +44,9 @@ describe('SensitiveTwoFactorGuard', () => {
       .mockReturnValueOnce(false)
       .mockReturnValueOnce(true);
 
-    expect(guard.canActivate(buildContext(buildUser(['administrateur'], false)))).toBe(
-      true,
-    );
+    expect(
+      guard.canActivate(buildContext(buildUser(['administrateur'], false))),
+    ).toBe(true);
   });
 
   it('bloque un rôle sensible sans 2FA', () => {
@@ -74,8 +74,8 @@ describe('SensitiveTwoFactorGuard', () => {
       .mockReturnValueOnce(false)
       .mockReturnValueOnce(false);
 
-    expect(guard.canActivate(buildContext(buildUser(['commercial'], false)))).toBe(
-      true,
-    );
+    expect(
+      guard.canActivate(buildContext(buildUser(['commercial'], false))),
+    ).toBe(true);
   });
 });

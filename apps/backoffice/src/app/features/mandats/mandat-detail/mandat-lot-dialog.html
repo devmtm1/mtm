@@ -1,0 +1,25 @@
+<h2 mat-dialog-title>{{ isEdit() ? 'Modifier le lot' : 'Ajouter un lot' }}</h2>
+<mat-dialog-content [formGroup]="form">
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Terrain</mat-label>
+    <mat-select formControlName="terrainId" [disabled]="isEdit()">
+      <mat-option value="">Sélectionner un terrain</mat-option>
+      @for (terrain of terrains(); track terrain.id) {
+        <mat-option [value]="terrain.id">{{ terrain.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Statut du lot</mat-label>
+    <mat-select formControlName="statutLot">
+      <mat-option value="Confie">Confié</mat-option>
+      <mat-option value="Disponible">Disponible</mat-option>
+      <mat-option value="Réservé">Réservé</mat-option>
+      <mat-option value="Vendu">Vendu</mat-option>
+    </mat-select>
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="close()">Annuler</button>
+  <button mat-flat-button color="primary" type="button" (click)="submit()" [disabled]="form.invalid">Enregistrer</button>
+</mat-dialog-actions>

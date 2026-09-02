@@ -95,6 +95,78 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/content/content-blocks').then((m) => m.ContentBlocks),
       },
+      {
+        path: 'mandats/nouveau',
+        canActivate: [permissionsGuard(['mandats:creer'])],
+        loadComponent: () =>
+          import('./features/mandats/mandat-form/mandat-form').then(
+            (m) => m.MandatForm,
+          ),
+      },
+      {
+        path: 'mandats/:id/modifier',
+        canActivate: [permissionsGuard(['mandats:modifier'])],
+        loadComponent: () =>
+          import('./features/mandats/mandat-form/mandat-form').then(
+            (m) => m.MandatForm,
+          ),
+      },
+      {
+        path: 'mandats/:id',
+        canActivate: [permissionsGuard(['mandats:consulter'])],
+        loadComponent: () =>
+          import('./features/mandats/mandat-detail/mandat-detail').then(
+            (m) => m.MandatDetail,
+          ),
+      },
+      {
+        path: 'mandats',
+        canActivate: [permissionsGuard(['mandats:consulter'])],
+        loadComponent: () =>
+          import('./features/mandats/mandats/mandats').then(
+            (m) => m.Mandats,
+          ),
+      },
+      {
+        path: 'crm/prospects/nouveau',
+        canActivate: [permissionsGuard(['crm:creer'])],
+        loadComponent: () =>
+          import('./features/crm/prospect-form/prospect-form').then(
+            (m) => m.ProspectForm,
+          ),
+      },
+      {
+        path: 'crm/prospects/:id/modifier',
+        canActivate: [permissionsGuard(['crm:modifier'])],
+        loadComponent: () =>
+          import('./features/crm/prospect-form/prospect-form').then(
+            (m) => m.ProspectForm,
+          ),
+      },
+      {
+        path: 'crm/prospects/:id/360',
+        canActivate: [permissionsGuard(['crm:consulter'])],
+        loadComponent: () =>
+          import('./features/crm/prospect-360/prospect-360').then(
+            (m) => m.Prospect360,
+          ),
+      },
+      {
+        path: 'crm/prospects/:id',
+        canActivate: [permissionsGuard(['crm:consulter'])],
+        loadComponent: () =>
+          import('./features/crm/prospect-detail/prospect-detail').then(
+            (m) => m.ProspectDetail,
+          ),
+      },
+      {
+        path: 'crm/prospects',
+        canActivate: [permissionsGuard(['crm:consulter'])],
+        loadComponent: () =>
+          import('./features/crm/prospects/prospects').then(
+            (m) => m.Prospects,
+          ),
+      },
     ],
   },
   { path: '**', redirectTo: 'dashboard' },
