@@ -1,5 +1,5 @@
 -- AlterTable
-ALTER TABLE "terrains" ADD COLUMN     "misEnAvant" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "terrains" ADD COLUMN IF NOT EXISTS "misEnAvant" BOOLEAN NOT NULL DEFAULT false;
 
 -- CreateTable
 CREATE TABLE "contacts" (
