@@ -12,6 +12,7 @@ import { UpdateTerrainDto } from './dto/update-terrain.dto';
 import { CreateTerrainAssetDto } from './dto/create-terrain-asset.dto';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import { SettingsService } from '../settings/settings.service';
+import type { PublicTerrainResponse } from './dto/public-terrain.dto';
 
 const terrainInclude = {
   proprietaire: true,
@@ -378,44 +379,114 @@ export class TerrainsService {
     );
   }
 
-  toPublic(terrain: Record<string, unknown>): Record<string, unknown> {
-    const safe = { ...terrain };
-    delete safe.prixAcquisition;
-    delete safe.marge;
-    delete safe.commission;
-    delete safe.notesInternes;
-    delete safe.proprietaire;
-    if (Array.isArray(safe.medias)) {
-      safe.medias = safe.medias.map((media: unknown) => {
-        const asset = media as Record<string, unknown>;
-        const resourceType =
-          typeof asset.resourceType === 'string' ? asset.resourceType : 'image';
-        return {
-          ...asset,
-          secureUrl: this.cloudinary.url(
-            String(asset.storageKey),
-            resourceType,
-            true,
-          ),
-        };
-      });
-    }
-    if (Array.isArray(safe.documents)) {
-      safe.documents = safe.documents.map((document: unknown) => {
-        const asset = document as Record<string, unknown>;
-        const resourceType =
-          typeof asset.resourceType === 'string' ? asset.resourceType : 'raw';
-        return {
-          ...asset,
-          secureUrl: this.cloudinary.url(
-            String(asset.storageKey),
-            resourceType,
-            true,
-          ),
-        };
-      });
-    }
-    return safe;
+  toPublic(terrain: Record<string, unknown>): PublicTerrainResponse {
+    const source = terrain as {
+      id: string;
+      referenceInterne: string;
+      nom: string;
+      statutJuridique: string;
+      niveauVerification: string;
+      region: string | null;
+      commune: string | null;
+      localisationDetail: string | null;
+      latitude: number | null;
+      longitude: number | null;
+      superficie: number | null;
+      uniteSuperficie: string | null;
+      dimensions: Record<string, unknown> | null;
+      prixPublic: number | null;
+      misEnAvant: boolean;
+      accesRoutier: string | null;
+      eauDisponible: boolean | null;
+      electriciteDisponible: boolean | null;
+      voisinage: string | null;
+      vocation: string | null;
+      proximiteAxes: string | null;
+      pointsInteret: Record<string, unknown> | null;
+      medias: Array<{
+        id: string;
+        type: string;
+        title: string | null;
+        isPublic: boolean;
+        sortOrder: number;
+        storageKey: string;
+        resourceType: string;
+        capturedAt: string | null;
+        createdAt: string;
+      }> | null;
+      documents: Array<{
+        id: string;
+        type: string;
+        title: string | null;
+        isPublic: boolean;
+        version: number;
+        storageKey: string;
+        resourceType: string;
+        createdAt: string;
+      }> | null;
+      createdAt: string;
+      updatedAt: string;
+    };
+
+    const medias =
+      source.medias?.map((media) => ({
+        id: media.id,
+        type: media.type,
+        title: media.title,
+        isPublic: media.isPublic,
+        sortOrder: media.sortOrder,
+        secureUrl: this.cloudinary.url(
+          media.storageKey,
+          media.resourceType,
+          true,
+        ),
+        capturedAt: media.capturedAt,
+        createdAt: media.createdAt,
+      })) ?? [];
+
+    const documents =
+      source.documents?.map((document) => ({
+        id: document.id,
+        type: document.type,
+        title: document.title,
+        isPublic: document.isPublic,
+        version: document.version,
+        secureUrl: this.cloudinary.url(
+          document.storageKey,
+          document.resourceType,
+          true,
+        ),
+        createdAt: document.createdAt,
+      })) ?? [];
+
+    return {
+      id: source.id,
+      referenceInterne: source.referenceInterne,
+      nom: source.nom,
+      statutJuridique: source.statutJuridique,
+      niveauVerification: source.niveauVerification,
+      region: source.region,
+      commune: source.commune,
+      localisationDetail: source.localisationDetail,
+      latitude: source.latitude,
+      longitude: source.longitude,
+      superficie: source.superficie,
+      uniteSuperficie: source.uniteSuperficie,
+      dimensions: source.dimensions,
+      prixPublic: source.prixPublic,
+      misEnAvant: source.misEnAvant,
+      accesRoutier: source.accesRoutier,
+      eauDisponible: source.eauDisponible,
+      electriciteDisponible: source.electriciteDisponible,
+      voisinage: source.voisinage,
+      vocation: source.vocation,
+      proximiteAxes: source.proximiteAxes,
+      pointsInteret: source.pointsInteret,
+      medias,
+      documents,
+      createdAt: source.createdAt,
+      updatedAt: source.updatedAt,
+    };
   }
 
   private async ensureExists(id: string): Promise<void> {

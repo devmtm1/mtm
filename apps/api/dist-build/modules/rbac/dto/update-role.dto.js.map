@@ -1,0 +1,1 @@
+{"version":3,"file":"update-role.dto.js","sourceRoot":"","sources":["../../../../src/modules/rbac/dto/update-role.dto.ts"],"names":[],"mappings":";;;;;;;;;;;;AAAA,6CAA8C;AAC9C,qDAA+D;AAE/D,MAAa,aAAa;IAKxB,WAAW,CAAU;CACtB;AAND,sCAMC;AADC;IAJC,IAAA,qBAAW,EAAC,EAAE,QAAQ,EAAE,KAAK,EAAE,CAAC;IAChC,IAAA,4BAAU,GAAE;IACZ,IAAA,0BAAQ,GAAE;IACV,IAAA,wBAAM,EAAC,CAAC,EAAE,GAAG,CAAC;;kDACM"}

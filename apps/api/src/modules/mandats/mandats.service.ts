@@ -320,7 +320,7 @@ export class MandatsService {
   }
 
   async checkAlerts() {
-    const alerts = await this.prisma.$transaction(async (tx) => {
+    const alertResults = await this.prisma.$transaction(async (tx) => {
       const now = new Date();
       const mandats = await tx.mandat.findMany({
         where: {
@@ -372,7 +372,7 @@ export class MandatsService {
 
     return {
       generatedAt: new Date().toISOString(),
-      alerts,
+      alerts: alertResults,
     };
   }
 

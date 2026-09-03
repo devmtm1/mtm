@@ -1,0 +1,31 @@
+export declare class CreateTerrainDto {
+    referenceInterne: string;
+    nom: string;
+    parcelleMatricule?: string;
+    proprietaireId?: string;
+    statutJuridique: string;
+    typeDocumentFoncier?: string;
+    niveauVerification: string;
+    region?: string;
+    commune?: string;
+    localisationDetail?: string;
+    latitude?: number;
+    longitude?: number;
+    superficie?: number;
+    uniteSuperficie?: string;
+    dimensions?: Record<string, unknown>;
+    prixAcquisition?: number;
+    prixPublic?: number;
+    marge?: number;
+    commission?: number;
+    statutCommercial: string;
+    misEnAvant?: boolean;
+    accesRoutier?: string;
+    eauDisponible?: boolean;
+    electriciteDisponible?: boolean;
+    voisinage?: string;
+    vocation?: string;
+    proximiteAxes?: string;
+    notesInternes?: string;
+    commercialResponsableId?: string;
+}

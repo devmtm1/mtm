@@ -27,24 +27,12 @@ export interface Pagination {
   pageSize?: number;
 }
 
-/**
- * Service d'audit générique et réutilisable (section 24 du CDC).
- * Tout module — Phase 0 ou futurs modules métier — doit passer par ce
- * service plutôt que d'écrire directement dans audit_logs, afin de
- * garantir un format cohérent et centralisé.
- */
 @Injectable()
 export class AuditService {
   private readonly logger = new Logger(AuditService.name);
 
   constructor(private readonly prisma: PrismaService) {}
 
-  /**
-   * Enregistre une entrée d'audit. Ne lève jamais d'exception : un échec
-   * d'écriture d'audit ne doit jamais faire échouer l'action métier
-   * qu'il documente (ex: un login réussi ne doit pas être annulé parce
-   * que l'audit log a échoué à s'écrire).
-   */
   async record(input: RecordAuditInput): Promise<void> {
     try {
       await this.prisma.auditLog.create({
@@ -53,7 +41,11 @@ export class AuditService {
           action: input.action,
           entityType: input.entityType,
           entityId: input.entityId ?? undefined,
+          // Prisma attend un type JSON très strict ; toJson() retourne `unknown`,
+          // le cast est donc nécessaire ici.
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           oldValue: this.toJson(input.oldValue) as any,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           newValue: this.toJson(input.newValue) as any,
           justification: input.justification,
           ipAddress: input.ipAddress,
@@ -126,6 +118,7 @@ export class AuditService {
     if (Array.isArray(value)) return value.map((item) => this.serialize(item));
     const record = value as Record<string, unknown>;
     if (typeof record.toJSON === 'function') {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       return this.serialize(record.toJSON());
     }
     const plain: Record<string, unknown> = {};
