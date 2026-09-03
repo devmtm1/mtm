@@ -221,6 +221,25 @@ describe('CrmService', () => {
     });
   });
 
+  it('autorise le responsable commercial à voir tous les prospects', async () => {
+    prismaMock.prospect.findMany.mockResolvedValue([]);
+    prismaMock.prospect.count.mockResolvedValue(0);
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+
+    await service.findAll(
+      { page: 1, pageSize: 25, sortBy: 'createdAt', sortOrder: 'desc' },
+      { id: 'r1', roles: ['responsable_commercial'] },
+    );
+
+    expect(prismaMock.prospect.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.not.objectContaining({
+          commercialResponsableId: expect.anything(),
+        }),
+      }),
+    );
+  });
+
   it('transitionne le pipeline avec justification pour perdu', async () => {
     prismaMock.prospect.findUnique.mockResolvedValue({
       id: 'p1',
@@ -418,5 +437,59 @@ describe('CrmService', () => {
       }),
     );
     expect(result.prospect.commercialResponsableId).toBe('u2');
+  });
+
+  it("interdit à un commercial d'affecter un prospect", async () => {
+    await expect(
+      service.assignCommercial('p1', 'u2', {
+        id: 'u1',
+        roles: ['commercial'],
+      }),
+    ).rejects.toThrow(BadRequestException);
+    expect(prismaMock.prospect.update).not.toHaveBeenCalled();
+  });
+
+  it('interdit la réaffectation via la mise à jour générique', async () => {
+    prismaMock.prospect.findUnique.mockResolvedValue({
+      id: 'p1',
+      commercialResponsableId: 'u1',
+    });
+
+    await expect(
+      service.update(
+        'p1',
+        { commercialResponsableId: 'u2' },
+        { id: 'u1', roles: ['commercial'] },
+      ),
+    ).rejects.toThrow(BadRequestException);
+    expect(prismaMock.prospect.update).not.toHaveBeenCalled();
+  });
+
+  it('autorise la mise à jour sans changement de commercial', async () => {
+    prismaMock.prospect.findUnique.mockResolvedValue({
+      id: 'p1',
+      commercialResponsableId: 'u1',
+    });
+    prismaMock.prospect.update.mockResolvedValue({
+      id: 'p1',
+      nom: 'Prospect modifié',
+      commercialResponsableId: 'u1',
+    });
+
+    await service.update(
+      'p1',
+      { nom: 'Prospect modifié', commercialResponsableId: 'u1' },
+      { id: 'u1', roles: ['commercial'] },
+    );
+
+    expect(prismaMock.prospect.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'p1' },
+        data: expect.objectContaining({
+          nom: 'Prospect modifié',
+          commercialResponsableId: 'u1',
+        }),
+      }),
+    );
   });
 });

@@ -1,4 +1,4 @@
-import { AllCommunityModule, ModuleRegistry, themeQuartz } from 'ag-grid-community';
+import { AllCommunityModule, ModuleRegistry, provideGlobalGridOptions, themeQuartz } from 'ag-grid-community';
 
 // Enregistrement des modules Community en effet de bord au chargement de
 // ce fichier. Comme ce fichier n'est importé que par les écrans utilisant
@@ -6,6 +6,7 @@ import { AllCommunityModule, ModuleRegistry, themeQuartz } from 'ag-grid-communi
 // Grid (~1 Mo) — n'est payé qu'au moment où l'utilisateur navigue vers un
 // de ces écrans, jamais dans le bundle initial.
 ModuleRegistry.registerModules([AllCommunityModule]);
+provideGlobalGridOptions({ paginationPageSizeSelector: false });
 
 // Thème partagé, aligné sur la palette MTM Immobilier pour conserver
 // une lecture sobre et cohérente sur tous les tableaux.

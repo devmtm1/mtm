@@ -1,6 +1,6 @@
 .prospects-page {
   display: grid;
-  gap: 20px;
+  gap: 16px;
   width: 100%;
   max-width: 1440px;
   margin: 0 auto;
@@ -12,6 +12,8 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
+
+  > div { min-width: 0; }
 
   h1 {
     margin: 8px 0 6px;
@@ -53,7 +55,7 @@
 
 .prospect-statistics {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -61,8 +63,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 88px;
-  padding: 14px 16px;
+  min-width: 0;
+  min-height: 80px;
+  padding: 12px 14px;
   box-shadow: 0 2px 8px rgba(25, 21, 40, 0.03);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 
@@ -88,6 +91,7 @@
 
   > div {
     display: grid;
+    min-width: 0;
     gap: 2px;
   }
 
@@ -99,12 +103,18 @@
   }
 
   span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-size: 12px;
     color: var(--mtm-text-muted);
     font-weight: 500;
   }
 
   small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-size: 11px;
     color: var(--mtm-text-muted);
   }
@@ -119,8 +129,8 @@
 
 .prospects-table-shell {
   display: grid;
-  gap: 12px;
-  padding: 18px;
+  gap: 14px;
+  padding: 16px;
   border: 1px solid var(--mtm-border);
   border-radius: 12px;
   background: var(--mtm-card-bg);
@@ -133,6 +143,8 @@
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+
+  > * { min-width: 0; }
 
   h2 {
     margin: 0;
@@ -147,7 +159,7 @@
   }
 }
 
-.prospects-toolbar__title { min-width: 180px; }
+.prospects-toolbar__title { flex: 1 1 220px; min-width: 180px; }
 
 .prospects-section-label {
   display: block;
@@ -163,9 +175,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  flex: 1 1 560px;
+  flex: 1 1 520px;
   justify-content: flex-end;
-  min-width: min(100%, 560px);
+  min-width: min(100%, 520px);
 }
 
 .filters__search-icon { width: 16px; height: 16px; color: var(--mtm-text-muted); }
@@ -191,6 +203,7 @@
 .prospects-view-switch {
   display: inline-flex;
   justify-self: end;
+  align-self: end;
   gap: 2px;
   padding: 3px;
   border: 1px solid var(--mtm-border);
@@ -222,8 +235,13 @@
 .prospects-grid {
   display: block;
   width: 100%;
+  min-width: 0;
   border-radius: 8px;
   overflow: hidden;
+}
+
+:host ::ng-deep .prospects-grid .ag-root-wrapper {
+  min-height: 0;
 }
 
 .prospects-grid-view {
@@ -236,7 +254,8 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-height: 170px;
+  min-width: 0;
+  min-height: 160px;
   padding: 16px;
   border-radius: 8px;
   background: var(--mtm-card-bg);
@@ -267,6 +286,10 @@
     border-radius: 5px;
     font-size: 11px;
     font-weight: 700;
+    max-width: 42%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     background: var(--mtm-purple-subtle);
     color: var(--mtm-purple-primary);
   }
@@ -277,7 +300,7 @@
     color: var(--mtm-text-muted);
   }
 
-  &__details { display: flex; gap: 12px; margin-top: 12px; padding: 10px 0; border-top: 1px solid var(--mtm-border); border-bottom: 1px solid var(--mtm-border); color: var(--mtm-text-muted); font-size: 11px; }
+  &__details { display: flex; gap: 12px; margin-top: 10px; padding: 10px 0; border-top: 1px solid var(--mtm-border); border-bottom: 1px solid var(--mtm-border); color: var(--mtm-text-muted); font-size: 11px; }
   &__details strong { color: var(--mtm-text-dark); font-size: 13px; }
   &__owner { overflow: hidden; margin: 0; color: var(--mtm-text-muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 }
@@ -322,6 +345,7 @@
   .filters__status { width: 160px; flex: 1; }
   .filters { min-width: 0; }
   .prospects-table-shell { padding: 14px; }
+  .prospects-view-switch { align-self: stretch; justify-self: start; }
 }
 
 @media (min-width: 901px) and (max-width: 1120px) {

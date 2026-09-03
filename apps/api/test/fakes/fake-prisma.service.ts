@@ -613,8 +613,8 @@ export class FakePrismaService {
       const s = typeof skip === 'number' ? skip : 0;
       const t = typeof take === 'number' ? take : list.length;
       const paginated = list.slice(s, s + t);
-      if (include) {
-        const inc = include as Record<string, unknown>;
+      if (_include) {
+        const inc = _include as Record<string, unknown>;
         return Promise.resolve(
           paginated.map((p) => {
             const result: Record<string, unknown> = { ...p };

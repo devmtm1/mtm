@@ -88,6 +88,31 @@ export class CrmService {
     }
   }
 
+  private async assertCommercialTarget(
+    commercialResponsableId: string,
+  ): Promise<void> {
+    const targetUser = await this.prisma.user.findUnique({
+      where: { id: commercialResponsableId },
+      include: { roles: { include: { role: { select: { name: true } } } } },
+    });
+    if (!targetUser || !targetUser.isActive) {
+      throw new BadRequestException('Utilisateur cible introuvable ou inactif');
+    }
+    const hasCommercialRole = targetUser.roles.some((ur) =>
+      [
+        'commercial',
+        'responsable_commercial',
+        'manager',
+        'administrateur',
+      ].includes(ur.role.name),
+    );
+    if (!hasCommercialRole) {
+      throw new BadRequestException(
+        "L'utilisateur cible n'a pas de rôle commercial",
+      );
+    }
+  }
+
   async findAll(
     query: QueryProspectDto,
     user: { id: string; roles: string[] },
@@ -95,8 +120,7 @@ export class CrmService {
     const page = query.page > 0 ? query.page : 1;
     const pageSize = Math.min(query.pageSize > 0 ? query.pageSize : 25, 200);
     const search = query.search?.trim();
-    const isManager =
-      user.roles.includes('manager') || user.roles.includes('administrateur');
+    const isManager = this.isManager(user);
 
     const where: Prisma.ProspectWhereInput = {
       ...(search
@@ -341,8 +365,7 @@ export class CrmService {
   }
 
   async getStats(user: { id: string; roles: string[] }) {
-    const isManager =
-      user.roles.includes('manager') || user.roles.includes('administrateur');
+    const isManager = this.isManager(user);
     const now = new Date();
     const startOfDay = new Date(now);
     startOfDay.setHours(0, 0, 0, 0);
@@ -389,8 +412,7 @@ export class CrmService {
   }
 
   async getUpcomingTasks(user: { id: string; roles: string[] }, limit = 20) {
-    const isManager =
-      user.roles.includes('manager') || user.roles.includes('administrateur');
+    const isManager = this.isManager(user);
     return this.prisma.activiteCrm.findMany({
       where: {
         statut: 'a_faire',
@@ -482,30 +504,14 @@ export class CrmService {
     commercialResponsableId: string | null,
     user: { id: string; roles: string[] },
   ) {
+    if (!this.isManager(user)) {
+      throw new BadRequestException(
+        "Seul l'encadrement commercial peut affecter un prospect",
+      );
+    }
     await this.assertOwnership(prospectId, user);
     if (commercialResponsableId) {
-      const targetUser = await this.prisma.user.findUnique({
-        where: { id: commercialResponsableId },
-        include: { roles: { include: { role: { select: { name: true } } } } },
-      });
-      if (!targetUser || !targetUser.isActive) {
-        throw new BadRequestException(
-          'Utilisateur cible introuvable ou inactif',
-        );
-      }
-      const hasCommercialRole = targetUser.roles.some((ur) =>
-        [
-          'commercial',
-          'responsable_commercial',
-          'manager',
-          'administrateur',
-        ].includes(ur.role.name),
-      );
-      if (!hasCommercialRole) {
-        throw new BadRequestException(
-          "L'utilisateur cible n'a pas de rôle commercial",
-        );
-      }
+      await this.assertCommercialTarget(commercialResponsableId);
     }
     const before = await this.findOne(prospectId, user);
     const prospect = await this.prisma.prospect.update({
@@ -556,11 +562,21 @@ export class CrmService {
     return { before, prospect, justification };
   }
 
-  async convertContact(contactId: string, commercialResponsableId?: string) {
+  async convertContact(
+    contactId: string,
+    commercialResponsableId?: string,
+    user?: { id: string; roles: string[] },
+  ) {
     const contact = await this.prisma.contact.findUnique({
       where: { id: contactId },
     });
     if (!contact) throw new NotFoundException('Contact public introuvable');
+
+    if (commercialResponsableId && user && !this.isManager(user)) {
+      throw new BadRequestException(
+        "Seul l'encadrement commercial peut affecter un prospect à un autre utilisateur",
+      );
+    }
 
     if (commercialResponsableId) {
       const targetUser = await this.prisma.user.findUnique({
@@ -637,8 +653,7 @@ export class CrmService {
 
   async create(dto: CreateProspectDto, user: { id: string; roles: string[] }) {
     await this.validatePipeline(dto.statutPipeline);
-    const isManager =
-      user.roles.includes('manager') || user.roles.includes('administrateur');
+    const isManager = this.isManager(user);
     const commercialResponsableId = isManager
       ? dto.commercialResponsableId
       : (dto.commercialResponsableId ?? user.id);
@@ -682,6 +697,21 @@ export class CrmService {
       }),
       ...(dto.score !== undefined && { score: dto.score }),
     };
+    if (dto.commercialResponsableId !== undefined) {
+      if (!this.isManager(user)) {
+        const current = await this.prisma.prospect.findUnique({
+          where: { id },
+          select: { commercialResponsableId: true },
+        });
+        if (current?.commercialResponsableId !== dto.commercialResponsableId) {
+          throw new BadRequestException(
+            "Seul l'encadrement commercial peut réaffecter un prospect",
+          );
+        }
+      } else if (dto.commercialResponsableId) {
+        await this.assertCommercialTarget(dto.commercialResponsableId);
+      }
+    }
     const prospect = await this.prisma.prospect.update({
       where: { id },
       data,

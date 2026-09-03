@@ -78,7 +78,7 @@ export class TerrainDetail implements OnInit, OnDestroy {
   protected openHistory(): void {
     if (!this.terrain) return;
     this.dialog.open(TerrainHistoryDialog, {
-      width: '600px',
+      width: '680px',
       maxWidth: 'calc(100vw - 32px)',
       data: { terrainId: this.terrain.id },
     });

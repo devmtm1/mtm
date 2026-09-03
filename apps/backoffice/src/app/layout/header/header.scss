@@ -379,6 +379,34 @@
     display: none;
   }
 
+  .header {
+    height: 56px;
+    padding-inline: 10px;
+  }
+
+  .header__breadcrumb {
+    max-width: min(42vw, 180px);
+  }
+
+  .header__profile-text,
+  .header__profile-chevron {
+    display: none;
+  }
+
+  .header__profile {
+    padding: 4px;
+  }
+}
+
+@media (max-width: 400px) {
+  .header__breadcrumb {
+    max-width: 34vw;
+  }
+
+  .header__left {
+    gap: 2px;
+  }
+
   .header__profile-text,
   .header__profile-chevron {
     display: none;

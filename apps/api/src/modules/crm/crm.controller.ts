@@ -113,6 +113,7 @@ export class CrmController {
     const prospect = await this.crm.convertContact(
       contactId,
       dto.commercialResponsableId,
+      user,
     );
     await this.audit.record({
       userId: user.id,

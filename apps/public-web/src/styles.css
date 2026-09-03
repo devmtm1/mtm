@@ -1857,6 +1857,117 @@ textarea:focus-visible {
   }
 }
 
+/* Responsive guardrails for compact phones, tablets and wide displays. */
+@media (max-width: 1024px) {
+  .why-section-inner {
+    gap: 48px;
+  }
+
+  .cta-section-inner {
+    grid-template-columns: minmax(0, 1fr) 260px;
+    gap: 32px;
+  }
+
+  .footer-main-grid {
+    grid-template-columns: 1.3fr 1fr 1fr;
+    gap: 30px 24px;
+  }
+
+  .footer-contact {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .site-header > div {
+    gap: 10px;
+  }
+
+  .site-header a[aria-label] {
+    min-width: 0;
+  }
+
+  .site-header a[aria-label] > span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .detail-hero-image {
+    aspect-ratio: 1.08;
+  }
+
+  .detail-intro h1 {
+    font-size: clamp(2rem, 12vw, 3.2rem);
+  }
+
+  .detail-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .detail-primary-action,
+  .detail-secondary-action,
+  .detail-tertiary-action {
+    width: 100%;
+  }
+
+  .detail-spec-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-map {
+    height: 280px;
+  }
+
+  .footer-main-grid {
+    grid-template-columns: 1fr;
+    gap: 26px;
+  }
+
+  .footer-brand,
+  .footer-contact {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 400px) {
+  .site-header > div {
+    padding-inline: 12px;
+  }
+
+  .site-header a[aria-label] > span:first-child {
+    width: 36px;
+    height: 36px;
+  }
+
+  .site-header a[aria-label] > span:last-child {
+    font-size: 0.98rem;
+  }
+
+  .about-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .about-stats div:last-child {
+    grid-column: auto;
+  }
+
+  .floating-whatsapp {
+    right: 12px;
+    bottom: 12px;
+    width: 46px;
+    min-height: 46px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .site-header > div,
+  .site-footer > div {
+    max-width: 1600px;
+  }
+}
+
 /* Cartographie (J1.3) */
 .mtm-leaflet-map {
   width: 100%;

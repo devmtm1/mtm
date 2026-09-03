@@ -1,6 +1,6 @@
 .mandats-page {
   display: grid;
-  gap: 20px;
+  gap: 16px;
   width: 100%;
   max-width: 1440px;
   margin: 0 auto;
@@ -12,6 +12,8 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
+
+  > div { min-width: 0; }
 
   h1 {
     margin: 8px 0 6px;
@@ -53,7 +55,7 @@
 
 .mandat-statistics {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -61,8 +63,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 88px;
-  padding: 14px 16px;
+  min-width: 0;
+  min-height: 80px;
+  padding: 12px 14px;
   box-shadow: 0 2px 8px rgba(25, 21, 40, 0.03);
   border-radius: 8px;
   background: var(--mtm-card-bg);
@@ -82,6 +85,7 @@
 
   > div {
     display: grid;
+    min-width: 0;
     gap: 2px;
   }
 
@@ -93,12 +97,16 @@
   }
 
   span {
+    overflow: hidden;
     font-size: 12px;
     color: var(--mtm-text-muted);
     font-weight: 500;
   }
 
   small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-size: 11px;
     color: var(--mtm-text-muted);
   }
@@ -106,8 +114,8 @@
 
 .mandats-table-shell {
   display: grid;
-  gap: 12px;
-  padding: 18px;
+  gap: 14px;
+  padding: 16px;
   border: 1px solid var(--mtm-border);
   border-radius: 12px;
   background: var(--mtm-card-bg);
@@ -120,6 +128,8 @@
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+
+  > * { min-width: 0; }
 
   h2 {
     margin: 0;
@@ -134,7 +144,7 @@
   }
 }
 
-.mandats-toolbar__title { min-width: 180px; }
+.mandats-toolbar__title { flex: 1 1 220px; min-width: 180px; }
 
 .mandats-section-label {
   display: block;
@@ -150,9 +160,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  flex: 1 1 560px;
+  flex: 1 1 520px;
   justify-content: flex-end;
-  min-width: min(100%, 560px);
+  min-width: min(100%, 520px);
 }
 
 .filters__search-icon { width: 16px; height: 16px; color: var(--mtm-text-muted); }
@@ -178,6 +188,7 @@
 .mandats-view-switch {
   display: inline-flex;
   justify-self: end;
+  align-self: end;
   gap: 2px;
   padding: 3px;
   border: 1px solid var(--mtm-border);
@@ -209,8 +220,13 @@
 .mandats-grid {
   display: block;
   width: 100%;
+  min-width: 0;
   border-radius: 8px;
   overflow: hidden;
+}
+
+:host ::ng-deep .mandats-grid .ag-root-wrapper {
+  min-height: 0;
 }
 
 .mandats-grid-view {
@@ -305,6 +321,7 @@
   .filters__status { width: 160px; flex: 1; }
   .filters { min-width: 0; }
   .mandats-table-shell { padding: 14px; }
+  .mandats-view-switch { align-self: stretch; justify-self: start; }
 }
 
 @media (min-width: 901px) and (max-width: 1220px) {

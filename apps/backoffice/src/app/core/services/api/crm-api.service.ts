@@ -74,7 +74,7 @@ export class CrmApiService {
   }
 
   getCommercials(): Observable<CommercialSummary[]> {
-    return this.http.get<CommercialSummary[]>(`${environment.apiUrl}/users`);
+    return this.http.get<CommercialSummary[]>(`${this.baseUrl}/commercials`);
   }
 
   create(payload: CreateProspectPayload): Observable<ProspectDetail> {
@@ -101,13 +101,18 @@ export class CrmApiService {
     return this.http.delete<{ success: boolean }>(`${this.baseUrl}/${prospectId}/activites/${activiteId}`);
   }
 
-  transitionPipeline(prospectId: string, stage: string) {
-    return this.http.patch(`${this.baseUrl}/${prospectId}/pipeline`, { statutPipeline: stage });
+  transitionPipeline(prospectId: string, stage: string, justification?: string) {
+    return this.http.patch(`${this.baseUrl}/${prospectId}/pipeline`, {
+      statutPipeline: stage,
+      ...(justification ? { justification } : {}),
+    });
   }
 
   convertContact(contactId: string, commercialResponsableId?: string) {
-    const params = commercialResponsableId ? new HttpParams().set('commercialResponsableId', commercialResponsableId) : new HttpParams();
-    return this.http.post<ProspectDetail>(`${this.baseUrl}/contacts/${contactId}/convert`, null, { params });
+    return this.http.post<ProspectDetail>(
+      `${this.baseUrl}/contacts/${contactId}/convert`,
+      commercialResponsableId ? { commercialResponsableId } : {},
+    );
   }
 
   assignCommercial(prospectId: string, commercialResponsableId: string) {

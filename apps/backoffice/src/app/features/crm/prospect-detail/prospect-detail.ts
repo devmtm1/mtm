@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -24,6 +24,7 @@ export class ProspectDetail implements OnInit {
   private readonly session = inject(SessionService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
   protected prospect: ProspectDetailModel | null = null;
   protected readonly loading = signal(true);
@@ -125,7 +126,11 @@ export class ProspectDetail implements OnInit {
   private loadProspect(id: string): void {
     this.loading.set(true);
     this.api.findOne(id).subscribe({
-      next: (prospect) => { this.prospect = prospect; this.loading.set(false); },
+      next: (prospect) => {
+        this.prospect = prospect;
+        this.loading.set(false);
+        this.changeDetector.markForCheck();
+      },
       error: () => { this.loading.set(false); this.snackBar.open('Prospect introuvable', 'Fermer', { duration: 4000 }); this.goBack(); },
     });
   }

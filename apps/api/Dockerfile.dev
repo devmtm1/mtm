@@ -14,8 +14,10 @@ RUN npm install --workspace=apps/api
 
 COPY apps/api ./apps/api
 
+RUN npx prisma generate --schema=apps/api/prisma/schema.prisma
+
 WORKDIR /app/apps/api
 
-EXPOSE 3000
+EXPOSE 3001
 
 CMD ["npm", "run", "start:dev"]
