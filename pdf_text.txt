@@ -1,0 +1,578 @@
+MTM IMMOBILIER
+
+CAHIER DES CHARGES
+Plateforme numérique intégrée — Site web, application mobile et
+système de gestion
+
+Document de référence pour la conception, le développement, la recette
+et la maintenance
+
+Version finale — 13 août 2026
+
+MTM Immobilier — Cahier des charges
+
+Page 1
+
+Objet du document
+Le présent cahier des charges formalise les besoins exprimés pour la plateforme numérique de MTM
+Immobilier. Il constitue une base fonctionnelle et technique de référence pour le développeur
+interne, tout en restant évolutif. Les règles métier sensibles et les clauses contractuelles doivent
+être validées par MTM et, lorsque nécessaire, par un conseil juridique.
+
+Sommaire
+1. Présentation et contexte
+2. Objectifs du projet
+3. Périmètre fonctionnel général
+4. Architecture des espaces utilisateurs
+5. Site internet public — arborescence
+6. Page d’accueil — maquette fonctionnelle
+7. Catalogue des terrains — fiche publique
+8. Module de gestion des terrains et biens
+9. Cartographie et géolocalisation
+10. Mandats de commercialisation et portefeuille propriétaire
+11. Vente, réservation et paiement
+12. Commissions des commerciaux
+13. CRM — prospects et clients
+14. Démarches administratives et vérification foncière
+15. Gestion locative
+16. Construction et suivi de chantier
+17. Gestion électronique des documents (GED)
+18. Comptabilité et finances
+19. Ressources humaines
+20. Gestion des partenaires
+21. Agenda, tâches et workflow
+22. Notifications et communication
+23. Tableaux de bord et reporting
+24. Administration et rôles
+25. Paramétrage général
+26. Application mobile Android et iPhone
+27. Sécurité, confidentialité et continuité
+28. Propriété intellectuelle, confidentialité et dépendance au développeur
+29. Architecture technique et exigences non fonctionnelles
+30. Développement par phases et gouvernance
+31. Livrables obligatoires
+
+MTM Immobilier — Cahier des charges
+
+Page 2
+
+32. Tests, recette et mise en production
+33. Maintenance et évolutions
+34. Vision à long terme — MTM Immobilier uniquement
+35. Maquettes fonctionnelles — synthèse
+36. Critères de qualité et d’acceptation
+37. Glossaire
+
+MTM Immobilier — Cahier des charges
+
+Page 3
+
+1. Présentation et contexte
+MTM Immobilier souhaite mettre en place une plateforme numérique intégrée couvrant son site
+internet public, une application web de gestion interne et des applications mobiles Android et
+iPhone. L’objectif est de centraliser les opérations immobilières, commerciales, administratives,
+locatives, financières et de construction dans un même système.
+• Les activités principales de MTM Immobilier sont : commercialisation de terrains, achat et vente,
+gérance et gestion locative, construction et démarches administratives et foncières. La vente de
+terrains et la gestion locative constituent des axes prioritaires, tout en conservant une présentation
+complète de l’ensemble des services.
+
+La plateforme doit être pensée en priorité pour une clientèle à distance, notamment la diaspora
+sénégalaise, avec un haut niveau de transparence, de traçabilité, de communication, de paiement à
+distance et de suivi des dossiers.
+
+2. Objectifs du projet
+Créer une vitrine digitale moderne et crédible pour MTM Immobilier.
+Permettre la consultation détaillée des terrains et autres offres, avec recherche, filtres, cartographie,
+galerie média et réservation.
+Permettre aux clients de créer un compte, suivre leurs dossiers, consulter rapports, contrats,
+paiements et documents, et échanger avec MTM.
+Centraliser la gestion interne : CRM, terrains, mandats, ventes, commissions, démarches, gestion
+locative, construction, documents, finances, RH et reporting.
+Réduire les doubles saisies et garantir une source unique de données synchronisée entre site,
+application web et applications mobiles.
+Préparer une architecture suffisamment modulaire pour permettre l’évolution de la solution avec
+MTM Immobilier, sans engager à ce stade une commercialisation externe de la solution.
+
+3. Périmètre fonctionnel général
+La solution comprend quatre grands canaux : (1) site web public, (2) application web de gestion, (3)
+application mobile Android, (4) application mobile iPhone.
+• Les données doivent être centralisées dans un backend commun et exposées par des API
+sécurisées. Les interfaces doivent respecter les mêmes règles métier, droits d’accès et statuts.
+
+Le français est la seule langue requise pour la V1. L’architecture doit toutefois permettre l’ajout
+ultérieur d’autres langues sans refonte majeure.
+
+4. Architecture des espaces utilisateurs
+• Espace public : consultation des services, terrains, projets à venir, réalisations, actualités, contact
+et demandes en ligne.
+• Espace client : dossiers, rapports de vérification, documents, paiements, réservations, ventes,
+construction, demandes et communications.
+• Espace propriétaire : mandats, lots confiés, lots vendus/restants, encaissements, documents,
+rapports et échéances.
+• Espace locataire : bail, loyers, quittances, paiements, caution, incidents et demandes.
+• Espace interne : administration, direction, managers, responsables commerciaux, commerciaux,
+comptabilité, gestion locative, démarches, construction, RH et autres profils configurables.
+
+5. Site internet public — arborescence
+MTM Immobilier — Cahier des charges
+
+Page 4
+
+• Pages principales : Accueil ; À propos ; Nos terrains / Nos produits ; Gestion locative ; Construction ;
+Démarches administratives ; Projets à venir ; Nos réalisations ; Actualités et conseils ; Contact ;
+Espace client.
+
+La navigation doit être claire, responsive et optimisée pour ordinateur, tablette et smartphone.
+• Les contenus marketing (terrains mis en avant, projets, actualités, témoignages, visuels, textes,
+coordonnées) doivent être administrables depuis le back-office sans intervention du développeur.
+
+6. Page d’accueil — maquette fonctionnelle
+En-tête : logo MTM Immobilier, menu principal, accès Espace client et bouton d’action principal.
+Hero : message de confiance et deux appels à l’action, par exemple « Voir les terrains » et «
+Demander une vérification ».
+Recherche rapide : région/zone, type de bien, superficie, budget, statut juridique et autres filtres
+configurables.
+Terrains mis en avant : cartes visuelles avec photo miniature, référence/matricule, localisation,
+superficie, statut juridique et prix public.
+Sections complémentaires : projets à venir, réalisations, services, témoignages, appel
+rapide/WhatsApp, formulaire de contact et pied de page complet.
+
+7. Catalogue des terrains — fiche publique
+• Chaque terrain doit pouvoir être présenté sous forme de carte moderne et cliquable. La carte
+contient au minimum une image, la référence ou le matricule, la localisation, la superficie, le type
+de titre/statut et le prix public.
+
+Au clic, ouverture d’une fiche détaillée avec grande image, galerie de miniatures, vidéos
+éventuelles, description, caractéristiques, carte interactive, points d’intérêt, informations d’accès,
+documents publiables et boutons « Demander une visite », « Demander des informations » et «
+Réserver » lorsque le bien est éligible.
+La vue publique ne doit jamais exposer les informations internes telles que prix d’acquisition MTM,
+marge, prix de majoration interne, commissions ou notes confidentielles.
+
+8. Module de gestion des terrains et biens
+• La fiche interne d’un terrain doit pouvoir contenir : référence interne ; nom du terrain ; numéro de
+parcelle/matricule ; informations cadastrales ou de propriété disponibles ; propriétaire ; statut
+juridique ; type de document foncier ; localisation administrative ; coordonnées GPS ; superficie ;
+dimensions ; prix d’acquisition MTM ; prix public ; prix de majoration/marge ; commission ; statut
+commercial ; photos ; vidéos ; plans ; documents ; notes internes ; commercial responsable ;
+mandat associé.
+• Les statuts juridiques doivent être configurables pour couvrir notamment titre foncier, bail,
+délibération, morcellement, régularisation en cours et autres situations utilisées par MTM. Le
+système doit permettre de préciser le niveau de vérification effectué et les documents justificatifs
+associés.
+• La fiche doit également pouvoir renseigner les caractéristiques utiles à la commercialisation : accès
+routier, eau, électricité, voisinage, vocation résidentielle/commerciale, proximité des axes et points
+d’intérêt.
+• Chaque modification sensible doit être historisée : utilisateur, date, ancienne valeur, nouvelle valeur
+et justification lorsque nécessaire.
+
+9. Cartographie et géolocalisation
+MTM Immobilier — Cahier des charges
+
+Page 5
+
+Intégrer une cartographie interactive permettant de localiser les terrains, visites et projets.
+Prévoir coordonnées GPS, points d’intérêt, itinéraires et, si la solution choisie le permet, vue
+satellite.
+Pour les agents terrain, la position GPS et les médias capturés doivent pouvoir être rattachés
+automatiquement au dossier concerné.
+• Les délimitations de parcelles ou plans géoréférencés pourront être ajoutés lorsque les données
+disponibles le permettent.
+
+10. Mandats de commercialisation et portefeuille
+propriétaire
+MTM peut recevoir d’un propriétaire un lot de terrains à commercialiser dans le cadre d’un
+contrat/mandat. Le système doit gérer ce portefeuille comme une entité distincte.
+• Fiche mandat : propriétaire, lots concernés, date de début, date de fin, type de mandat, exclusivité,
+prix/conditions, commissions, clauses particulières, documents contractuels, objectifs de
+commercialisation et statut.
+• Le système doit gérer les engagements de durée, par exemple une période de commercialisation
+de deux ans, avec alertes configurables avant échéance.
+
+Le suivi doit afficher lots confiés, lots disponibles, lots réservés, lots vendus, chiffre d’affaires,
+commissions et reste à commercialiser.
+• Le système doit pouvoir enregistrer les restrictions contractuelles, notamment l’interdiction pour le
+propriétaire de réaliser directement des transactions sur les lots confiés pendant la période prévue,
+sous réserve des clauses effectivement signées.
+• Documents : contrat initial, avenants, preuves de signature, correspondances, justificatifs et
+historique.
+
+11. Vente, réservation et paiement
+Créer un dossier de vente reliant client, terrain, propriétaire/mandat, commercial, prix, commission,
+réservation, paiements, documents et statut.
+• Statuts : disponible, pré-réservé, réservé, vente en cours, paiement partiel, soldé/finalisé, annulé et
+autres statuts configurables.
+
+Réservation : montant d’acompte configurable, durée de blocage configurable, conditions
+d’annulation, reçu et notifications.
+• Paiements : espèces si autorisées par les règles internes, virement bancaire, paiement en ligne et
+autres moyens activés par MTM. Chaque opération doit conserver date, montant, mode, référence
+et justificatif.
+• Le système calcule automatiquement le montant payé, le solde restant, les échéances et, lorsque
+les règles sont définies, la commission du commercial.
+• Documents générables : bon de réservation, reçu, facture, contrat, état de paiement et autres
+modèles administrables.
+
+12. Commissions des commerciaux
+• Chaque vente doit pouvoir être attribuée à un ou plusieurs commerciaux selon les règles MTM.
+• Les règles de commission doivent être paramétrables : pourcentage, montant fixe, paliers, bonus
+éventuels ou autres règles.
+• Le système calcule la commission estimée puis soumet le montant à validation selon le workflow
+interne. Une fois validée, la commission est intégrée au suivi financier.
+
+MTM Immobilier — Cahier des charges
+
+Page 6
+
+Tableau de bord commercial : ventes, objectifs, commissions estimées, commissions validées,
+commissions payées et historique.
+
+13. CRM — prospects et clients
+• Fiche contact : identité, coordonnées, pays de résidence, source d’acquisition, besoins, budget,
+préférences, commercial responsable, historique des échanges, rendez-vous, tâches, dossiers et
+documents.
+
+Pipeline commercial : nouveau contact, qualification, proposition, visite, négociation, réservation,
+vente, perdu — étapes configurables.
+Relances, rappels, rendez-vous et tâches doivent être visibles dans une vue personnelle et dans les
+tableaux de bord managers.
+• Les dossiers d’un même client doivent être regroupés afin de donner une vue 360° de la relation.
+
+14. Démarches administratives et vérification
+foncière
+Le module doit gérer les missions confiées par des clients, notamment ceux de la diaspora qui
+demandent à MTM d’aller vérifier un terrain avant achat.
+• Étape 1 — Demande : client, terrain, localisation, type de vérification, objectif, pièces fournies,
+budget et urgence.
+• Étape 2 — Étude de faisabilité : possibilité d’une étude préalable avant engagement complet. Les
+règles de facturation doivent être paramétrables, y compris les frais d’étude lorsque la conclusion
+est défavorable, selon la politique tarifaire de MTM.
+• Étape 3 — Vérification physique : visite, constat, photos, vidéos, GPS, accès, environnement,
+conformité apparente avec les informations fournies.
+• Étape 4 — Vérification administrative : en fonction de la nature du dossier et de la localisation, le
+collaborateur enregistre les administrations/structures consultées, par exemple mairie ou services
+des Domaines compétents (Dakar, Mbour, Louga, etc.).
+• Étape 5 — Rapport : conclusion structurée, pièces justificatives, réserves, recommandations et
+décision MTM : favorable / défavorable / à compléter.
+
+Le rapport doit pouvoir être généré, archivé et rendu accessible au client depuis son espace
+sécurisé. Il peut également être envoyé par e-mail ou autre canal autorisé.
+• Chaque mission doit conserver la traçabilité des personnes ayant effectué les vérifications, des
+dates, documents consultés, observations et pièces collectées.
+• Les tarifs de vérification doivent être configurables ; la fourchette indicative évoquée pour MTM est
+de 100 000 à 200 000 FCFA, sans figer cette valeur dans le code.
+
+15. Gestion locative
+Gestion des propriétaires, biens, locataires, baux, loyers, cautions, paiements, quittances, impayés,
+relances, préavis, sorties, états des lieux, incidents et travaux.
+• Fiche bien locatif : propriétaire, adresse/localisation, type, loyer, charges, caution, contrat,
+locataire, échéances, historique financier et incidents.
+• Paiements : avance, paiement normal, paiement partiel, retard, impayé et régularisation. Le solde
+doit être recalculé automatiquement.
+
+Caution : montant initial, date, statut, retenues éventuelles, justification, remboursement et
+historique.
+
+MTM Immobilier — Cahier des charges
+
+Page 7
+
+Sortie : préavis, date prévue, état des lieux, calcul de régularisation, restitution de caution et clôture
+du dossier.
+Cas particuliers : départ sans préavis, impayé prolongé, avance de loyer, changement de locataire et
+autres situations doivent être gérés par des statuts et workflows plutôt que par des notes libres
+uniquement.
+Relances automatiques : modèles configurables et calendrier de relance. Les délais doivent être
+paramétrables par MTM.
+• Espace propriétaire : loyers encaissés, dépenses, solde, rapports et documents. Espace locataire :
+bail, quittances, paiements, incidents et demandes.
+
+16. Construction et suivi de chantier
+Gestion d’un projet de construction de bout en bout : client, terrain, programme, devis, budget,
+planning, prestataires, matériaux, paiements, documents et rapports.
+Journal de chantier : date, intervenants, avancement, observations, photos/vidéos, problèmes,
+décisions et prochaines actions.
+Planning avec jalons et, si possible, vue de type Gantt. Alertes sur retards, dépassements
+budgétaires et échéances.
+• Espace client permettant de consulter l’avancement et les rapports autorisés.
+
+17. Gestion électronique des documents (GED)
+Centraliser titres, baux, délibérations, plans, contrats, rapports, factures, quittances, pièces
+d’identité, mandats, documents de chantier et autres pièces.
+Classement par client, propriétaire, terrain, mandat, vente, démarche, location, chantier ou RH.
+Recherche plein texte et filtres ; versioning ; droits d’accès ; historique ; archivage ; téléchargement
+sécurisé ; partage contrôlé.
+Prévoir l’intégration future ou directe d’une signature électronique, selon le prestataire retenu.
+Depuis le mobile, un agent doit pouvoir photographier/scanner un document et l’associer
+immédiatement au bon dossier.
+
+18. Comptabilité et finances
+Suivre recettes, dépenses, factures, paiements, virements, commissions, loyers, frais de démarches,
+opérations liées aux constructions et autres flux.
+• Les recettes doivent être ventilables par activité : vente de terrains, gestion locative, démarches,
+construction et autres services.
+
+Tableaux de bord : chiffre d’affaires, encaissements, dépenses, marge, commissions, impayés et
+échéances.
+Exports pour exploitation comptable externe si la comptabilité complète n’est pas intégrée dans la
+V1.
+
+19. Ressources humaines
+• Fiche collaborateur : identité, matricule interne, poste, service, date d’entrée, statut contractuel,
+documents, objectifs et habilitations.
+
+Suivi des objectifs, performances et commissions pour les commerciaux.
+
+MTM Immobilier — Cahier des charges
+
+Page 8
+
+Gestion des droits d’accès séparée de la simple fonction RH : chaque rôle applicatif doit être
+explicitement autorisé.
+
+20. Gestion des partenaires
+Base partenaires : notaires, géomètres, architectes, entreprises, banques, prestataires, experts et
+autres partenaires.
+Historique des dossiers associés, contacts, documents, prestations et évaluations internes.
+
+21. Agenda, tâches et workflow
+Agenda partagé et individuel pour visites, rendez-vous, appels, vérifications, échéances
+contractuelles et réunions.
+Tâches assignables avec responsable, priorité, date limite, statut et historique.
+Workflow standard des dossiers : création, qualification, vérification, validation, signature, paiement,
+exécution, clôture et archivage, avec étapes configurables selon le module.
+
+22. Notifications et communication
+Notifications internes : nouveau prospect, nouveau dossier, paiement reçu, impayé, mandat proche
+de l’échéance, document manquant, chantier en retard, etc.
+Canaux : notifications in-app, e-mail, SMS et WhatsApp lorsque l’intégration est disponible et
+autorisée.
+Messagerie interne ou fil de discussion par dossier, avec historique et droits d’accès.
+
+23. Tableaux de bord et reporting
+Dashboard direction : chiffre d’affaires, ventes, locations, démarches, constructions, performances
+commerciales, commissions, alertes et tendances.
+Dashboard manager : équipe, objectifs, activité, dossiers bloqués, ventes et relances.
+Dashboard commercial : prospects, pipeline, visites, ventes, commissions et tâches.
+Rapports exportables en PDF/Excel : ventes par période, ventes par zone, performance des
+commerciaux, terrains disponibles/vendus, loyers, impayés, rentabilité par activité et activité des
+démarches.
+Analyses avancées et prévisions peuvent être ajoutées progressivement.
+
+24. Administration et rôles
+• Rôles initiaux recommandés : administrateur, direction, manager, responsable commercial,
+commercial, comptable, responsable gestion locative, responsable démarches, responsable
+construction, RH et autres profils configurables.
+
+Permissions granulaires : consulter, créer, modifier, valider, supprimer, exporter, payer, publier et
+administrer.
+Certaines informations doivent être strictement internes, notamment prix d’acquisition MTM,
+marges, majorations, commissions, notes sensibles et données RH.
+Journal d’audit : utilisateur, date/heure, action, objet, ancienne/nouvelle valeur lorsque pertinent.
+
+25. Paramétrage général
+
+MTM Immobilier — Cahier des charges
+
+Page 9
+
+• Les paramètres métier doivent être modifiables par les administrateurs autorisés sans modification
+du code : taux de commission, frais de prestation, prix de vérification, modèles de contrats,
+factures, reçus, délais de réservation, statuts, types de documents, régions/communes et règles de
+notification.
+• Les paramètres sensibles doivent être soumis à des permissions renforcées et, si nécessaire, à une
+validation.
+
+26. Application mobile Android et iPhone
+Fonctions client : consultation des biens, espace personnel, documents, paiements, réservations,
+demandes et notifications.
+Fonctions agent terrain : missions, carte, navigation, GPS, photos/vidéos, formulaires de visite,
+rapport et synchronisation.
+Mode hors connexion recommandé pour les zones à faible réseau, avec file d’attente de
+synchronisation sécurisée.
+• Les applications doivent respecter les standards de sécurité des plateformes mobiles et permettre
+des mises à jour sans rupture de données.
+
+27. Sécurité, confidentialité et continuité
+Authentification sécurisée, politique de mots de passe, contrôle de session, double authentification
+pour administrateurs et comptes sensibles.
+Chiffrement en transit et au repos lorsque techniquement applicable, protection des pièces
+sensibles, contrôle d’accès par rôle et principe du moindre privilège.
+Sauvegardes automatiques, tests de restauration, procédure de récupération après incident et
+journalisation.
+Séparation des environnements de développement, test et production.
+• Les données clients et documents ne doivent pas être exposés publiquement par erreur ; les liens
+de partage doivent être temporaires ou contrôlés lorsqu’ils sont utilisés.
+
+28. Propriété intellectuelle, confidentialité et
+dépendance au développeur
+Tout développement réalisé pour MTM Immobilier dans le cadre de la mission doit être remis à MTM
+Immobilier avec son code source, documentation, scripts, configurations, schémas de données et
+éléments nécessaires à l’exploitation.
+Le contrat de travail ou contrat de mission doit prévoir des clauses de confidentialité, de
+non-divulgation, de non-réutilisation et de non-commercialisation des développements spécifiques à
+MTM, dans les limites permises par le droit applicable.
+• Le développeur ne doit pas conserver un accès exclusif à l’hébergement, au dépôt de code, aux
+comptes cloud, aux bases de données, aux clés d’API ou aux comptes administrateurs. MTM doit
+être propriétaire ou administrateur principal de ces ressources.
+• Les modalités juridiques exactes doivent être validées par un juriste/avocat au Sénégal afin
+d’assurer leur conformité au contrat de travail et au droit applicable.
+
+La documentation technique doit permettre à MTM de changer de développeur ou de prestataire
+sans perdre le contrôle du système.
+
+29. Architecture technique et exigences non
+fonctionnelles
+MTM Immobilier — Cahier des charges
+
+Page 10
+
+Architecture modulaire avec backend/API centralisé, base de données structurée, front-end web
+responsive et applications mobiles connectées.
+Le choix des technologies est laissé au développeur sous réserve de respecter sécurité,
+maintenabilité, documentation, performance, disponibilité et capacité d’évolution.
+API documentées ; gestion des erreurs ; logs ; monitoring ; migrations de base de données ;
+stratégie de sauvegarde ; tests automatisés sur les fonctions critiques.
+La solution doit être conçue pour augmenter progressivement le volume de biens, clients,
+documents et transactions sans refonte complète.
+• Les performances attendues, seuils de disponibilité et objectifs de reprise devront être précisés
+dans la phase de conception technique.
+
+30. Développement par phases et gouvernance
+• Le développeur est interne à MTM Immobilier et rémunéré mensuellement. Le cahier des charges
+ne fixe pas un délai arbitraire ; il exige plutôt un planning détaillé proposé par le développeur,
+découpé en jalons.
+• Chaque jalon doit donner lieu à une démonstration, un livrable fonctionnel, une liste d’anomalies et
+une validation avant passage au jalon suivant.
+
+Le développement doit être réalisé avec gestion de versions, tickets/anomalies, documentation et
+environnement de test.
+• Phase 1 : socle, comptes/rôles, terrains, CRM, mandats, ventes/réservations, paiements, GED de
+base, site public connecté et sécurité.
+• Phase 2 : gestion locative avancée, démarches, construction, agenda, notifications, messagerie,
+application mobile terrain.
+• Phase 3 : reporting avancé, automatisations, analyses, enrichissements cartographiques et
+optimisation.
+• Phase 4 : stabilisation, durcissement sécurité, documentation complète, transfert de compétences
+et préparation des évolutions futures.
+
+31. Livrables obligatoires
+Code source complet et dépôt de code sous contrôle MTM.
+Base de données, schémas et scripts de migration.
+Documentation technique et documentation utilisateur.
+Configuration des environnements, accès serveurs/cloud, sauvegardes et procédures de
+restauration.
+Applications Android et iPhone, site web, application web d’administration et API.
+Modèles de documents, workflows, règles métier et paramètres.
+Procès-verbal ou fiche de recette par module.
+
+32. Tests, recette et mise en production
+Tests unitaires, intégration, sécurité, permissions, paiements, workflows, notifications, responsive et
+mobile.
+Tests de non-régression avant chaque mise en production importante.
+Recette métier par MTM sur des scénarios réels ou représentatifs.
+
+MTM Immobilier — Cahier des charges
+
+Page 11
+
+• Aucune fonctionnalité critique ne doit être considérée comme terminée sans critère d’acceptation
+validé.
+
+Prévoir une procédure de retour arrière et une sauvegarde avant déploiement.
+
+33. Maintenance et évolutions
+Maintenance corrective : correction des anomalies, incidents et problèmes de sécurité.
+Maintenance évolutive : nouvelles fonctions, améliorations UX et nouveaux rapports.
+• Le développeur doit documenter les changements et mettre à jour la documentation.
+• Les évolutions doivent être estimées, priorisées et validées par MTM avant développement.
+
+34. Vision à long terme — MTM Immobilier
+uniquement
+La plateforme doit pouvoir accompagner la croissance de MTM Immobilier, l’ouverture de nouvelles
+zones d’activité, l’augmentation du portefeuille foncier, des clients et des biens gérés.
+• L’architecture peut être réutilisable et modulaire, mais le périmètre et la propriété du produit
+restent centrés sur MTM Immobilier. Toute commercialisation ou réutilisation externe doit faire
+l’objet d’une décision et d’un cadre contractuel distincts.
+
+La priorité reste la fiabilité opérationnelle, la sécurité des données, la qualité de service et la relation
+avec les clients, notamment ceux de la diaspora.
+
+35. Maquettes fonctionnelles — synthèse
+• Maquette A — Accueil : logo, navigation, hero, recherche, terrains mis en avant, projets à venir,
+réalisations, témoignages, contact.
+• Maquette B — Dashboard administrateur : indicateurs, graphiques, alertes, activité récente,
+raccourcis.
+• Maquette C — Fiche terrain : galerie, informations publiques/internes, carte, documents, mandats,
+ventes, réservations, historique.
+• Maquette D — Fiche client : identité, dossiers, documents, paiements, communications,
+rendez-vous, vue 360°.
+• Maquette E — Mandat : propriétaire, lots, durée, exclusivité, commissions, documents, échéances,
+ventes/restants.
+• Maquette F — Dashboard commercial : pipeline, objectifs, commissions, agenda, tâches.
+• Maquette G — Comptabilité : recettes, dépenses, factures, paiements, commissions, exports.
+• Maquette H — GED : recherche, arborescence, versions, confidentialité, historique.
+• Maquette I — Démarches : dossiers, étapes, documents, administrations consultées, rapport et
+décision.
+• Maquette J — Construction : projets, budget, planning, journal de chantier, photos, paiements,
+incidents.
+• Maquette K — Gestion locative : biens, locataires, loyers, retards, avances, cautions, sorties,
+incidents.
+• Maquette L — Mobile terrain : missions, carte, GPS, capture média, formulaire, rapport, mode hors
+ligne.
+• Maquette M — Portail propriétaire : mandats, lots, ventes, encaissements, documents, rapports.
+• Maquette N — Portail client : dossiers, rapports, contrats, paiements, documents, messages.
+
+36. Critères de qualité et d’acceptation
+MTM Immobilier — Cahier des charges
+
+Page 12
+
+• Interface moderne, claire, responsive et cohérente avec l’identité MTM Immobilier.
+
+Navigation intuitive et temps de réponse satisfaisant sur les fonctions courantes.
+Aucun utilisateur ne doit accéder à des données non autorisées.
+• Toute opération financière importante doit être traçable.
+• Les données doivent rester cohérentes entre site, web, Android et iPhone.
+• Les sauvegardes et restaurations doivent être testées.
+• Le système doit rester exploitable sans dépendre d’une seule personne.
+• Les fonctionnalités prévues au périmètre validé doivent être testées et acceptées avant clôture de
+la phase correspondante.
+
+37. Glossaire
+CRM : gestion de la relation clients et prospects.
+GED : gestion électronique des documents.
+API : interface permettant aux différentes applications de communiquer avec le backend.
+Mandat : contrat par lequel un propriétaire confie à MTM une mission de commercialisation ou de
+gestion selon des conditions définies.
+Acompte : somme versée dans le cadre d’une réservation ou d’une transaction selon les conditions
+convenues.
+Back-office : interface interne utilisée par MTM pour administrer les données et opérations.
+Journal d’audit : historique des actions importantes réalisées dans le système.
+Workflow : enchaînement structuré d’étapes et de validations.
+
+MTM Immobilier — Cahier des charges
+
+Page 13
+
+Validation du cahier des charges
+La présente version constitue la base de référence pour le développement de la plateforme MTM
+Immobilier, sous réserve des ajustements validés ultérieurement par écrit.
+Pour MTM Immobilier
+
+Pour le développeur
+
+Nom / fonction : __________________________
+
+Nom : _________________________________
+
+Date / signature : _______________________
+
+Date / signature : ______________________
+
+MTM Immobilier — Cahier des charges
+
+Page 14
+
+

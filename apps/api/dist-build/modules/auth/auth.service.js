@@ -99,10 +99,25 @@ let AuthService = AuthService_1 = class AuthService {
                 };
             }
             const secret = this.twoFactorService.decryptSecret(user.twoFactorSecret ?? '');
-            const codeValid = this.twoFactorService.verifyCode(twoFactorCode, secret);
+            let codeValid = this.twoFactorService.verifyCode(twoFactorCode, secret);
+            let usedRecoveryCode = false;
+            if (!codeValid && user.twoFactorRecoveryCodes) {
+                const recoveryResult = this.twoFactorService.verifyRecoveryCode(twoFactorCode, user.twoFactorRecoveryCodes);
+                if (recoveryResult.valid) {
+                    codeValid = true;
+                    usedRecoveryCode = true;
+                    await this.prisma.user.update({
+                        where: { id: user.id },
+                        data: {
+                            twoFactorRecoveryCodes: this.twoFactorService.encryptRecoveryCodes(recoveryResult.remainingCodes),
+                        },
+                    });
+                    await this.recordAudit(user.id, 'auth.login.used_recovery_code', context);
+                }
+            }
             if (!codeValid) {
                 await this.recordAudit(user.id, 'auth.login.rejected_invalid_2fa', context);
-                throw new common_1.UnauthorizedException('Code de double authentification invalide');
+                throw new common_1.UnauthorizedException('Code de double authentification ou code de secours invalide');
             }
         }
         await this.usersService.resetFailedAttempts(user.id);
@@ -212,8 +227,17 @@ let AuthService = AuthService_1 = class AuthService {
         if (!valid) {
             throw new common_1.UnauthorizedException('Code invalide');
         }
-        await this.usersService.enableTwoFactor(userId);
+        const recoveryCodes = this.twoFactorService.generateRecoveryCodes();
+        const encryptedRecovery = this.twoFactorService.encryptRecoveryCodes(recoveryCodes);
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                twoFactorEnabled: true,
+                twoFactorRecoveryCodes: encryptedRecovery,
+            },
+        });
         await this.recordAudit(userId, 'auth.2fa.enabled', {});
+        return { recoveryCodes };
     }
     async disableTwoFactor(userId, currentPassword) {
         const user = await this.usersService.findById(userId);

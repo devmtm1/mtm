@@ -35,8 +35,9 @@ model User {
   lockedUntil         DateTime? // verrouillage temporaire après N échecs
 
   // --- 2FA (TOTP) ---
-  twoFactorEnabled Boolean @default(false)
-  twoFactorSecret  String? // chiffré côté application avant stockage
+  twoFactorEnabled       Boolean @default(false)
+  twoFactorSecret        String? // chiffré côté application avant stockage
+  twoFactorRecoveryCodes String? // codes de secours chiffrés (JSON)
 
   lastLoginAt DateTime?
 

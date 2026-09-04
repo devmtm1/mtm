@@ -12,7 +12,10 @@ export declare class TerrainsService {
     private readonly cloudinary;
     private readonly settings;
     constructor(prisma: PrismaService, cloudinary: CloudinaryService, settings: SettingsService);
-    findAll(query: QueryTerrainDto): Promise<{
+    findAll(query: QueryTerrainDto, user?: {
+        roles: string[];
+        permissions: string[];
+    }): Promise<{
         items: ({
             proprietaire: {
                 id: string;
@@ -92,7 +95,10 @@ export declare class TerrainsService {
         page: number;
         pageSize: number;
     }>;
-    findOne(id: string): Promise<{
+    findOne(id: string, user?: {
+        roles: string[];
+        permissions: string[];
+    }): Promise<{
         proprietaire: {
             id: string;
             createdAt: Date;

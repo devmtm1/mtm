@@ -56,6 +56,7 @@ describe('AuthService', () => {
     lockedUntil: null,
     twoFactorEnabled: false,
     twoFactorSecret: null,
+    twoFactorRecoveryCodes: null,
     lastLoginAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),

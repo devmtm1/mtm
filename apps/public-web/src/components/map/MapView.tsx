@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -42,6 +42,8 @@ export function MapView({
 }: Readonly<MapViewProps>) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
+  const tileLayerRef = useRef<L.TileLayer | null>(null);
+  const [mapType, setMapType] = useState<'plan' | 'satellite'>('plan');
   const clickRef = useRef<MapViewProps['onMarkerClick']>(onMarkerClick);
   clickRef.current = onMarkerClick;
 
@@ -58,11 +60,22 @@ export function MapView({
       scrollWheelZoom: false,
     }).setView(initialCenter, zoom);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap',
+    const tileUrl =
+      mapType === 'satellite'
+        ? 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+        : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+    const tileAttr =
+      mapType === 'satellite'
+        ? 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+        : '&copy; OpenStreetMap';
+
+    const tileLayer = L.tileLayer(tileUrl, {
+      attribution: tileAttr,
       maxZoom: 19,
     }).addTo(map);
 
+    tileLayerRef.current = tileLayer;
     mapRef.current = map;
 
     return () => {
@@ -70,6 +83,30 @@ export function MapView({
       mapRef.current = null;
     };
   }, [center, zoom]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (tileLayerRef.current) {
+      map.removeLayer(tileLayerRef.current);
+    }
+
+    const tileUrl =
+      mapType === 'satellite'
+        ? 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+        : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+    const tileAttr =
+      mapType === 'satellite'
+        ? 'Tiles &copy; Esri &mdash; Source: Esri, GeoEye'
+        : '&copy; OpenStreetMap';
+
+    tileLayerRef.current = L.tileLayer(tileUrl, {
+      attribution: tileAttr,
+      maxZoom: 19,
+    }).addTo(map);
+  }, [mapType]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -114,5 +151,33 @@ export function MapView({
     }
   }, [markers, route]);
 
-  return <div ref={containerRef} className="mtm-leaflet-map" style={{ height }} />;
+  return (
+    <div className="relative overflow-hidden rounded-xl border border-sand-300">
+      <div className="absolute right-3 top-3 z-[1000] flex gap-1 rounded-lg bg-white/90 p-1 shadow-md backdrop-blur-sm">
+        <button
+          type="button"
+          onClick={() => setMapType('plan')}
+          className={`rounded px-2.5 py-1 text-xs font-semibold transition ${
+            mapType === 'plan'
+              ? 'bg-amber-600 text-white'
+              : 'text-gray-700 hover:bg-gray-100'
+          }`}
+        >
+          Plan
+        </button>
+        <button
+          type="button"
+          onClick={() => setMapType('satellite')}
+          className={`rounded px-2.5 py-1 text-xs font-semibold transition ${
+            mapType === 'satellite'
+              ? 'bg-amber-600 text-white'
+              : 'text-gray-700 hover:bg-gray-100'
+          }`}
+        >
+          Satellite
+        </button>
+      </div>
+      <div ref={containerRef} className="mtm-leaflet-map" style={{ height }} />
+    </div>
+  );
 }

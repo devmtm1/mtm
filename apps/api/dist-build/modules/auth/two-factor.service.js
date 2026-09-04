@@ -106,6 +106,38 @@ let TwoFactorService = class TwoFactorService {
             return '';
         }
     }
+    generateRecoveryCodes() {
+        const codes = [];
+        for (let i = 0; i < 8; i++) {
+            const code = (0, node_crypto_1.randomBytes)(5).toString('hex').toUpperCase();
+            codes.push(code);
+        }
+        return codes;
+    }
+    encryptRecoveryCodes(codes) {
+        return this.encryptSecret(JSON.stringify(codes));
+    }
+    decryptRecoveryCodes(stored) {
+        if (!stored)
+            return [];
+        try {
+            const raw = this.decryptSecret(stored);
+            return JSON.parse(raw);
+        }
+        catch {
+            return [];
+        }
+    }
+    verifyRecoveryCode(code, storedRecoveryCodes) {
+        const codes = this.decryptRecoveryCodes(storedRecoveryCodes);
+        const normalizedInput = code.trim().toUpperCase();
+        const index = codes.indexOf(normalizedInput);
+        if (index === -1) {
+            return { valid: false, remainingCodes: codes };
+        }
+        const remainingCodes = codes.filter((_, i) => i !== index);
+        return { valid: true, remainingCodes };
+    }
     encryptionKey() {
         const authConfig = this.configService.get('auth');
         return (0, node_crypto_1.createHash)('sha256').update(authConfig.jwtRefreshSecret).digest();

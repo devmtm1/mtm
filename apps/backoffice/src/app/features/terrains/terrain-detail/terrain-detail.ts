@@ -28,6 +28,10 @@ export class TerrainDetail implements OnInit, OnDestroy {
   protected terrain: TerrainDetailModel | null = null;
   protected readonly loading = signal(true);
   protected readonly canModify = this.session.hasPermission('terrains:modifier');
+  protected readonly canViewFinancials =
+    this.session.hasPermission('terrains:consulter_financier') ||
+    this.session.hasRole('administrateur') ||
+    this.session.hasRole('direction');
   protected mapUrl: string | null = null;
 
   @ViewChild('mapContainer') private mapContainer?: ElementRef<HTMLDivElement>;

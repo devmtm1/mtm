@@ -26,7 +26,7 @@ let ContactService = class ContactService {
             if (!terrain)
                 throw new common_1.NotFoundException('Terrain introuvable');
         }
-        return this.prisma.contact.create({
+        const contact = await this.prisma.contact.create({
             data: {
                 nom: dto.nom,
                 email: dto.email,
@@ -36,6 +36,43 @@ let ContactService = class ContactService {
                 terrainId: dto.terrainId,
             },
         });
+        try {
+            let prospect = await this.prisma.prospect.findFirst({
+                where: {
+                    OR: [
+                        ...(dto.email ? [{ email: dto.email }] : []),
+                        ...(dto.telephone ? [{ telephone: dto.telephone }] : []),
+                    ],
+                },
+            });
+            if (!prospect) {
+                const [prenom, ...rest] = (dto.nom || '').split(' ');
+                prospect = await this.prisma.prospect.create({
+                    data: {
+                        nom: rest.length ? rest.join(' ') : dto.nom,
+                        prenom: rest.length ? prenom : undefined,
+                        email: dto.email,
+                        telephone: dto.telephone,
+                        sourceAcquisition: 'contact_public',
+                        besoins: `[${dto.sujet || 'Contact public'}] ${dto.message}`,
+                        statutPipeline: 'nouveau_contact',
+                    },
+                });
+            }
+            await this.prisma.activiteCrm.create({
+                data: {
+                    prospectId: prospect.id,
+                    type: 'note',
+                    titre: `Demande de contact web: ${dto.sujet || 'Sans sujet'}`,
+                    description: dto.message,
+                    statut: 'realise',
+                    priorite: 'haute',
+                },
+            });
+        }
+        catch {
+        }
+        return contact;
     }
     async findAll(options = {}) {
         return this.prisma.contact.findMany({
@@ -49,6 +86,45 @@ let ContactService = class ContactService {
             where: { id },
             data: { lu: true },
         });
+    }
+    async convertToProspect(id, commercialResponsableId) {
+        const contact = await this.prisma.contact.findUnique({ where: { id } });
+        if (!contact)
+            throw new common_1.NotFoundException('Message de contact introuvable');
+        let prospect = await this.prisma.prospect.findFirst({
+            where: {
+                OR: [
+                    ...(contact.email ? [{ email: contact.email }] : []),
+                    ...(contact.telephone ? [{ telephone: contact.telephone }] : []),
+                ],
+            },
+        });
+        if (!prospect) {
+            const [prenom, ...rest] = (contact.nom || '').split(' ');
+            prospect = await this.prisma.prospect.create({
+                data: {
+                    nom: rest.length ? rest.join(' ') : contact.nom,
+                    prenom: rest.length ? prenom : undefined,
+                    email: contact.email,
+                    telephone: contact.telephone,
+                    sourceAcquisition: 'contact_public',
+                    besoins: `[${contact.sujet || 'Contact public'}] ${contact.message}`,
+                    statutPipeline: 'nouveau_contact',
+                    commercialResponsableId: commercialResponsableId || undefined,
+                },
+            });
+        }
+        else if (commercialResponsableId) {
+            prospect = await this.prisma.prospect.update({
+                where: { id: prospect.id },
+                data: { commercialResponsableId },
+            });
+        }
+        await this.prisma.contact.update({
+            where: { id },
+            data: { lu: true },
+        });
+        return prospect;
     }
 };
 exports.ContactService = ContactService;

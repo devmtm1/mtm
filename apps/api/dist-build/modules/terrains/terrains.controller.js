@@ -39,14 +39,14 @@ let TerrainsController = class TerrainsController {
     findPublicOne(id) {
         return this.terrains.findPublicOne(id);
     }
-    findAll(query) {
-        return this.terrains.findAll(query);
+    findAll(query, user) {
+        return this.terrains.findAll(query, user);
     }
     getOptions() {
         return this.terrains.getOptions();
     }
-    findOne(id) {
-        return this.terrains.findOne(id);
+    findOne(id, user) {
+        return this.terrains.findOne(id, user);
     }
     async create(dto, user, req) {
         const terrain = await this.terrains.create(dto);
@@ -170,8 +170,9 @@ __decorate([
     (0, common_1.Get)(),
     (0, require_permissions_decorator_1.RequirePermissions)('terrains:consulter'),
     __param(0, (0, common_1.Query)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [query_terrain_dto_1.QueryTerrainDto]),
+    __metadata("design:paramtypes", [query_terrain_dto_1.QueryTerrainDto, Object]),
     __metadata("design:returntype", void 0)
 ], TerrainsController.prototype, "findAll", null);
 __decorate([
@@ -185,8 +186,9 @@ __decorate([
     (0, common_1.Get)(':id'),
     (0, require_permissions_decorator_1.RequirePermissions)('terrains:consulter'),
     __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], TerrainsController.prototype, "findOne", null);
 __decorate([

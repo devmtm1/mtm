@@ -50,8 +50,9 @@ export class TerrainsController {
 
   @Get() @RequirePermissions('terrains:consulter') findAll(
     @Query() query: QueryTerrainDto,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.terrains.findAll(query);
+    return this.terrains.findAll(query, user);
   }
 
   @Get('options') @RequirePermissions('terrains:consulter') getOptions() {
@@ -60,8 +61,9 @@ export class TerrainsController {
 
   @Get(':id') @RequirePermissions('terrains:consulter') findOne(
     @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.terrains.findOne(id);
+    return this.terrains.findOne(id, user);
   }
 
   @Post() @RequirePermissions('terrains:creer') async create(

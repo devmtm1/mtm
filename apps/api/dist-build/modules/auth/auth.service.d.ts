@@ -38,7 +38,9 @@ export declare class AuthService {
         otpauthUrl: string;
         qrCodeDataUrl: string;
     }>;
-    confirmTwoFactorSetup(userId: string, code: string): Promise<void>;
+    confirmTwoFactorSetup(userId: string, code: string): Promise<{
+        recoveryCodes: string[];
+    }>;
     disableTwoFactor(userId: string, currentPassword: string): Promise<void>;
     changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void>;
     private handleFailedLogin;

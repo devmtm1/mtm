@@ -84,6 +84,12 @@ export const routes: Routes = [
           import('./features/settings/settings').then((m) => m.Settings),
       },
       {
+        path: 'contacts',
+        canActivate: [permissionsGuard(['settings:consulter'])],
+        loadComponent: () =>
+          import('./features/contacts/contacts').then((m) => m.Contacts),
+      },
+      {
         path: 'audit',
         canActivate: [permissionsGuard(['audit:consulter'])],
         loadComponent: () =>

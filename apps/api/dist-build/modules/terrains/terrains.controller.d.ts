@@ -18,7 +18,7 @@ export declare class TerrainsController {
         pageSize: number;
     }>;
     findPublicOne(id: string): Promise<import("./dto/public-terrain.dto").PublicTerrainResponse>;
-    findAll(query: QueryTerrainDto): Promise<{
+    findAll(query: QueryTerrainDto, user: AuthenticatedUser): Promise<{
         items: ({
             commercialResponsable: {
                 id: string;
@@ -103,7 +103,7 @@ export declare class TerrainsController {
         niveauVerification: string[];
         statutCommercial: string[];
     }>;
-    findOne(id: string): Promise<{
+    findOne(id: string, user: AuthenticatedUser): Promise<{
         commercialResponsable: {
             id: string;
             firstName: string;

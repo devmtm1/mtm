@@ -9,7 +9,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { SessionService } from '../../core/services/session.service';
 import { Router } from '@angular/router';
 
-type TwoFactorStep = 'status' | 'setup' | 'disable';
+type TwoFactorStep = 'status' | 'setup' | 'recovery-codes' | 'disable';
 
 interface ConfirmForm {
   code: FormControl<string>;
@@ -41,6 +41,7 @@ export class Security {
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly qrCodeDataUrl = signal<string | null>(null);
   protected readonly otpauthUrl = signal<string | null>(null);
+  protected readonly recoveryCodes = signal<string[]>([]);
 
   protected readonly confirmForm = new FormGroup<ConfirmForm>({
     code: new FormControl('', {
@@ -85,18 +86,23 @@ export class Security {
     const { code } = this.confirmForm.getRawValue();
 
     this.authService.confirmTwoFactor(code).subscribe({
-      next: () => {
+      next: (res) => {
         this.loading.set(false);
         this.sessionService.patchUser({ twoFactorEnabled: true });
-        this.step.set('status');
+        this.recoveryCodes.set(res.recoveryCodes || []);
+        this.step.set('recovery-codes');
         this.confirmForm.reset();
-        void this.router.navigate(['/dashboard']);
       },
       error: () => {
         this.loading.set(false);
         this.errorMessage.set('Code invalide.');
       },
     });
+  }
+
+  finishRecoveryCodes(): void {
+    this.step.set('status');
+    void this.router.navigate(['/dashboard']);
   }
 
   cancelSetup(): void {

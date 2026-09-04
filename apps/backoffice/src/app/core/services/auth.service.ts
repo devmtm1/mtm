@@ -90,8 +90,8 @@ export class AuthService {
     );
   }
 
-  confirmTwoFactor(code: string): Observable<{ success: boolean }> {
-    return this.http.post<{ success: boolean }>(
+  confirmTwoFactor(code: string): Observable<{ recoveryCodes?: string[] }> {
+    return this.http.post<{ recoveryCodes?: string[] }>(
       `${environment.apiUrl}/auth/2fa/confirm`,
       { code },
     );

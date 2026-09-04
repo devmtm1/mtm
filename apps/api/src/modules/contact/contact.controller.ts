@@ -64,4 +64,22 @@ export class ContactController {
     });
     return this.contacts.markRead(id);
   }
+
+  @Post(':id/convert-to-prospect')
+  @RequirePermissions('crm:creer')
+  async convertToProspect(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('commercialResponsableId') commercialResponsableId: string | undefined,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const prospect = await this.contacts.convertToProspect(id, commercialResponsableId);
+    await this.audit.record({
+      userId: user.id,
+      action: 'contact.converted_to_prospect',
+      entityType: 'Contact',
+      entityId: id,
+      newValue: { prospectId: prospect.id },
+    });
+    return prospect;
+  }
 }

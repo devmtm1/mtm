@@ -76,7 +76,10 @@ export class TerrainsService {
     private readonly settings: SettingsService,
   ) {}
 
-  async findAll(query: QueryTerrainDto) {
+  async findAll(
+    query: QueryTerrainDto,
+    user?: { roles: string[]; permissions: string[] },
+  ) {
     const page = query.page > 0 ? query.page : 1;
     const pageSize = Math.min(query.pageSize > 0 ? query.pageSize : 25, 200);
     const search = query.search?.trim();
@@ -149,20 +152,23 @@ export class TerrainsService {
       this.prisma.terrain.count({ where }),
     ]);
     return {
-      items: items.map((item) => this.toInternal(item)),
+      items: items.map((item) => this.toInternal(item, user)),
       total,
       page,
       pageSize,
     };
   }
 
-  async findOne(id: string) {
+  async findOne(
+    id: string,
+    user?: { roles: string[]; permissions: string[] },
+  ) {
     const terrain = await this.prisma.terrain.findUnique({
       where: { id },
       include: terrainInclude,
     });
     if (!terrain) throw new NotFoundException('Terrain introuvable');
-    return this.toInternal(terrain);
+    return this.toInternal(terrain, user);
   }
 
   async findPublic(query: QueryTerrainDto) {
@@ -240,8 +246,18 @@ export class TerrainsService {
     if (existing)
       throw new ConflictException('Une référence terrain existe déjà');
     await this.validateStatuses(dto);
+
+    const data = { ...dto } as unknown as Prisma.TerrainUncheckedCreateInput;
+    if (
+      dto.prixPublic !== undefined &&
+      dto.prixAcquisition !== undefined &&
+      (dto.marge === undefined || dto.marge === null)
+    ) {
+      data.marge = Number(dto.prixPublic) - Number(dto.prixAcquisition);
+    }
+
     const terrain = await this.prisma.terrain.create({
-      data: dto as unknown as Prisma.TerrainUncheckedCreateInput,
+      data,
       include: terrainInclude,
     });
     return this.toInternal(terrain);
@@ -250,8 +266,17 @@ export class TerrainsService {
   async update(id: string, dto: UpdateTerrainDto) {
     await this.ensureExists(id);
     await this.validateStatuses(dto);
-    const terrainData = { ...dto };
-    delete terrainData.justification;
+    const terrainData = { ...dto } as Record<string, unknown>;
+    delete terrainData['justification'];
+
+    if (
+      dto.prixPublic !== undefined &&
+      dto.prixAcquisition !== undefined &&
+      (dto.marge === undefined || dto.marge === null)
+    ) {
+      terrainData['marge'] = Number(dto.prixPublic) - Number(dto.prixAcquisition);
+    }
+
     const terrain = await this.prisma.terrain.update({
       where: { id },
       data: terrainData as unknown as Prisma.TerrainUncheckedUpdateInput,
@@ -531,13 +556,29 @@ export class TerrainsService {
     }
   }
 
-  private toInternal<T extends Record<string, unknown>>(terrain: T): T {
+  private toInternal<T extends Record<string, unknown>>(
+    terrain: T,
+    user?: { roles?: string[]; permissions?: string[] },
+  ): T {
     const value: T & {
       medias?: Array<Record<string, unknown>>;
       documents?: Array<Record<string, unknown>>;
     } = terrain;
-    return {
+
+    const hasFinancialAccess =
+      !user ||
+      user.roles?.includes('administrateur') ||
+      user.roles?.includes('direction') ||
+      user.permissions?.includes('terrains:consulter_financier');
+
+    const result = {
       ...terrain,
+      ...(!hasFinancialAccess && {
+        prixAcquisition: null,
+        marge: null,
+        commission: null,
+        notesInternes: null,
+      }),
       medias: value.medias?.map((asset) => ({
         ...asset,
         secureUrl: this.cloudinary.url(
@@ -555,6 +596,7 @@ export class TerrainsService {
         ),
       })),
     };
+    return result as T;
   }
 
   private asOptions(value: unknown, fallback: string[]): string[] {

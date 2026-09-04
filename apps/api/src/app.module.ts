@@ -20,6 +20,7 @@ import { ContactModule } from './modules/contact/contact.module';
 import { ContentBlockModule } from './modules/content/content-block.module';
 import { MandatsModule } from './modules/mandats/mandats.module';
 import { CrmModule } from './modules/crm/crm.module';
+import { CronModule } from './modules/cron/cron.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { CrmModule } from './modules/crm/crm.module';
     ContentBlockModule,
     MandatsModule,
     CrmModule,
+    CronModule,
     HealthModule,
   ],
   providers: [

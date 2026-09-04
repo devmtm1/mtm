@@ -66,11 +66,12 @@ export function ContactModal({
           />
           <input className="input" name="telephone" placeholder="Téléphone" />
           <input type="hidden" name="terrainId" value={terrainId ?? ''} />
-          <select className="input" name="sujet">
+          <select className="input" name="sujet" defaultValue={terrainId ? 'Acquérir un terrain' : ''}>
             <option value="">Je souhaite...</option>
-            <option>Acquérir un terrain</option>
-            <option>Demander une vérification</option>
-            <option>Parler de gestion locative</option>
+            <option value="Acquérir un terrain">Acquérir un terrain / Réserver</option>
+            <option value="Demander une visite">Demander une visite</option>
+            <option value="Demander une vérification">Demander une vérification foncière</option>
+            <option value="Parler de gestion locative">Parler de gestion locative</option>
           </select>
           <textarea
             className="input min-h-[80px]"

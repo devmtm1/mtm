@@ -55,6 +55,28 @@ export declare class AuditService {
         pageSize: number;
         totalPages: number;
     }>;
+    exportLogs(filters: AuditQueryFilters, justification: string, userId: string): Promise<({
+        user: {
+            id: string;
+            email: string;
+            firstName: string;
+            lastName: string;
+        } | null;
+    } & {
+        id: string;
+        userId: string | null;
+        action: string;
+        entityType: string;
+        entityId: string | null;
+        oldValue: import("@prisma/client/runtime/library").JsonValue | null;
+        newValue: import("@prisma/client/runtime/library").JsonValue | null;
+        justification: string | null;
+        ipAddress: string | null;
+        userAgent: string | null;
+        mandatId: string | null;
+        prospectId: string | null;
+        createdAt: Date;
+    })[]>;
     private toJson;
     private serialize;
 }

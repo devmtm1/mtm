@@ -1,0 +1,79 @@
+<div class="contacts-page p-6">
+  <div class="header flex justify-between items-center mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Demandes de Contact Web</h1>
+      <p class="text-sm text-gray-500">Messages reçus depuis le site public et demandes de visite</p>
+    </div>
+    <div class="filters flex gap-2">
+      <button mat-stroked-button [color]="filterLu() === undefined ? 'primary' : ''" (click)="setFilter(undefined)">Tous</button>
+      <button mat-stroked-button [color]="filterLu() === false ? 'primary' : ''" (click)="setFilter(false)">Non lus</button>
+      <button mat-stroked-button [color]="filterLu() === true ? 'primary' : ''" (click)="setFilter(true)">Lus</button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <p class="text-gray-500">Chargement des messages de contact...</p>
+  } @else if (contacts().length === 0) {
+    <mat-card class="p-8 text-center text-gray-500">
+      Aucun message de contact correspondant aux critères.
+    </mat-card>
+  } @else {
+    <div class="mat-elevation-z2 rounded-lg overflow-hidden bg-white">
+      <table mat-table [dataSource]="contacts()" class="w-full">
+        <ng-container matColumnDef="nom">
+          <th mat-header-cell *matHeaderCellDef> Nom </th>
+          <td mat-cell *matCellDef="let element" class="font-medium"> {{ element.nom }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef> Email </th>
+          <td mat-cell *matCellDef="let element"> {{ element.email || '—' }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="telephone">
+          <th mat-header-cell *matHeaderCellDef> Téléphone </th>
+          <td mat-cell *matCellDef="let element"> {{ element.telephone || '—' }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="sujet">
+          <th mat-header-cell *matHeaderCellDef> Sujet / Message </th>
+          <td mat-cell *matCellDef="let element" class="max-w-xs truncate">
+            <span class="font-semibold block text-xs text-amber-700">{{ element.sujet || 'Contact public' }}</span>
+            <span class="text-gray-600 text-sm">{{ element.message }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef> Date </th>
+          <td mat-cell *matCellDef="let element"> {{ element.createdAt | date:'dd/MM/yyyy HH:mm' }} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="statut">
+          <th mat-header-cell *matHeaderCellDef> Statut </th>
+          <td mat-cell *matCellDef="let element">
+            @if (element.lu) {
+              <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-700">Lu</span>
+            } @else {
+              <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">Nouveau</span>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="text-right"> Actions </th>
+          <td mat-cell *matCellDef="let element" class="text-right space-x-2">
+            @if (!element.lu) {
+              <button mat-button color="accent" (click)="markAsRead(element)">Marquer lu</button>
+            }
+            <button mat-flat-button color="primary" (click)="convertToProspect(element)">
+              Convertir en Prospect CRM
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+  }
+</div>

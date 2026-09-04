@@ -12,5 +12,12 @@ export declare class TwoFactorService {
     verifyCode(code: string, secret: string): boolean;
     encryptSecret(secret: string): string;
     decryptSecret(storedSecret: string): string;
+    generateRecoveryCodes(): string[];
+    encryptRecoveryCodes(codes: string[]): string;
+    decryptRecoveryCodes(stored: string | null): string[];
+    verifyRecoveryCode(code: string, storedRecoveryCodes: string | null): {
+        valid: boolean;
+        remainingCodes: string[];
+    };
     private encryptionKey;
 }

@@ -103,6 +103,44 @@ export class AuditService {
     };
   }
 
+  async exportLogs(
+    filters: AuditQueryFilters,
+    justification: string,
+    userId: string,
+  ) {
+    await this.record({
+      userId,
+      action: 'audit.exported',
+      entityType: 'AuditLog',
+      justification,
+      newValue: { filters },
+    });
+
+    return this.prisma.auditLog.findMany({
+      where: {
+        ...(filters.userId ? { userId: filters.userId } : {}),
+        ...(filters.entityType ? { entityType: filters.entityType } : {}),
+        ...(filters.entityId ? { entityId: filters.entityId } : {}),
+        ...(filters.action ? { action: filters.action } : {}),
+        ...(filters.from || filters.to
+          ? {
+              createdAt: {
+                ...(filters.from ? { gte: filters.from } : {}),
+                ...(filters.to ? { lte: filters.to } : {}),
+              },
+            }
+          : {}),
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 2000,
+      include: {
+        user: {
+          select: { id: true, email: true, firstName: true, lastName: true },
+        },
+      },
+    });
+  }
+
   private toJson(value: unknown) {
     if (value === undefined || value === null) return undefined;
     try {

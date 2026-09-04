@@ -32,6 +32,7 @@ const contact_module_1 = require("./modules/contact/contact.module");
 const content_block_module_1 = require("./modules/content/content-block.module");
 const mandats_module_1 = require("./modules/mandats/mandats.module");
 const crm_module_1 = require("./modules/crm/crm.module");
+const cron_module_1 = require("./modules/cron/cron.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -65,6 +66,7 @@ exports.AppModule = AppModule = __decorate([
             content_block_module_1.ContentBlockModule,
             mandats_module_1.MandatsModule,
             crm_module_1.CrmModule,
+            cron_module_1.CronModule,
             health_module_1.HealthModule,
         ],
         providers: [

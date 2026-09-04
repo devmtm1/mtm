@@ -58,6 +58,10 @@ export class SessionService {
     return this.permissions().includes(permission);
   }
 
+  hasRole(roleName: string): boolean {
+    return this.userSignal()?.roles?.includes(roleName) ?? false;
+  }
+
   hasAllPermissions(permissions: string[]): boolean {
     return permissions.every((p) => this.hasPermission(p));
   }

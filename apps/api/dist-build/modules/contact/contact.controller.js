@@ -56,6 +56,17 @@ let ContactController = class ContactController {
         });
         return this.contacts.markRead(id);
     }
+    async convertToProspect(id, commercialResponsableId, user) {
+        const prospect = await this.contacts.convertToProspect(id, commercialResponsableId);
+        await this.audit.record({
+            userId: user.id,
+            action: 'contact.converted_to_prospect',
+            entityType: 'Contact',
+            entityId: id,
+            newValue: { prospectId: prospect.id },
+        });
+        return prospect;
+    }
 };
 exports.ContactController = ContactController;
 __decorate([
@@ -83,6 +94,16 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], ContactController.prototype, "markRead", null);
+__decorate([
+    (0, common_1.Post)(':id/convert-to-prospect'),
+    (0, require_permissions_decorator_1.RequirePermissions)('crm:creer'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(1, (0, common_1.Body)('commercialResponsableId')),
+    __param(2, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:returntype", Promise)
+], ContactController.prototype, "convertToProspect", null);
 exports.ContactController = ContactController = __decorate([
     (0, swagger_1.ApiTags)('contacts'),
     (0, common_1.Controller)('contacts'),

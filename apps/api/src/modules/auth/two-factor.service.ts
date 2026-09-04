@@ -98,6 +98,46 @@ export class TwoFactorService {
     }
   }
 
+  /**
+   * Génère 8 codes de secours aléatoires à 10 caractères alphanumériques.
+   */
+  generateRecoveryCodes(): string[] {
+    const codes: string[] = [];
+    for (let i = 0; i < 8; i++) {
+      const code = randomBytes(5).toString('hex').toUpperCase(); // Ex: 4F2A8B9C1E
+      codes.push(code);
+    }
+    return codes;
+  }
+
+  encryptRecoveryCodes(codes: string[]): string {
+    return this.encryptSecret(JSON.stringify(codes));
+  }
+
+  decryptRecoveryCodes(stored: string | null): string[] {
+    if (!stored) return [];
+    try {
+      const raw = this.decryptSecret(stored);
+      return JSON.parse(raw);
+    } catch {
+      return [];
+    }
+  }
+
+  verifyRecoveryCode(
+    code: string,
+    storedRecoveryCodes: string | null,
+  ): { valid: boolean; remainingCodes: string[] } {
+    const codes = this.decryptRecoveryCodes(storedRecoveryCodes);
+    const normalizedInput = code.trim().toUpperCase();
+    const index = codes.indexOf(normalizedInput);
+    if (index === -1) {
+      return { valid: false, remainingCodes: codes };
+    }
+    const remainingCodes = codes.filter((_, i) => i !== index);
+    return { valid: true, remainingCodes };
+  }
+
   private encryptionKey(): Buffer {
     const authConfig = this.configService.get<AuthConfig>('auth')!;
     return createHash('sha256').update(authConfig.jwtRefreshSecret).digest();

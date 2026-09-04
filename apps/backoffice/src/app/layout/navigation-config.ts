@@ -88,6 +88,12 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
     title: 'Contenu',
     items: [
       {
+        label: 'Demandes web',
+        route: '/contacts',
+        icon: LucideFileText,
+        permission: 'settings:consulter',
+      },
+      {
         label: 'Contenus du site',
         route: '/content',
         icon: LucideFileText,

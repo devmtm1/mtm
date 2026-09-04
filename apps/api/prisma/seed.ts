@@ -16,11 +16,18 @@ const ACTIONS = [
   'administrer',
 ] as const;
 
-// Ressources couvertes par la Phase 1.
+// Ressources couvertes par le système MTM.
 const PHASE_1_RESOURCES = [
   'terrains',
   'mandats',
   'crm',
+  'users',
+  'roles',
+  'settings',
+  'audit',
+  'content',
+  'contact',
+  'proprietaires',
 ] as const;
 
 // Rôles initiaux recommandés par la section 24 du CDC.
@@ -41,7 +48,14 @@ async function main(): Promise<void> {
   console.log('Seed Phase 0 — démarrage');
 
   // --- Permissions ---
-  const permissions = [];
+  const permissions = [
+    {
+      name: 'terrains:consulter_financier',
+      resource: 'terrains',
+      action: 'consulter_financier',
+      description: "Consulter les prix d'acquisition, marges et commissions des terrains",
+    },
+  ];
   for (const resource of PHASE_1_RESOURCES) {
     for (const action of ACTIONS) {
       permissions.push({
@@ -106,6 +120,19 @@ async function main(): Promise<void> {
     });
   }
   console.log('  Rôle administrateur : toutes permissions attribuées');
+
+  // --- Permissions financières terrains par rôle ---
+  const financialPermission = await prisma.permission.findUniqueOrThrow({
+    where: { name: 'terrains:consulter_financier' },
+  });
+  for (const roleName of ['direction', 'comptable', 'manager']) {
+    const role = await prisma.role.findUniqueOrThrow({ where: { name: roleName } });
+    await prisma.rolePermission.upsert({
+      where: { roleId_permissionId: { roleId: role.id, permissionId: financialPermission.id } },
+      update: {},
+      create: { roleId: role.id, permissionId: financialPermission.id },
+    });
+  }
 
   // --- Permissions CRM par rôle métier ---
   const crmPermissionNames = ['crm:consulter', 'crm:creer', 'crm:modifier', 'crm:supprimer'];
