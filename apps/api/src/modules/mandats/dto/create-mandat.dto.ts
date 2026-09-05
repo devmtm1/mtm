@@ -8,7 +8,6 @@ import {
   IsUUID,
   IsObject,
   Length,
-  Max,
   Min,
 } from 'class-validator';
 

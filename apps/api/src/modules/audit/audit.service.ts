@@ -43,9 +43,9 @@ export class AuditService {
           entityId: input.entityId ?? undefined,
           // Prisma attend un type JSON très strict ; toJson() retourne `unknown`,
           // le cast est donc nécessaire ici.
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-assignment
           oldValue: this.toJson(input.oldValue) as any,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-assignment
           newValue: this.toJson(input.newValue) as any,
           justification: input.justification,
           ipAddress: input.ipAddress,

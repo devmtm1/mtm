@@ -43,7 +43,7 @@ export class AuditController {
   ) {
     if (!justification || justification.trim().length < 3) {
       throw new BadRequestException(
-        'Une justification minimale de 3 caractères est obligatoire pour exporter les journaux d\'audit',
+        "Une justification minimale de 3 caractères est obligatoire pour exporter les journaux d'audit",
       );
     }
     return this.auditService.exportLogs(

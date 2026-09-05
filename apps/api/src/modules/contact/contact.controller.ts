@@ -69,10 +69,14 @@ export class ContactController {
   @RequirePermissions('crm:creer')
   async convertToProspect(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body('commercialResponsableId') commercialResponsableId: string | undefined,
+    @Body('commercialResponsableId')
+    commercialResponsableId: string | undefined,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    const prospect = await this.contacts.convertToProspect(id, commercialResponsableId);
+    const prospect = await this.contacts.convertToProspect(
+      id,
+      commercialResponsableId,
+    );
     await this.audit.record({
       userId: user.id,
       action: 'contact.converted_to_prospect',

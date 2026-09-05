@@ -17,7 +17,7 @@ export class CronService {
    */
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async handleMandatsEcheances(): Promise<void> {
-    this.logger.log('Vérification quotidienne de l\'échéance des mandats...');
+    this.logger.log("Vérification quotidienne de l'échéance des mandats...");
     const now = new Date();
     const activeMandats = await this.prisma.mandat.findMany({
       where: {
@@ -56,7 +56,9 @@ export class CronService {
         });
       }
     }
-    this.logger.log(`Alerte mandats : ${countAlerts} mandats proches de l'expiration.`);
+    this.logger.log(
+      `Alerte mandats : ${countAlerts} mandats proches de l'expiration.`,
+    );
   }
 
   /**
@@ -88,7 +90,9 @@ export class CronService {
       const isOverdue = task.dateEcheance && task.dateEcheance < now;
       await this.audit.record({
         userId: task.prospect.commercialResponsableId,
-        action: isOverdue ? 'crm.activite_en_retard' : 'crm.activite_echeance_proche',
+        action: isOverdue
+          ? 'crm.activite_en_retard'
+          : 'crm.activite_echeance_proche',
         entityType: 'ActiviteCrm',
         entityId: task.id,
         newValue: {

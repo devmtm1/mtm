@@ -118,7 +118,7 @@ export class TwoFactorService {
     if (!stored) return [];
     try {
       const raw = this.decryptSecret(stored);
-      return JSON.parse(raw);
+      return JSON.parse(raw) as string[];
     } catch {
       return [];
     }

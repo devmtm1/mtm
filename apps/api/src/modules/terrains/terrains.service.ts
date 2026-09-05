@@ -159,10 +159,7 @@ export class TerrainsService {
     };
   }
 
-  async findOne(
-    id: string,
-    user?: { roles: string[]; permissions: string[] },
-  ) {
+  async findOne(id: string, user?: { roles: string[]; permissions: string[] }) {
     const terrain = await this.prisma.terrain.findUnique({
       where: { id },
       include: terrainInclude,
@@ -274,12 +271,13 @@ export class TerrainsService {
       dto.prixAcquisition !== undefined &&
       (dto.marge === undefined || dto.marge === null)
     ) {
-      terrainData['marge'] = Number(dto.prixPublic) - Number(dto.prixAcquisition);
+      terrainData['marge'] =
+        Number(dto.prixPublic) - Number(dto.prixAcquisition);
     }
 
     const terrain = await this.prisma.terrain.update({
       where: { id },
-      data: terrainData as unknown as Prisma.TerrainUncheckedUpdateInput,
+      data: terrainData,
       include: terrainInclude,
     });
     return this.toInternal(terrain);
@@ -596,7 +594,7 @@ export class TerrainsService {
         ),
       })),
     };
-    return result as T;
+    return result;
   }
 
   private asOptions(value: unknown, fallback: string[]): string[] {

@@ -94,7 +94,6 @@ export class AuthService {
         user.twoFactorSecret ?? '',
       );
       let codeValid = this.twoFactorService.verifyCode(twoFactorCode, secret);
-      let usedRecoveryCode = false;
 
       if (!codeValid && user.twoFactorRecoveryCodes) {
         const recoveryResult = this.twoFactorService.verifyRecoveryCode(
@@ -103,13 +102,13 @@ export class AuthService {
         );
         if (recoveryResult.valid) {
           codeValid = true;
-          usedRecoveryCode = true;
           await this.prisma.user.update({
             where: { id: user.id },
             data: {
-              twoFactorRecoveryCodes: this.twoFactorService.encryptRecoveryCodes(
-                recoveryResult.remainingCodes,
-              ),
+              twoFactorRecoveryCodes:
+                this.twoFactorService.encryptRecoveryCodes(
+                  recoveryResult.remainingCodes,
+                ),
             },
           });
           await this.recordAudit(
