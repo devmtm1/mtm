@@ -8,5 +8,6 @@
   },
   "transformIgnorePatterns": [
     "/node_modules/(?!@nestjs/schedule)"
-  ]
+  ],
+  "testTimeout": 30000
 }

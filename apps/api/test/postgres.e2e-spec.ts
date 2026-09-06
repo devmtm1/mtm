@@ -29,6 +29,20 @@ describe('PostgreSQL réel (e2e)', () => {
     );
     await app.init();
     prisma = moduleRef.get(PrismaService);
+
+    await prisma.$executeRawUnsafe(`
+      DO $$
+      DECLARE
+        r RECORD;
+      BEGIN
+        FOR r IN
+          SELECT tablename FROM pg_tables
+          WHERE schemaname = 'public' AND tablename NOT LIKE '_prisma%'
+        LOOP
+          EXECUTE format('TRUNCATE TABLE %I RESTART IDENTITY CASCADE', r.tablename);
+        END LOOP;
+      END $$;
+    `);
   });
 
   afterAll(async () => {
@@ -49,6 +63,7 @@ describe('PostgreSQL réel (e2e)', () => {
     await prisma.refreshToken.deleteMany();
     await prisma.passwordResetToken.deleteMany();
     await prisma.userRole.deleteMany();
+    await prisma.rolePermission.deleteMany();
     await prisma.user.deleteMany();
     await prisma.role.deleteMany();
     await prisma.permission.deleteMany();
