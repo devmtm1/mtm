@@ -63,6 +63,7 @@
     "@types/passport-jwt": "^4.0.1",
     "@types/qrcode": "^1.5.5",
     "@types/supertest": "^6.0.2",
+    "dotenv": "^17.4.1",
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
@@ -97,8 +98,5 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  },
-  "prisma": {
-    "seed": "ts-node prisma/seed.ts"
   }
 }

@@ -10,6 +10,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { FormsModule } from '@angular/forms';
 import { LucidePencil, LucideTrash2, LucidePlus } from '@lucide/angular';
 import { ContentBlockApiService, type ContentBlock } from '../../core/services/api/content-block-api.service';
+import { SessionService } from '../../core/services/session.service';
 import { ContentEditorDialog } from './content-editor-dialog';
 
 @Component({
@@ -35,10 +36,10 @@ import { ContentEditorDialog } from './content-editor-dialog';
           <h1>Contenus du site</h1>
           <p>Gérez les contenus textuels, témoignages et éléments du site public.</p>
         </div>
-        <button mat-flat-button color="primary" (click)="openEditor()">
+        @if (canCreate) { <button mat-flat-button color="primary" (click)="openEditor()">
           <svg lucidePlus aria-hidden="true"></svg>
           Nouveau contenu
-        </button>
+        </button> }
       </div>
 
       <table mat-table [dataSource]="blocks()" class="w-full">
@@ -69,12 +70,15 @@ import { ContentEditorDialog } from './content-editor-dialog';
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef>Actions</th>
           <td mat-cell *matCellDef="let b">
-            <button mat-button (click)="openEditor(b)">
+            @if (canModify) { <button mat-button (click)="openEditor(b)">
               <svg lucidePencil aria-hidden="true"></svg>
-            </button>
-            <button mat-button color="warn" (click)="remove(b)">
+            </button> }
+            @if (canPublish) { <button mat-button (click)="publish(b)">
+              {{ b.isActive ? 'Dépublier' : 'Publier' }}
+            </button> }
+            @if (canDelete) { <button mat-button color="warn" (click)="remove(b)">
               <svg lucideTrash2 aria-hidden="true"></svg>
-            </button>
+            </button> }
           </td>
         </ng-container>
 
@@ -107,6 +111,11 @@ export class ContentBlocks {
   private readonly api = inject(ContentBlockApiService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly session = inject(SessionService);
+  protected readonly canCreate = this.session.hasPermission('content:creer');
+  protected readonly canModify = this.session.hasPermission('content:modifier');
+  protected readonly canPublish = this.session.hasPermission('content:publier');
+  protected readonly canDelete = this.session.hasPermission('content:supprimer');
 
   protected readonly loading = signal(true);
   protected readonly blocks = signal<ContentBlock[]>([]);
@@ -118,7 +127,7 @@ export class ContentBlocks {
 
   private load(): void {
     this.loading.set(true);
-    this.api.findAll().subscribe({
+    this.api.findAllAdmin().subscribe({
       next: (data) => {
         this.blocks.set(data);
         this.loading.set(false);
@@ -157,6 +166,16 @@ export class ContentBlocks {
       error: () => {
         this.snackBar.open('Erreur', 'Fermer', { duration: 3000 });
       },
+    });
+  }
+
+  publish(block: ContentBlock): void {
+    this.api.publish(block.key, !block.isActive).subscribe({
+      next: () => {
+        this.snackBar.open(block.isActive ? 'Contenu dépublié' : 'Contenu publié', 'Fermer', { duration: 2000 });
+        this.load();
+      },
+      error: () => this.snackBar.open('Permission de publication insuffisante', 'Fermer', { duration: 3000 }),
     });
   }
 }

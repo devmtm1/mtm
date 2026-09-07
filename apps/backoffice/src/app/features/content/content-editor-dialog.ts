@@ -49,10 +49,6 @@ import { ContentBlockApiService, type ContentBlock, type CreateContentBlockPaylo
         <input matInput type="number" [(ngModel)]="form.ordre" />
       </mat-form-field>
 
-      <mat-checkbox [(ngModel)]="form.isActive">
-        <span class="font-medium">Actif</span>
-      </mat-checkbox>
-
       <mat-form-field appearance="outline" class="full-width textarea-field">
         <mat-label>Contenu</mat-label>
         <textarea
@@ -111,7 +107,9 @@ export class ContentEditorDialog {
     this.saving.set(true);
 
     if (this.editing) {
-      this.api.update(this.form.key, this.form).subscribe({
+      const editable = { ...this.form };
+      delete editable.isActive;
+      this.api.update(this.form.key, editable).subscribe({
         next: () => {
           this.saving.set(false);
           this.dialogRef.close({ updated: true });
@@ -124,7 +122,7 @@ export class ContentEditorDialog {
         },
       });
     } else {
-      this.api.create(this.form).subscribe({
+      this.api.create({ ...this.form, isActive: false }).subscribe({
         next: () => {
           this.saving.set(false);
           this.dialogRef.close({ created: true });

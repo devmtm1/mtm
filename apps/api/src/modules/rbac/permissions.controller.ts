@@ -9,7 +9,7 @@ export class PermissionsController {
   constructor(private readonly permissionsService: PermissionsService) {}
 
   @Get()
-  @RequirePermissions('permissions:consulter')
+  @RequirePermissions('roles:administrer')
   findAll() {
     return this.permissionsService.findAll();
   }

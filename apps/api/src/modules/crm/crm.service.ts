@@ -8,6 +8,7 @@ import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
+import { validateUploadedAsset } from '../../common/storage/asset-validation';
 import { CreateProspectDto } from './dto/create-prospect.dto';
 import { UpdateProspectDto } from './dto/update-prospect.dto';
 import { QueryProspectDto } from './dto/query-prospect.dto';
@@ -654,6 +655,20 @@ export class CrmService {
   async create(dto: CreateProspectDto, user: { id: string; roles: string[] }) {
     await this.validatePipeline(dto.statutPipeline);
     const isManager = this.isManager(user);
+    if (
+      !isManager &&
+      dto.commercialResponsableId &&
+      dto.commercialResponsableId !== user.id
+    ) {
+      throw new BadRequestException(
+        'Seul l’encadrement commercial peut affecter un autre commercial',
+      );
+    }
+    if (dto.commercialResponsableId) {
+      await this.assertCommercialTarget(
+        isManager ? dto.commercialResponsableId : user.id,
+      );
+    }
     const commercialResponsableId = isManager
       ? dto.commercialResponsableId
       : (dto.commercialResponsableId ?? user.id);
@@ -805,10 +820,19 @@ export class CrmService {
     prospectId: string,
     dto: CreateDocumentCrmDto,
     file: Express.Multer.File,
-    user: { id: string; roles: string[] },
+    user: { id: string; roles: string[]; permissions: string[] },
   ) {
     await this.assertOwnership(prospectId, user);
-    this.validateFileSize(file);
+    validateUploadedAsset(file, 'document');
+    if (
+      dto.isPublic &&
+      !user.roles.some((role) => ['administrateur', 'direction'].includes(role)) &&
+      !user.permissions.includes('crm:publier')
+    ) {
+      throw new BadRequestException(
+        'La publication nécessite la permission crm:publier',
+      );
+    }
     await this.validateDocumentType(dto.type);
     const uploaded = await this.cloudinary.upload(
       file,

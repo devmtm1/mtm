@@ -8,10 +8,12 @@ import { TerrainsService } from './terrains.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 
 describe('TerrainsService', () => {
+  const internalUser = { roles: ['commercial'], permissions: [] };
   let service: TerrainsService;
   let prismaMock: {
     terrain: {
       findUnique: jest.Mock;
+      findFirst: jest.Mock;
       findMany: jest.Mock;
       count: jest.Mock;
       create: jest.Mock;
@@ -34,6 +36,7 @@ describe('TerrainsService', () => {
     prismaMock = {
       terrain: {
         findUnique: jest.fn(),
+        findFirst: jest.fn(),
         findMany: jest.fn(),
         count: jest.fn(),
         create: jest.fn(),
@@ -78,7 +81,7 @@ describe('TerrainsService', () => {
         statutJuridique: 'Bail',
         niveauVerification: 'Non vérifié',
         statutCommercial: 'Brouillon',
-      }),
+      }, internalUser),
     ).rejects.toThrow(ConflictException);
     expect(prismaMock.terrain.create).not.toHaveBeenCalled();
   });
@@ -93,7 +96,7 @@ describe('TerrainsService', () => {
         statutJuridique: 'Bail',
         niveauVerification: 'Non vérifié',
         statutCommercial: 'Statut inconnu',
-      }),
+      }, internalUser),
     ).rejects.toThrow(BadRequestException);
     expect(prismaMock.terrain.create).not.toHaveBeenCalled();
   });
@@ -102,7 +105,7 @@ describe('TerrainsService', () => {
     prismaMock.terrain.findUnique.mockResolvedValue(null);
 
     await expect(
-      service.update('missing', { nom: 'Nouveau nom' }),
+      service.update('missing', { nom: 'Nouveau nom' }, internalUser),
     ).rejects.toThrow(NotFoundException);
   });
 
@@ -183,7 +186,7 @@ describe('TerrainsService', () => {
   });
 
   it('rattache un média au terrain existant', async () => {
-    prismaMock.terrain.findUnique.mockResolvedValue({ id: 't1' });
+    prismaMock.terrain.findFirst.mockResolvedValue({ id: 't1' });
     prismaMock.terrainMedia.create.mockResolvedValue({
       id: 'm1',
       terrainId: 't1',
@@ -192,7 +195,12 @@ describe('TerrainsService', () => {
     const result = await service.addMedia(
       't1',
       { type: 'photo', title: 'Vue principale' },
-      { buffer: Buffer.from('image') } as Express.Multer.File,
+      {
+        buffer: Buffer.from([0xff, 0xd8, 0xff]),
+        mimetype: 'image/jpeg',
+        size: 3,
+      } as Express.Multer.File,
+      internalUser,
     );
 
     expect(result).toEqual({ id: 'm1', terrainId: 't1' });
@@ -209,13 +217,37 @@ describe('TerrainsService', () => {
   });
 
   it('refuse un média dépassant la limite de 10 Mo', async () => {
-    prismaMock.terrain.findUnique.mockResolvedValue({ id: 't1' });
+    prismaMock.terrain.findFirst.mockResolvedValue({ id: 't1' });
 
     await expect(
-      service.addMedia('t1', { type: 'photo' }, {
-        buffer: Buffer.from('image'),
-        size: 10 * 1024 * 1024 + 1,
-      } as Express.Multer.File),
+      service.addMedia(
+        't1',
+        { type: 'photo' },
+        {
+          buffer: Buffer.from([0xff, 0xd8, 0xff]),
+          mimetype: 'image/jpeg',
+          size: 10 * 1024 * 1024 + 1,
+        } as Express.Multer.File,
+        internalUser,
+      ),
+    ).rejects.toThrow(BadRequestException);
+    expect(cloudinaryMock.upload).not.toHaveBeenCalled();
+  });
+
+  it('refuse la publication d’un média sans permission de publication', async () => {
+    prismaMock.terrain.findFirst.mockResolvedValue({ id: 't1' });
+
+    await expect(
+      service.addMedia(
+        't1',
+        { type: 'photo', isPublic: true },
+        {
+          buffer: Buffer.from([0xff, 0xd8, 0xff]),
+          mimetype: 'image/jpeg',
+          size: 3,
+        } as Express.Multer.File,
+        internalUser,
+      ),
     ).rejects.toThrow(BadRequestException);
     expect(cloudinaryMock.upload).not.toHaveBeenCalled();
   });

@@ -13,6 +13,7 @@ import { CreateTerrainAssetDto } from './dto/create-terrain-asset.dto';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import { SettingsService } from '../settings/settings.service';
 import type { PublicTerrainResponse } from './dto/public-terrain.dto';
+import { validateUploadedAsset } from '../../common/storage/asset-validation';
 
 const terrainInclude = {
   proprietaire: true,
@@ -83,7 +84,9 @@ export class TerrainsService {
     const page = query.page > 0 ? query.page : 1;
     const pageSize = Math.min(query.pageSize > 0 ? query.pageSize : 25, 200);
     const search = query.search?.trim();
+    const ownership = this.ownershipFilter(user);
     const where = {
+      ...ownership,
       ...(search
         ? {
             OR: [
@@ -160,8 +163,8 @@ export class TerrainsService {
   }
 
   async findOne(id: string, user?: { roles: string[]; permissions: string[] }) {
-    const terrain = await this.prisma.terrain.findUnique({
-      where: { id },
+    const terrain = await this.prisma.terrain.findFirst({
+      where: { id, ...this.ownershipFilter(user) },
       include: terrainInclude,
     });
     if (!terrain) throw new NotFoundException('Terrain introuvable');
@@ -236,7 +239,10 @@ export class TerrainsService {
     return this.toPublic(terrain);
   }
 
-  async create(dto: CreateTerrainDto) {
+  async create(
+    dto: CreateTerrainDto,
+    user: { roles: string[]; permissions: string[] },
+  ) {
     const existing = await this.prisma.terrain.findUnique({
       where: { referenceInterne: dto.referenceInterne },
     });
@@ -257,11 +263,15 @@ export class TerrainsService {
       data,
       include: terrainInclude,
     });
-    return this.toInternal(terrain);
+    return this.toInternal(terrain, user);
   }
 
-  async update(id: string, dto: UpdateTerrainDto) {
-    await this.ensureExists(id);
+  async update(
+    id: string,
+    dto: UpdateTerrainDto,
+    user: { roles: string[]; permissions: string[] },
+  ) {
+    await this.ensureAccessible(id, user);
     await this.validateStatuses(dto);
     const terrainData = { ...dto } as Record<string, unknown>;
     delete terrainData['justification'];
@@ -280,22 +290,23 @@ export class TerrainsService {
       data: terrainData,
       include: terrainInclude,
     });
-    return this.toInternal(terrain);
+    return this.toInternal(terrain, user);
   }
 
   async updateStatus(
     id: string,
     field: 'statutJuridique' | 'niveauVerification' | 'statutCommercial',
     value: string,
+    user: { roles: string[]; permissions: string[] },
   ) {
-    await this.ensureExists(id);
+    await this.ensureAccessible(id, user);
     await this.validateStatuses({ [field]: value });
     const terrain = await this.prisma.terrain.update({
       where: { id },
       data: { [field]: value },
       include: terrainInclude,
     });
-    return this.toInternal(terrain);
+    return this.toInternal(terrain, user);
   }
 
   async getOptions() {
@@ -332,9 +343,11 @@ export class TerrainsService {
     id: string,
     dto: CreateTerrainAssetDto,
     file: Express.Multer.File,
+    user: { roles: string[]; permissions: string[] },
   ) {
-    await this.ensureExists(id);
-    this.validateFileSize(file);
+    await this.ensureAccessible(id, user);
+    validateUploadedAsset(file, 'media');
+    this.assertCanPublish(dto.isPublic, user);
     const uploaded = await this.cloudinary.upload(
       file,
       `mtm/terrains/${id}/media`,
@@ -356,9 +369,11 @@ export class TerrainsService {
     id: string,
     dto: CreateTerrainAssetDto,
     file: Express.Multer.File,
+    user: { roles: string[]; permissions: string[] },
   ) {
-    await this.ensureExists(id);
-    this.validateFileSize(file);
+    await this.ensureAccessible(id, user);
+    validateUploadedAsset(file, 'document');
+    this.assertCanPublish(dto.isPublic, user);
     const uploaded = await this.cloudinary.upload(
       file,
       `mtm/terrains/${id}/documents`,
@@ -376,7 +391,12 @@ export class TerrainsService {
     });
   }
 
-  async removeMedia(id: string, mediaId: string): Promise<void> {
+  async removeMedia(
+    id: string,
+    mediaId: string,
+    user: { roles: string[]; permissions: string[] },
+  ): Promise<void> {
+    await this.ensureAccessible(id, user);
     const media = await this.prisma.terrainMedia.findFirst({
       where: { id: mediaId, terrainId: id },
     });
@@ -389,7 +409,12 @@ export class TerrainsService {
     );
   }
 
-  async removeDocument(id: string, documentId: string): Promise<void> {
+  async removeDocument(
+    id: string,
+    documentId: string,
+    user: { roles: string[]; permissions: string[] },
+  ): Promise<void> {
+    await this.ensureAccessible(id, user);
     const document = await this.prisma.terrainDocument.findFirst({
       where: { id: documentId, terrainId: id },
     });
@@ -512,12 +537,31 @@ export class TerrainsService {
     };
   }
 
-  private async ensureExists(id: string): Promise<void> {
-    const exists = await this.prisma.terrain.findUnique({
-      where: { id },
+  private async ensureAccessible(
+    id: string,
+    user: { roles: string[]; permissions: string[] },
+  ): Promise<void> {
+    const terrain = await this.prisma.terrain.findFirst({
+      where: { id, ...this.ownershipFilter(user) },
       select: { id: true },
     });
-    if (!exists) throw new NotFoundException('Terrain introuvable');
+    if (!terrain) throw new NotFoundException('Terrain introuvable');
+  }
+
+  private ownershipFilter(user?: { id?: string; roles?: string[] }) {
+    if (!user || this.hasGlobalScope(user.roles ?? [])) return {};
+    return { commercialResponsableId: user.id };
+  }
+
+  private hasGlobalScope(roles: string[]): boolean {
+    return roles.some((role) =>
+      [
+        'administrateur',
+        'direction',
+        'manager',
+        'responsable_commercial',
+      ].includes(role),
+    );
   }
 
   private async validateStatuses(
@@ -547,10 +591,18 @@ export class TerrainsService {
     }
   }
 
-  private validateFileSize(file: Express.Multer.File): void {
-    const maxFileSize = 10 * 1024 * 1024;
-    if (file.size > maxFileSize) {
-      throw new BadRequestException('Le fichier ne doit pas dépasser 10 Mo');
+  private assertCanPublish(
+    isPublic: boolean | undefined,
+    user: { roles: string[]; permissions: string[] },
+  ): void {
+    if (
+      isPublic &&
+      !user.roles.some((role) => ['administrateur', 'direction'].includes(role)) &&
+      !user.permissions.includes('terrains:publier')
+    ) {
+      throw new BadRequestException(
+        'La publication nécessite la permission terrains:publier',
+      );
     }
   }
 

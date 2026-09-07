@@ -97,7 +97,7 @@ export const routes: Routes = [
       },
       {
         path: 'content',
-        canActivate: [permissionsGuard(['settings:consulter'])],
+        canActivate: [permissionsGuard(['content:consulter'])],
         loadComponent: () =>
           import('./features/content/content-blocks').then((m) => m.ContentBlocks),
       },

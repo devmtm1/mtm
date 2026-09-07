@@ -71,7 +71,7 @@ export class TerrainsController {
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    const terrain = await this.terrains.create(dto);
+    const terrain = await this.terrains.create(dto, user);
     await this.audit.record({
       userId: user.id,
       action: 'terrain.created',
@@ -90,8 +90,8 @@ export class TerrainsController {
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    const before = await this.terrains.findOne(id);
-    const terrain = await this.terrains.update(id, dto);
+    const before = await this.terrains.findOne(id, user);
+    const terrain = await this.terrains.update(id, dto, user);
     await this.audit.record({
       userId: user.id,
       action: 'terrain.updated',
@@ -167,7 +167,7 @@ export class TerrainsController {
     req: Request,
   ) {
     const before = await this.terrains.findOne(id);
-    const terrain = await this.terrains.updateStatus(id, field, value);
+    const terrain = await this.terrains.updateStatus(id, field, value, user);
     await this.audit.record({
       userId: user.id,
       action: `terrain.${field}.updated`,
@@ -193,7 +193,7 @@ export class TerrainsController {
   ) {
     if (!file)
       throw new BadRequestException('Un fichier média est obligatoire');
-    const media = await this.terrains.addMedia(id, dto, file);
+    const media = await this.terrains.addMedia(id, dto, file, user);
     await this.audit.record({
       userId: user.id,
       action: 'terrain.media.created',
@@ -214,7 +214,7 @@ export class TerrainsController {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     if (!file) throw new BadRequestException('Un document est obligatoire');
-    const document = await this.terrains.addDocument(id, dto, file);
+    const document = await this.terrains.addDocument(id, dto, file, user);
     await this.audit.record({
       userId: user.id,
       action: 'terrain.document.created',
@@ -232,7 +232,7 @@ export class TerrainsController {
     @Param('mediaId', ParseUUIDPipe) mediaId: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    await this.terrains.removeMedia(id, mediaId);
+    await this.terrains.removeMedia(id, mediaId, user);
     await this.audit.record({
       userId: user.id,
       action: 'terrain.media.deleted',
@@ -249,7 +249,7 @@ export class TerrainsController {
     @Param('documentId', ParseUUIDPipe) documentId: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    await this.terrains.removeDocument(id, documentId);
+    await this.terrains.removeDocument(id, documentId, user);
     await this.audit.record({
       userId: user.id,
       action: 'terrain.document.deleted',

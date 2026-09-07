@@ -2,12 +2,11 @@ import { Component, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { LucideX } from '@lucide/angular';
 import { MandatsApiService, AuditHistoryItem } from '../../../core/services/api/mandats-api.service';
 
 @Component({
   selector: 'app-mandat-history-dialog',
-  imports: [DatePipe, MatButtonModule, MatDialogModule, LucideX],
+  imports: [DatePipe, MatButtonModule, MatDialogModule],
   templateUrl: './mandat-history-dialog.html',
   styleUrl: './mandat-history-dialog.scss',
 })

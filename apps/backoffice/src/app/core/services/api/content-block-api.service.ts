@@ -35,15 +35,25 @@ export class ContentBlockApiService {
     return this.http.get<ContentBlock[]>(this.baseUrl, { params });
   }
 
+  findAllAdmin(): Observable<ContentBlock[]> {
+    return this.http.get<ContentBlock[]>(`${this.baseUrl}/admin`);
+  }
+
   create(payload: CreateContentBlockPayload): Observable<ContentBlock> {
     return this.http.post<ContentBlock>(this.baseUrl, payload);
   }
 
   update(
     key: string,
-    payload: Partial<CreateContentBlockPayload>,
+    payload: Partial<Omit<CreateContentBlockPayload, 'isActive'>>,
   ): Observable<ContentBlock> {
     return this.http.patch<ContentBlock>(`${this.baseUrl}/${key}`, payload);
+  }
+
+  publish(key: string, isActive: boolean): Observable<ContentBlock> {
+    return this.http.patch<ContentBlock>(`${this.baseUrl}/${key}/publish`, {
+      isActive,
+    });
   }
 
   remove(key: string): Observable<void> {

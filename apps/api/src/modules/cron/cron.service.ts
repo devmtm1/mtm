@@ -21,7 +21,7 @@ export class CronService {
     const now = new Date();
     const activeMandats = await this.prisma.mandat.findMany({
       where: {
-        statut: 'actif',
+        statut: 'Actif',
         dateFin: { gte: now },
       },
       select: {
@@ -42,6 +42,16 @@ export class CronService {
       const alertThreshold = mandat.alerteEcheanceJours ?? 30;
 
       if (daysUntilExpiry <= alertThreshold) {
+        const alreadyLogged = await this.prisma.auditLog.findFirst({
+          where: {
+            action: 'mandat.echeance_imminente',
+            entityType: 'Mandat',
+            entityId: mandat.id,
+            createdAt: { gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()) },
+          },
+          select: { id: true },
+        });
+        if (alreadyLogged) continue;
         countAlerts++;
         await this.audit.record({
           userId: mandat.commercialResponsableId,

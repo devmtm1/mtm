@@ -5,13 +5,12 @@ import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { LucideX, LucidePlus } from '@lucide/angular';
 import { MandatsApiService } from '../../../core/services/api/mandats-api.service';
 import { TerrainsApiService } from '../../../core/services/api/terrains-api.service';
 
 @Component({
   selector: 'app-mandat-lot-dialog',
-  imports: [ReactiveFormsModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule, LucideX, LucidePlus],
+  imports: [ReactiveFormsModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   templateUrl: './mandat-lot-dialog.html',
   styleUrl: './mandat-lot-dialog.scss',
 })

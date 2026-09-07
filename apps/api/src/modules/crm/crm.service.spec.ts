@@ -285,6 +285,24 @@ describe('CrmService', () => {
     ).rejects.toThrow(BadRequestException);
   });
 
+  it('interdit à un commercial d’affecter un prospect à un autre commercial', async () => {
+    prismaMock.systemSetting.findUnique.mockResolvedValue({
+      value: ['nouveau_contact'],
+    });
+
+    await expect(
+      service.create(
+        {
+          nom: 'Prospect',
+          statutPipeline: 'nouveau_contact',
+          commercialResponsableId: 'other',
+        },
+        { id: 'u1', roles: ['commercial'] },
+      ),
+    ).rejects.toThrow(BadRequestException);
+    expect(prismaMock.prospect.create).not.toHaveBeenCalled();
+  });
+
   it("interdit au commercial de faire avancer un prospect qui n'est pas le sien", async () => {
     prismaMock.prospect.findUnique.mockResolvedValue({
       id: 'p1',

@@ -8,6 +8,7 @@ describe('ContentBlockService public contract', () => {
     contentBlock: {
       findMany: jest.Mock;
       findUnique: jest.Mock;
+      update: jest.Mock;
     };
   };
 
@@ -16,6 +17,7 @@ describe('ContentBlockService public contract', () => {
       contentBlock: {
         findMany: jest.fn(),
         findUnique: jest.fn(),
+        update: jest.fn(),
       },
     };
     service = new ContentBlockService(prismaMock as unknown as PrismaService);
@@ -42,6 +44,21 @@ describe('ContentBlockService public contract', () => {
     expect(prismaMock.contentBlock.findUnique).toHaveBeenCalledWith({
       where: { key: 'home.hero.title', isActive: true },
       select: { key: true, title: true, content: true, type: true },
+    });
+  });
+
+  it('publie ou dépublie un contenu avec traçabilité de l’éditeur', async () => {
+    prismaMock.contentBlock.findUnique.mockResolvedValue({ key: 'home.hero' });
+    prismaMock.contentBlock.update.mockResolvedValue({
+      key: 'home.hero',
+      isActive: true,
+    });
+
+    await service.setActive('home.hero', true, 'user-1');
+
+    expect(prismaMock.contentBlock.update).toHaveBeenCalledWith({
+      where: { key: 'home.hero' },
+      data: { isActive: true, updatedById: 'user-1' },
     });
   });
 });

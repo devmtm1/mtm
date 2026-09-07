@@ -34,6 +34,7 @@
               }
             ],
             "styles": ["src/styles.scss"],
+            "allowedCommonJsDependencies": ["leaflet"],
             "optimization": {
               "scripts": true,
               "styles": true,

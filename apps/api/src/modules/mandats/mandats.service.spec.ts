@@ -10,10 +10,12 @@ import { AuditService } from '../audit/audit.service';
 import { Prisma } from '@prisma/client';
 
 describe('MandatsService', () => {
+  const internalUser = { id: 'u1', roles: ['commercial'], permissions: [] };
   let service: MandatsService;
   let prismaMock: {
     mandat: {
       findUnique: jest.Mock;
+      findFirst: jest.Mock;
       findMany: jest.Mock;
       count: jest.Mock;
       create: jest.Mock;
@@ -57,6 +59,7 @@ describe('MandatsService', () => {
     prismaMock = {
       mandat: {
         findUnique: jest.fn(),
+        findFirst: jest.fn(),
         findMany: jest.fn(),
         count: jest.fn(),
         create: jest.fn(),
@@ -122,7 +125,7 @@ describe('MandatsService', () => {
         dateDebut: '2026-01-01',
         dateFin: '2027-01-01',
         statut: 'Brouillon',
-      }),
+      }, internalUser),
     ).rejects.toThrow(ConflictException);
     expect(prismaMock.mandat.create).not.toHaveBeenCalled();
   });
@@ -141,28 +144,29 @@ describe('MandatsService', () => {
         dateDebut: '2026-01-01',
         dateFin: '2027-01-01',
         statut: 'Invalide',
-      }),
+      }, internalUser),
     ).rejects.toThrow(BadRequestException);
     expect(prismaMock.mandat.create).not.toHaveBeenCalled();
   });
 
   it('refuse un type de document invalide', async () => {
-    prismaMock.mandat.findUnique.mockResolvedValue({ id: 'm1' });
+    prismaMock.mandat.findFirst.mockResolvedValue({ id: 'm1' });
     prismaMock.systemSetting.findUnique.mockResolvedValue({
       value: ['contrat', 'avenant'],
     });
 
     await expect(
       service.addDocument('m1', { type: 'photo' }, {
-        buffer: Buffer.from('image'),
+        buffer: Buffer.from('%PDF-1.7'),
+        mimetype: 'application/pdf',
         size: 1024,
-      } as Express.Multer.File),
+      } as Express.Multer.File, internalUser),
     ).rejects.toThrow(BadRequestException);
     expect(cloudinaryMock.upload).not.toHaveBeenCalled();
   });
 
   it('calcule le résumé financier', async () => {
-    prismaMock.mandat.findUnique.mockResolvedValue({
+    prismaMock.mandat.findFirst.mockResolvedValue({
       id: 'm1',
       lots: [
         {
@@ -180,7 +184,7 @@ describe('MandatsService', () => {
       ],
     });
 
-    const result = await service.getFinancialSummary('m1');
+    const result = await service.getFinancialSummary('m1', internalUser);
     expect(result).toEqual({
       mandatId: 'm1',
       chiffreAffaires: 1000000,
@@ -190,10 +194,28 @@ describe('MandatsService', () => {
   });
 
   it('refuse d’ajouter un lot sur un mandat inexistant', async () => {
+    prismaMock.mandat.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.addLot('missing', { terrainId: 't1' }, internalUser),
+    ).rejects.toThrow(NotFoundException);
+  });
+
+  it('refuse un mandat dont la date de fin précède le début', async () => {
     prismaMock.mandat.findUnique.mockResolvedValue(null);
 
     await expect(
-      service.addLot('missing', { terrainId: 't1' }),
-    ).rejects.toThrow(NotFoundException);
+      service.create(
+        {
+          referenceInterne: 'M-003',
+          proprietaireId: 'p1',
+          typeMandat: 'Vente',
+          dateDebut: '2027-01-01',
+          dateFin: '2026-01-01',
+          statut: 'Brouillon',
+        },
+        internalUser,
+      ),
+    ).rejects.toThrow(BadRequestException);
   });
 });

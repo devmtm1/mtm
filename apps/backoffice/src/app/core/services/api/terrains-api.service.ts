@@ -51,6 +51,20 @@ export class TerrainsApiService {
     return this.http.patch<TerrainDetail>(`${this.baseUrl}/${id}`, payload);
   }
 
+  updateJuridicalStatus(id: string, value: string, justification?: string) {
+    return this.http.patch<TerrainDetail>(`${this.baseUrl}/${id}/juridical-status`, {
+      value,
+      ...(justification ? { justification } : {}),
+    });
+  }
+
+  updateVerificationStatus(id: string, value: string, justification?: string) {
+    return this.http.patch<TerrainDetail>(`${this.baseUrl}/${id}/verification-status`, {
+      value,
+      ...(justification ? { justification } : {}),
+    });
+  }
+
   upload(id: string, kind: 'media' | 'documents', file: File, type: string, title?: string, isPublic = false): Observable<unknown> {
     const formData = new FormData();
     formData.append('file', file);

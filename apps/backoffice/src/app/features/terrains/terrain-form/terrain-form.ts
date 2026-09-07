@@ -14,6 +14,7 @@ import { LucideArrowLeft, LucideFileText, LucideImage, LucideSave, LucideTrash2,
 import { TerrainsApiService } from '../../../core/services/api/terrains-api.service';
 import type { CreateTerrainPayload, ProprietaireSummary, TerrainDetail } from '../../../core/models/terrain.model';
 import { ProprietaireDialog } from '../proprietaire-dialog';
+import { SessionService } from '../../../core/services/session.service';
 
 @Component({
   selector: 'app-terrain-form',
@@ -28,6 +29,8 @@ export class TerrainForm implements OnInit {
   private readonly formBuilder = inject(FormBuilder);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
+  private readonly session = inject(SessionService);
+  private originalStatuses: { statutJuridique: string; niveauVerification: string } | null = null;
 
   protected terrainId: string | null = null;
   protected terrain: TerrainDetail | null = null;
@@ -45,7 +48,18 @@ export class TerrainForm implements OnInit {
     this.api.getProprietaires().subscribe({ next: (proprietaires) => { this.proprietaires = proprietaires; } });
     this.terrainId = this.route.snapshot.paramMap.get('id');
     if (this.terrainId) {
-      this.api.findOne(this.terrainId).subscribe({ next: (terrain) => { this.terrain = terrain; this.form.patchValue(this.toFormValue(terrain)); }, error: () => this.goBack() });
+      this.api.findOne(this.terrainId).subscribe({ next: (terrain) => {
+        this.terrain = terrain;
+        this.originalStatuses = {
+          statutJuridique: terrain.statutJuridique,
+          niveauVerification: terrain.niveauVerification,
+        };
+        this.form.patchValue(this.toFormValue(terrain));
+      }, error: () => this.goBack() });
+    }
+    if (!this.session.hasPermission('terrains:valider')) {
+      this.form.controls.statutJuridique.disable();
+      this.form.controls.niveauVerification.disable();
     }
   }
 
@@ -56,8 +70,18 @@ export class TerrainForm implements OnInit {
     const payload = this.cleanPayload(value);
     const request$ = this.terrainId ? this.api.update(this.terrainId, payload) : this.api.create(payload);
     request$.subscribe({ next: (terrain) => {
+      const statusUpdates = this.terrainId && this.originalStatuses
+        ? [
+            value.statutJuridique !== this.originalStatuses.statutJuridique
+              ? this.api.updateJuridicalStatus(terrain.id, value.statutJuridique ?? '')
+              : of(null),
+            value.niveauVerification !== this.originalStatuses.niveauVerification
+              ? this.api.updateVerificationStatus(terrain.id, value.niveauVerification ?? '')
+              : of(null),
+          ]
+        : [];
       const uploads = this.selectedAssets.map((asset) => this.api.upload(terrain.id, asset.kind, asset.file, asset.type, asset.title, asset.isPublic));
-      forkJoin(uploads.length ? uploads : [of(null)]).subscribe({
+      forkJoin([...statusUpdates, ...uploads].length ? [...statusUpdates, ...uploads] : [of(null)]).subscribe({
         next: () => { this.saving = false; this.snackBar.open(this.selectedAssets.length ? 'Terrain et fichiers enregistrés' : (this.terrainId ? 'Terrain mis à jour' : 'Terrain créé'), 'Fermer', { duration: 3000 }); this.router.navigate(['/terrains', terrain.id]); },
         error: () => { this.saving = false; this.snackBar.open('Terrain enregistré, mais un fichier n’a pas pu être envoyé', 'Fermer', { duration: 5000 }); this.router.navigate(['/terrains', terrain.id]); },
       });
@@ -107,6 +131,10 @@ export class TerrainForm implements OnInit {
     const dimensions = this.parseDimensions(value.dimensions);
     const stringFields = ['parcelleMatricule', 'proprietaireId', 'typeDocumentFoncier', 'region', 'commune', 'localisationDetail', 'accesRoutier', 'voisinage', 'vocation', 'proximiteAxes', 'notesInternes', 'uniteSuperficie'] as const;
     const cleaned = { ...value, dimensions } as Record<string, unknown>;
+    if (this.terrainId) {
+      delete cleaned['statutJuridique'];
+      delete cleaned['niveauVerification'];
+    }
     for (const field of stringFields) {
       if (typeof cleaned[field] === 'string' && cleaned[field].trim() === '') {
         cleaned[field] = undefined;

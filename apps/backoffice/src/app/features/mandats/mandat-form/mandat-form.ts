@@ -8,13 +8,13 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpErrorResponse } from '@angular/common/http';
-import { LucideArrowLeft, LucideSave, LucideFileText } from '@lucide/angular';
+import { LucideArrowLeft } from '@lucide/angular';
 import { MandatsApiService } from '../../../core/services/api/mandats-api.service';
 import type { CreateMandatPayload, MandatDetail, ProprietaireSummary } from '../../../core/models/mandat.model';
 
 @Component({
   selector: 'app-mandat-form',
-  imports: [FormsModule, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatCheckboxModule, LucideArrowLeft, LucideSave, LucideFileText],
+  imports: [FormsModule, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatCheckboxModule, LucideArrowLeft],
   templateUrl: './mandat-form.html',
   styleUrl: './mandat-form.scss',
 })

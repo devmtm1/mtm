@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { LucideArrowLeft, LucideFileText, LucidePencil, LucidePlus, LucideUser, LucideClock, LucideMapPin, LucideTrash, LucideUpload } from '@lucide/angular';
+import { LucideArrowLeft, LucideFileText, LucidePencil, LucidePlus, LucideUser, LucideClock, LucideTrash, LucideUpload } from '@lucide/angular';
 import { MandatsApiService } from '../../../core/services/api/mandats-api.service';
 import { SessionService } from '../../../core/services/session.service';
 import type { MandatDetail as MandatDetailModel, MandatFinancialSummary, MandatLotItem } from '../../../core/models/mandat.model';
@@ -13,7 +13,7 @@ import { MandatLotDialog } from './mandat-lot-dialog';
 
 @Component({
   selector: 'app-mandat-detail',
-  imports: [DatePipe, MatButtonModule, MatDialogModule, LucideArrowLeft, LucideFileText, LucidePencil, LucidePlus, LucideUser, LucideClock, LucideMapPin, LucideTrash, LucideUpload],
+  imports: [DatePipe, MatButtonModule, MatDialogModule, LucideArrowLeft, LucideFileText, LucidePencil, LucidePlus, LucideUser, LucideClock, LucideTrash, LucideUpload],
   templateUrl: './mandat-detail.html',
   styleUrl: './mandat-detail.scss',
 })

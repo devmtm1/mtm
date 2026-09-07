@@ -34,6 +34,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((error: unknown) => {
       if (
         error instanceof HttpErrorResponse &&
+        error.status === 403 &&
+        error.error?.code === 'TWO_FACTOR_REQUIRED'
+      ) {
+        void router.navigate(['/security']);
+        return throwError(() => error);
+      }
+      if (
+        error instanceof HttpErrorResponse &&
         error.status === 401 &&
         !isAuthEndpoint
       ) {
@@ -48,13 +56,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           }),
           catchError((refreshError: unknown) => {
             sessionService.clearSession();
-      if (
-        error instanceof HttpErrorResponse &&
-        error.status === 403 &&
-        error.error?.code === 'TWO_FACTOR_REQUIRED'
-      ) {
-        void router.navigate(['/security']);
-      }
             void router.navigate(['/login']);
             return throwError(() => refreshError);
           }),

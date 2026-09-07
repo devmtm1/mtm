@@ -1,10 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateContactDto } from './dto/create-contact.dto';
 import type { Contact } from '@prisma/client';
 
 @Injectable()
 export class ContactService {
+  private readonly logger = new Logger(ContactService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   async create(dto: CreateContactDto): Promise<Contact> {
@@ -62,8 +69,11 @@ export class ContactService {
           priorite: 'haute',
         },
       });
-    } catch {
-      // Ignorer si la création de prospect échoue pour ne pas bloquer l'envoi du message public
+    } catch (error) {
+      this.logger.error(
+        `Échec de synchronisation du contact ${contact.id} vers le CRM`,
+        error instanceof Error ? error.stack : String(error),
+      );
     }
 
     return contact;
@@ -84,9 +94,43 @@ export class ContactService {
     });
   }
 
-  async convertToProspect(id: string, commercialResponsableId?: string) {
+  async convertToProspect(
+    id: string,
+    commercialResponsableId: string | undefined,
+    user: { id: string; roles: string[] },
+  ) {
     const contact = await this.prisma.contact.findUnique({ where: { id } });
     if (!contact) throw new NotFoundException('Message de contact introuvable');
+
+    const isManager = user.roles.some((role) =>
+      ['administrateur', 'direction', 'manager', 'responsable_commercial'].includes(role),
+    );
+    if (
+      commercialResponsableId &&
+      !isManager &&
+      commercialResponsableId !== user.id
+    ) {
+      throw new BadRequestException(
+        'Seul l’encadrement commercial peut affecter un autre commercial',
+      );
+    }
+
+    if (commercialResponsableId) {
+      const target = await this.prisma.user.findUnique({
+        where: { id: commercialResponsableId },
+        include: { roles: { include: { role: { select: { name: true } } } } },
+      });
+      const isCommercial = target?.roles.some((item) =>
+        ['commercial', 'responsable_commercial', 'manager', 'administrateur'].includes(
+          item.role.name,
+        ),
+      );
+      if (!target?.isActive || !isCommercial) {
+        throw new BadRequestException(
+          'L’utilisateur cible est invalide ou ne possède pas un rôle commercial',
+        );
+      }
+    }
 
     let prospect = await this.prisma.prospect.findFirst({
       where: {

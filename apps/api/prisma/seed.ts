@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
@@ -46,6 +47,13 @@ const INITIAL_ROLES = [
 
 async function main(): Promise<void> {
   console.log('Seed Phase 0 — démarrage');
+
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+  if (!adminPassword || adminPassword.length < 12) {
+    throw new Error(
+      'SEED_ADMIN_PASSWORD doit être configuré et contenir au moins 12 caractères',
+    );
+  }
 
   // --- Permissions ---
   const permissions = [
@@ -164,7 +172,6 @@ async function main(): Promise<void> {
 
   // --- Utilisateur administrateur par défaut ---
   const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@mtm-immobilier.sn';
-  const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? 'ChangeMe!2026';
   const hashedPassword = await bcrypt.hash(adminPassword, 12);
 
   const adminUser = await prisma.user.upsert({
@@ -191,12 +198,6 @@ async function main(): Promise<void> {
   });
 
   console.log(`  Utilisateur administrateur : ${adminEmail}`);
-  if (!process.env.SEED_ADMIN_PASSWORD) {
-    console.log(
-      '  ⚠️  Mot de passe par défaut utilisé (ChangeMe!2026) — à changer immédiatement.',
-    );
-  }
-
   // --- Paramètres système de base ---
   await prisma.systemSetting.upsert({
     where: { key: 'app.name' },
@@ -297,6 +298,17 @@ async function main(): Promise<void> {
       ],
       description: 'Liste des types de documents contractuels pour les mandats',
       isSensitive: false,
+    },
+  });
+
+  await prisma.systemSetting.upsert({
+    where: { key: 'mandats.commissionRate' },
+    update: {},
+    create: {
+      key: 'mandats.commissionRate',
+      value: 5,
+      description: 'Taux de commission par défaut des mandats, en pourcentage',
+      isSensitive: true,
     },
   });
 

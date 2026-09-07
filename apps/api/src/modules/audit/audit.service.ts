@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 
 export interface RecordAuditInput {
@@ -54,6 +54,9 @@ export class AuditService {
       });
     } catch (error) {
       this.logger.error("Échec de l'écriture du journal d'audit", error);
+      throw new ServiceUnavailableException(
+        "L'opération n'a pas pu être tracée et a été interrompue",
+      );
     }
   }
 

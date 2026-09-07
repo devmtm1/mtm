@@ -38,28 +38,35 @@ export class MandatsController {
 
   @Get() @RequirePermissions('mandats:consulter') findAll(
     @Query() query: QueryMandatDto,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.mandats.findAll(query);
+    return this.mandats.findAll(query, user);
   }
 
   @Get('options') @RequirePermissions('mandats:consulter') getOptions() {
     return this.mandats.getOptions();
   }
 
-  @Get('stats') @RequirePermissions('mandats:consulter') getStats() {
-    return this.mandats.getStats();
+  @Get('stats') @RequirePermissions('mandats:consulter') getStats(
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.mandats.getStats(user);
   }
 
   @Get(':id/financial')
   @RequirePermissions('mandats:consulter')
-  getFinancialSummary(@Param('id', ParseUUIDPipe) id: string) {
-    return this.mandats.getFinancialSummary(id);
+  getFinancialSummary(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.mandats.getFinancialSummary(id, user);
   }
 
   @Get('expirants') @RequirePermissions('mandats:consulter') getExpirants(
+    @CurrentUser() user: AuthenticatedUser,
     @Query('jours') jours?: string,
   ) {
-    return this.mandats.getExpirants(jours ? Number(jours) : undefined);
+    return this.mandats.getExpirants(jours ? Number(jours) : undefined, user);
   }
 
   @Post('alerts/check')
@@ -70,14 +77,16 @@ export class MandatsController {
 
   @Get(':id') @RequirePermissions('mandats:consulter') findOne(
     @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.mandats.findOne(id);
+    return this.mandats.findOne(id, user);
   }
 
   @Get(':id/history') @RequirePermissions('mandats:consulter') getHistory(
     @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.mandats.getHistory(id);
+    return this.mandats.getHistory(id, user);
   }
 
   @Post() @RequirePermissions('mandats:creer') async create(
@@ -85,7 +94,7 @@ export class MandatsController {
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    const mandat = await this.mandats.create(dto);
+    const mandat = await this.mandats.create(dto, user);
     await this.audit.record({
       userId: user.id,
       action: 'mandat.created',
@@ -104,8 +113,8 @@ export class MandatsController {
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    const before = await this.mandats.findOne(id);
-    const mandat = await this.mandats.update(id, dto);
+    const before = await this.mandats.findOne(id, user);
+    const mandat = await this.mandats.update(id, dto, user);
     await this.audit.record({
       userId: user.id,
       action: 'mandat.updated',
@@ -125,8 +134,8 @@ export class MandatsController {
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    const before = await this.mandats.findOne(id);
-    await this.mandats.remove(id);
+    const before = await this.mandats.findOne(id, user);
+    await this.mandats.remove(id, user);
     await this.audit.record({
       userId: user.id,
       action: 'mandat.deleted',
@@ -146,7 +155,7 @@ export class MandatsController {
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    const lot = await this.mandats.addLot(id, dto);
+    const lot = await this.mandats.addLot(id, dto, user);
     await this.audit.record({
       userId: user.id,
       action: 'mandat.lot.created',
@@ -172,8 +181,8 @@ export class MandatsController {
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    const before = await this.mandats.findOne(id);
-    const lot = await this.mandats.updateLot(id, lotId, dto);
+    const before = await this.mandats.findOne(id, user);
+    const lot = await this.mandats.updateLot(id, lotId, dto, user);
     await this.audit.record({
       userId: user.id,
       action: 'mandat.lot.updated',
@@ -198,7 +207,7 @@ export class MandatsController {
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    await this.mandats.removeLot(id, lotId);
+    await this.mandats.removeLot(id, lotId, user);
     await this.audit.record({
       userId: user.id,
       action: 'mandat.lot.deleted',
@@ -220,7 +229,7 @@ export class MandatsController {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     if (!file) throw new BadRequestException('Un document est obligatoire');
-    const document = await this.mandats.addDocument(id, dto, file);
+    const document = await this.mandats.addDocument(id, dto, file, user);
     await this.audit.record({
       userId: user.id,
       action: 'mandat.document.created',
@@ -238,7 +247,7 @@ export class MandatsController {
     @Param('documentId', ParseUUIDPipe) documentId: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    await this.mandats.removeDocument(id, documentId);
+    await this.mandats.removeDocument(id, documentId, user);
     await this.audit.record({
       userId: user.id,
       action: 'mandat.document.deleted',

@@ -40,12 +40,12 @@ describe('AuditService', () => {
       });
     });
 
-    it("n'échoue jamais même si l'écriture en base échoue", async () => {
+    it("interrompt l'opération si l'écriture en base échoue", async () => {
       prismaMock.auditLog.create.mockRejectedValue(new Error('DB down'));
 
       await expect(
         service.record({ action: 'x', entityType: 'Y' }),
-      ).resolves.toBeUndefined();
+      ).rejects.toThrow("L'opération n'a pas pu être tracée");
     });
   });
 

@@ -76,6 +76,7 @@ export class ContactController {
     const prospect = await this.contacts.convertToProspect(
       id,
       commercialResponsableId,
+      user,
     );
     await this.audit.record({
       userId: user.id,

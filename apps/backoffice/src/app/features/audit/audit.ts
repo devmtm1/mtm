@@ -8,9 +8,19 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { mtmGridTheme } from '../../core/ag-grid.config';
 import { AuditApiService } from '../../core/services/api/audit-api.service';
+import { SessionService } from '../../core/services/session.service';
 import type { AuditLogItem } from '../../core/models/audit.model';
 
-const ENTITY_TYPES = ['User', 'Role', 'SystemSetting'] as const;
+const ENTITY_TYPES = [
+  'User',
+  'Role',
+  'SystemSetting',
+  'Terrain',
+  'Mandat',
+  'Prospect',
+  'ActiviteCrm',
+  'DocumentCrm',
+] as const;
 
 @Component({
   selector: 'app-audit',
@@ -27,12 +37,14 @@ const ENTITY_TYPES = ['User', 'Role', 'SystemSetting'] as const;
 })
 export class Audit implements OnInit {
   private readonly auditApi = inject(AuditApiService);
+  private readonly session = inject(SessionService);
 
   protected readonly theme = mtmGridTheme;
   protected readonly loading = signal(true);
   protected readonly rowData = signal<AuditLogItem[]>([]);
   protected readonly total = signal(0);
   protected readonly entityTypes = ENTITY_TYPES;
+  protected readonly canExport = this.session.hasPermission('audit:exporter');
 
   protected entityTypeFilter = '';
   protected actionFilter = '';
@@ -70,6 +82,27 @@ export class Audit implements OnInit {
 
   applyFilters(): void {
     this.load();
+  }
+
+  exportLogs(): void {
+    if (!this.canExport) return;
+    const justification = prompt('Justification de l’export des journaux :')?.trim();
+    if (!justification || justification.length < 3) return;
+    this.auditApi.export({
+      entityType: this.entityTypeFilter || undefined,
+      action: this.actionFilter || undefined,
+      pageSize: 2000,
+    }, justification).subscribe({
+      next: (items) => {
+        const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `audit-${new Date().toISOString().slice(0, 10)}.json`;
+        anchor.click();
+        URL.revokeObjectURL(url);
+      },
+    });
   }
 
   private load(): void {
