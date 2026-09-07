@@ -42,6 +42,8 @@ jobs:
       JWT_ACCESS_SECRET: ci-access-secret-min-32-characters-long
       JWT_REFRESH_SECRET: ci-refresh-secret-min-32-characters-long
       CORS_ORIGIN: http://localhost:4200
+      SEED_ADMIN_EMAIL: admin@mtm-immobilier.test
+      SEED_ADMIN_PASSWORD: ci-seed-admin-password-2026!
 
     steps:
       - name: Checkout
