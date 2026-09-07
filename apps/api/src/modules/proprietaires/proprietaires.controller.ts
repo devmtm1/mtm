@@ -28,19 +28,19 @@ export class ProprietairesController {
   ) {}
 
   @Get()
-  @RequirePermissions('terrains:consulter')
+  @RequirePermissions('proprietaires:consulter')
   findAll() {
     return this.proprietaires.findAll();
   }
 
   @Get(':id')
-  @RequirePermissions('terrains:consulter')
+  @RequirePermissions('proprietaires:consulter')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.proprietaires.findById(id);
   }
 
   @Post()
-  @RequirePermissions('terrains:administrer')
+  @RequirePermissions('proprietaires:creer')
   async create(
     @Body() dto: CreateProprietaireDto,
     @CurrentUser() user: AuthenticatedUser,
@@ -65,7 +65,7 @@ export class ProprietairesController {
   }
 
   @Patch(':id')
-  @RequirePermissions('terrains:administrer')
+  @RequirePermissions('proprietaires:modifier')
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateProprietaireDto,
@@ -101,7 +101,7 @@ export class ProprietairesController {
   }
 
   @Delete(':id')
-  @RequirePermissions('terrains:administrer')
+  @RequirePermissions('proprietaires:supprimer')
   async remove(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: AuthenticatedUser,

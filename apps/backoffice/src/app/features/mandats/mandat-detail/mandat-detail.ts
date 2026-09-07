@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, computed, signal, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -30,6 +30,13 @@ export class MandatDetail implements OnInit {
   protected readonly canModify = this.session.hasPermission('mandats:modifier');
   protected readonly pendingDocuments = signal<{ file: File }[]>([]);
   protected readonly financial = signal<MandatFinancialSummary | null>(null);
+  protected readonly lotsByStatus = computed<Record<string, number>>(() => {
+    const counts: Record<string, number> = {};
+    for (const lot of this.mandat?.lots ?? []) {
+      counts[lot.statutLot] = (counts[lot.statutLot] || 0) + 1;
+    }
+    return counts;
+  });
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -51,14 +58,6 @@ export class MandatDetail implements OnInit {
 
   protected goBack(): void { this.router.navigate(['/mandats']); }
   protected edit(): void { if (this.mandat) this.router.navigate(['/mandats', this.mandat.id, 'modifier']); }
-
-  protected lotsParStatut(): Record<string, number> {
-    const counts: Record<string, number> = {};
-    for (const lot of this.mandat?.lots ?? []) {
-      counts[lot.statutLot] = (counts[lot.statutLot] || 0) + 1;
-    }
-    return counts;
-  }
 
   protected restrictionsJson(): string {
     return this.mandat?.restrictionsContractuelles ? JSON.stringify(this.mandat.restrictionsContractuelles, null, 2) : '—';

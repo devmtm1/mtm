@@ -21,6 +21,7 @@
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:seed": "ts-node prisma/seed.ts",
+    "db:seed": "npm run prisma:seed",
     "prisma:studio": "prisma studio",
     "audit:purge": "./scripts/purge-audit-logs.sh"
   },

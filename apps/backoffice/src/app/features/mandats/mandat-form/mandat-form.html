@@ -22,6 +22,9 @@
               <mat-option [value]="p.id">{{ p.lastName }} {{ p.firstName }}</mat-option>
             }
           </mat-select>
+          <button mat-button type="button" matSuffix (click)="addProprietaire(); $event.stopPropagation()">
+            Nouveau propriétaire
+          </button>
         </mat-form-field>
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Commercial responsable</mat-label>

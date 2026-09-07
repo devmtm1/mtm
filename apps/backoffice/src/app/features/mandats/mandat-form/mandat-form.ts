@@ -9,12 +9,14 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpErrorResponse } from '@angular/common/http';
 import { LucideArrowLeft } from '@lucide/angular';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MandatsApiService } from '../../../core/services/api/mandats-api.service';
+import { ProprietaireDialog } from '../../terrains/proprietaire-dialog';
 import type { CreateMandatPayload, MandatDetail, ProprietaireSummary } from '../../../core/models/mandat.model';
 
 @Component({
   selector: 'app-mandat-form',
-  imports: [FormsModule, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatCheckboxModule, LucideArrowLeft],
+  imports: [FormsModule, ReactiveFormsModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatCheckboxModule, LucideArrowLeft],
   templateUrl: './mandat-form.html',
   styleUrl: './mandat-form.scss',
 })
@@ -24,12 +26,35 @@ export class MandatForm implements OnInit {
   private readonly api: MandatsApiService = inject(MandatsApiService);
   private readonly formBuilder: FormBuilder = inject(FormBuilder);
   private readonly snackBar: MatSnackBar = inject(MatSnackBar);
+  private readonly dialog = inject(MatDialog);
 
   protected mandatId: string | null = null;
   protected mandat: MandatDetail | null = null;
   protected saving = false;
   protected options = { typeMandat: [], statut: [] } as { typeMandat: string[]; statut: string[] };
   protected proprietaires: ProprietaireSummary[] = [];
+
+  protected addProprietaire(): void {
+    const ref = this.dialog.open(ProprietaireDialog, {
+      width: '520px',
+      maxWidth: 'calc(100vw - 32px)',
+    });
+    ref.afterClosed().subscribe((payload: Omit<ProprietaireSummary, 'id'> | undefined) => {
+      if (!payload) return;
+      this.api.createProprietaire(payload).subscribe({
+        next: (proprietaire) => {
+          this.proprietaires = [...this.proprietaires, proprietaire].sort((a, b) =>
+            `${a.lastName}${a.firstName}`.localeCompare(`${b.lastName}${b.firstName}`),
+          );
+          this.form.controls.proprietaireId.setValue(proprietaire.id);
+          this.snackBar.open('Propriétaire créé et sélectionné', 'Fermer', { duration: 3000 });
+        },
+        error: (error: HttpErrorResponse) => {
+          this.snackBar.open(this.getApiErrorMessage(error), 'Fermer', { duration: 4000 });
+        },
+      });
+    });
+  }
 
   protected readonly form = this.formBuilder.nonNullable.group({
     referenceInterne: ['', [Validators.required, Validators.maxLength(100)]],

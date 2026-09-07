@@ -170,6 +170,40 @@ async function main(): Promise<void> {
   }
   console.log('  Rôle commercial : permissions CRM limitées attribuées');
 
+  // Les propriétaires sont nécessaires aux parcours terrains et mandats.
+  // Les rôles commerciaux peuvent les consulter et en créer ; la gestion
+  // complète reste réservée à l'encadrement commercial.
+  const proprietorPermissionsByRole: Record<string, string[]> = {
+    commercial: ['proprietaires:consulter', 'proprietaires:creer'],
+    responsable_commercial: [
+      'proprietaires:consulter',
+      'proprietaires:creer',
+      'proprietaires:modifier',
+      'proprietaires:supprimer',
+    ],
+    manager: [
+      'proprietaires:consulter',
+      'proprietaires:creer',
+      'proprietaires:modifier',
+      'proprietaires:supprimer',
+    ],
+  };
+  for (const [roleName, permissionNames] of Object.entries(
+    proprietorPermissionsByRole,
+  )) {
+    const role = await prisma.role.findUniqueOrThrow({ where: { name: roleName } });
+    for (const permissionName of permissionNames) {
+      const permission = await prisma.permission.findUniqueOrThrow({
+        where: { name: permissionName },
+      });
+      await prisma.rolePermission.upsert({
+        where: { roleId_permissionId: { roleId: role.id, permissionId: permission.id } },
+        update: {},
+        create: { roleId: role.id, permissionId: permission.id },
+      });
+    }
+  }
+
   // --- Utilisateur administrateur par défaut ---
   const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@mtm-immobilier.sn';
   const hashedPassword = await bcrypt.hash(adminPassword, 12);
@@ -412,7 +446,9 @@ async function main(): Promise<void> {
   for (const block of contentBlocks) {
     await prisma.contentBlock.upsert({
       where: { key: block.key },
-      update: block,
+      // Les contenus peuvent être personnalisés depuis le back-office.
+      // Le seed ne doit jamais remplacer une valeur existante.
+      update: {},
       create: block,
     });
   }

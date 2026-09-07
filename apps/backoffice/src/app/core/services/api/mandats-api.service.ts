@@ -58,6 +58,15 @@ export class MandatsApiService {
     return this.http.get<ProprietaireSummary[]>(`${environment.apiUrl}/proprietaires`);
   }
 
+  createProprietaire(
+    payload: Omit<ProprietaireSummary, 'id'>,
+  ): Observable<ProprietaireSummary> {
+    return this.http.post<ProprietaireSummary>(
+      `${environment.apiUrl}/proprietaires`,
+      payload,
+    );
+  }
+
   create(payload: CreateMandatPayload): Observable<MandatDetail> {
     return this.http.post<MandatDetail>(this.baseUrl, payload);
   }

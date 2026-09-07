@@ -61,9 +61,9 @@ export class ProprietaireDialog {
 
     const value = this.form.getRawValue();
 
-    const cleaned: Record<string, string> = {};
+    const cleaned: Record<string, string | undefined> = {};
     for (const [key, val] of Object.entries(value)) {
-      cleaned[key] = typeof val === 'string' && val.trim() === '' ? '' : val;
+      cleaned[key] = typeof val === 'string' && val.trim() === '' ? undefined : val;
     }
 
     this.dialogRef.close(cleaned as Omit<ProprietaireSummary, 'id'>);
