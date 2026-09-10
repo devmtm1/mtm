@@ -15,6 +15,13 @@
   padding: 18px;
 
   > * { min-width: 0; }
+}
+
+.p360-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
 
   h1 {
     margin: 4px 0 6px;
@@ -27,6 +34,21 @@
     color: var(--mtm-text-muted);
     font-size: 13px;
   }
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--mtm-border);
+  border-radius: 7px;
+  color: var(--mtm-text-muted);
+
+  svg { width: 16px; height: 16px; }
 }
 
 .eyebrow {

@@ -1,7 +1,16 @@
 import type { PublicTerrainResponse, Terrain } from '../domain/terrains/types';
 
 export const publicApiUrl =
-  import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api';
+  import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 
 function mapPublicTerrain(terrain: PublicTerrainResponse): Terrain {
   const price = Number(terrain.prixPublic);
@@ -11,7 +20,8 @@ function mapPublicTerrain(terrain: PublicTerrainResponse): Terrain {
   )?.secureUrl;
 
   return {
-    id: terrain.referenceInterne,
+    id: terrain.id,
+    referenceInterne: terrain.referenceInterne,
     name: terrain.nom,
     location:
       [terrain.commune, terrain.region].filter(Boolean).join(', ') || 'Sénégal',
@@ -22,7 +32,7 @@ function mapPublicTerrain(terrain: PublicTerrainResponse): Terrain {
     price: Number.isFinite(price)
       ? ` ${price.toLocaleString('fr-FR')} FCFA`
       : 'Prix sur demande',
-    status: terrain.statutJuridique,
+    status: 'Disponible',
     legalStatus: terrain.statutJuridique,
     tag: 'Disponible',
     image:
@@ -73,4 +83,15 @@ export async function sendContact(
     body: JSON.stringify(payload),
   });
   if (!response.ok) throw new Error('Unable to send contact request');
+}
+
+export async function sendReservationRequest(
+  payload: Record<string, unknown>,
+): Promise<void> {
+  const response = await fetch(`${publicApiUrl}/ventes/public/reservation-requests`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) throw new Error('Unable to send reservation request');
 }

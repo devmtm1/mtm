@@ -30,7 +30,7 @@ marges, commissions, notes et proprietaires). Les terrains affiches proviennent
 exclusivement de cette API ; en cas d'indisponibilite, le catalogue reste vide.
 
 La variable `VITE_API_URL` permet de remplacer l'URL par defaut
-(`http://localhost:3001/api`).
+(`http://localhost:3000/api`).
 
 Le bouton WhatsApp utilise la variable `VITE_WHATSAPP_NUMBER`, au format
 international sans espaces ni signe `+` (par exemple `221770000000`).

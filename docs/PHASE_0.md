@@ -148,6 +148,33 @@ du parcours aux utilisateurs.
 5. Valider par écrit ce jalon (conformément à l'exigence de gouvernance
    du planning d'exécution) avant de démarrer le Jalon J1.1.
 
+## Complément post-clôture — Politique de rétention des documents
+
+**Ajouté après la clôture initiale du jalon**, suite à un audit de
+conformité de la Phase 0 par rapport à la section 27 du cahier des
+charges (« Politique de conservation des logs et documents »). La
+rétention des journaux d'audit était déjà couverte à la clôture ; celle
+des documents métier (GED) ne l'était pas et a été comblée :
+
+- Script `apps/api/scripts/purge-documents.ts` (`npm run documents:purge`,
+  support `DRY_RUN=true`) et service Docker `document-retention`.
+- **Désactivée par défaut** : les documents (titres, contrats, quittances,
+  justificatifs...) ont une valeur légale/probatoire et ne doivent pas
+  être supprimés automatiquement sans validation explicite de MTM (et
+  d'un conseil juridique si nécessaire — section 28 du CDC). La purge ne
+  s'active qu'en définissant explicitement `DOCUMENT_RETENTION_DAYS` et
+  `DOCUMENT_RETENTION_PURGEABLE_TYPES` (par modèle et par type de
+  document).
+- Chaque document purgé est tracé dans le journal d'audit avant
+  suppression (action `document.purge`), avec suppression de l'actif
+  Cloudinary associé.
+- Détails complets : `docs/BACKUP.md`, section « Rétention des documents
+  (GED) ».
+
+**Action restant à votre charge** : définir avec MTM (et un conseil
+juridique si nécessaire) les durées de conservation réelles par type de
+document avant d'activer la purge automatique en production.
+
 ## Historique des commits de ce jalon
 
 14 commits, du bootstrap du monorepo à la CI (`1cf94bc` → `d109f8b`),

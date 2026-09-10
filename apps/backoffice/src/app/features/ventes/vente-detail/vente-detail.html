@@ -1,0 +1,199 @@
+<section class="vente-detail-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Ventes</p>
+      <h1 class="page-header__title">Dossier de vente</h1>
+    </div>
+
+    <button mat-stroked-button type="button" (click)="goBack()">Retour</button>
+  </header>
+
+  @if (loading()) {
+    <div class="page-card loading-state">
+      <mat-progress-spinner mode="indeterminate" diameter="28"></mat-progress-spinner>
+      <span>Chargement du dossier...</span>
+    </div>
+  } @else if (dossier(); as dossier) {
+    <div class="summary-grid">
+      <mat-card class="detail-card">
+        <mat-card-header>
+          <mat-card-title>Informations</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="detail-row"><span>Référence</span><strong>{{ dossier.referenceInterne || '—' }}</strong></div>
+          <div class="detail-row"><span>Statut</span><strong>{{ dossier.statut }}</strong></div>
+          <div class="detail-row"><span>Prix vente</span><strong>{{ dossier.prixVente | currency:'XOF':'symbol':'1.0-0':'fr' }}</strong></div>
+          <div class="detail-row"><span>Montant payé</span><strong>{{ dossier.montantPaye | currency:'XOF':'symbol':'1.0-0':'fr' }}</strong></div>
+          <div class="detail-row"><span>Solde restant</span><strong>{{ dossier.soldeRestant | currency:'XOF':'symbol':'1.0-0':'fr' }}</strong></div>
+          <div class="detail-row"><span>Créé le</span><strong>{{ dossier.createdAt | date:'dd/MM/yyyy' }}</strong></div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="detail-card">
+        <mat-card-header>
+          <mat-card-title>Prospect</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="detail-row"><span>Nom</span><strong>{{ dossier.prospect.nom }}</strong></div>
+          <div class="detail-row"><span>Prénom</span><strong>{{ dossier.prospect.prenom || '—' }}</strong></div>
+          <div class="detail-row"><span>Email</span><strong>{{ dossier.prospect.email || '—' }}</strong></div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="detail-card">
+        <mat-card-header>
+          <mat-card-title>Terrain</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="detail-row"><span>Référence</span><strong>{{ dossier.terrain?.referenceInterne || '—' }}</strong></div>
+          <div class="detail-row"><span>Nom</span><strong>{{ dossier.terrain?.nom || '—' }}</strong></div>
+          <div class="detail-row"><span>Statut commercial</span><strong>{{ dossier.terrain?.statutCommercial || '—' }}</strong></div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <section class="page-section detail-section">
+      <div class="section-header">
+        <h2>Réservations</h2>
+      </div>
+
+      @if (dossier.reservations.length) {
+        <div class="list-wrap">
+          @for (reservation of dossier.reservations; track reservation.id) {
+            <div class="list-item">
+              <div class="list-item__content">
+                <strong>Réservation {{ reservation.id.slice(0, 8) }}</strong>
+                <p>Statut : {{ reservation.statut }}</p>
+              </div>
+              <div class="meta-list">
+                <span>Montant acompte : {{ reservation.montantAcompte | currency:'XOF':'symbol':'1.0-0':'fr' }}</span>
+                <span>Expiration : {{ reservation.dateExpiration | date:'dd/MM/yyyy' }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">Aucune réservation.</div>
+      }
+    </section>
+
+    <section class="page-section detail-section">
+      <div class="section-header">
+        <h2>Paiements</h2>
+        @if (canValidate && pendingPayment()) {
+          <button mat-flat-button color="primary" type="button" (click)="validatePendingPayment()">
+            Valider le paiement en attente
+          </button>
+        }
+      </div>
+
+      @if (dossier.paiements?.length) {
+        <div class="list-wrap">
+          @for (payment of dossier.paiements; track payment.id) {
+            <div class="list-item">
+              <div class="list-item__content">
+                <strong>{{ payment.reference || 'Paiement' }}</strong>
+                <p>Mode : {{ payment.mode }} — Statut : {{ payment.statut }}</p>
+              </div>
+              <div class="meta-list">
+                <span>{{ payment.montant | currency:'XOF':'symbol':'1.0-0':'fr' }}</span>
+                <span>{{ payment.datePaiement | date:'dd/MM/yyyy' }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">Aucun paiement.</div>
+      }
+    </section>
+
+    <section class="page-section detail-section">
+      <div class="section-header">
+        <h2>Commissions</h2>
+      </div>
+
+      @if (dossier.commissions?.length) {
+        <div class="list-wrap">
+          @for (commission of dossier.commissions; track commission.id) {
+            <div class="list-item">
+              <div class="list-item__content">
+                <strong>{{ commission.commercial?.firstName || 'Commercial' }} {{ commission.commercial?.lastName || '' }}</strong>
+                <p>Type : {{ commission.typeRegle }} — Statut : {{ commission.statut }}</p>
+              </div>
+              <div class="meta-list">
+                <span>{{ commission.montantEstime | currency:'XOF':'symbol':'1.0-0':'fr' }}</span>
+                @if (commission.statut === 'estimee' && canValidate) {
+                  <span>
+                    <button mat-stroked-button type="button" (click)="validateCommission(commission.id)">Valider</button>
+                  </span>
+                }
+                @if (commission.statut === 'validee' && canPay) {
+                  <span>
+                    <button mat-stroked-button type="button" (click)="payCommission(commission.id)">Payer</button>
+                  </span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">Aucune commission.</div>
+      }
+    </section>
+
+    <section class="page-section detail-section">
+      <div class="section-header">
+        <h2>Échéances</h2>
+      </div>
+
+      @if (echeances().length) {
+        <div class="list-wrap">
+          @for (echeance of echeances(); track echeance.id) {
+            <div class="list-item">
+              <div class="list-item__content">
+                <strong>Échéance {{ echeance.numero }}</strong>
+                <p>Statut : {{ echeance.statut }}</p>
+              </div>
+              <div class="meta-list">
+                <span>{{ echeance.montantPrevu | currency:'XOF':'symbol':'1.0-0':'fr' }}</span>
+                <span>{{ echeance.dateEcheance | date:'dd/MM/yyyy' }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">Aucune échéance.</div>
+      }
+    </section>
+
+    <section class="page-section detail-section">
+      <div class="section-header">
+        <h2>Documents</h2>
+        <button mat-button type="button" (click)="openDocumentsSearch()">Recherche GED avancée</button>
+      </div>
+
+      @if (dossier.documents.length) {
+        <div class="list-wrap">
+          @for (document of dossier.documents; track document.id) {
+            <div class="list-item">
+              <div class="list-item__content">
+                <strong>{{ document.title || document.type }}</strong>
+                <p>{{ document.type }} • v{{ document.version }}</p>
+              </div>
+              <div class="meta-list">
+                <span>{{ document.createdAt | date:'dd/MM/yyyy' }}</span>
+                @if (document.secureUrl) {
+                  <a mat-stroked-button [href]="document.secureUrl" target="_blank" rel="noopener noreferrer">
+                    Ouvrir
+                  </a>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">Aucun document.</div>
+      }
+    </section>
+  }
+</section>

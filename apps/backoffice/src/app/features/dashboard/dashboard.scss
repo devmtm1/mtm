@@ -174,7 +174,7 @@
 
 .kpi-subtext {
   font-size: 0.75rem;
-  color: #94A3B8;
+  color: var(--mtm-text-muted);
 }
 
 .kpi-trend {
@@ -241,7 +241,7 @@
   .header-icon {
     width: 18px;
     height: 18px;
-    stroke: #64748B;
+    stroke: var(--mtm-text-muted);
   }
 
   .badge-count--alert {

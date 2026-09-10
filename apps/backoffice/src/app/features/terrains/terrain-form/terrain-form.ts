@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -12,7 +12,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin, of } from 'rxjs';
 import { LucideArrowLeft, LucideFileText, LucideImage, LucideSave, LucideTrash2, LucideUpload } from '@lucide/angular';
 import { TerrainsApiService } from '../../../core/services/api/terrains-api.service';
-import type { CreateTerrainPayload, ProprietaireSummary, TerrainDetail } from '../../../core/models/terrain.model';
+import type { CreateTerrainPayload, ProprietaireSummary, TerrainDetail, TerrainPointInteret } from '../../../core/models/terrain.model';
 import { ProprietaireDialog } from '../proprietaire-dialog';
 import { SessionService } from '../../../core/services/session.service';
 
@@ -31,6 +31,7 @@ export class TerrainForm implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly session = inject(SessionService);
   private originalStatuses: { statutJuridique: string; niveauVerification: string } | null = null;
+  private originalSensitiveValues: { prixAcquisition: number | null; marge: number | null; commission: number | null; proprietaireId: string } | null = null;
 
   protected terrainId: string | null = null;
   protected terrain: TerrainDetail | null = null;
@@ -40,8 +41,28 @@ export class TerrainForm implements OnInit {
   protected selectedAssets: SelectedAsset[] = [];
   protected readonly currentStep = signal(1);
   protected readonly form = this.formBuilder.group({
-    referenceInterne: ['', [Validators.required, Validators.maxLength(100)]], nom: ['', [Validators.required, Validators.maxLength(200)]], parcelleMatricule: [''], proprietaireId: [''], statutJuridique: ['Régularisation en cours', Validators.required], typeDocumentFoncier: [''], niveauVerification: ['Non vérifié', Validators.required], region: [''], commune: [''], localisationDetail: [''], latitude: [null as number | null, [Validators.min(-90), Validators.max(90)]], longitude: [null as number | null, [Validators.min(-180), Validators.max(180)]], superficie: [null as number | null, Validators.min(0)], uniteSuperficie: ['m²'], dimensions: [''], prixAcquisition: [null as number | null, Validators.min(0)], prixPublic: [null as number | null, Validators.min(0)], marge: [null as number | null], commission: [null as number | null, Validators.min(0)],      statutCommercial: ['Brouillon', Validators.required], misEnAvant: [false], accesRoutier: [''], eauDisponible: [null as boolean | null], electriciteDisponible: [null as boolean | null], voisinage: [''], vocation: [''], proximiteAxes: [''], notesInternes: [''],
+    referenceInterne: ['', [Validators.required, Validators.maxLength(100)]], nom: ['', [Validators.required, Validators.maxLength(200)]], parcelleMatricule: [''], proprietaireId: [''], statutJuridique: ['Régularisation en cours', Validators.required], typeDocumentFoncier: [''], niveauVerification: ['Non vérifié', Validators.required], region: [''], commune: [''], localisationDetail: [''], latitude: [null as number | null, [Validators.min(-90), Validators.max(90)]], longitude: [null as number | null, [Validators.min(-180), Validators.max(180)]], superficie: [null as number | null, Validators.min(0)], uniteSuperficie: ['m²'], dimensions: [''], prixAcquisition: [null as number | null, Validators.min(0)], prixPublic: [null as number | null, Validators.min(0)], marge: [null as number | null], commission: [null as number | null, Validators.min(0)],      statutCommercial: ['Brouillon', Validators.required], misEnAvant: [false], accesRoutier: [''], eauDisponible: [null as boolean | null], electriciteDisponible: [null as boolean | null], voisinage: [''], vocation: [''], proximiteAxes: [''], notesInternes: [''], justification: [''], pointsInteret: this.formBuilder.array<ReturnType<typeof this.buildPointInteretGroup>>([]),
   });
+
+  protected get pointsInteretArray(): FormArray {
+    return this.form.controls.pointsInteret as FormArray;
+  }
+
+  private buildPointInteretGroup(point: Partial<TerrainPointInteret> = {}) {
+    return this.formBuilder.group({
+      nom: [point.nom ?? '', [Validators.required, Validators.maxLength(150)]],
+      type: [point.type ?? ''],
+      distanceKm: [point.distanceKm ?? null as number | null, Validators.min(0)],
+    });
+  }
+
+  protected addPointInteret(): void {
+    this.pointsInteretArray.push(this.buildPointInteretGroup());
+  }
+
+  protected removePointInteret(index: number): void {
+    this.pointsInteretArray.removeAt(index);
+  }
 
   ngOnInit(): void {
     this.api.getOptions().subscribe({ next: (options) => { this.options = options; } });
@@ -54,7 +75,15 @@ export class TerrainForm implements OnInit {
           statutJuridique: terrain.statutJuridique,
           niveauVerification: terrain.niveauVerification,
         };
+        this.originalSensitiveValues = {
+          prixAcquisition: this.toNumber(terrain.prixAcquisition),
+          marge: this.toNumber(terrain.marge),
+          commission: this.toNumber(terrain.commission),
+          proprietaireId: terrain.proprietaire?.id ?? '',
+        };
         this.form.patchValue(this.toFormValue(terrain));
+        this.pointsInteretArray.clear();
+        (terrain.pointsInteret ?? []).forEach((point) => this.pointsInteretArray.push(this.buildPointInteretGroup(point)));
       }, error: () => this.goBack() });
     }
     if (!this.session.hasPermission('terrains:valider')) {
@@ -63,17 +92,37 @@ export class TerrainForm implements OnInit {
     }
   }
 
+  protected readonly justificationRequired = signal(false);
+
+  private computeJustificationRequired(value: ReturnType<typeof this.form.getRawValue>): boolean {
+    if (!this.terrainId) return false;
+    const juridicalChanged = !!this.originalStatuses && value.statutJuridique !== this.originalStatuses.statutJuridique;
+    const sensitiveChanged = !!this.originalSensitiveValues && (
+      this.toNumber(value.prixAcquisition) !== this.originalSensitiveValues.prixAcquisition ||
+      this.toNumber(value.marge) !== this.originalSensitiveValues.marge ||
+      this.toNumber(value.commission) !== this.originalSensitiveValues.commission ||
+      (value.proprietaireId ?? '') !== this.originalSensitiveValues.proprietaireId
+    );
+    return juridicalChanged || sensitiveChanged;
+  }
+
   protected submit(): void {
     if (this.form.invalid || this.saving) { this.form.markAllAsTouched(); return; }
-    this.saving = true;
     const value = this.form.getRawValue();
+    const requiresJustification = this.computeJustificationRequired(value);
+    this.justificationRequired.set(requiresJustification);
+    if (requiresJustification && !value.justification?.trim()) {
+      this.snackBar.open('Une justification est obligatoire : vous modifiez un prix, une marge, une commission, le propriétaire ou le statut juridique.', 'Fermer', { duration: 5000 });
+      return;
+    }
+    this.saving = true;
     const payload = this.cleanPayload(value);
     const request$ = this.terrainId ? this.api.update(this.terrainId, payload) : this.api.create(payload);
     request$.subscribe({ next: (terrain) => {
       const statusUpdates = this.terrainId && this.originalStatuses
         ? [
             value.statutJuridique !== this.originalStatuses.statutJuridique
-              ? this.api.updateJuridicalStatus(terrain.id, value.statutJuridique ?? '')
+              ? this.api.updateJuridicalStatus(terrain.id, value.statutJuridique ?? '', value.justification ?? undefined)
               : of(null),
             value.niveauVerification !== this.originalStatuses.niveauVerification
               ? this.api.updateVerificationStatus(terrain.id, value.niveauVerification ?? '')
@@ -129,8 +178,15 @@ export class TerrainForm implements OnInit {
   private parseDimensions(value: string | null): Record<string, unknown> | undefined { if (!value?.trim()) return undefined; try { return JSON.parse(value) as Record<string, unknown>; } catch { return { description: value }; } }
   private cleanPayload(value: ReturnType<typeof this.form.getRawValue>): CreateTerrainPayload {
     const dimensions = this.parseDimensions(value.dimensions);
-    const stringFields = ['parcelleMatricule', 'proprietaireId', 'typeDocumentFoncier', 'region', 'commune', 'localisationDetail', 'accesRoutier', 'voisinage', 'vocation', 'proximiteAxes', 'notesInternes', 'uniteSuperficie'] as const;
-    const cleaned = { ...value, dimensions } as Record<string, unknown>;
+    const pointsInteret = (value.pointsInteret ?? [])
+      .filter((point) => point.nom?.trim())
+      .map((point) => ({
+        nom: point.nom!.trim(),
+        type: point.type?.trim() || undefined,
+        distanceKm: point.distanceKm ?? undefined,
+      }));
+    const stringFields = ['parcelleMatricule', 'proprietaireId', 'typeDocumentFoncier', 'region', 'commune', 'localisationDetail', 'accesRoutier', 'voisinage', 'vocation', 'proximiteAxes', 'notesInternes', 'uniteSuperficie', 'justification'] as const;
+    const cleaned = { ...value, dimensions, pointsInteret: pointsInteret.length ? pointsInteret : undefined } as Record<string, unknown>;
     if (this.terrainId) {
       delete cleaned['statutJuridique'];
       delete cleaned['niveauVerification'];

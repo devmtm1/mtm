@@ -6,25 +6,28 @@
 
 :root {
   // Couleurs de marque MTM Immobilier
-  --mtm-purple-dark: #12324E;
-  --mtm-purple-primary: #1C4B75;
-  --mtm-purple-medium: #2A6A96;
-  --mtm-purple-light: #63B9D6;
-  --mtm-purple-subtle: #EAF5F9;
+  --mtm-purple-dark: #32124F;
+  --mtm-purple-primary: #4B1D73;
+  --mtm-purple-medium: #6E3E97;
+  --mtm-purple-light: #E8DFF4;
+  --mtm-purple-subtle: #F3EBFA;
 
-  --mtm-red-primary: #B82F39;
-  --mtm-red-hover: #82191D;
-  --mtm-red-subtle: #FBECEF;
+  --mtm-red-primary: #DC2626;
+  --mtm-red-hover: #B91C1C;
+  --mtm-red-subtle: #FEE2E2;
 
-  --mtm-text-dark: #191528;
-  --mtm-text-muted: #64748B;
-  --mtm-border: #E2E8F0;
-  --mtm-bg-surface: #F8FAFC;
-  --mtm-bg-hover: #F1F5F9;
+  --mtm-text-dark: #1F2937;
+  --mtm-text-muted: #6B7280;
+  --mtm-border: #E5E7EB;
+  --mtm-bg-surface: #F7F8FA;
+  --mtm-bg-hover: #EEF2F7;
   --mtm-card-bg: #FFFFFF;
+  --mtm-shadow-soft: 0 6px 18px rgba(31, 41, 55, 0.06);
+  --mtm-shadow-card: 0 2px 10px rgba(31, 41, 55, 0.04);
+  --mtm-radius-md: 10px;
+  --mtm-radius-lg: 14px;
 
-  // Statuts sémantiques (succès / avertissement) — le rouge MTM reste la
-  // couleur d'erreur/destructif de la marque, pas besoin d'un second rouge.
+  // Statuts sémantiques (succès / avertissement)
   --mtm-success: #059669;
   --mtm-success-bg: #ECFDF5;
   --mtm-warning: #D97706;
@@ -56,15 +59,15 @@
 [data-theme='dark'] {
   color-scheme: dark;
 
-  --mtm-purple-dark: #C9E8F3;
-  --mtm-purple-primary: #63B9D6;
-  --mtm-purple-medium: #8BCFE0;
-  --mtm-purple-light: #B7E4EC;
-  --mtm-purple-subtle: #19354D;
+  --mtm-purple-dark: #F0E7FF;
+  --mtm-purple-primary: #B79AEF;
+  --mtm-purple-medium: #D2C0F5;
+  --mtm-purple-light: #EAE1F8;
+  --mtm-purple-subtle: #2A1D3E;
 
-  --mtm-red-primary: #E56A73;
-  --mtm-red-hover: #F18B91;
-  --mtm-red-subtle: #4A252B;
+  --mtm-red-primary: #F87171;
+  --mtm-red-hover: #FB7185;
+  --mtm-red-subtle: #4A2A2D;
 
   --mtm-text-dark: #F4F4F5;
   --mtm-text-muted: #A1A1AA;
@@ -109,13 +112,97 @@ html {
 }
 
 body {
-  background-color: var(--mtm-bg-surface);
+  background:
+    linear-gradient(180deg, var(--mtm-bg-surface) 0%, #f2f4f8 180px, var(--mtm-bg-surface) 100%);
   color: var(--mtm-text-dark);
   margin: 0;
   height: 100%;
   min-width: 320px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-top: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--mtm-border);
+}
+
+.page-header__title {
+  margin: 0;
+  font-family: var(--mtm-font-display);
+  font-size: clamp(1.4rem, 1.3rem + 0.4vw, 2rem);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--mtm-text-dark);
+}
+
+.page-header__subtitle {
+  margin: 6px 0 0;
+  color: var(--mtm-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.page-shell {
+  display: block;
+  width: min(100%, 1680px);
+  margin: 0 auto;
+}
+
+.page-card,
+.page-section {
+  background: var(--mtm-card-bg);
+  border: 1px solid var(--mtm-border);
+  border-radius: var(--mtm-radius-lg);
+  box-shadow: var(--mtm-shadow-card);
+}
+
+.page-card {
+  padding: 20px;
+}
+
+.page-section {
+  overflow: hidden;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--mtm-border);
+}
+
+.section-header h2,
+.section-header h3 {
+  margin: 0;
+  font-family: var(--mtm-font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--mtm-text-dark);
 }
 
 /* Shared overflow and sizing rules for every routed feature. */
@@ -143,6 +230,42 @@ ag-grid-angular {
   display: block;
   min-width: 0;
   max-width: 100%;
+}
+
+.mat-mdc-form-field {
+  --mdc-outlined-text-field-container-color: var(--mtm-card-bg);
+  --mdc-outlined-text-field-input-text-color: var(--mtm-text-dark);
+  --mdc-outlined-text-field-label-text-color: var(--mtm-text-muted);
+  --mdc-outlined-text-field-hover-label-text-color: var(--mtm-purple-primary);
+  --mdc-outlined-text-field-focus-label-text-color: var(--mtm-purple-primary);
+  --mdc-outlined-text-field-outline-color: var(--mtm-border);
+  --mdc-outlined-text-field-hover-outline-color: var(--mtm-purple-primary);
+  --mdc-outlined-text-field-focus-outline-color: var(--mtm-purple-primary);
+}
+
+.mat-mdc-form-field-focus-overlay {
+  background-color: var(--mtm-purple-subtle);
+}
+
+.mat-mdc-table {
+  background: transparent;
+}
+
+.mat-mdc-table thead th {
+  color: var(--mtm-text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.mat-mdc-table tbody td {
+  color: var(--mtm-text-dark);
+}
+
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  border-radius: var(--mtm-radius-lg) !important;
+  box-shadow: var(--mtm-shadow-soft) !important;
 }
 
 @media (max-width: 600px) {
@@ -189,18 +312,27 @@ body:has(.detail-page) .shell__main::-webkit-scrollbar {
 }
 
 /* Boutons principaux avec la couleur rouge d'accentuation MTM pour un contrat visuel sobre et net */
+.mat-mdc-button,
+.mat-mdc-outlined-button,
+.mat-mdc-unelevated-button,
+.mat-mdc-raised-button {
+  border-radius: var(--mtm-radius-md) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em;
+}
+
 .mat-mdc-unelevated-button.mat-primary,
 .mat-mdc-raised-button.mat-primary,
 .btn-mtm-primary {
   --mdc-filled-button-container-color: var(--mtm-purple-primary) !important;
   --mdc-filled-button-label-text-color: #ffffff !important;
-  border-radius: 8px !important;
+  border-radius: var(--mtm-radius-md) !important;
   font-weight: 600 !important;
   transition: all 0.2s ease !important;
 
   &:hover {
     background-color: var(--mtm-purple-medium) !important;
-    box-shadow: 0 4px 12px rgba(28, 75, 117, 0.25) !important;
+    box-shadow: 0 4px 12px rgba(75, 29, 115, 0.2) !important;
   }
 }
 
@@ -209,21 +341,21 @@ body:has(.detail-page) .shell__main::-webkit-scrollbar {
 .mat-mdc-raised-button.mat-tertiary {
   background-color: var(--mtm-red-primary) !important;
   color: #ffffff !important;
-  border-radius: 8px !important;
+  border-radius: var(--mtm-radius-md) !important;
   font-weight: 600 !important;
   transition: all 0.2s ease !important;
 
   &:hover {
     background-color: var(--mtm-red-hover) !important;
-    box-shadow: 0 4px 12px rgba(184, 47, 57, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.22) !important;
   }
 }
 
 /* Style uniforme des cartes Material */
 .mat-mdc-card {
-  border-radius: 12px !important;
+  border-radius: var(--mtm-radius-lg) !important;
   border: 1px solid var(--mtm-border) !important;
-  box-shadow: 0 2px 10px rgba(25, 21, 40, 0.04) !important;
+  box-shadow: var(--mtm-shadow-card) !important;
   background-color: var(--mtm-card-bg) !important;
 }
 

@@ -98,9 +98,165 @@ interface FakeDossierVente {
   prospectId: string;
   terrainId: string | null;
   mandatId: string | null;
+  commercialResponsableId: string | null;
+  referenceInterne: string | null;
+  prixVente: number | null;
+  commissionEstimee: number | null;
+  notes: string | null;
+  statut: string;
+  dateVente: Date | null;
+  reservationRequestId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface FakeTerrain {
+  id: string;
+  referenceInterne: string;
+  nom: string;
+  parcelleMatricule: string | null;
+  informationsCadastrales: unknown;
+  proprietaireId: string | null;
+  statutJuridique: string;
+  typeDocumentFoncier: string | null;
+  niveauVerification: string;
+  region: string | null;
+  commune: string | null;
+  localisationDetail: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  superficie: number | null;
+  uniteSuperficie: string | null;
+  dimensions: unknown;
+  prixAcquisition: number | null;
+  prixPublic: number | null;
+  marge: number | null;
+  commission: number | null;
+  statutCommercial: string;
+  misEnAvant: boolean;
+  accesRoutier: string | null;
+  eauDisponible: boolean | null;
+  electriciteDisponible: boolean | null;
+  voisinage: string | null;
+  vocation: string | null;
+  proximiteAxes: string | null;
+  pointsInteret: unknown;
+  notesInternes: string | null;
+  commercialResponsableId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface FakeProprietaire {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  phone: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface FakeMandat {
+  id: string;
+  referenceInterne: string;
+  proprietaireId: string;
+  commercialResponsableId: string | null;
+  typeMandat: string;
+  dateDebut: Date;
+  dateFin: Date;
+  exclusivite: boolean;
+  prixConditions: string | null;
+  commissions: string | null;
+  clauses: string | null;
+  restrictionsContractuelles: unknown;
+  objectifsCommercialisation: string | null;
+  alerteEcheanceJours: number;
   statut: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+interface FakeMandatLot {
+  id: string;
+  mandatId: string;
+  terrainId: string;
+  statutLot: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface FakeReservation {
+  id: string;
+  dossierVenteId: string;
+  montantAcompte: number;
+  dureeBlocageJours: number;
+  dateDebut: Date;
+  dateExpiration: Date;
+  conditionsAnnulation: string | null;
+  statut: string;
+  reference: string | null;
+  createdById: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface FakeEcheancePaiement {
+  id: string;
+  dossierVenteId: string;
+  numero: number;
+  dateEcheance: Date;
+  montantPrevu: number;
+  montantPaye: number;
+  statut: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface FakePaiement {
+  id: string;
+  dossierVenteId: string;
+  montant: number;
+  datePaiement: Date;
+  mode: string;
+  reference: string | null;
+  justificatifUrl: string | null;
+  statut: string;
+  notes: string | null;
+  recordedById: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface FakeCommissionVente {
+  id: string;
+  dossierVenteId: string;
+  commercialId: string;
+  typeRegle: string;
+  taux: number | null;
+  montantFixe: number | null;
+  palier: number | null;
+  bonus: number | null;
+  montantEstime: number;
+  montantValide: number | null;
+  montantPaye: number | null;
+  statut: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface FakeDocumentVente {
+  id: string;
+  dossierVenteId: string;
+  type: string;
+  storageKey: string;
+  resourceType: string;
+  title: string | null;
+  isGenerated: boolean;
+  isPublic: boolean;
+  version: number;
+  createdById: string | null;
+  createdAt: Date;
 }
 
 interface FakeSystemSetting {
@@ -130,6 +286,13 @@ import { randomUUID } from 'crypto';
 
 function fakeUuid(): string {
   return randomUUID();
+}
+
+/** Convertit une valeur primitive en chaîne pour une comparaison `contains`, sans jamais stringifier un objet. */
+function toSearchable(value: unknown): string {
+  return typeof value === 'string' || typeof value === 'number'
+    ? String(value)
+    : '';
 }
 
 export class FakePrismaService {
@@ -165,7 +328,16 @@ export class FakePrismaService {
   prospects = new Map<string, FakeProspect>();
   activitesCrm = new Map<string, FakeActiviteCrm>();
   documentsCrm = new Map<string, FakeDocumentCrm>();
+  terrains = new Map<string, FakeTerrain>();
+  proprietaires = new Map<string, FakeProprietaire>();
+  mandats = new Map<string, FakeMandat>();
+  mandatLots = new Map<string, FakeMandatLot>();
   dossiersVente = new Map<string, FakeDossierVente>();
+  reservations = new Map<string, FakeReservation>();
+  echeancesPaiement = new Map<string, FakeEcheancePaiement>();
+  paiements = new Map<string, FakePaiement>();
+  commissionsVente = new Map<string, FakeCommissionVente>();
+  documentsVente = new Map<string, FakeDocumentVente>();
   systemSettings = new Map<string, FakeSystemSetting>();
   contacts = new Map<string, FakeContact>();
 
@@ -265,6 +437,23 @@ export class FakePrismaService {
     return this.seedContact(partial);
   }
 
+  seedProprietaire(
+    partial: Partial<FakeProprietaire> = {},
+  ): FakeProprietaire {
+    const proprietaire: FakeProprietaire = {
+      id: fakeUuid(),
+      firstName: 'Proprietaire',
+      lastName: 'Test',
+      email: null,
+      phone: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      ...partial,
+    };
+    this.proprietaires.set(proprietaire.id, proprietaire);
+    return proprietaire;
+  }
+
   seedSystemSetting(
     partial: Partial<FakeSystemSetting> = {},
   ): FakeSystemSetting {
@@ -313,6 +502,842 @@ export class FakePrismaService {
   }
 
   // --- API façon Prisma ---
+
+  terrain = {
+    findUnique: ({ where }: { where: { id?: string; referenceInterne?: string } }) => {
+      const terrain = where.id
+        ? this.terrains.get(where.id)
+        : Array.from(this.terrains.values()).find(
+            (t) => t.referenceInterne === where.referenceInterne,
+          );
+      return Promise.resolve(terrain ?? null);
+    },
+    create: ({ data }: { data: Partial<FakeTerrain> }) => {
+      const terrain: FakeTerrain = {
+        id: data.id ?? fakeUuid(),
+        referenceInterne: data.referenceInterne ?? `T-${fakeUuid().slice(0, 8)}`,
+        nom: data.nom ?? 'Terrain',
+        parcelleMatricule: data.parcelleMatricule ?? null,
+        informationsCadastrales: data.informationsCadastrales ?? null,
+        proprietaireId: data.proprietaireId ?? null,
+        statutJuridique: data.statutJuridique ?? 'Titre foncier',
+        typeDocumentFoncier: data.typeDocumentFoncier ?? null,
+        niveauVerification: data.niveauVerification ?? 'Vérifié',
+        region: data.region ?? null,
+        commune: data.commune ?? null,
+        localisationDetail: data.localisationDetail ?? null,
+        latitude: data.latitude ?? null,
+        longitude: data.longitude ?? null,
+        superficie: data.superficie ?? null,
+        uniteSuperficie: data.uniteSuperficie ?? null,
+        dimensions: data.dimensions ?? null,
+        prixAcquisition: data.prixAcquisition ?? null,
+        prixPublic: data.prixPublic ?? null,
+        marge: data.marge ?? null,
+        commission: data.commission ?? null,
+        statutCommercial: data.statutCommercial ?? 'Disponible',
+        misEnAvant: data.misEnAvant ?? false,
+        accesRoutier: data.accesRoutier ?? null,
+        eauDisponible: data.eauDisponible ?? null,
+        electriciteDisponible: data.electriciteDisponible ?? null,
+        voisinage: data.voisinage ?? null,
+        vocation: data.vocation ?? null,
+        proximiteAxes: data.proximiteAxes ?? null,
+        pointsInteret: data.pointsInteret ?? null,
+        notesInternes: data.notesInternes ?? null,
+        commercialResponsableId: data.commercialResponsableId ?? null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.terrains.set(terrain.id, terrain);
+      return Promise.resolve(terrain);
+    },
+    updateMany: ({ where, data }: { where: { id?: string; statutCommercial?: string | { in: string[] } }; data: Partial<FakeTerrain> }) => {
+      let list = Array.from(this.terrains.values());
+      if (where.id) list = list.filter((t) => t.id === where.id);
+      const statutCommercialIn =
+        where.statutCommercial &&
+        typeof where.statutCommercial === 'object' &&
+        'in' in where.statutCommercial
+          ? where.statutCommercial.in
+          : undefined;
+      if (statutCommercialIn) {
+        list = list.filter((t) => statutCommercialIn.includes(t.statutCommercial));
+      }
+      for (const terrain of list) {
+        const merged = { ...terrain, ...data, updatedAt: new Date() };
+        this.terrains.set(terrain.id, merged);
+      }
+      return Promise.resolve({ count: list.length });
+    },
+    findFirst: ({
+      where = {},
+      include,
+      select,
+    }: {
+      where?: Record<string, unknown>;
+      include?: Record<string, unknown>;
+      select?: Record<string, unknown>;
+    }) => {
+      const found = Array.from(this.terrains.values()).find((t) =>
+        this.matchesTerrainWhere(t, where),
+      );
+      if (!found) return Promise.resolve(null);
+      return Promise.resolve(this.hydrateTerrain(found, { include, select }));
+    },
+    findMany: ({
+      where = {},
+      include,
+      select,
+      orderBy,
+      skip = 0,
+      take,
+    }: {
+      where?: Record<string, unknown>;
+      include?: Record<string, unknown>;
+      select?: Record<string, unknown>;
+      orderBy?: Record<string, string>;
+      skip?: number;
+      take?: number;
+    } = {}) => {
+      let list = Array.from(this.terrains.values()).filter((t) =>
+        this.matchesTerrainWhere(t, where),
+      );
+      if (orderBy) {
+        const key = Object.keys(orderBy)[0];
+        const dir = orderBy[key];
+        list = [...list].sort((a, b) => {
+          const aVal = a[key as keyof FakeTerrain];
+          const bVal = b[key as keyof FakeTerrain];
+          if (aVal == null && bVal == null) return 0;
+          if (aVal == null) return 1;
+          if (bVal == null) return -1;
+          if (aVal < bVal) return dir === 'desc' ? 1 : -1;
+          if (aVal > bVal) return dir === 'desc' ? -1 : 1;
+          return 0;
+        });
+      }
+      const paginated = take
+        ? list.slice(skip, skip + take)
+        : list.slice(skip);
+      return Promise.resolve(
+        paginated.map((t) => this.hydrateTerrain(t, { include, select })),
+      );
+    },
+    count: ({ where = {} }: { where?: Record<string, unknown> } = {}) =>
+      Promise.resolve(
+        Array.from(this.terrains.values()).filter((t) =>
+          this.matchesTerrainWhere(t, where),
+        ).length,
+      ),
+    update: ({
+      where,
+      data,
+      include,
+    }: {
+      where: { id: string };
+      data: Record<string, unknown>;
+      include?: Record<string, unknown>;
+    }) => {
+      const existing = this.terrains.get(where.id);
+      if (!existing) throw new Error('Terrain not found (fake prisma)');
+      const merged = { ...existing, ...data, updatedAt: new Date() };
+      this.terrains.set(where.id, merged);
+      return Promise.resolve(this.hydrateTerrain(merged, { include }));
+    },
+  };
+
+  private matchesTerrainWhere(
+    terrain: FakeTerrain,
+    where: Record<string, unknown>,
+  ): boolean {
+    for (const [key, condition] of Object.entries(where)) {
+      if (condition === undefined) continue;
+      if (key === 'OR' && Array.isArray(condition)) {
+        const matches = (condition as Record<string, unknown>[]).some(
+          (clause) => this.matchesTerrainWhere(terrain, clause),
+        );
+        if (!matches) return false;
+        continue;
+      }
+      const value = terrain[key as keyof FakeTerrain];
+      if (condition && typeof condition === 'object' && 'contains' in condition) {
+        const contains = (condition as { contains: string }).contains.toLowerCase();
+        if (!toSearchable(value).toLowerCase().includes(contains)) return false;
+        continue;
+      }
+      if (
+        condition &&
+        typeof condition === 'object' &&
+        ('gte' in condition || 'lte' in condition)
+      ) {
+        const range = condition as { gte?: number; lte?: number };
+        if (range.gte !== undefined && !(Number(value) >= range.gte)) return false;
+        if (range.lte !== undefined && !(Number(value) <= range.lte)) return false;
+        continue;
+      }
+      if (value !== condition) return false;
+    }
+    return true;
+  }
+
+  private hydrateTerrain(
+    terrain: FakeTerrain,
+    opts: {
+      include?: Record<string, unknown>;
+      select?: Record<string, unknown>;
+    } = {},
+  ): Record<string, unknown> {
+    if (opts.select) {
+      const result: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(opts.select)) {
+        if (!value) continue;
+        if (key === 'medias' || key === 'documents') {
+          result[key] = [];
+        } else {
+          result[key] = terrain[key as keyof FakeTerrain];
+        }
+      }
+      return result;
+    }
+
+    const proprietaire = terrain.proprietaireId
+      ? this.proprietaires.get(terrain.proprietaireId) ?? null
+      : null;
+    const commercialResponsable = terrain.commercialResponsableId
+      ? this.users.get(terrain.commercialResponsableId) ?? null
+      : null;
+
+    return {
+      ...terrain,
+      ...(opts.include?.proprietaire ? { proprietaire } : {}),
+      ...(opts.include?.commercialResponsable
+        ? {
+            commercialResponsable: commercialResponsable
+              ? {
+                  id: commercialResponsable.id,
+                  firstName: commercialResponsable.firstName,
+                  lastName: commercialResponsable.lastName,
+                }
+              : null,
+          }
+        : {}),
+      ...(opts.include?.medias ? { medias: [] } : {}),
+      ...(opts.include?.documents ? { documents: [] } : {}),
+    };
+  }
+
+  proprietaire = {
+    findUnique: ({ where }: { where: { id: string } }) =>
+      Promise.resolve(this.proprietaires.get(where.id) ?? null),
+    create: ({
+      data,
+    }: {
+      data: Partial<FakeProprietaire> & { firstName: string; lastName: string };
+    }) => Promise.resolve(this.seedProprietaire(data)),
+  };
+
+  private pickTerrainSummary(terrain: FakeTerrain) {
+    return {
+      id: terrain.id,
+      referenceInterne: terrain.referenceInterne,
+      nom: terrain.nom,
+      commune: terrain.commune,
+      region: terrain.region,
+      superficie: terrain.superficie,
+      prixPublic: terrain.prixPublic,
+      statutCommercial: terrain.statutCommercial,
+    };
+  }
+
+  private matchesMandatWhere(
+    mandat: FakeMandat,
+    where: Record<string, unknown>,
+  ): boolean {
+    for (const [key, condition] of Object.entries(where)) {
+      if (condition === undefined) continue;
+      if (key === 'OR' && Array.isArray(condition)) {
+        const matches = (condition as Record<string, unknown>[]).some(
+          (clause) => this.matchesMandatWhere(mandat, clause),
+        );
+        if (!matches) return false;
+        continue;
+      }
+      if (key === 'id' && condition && typeof condition === 'object' && 'not' in condition) {
+        if (mandat.id === (condition as { not: string }).not) return false;
+        continue;
+      }
+      if (key === 'proprietaire' && condition && typeof condition === 'object') {
+        const proprietaire = this.proprietaires.get(mandat.proprietaireId);
+        const sub = condition as Record<string, { contains: string }>;
+        const matches = Object.entries(sub).every(([field, cond]) => {
+          const value = proprietaire
+            ? (proprietaire as unknown as Record<string, unknown>)[field]
+            : undefined;
+          return toSearchable(value)
+            .toLowerCase()
+            .includes(cond.contains.toLowerCase());
+        });
+        if (!matches) return false;
+        continue;
+      }
+      if (key === 'lots' && condition && typeof condition === 'object' && 'some' in condition) {
+        const someWhere = (condition as { some: { terrainId?: string } }).some;
+        const hasMatch = Array.from(this.mandatLots.values()).some(
+          (lot) =>
+            lot.mandatId === mandat.id &&
+            (!someWhere.terrainId || lot.terrainId === someWhere.terrainId),
+        );
+        if (!hasMatch) return false;
+        continue;
+      }
+      const value = (mandat as unknown as Record<string, unknown>)[key];
+      if (condition && typeof condition === 'object' && 'contains' in condition) {
+        const contains = (condition as { contains: string }).contains.toLowerCase();
+        if (!toSearchable(value).toLowerCase().includes(contains)) return false;
+        continue;
+      }
+      if (
+        condition &&
+        typeof condition === 'object' &&
+        ('gte' in condition || 'lte' in condition)
+      ) {
+        const range = condition as { gte?: Date | number; lte?: Date | number };
+        const comparable = value instanceof Date ? value.getTime() : value;
+        if (range.gte !== undefined) {
+          const gte = range.gte instanceof Date ? range.gte.getTime() : range.gte;
+          if (!(Number(comparable) >= Number(gte))) return false;
+        }
+        if (range.lte !== undefined) {
+          const lte = range.lte instanceof Date ? range.lte.getTime() : range.lte;
+          if (!(Number(comparable) <= Number(lte))) return false;
+        }
+        continue;
+      }
+      if (value !== condition) return false;
+    }
+    return true;
+  }
+
+  private hydrateMandat(mandat: FakeMandat): Record<string, unknown> {
+    const proprietaire = this.proprietaires.get(mandat.proprietaireId) ?? null;
+    const commercialResponsable = mandat.commercialResponsableId
+      ? this.users.get(mandat.commercialResponsableId) ?? null
+      : null;
+    const lots = Array.from(this.mandatLots.values())
+      .filter((lot) => lot.mandatId === mandat.id)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+      .map((lot) => ({
+        ...lot,
+        terrain: this.terrains.get(lot.terrainId)
+          ? this.pickTerrainSummary(this.terrains.get(lot.terrainId)!)
+          : null,
+      }));
+    const documents: unknown[] = [];
+
+    return {
+      ...mandat,
+      proprietaire: proprietaire
+        ? {
+            id: proprietaire.id,
+            firstName: proprietaire.firstName,
+            lastName: proprietaire.lastName,
+            email: proprietaire.email,
+            phone: proprietaire.phone,
+          }
+        : null,
+      commercialResponsable: commercialResponsable
+        ? {
+            id: commercialResponsable.id,
+            firstName: commercialResponsable.firstName,
+            lastName: commercialResponsable.lastName,
+          }
+        : null,
+      lots,
+      documents,
+      _count: { lots: lots.length, documents: documents.length },
+    };
+  }
+
+  mandat = {
+    findUnique: ({
+      where,
+    }: {
+      where: { id?: string; referenceInterne?: string };
+    }) => {
+      const mandat = where.id
+        ? this.mandats.get(where.id)
+        : Array.from(this.mandats.values()).find(
+            (m) => m.referenceInterne === where.referenceInterne,
+          );
+      return Promise.resolve(mandat ?? null);
+    },
+    findFirst: ({ where = {} }: { where?: Record<string, unknown> }) => {
+      const found = Array.from(this.mandats.values()).find((m) =>
+        this.matchesMandatWhere(m, where),
+      );
+      return Promise.resolve(found ? this.hydrateMandat(found) : null);
+    },
+    findMany: ({
+      where = {},
+      orderBy,
+      skip = 0,
+      take,
+    }: {
+      where?: Record<string, unknown>;
+      orderBy?: Record<string, string>;
+      skip?: number;
+      take?: number;
+    } = {}) => {
+      let list = Array.from(this.mandats.values()).filter((m) =>
+        this.matchesMandatWhere(m, where),
+      );
+      if (orderBy) {
+        const key = Object.keys(orderBy)[0];
+        const dir = orderBy[key];
+        list = [...list].sort((a, b) => {
+          const aVal = a[key as keyof FakeMandat];
+          const bVal = b[key as keyof FakeMandat];
+          if (aVal == null && bVal == null) return 0;
+          if (aVal == null) return 1;
+          if (bVal == null) return -1;
+          if (aVal < bVal) return dir === 'desc' ? 1 : -1;
+          if (aVal > bVal) return dir === 'desc' ? -1 : 1;
+          return 0;
+        });
+      }
+      const paginated = take ? list.slice(skip, skip + take) : list.slice(skip);
+      return Promise.resolve(paginated.map((m) => this.hydrateMandat(m)));
+    },
+    count: ({ where = {} }: { where?: Record<string, unknown> } = {}) =>
+      Promise.resolve(
+        Array.from(this.mandats.values()).filter((m) =>
+          this.matchesMandatWhere(m, where),
+        ).length,
+      ),
+    create: ({ data }: { data: Partial<FakeMandat> }) => {
+      const mandat: FakeMandat = {
+        id: data.id ?? fakeUuid(),
+        referenceInterne: data.referenceInterne as string,
+        proprietaireId: data.proprietaireId as string,
+        commercialResponsableId: data.commercialResponsableId ?? null,
+        typeMandat: data.typeMandat as string,
+        dateDebut: data.dateDebut as Date,
+        dateFin: data.dateFin as Date,
+        exclusivite: data.exclusivite ?? false,
+        prixConditions: data.prixConditions ?? null,
+        commissions: data.commissions ?? null,
+        clauses: data.clauses ?? null,
+        restrictionsContractuelles: data.restrictionsContractuelles ?? null,
+        objectifsCommercialisation: data.objectifsCommercialisation ?? null,
+        alerteEcheanceJours: data.alerteEcheanceJours ?? 30,
+        statut: data.statut as string,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.mandats.set(mandat.id, mandat);
+      return Promise.resolve(this.hydrateMandat(mandat));
+    },
+    update: ({
+      where,
+      data,
+    }: {
+      where: { id: string };
+      data: Record<string, unknown>;
+    }) => {
+      const existing = this.mandats.get(where.id);
+      if (!existing) throw new Error('Mandat not found (fake prisma)');
+      const merged = { ...existing, ...data, updatedAt: new Date() };
+      this.mandats.set(where.id, merged);
+      return Promise.resolve(this.hydrateMandat(merged));
+    },
+    delete: ({ where }: { where: { id: string } }) => {
+      const existing = this.mandats.get(where.id);
+      if (!existing) throw new Error('Mandat not found (fake prisma)');
+      this.mandats.delete(where.id);
+      for (const [lotId, lot] of this.mandatLots) {
+        if (lot.mandatId === where.id) this.mandatLots.delete(lotId);
+      }
+      return Promise.resolve(existing);
+    },
+  };
+
+  mandatLot = {
+    findFirst: ({ where }: { where: Record<string, unknown> }) => {
+      const list = Array.from(this.mandatLots.values()).filter((lot) => {
+        if (where.id && lot.id !== where.id) return false;
+        if (where.mandatId && lot.mandatId !== where.mandatId) return false;
+        if (where.terrainId && lot.terrainId !== where.terrainId) return false;
+        return true;
+      });
+      return Promise.resolve(list[0] ?? null);
+    },
+    count: ({ where }: { where?: Record<string, unknown> } = {}) => {
+      let list = Array.from(this.mandatLots.values());
+      const w = where as { mandat?: Record<string, unknown> } | undefined;
+      if (w?.mandat) {
+        const mandatIds = Array.from(this.mandats.values())
+          .filter((m) => this.matchesMandatWhere(m, w.mandat as Record<string, unknown>))
+          .map((m) => m.id);
+        list = list.filter((lot) => mandatIds.includes(lot.mandatId));
+      }
+      return Promise.resolve(list.length);
+    },
+    groupBy: ({
+      where,
+      by,
+    }: {
+      where?: Record<string, unknown>;
+      by: string[];
+    } = { by: [] }) => {
+      let list = Array.from(this.mandatLots.values());
+      const w = where as { mandat?: Record<string, unknown> } | undefined;
+      if (w?.mandat) {
+        const mandatIds = Array.from(this.mandats.values())
+          .filter((m) => this.matchesMandatWhere(m, w.mandat as Record<string, unknown>))
+          .map((m) => m.id);
+        list = list.filter((lot) => mandatIds.includes(lot.mandatId));
+      }
+      const groups = new Map<string, number>();
+      for (const lot of list) {
+        const key = by[0] as keyof FakeMandatLot;
+        const val = String(lot[key]);
+        groups.set(val, (groups.get(val) ?? 0) + 1);
+      }
+      return Promise.resolve(
+        Array.from(groups.entries()).map(([statutLot, count]) => ({
+          statutLot,
+          _count: { statutLot: count },
+        })),
+      );
+    },
+    create: ({ data }: { data: Partial<FakeMandatLot> }) => {
+      const lot: FakeMandatLot = {
+        id: data.id ?? fakeUuid(),
+        mandatId: data.mandatId as string,
+        terrainId: data.terrainId as string,
+        statutLot: data.statutLot ?? 'Confie',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.mandatLots.set(lot.id, lot);
+      const terrain = this.terrains.get(lot.terrainId);
+      return Promise.resolve({
+        ...lot,
+        terrain: terrain ? this.pickTerrainSummary(terrain) : null,
+      });
+    },
+    update: ({
+      where,
+      data,
+    }: {
+      where: { id: string };
+      data: Partial<FakeMandatLot>;
+    }) => {
+      const existing = this.mandatLots.get(where.id);
+      if (!existing) throw new Error('MandatLot not found (fake prisma)');
+      const merged = { ...existing, ...data, updatedAt: new Date() };
+      this.mandatLots.set(where.id, merged);
+      const terrain = this.terrains.get(merged.terrainId);
+      return Promise.resolve({
+        ...merged,
+        terrain: terrain ? this.pickTerrainSummary(terrain) : null,
+      });
+    },
+    delete: ({ where }: { where: { id: string } }) => {
+      const existing = this.mandatLots.get(where.id);
+      if (!existing) throw new Error('MandatLot not found (fake prisma)');
+      this.mandatLots.delete(where.id);
+      return Promise.resolve(existing);
+    },
+  };
+
+  reservation = {
+    findFirst: ({ where }: { where: Record<string, unknown> }) => {
+      let list = Array.from(this.reservations.values());
+      const w = where;
+      if (w?.dossierVente && typeof w.dossierVente === 'object') {
+        const dossierVente = w.dossierVente as Record<string, unknown>;
+        if (dossierVente.terrainId) {
+          list = list.filter((reservation) => {
+            const dossier = this.dossiersVente.get(reservation.dossierVenteId);
+            return dossier?.terrainId === dossierVente.terrainId;
+          });
+        }
+      }
+      const statutIn =
+        w?.statut && typeof w.statut === 'object' && 'in' in w.statut
+          ? (w.statut as { in: string[] }).in
+          : undefined;
+      if (statutIn) {
+        list = list.filter((reservation) => statutIn.includes(reservation.statut));
+      }
+      if (w?.dateExpiration && typeof w.dateExpiration === 'object' && 'gt' in w.dateExpiration) {
+        list = list.filter((reservation) => reservation.dateExpiration > (w.dateExpiration as { gt: Date }).gt);
+      }
+      return Promise.resolve(list[0] ?? null);
+    },
+    create: ({ data }: { data: Partial<FakeReservation> }) => {
+      const reservation: FakeReservation = {
+        id: data.id ?? fakeUuid(),
+        dossierVenteId: data.dossierVenteId as string,
+        montantAcompte: data.montantAcompte ?? 0,
+        dureeBlocageJours: data.dureeBlocageJours ?? 0,
+        dateDebut: data.dateDebut ?? new Date(),
+        dateExpiration: data.dateExpiration ?? new Date(),
+        conditionsAnnulation: data.conditionsAnnulation ?? null,
+        statut: data.statut ?? 'active',
+        reference: data.reference ?? null,
+        createdById: data.createdById ?? null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.reservations.set(reservation.id, reservation);
+      return Promise.resolve(reservation);
+    },
+    updateMany: ({ where, data }: { where: { id?: string; statut?: { in: string[] } }; data: Partial<FakeReservation> }) => {
+      let list = Array.from(this.reservations.values());
+      if (where.id) list = list.filter((reservation) => reservation.id === where.id);
+      const statutIn = where.statut && 'in' in where.statut ? where.statut.in : undefined;
+      if (statutIn) {
+        list = list.filter((reservation) => statutIn.includes(reservation.statut));
+      }
+      for (const reservation of list) {
+        this.reservations.set(reservation.id, { ...reservation, ...data, updatedAt: new Date() });
+      }
+      return Promise.resolve({ count: list.length });
+    },
+  };
+
+  echeancePaiement = {
+    createMany: ({ data }: { data: Partial<FakeEcheancePaiement>[] }) => {
+      for (const item of data) {
+        const echeance: FakeEcheancePaiement = {
+          id: item.id ?? fakeUuid(),
+          dossierVenteId: item.dossierVenteId as string,
+          numero: item.numero as number,
+          dateEcheance: item.dateEcheance ?? new Date(),
+          montantPrevu: item.montantPrevu ?? 0,
+          montantPaye: item.montantPaye ?? 0,
+          statut: item.statut ?? 'en_attente',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        this.echeancesPaiement.set(echeance.id, echeance);
+      }
+      return Promise.resolve({ count: data.length });
+    },
+    findMany: ({ where, orderBy }: { where?: Record<string, unknown>; orderBy?: Record<string, string> } = {}) => {
+      let list = Array.from(this.echeancesPaiement.values());
+      if (where?.dossierVenteId) {
+        list = list.filter((item) => item.dossierVenteId === where.dossierVenteId);
+      }
+      if (orderBy) {
+        const key = Object.keys(orderBy)[0];
+        const dir = orderBy[key];
+        list.sort((a, b) => {
+          const aVal = a[key as keyof FakeEcheancePaiement];
+          const bVal = b[key as keyof FakeEcheancePaiement];
+          if (aVal < bVal) return dir === 'desc' ? 1 : -1;
+          if (aVal > bVal) return dir === 'desc' ? -1 : 1;
+          return 0;
+        });
+      }
+      return Promise.resolve(list);
+    },
+    update: ({ where, data }: { where: { id: string }; data: Partial<FakeEcheancePaiement> }) => {
+      const existing = this.echeancesPaiement.get(where.id);
+      if (!existing) throw new Error('Echeance not found (fake prisma)');
+      const merged = { ...existing, ...data, updatedAt: new Date() };
+      this.echeancesPaiement.set(where.id, merged);
+      return Promise.resolve(merged);
+    },
+  };
+
+  paiement = {
+    aggregate: async ({ where, _sum }: { where: Record<string, unknown>; _sum?: Record<string, string> }) => {
+      let list = Array.from(this.paiements.values());
+      if (where.dossierVenteId) {
+        list = list.filter((payment) => payment.dossierVenteId === where.dossierVenteId);
+      }
+      if (where.statut) {
+        list = list.filter((payment) => payment.statut === where.statut);
+      }
+      if (where.dossierVente && typeof where.dossierVente === 'object') {
+        const dossierWhere = where.dossierVente as Record<string, unknown>;
+        if (dossierWhere.commercialResponsableId) {
+          list = list.filter((payment) => {
+            const dossier = this.dossiersVente.get(payment.dossierVenteId);
+            return dossier?.commercialResponsableId === dossierWhere.commercialResponsableId;
+          });
+        }
+      }
+      const sum = _sum?.montant ? list.reduce((acc, item) => acc + Number(item.montant), 0) : 0;
+      return Promise.resolve({ _sum: { montant: sum } });
+    },
+    create: ({ data }: { data: Partial<FakePaiement> }) => {
+      const payment: FakePaiement = {
+        id: data.id ?? fakeUuid(),
+        dossierVenteId: data.dossierVenteId as string,
+        montant: data.montant ?? 0,
+        datePaiement: data.datePaiement ?? new Date(),
+        mode: data.mode ?? 'virement',
+        reference: data.reference ?? null,
+        justificatifUrl: data.justificatifUrl ?? null,
+        statut: data.statut ?? 'en_attente',
+        notes: data.notes ?? null,
+        recordedById: data.recordedById ?? null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.paiements.set(payment.id, payment);
+      return Promise.resolve(payment);
+    },
+    findFirst: ({ where }: { where: Record<string, unknown> }) => {
+      let list = Array.from(this.paiements.values());
+      if (where.id) list = list.filter((payment) => payment.id === where.id);
+      if (where.dossierVenteId) list = list.filter((payment) => payment.dossierVenteId === where.dossierVenteId);
+      if (where.statut) list = list.filter((payment) => payment.statut === where.statut);
+      return Promise.resolve(list[0] ?? null);
+    },
+    update: ({ where, data }: { where: { id: string }; data: Partial<FakePaiement> }) => {
+      const existing = this.paiements.get(where.id);
+      if (!existing) throw new Error('Paiement not found (fake prisma)');
+      const merged = { ...existing, ...data, updatedAt: new Date() };
+      this.paiements.set(where.id, merged);
+      return Promise.resolve(merged);
+    },
+  };
+
+  commissionVente = {
+    aggregate: async ({ where, _sum }: { where: Record<string, unknown>; _sum?: Record<string, string> }) => {
+      let list = Array.from(this.commissionsVente.values());
+      if (where.dossierVente) {
+        const dossierWhere = where.dossierVente as Record<string, unknown>;
+        list = list.filter((commission) => {
+          const dossier = this.dossiersVente.get(commission.dossierVenteId);
+          return dossier && dossierWhere.commercialResponsableId === undefined
+            ? true
+            : dossier?.commercialResponsableId === dossierWhere.commercialResponsableId;
+        });
+      }
+      if (where.commercialId) {
+        list = list.filter((commission) => commission.commercialId === where.commercialId);
+      }
+      if (where.statut) {
+        list = list.filter((commission) => commission.statut === where.statut);
+      }
+      const sumKey = _sum && Object.keys(_sum)[0];
+      const sum = sumKey ? list.reduce((acc, item) => acc + Number(item[sumKey as keyof FakeCommissionVente] ?? 0), 0) : 0;
+      return Promise.resolve({ _sum: { [sumKey ?? 'montantEstime']: sum } });
+    },
+    create: ({ data }: { data: Partial<FakeCommissionVente> }) => {
+      const commission: FakeCommissionVente = {
+        id: data.id ?? fakeUuid(),
+        dossierVenteId: data.dossierVenteId as string,
+        commercialId: data.commercialId as string,
+        typeRegle: data.typeRegle ?? 'pourcentage',
+        taux: data.taux ?? null,
+        montantFixe: data.montantFixe ?? null,
+        palier: data.palier ?? null,
+        bonus: data.bonus ?? null,
+        montantEstime: data.montantEstime ?? 0,
+        montantValide: data.montantValide ?? null,
+        montantPaye: data.montantPaye ?? null,
+        statut: data.statut ?? 'estimee',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.commissionsVente.set(commission.id, commission);
+      return Promise.resolve(commission);
+    },
+    findFirst: ({ where }: { where: Record<string, unknown> }) => {
+      let list = Array.from(this.commissionsVente.values());
+      if (where.id) list = list.filter((commission) => commission.id === where.id);
+      if (where.dossierVenteId) list = list.filter((commission) => commission.dossierVenteId === where.dossierVenteId);
+      return Promise.resolve(list[0] ?? null);
+    },
+    update: ({ where, data }: { where: { id: string }; data: Partial<FakeCommissionVente> }) => {
+      const existing = this.commissionsVente.get(where.id);
+      if (!existing) throw new Error('Commission not found (fake prisma)');
+      const merged = { ...existing, ...data, updatedAt: new Date() };
+      this.commissionsVente.set(where.id, merged);
+      return Promise.resolve(merged);
+    },
+  };
+
+  documentVente = {
+    findFirst: ({ where }: { where: Record<string, unknown> }) => {
+      let list = Array.from(this.documentsVente.values());
+      if (where.id) list = list.filter((doc) => doc.id === where.id);
+      if (where.isPublic) list = list.filter((doc) => doc.isPublic === where.isPublic);
+      if (where.dossierVente) {
+        const dossierWhere = where.dossierVente as Record<string, unknown>;
+        list = list.filter((doc) => {
+          const dossier = this.dossiersVente.get(doc.dossierVenteId);
+          return dossier && dossier.prospectId === dossierWhere.prospectId;
+        });
+      }
+      return Promise.resolve(list[0] ?? null);
+    },
+    findMany: ({ where, include, orderBy, take }: { where?: Record<string, unknown>; include?: Record<string, unknown>; orderBy?: Record<string, string>; take?: number } = {}) => {
+      let list = Array.from(this.documentsVente.values());
+      const w = where;
+      if (w?.dossierVenteId) {
+        const dossierVenteId = w.dossierVenteId as string | { in: string[] };
+        if (typeof dossierVenteId === 'string') {
+          list = list.filter((doc) => doc.dossierVenteId === dossierVenteId);
+        } else if (typeof dossierVenteId === 'object' && 'in' in dossierVenteId) {
+          list = list.filter((doc) => dossierVenteId.in.includes(doc.dossierVenteId));
+        }
+      }
+      if (w?.type) list = list.filter((doc) => doc.type === w.type);
+      if (w?.createdAt && typeof w.createdAt === 'object') {
+        const createdAtWhere = w.createdAt as Record<string, Date>;
+        if (createdAtWhere.gte) list = list.filter((doc) => doc.createdAt >= createdAtWhere.gte);
+        if (createdAtWhere.lte) list = list.filter((doc) => doc.createdAt <= createdAtWhere.lte);
+      }
+      if (orderBy) {
+        const key = Object.keys(orderBy)[0];
+        const dir = orderBy[key];
+        list.sort((a, b) => {
+          const aVal = a[key as keyof FakeDocumentVente];
+          const bVal = b[key as keyof FakeDocumentVente];
+          if (aVal == null && bVal == null) return 0;
+          if (aVal == null) return 1;
+          if (bVal == null) return -1;
+          if (aVal < bVal) return dir === 'desc' ? 1 : -1;
+          if (aVal > bVal) return dir === 'desc' ? -1 : 1;
+          return 0;
+        });
+      }
+      if (take && take > 0) list = list.slice(0, take);
+      return Promise.resolve(list.map((doc) => ({ ...doc, dossierVente: this.dossiersVente.get(doc.dossierVenteId) ? { id: this.dossiersVente.get(doc.dossierVenteId)!.id, referenceInterne: this.dossiersVente.get(doc.dossierVenteId)!.referenceInterne, prospectId: this.dossiersVente.get(doc.dossierVenteId)!.prospectId } : null, createdBy: null })));
+    },
+    create: ({ data }: { data: Partial<FakeDocumentVente> }) => {
+      const doc: FakeDocumentVente = {
+        id: data.id ?? fakeUuid(),
+        dossierVenteId: data.dossierVenteId as string,
+        type: data.type ?? 'autre',
+        storageKey: data.storageKey ?? 'fake-storage-key',
+        resourceType: data.resourceType ?? 'raw',
+        title: data.title ?? null,
+        isGenerated: data.isGenerated ?? false,
+        isPublic: data.isPublic ?? false,
+        version: data.version ?? 1,
+        createdById: data.createdById ?? null,
+        createdAt: new Date(),
+      };
+      this.documentsVente.set(doc.id, doc);
+      return Promise.resolve(doc);
+    },
+    delete: ({ where }: { where: { id: string } }) => {
+      const existing = this.documentsVente.get(where.id);
+      if (!existing) throw new Error('DocumentVente not found (fake prisma)');
+      this.documentsVente.delete(where.id);
+      return Promise.resolve(existing);
+    },
+  };
 
   user = {
     findUnique: ({ where }: { where: { id?: string; email?: string } }) => {
@@ -859,13 +1884,142 @@ export class FakePrismaService {
   };
 
   dossierVente = {
-    findMany: ({ where }: { where?: Record<string, unknown> } = {}) => {
+    findMany: ({ where, include, orderBy, take }: { where?: Record<string, unknown>; include?: Record<string, unknown>; orderBy?: Record<string, string>; take?: number } = {}) => {
       let list = Array.from(this.dossiersVente.values());
       const w = where;
       if (w?.prospectId) {
         list = list.filter((d) => d.prospectId === w.prospectId);
       }
-      return Promise.resolve(list);
+      if (w?.commercialResponsableId) {
+        list = list.filter((d) => d.commercialResponsableId === w.commercialResponsableId);
+      }
+      if (w?.terrainId) {
+        list = list.filter((d) => d.terrainId === w.terrainId);
+      }
+      if (w?.statut) {
+        list = list.filter((d) => d.statut === w.statut);
+      }
+      if (w?.createdAt && typeof w.createdAt === 'object') {
+        const createdAtWhere = w.createdAt as Record<string, Date>;
+        if (createdAtWhere.gte) list = list.filter((d) => d.createdAt >= createdAtWhere.gte);
+        if (createdAtWhere.lte) list = list.filter((d) => d.createdAt <= createdAtWhere.lte);
+      }
+      if (orderBy) {
+        const key = Object.keys(orderBy)[0];
+        const dir = orderBy[key];
+        list.sort((a, b) => {
+          const aVal = a[key as keyof FakeDossierVente];
+          const bVal = b[key as keyof FakeDossierVente];
+          if (aVal == null && bVal == null) return 0;
+          if (aVal == null) return 1;
+          if (bVal == null) return -1;
+          if (aVal < bVal) return dir === 'desc' ? 1 : -1;
+          if (aVal > bVal) return dir === 'desc' ? -1 : 1;
+          return 0;
+        });
+      }
+      if (take && take > 0) list = list.slice(0, take);
+      return Promise.resolve(list.map((dossier) => ({
+        ...dossier,
+        prospect: this.prospects.get(dossier.prospectId) ?? null,
+        terrain: this.terrains.get(dossier.terrainId ?? '') ?? null,
+        mandat: null,
+        commercialResponsable: dossier.commercialResponsableId ? this.users.get(dossier.commercialResponsableId) ?? null : null,
+        reservations: Array.from(this.reservations.values()).filter((r) => r.dossierVenteId === dossier.id),
+        paiements: Array.from(this.paiements.values()).filter((p) => p.dossierVenteId === dossier.id),
+        commissions: Array.from(this.commissionsVente.values()).filter((c) => c.dossierVenteId === dossier.id),
+        documents: Array.from(this.documentsVente.values()).filter((d) => d.dossierVenteId === dossier.id),
+        _count: { documents: 0, commissions: 0 },
+      })));
+    },
+    findUnique: ({ where, include }: { where: { id: string }; include?: Record<string, unknown> } = { where: { id: '' } }) => {
+      const dossier = this.dossiersVente.get(where.id);
+      if (!dossier) return Promise.resolve(null);
+      const result: Record<string, unknown> = {
+        ...dossier,
+        prospect: this.prospects.get(dossier.prospectId) ?? null,
+        terrain: dossier.terrainId ? this.terrains.get(dossier.terrainId) ?? null : null,
+        mandat: null,
+        commercialResponsable: dossier.commercialResponsableId ? this.users.get(dossier.commercialResponsableId) ?? null : null,
+        reservations: Array.from(this.reservations.values()).filter((r) => r.dossierVenteId === dossier.id),
+        paiements: Array.from(this.paiements.values()).filter((p) => p.dossierVenteId === dossier.id),
+        commissions: Array.from(this.commissionsVente.values()).filter((c) => c.dossierVenteId === dossier.id),
+        documents: Array.from(this.documentsVente.values()).filter((d) => d.dossierVenteId === dossier.id),
+      };
+      if (include?._count) {
+        result._count = { documents: (result.documents as unknown[]).length, commissions: (result.commissions as unknown[]).length };
+      }
+      return Promise.resolve(result);
+    },
+    findFirst: ({ where }: { where: Record<string, unknown> } = { where: {} }) => {
+      let list = Array.from(this.dossiersVente.values());
+      if (where.id) list = list.filter((dossier) => dossier.id === where.id);
+      if (where.terrainId) list = list.filter((dossier) => dossier.terrainId === where.terrainId);
+      if (where.prospectId) list = list.filter((dossier) => dossier.prospectId === where.prospectId);
+      if (where.commercialResponsableId) list = list.filter((dossier) => dossier.commercialResponsableId === where.commercialResponsableId);
+      if (where.statut) list = list.filter((dossier) => dossier.statut === where.statut);
+      if (where.reservationRequestId) list = list.filter((dossier) => dossier.reservationRequestId === where.reservationRequestId);
+      if (where.createdAt && typeof where.createdAt === 'object') {
+        const createdAtWhere = where.createdAt as Record<string, Date>;
+        if (createdAtWhere.gte) list = list.filter((dossier) => dossier.createdAt >= createdAtWhere.gte);
+        if (createdAtWhere.lte) list = list.filter((dossier) => dossier.createdAt <= createdAtWhere.lte);
+      }
+      return Promise.resolve(list[0] ?? null);
+    },
+    count: ({ where }: { where?: Record<string, unknown> } = {}) => {
+      let list = Array.from(this.dossiersVente.values());
+      const w = where;
+      if (w?.commercialResponsableId) {
+        list = list.filter((dossier) => dossier.commercialResponsableId === w.commercialResponsableId);
+      }
+      return Promise.resolve(list.length);
+    },
+    groupBy: ({ by, where, _count }: { by: string[]; where?: Record<string, unknown>; _count?: Record<string, unknown> } = { by: [], where: {} }) => {
+      let list = Array.from(this.dossiersVente.values());
+      const w = where;
+      if (w?.commercialResponsableId) {
+        list = list.filter((dossier) => dossier.commercialResponsableId === w.commercialResponsableId);
+      }
+      const groups = new Map<string, number>();
+      for (const dossier of list) {
+        const key = by[0];
+        const val = dossier[key as keyof FakeDossierVente] as string;
+        groups.set(val, (groups.get(val) || 0) + 1);
+      }
+      return Promise.resolve(Array.from(groups.entries()).map(([statut, count]) => ({ statut, _count: { statut: count } })));
+    },
+    create: ({ data }: { data: Partial<FakeDossierVente> }) => {
+      const dossier: FakeDossierVente = {
+        id: data.id ?? fakeUuid(),
+        prospectId: data.prospectId as string,
+        terrainId: data.terrainId ?? null,
+        mandatId: data.mandatId ?? null,
+        commercialResponsableId: data.commercialResponsableId ?? null,
+        referenceInterne: data.referenceInterne ?? null,
+        prixVente: data.prixVente ?? null,
+        commissionEstimee: data.commissionEstimee ?? null,
+        notes: data.notes ?? null,
+        statut: data.statut ?? 'en_cours',
+        dateVente: data.dateVente ?? null,
+        reservationRequestId: data.reservationRequestId ?? null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.dossiersVente.set(dossier.id, dossier);
+      return Promise.resolve(dossier);
+    },
+    update: ({ where, data }: { where: { id: string }; data: Partial<FakeDossierVente> }) => {
+      const existing = this.dossiersVente.get(where.id);
+      if (!existing) throw new Error('DossierVente not found (fake prisma)');
+      const merged = { ...existing, ...data, updatedAt: new Date() };
+      this.dossiersVente.set(where.id, merged);
+      return Promise.resolve(merged);
+    },
+    delete: ({ where }: { where: { id: string } }) => {
+      const existing = this.dossiersVente.get(where.id);
+      if (!existing) throw new Error('DossierVente not found (fake prisma)');
+      this.dossiersVente.delete(where.id);
+      return Promise.resolve(existing);
     },
   };
 
@@ -896,5 +2050,14 @@ export class FakePrismaService {
   // Utilisé par HealthService — simule une base disponible.
   $queryRaw = () => Promise.resolve([{ '?column?': 1 }]);
 
-  $transaction = (ops: Promise<unknown>[]) => Promise.all(ops);
+  $transaction = async (
+    ops: ((tx: FakePrismaService) => Promise<unknown>) | Promise<unknown>[],
+    _options?: unknown,
+  ) => {
+    if (typeof ops === 'function') {
+      return await ops(this);
+    }
+
+    return await Promise.all(ops);
+  };
 }

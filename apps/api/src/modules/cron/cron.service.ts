@@ -12,9 +12,6 @@ export class CronService {
     private readonly audit: AuditService,
   ) {}
 
-  /**
-   * Balayage quotidien à minuit pour repérer les mandats approchant de leur date de fin.
-   */
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async handleMandatsEcheances(): Promise<void> {
     this.logger.log("Vérification quotidienne de l'échéance des mandats...");
@@ -71,9 +68,6 @@ export class CronService {
     );
   }
 
-  /**
-   * Balayage horaire pour vérifier les activités CRM échues ou approchant de l'échéance.
-   */
   @Cron(CronExpression.EVERY_HOUR)
   async handleCrmRelances(): Promise<void> {
     const now = new Date();
@@ -111,6 +105,82 @@ export class CronService {
           prospectId: task.prospectId,
           isOverdue,
         },
+      });
+    }
+  }
+
+  @Cron(CronExpression.EVERY_HOUR)
+  async handleReservationsExpirees(): Promise<void> {
+    const now = new Date();
+    const expiredReservations = await this.prisma.reservation.findMany({
+      where: {
+        statut: { in: ['active', 'prolongee'] },
+        dateExpiration: { lte: now },
+      },
+      select: {
+        id: true,
+        dossierVenteId: true,
+        dossierVente: {
+          select: {
+            id: true,
+            statut: true,
+            terrainId: true,
+            paiements: {
+              where: { statut: 'valide' },
+              select: { id: true },
+            },
+          },
+        },
+      },
+    });
+
+    for (const reservation of expiredReservations) {
+      const dossier = reservation.dossierVente;
+      if (!dossier) continue;
+
+      const hasValidatedPayments = dossier.paiements.length > 0;
+      const isSoldOrPartiallyPaid = ['solde', 'paiement_partiel'].includes(dossier.statut);
+
+      if (hasValidatedPayments || isSoldOrPartiallyPaid) {
+        await this.audit.record({
+          action: 'vente.reservation.expiry_skipped',
+          entityType: 'Reservation',
+          entityId: reservation.id,
+          newValue: {
+            dossierVenteId: reservation.dossierVenteId,
+            reason: hasValidatedPayments
+              ? 'paiements_valides_presents'
+              : 'statut_dossier_avance',
+          },
+        });
+        continue;
+      }
+
+      await this.prisma.$transaction(async (transaction) => {
+        const updated = await transaction.reservation.updateMany({
+          where: { id: reservation.id, statut: { in: ['active', 'prolongee'] } },
+          data: { statut: 'expiree' },
+        });
+        if (updated.count !== 1) return;
+
+        await transaction.dossierVente.update({
+          where: { id: reservation.dossierVenteId },
+          data: { statut: 'annule' },
+        });
+
+        if (dossier.terrainId) {
+          await transaction.terrain.updateMany({
+            where: { id: dossier.terrainId, statutCommercial: 'Réservé' },
+            data: { statutCommercial: 'Disponible' },
+          });
+        }
+      });
+
+      await this.audit.record({
+        action: 'vente.reservation.expired',
+        entityType: 'Reservation',
+        entityId: reservation.id,
+        newValue: { dossierVenteId: reservation.dossierVenteId },
       });
     }
   }

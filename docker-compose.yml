@@ -106,6 +106,35 @@ services:
     networks:
       - mtm-network
 
+  document-retention:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile.dev
+    container_name: mtm-document-retention
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-mtm_user}:${POSTGRES_PASSWORD:-change_me_in_local_env}@postgres:5432/${POSTGRES_DB:-mtm_immobilier}
+      # Désactivée par défaut (voir .env.example) : ne purge rien tant que
+      # DOCUMENT_RETENTION_DAYS et DOCUMENT_RETENTION_PURGEABLE_TYPES ne sont
+      # pas explicitement définis et validés par MTM.
+      DOCUMENT_RETENTION_DAYS: ${DOCUMENT_RETENTION_DAYS:-}
+      DOCUMENT_RETENTION_PURGEABLE_TYPES: ${DOCUMENT_RETENTION_PURGEABLE_TYPES:-}
+    volumes:
+      - ./apps/api:/app/apps/api
+      - /app/apps/api/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    working_dir: /app/apps/api
+    command: >-
+      "while true; do npm run documents:purge;
+      sleep ${DOCUMENT_RETENTION_INTERVAL_SECONDS:-86400}; done"
+    networks:
+      - mtm-network
+
 networks:
   mtm-network:
     driver: bridge

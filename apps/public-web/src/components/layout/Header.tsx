@@ -9,12 +9,8 @@ type HeaderProps = {
 const navItems = [
   { label: 'Accueil', href: '#accueil' },
   { label: 'Nos terrains', href: '#terrains' },
-  { label: 'Projets', href: '#projets' },
-  { label: 'Réalisations', href: '#realisations' },
-  { label: 'Actualités', href: '#actualites' },
   { label: 'À propos', href: '#a-propos' },
   { label: 'Contact', href: '#contact' },
-  { label: 'Espace client', href: '#client' },
 ];
 
 const serviceItems = [

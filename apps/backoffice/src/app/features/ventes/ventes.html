@@ -1,0 +1,156 @@
+<div class="sales-page">
+  <header class="page-header sales-header">
+    <div class="sales-header__content">
+      <p class="sales-header__eyebrow">J1.6 · Cœur commercial</p>
+      <h1 class="page-header__title">Ventes, réservations et paiements</h1>
+      <p class="page-header__subtitle">Suivi des dossiers commerciaux, des acomptes et des soldes.</p>
+    </div>
+
+    <div class="sales-header__actions">
+      <button mat-stroked-button type="button" (click)="openDocuments()">
+        Rechercher un document
+      </button>
+      <button mat-stroked-button type="button" class="sales-header__action" (click)="load()">
+        Actualiser
+      </button>
+    </div>
+  </header>
+
+  @if (dashboardStats(); as stats) {
+    <section class="stats-grid" aria-label="Statistiques ventes">
+      <mat-card class="stats-card">
+        <p class="stats-card__label">Dossiers</p>
+        <p class="stats-card__value">{{ stats.totalDossiers }}</p>
+      </mat-card>
+
+      <mat-card class="stats-card stats-card--success">
+        <p class="stats-card__label">Paiements validés</p>
+        <p class="stats-card__value">{{ stats.totalPaiementsValides | currency:'XOF':'symbol':'1.0-0':'fr' }}</p>
+      </mat-card>
+
+      <mat-card class="stats-card stats-card--warning">
+        <p class="stats-card__label">Commissions estimées</p>
+        <p class="stats-card__value">{{ stats.totalCommissionsEstimees | currency:'XOF':'symbol':'1.0-0':'fr' }}</p>
+      </mat-card>
+
+      <mat-card class="stats-card stats-card--purple">
+        <p class="stats-card__label">Commissions payées</p>
+        <p class="stats-card__value">{{ stats.totalCommissionsPayees | currency:'XOF':'symbol':'1.0-0':'fr' }}</p>
+      </mat-card>
+    </section>
+  }
+
+  @if (loading()) {
+    <div class="page-card sales-state">
+      <p class="sales-state__text">Chargement des dossiers de vente...</p>
+    </div>
+  } @else if (!dossiers().length) {
+    @if (!reservationRequests().length) {
+      <div class="page-card sales-state sales-state--empty">
+        <p class="sales-state__title">Aucun dossier de vente pour le moment</p>
+        <p class="sales-state__description">
+          Les dossiers apparaîtront ici après la conversion d’une demande publique de réservation ou la création d’un dossier depuis un prospect.
+        </p>
+        <button mat-flat-button color="primary" type="button" class="sales-state__cta" (click)="goToProspects()">
+          Ouvrir les prospects
+        </button>
+      </div>
+    }
+  } @else {
+    <section class="sales-grid" aria-label="Liste des dossiers de vente">
+      @for (dossier of dossiers(); track dossier.id) {
+        <mat-card class="sales-card">
+          <div class="sales-card__header">
+            <div class="sales-card__identity">
+              <p class="sales-card__eyebrow">{{ dossier.referenceInterne || 'Dossier' }}</p>
+              <h2 class="sales-card__title">{{ dossier.prospect.prenom || '' }} {{ dossier.prospect.nom }}</h2>
+              <p class="sales-card__subtitle">
+                {{ dossier.terrain?.referenceInterne || 'Terrain non affecté' }} · {{ dossier.terrain?.nom || '—' }}
+              </p>
+            </div>
+            <span class="status-badge">{{ dossier.statut }}</span>
+          </div>
+
+          <dl class="sales-card__meta">
+            <div class="sales-card__metric">
+              <dt>Prix de vente</dt>
+              <dd>{{ formatMoney(dossier.prixVente) | currency:'XOF':'symbol':'1.0-0':'fr' }}</dd>
+            </div>
+            <div class="sales-card__metric">
+              <dt>Déjà payé</dt>
+              <dd class="sales-card__metric-value--success">
+                {{ formatMoney(dossier.montantPaye) | currency:'XOF':'symbol':'1.0-0':'fr' }}
+              </dd>
+            </div>
+            <div class="sales-card__metric">
+              <dt>Solde restant</dt>
+              <dd>{{ dossier.soldeRestant === null ? '—' : (dossier.soldeRestant | currency:'XOF':'symbol':'1.0-0':'fr') }}</dd>
+            </div>
+            <div class="sales-card__metric">
+              <dt>Documents</dt>
+              <dd>{{ dossier._count.documents }}</dd>
+            </div>
+          </dl>
+
+          @if (dossier.reservations.length) {
+            <p class="sales-card__notice">
+              Réservation {{ dossier.reservations[0].statut }} · expire le {{ dossier.reservations[0].dateExpiration | date:'dd/MM/yyyy' }}
+            </p>
+          }
+
+          <div class="sales-card__actions">
+            <button mat-flat-button color="primary" type="button" (click)="reserve(dossier)" [disabled]="dossier.reservations.length > 0">
+              Réserver
+            </button>
+            <button mat-stroked-button type="button" (click)="pay(dossier)">
+              Enregistrer un paiement
+            </button>
+            @if (dossier.paiements?.some((payment) => payment.statut === 'en_attente')) {
+              <button mat-stroked-button color="primary" type="button" (click)="validatePendingPayment(dossier)">
+                Valider le paiement
+              </button>
+            }
+            <button mat-stroked-button type="button" (click)="openDetail(dossier.id)">
+              Voir le dossier
+            </button>
+          </div>
+        </mat-card>
+      }
+    </section>
+  }
+
+  @if (!loading() && reservationRequests().length) {
+    <section class="request-section page-section">
+      <div class="section-header">
+        <h2>Demandes publiques de réservation</h2>
+      </div>
+      <div class="request-list">
+        @for (request of reservationRequests(); track request.id) {
+          <mat-card class="request-card">
+            <div class="request-card__header">
+              <div>
+                <p class="request-card__name">{{ request.nom }}</p>
+                <p class="request-card__meta">
+                  {{ request.email }}{{ request.telephone ? ' · ' + request.telephone : '' }}
+                </p>
+              </div>
+              <span class="status-badge">{{ request.statut }}</span>
+            </div>
+
+            <p class="request-card__terrain">{{ request.terrain.referenceInterne }} · {{ request.terrain.nom }}</p>
+            @if (request.message) {
+              <p class="request-card__message">{{ request.message }}</p>
+            }
+            <p class="request-card__date">Reçue le {{ request.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+
+            @if (request.statut === 'nouvelle') {
+              <button mat-flat-button color="primary" type="button" class="request-card__cta" (click)="convertRequest(request)">
+                Créer le dossier de vente
+              </button>
+            }
+          </mat-card>
+        }
+      </div>
+    </section>
+  }
+</div>

@@ -1,0 +1,45 @@
+<h2 mat-dialog-title>{{ editing ? 'Modifier' : 'Créer' }} un élément de portfolio</h2>
+<mat-dialog-content class="dialog-content">
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Catégorie</mat-label>
+    <mat-select [(ngModel)]="form.category">
+      <mat-option value="realisation">Réalisation</mat-option>
+      <mat-option value="projet_a_venir">Projet à venir</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Titre</mat-label>
+    <input matInput [(ngModel)]="form.title" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Lieu</mat-label>
+    <input matInput [(ngModel)]="form.location" placeholder="Saly, Mbour..." />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Date</mat-label>
+    <input matInput type="date" [(ngModel)]="form.date" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Ordre d'affichage</mat-label>
+    <input matInput type="number" [(ngModel)]="form.ordre" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width textarea-field">
+    <mat-label>Description</mat-label>
+    <textarea matInput rows="4" [(ngModel)]="form.description"></textarea>
+  </mat-form-field>
+
+  @if (!editing) {
+    <p class="hint">L’image se rajoute une fois l’élément créé, depuis la liste.</p>
+  }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="cancel()">Annuler</button>
+  <button mat-flat-button color="primary" type="button" [disabled]="saving()" (click)="submit()">
+    {{ saving() ? 'Enregistrement...' : (editing ? 'Mettre à jour' : 'Créer') }}
+  </button>
+</mat-dialog-actions>

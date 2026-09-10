@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsOptional, IsString, Length } from 'class-validator';
+import { IsEmail, IsOptional, IsString, IsUUID, Length } from 'class-validator';
 
 export class CreateContactDto {
   @ApiProperty({ example: 'Fatou Diop' })
@@ -33,6 +33,6 @@ export class CreateContactDto {
 
   @ApiProperty({ example: 'a1b2c3d4-...', required: false })
   @IsOptional()
-  @IsString()
+  @IsUUID()
   terrainId?: string;
 }

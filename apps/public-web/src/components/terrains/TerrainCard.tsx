@@ -32,9 +32,9 @@ export function TerrainCard({
           {terrain.status}
         </span>
       </div>
-      <div className="p-3.5">
+      <div className="terrain-card-body p-3.5">
         <div className="terrain-card-reference">
-          <p>{terrain.id}</p>
+          <p>{terrain.referenceInterne ?? terrain.id}</p>
           {terrain.misEnAvant && (
             <span className="terrain-card-featured">Mis en avant</span>
           )}
@@ -64,7 +64,7 @@ export function TerrainCard({
           className="card-action mt-3 w-full rounded-lg px-3 py-2 text-[0.78rem] font-bold"
           onClick={() => onSelect(terrain)}
         >
-          Voir la fiche <ArrowRight size={14} className="ml-1 inline" />
+          Découvrir ce terrain <ArrowRight size={14} className="ml-1 inline" />
         </button>
       </div>
     </article>

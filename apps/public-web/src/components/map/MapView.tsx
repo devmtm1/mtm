@@ -22,10 +22,19 @@ type MapViewProps = {
 
 const DEFAULT_CENTER: [number, number] = [14.7167, -17.4677];
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 function createPinIcon(color: string): L.DivIcon {
   return L.divIcon({
     className: 'mtm-map-pin',
-    html: `<span class="mtm-map-pin-dot" style="--pin-color:${color}"></span>`,
+    html: `<span class="mtm-map-pin-dot" style="--pin-color:${escapeHtml(color)}"></span>`,
     iconSize: [22, 22],
     iconAnchor: [11, 11],
     popupAnchor: [0, -12],

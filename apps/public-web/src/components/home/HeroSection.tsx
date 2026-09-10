@@ -77,7 +77,7 @@ export function HeroSection({
           </div>
         </div>
       </div>
-      <div className="absolute bottom-0 left-0 right-0 z-10 h-24 bg-gradient-to-t from-[#f7f8fa] to-transparent" />
+      <div className="hero-bottom-fade absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#f7f8fa] to-transparent" />
     </section>
   );
 }

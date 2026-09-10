@@ -10,6 +10,8 @@ import {
   LucideLandPlot,
   LucideScrollText,
   LucideUserSearch,
+  LucideReceipt,
+  LucideIdCard,
 } from '@lucide/angular';
 
 /**
@@ -77,10 +79,22 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         permission: 'mandats:consulter',
       },
       {
+        label: 'Propriétaires',
+        route: '/proprietaires',
+        icon: LucideIdCard,
+        permission: 'proprietaires:consulter',
+      },
+      {
         label: 'Prospects',
         route: '/crm/prospects',
         icon: LucideUserSearch,
         permission: 'crm:consulter',
+      },
+      {
+        label: 'Ventes',
+        route: '/ventes',
+        icon: LucideReceipt,
+        permission: 'ventes:consulter',
       },
     ],
   },
@@ -98,6 +112,12 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         route: '/content',
         icon: LucideFileText,
         permission: 'settings:consulter',
+      },
+      {
+        label: 'Réalisations & projets',
+        route: '/content/showcase',
+        icon: LucideFileText,
+        permission: 'content:consulter',
       },
     ],
   },

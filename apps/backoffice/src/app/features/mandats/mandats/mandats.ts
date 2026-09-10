@@ -115,4 +115,9 @@ export class Mandats implements OnInit {
     const num = typeof value === 'string' ? Number(value) : value;
     return `${Number(num).toLocaleString('fr-FR')} FCFA`;
   }
+
+  protected getMandatStatusClass(statut: string | null | undefined): string {
+    const normalized = (statut ?? '').trim().toLowerCase().replace(/\s+/g, '-');
+    return normalized ? `status-${normalized}` : 'status-default';
+  }
 }

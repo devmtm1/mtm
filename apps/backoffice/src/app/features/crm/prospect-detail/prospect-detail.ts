@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -8,6 +9,8 @@ import { LucideArrowLeft, LucidePencil, LucidePlus, LucideClock } from '@lucide/
 import { CrmApiService } from '../../../core/services/api/crm-api.service';
 import { SessionService } from '../../../core/services/session.service';
 import { ActiviteDialog } from '../activite-dialog/activite-dialog';
+import { ClientAccountDialog } from '../client-account-dialog/client-account-dialog';
+import { SalesDossierDialog } from '../sales-dossier-dialog/sales-dossier-dialog';
 import type { ProspectDetail as ProspectDetailModel } from '../../../core/models/prospect.model';
 
 @Component({
@@ -29,6 +32,8 @@ export class ProspectDetail implements OnInit {
   protected prospect: ProspectDetailModel | null = null;
   protected readonly loading = signal(true);
   protected readonly canModify = this.session.hasPermission('crm:modifier');
+  protected readonly canCreateClient = this.session.hasPermission('clients:creer');
+  protected readonly canCreateSale = this.session.hasPermission('ventes:creer');
   protected readonly pipelineStages = signal<string[]>([]);
   protected readonly transitioning = signal(false);
 
@@ -51,6 +56,7 @@ export class ProspectDetail implements OnInit {
   }
 
   protected goBack(): void { this.router.navigate(['/crm/prospects']); }
+  protected openVue360(): void { if (this.prospect) this.router.navigate(['/crm/prospects', this.prospect.id, '360']); }
   protected edit(): void { if (this.prospect) this.router.navigate(['/crm/prospects', this.prospect.id, 'modifier']); }
 
   protected formatMoney(value: number | string | null | undefined): string {
@@ -77,6 +83,35 @@ export class ProspectDetail implements OnInit {
     });
   }
 
+  protected openCreateClientAccount(): void {
+    if (!this.prospect?.email || !this.canCreateClient) return;
+    this.dialog.open(ClientAccountDialog, {
+      width: '520px',
+      maxWidth: 'calc(100vw - 32px)',
+      data: {
+        prospectId: this.prospect.id,
+        email: this.prospect.email,
+        name: `${this.prospect.prenom ?? ''} ${this.prospect.nom}`.trim(),
+      },
+    });
+  }
+
+  protected openCreateSalesDossier(): void {
+    if (!this.prospect || !this.canCreateSale) return;
+    this.dialog.open(SalesDossierDialog, {
+      width: '520px',
+      maxWidth: 'calc(100vw - 32px)',
+      data: {
+        prospectId: this.prospect.id,
+        prospectName: `${this.prospect.prenom ?? ''} ${this.prospect.nom}`.trim(),
+      },
+    }).afterClosed().subscribe((created) => {
+      if (!created || !this.prospect) return;
+      this.snackBar.open('Dossier de vente créé', 'Fermer', { duration: 3000 });
+      this.loadProspect(this.prospect.id);
+    });
+  }
+
   protected openEditActivite(activiteId: string): void {
     if (!this.prospect) return;
     const activite = this.prospect.activites.find((a) => a.id === activiteId);
@@ -92,15 +127,25 @@ export class ProspectDetail implements OnInit {
 
   protected transitionPipeline(stage: string): void {
     if (!this.prospect || this.transitioning()) return;
+    let justification: string | undefined;
+    if (stage === 'perdu') {
+      const input = window.prompt('Justification obligatoire pour marquer ce prospect comme perdu :')?.trim();
+      if (!input || input.length < 3) {
+        if (input !== null) this.snackBar.open('Justification obligatoire (3 caractères minimum)', 'Fermer', { duration: 4000 });
+        return;
+      }
+      justification = input;
+    }
     this.transitioning.set(true);
-    this.api.transitionPipeline(this.prospect.id, stage).subscribe({
+    this.api.transitionPipeline(this.prospect.id, stage, justification).subscribe({
       next: () => {
         this.snackBar.open('Pipeline mis à jour', 'Fermer', { duration: 3000 });
         this.loadProspect(this.prospect!.id);
         this.transitioning.set(false);
       },
-      error: (err) => {
-        this.snackBar.open(err?.message ?? 'Erreur', 'Fermer', { duration: 4000 });
+      error: (err: HttpErrorResponse) => {
+        const message = err.error?.message;
+        this.snackBar.open(Array.isArray(message) ? message.join(' ') : (typeof message === 'string' && message.trim() ? message : 'Erreur'), 'Fermer', { duration: 4000 });
         this.transitioning.set(false);
       },
     });
@@ -109,9 +154,13 @@ export class ProspectDetail implements OnInit {
   protected uploadDocument(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file || !this.prospect) return;
-    this.api.addDocument(this.prospect.id, file, 'document').subscribe({
+    this.api.addDocument(this.prospect.id, file, 'autre').subscribe({
       next: () => { this.snackBar.open('Document ajouté', 'Fermer', { duration: 3000 }); this.loadProspect(this.prospect!.id); },
-      error: () => { this.snackBar.open('Impossible d’ajouter le document', 'Fermer', { duration: 4000 }); },
+      error: (error: { error?: { message?: string | string[] }; message?: string }) => {
+        const message = error.error?.message ?? error.message;
+        const detail = Array.isArray(message) ? message.join(', ') : message;
+        this.snackBar.open(detail || 'Impossible d’ajouter le document', 'Fermer', { duration: 5000 });
+      },
     });
   }
 

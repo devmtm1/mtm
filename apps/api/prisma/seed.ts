@@ -29,6 +29,8 @@ const PHASE_1_RESOURCES = [
   'content',
   'contact',
   'proprietaires',
+  'ventes',
+  'clients',
 ] as const;
 
 // Rôles initiaux recommandés par la section 24 du CDC.
@@ -43,6 +45,7 @@ const INITIAL_ROLES = [
   { name: 'responsable_demarches', description: 'Responsable démarches administratives' },
   { name: 'responsable_construction', description: 'Responsable construction' },
   { name: 'rh', description: 'Ressources humaines' },
+  { name: 'client', description: 'Client MTM Immobilier' },
 ];
 
 async function main(): Promise<void> {
@@ -62,6 +65,12 @@ async function main(): Promise<void> {
       resource: 'terrains',
       action: 'consulter_financier',
       description: "Consulter les prix d'acquisition, marges et commissions des terrains",
+    },
+    {
+      name: 'ventes:consulter_financier',
+      resource: 'ventes',
+      action: 'consulter_financier',
+      description: 'Consulter les montants, commissions et soldes des dossiers de vente',
     },
   ];
   for (const resource of PHASE_1_RESOURCES) {
@@ -129,6 +138,19 @@ async function main(): Promise<void> {
   }
   console.log('  Rôle administrateur : toutes permissions attribuées');
 
+  // --- Permissions financières ventes par rôle ---
+  const ventesFinancialPermission = await prisma.permission.findUniqueOrThrow({
+    where: { name: 'ventes:consulter_financier' },
+  });
+  for (const roleName of ['direction', 'comptable', 'manager', 'responsable_commercial']) {
+    const role = await prisma.role.findUniqueOrThrow({ where: { name: roleName } });
+    await prisma.rolePermission.upsert({
+      where: { roleId_permissionId: { roleId: role.id, permissionId: ventesFinancialPermission.id } },
+      update: {},
+      create: { roleId: role.id, permissionId: ventesFinancialPermission.id },
+    });
+  }
+
   // --- Permissions financières terrains par rôle ---
   const financialPermission = await prisma.permission.findUniqueOrThrow({
     where: { name: 'terrains:consulter_financier' },
@@ -169,6 +191,76 @@ async function main(): Promise<void> {
     });
   }
   console.log('  Rôle commercial : permissions CRM limitées attribuées');
+
+  // --- Permissions ventes J1.6 par rôle ---
+  const salesPermissionsByRole: Record<string, string[]> = {
+    commercial: [
+      'ventes:consulter',
+      'ventes:creer',
+      'ventes:modifier',
+      'clients:creer',
+    ],
+    responsable_commercial: [
+      'ventes:consulter',
+      'ventes:creer',
+      'ventes:modifier',
+      'ventes:valider',
+      'ventes:exporter',
+      'ventes:publier',
+      'clients:creer',
+    ],
+    manager: [
+      'ventes:consulter',
+      'ventes:creer',
+      'ventes:modifier',
+      'ventes:valider',
+      'ventes:exporter',
+      'ventes:publier',
+      'clients:creer',
+    ],
+    comptable: [
+      'ventes:consulter',
+      'ventes:modifier',
+      'ventes:valider',
+      'ventes:payer',
+      'ventes:exporter',
+    ],
+    direction: [
+      'ventes:consulter',
+      'ventes:creer',
+      'ventes:modifier',
+      'ventes:valider',
+      'ventes:payer',
+      'ventes:exporter',
+      'ventes:administrer',
+      'ventes:publier',
+      'clients:creer',
+    ],
+  };
+  for (const [roleName, permissionNames] of Object.entries(salesPermissionsByRole)) {
+    const role = await prisma.role.findUniqueOrThrow({ where: { name: roleName } });
+    for (const permissionName of permissionNames) {
+      const permission = await prisma.permission.findUniqueOrThrow({
+        where: { name: permissionName },
+      });
+      await prisma.rolePermission.upsert({
+        where: { roleId_permissionId: { roleId: role.id, permissionId: permission.id } },
+        update: {},
+        create: { roleId: role.id, permissionId: permission.id },
+      });
+    }
+  }
+  console.log('  Permissions ventes J1.6 attribuées');
+
+  const clientRole = await prisma.role.findUniqueOrThrow({ where: { name: 'client' } });
+  for (const permissionName of ['clients:consulter']) {
+    const permission = await prisma.permission.findUniqueOrThrow({ where: { name: permissionName } });
+    await prisma.rolePermission.upsert({
+      where: { roleId_permissionId: { roleId: clientRole.id, permissionId: permission.id } },
+      update: {},
+      create: { roleId: clientRole.id, permissionId: permission.id },
+    });
+  }
 
   // Les propriétaires sont nécessaires aux parcours terrains et mandats.
   // Les rôles commerciaux peuvent les consulter et en créer ; la gestion
@@ -419,6 +511,120 @@ async function main(): Promise<void> {
       ],
       description: 'Types de documents CRM disponibles',
       isSensitive: false,
+    },
+  });
+
+  // --- Statuts de vente configurables (J1.6) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'ventes.statuts' },
+    update: {},
+    create: {
+      key: 'ventes.statuts',
+      value: [
+        'en_cours',
+        'pre_reserve',
+        'reserve',
+        'paiement_partiel',
+        'solde',
+        'annule',
+      ],
+      description: 'Statuts configurables des dossiers de vente',
+      isSensitive: false,
+    },
+  });
+
+  // --- Transitions autorisées entre statuts de vente (J1.6) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'ventes.transitions' },
+    update: {},
+    create: {
+      key: 'ventes.transitions',
+      value: {
+        en_cours: ['pre_reserve', 'reserve', 'annule'],
+        pre_reserve: ['reserve', 'en_cours', 'annule'],
+        reserve: ['paiement_partiel', 'en_cours', 'annule'],
+        paiement_partiel: ['solde', 'annule'],
+        solde: [],
+        annule: ['en_cours'],
+      },
+      description: 'Matrice des transitions autorisées entre statuts de vente',
+      isSensitive: false,
+    },
+  });
+
+  // --- Modes de paiement autorisés (J1.6) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'paiements.modesAutorises' },
+    update: {},
+    create: {
+      key: 'paiements.modesAutorises',
+      value: ['especes', 'virement', 'en_ligne'],
+      description: 'Modes de paiement autorisés pour les ventes',
+      isSensitive: false,
+    },
+  });
+
+  // --- Types de documents de vente configurables (J1.6) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'ventes.documentTypes' },
+    update: {},
+    create: {
+      key: 'ventes.documentTypes',
+      value: [
+        'bon_reservation',
+        'recu',
+        'facture',
+        'contrat',
+        'etat_paiement',
+        'justificatif',
+        'autre',
+      ],
+      description: 'Types de documents générables pour les ventes',
+      isSensitive: false,
+    },
+  });
+
+  // --- Nombre d\'échéances par défaut pour les ventes (J1.6) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'ventes.echeancesDefaut' },
+    update: {},
+    create: {
+      key: 'ventes.echeancesDefaut',
+      value: 3,
+      description: 'Nombre d\'échéances par défaut lors de la création d\'un dossier de vente',
+      isSensitive: false,
+    },
+  });
+
+  await prisma.systemSetting.upsert({
+    where: { key: 'ventes.reglesCommissions' },
+    update: {},
+    create: {
+      key: 'ventes.reglesCommissions',
+      value: [
+        {
+          id: 'commission-standard',
+          typeRegle: 'pourcentage',
+          taux: 2.5,
+          description: 'Commission standard : 2,5 % du prix de vente',
+        },
+        {
+          id: 'commission-forfait',
+          typeRegle: 'montant_fixe',
+          montantFixe: 500000,
+          description: 'Commission forfaitaire : 500 000 FCFA',
+        },
+        {
+          id: 'commission-palier',
+          typeRegle: 'pourcentage',
+          taux: 2,
+          palier: 10000000,
+          bonus: 200000,
+          description: 'Commission avec palier : 2 % + 200 000 FCFA bonus au-delà de 10 M FCFA',
+        },
+      ],
+      description: 'Règles de commission configurables par l’administrateur',
+      isSensitive: true,
     },
   });
 

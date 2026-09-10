@@ -110,6 +110,48 @@ Avec Docker Compose, le service `audit-retention` exécute cette purge chaque
 jour par défaut. L'intervalle se règle avec
 `AUDIT_RETENTION_INTERVAL_SECONDS`.
 
+## Rétention des documents (GED)
+
+Contrairement aux journaux d'audit, les documents de la GED (titres
+fonciers, contrats, quittances, justificatifs, preuves de signature...)
+peuvent avoir une valeur légale ou probatoire de longue durée (sections 17
+et 28 du cahier des charges). **La purge automatique est donc désactivée
+par défaut** — aucun document n'est supprimé tant que MTM (et un conseil
+juridique si nécessaire) n'a pas validé explicitement une durée de
+conservation et la liste des types de documents concernés.
+
+Pour activer une purge automatique sur certains types de documents,
+définir dans `.env` :
+
+```bash
+DOCUMENT_RETENTION_DAYS=3650
+DOCUMENT_RETENTION_PURGEABLE_TYPES=DocumentVente:justificatif,MandatDocument:correspondance
+```
+
+`DOCUMENT_RETENTION_PURGEABLE_TYPES` est une liste `Modèle:type` séparée
+par des virgules (`*` pour "tous les types" d'un modèle). Modèles valides :
+`TerrainDocument`, `MandatDocument`, `DocumentVente`, `DocumentCrm`. Tant
+que cette variable est vide, ou que `DOCUMENT_RETENTION_DAYS` n'est pas
+défini, le script ne fait rien.
+
+Toujours simuler avant la première exécution réelle :
+
+```bash
+cd apps/api
+DRY_RUN=true npm run documents:purge
+npm run documents:purge
+```
+
+Chaque document purgé est d'abord tracé dans le journal d'audit
+(`action: document.purge`, avec type, référence de stockage et date de
+création), puis supprimé de la base et du stockage Cloudinary associé —
+conformément à l'exigence de traçabilité de la rétention (section 27 du
+CDC).
+
+Avec Docker Compose, le service `document-retention` exécute cette purge
+selon `DOCUMENT_RETENTION_INTERVAL_SECONDS` (24 heures par défaut), mais
+reste sans effet tant que les variables ci-dessus ne sont pas définies.
+
 ## Récupération de compte
 
 Les endpoints `POST /api/auth/password-reset/request` et

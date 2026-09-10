@@ -5,7 +5,7 @@ import { MapView, type MapMarker } from '../map/MapView';
 type TerrainDetailsPageProps = {
   terrain: Terrain;
   onBack: () => void;
-  onContact: () => void;
+  onContact: (subject?: string) => void;
 };
 
 export function TerrainDetailsPage({
@@ -15,6 +15,15 @@ export function TerrainDetailsPage({
 }: Readonly<TerrainDetailsPageProps>) {
   const gallery = terrain.media?.filter((media) => media.secureUrl && media.type !== 'video') ?? [];
   const mainImage = gallery[0]?.secureUrl ?? terrain.image;
+
+  function escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
   const terrainLat = Number(terrain.latitude);
   const terrainLng = Number(terrain.longitude);
   const hasCoords = Number.isFinite(terrainLat) && Number.isFinite(terrainLng);
@@ -28,7 +37,7 @@ export function TerrainDetailsPage({
       lng: terrainLng,
       title: terrain.name,
       color: '#e2603f',
-      popupHtml: `<strong>${terrain.name}</strong><br/>${terrain.location}`,
+      popupHtml: `<strong>${escapeHtml(terrain.name)}</strong><br/>${escapeHtml(terrain.location)}`,
     });
     routePoints.push([terrainLat, terrainLng]);
   }
@@ -80,15 +89,15 @@ export function TerrainDetailsPage({
             )}
           </div>
           <div className="detail-intro">
-            <p className="eyebrow">Référence {terrain.id}</p>
+            <p className="eyebrow">Référence {terrain.referenceInterne ?? terrain.id}</p>
             <h1>{terrain.name}</h1>
             <p className="detail-location"><MapPin size={17} /> {terrain.location}</p>
             <p className="detail-price">{terrain.price}</p>
             <p className="detail-description">{terrain.detail ?? 'Une opportunité foncière sélectionnée par MTM Immobilier, avec un accompagnement transparent à chaque étape de votre projet.'}</p>
             <div className="detail-actions">
-              <button type="button" className="detail-primary-action" onClick={onContact}>Demander des informations <ArrowRight size={16} /></button>
-              <button type="button" className="detail-secondary-action" onClick={onContact}>Planifier une visite</button>
-              <button type="button" className="detail-tertiary-action" onClick={onContact}>Réserver <ArrowRight size={16} /></button>
+              <button type="button" className="detail-primary-action" onClick={() => onContact('Demander une visite')}>Demander des informations <ArrowRight size={16} /></button>
+              <button type="button" className="detail-secondary-action" onClick={() => onContact('Demander une visite')}>Planifier une visite</button>
+              <button type="button" className="detail-tertiary-action" onClick={() => onContact('Acquérir un terrain')}>Réserver <ArrowRight size={16} /></button>
             </div>
             <div className="detail-trust"><ShieldCheck size={19} /><span>Informations publiques vérifiées par MTM Immobilier</span></div>
           </div>

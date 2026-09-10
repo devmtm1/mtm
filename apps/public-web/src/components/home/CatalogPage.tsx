@@ -16,8 +16,17 @@ function toMapMarkers(terrains: Terrain[]): MapMarker[] {
       lat: Number(terrain.latitude),
       lng: Number(terrain.longitude),
       title: terrain.name,
-      popupHtml: `<strong>${terrain.name}</strong><br/>${terrain.location}<br/><span class="mtm-map-popup-price">${terrain.price}</span>`,
+      popupHtml: `<strong>${escapeHtml(terrain.name)}</strong><br/>${escapeHtml(terrain.location)}<br/><span class="mtm-map-popup-price">${escapeHtml(terrain.price)}</span>`,
     }));
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 type CatalogPageProps = {
@@ -42,6 +51,8 @@ type CatalogPageProps = {
   onSelectTerrain: (terrain: Terrain) => void;
   onContact: () => void;
   onBack: () => void;
+  loading?: boolean;
+  error?: string | null;
 };
 
 export function CatalogPage({
@@ -53,9 +64,19 @@ export function CatalogPage({
   onLoadMore,
   onSelectTerrain,
   onBack,
+  loading = false,
+  error = null,
 }: Readonly<CatalogPageProps>) {
   return (
     <main className="catalog-page">
+      {loading && (
+        <div className="mx-auto max-w-6xl px-5 py-8 text-sm text-slate-500">
+          Chargement du catalogue…
+        </div>
+      )}
+      {error && !loading && (
+        <div className="mx-auto max-w-6xl px-5 py-4 text-sm text-red-700">{error}</div>
+      )}
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 pt-28 lg:px-10 lg:pt-32">
         <button
           type="button"

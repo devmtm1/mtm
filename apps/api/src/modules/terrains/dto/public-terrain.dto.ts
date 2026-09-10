@@ -9,6 +9,14 @@ export interface PublicTerrainMedia {
   createdAt: string;
 }
 
+export interface PublicPointInteret {
+  nom: string;
+  type?: string;
+  distanceKm?: number;
+  latitude?: number;
+  longitude?: number;
+}
+
 export interface PublicTerrainDocument {
   id: string;
   type: string;
@@ -41,7 +49,7 @@ export interface PublicTerrainResponse {
   voisinage: string | null;
   vocation: string | null;
   proximiteAxes: string | null;
-  pointsInteret: Record<string, unknown> | null;
+  pointsInteret: PublicPointInteret[] | null;
   medias: PublicTerrainMedia[];
   documents: PublicTerrainDocument[];
   createdAt: string;

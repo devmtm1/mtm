@@ -9,6 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { Public } from '../auth/decorators/public.decorator';
 import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
 import { AuditService } from '../audit/audit.service';
@@ -18,7 +19,7 @@ import { ContactService } from './contact.service';
 import { CreateContactDto } from './dto/create-contact.dto';
 
 @ApiTags('contacts')
-@Controller('contacts')
+@Controller(['contacts', 'contact'])
 export class ContactController {
   constructor(
     private readonly contacts: ContactService,
@@ -26,6 +27,13 @@ export class ContactController {
   ) {}
 
   @Public()
+  @Throttle({
+    default: {
+      limit: Number.parseInt(process.env.CONTACT_RATE_LIMIT_MAX ?? '5', 10),
+      ttl:
+        Number.parseInt(process.env.CONTACT_RATE_LIMIT_TTL ?? '60', 10) * 1000,
+    },
+  })
   @Post()
   async create(@Body() dto: CreateContactDto) {
     const contact = await this.contacts.create(dto);

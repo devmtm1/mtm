@@ -21,6 +21,6 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": false
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "prisma/seed.ts"],
+  "include": ["src/**/*.ts", "test/**/*.ts", "prisma/seed.ts", "scripts/purge-documents.ts"],
   "exclude": ["node_modules", "dist"]
 }

@@ -102,6 +102,14 @@ export const routes: Routes = [
           import('./features/content/content-blocks').then((m) => m.ContentBlocks),
       },
       {
+        path: 'content/showcase',
+        canActivate: [permissionsGuard(['content:consulter'])],
+        loadComponent: () =>
+          import('./features/content/showcase-items/showcase-items').then(
+            (m) => m.ShowcaseItems,
+          ),
+      },
+      {
         path: 'mandats/nouveau',
         canActivate: [permissionsGuard(['mandats:creer'])],
         loadComponent: () =>
@@ -134,12 +142,50 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'proprietaires',
+        canActivate: [permissionsGuard(['proprietaires:consulter'])],
+        loadComponent: () =>
+          import('./features/proprietaires/proprietaires').then(
+            (m) => m.Proprietaires,
+          ),
+      },
+      {
+        path: 'proprietaires/:id',
+        canActivate: [permissionsGuard(['proprietaires:consulter'])],
+        loadComponent: () =>
+          import('./features/proprietaires/proprietaire-detail/proprietaire-detail').then(
+            (m) => m.ProprietaireDetail,
+          ),
+      },
+      {
         path: 'crm/prospects/nouveau',
         canActivate: [permissionsGuard(['crm:creer'])],
         loadComponent: () =>
           import('./features/crm/prospect-form/prospect-form').then(
             (m) => m.ProspectForm,
           ),
+      },
+      {
+        path: 'ventes/:id',
+        canActivate: [permissionsGuard(['ventes:consulter'])],
+        loadComponent: () =>
+          import('./features/ventes/vente-detail/vente-detail').then(
+            (m) => m.VenteDetailPage,
+          ),
+      },
+      {
+        path: 'ventes/documents',
+        canActivate: [permissionsGuard(['ventes:consulter'])],
+        loadComponent: () =>
+          import('./features/ventes/documents/documents').then(
+            (m) => m.VenteDocumentsPage,
+          ),
+      },
+      {
+        path: 'ventes',
+        canActivate: [permissionsGuard(['ventes:consulter'])],
+        loadComponent: () =>
+          import('./features/ventes/ventes').then((m) => m.Ventes),
       },
       {
         path: 'crm/prospects/:id/modifier',

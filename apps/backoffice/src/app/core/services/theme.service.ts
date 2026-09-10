@@ -8,7 +8,7 @@ const THEME_STORAGE_KEY = 'mtm.theme';
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
   private readonly document = inject(DOCUMENT);
-  private readonly mode = signal<ThemeMode>(this.readInitialMode());
+  private readonly mode = signal<ThemeMode>('light');
 
   readonly isDark = computed(() => this.mode() === 'dark');
 
@@ -25,17 +25,7 @@ export class ThemeService {
   }
 
   private readInitialMode(): ThemeMode {
-    try {
-      const storedMode = localStorage.getItem(THEME_STORAGE_KEY);
-      if (storedMode === 'light' || storedMode === 'dark') return storedMode;
-    } catch {
-      // Le thème système reste la valeur de repli si le stockage est indisponible.
-    }
-
-    const prefersDark = this.document.defaultView?.matchMedia?.('(prefers-color-scheme: dark)').matches;
-    return prefersDark
-      ? 'dark'
-      : 'light';
+    return 'light';
   }
 
   private persistMode(mode: ThemeMode): void {

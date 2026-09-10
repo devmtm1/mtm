@@ -1,0 +1,42 @@
+<div class="proprietaires-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">J1.4 · Portefeuille</p>
+      <h1 class="page-header__title">Propriétaires</h1>
+      <p class="page-header__subtitle">Portefeuille des propriétaires fonciers rattachés à MTM Immobilier.</p>
+    </div>
+    @if (canCreate()) {
+      <button mat-flat-button color="primary" type="button" (click)="openCreate()">
+        <svg lucidePlus aria-hidden="true"></svg><span>Nouveau propriétaire</span>
+      </button>
+    }
+  </header>
+
+  <div class="proprietaires-toolbar">
+    <mat-form-field appearance="outline" class="proprietaires-search">
+      <mat-label>Rechercher</mat-label>
+      <svg matPrefix lucideSearch aria-hidden="true"></svg>
+      <input matInput [value]="searchTerm()" (input)="searchTerm.set($any($event.target).value)" placeholder="Nom, email, téléphone...">
+    </mat-form-field>
+    <p class="proprietaires-count">{{ filtered().length }} résultat{{ filtered().length > 1 ? 's' : '' }}</p>
+  </div>
+
+  @if (loading()) {
+    <div class="page-card"><p>Chargement...</p></div>
+  } @else if (!filtered().length) {
+    <div class="page-card"><p>Aucun propriétaire trouvé.</p></div>
+  } @else {
+    <div class="proprietaires-grid">
+      @for (proprietaire of filtered(); track proprietaire.id) {
+        <article class="proprietaire-card" role="button" tabindex="0" (click)="openDetail(proprietaire.id)" (keyup.enter)="openDetail(proprietaire.id)">
+          <span class="proprietaire-card__icon"><svg lucideIdCard aria-hidden="true"></svg></span>
+          <div class="proprietaire-card__body">
+            <h3>{{ proprietaire.firstName }} {{ proprietaire.lastName }}</h3>
+            <p>{{ proprietaire.email || 'Email non renseigné' }}</p>
+            <p>{{ proprietaire.phone || 'Téléphone non renseigné' }}</p>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</div>

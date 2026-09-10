@@ -2017,3 +2017,111 @@ textarea:focus-visible {
 .detail-map-link:hover {
   gap: 10px;
 }
+
+/* ---------- Premium public-web pass ---------- */
+.site-header {
+  background: rgba(30, 18, 45, 0.92);
+  box-shadow: 0 12px 34px rgba(30, 18, 45, 0.18);
+}
+.hero-overlay {
+  background:
+    linear-gradient(90deg, rgba(30, 18, 45, 0.92) 0%, rgba(30, 18, 45, 0.7) 46%, rgba(30, 18, 45, 0.28) 100%),
+    linear-gradient(180deg, rgba(30, 18, 45, 0.12) 35%, rgba(30, 18, 45, 0.76) 100%);
+}
+.hero-bottom-fade {
+  z-index: 1;
+  pointer-events: none;
+}
+.filter-panel {
+  border-color: rgba(75, 29, 115, 0.14);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 18px 42px rgba(50, 18, 79, 0.1);
+}
+.filter-panel-icon {
+  border-radius: 12px;
+  color: #fff;
+  background: var(--primary);
+}
+.field {
+  min-height: 58px;
+  border-radius: 11px;
+  background: #fcfbfd;
+}
+.filter-submit {
+  border-radius: 11px;
+  background: var(--accent);
+}
+.filter-submit:hover {
+  background: var(--accent-dark);
+}
+.catalog-heading-copy {
+  max-width: 520px;
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+.terrain-card {
+  border-color: rgba(75, 29, 115, 0.11);
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(50, 18, 79, 0.07);
+}
+.terrain-card:hover {
+  border-color: rgba(75, 29, 115, 0.25);
+  box-shadow: 0 20px 42px rgba(50, 18, 79, 0.13);
+  transform: translateY(-5px);
+}
+.terrain-card-media {
+  aspect-ratio: 1.55;
+}
+.terrain-card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+.terrain-card-body .card-action {
+  margin-top: auto;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.card-action {
+  border-color: rgba(75, 29, 115, 0.16);
+}
+.detail-hero-image {
+  border-radius: 18px;
+  box-shadow: 0 24px 48px rgba(50, 18, 79, 0.13);
+}
+.detail-status {
+  left: 20px;
+  bottom: 20px;
+  background: rgba(30, 18, 45, 0.88);
+}
+.detail-intro h1 {
+  letter-spacing: -0.035em;
+}
+.detail-price {
+  display: inline-block;
+  border-radius: 10px;
+  padding: 8px 12px;
+  background: var(--soft);
+}
+.detail-panel,
+.detail-map-section {
+  border-top-color: rgba(75, 29, 115, 0.14);
+}
+.detail-map-section .mtm-leaflet-map {
+  margin-top: 22px;
+}
+@media (max-width: 640px) {
+  .hero-bottom-fade {
+    height: 56px;
+  }
+  .filter-panel {
+    border-radius: 15px;
+    padding: 16px;
+  }
+  .catalog-heading-copy {
+    font-size: 0.84rem;
+  }
+}

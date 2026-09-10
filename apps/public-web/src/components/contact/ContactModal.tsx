@@ -2,16 +2,22 @@ import { ArrowRight, X } from 'lucide-react';
 import type { SyntheticEvent } from 'react';
 import { useContactForm } from '../../hooks/useContactForm';
 
-type ContactModalProps = { terrainId: string | null; onClose: () => void };
+type ContactModalProps = {
+  terrainId: string | null;
+  onClose: () => void;
+  defaultSubject?: string | null;
+};
 type ContactForm = ReturnType<typeof useContactForm>;
 
 export function ContactModal({
   terrainId,
   onClose,
+  defaultSubject,
 }: Readonly<ContactModalProps>) {
   const formState: ContactForm = useContactForm(() =>
     setTimeout(onClose, 1500),
   );
+  const initialSubject = defaultSubject ?? (terrainId ? 'Acquérir un terrain' : '');
   function handleSubmit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -20,14 +26,16 @@ export function ContactModal({
       const value = values.get(name);
       return typeof value === 'string' ? value : '';
     };
+    const subject = getText('sujet');
     void formState
       .submit({
         nom: getText('nom'),
         email: getText('email'),
         telephone: getText('telephone') || undefined,
-        sujet: getText('sujet') || undefined,
+        sujet: subject || undefined,
         message: getText('message') || undefined,
         terrainId: getText('terrainId') || undefined,
+        reservation: subject === 'Acquérir un terrain' && Boolean(terrainId),
       })
       .then((success) => {
         if (success) form.reset();
@@ -62,11 +70,12 @@ export function ContactModal({
             name="email"
             required
             type="email"
+            autoComplete="email"
             placeholder="Adresse e-mail"
           />
           <input className="input" name="telephone" placeholder="Téléphone" />
           <input type="hidden" name="terrainId" value={terrainId ?? ''} />
-          <select className="input" name="sujet" defaultValue={terrainId ? 'Acquérir un terrain' : ''}>
+          <select className="input" name="sujet" defaultValue={initialSubject}>
             <option value="">Je souhaite...</option>
             <option value="Acquérir un terrain">Acquérir un terrain / Réserver</option>
             <option value="Demander une visite">Demander une visite</option>
@@ -83,7 +92,7 @@ export function ContactModal({
           )}
           {formState.isSuccess && (
             <p className="text-sm text-green-600">
-              Demande envoyée avec succès !
+              Votre demande a été transmise à MTM avec succès.
             </p>
           )}
           <button

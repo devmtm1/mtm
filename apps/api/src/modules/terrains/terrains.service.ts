@@ -12,7 +12,10 @@ import { UpdateTerrainDto } from './dto/update-terrain.dto';
 import { CreateTerrainAssetDto } from './dto/create-terrain-asset.dto';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import { SettingsService } from '../settings/settings.service';
-import type { PublicTerrainResponse } from './dto/public-terrain.dto';
+import type {
+  PublicPointInteret,
+  PublicTerrainResponse,
+} from './dto/public-terrain.dto';
 import { validateUploadedAsset } from '../../common/storage/asset-validation';
 
 const terrainInclude = {
@@ -118,6 +121,7 @@ export class TerrainsService {
         : {}),
       ...(query.region ? { region: query.region } : {}),
       ...(query.commune ? { commune: query.commune } : {}),
+      ...(query.vocation ? { vocation: query.vocation } : {}),
       ...(query.proprietaireId ? { proprietaireId: query.proprietaireId } : {}),
       ...(query.superficieMin !== undefined || query.superficieMax !== undefined
         ? {
@@ -187,6 +191,7 @@ export class TerrainsService {
         : {}),
       ...(query.region ? { region: query.region } : {}),
       ...(query.commune ? { commune: query.commune } : {}),
+      ...(query.vocation ? { vocation: query.vocation } : {}),
       ...(query.superficieMin !== undefined || query.superficieMax !== undefined
         ? {
             superficie: {
@@ -273,6 +278,9 @@ export class TerrainsService {
   ) {
     await this.ensureAccessible(id, user);
     await this.validateStatuses(dto);
+    this.assertJustificationForSensitiveFields(
+      dto as unknown as Record<string, unknown>,
+    );
     const terrainData = { ...dto } as Record<string, unknown>;
     delete terrainData['justification'];
 
@@ -297,10 +305,16 @@ export class TerrainsService {
     id: string,
     field: 'statutJuridique' | 'niveauVerification' | 'statutCommercial',
     value: string,
+    justification: string | undefined,
     user: { roles: string[]; permissions: string[] },
   ) {
     await this.ensureAccessible(id, user);
     await this.validateStatuses({ [field]: value });
+    if (field === 'statutJuridique' && !justification?.trim()) {
+      throw new BadRequestException(
+        'Une justification est obligatoire pour modifier le statut juridique d’un terrain',
+      );
+    }
     const terrain = await this.prisma.terrain.update({
       where: { id },
       data: { [field]: value },
@@ -450,7 +464,7 @@ export class TerrainsService {
       voisinage: string | null;
       vocation: string | null;
       proximiteAxes: string | null;
-      pointsInteret: Record<string, unknown> | null;
+      pointsInteret: PublicPointInteret[] | null;
       medias: Array<{
         id: string;
         type: string;
@@ -591,13 +605,38 @@ export class TerrainsService {
     }
   }
 
+  private static readonly SENSITIVE_FIELDS = [
+    'prixAcquisition',
+    'marge',
+    'commission',
+    'proprietaireId',
+  ] as const;
+
+  private assertJustificationForSensitiveFields(
+    dto: Record<string, unknown>,
+  ): void {
+    const touchesSensitiveField = TerrainsService.SENSITIVE_FIELDS.some(
+      (field) => dto[field] !== undefined,
+    );
+    if (
+      touchesSensitiveField &&
+      !(typeof dto['justification'] === 'string' && dto['justification'].trim())
+    ) {
+      throw new BadRequestException(
+        'Une justification est obligatoire pour modifier un champ sensible (prix d’acquisition, marge, commission, propriétaire)',
+      );
+    }
+  }
+
   private assertCanPublish(
     isPublic: boolean | undefined,
     user: { roles: string[]; permissions: string[] },
   ): void {
     if (
       isPublic &&
-      !user.roles.some((role) => ['administrateur', 'direction'].includes(role)) &&
+      !user.roles.some((role) =>
+        ['administrateur', 'direction'].includes(role),
+      ) &&
       !user.permissions.includes('terrains:publier')
     ) {
       throw new BadRequestException(

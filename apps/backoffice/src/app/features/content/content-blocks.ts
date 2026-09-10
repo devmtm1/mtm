@@ -94,16 +94,67 @@ import { ContentEditorDialog } from './content-editor-dialog';
     </div>
   `,
   styles: [`
-    .page-container { padding: 24px; }
-    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .page-header h1 { font-size: 1.5rem; margin: 0; }
-    .page-header p { color: #647489; font-size: 0.9rem; }
+    .page-container {
+      padding: 24px;
+      background: var(--mtm-card-bg);
+      border: 1px solid var(--mtm-border);
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(31, 41, 55, 0.04);
+    }
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--mtm-border);
+    }
+    .page-header h1 {
+      font-family: var(--mtm-font-display);
+      font-size: 1.5rem;
+      margin: 0;
+      color: var(--mtm-text-dark);
+    }
+    .page-header p {
+      color: var(--mtm-text-muted);
+      font-size: 0.9rem;
+      margin: 6px 0 0;
+    }
     table { border-spacing: 0; }
-    th { padding: 12px 8px; text-align: left; border-bottom: 2px solid #e2e8f0; font-weight: 600; }
-    td { padding: 10px 8px; border-bottom: 1px solid #f1f5f9; }
-    .badge-yes { background: #dcfce7; color: #16a34a; padding: 2px 8px; border-radius: 9999px; font-size: 12px; }
-    .badge-no { background: #fee2e2; color: #dc2626; padding: 2px 8px; border-radius: 9999px; font-size: 12px; }
-    .empty { text-align: center; padding: 40px; color: #94a3b8; }
+    th {
+      padding: 12px 8px;
+      text-align: left;
+      border-bottom: 2px solid var(--mtm-border);
+      font-weight: 600;
+      color: var(--mtm-text-dark);
+    }
+    td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--mtm-border);
+      color: var(--mtm-text-dark);
+    }
+    .badge-yes {
+      background: var(--mtm-success-bg);
+      color: var(--mtm-success);
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-no {
+      background: var(--mtm-red-subtle);
+      color: var(--mtm-red-primary);
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .empty {
+      text-align: center;
+      padding: 40px;
+      color: var(--mtm-text-muted);
+    }
     button[mat-button] { padding: 4px 8px; }
   `],
 })

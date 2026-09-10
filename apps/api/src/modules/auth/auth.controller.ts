@@ -201,7 +201,7 @@ export class AuthController {
       secure: this.configService.get<string>('app.nodeEnv') === 'production',
       sameSite: 'strict',
       maxAge: parseDurationToMs(this.authConfig.jwtRefreshExpiresIn),
-      path: '/api/auth',
+      path: '/api',
     });
   }
 }

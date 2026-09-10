@@ -1,0 +1,26 @@
+<h2 mat-dialog-title>Créer un dossier de vente</h2>
+<mat-dialog-content>
+  <p class="mb-4 text-sm text-gray-600">
+    Prospect concerné : <strong>{{ data.prospectName }}</strong>
+  </p>
+  <form [formGroup]="form" class="grid gap-2">
+    <mat-form-field appearance="outline">
+      <mat-label>Prix de vente prévisionnel (FCFA)</mat-label>
+      <input matInput type="number" min="0" formControlName="prixVente" placeholder="Ex. 25000000">
+      <mat-hint>Facultatif, vous pourrez le compléter plus tard.</mat-hint>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Notes</mat-label>
+      <textarea matInput rows="3" formControlName="notes"></textarea>
+    </mat-form-field>
+  </form>
+  @if (error) {
+    <p class="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">{{ error }}</p>
+  }
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-stroked-button type="button" mat-dialog-close>Annuler</button>
+  <button mat-flat-button color="primary" type="button" (click)="submit()" [disabled]="form.invalid || creating">
+    {{ creating ? 'Création...' : 'Créer le dossier' }}
+  </button>
+</mat-dialog-actions>

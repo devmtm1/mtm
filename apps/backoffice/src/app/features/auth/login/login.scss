@@ -4,7 +4,7 @@
   justify-content: center;
   height: 100vh;
   padding: 16px;
-  background: radial-gradient(circle at 50% 20%, var(--mtm-purple-primary) 0%, var(--mtm-purple-dark) 60%, #0D263A 100%);
+  background: radial-gradient(circle at 50% 20%, var(--mtm-purple-primary) 0%, var(--mtm-purple-dark) 58%, #1A1026 100%);
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
@@ -105,13 +105,13 @@
     margin: 0 0 4px;
     font-size: 1.15rem;
     font-weight: 700;
-    color: #191528;
+    color: var(--mtm-text-dark);
   }
 
   p {
     margin: 0;
     font-size: 0.8rem;
-    color: #64748B;
+    color: var(--mtm-text-muted);
   }
 }
 
@@ -135,22 +135,22 @@
     --mdc-outlined-text-field-outline-color: var(--mtm-border);
     --mdc-outlined-text-field-hover-outline-color: var(--mtm-purple-primary);
     --mdc-outlined-text-field-focus-outline-color: var(--mtm-purple-primary);
-    --mdc-outlined-text-field-input-text-color: #191528;
-    --mdc-outlined-text-field-label-text-color: #64748B;
+    --mdc-outlined-text-field-input-text-color: var(--mtm-text-dark);
+    --mdc-outlined-text-field-label-text-color: var(--mtm-text-muted);
   }
 
   .mat-mdc-input-element {
-    color: #191528 !important;
+    color: var(--mtm-text-dark) !important;
     caret-color: var(--mtm-purple-primary) !important;
 
     &::placeholder {
-      color: #64748B !important;
+      color: var(--mtm-text-muted) !important;
       opacity: 1;
     }
   }
 
   .mdc-floating-label {
-    color: #64748B !important;
+    color: var(--mtm-text-muted) !important;
   }
 
   .mdc-text-field--focused .mdc-floating-label {

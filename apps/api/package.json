@@ -23,7 +23,8 @@
     "prisma:seed": "ts-node prisma/seed.ts",
     "db:seed": "npm run prisma:seed",
     "prisma:studio": "prisma studio",
-    "audit:purge": "./scripts/purge-audit-logs.sh"
+    "audit:purge": "./scripts/purge-audit-logs.sh",
+    "documents:purge": "ts-node scripts/purge-documents.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",

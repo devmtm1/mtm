@@ -30,6 +30,9 @@ export function TerrainCatalogSection({
             <br />
             <i>disponibles.</i>
           </h2>
+          <p className="catalog-heading-copy">
+            Des opportunités sélectionnées pour construire, investir et donner forme à vos projets.
+          </p>
         </div>
         {total > 0 && (
           <p className="self-start text-sm text-slate-500 sm:self-end">

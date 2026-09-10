@@ -1,6 +1,5 @@
 import type { Terrain } from '../../domain/terrains/types';
 import { AboutSection } from './AboutSection';
-import { ClientSection } from './ClientSection';
 import { ContactCtaSection } from './ContactCtaSection';
 import { FeaturedTerrainsSection } from './FeaturedTerrainsSection';
 import { HeroSection } from './HeroSection';
@@ -31,6 +30,8 @@ type HomePageSectionsProps = {
   onContact: () => void;
   onSelectTerrain: (terrain: Terrain) => void;
   onViewAll: () => void;
+  loading?: boolean;
+  error?: string | null;
 };
 
 export function HomePageSections({
@@ -41,9 +42,19 @@ export function HomePageSections({
   onContact,
   onSelectTerrain,
   onViewAll,
+  loading = false,
+  error = null,
 }: Readonly<HomePageSectionsProps>) {
   return (
     <main>
+      {loading && (
+        <div className="mx-auto max-w-6xl px-5 py-8 text-sm text-slate-500">
+          Chargement du catalogue et du contenu public…
+        </div>
+      )}
+      {error && !loading && (
+        <div className="mx-auto max-w-6xl px-5 pb-4 text-sm text-red-700">{error}</div>
+      )}
       <HeroSection contentBlocks={contentBlocks} onContact={onContact} onViewAll={onViewAll} />
       <TerrainSearchSection
         filters={filters}
@@ -61,7 +72,6 @@ export function HomePageSections({
       <TestimonialsSection contentBlocks={contentBlocks} />
       <NewsSection contentBlocks={contentBlocks} />
       <WhyMtmSection onContact={onContact} />
-      <ClientSection onContact={onContact} />
       <ContactCtaSection onContact={onContact} />
     </main>
   );

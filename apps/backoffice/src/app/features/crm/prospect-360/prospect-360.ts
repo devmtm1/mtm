@@ -4,7 +4,7 @@ import { DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { LucidePlus, LucideUpload } from '@lucide/angular';
+import { LucideArrowLeft, LucidePlus, LucideUpload } from '@lucide/angular';
 import { CrmApiService } from '../../../core/services/api/crm-api.service';
 import { SessionService } from '../../../core/services/session.service';
 import { ActiviteDialog } from '../activite-dialog/activite-dialog';
@@ -13,7 +13,7 @@ import type { ProspectDetail, ProspectTimeline } from '../../../core/models/pros
 
 @Component({
   selector: 'app-prospect-360',
-  imports: [DatePipe, MatButtonModule, MatDialogModule, LucidePlus, LucideUpload],
+  imports: [DatePipe, MatButtonModule, MatDialogModule, LucideArrowLeft, LucidePlus, LucideUpload],
   templateUrl: './prospect-360.html',
   styleUrl: './prospect-360.scss',
 })
@@ -47,6 +47,7 @@ export class Prospect360 implements OnInit {
   }
 
   protected goBack(): void { this.router.navigate(['/crm/prospects']); }
+  protected goToDetail(): void { if (this.prospect) this.router.navigate(['/crm/prospects', this.prospect.id]); }
   protected edit(): void { if (this.prospect) this.router.navigate(['/crm/prospects', this.prospect.id, 'modifier']); }
   protected formatMoney(value: number | string | null | undefined): string {
     return value === null || value === undefined ? '—' : `${Number(value).toLocaleString('fr-FR')} FCFA`;

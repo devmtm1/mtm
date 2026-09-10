@@ -167,7 +167,13 @@ export class TerrainsController {
     req: Request,
   ) {
     const before = await this.terrains.findOne(id);
-    const terrain = await this.terrains.updateStatus(id, field, value, user);
+    const terrain = await this.terrains.updateStatus(
+      id,
+      field,
+      value,
+      justification,
+      user,
+    );
     await this.audit.record({
       userId: user.id,
       action: `terrain.${field}.updated`,

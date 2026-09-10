@@ -1,0 +1,122 @@
+.vente-documents-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mtm-purple-primary);
+}
+
+.context-banner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--mtm-border);
+  border-radius: 10px;
+  background: var(--mtm-purple-subtle);
+  font-size: 0.82rem;
+  color: var(--mtm-text-dark);
+}
+
+.context-chip {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--mtm-card-bg);
+  border: 1px solid var(--mtm-border);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--mtm-purple-primary);
+}
+
+.filters-bar {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.filters-bar button[type='submit'] {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.documents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.document-card {
+  height: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--mtm-border);
+  box-shadow: var(--mtm-shadow-card);
+}
+
+.document-card .mat-mdc-card-header {
+  padding: 16px 20px 0;
+}
+
+.document-card .mat-mdc-card-title {
+  font-family: var(--mtm-font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--mtm-text-dark);
+}
+
+.document-card .mat-mdc-card-content {
+  padding: 16px 20px;
+}
+
+.document-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.document-meta span {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--mtm-border);
+  font-size: 0.8rem;
+  color: var(--mtm-text-muted);
+}
+
+.document-meta span:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.document-meta strong {
+  color: var(--mtm-text-dark);
+}
+
+.document-card .mat-mdc-card-actions {
+  padding: 0 20px 20px;
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  border-radius: 12px;
+  border: 1px solid var(--mtm-border);
+  background: var(--mtm-card-bg);
+  box-shadow: var(--mtm-shadow-card);
+  color: var(--mtm-text-muted);
+}

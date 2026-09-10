@@ -11,6 +11,7 @@ export type TerrainDocument = {
 
 export type Terrain = {
   id: string;
+  referenceInterne?: string;
   name: string;
   location: string;
   region: string;

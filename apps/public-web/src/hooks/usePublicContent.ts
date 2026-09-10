@@ -5,19 +5,30 @@ export function usePublicContent() {
   const [contentBlocks, setContentBlocks] = useState<Record<string, string>>(
     {},
   );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
+    setLoading(true);
+    setError(null);
     void getContentBlocks()
       .then((blocks) => {
-        if (active) setContentBlocks(blocks);
+        if (!active) return;
+        setContentBlocks(blocks);
       })
-      .catch(() => undefined);
+      .catch(() => {
+        if (!active) return;
+        setError('Le contenu public n’a pas pu être chargé.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
 
     return () => {
       active = false;
     };
   }, []);
 
-  return contentBlocks;
+  return { contentBlocks, loading, error };
 }

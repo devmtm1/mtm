@@ -37,7 +37,7 @@ export class Terrains implements OnInit {
     protected readonly availableCount = computed(() => this.rowData().filter((terrain) => terrain.statutCommercial === 'Disponible').length);
     protected readonly reservedCount = computed(() => this.rowData().filter((terrain) => terrain.statutCommercial === 'Réservé').length);
     protected readonly soldCount = computed(() => this.rowData().filter((terrain) => terrain.statutCommercial === 'Vendu').length);
-  protected readonly filters = this.formBuilder.nonNullable.group({ search: [''], statutJuridique: [''], niveauVerification: [''], statutCommercial: [''] });
+  protected readonly filters = this.formBuilder.nonNullable.group({ search: [''], statutJuridique: [''], niveauVerification: [''], statutCommercial: [''], vocation: [''] });
 
   protected readonly columnDefs: ColDef<TerrainListItem>[] = [
     { field: 'referenceInterne', headerName: 'Référence', flex: 1, minWidth: 130, sortable: true, filter: true },

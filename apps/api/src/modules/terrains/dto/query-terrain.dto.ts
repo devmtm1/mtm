@@ -19,6 +19,7 @@ export class QueryTerrainDto {
   @IsOptional() @IsBoolean() misEnAvant?: boolean;
   @IsOptional() @IsString() region?: string;
   @IsOptional() @IsString() commune?: string;
+  @IsOptional() @IsString() vocation?: string;
   @IsOptional() @IsUUID() proprietaireId?: string;
   @IsOptional() @Type(() => Number) @IsNumber() @Min(0) superficieMin?: number;
   @IsOptional() @Type(() => Number) @IsNumber() @Min(0) superficieMax?: number;

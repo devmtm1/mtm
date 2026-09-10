@@ -1,0 +1,115 @@
+<div class="dashboard-page">
+  <header class="dashboard-page-header">
+    <div class="dashboard-page-header__content">
+      <span class="dashboard-eyebrow">Tableau de bord</span>
+      <h1>Bonjour {{ user()?.firstName }}</h1>
+      <p>Vue d’ensemble de l’activité commerciale de MTM Immobilier.</p>
+    </div>
+  </header>
+
+  @if (!canViewVentes && !canViewMandats) {
+    <mat-card class="section-card"><p style="padding: 16px;">Utilisez le menu pour accéder à vos modules.</p></mat-card>
+  }
+
+  @if (canViewVentes) {
+    @if (loadingVentes()) {
+      <p class="kpi-subtext">Chargement des indicateurs de vente...</p>
+    } @else if (ventesStats(); as stats) {
+      <section class="kpi-grid" aria-label="Indicateurs commerciaux globaux">
+        <mat-card class="kpi-card">
+          <span class="kpi-icon-wrapper purple"><svg lucideReceipt class="kpi-icon" aria-hidden="true"></svg></span>
+          <div class="kpi-info"><span class="kpi-label">Dossiers de vente</span><span class="kpi-value">{{ stats.totalDossiers }}</span></div>
+        </mat-card>
+        <mat-card class="kpi-card">
+          <span class="kpi-icon-wrapper dark"><svg lucideWallet class="kpi-icon" aria-hidden="true"></svg></span>
+          <div class="kpi-info"><span class="kpi-label">Paiements validés</span><span class="kpi-value">{{ formatMoney(stats.totalPaiementsValides) }}</span></div>
+        </mat-card>
+        <mat-card class="kpi-card">
+          <span class="kpi-icon-wrapper red-outline"><svg lucideCircleDollarSign class="kpi-icon" aria-hidden="true"></svg></span>
+          <div class="kpi-info"><span class="kpi-label">Commissions estimées</span><span class="kpi-value">{{ formatMoney(stats.totalCommissionsEstimees) }}</span></div>
+        </mat-card>
+        <mat-card class="kpi-card">
+          <span class="kpi-icon-wrapper purple"><svg lucideCircleDollarSign class="kpi-icon" aria-hidden="true"></svg></span>
+          <div class="kpi-info"><span class="kpi-label">Commissions validées</span><span class="kpi-value">{{ formatMoney(stats.totalCommissionsValidees) }}</span></div>
+        </mat-card>
+        <mat-card class="kpi-card">
+          <span class="kpi-icon-wrapper dark"><svg lucideCircleDollarSign class="kpi-icon" aria-hidden="true"></svg></span>
+          <div class="kpi-info"><span class="kpi-label">Commissions payées</span><span class="kpi-value">{{ formatMoney(stats.totalCommissionsPayees) }}</span></div>
+        </mat-card>
+      </section>
+    }
+  }
+
+  <section class="dashboard-body-grid">
+    @if (canViewVentes) {
+      <mat-card class="section-card">
+        <div class="section-header">
+          <h2><svg lucideTrendingUp class="header-icon" aria-hidden="true"></svg> Ventes récentes</h2>
+          @if (ventesStats(); as stats) { <span class="badge-count">{{ stats.ventesRecentes.length }}</span> }
+        </div>
+        @if (loadingVentes()) {
+          <p class="kpi-subtext" style="padding: 12px 20px;">Chargement...</p>
+        } @else if (ventesStats(); as stats) {
+          @if (stats.ventesRecentes.length) {
+            <div class="activity-timeline">
+              @for (vente of stats.ventesRecentes; track vente.id) {
+                <div class="activity-item" role="button" tabindex="0" (click)="openVente(vente.id)" (keyup.enter)="openVente(vente.id)">
+                  <span class="activity-marker purple"></span>
+                  <div class="activity-content">
+                    <span class="activity-title">{{ vente.referenceInterne || 'Dossier' }} · {{ vente.prospect.prenom }} {{ vente.prospect.nom }}</span>
+                    <span class="activity-meta">{{ vente.terrain?.nom || 'Terrain non affecté' }} · {{ vente.statut }} · {{ formatMoney(vente.prixVente) }}</span>
+                    <span class="activity-time">{{ vente.createdAt | date:'dd/MM/yyyy' }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="kpi-subtext" style="padding: 12px 20px;">Aucune vente récente.</p>
+          }
+        }
+      </mat-card>
+    }
+
+    @if (canViewVentes) {
+      <mat-card class="section-card">
+        <div class="section-header"><h2><svg lucideHandshake class="header-icon" aria-hidden="true"></svg> Ma performance commerciale</h2></div>
+        @if (loadingPerformance()) {
+          <p class="kpi-subtext" style="padding: 12px 20px;">Chargement...</p>
+        } @else if (myPerformance(); as perf) {
+          <div class="activity-timeline">
+            <div class="activity-item">
+              <span class="activity-marker dark"></span>
+              <div class="activity-content"><span class="activity-title">Mes dossiers de vente</span><span class="activity-meta">{{ perf.totalDossiers }} dossier{{ perf.totalDossiers > 1 ? 's' : '' }}</span></div>
+            </div>
+            <div class="activity-item">
+              <span class="activity-marker purple"></span>
+              <div class="activity-content"><span class="activity-title">Mes paiements validés</span><span class="activity-meta">{{ formatMoney(perf.totalPaiements) }}</span></div>
+            </div>
+            <div class="activity-item">
+              <span class="activity-marker red"></span>
+              <div class="activity-content"><span class="activity-title">Mes commissions payées</span><span class="activity-meta">{{ formatMoney(perf.totalCommissionsPayees) }}</span></div>
+            </div>
+          </div>
+        } @else {
+          <p class="kpi-subtext" style="padding: 12px 20px;">Aucune donnée de performance disponible.</p>
+        }
+      </mat-card>
+    }
+  </section>
+
+  @if (canViewMandats) {
+    @if (loadingMandats()) {
+      <p class="kpi-subtext">Chargement du portefeuille propriétaire...</p>
+    } @else if (mandatStats(); as mstats) {
+      <mat-card class="section-card">
+        <div class="section-header"><h2><svg lucideScrollText class="header-icon" aria-hidden="true"></svg> Portefeuille propriétaire</h2></div>
+        <section class="kpi-grid" style="padding: 12px 20px 20px;">
+          <div class="kpi-info"><span class="kpi-label">Mandats actifs</span><span class="kpi-value">{{ mstats.actifs }} / {{ mstats.totalMandats }}</span></div>
+          <div class="kpi-info"><span class="kpi-label">Expirants sous 30 jours</span><span class="kpi-value">{{ mstats.expirant30Jours }}</span></div>
+          <div class="kpi-info"><span class="kpi-label">Lots confiés</span><span class="kpi-value">{{ mstats.totalLots }}</span></div>
+          <div class="kpi-info"><span class="kpi-label">Chiffre d’affaires</span><span class="kpi-value">{{ formatMoney(mstats.financial.chiffreAffaires) }}</span></div>
+        </section>
+      </mat-card>
+    }
+  }
+</div>

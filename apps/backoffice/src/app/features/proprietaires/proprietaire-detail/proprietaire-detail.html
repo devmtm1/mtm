@@ -1,0 +1,72 @@
+<section class="detail-page">
+  <header class="detail-header">
+    <div class="detail-heading">
+      <button mat-button class="back-button" type="button" (click)="goBack()"><svg lucideArrowLeft aria-hidden="true"></svg></button>
+      <div>
+        <div class="detail-title-line">
+          <span class="detail-icon"><svg lucideIdCard aria-hidden="true"></svg></span>
+          <h1>{{ proprietaire()?.firstName }} {{ proprietaire()?.lastName }}</h1>
+        </div>
+        <p class="detail-subtitle">{{ proprietaire()?.email || 'Email non renseigné' }} · {{ proprietaire()?.phone || 'Téléphone non renseigné' }}</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      @if (canModify()) { <button mat-flat-button color="primary" type="button" (click)="edit()"><svg lucidePencil aria-hidden="true"></svg><span>Modifier</span></button> }
+      @if (canDelete()) { <button mat-stroked-button color="warn" type="button" (click)="remove()"><svg lucideTrash2 aria-hidden="true"></svg><span>Supprimer</span></button> }
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="page-card"><p>Chargement...</p></div>
+  } @else {
+    <section class="content-grid">
+      <section class="detail-section">
+        <h2>Informations générales</h2>
+        <dl class="info-list">
+          <div><dt>Prénom</dt><dd>{{ proprietaire()?.firstName }}</dd></div>
+          <div><dt>Nom</dt><dd>{{ proprietaire()?.lastName }}</dd></div>
+          <div><dt>Email</dt><dd>{{ proprietaire()?.email || '—' }}</dd></div>
+          <div><dt>Téléphone</dt><dd>{{ proprietaire()?.phone || '—' }}</dd></div>
+          <div><dt>Rattaché depuis</dt><dd>{{ proprietaire()?.createdAt ? (proprietaire()!.createdAt | date:'dd/MM/yyyy') : '—' }}</dd></div>
+        </dl>
+        @if (proprietaire()?.notes) {
+          <div class="detail-section__full"><h3>Notes</h3><p>{{ proprietaire()?.notes }}</p></div>
+        }
+      </section>
+
+      <section class="detail-section" id="terrains">
+        <h2>Terrains ({{ terrains().length }})</h2>
+        @if (terrains().length) {
+          <div class="link-list">
+            @for (terrain of terrains(); track terrain.id) {
+              <button type="button" class="link-list__item" (click)="openTerrain(terrain.id)">
+                <strong>{{ terrain.referenceInterne }} · {{ terrain.nom }}</strong>
+                <small>{{ terrain.commune || '—' }} · {{ formatMoney(terrain.prixPublic) }}</small>
+                <span class="status-badge">{{ terrain.statutCommercial }}</span>
+              </button>
+            }
+          </div>
+        } @else {
+          <p class="muted">Aucun terrain rattaché à ce propriétaire.</p>
+        }
+      </section>
+
+      <section class="detail-section" id="mandats">
+        <h2>Mandats ({{ mandats().length }})</h2>
+        @if (mandats().length) {
+          <div class="link-list">
+            @for (mandat of mandats(); track mandat.id) {
+              <button type="button" class="link-list__item" (click)="openMandat(mandat.id)">
+                <strong>{{ mandat.referenceInterne }}</strong>
+                <small>{{ mandat.typeMandat }} · {{ mandat.dateDebut | date:'dd/MM/yyyy' }} → {{ mandat.dateFin | date:'dd/MM/yyyy' }}</small>
+                <span class="status-badge">{{ mandat.statut }}</span>
+              </button>
+            }
+          </div>
+        } @else {
+          <p class="muted">Aucun mandat rattaché à ce propriétaire.</p>
+        }
+      </section>
+    </section>
+  }
+</section>

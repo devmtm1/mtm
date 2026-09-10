@@ -1,5 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  IsArray,
   IsBoolean,
   IsNumber,
   IsObject,
@@ -9,7 +12,9 @@ import {
   Length,
   Max,
   Min,
+  ValidateNested,
 } from 'class-validator';
+import { TerrainPointInteretDto } from './terrain-point-interet.dto';
 
 export class CreateTerrainDto {
   @ApiProperty() @IsString() @Length(1, 100) referenceInterne!: string;
@@ -63,6 +68,13 @@ export class CreateTerrainDto {
   @ApiPropertyOptional() @IsOptional() @IsString() voisinage?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() vocation?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() proximiteAxes?: string;
+  @ApiPropertyOptional({ type: [TerrainPointInteretDto] })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(30)
+  @ValidateNested({ each: true })
+  @Type(() => TerrainPointInteretDto)
+  pointsInteret?: TerrainPointInteretDto[];
   @ApiPropertyOptional() @IsOptional() @IsString() notesInternes?: string;
   @ApiPropertyOptional()
   @IsOptional()

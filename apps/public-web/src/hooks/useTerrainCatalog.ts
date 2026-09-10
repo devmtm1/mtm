@@ -46,15 +46,26 @@ function matchesSize(terrain: Terrain, size: string) {
 export function useTerrainCatalog(filters: TerrainFilters) {
   const [catalogue, setCatalogue] = useState<Terrain[]>([]);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
+    setLoading(true);
+    setError(null);
     void getPublicTerrains()
       .then((terrains) => {
-        if (active) setCatalogue(terrains);
+        if (!active) return;
+        setCatalogue(terrains);
+        setError(null);
       })
       .catch(() => {
-        if (active) setCatalogue([]);
+        if (!active) return;
+        setCatalogue([]);
+        setError('Le catalogue est temporairement indisponible.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
       });
 
     return () => {
@@ -97,5 +108,7 @@ export function useTerrainCatalog(filters: TerrainFilters) {
     hasMore,
     total: filteredTerrains.length,
     loadMore,
+    loading,
+    error,
   };
 }

@@ -1,13 +1,15 @@
 import { renderHook, act } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { sendContact } from '../services/public-api';
+import { sendContact, sendReservationRequest } from '../services/public-api';
 import { useContactForm } from './useContactForm';
 
 vi.mock('../services/public-api', () => ({
   sendContact: vi.fn(),
+  sendReservationRequest: vi.fn(),
 }));
 
 const mockedSendContact = vi.mocked(sendContact);
+const mockedSendReservationRequest = vi.mocked(sendReservationRequest);
 
 describe('useContactForm', () => {
   beforeEach(() => {
@@ -51,5 +53,50 @@ describe('useContactForm', () => {
       'Impossible d’envoyer le message. Veuillez réessayer.',
     );
     expect(result.current.isSubmitting).toBe(false);
+  });
+
+  it('creates a specific default message when the public request is a reservation', async () => {
+    mockedSendContact.mockResolvedValueOnce();
+    const { result } = renderHook(() => useContactForm());
+
+    await act(async () => {
+      await result.current.submit({
+        nom: 'Awa',
+        email: 'awa@example.com',
+        sujet: 'Acquérir un terrain',
+      });
+    });
+
+    expect(mockedSendContact).toHaveBeenCalledWith({
+      nom: 'Awa',
+      email: 'awa@example.com',
+      sujet: 'Acquérir un terrain',
+      message:
+        'Je souhaite acquérir un terrain et recevoir un accompagnement MTM pour la réservation.',
+    });
+  });
+
+  it('sends a terrain reservation request to the dedicated public endpoint', async () => {
+    mockedSendReservationRequest.mockResolvedValueOnce();
+    const { result } = renderHook(() => useContactForm());
+
+    await act(async () => {
+      await result.current.submit({
+        nom: 'Awa',
+        email: 'awa@example.com',
+        terrainId: 'terrain-id',
+        sujet: 'Acquérir un terrain',
+        reservation: true,
+      });
+    });
+
+    expect(mockedSendReservationRequest).toHaveBeenCalledWith({
+      nom: 'Awa',
+      email: 'awa@example.com',
+      terrainId: 'terrain-id',
+      message:
+        'Je souhaite acquérir un terrain et recevoir un accompagnement MTM pour la réservation.',
+    });
+    expect(mockedSendContact).not.toHaveBeenCalled();
   });
 });
