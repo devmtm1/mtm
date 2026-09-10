@@ -14,7 +14,7 @@ Monorepo du projet MTM Immobilier : backend API (NestJS), back-office
 apps/
 ├── api/              # Backend NestJS + Prisma + PostgreSQL
 ├── backoffice/        # Interface interne Angular
-└── public-web/        # Site public — non développé (Phase 1+)
+└── public-web/        # Site public — React + Vite (accueil, catalogue, fiche terrain, réalisations, contact...)
 ```
 
 ## Stack technique

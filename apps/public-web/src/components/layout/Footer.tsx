@@ -1,59 +1,58 @@
+import { Link } from 'react-router-dom';
 import { Mail, MapPin, Phone } from 'lucide-react';
+import { ROUTES } from '../../routes';
 
-type FooterProps = {
-  onNavigate: (href: string) => void;
-};
+export function Footer() {
+  const year = new Date().getFullYear();
 
-export function Footer({ onNavigate }: Readonly<FooterProps>) {
-  const navLink = (href: string, label: string) => (
-    <a
-      href={href}
-      onClick={(event) => {
-        event.preventDefault();
-        onNavigate(href);
-      }}
-    >
-      {label}
-    </a>
-  );
   return (
-    <footer id="contact" className="site-footer">
-      <div className="mx-auto max-w-7xl px-5 py-14 lg:px-10 lg:py-16">
-        <div className="footer-main-grid">
-          <div className="footer-brand">
-            <div className="footer-logo">
-              <span>MTM</span>
-              <span>Immobilier</span>
-            </div>
-            <p>
-              Construire en confiance, au Sénégal et au-delà.
-            </p>
-            <span className="footer-signature">Terrains · projets · accompagnement</span>
+    <footer className="border-t border-mtm-border bg-mtm-primary-dark text-white">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-4">
+        <div className="md:col-span-2">
+          <div className="flex items-center gap-2.5">
+            <img src="/logomtm.jpeg" alt="MTM Immobilier" className="h-11 w-11 rounded-full object-cover" />
+            <span className="font-display text-lg font-bold">MTM Immobilier</span>
           </div>
-          <div className="footer-column">
-            <h3 className="footer-title">Explorer</h3>
-            {navLink('#terrains', 'Nos terrains')}
-            {navLink('#services', 'Nos services')}
-            {navLink('#realisations', 'Nos réalisations')}
-          </div>
-          <div className="footer-column">
-            <h3 className="footer-title">Services</h3>
-            {navLink('#verification-fonciere', 'Vérification foncière')}
-            {navLink('#gestion-locative', 'Gestion locative')}
-            {navLink('#construction', 'Construction')}
-            {navLink('#demarches', 'Démarches')}
-          </div>
-          <div className="footer-column footer-contact">
-            <h3 className="footer-title">Nous trouver</h3>
-            <p><MapPin size={16} /> Dakar, Sénégal</p>
-            <p><Phone size={16} /> +221 77 000 00 00</p>
-            <p><Mail size={16} /> bonjour@mtm-immobilier.sn</p>
-          </div>
+          <p className="mt-4 max-w-sm text-sm text-white/70">
+            Commercialisation de terrains, gestion locative, construction et démarches
+            foncières — un accompagnement fiable et transparent, y compris à distance.
+          </p>
         </div>
-        <div className="footer-bottom">
-          <span>© 2026 MTM Immobilier. Tous droits réservés.</span>
-          <span>Une expertise immobilière locale</span>
+
+        <nav aria-label="Liens rapides">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-white/60">Explorer</h3>
+          <ul className="mt-4 flex flex-col gap-2 text-sm text-white/80">
+            <li><Link to={ROUTES.catalog} className="hover:text-white">Nos terrains</Link></li>
+            <li><Link to={ROUTES.realisations} className="hover:text-white">Nos réalisations</Link></li>
+            <li><Link to={ROUTES.projetsAVenir} className="hover:text-white">Projets à venir</Link></li>
+            <li><Link to={ROUTES.about} className="hover:text-white">À propos</Link></li>
+            <li><Link to={ROUTES.actualites} className="hover:text-white">Actualités</Link></li>
+          </ul>
+        </nav>
+
+        <div>
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-white/60">Contact</h3>
+          <ul className="mt-4 flex flex-col gap-3 text-sm text-white/80">
+            <li className="flex items-start gap-2">
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>Dakar, Sénégal</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <Phone className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <a href="tel:+221770000000" className="hover:text-white">+221 77 000 00 00</a>
+            </li>
+            <li className="flex items-center gap-2">
+              <Mail className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <a href="mailto:contact@mtm-immobilier.sn" className="hover:text-white">
+                contact@mtm-immobilier.sn
+              </a>
+            </li>
+          </ul>
         </div>
+      </div>
+
+      <div className="border-t border-white/10 py-4 text-center text-xs text-white/50">
+        © {year} MTM Immobilier. Tous droits réservés.
       </div>
     </footer>
   );

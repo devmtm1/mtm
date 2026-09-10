@@ -4,23 +4,31 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: '#32124F',
-        primary: '#4B1D73',
-        medium: '#6B3E8A',
-        light: '#E9DDF2',
-        coral: '#B45309',
-        mist: '#F7F8FA',
-        sand: '#F3EEF7',
+        // Couleurs extraites par échantillonnage direct de public/logomtm.jpeg
+        // (pixels les plus saturés du "M" et du mot-symbole) — source unique
+        // de vérité pour toute la palette du site, ne jamais redéfinir une
+        // couleur de marque ailleurs que dans ce fichier.
+        'mtm-primary': '#B43036',
+        'mtm-primary-dark': '#751F23',
+        'mtm-secondary': '#1F4C7A',
+        'mtm-secondary-dark': '#14314F',
+        'mtm-bg': '#F7F8FA',
+        'mtm-surface': '#FFFFFF',
+        'mtm-border': '#E5E7EB',
+        'mtm-text': '#1F2937',
+        'mtm-muted': '#6B7280',
+        'mtm-success': '#059669',
+        'mtm-warning': '#D97706',
+        'mtm-error': '#DC2626',
       },
       fontFamily: {
-        sans: ['Plus Jakarta Sans', 'sans-serif'],
-        display: ['Outfit', 'sans-serif'],
+        display: ['"Outfit"', 'system-ui', 'sans-serif'],
+        sans: ['"Inter"', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        soft: '0 18px 45px rgba(50, 18, 79, 0.09)',
-        card: '0 8px 24px rgba(50, 18, 79, 0.06)',
+        card: '0 1px 2px rgba(31, 41, 55, 0.06), 0 1px 3px rgba(31, 41, 55, 0.08)',
       },
     },
   },
   plugins: [],
-}
+};

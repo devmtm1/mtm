@@ -1,221 +1,121 @@
-import { ArrowRight, ChevronDown, Menu, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
+import { NavLink } from 'react-router-dom';
+import { ChevronDown, Menu, User, X } from 'lucide-react';
+import { ROUTES } from '../../routes';
+import { useAuth } from '../../contexts/auth-context-store';
 
-type HeaderProps = {
-  onContact: () => void;
-  onNavigate: (href: string) => void;
-};
-
-const navItems = [
-  { label: 'Accueil', href: '#accueil' },
-  { label: 'Nos terrains', href: '#terrains' },
-  { label: 'À propos', href: '#a-propos' },
-  { label: 'Contact', href: '#contact' },
+const PRIMARY_LINKS = [
+  { to: ROUTES.home, label: 'Accueil' },
+  { to: ROUTES.catalog, label: 'Nos terrains' },
+  { to: ROUTES.realisations, label: 'Nos réalisations' },
+  { to: ROUTES.projetsAVenir, label: 'Projets à venir' },
 ];
 
-const serviceItems = [
-  { label: 'Gestion locative', href: '#gestion-locative' },
-  { label: 'Construction', href: '#construction' },
-  { label: 'Démarches', href: '#demarches' },
+const SERVICE_LINKS = [
+  { to: ROUTES.gestionLocative, label: 'Gestion locative' },
+  { to: ROUTES.construction, label: 'Construction' },
+  { to: ROUTES.demarches, label: 'Démarches administratives' },
 ];
 
-export function Header({ onContact, onNavigate }: Readonly<HeaderProps>) {
-  const [menuOpen, setMenuOpen] = useState(false);
+function navLinkClass({ isActive }: { isActive: boolean }): string {
+  return `text-sm font-semibold transition-colors ${
+    isActive ? 'text-mtm-primary' : 'text-mtm-text hover:text-mtm-primary'
+  }`;
+}
+
+export function Header() {
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
-  const servicesRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!menuOpen) return undefined;
-
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setMenuOpen(false);
-    };
-
-    document.addEventListener('keydown', closeOnEscape);
-    return () => document.removeEventListener('keydown', closeOnEscape);
-  }, [menuOpen]);
-
-  useEffect(() => {
-    if (!servicesOpen) return undefined;
-
-    const closeOnOutsideClick = (event: MouseEvent) => {
-      if (!servicesRef.current?.contains(event.target as Node)) {
-        setServicesOpen(false);
-      }
-    };
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setServicesOpen(false);
-    };
-
-    document.addEventListener('mousedown', closeOnOutsideClick);
-    document.addEventListener('keydown', closeOnEscape);
-    return () => {
-      document.removeEventListener('mousedown', closeOnOutsideClick);
-      document.removeEventListener('keydown', closeOnEscape);
-    };
-  }, [servicesOpen]);
-
-  const openContact = () => {
-    setMenuOpen(false);
-    setServicesOpen(false);
-    onContact();
-  };
-
-  const openClientSpace = () => {
-    setMenuOpen(false);
-    setServicesOpen(false);
-    onNavigate('#client');
-  };
+  const { user } = useAuth();
+  const clientLabel = user ? user.firstName : 'Espace client';
 
   return (
-    <header className="site-header fixed left-0 right-0 top-0 z-40 border-b border-white/15 bg-ink/95 text-white shadow-lg shadow-ink/10 backdrop-blur-md">
-      <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between gap-6 px-4 sm:px-6 lg:px-10">
-        <a
-          href="#accueil"
-          className="flex items-center gap-3"
-          aria-label="MTM Immobilier, accueil"
-          onClick={(event) => {
-            event.preventDefault();
-            setMenuOpen(false);
-            setServicesOpen(false);
-            onNavigate('#accueil');
-          }}
-        >
-          <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-lg border border-white/40 bg-white">
-            <img
-              src="/logomtm.jpeg"
-              alt=""
-              className="h-full w-full object-cover"
-            />
-          </span>
-          <span className="font-display text-lg font-semibold tracking-tight sm:text-xl">
-            MTM <em className="not-italic text-coral">Immobilier</em>
-          </span>
-        </a>
-        <nav
-          className="hidden min-w-0 flex-1 items-center justify-center gap-3 text-[0.8rem] text-white/75 2xl:flex"
-          aria-label="Navigation principale"
-        >
-          {navItems.map((item, index) => (
-            <a
-              className="nav-link"
-              style={{ '--nav-index': index } as React.CSSProperties}
-              href={item.href}
-              key={item.href}
-              onClick={(event) => {
-                event.preventDefault();
-                onNavigate(item.href);
-              }}
-            >
-              {item.label}
-            </a>
+    <header className="sticky top-0 z-40 border-b border-mtm-border bg-mtm-surface/95 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+        <NavLink to={ROUTES.home} className="flex items-center gap-2.5" onClick={() => setMobileOpen(false)}>
+          <img src="/logomtm.jpeg" alt="MTM Immobilier" className="h-11 w-11 rounded-full object-cover" />
+          <span className="font-display text-lg font-bold text-mtm-text">MTM Immobilier</span>
+        </NavLink>
+
+        <nav className="hidden items-center gap-7 md:flex">
+          {PRIMARY_LINKS.map((link) => (
+            <NavLink key={link.to} to={link.to} className={navLinkClass} end={link.to === ROUTES.home}>
+              {link.label}
+            </NavLink>
           ))}
+
           <div
             className="relative"
-            ref={servicesRef}
+            onMouseEnter={() => setServicesOpen(true)}
+            onMouseLeave={() => setServicesOpen(false)}
           >
             <button
               type="button"
-              className="nav-link flex items-center gap-1"
-              aria-haspopup="true"
-              aria-expanded={servicesOpen}
+              className="flex items-center gap-1 text-sm font-semibold text-mtm-text hover:text-mtm-primary"
               onClick={() => setServicesOpen((open) => !open)}
+              aria-expanded={servicesOpen}
             >
               Services
-              <ChevronDown
-                size={14}
-                className={`transition-transform ${servicesOpen ? 'rotate-180' : ''}`}
-              />
+              <ChevronDown className="h-4 w-4" aria-hidden="true" />
             </button>
             {servicesOpen && (
-              <div className="nav-dropdown-panel" role="menu">
-                {serviceItems.map((item) => (
-                  <a
-                    className="nav-dropdown-item"
-                    href={item.href}
-                    key={item.href}
-                    role="menuitem"
-                    onClick={(event) => {
-                      event.preventDefault();
-                      setServicesOpen(false);
-                      onNavigate(item.href);
-                    }}
+              <div className="absolute left-0 top-full w-56 rounded-md border border-mtm-border bg-mtm-surface py-2 shadow-card">
+                {SERVICE_LINKS.map((link) => (
+                  <NavLink
+                    key={link.to}
+                    to={link.to}
+                    className="block px-4 py-2 text-sm text-mtm-text hover:bg-mtm-bg hover:text-mtm-primary"
                   >
-                    {item.label}
-                  </a>
+                    {link.label}
+                  </NavLink>
                 ))}
               </div>
             )}
           </div>
-        </nav>
-        <div className="hidden shrink-0 items-center gap-4 2xl:flex">
-          <a className="text-sm font-medium text-white/75 transition hover:text-white" href="#contact">
-            Nous contacter
-          </a>
-          <button
-            type="button"
-            className="rounded-full bg-coral px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8f3f2b]"
-            onClick={openClientSpace}
+
+          <NavLink to={ROUTES.actualites} className={navLinkClass}>
+            Actualités
+          </NavLink>
+          <NavLink to={ROUTES.clientPortal} className="flex items-center gap-1.5 text-sm font-semibold text-mtm-text hover:text-mtm-primary">
+            <User className="h-4 w-4" aria-hidden="true" />
+            {clientLabel}
+          </NavLink>
+          <NavLink
+            to={ROUTES.contact}
+            className="rounded-md bg-mtm-primary px-4 py-2 text-sm font-semibold text-white hover:bg-mtm-primary-dark"
           >
-            Espace client <ArrowRight className="ml-2 inline" size={15} />
-          </button>
-        </div>
+            Contact
+          </NavLink>
+        </nav>
+
         <button
           type="button"
-          className="menu-toggle rounded-lg p-2 2xl:hidden"
-          aria-label={menuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
-          aria-expanded={menuOpen}
-          aria-controls="mobile-navigation"
-          onClick={() => setMenuOpen((open) => !open)}
+          className="inline-flex items-center justify-center rounded-md p-2 text-mtm-text md:hidden"
+          onClick={() => setMobileOpen((open) => !open)}
+          aria-label={mobileOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+          aria-expanded={mobileOpen}
         >
-          {menuOpen ? <X /> : <Menu />}
+          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </div>
-      {menuOpen && (
-        <nav id="mobile-navigation" className="mobile-menu border-t border-white/15 px-4 pb-5 pt-3 sm:px-6 2xl:hidden" aria-label="Navigation mobile">
-          {navItems.map((item) => (
-            <a
-              className="mobile-nav-link block border-b border-white/10 py-3 text-white/80 last:border-0"
-              href={item.href}
-              key={item.href}
-              onClick={(event) => {
-                event.preventDefault();
-                setMenuOpen(false);
-                onNavigate(item.href);
-              }}
-            >
-              {item.label}
-            </a>
-          ))}
-          <p className="mobile-nav-group-label">Services</p>
-          {serviceItems.map((item) => (
-            <a
-              className="mobile-nav-link mobile-nav-sublink block border-b border-white/10 py-3 text-white/80 last:border-0"
-              href={item.href}
-              key={item.href}
-              onClick={(event) => {
-                event.preventDefault();
-                setMenuOpen(false);
-                onNavigate(item.href);
-              }}
-            >
-              {item.label}
-            </a>
-          ))}
-          <a
-            className="mobile-nav-link block border-b border-white/10 py-3 text-white/80 last:border-0"
-            href="#client"
-            onClick={(event) => {
-              event.preventDefault();
-              setMenuOpen(false);
-              onNavigate('#client');
-            }}
-          >
-            Espace client
-          </a>
-          <button type="button" className="mt-4 flex w-full items-center justify-center rounded-lg bg-coral px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#8f3f2b]" onClick={openContact}>
-            Nous contacter <ArrowRight className="ml-2" size={15} />
-          </button>
+
+      {mobileOpen && (
+        <nav className="border-t border-mtm-border bg-mtm-surface px-4 pb-4 md:hidden">
+          <ul className="flex flex-col gap-1 pt-2">
+            {[...PRIMARY_LINKS, ...SERVICE_LINKS, { to: ROUTES.actualites, label: 'Actualités' }, { to: ROUTES.clientPortal, label: clientLabel }, { to: ROUTES.contact, label: 'Contact' }].map(
+              (link) => (
+                <li key={link.to}>
+                  <NavLink
+                    to={link.to}
+                    className="block rounded-md px-3 py-2.5 text-sm font-semibold text-mtm-text hover:bg-mtm-bg hover:text-mtm-primary"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {link.label}
+                  </NavLink>
+                </li>
+              ),
+            )}
+          </ul>
         </nav>
       )}
     </header>

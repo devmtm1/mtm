@@ -1,64 +1,56 @@
-# public-web
+# MTM Immobilier — Site public
 
-Site public MTM Immobilier, implemente avec React, TypeScript, Vite, Tailwind
-CSS et Lucide React.
+Site vitrine public (React + TypeScript + Vite), conforme à la Phase 1 du
+cahier des charges (sections 5, 6, 7, 11) : accueil, catalogue de terrains,
+fiche terrain détaillée (galerie, carte Leaflet, points d'intérêt), nos
+réalisations, projets à venir, actualités, à propos, présentation des
+services (gestion locative, construction, démarches administratives) et
+contact (formulaire + demande de réservation).
 
-## Developpement
-
-Depuis la racine du monorepo :
-
-```bash
-npm run public-web:dev
-```
-
-Le site est disponible sur `http://localhost:5173`.
-
-## Tests
+## Démarrage
 
 ```bash
-npm test
+cp .env.example .env   # VITE_API_URL par défaut : http://localhost:3000/api
+npm run dev             # http://localhost:5173
 ```
 
-Les tests couvrent le chargement et le filtrage du catalogue terrain ainsi que
-les états de succès et d'erreur du formulaire de contact.
+L'API doit tourner en parallèle (`npm run api:dev` à la racine du monorepo).
 
-## Donnees publiques
+## Scripts
 
-Le catalogue appelle `GET /api/terrains/public`. Cette API ne renvoie que les
-terrains disponibles et exclut les donnees internes (prix d'acquisition,
-marges, commissions, notes et proprietaires). Les terrains affiches proviennent
-exclusivement de cette API ; en cas d'indisponibilite, le catalogue reste vide.
+| Commande | Rôle |
+|---|---|
+| `npm run dev` | Serveur de développement Vite |
+| `npm run build` | Build de production (`tsc -b && vite build`) |
+| `npm run preview` | Sert le build de production en local |
+| `npm run lint` | ESLint |
+| `npm run test` | Tests Vitest |
 
-La variable `VITE_API_URL` permet de remplacer l'URL par defaut
-(`http://localhost:3000/api`).
+## Architecture
 
-Le bouton WhatsApp utilise la variable `VITE_WHATSAPP_NUMBER`, au format
-international sans espaces ni signe `+` (par exemple `221770000000`).
+- `src/api/` — un module par ressource (`terrains`, `content`, `showcase`,
+  `contact`, `reservations`), tous passent par `src/api/client.ts` (fetch
+  centralisé + gestion d'erreur uniforme).
+- `src/hooks/` — un hook par domaine de données ; `useAsyncData` factorise
+  le câblage loading/error commun aux hooks de lecture.
+- `src/types/` — reflet strict des DTO publics du backend. Ne jamais y
+  ajouter un champ interne (prix d'acquisition, marge, commission) : ces
+  champs ne sont de toute façon jamais renvoyés par les endpoints publics.
+- `src/components/ui/` — primitives réutilisables (Button, Modal, FormField...).
+- `src/components/{terrains,showcase,contact,reservation,home,layout}/` —
+  composants métier regroupés par domaine.
+- `src/pages/` — une page par route, orchestration uniquement (peu de
+  logique propre, délègue aux hooks/composants).
 
-La video du hero utilise `VITE_HERO_VIDEO_URL` pour remplacer la source video
-distante par une source hebergee par le projet si necessaire.
+## Espace client
 
-## Architecture frontend
+Connexion (`/espace-client/connexion`) + portail (`/espace-client`, protégé) :
+dossiers, réservations, paiements, documents du client connecté. Gère aussi
+la double authentification (si activée sur le compte), le changement de mot
+de passe obligatoire au premier accès (`mustChangePassword`), et la
+réinitialisation de mot de passe oublié.
 
-Le code est organise par responsabilite afin de garder les pages lisibles et
-les features evolutives :
-
-```text
-src/
-	components/       composants UI reutilisables et composants de feature
-	domain/           contrats et donnees metier stables
-	hooks/            etat, effets et orchestration reutilisable
-	services/         acces API et transport uniquement
-	pages/            pages composees par route (a ajouter avec les nouvelles routes)
-	features/         modules fonctionnels autonomes lorsque leur perimetre grandit
-```
-
-Regles principales :
-
-- `App` orchestre la page et ne definit pas les contrats API ;
-- les composants recoivent leurs donnees et callbacks par props ;
-- les hooks gerent les effets et etats d'interface, les services gerent `fetch` ;
-- les donnees publiques restent encapsulees dans `domain/terrains` et viennent
-	exclusivement du service API ;
-- une nouvelle page doit etre creee dans `pages/` puis composee avec des
-	composants de `components/` ou de sa feature, sans dupliquer l'acces API.
+Authentification : JWT en mémoire (jamais localStorage) + cookie httpOnly
+pour le refresh token, reprise de session silencieuse au chargement de l'app
+(`AuthProvider`). Toute la logique d'auth vit dans `src/contexts/`,
+`src/api/auth.ts` et `src/components/auth/`.

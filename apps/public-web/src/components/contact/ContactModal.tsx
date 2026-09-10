@@ -1,110 +1,17 @@
-import { ArrowRight, X } from 'lucide-react';
-import type { SyntheticEvent } from 'react';
-import { useContactForm } from '../../hooks/useContactForm';
+import { Modal } from '../ui/Modal';
+import { ContactForm } from './ContactForm';
 
-type ContactModalProps = {
-  terrainId: string | null;
+interface ContactModalProps {
+  title?: string;
+  terrainId?: string;
+  initialSujet?: string;
   onClose: () => void;
-  defaultSubject?: string | null;
-};
-type ContactForm = ReturnType<typeof useContactForm>;
+}
 
-export function ContactModal({
-  terrainId,
-  onClose,
-  defaultSubject,
-}: Readonly<ContactModalProps>) {
-  const formState: ContactForm = useContactForm(() =>
-    setTimeout(onClose, 1500),
-  );
-  const initialSubject = defaultSubject ?? (terrainId ? 'Acquérir un terrain' : '');
-  function handleSubmit(event: SyntheticEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const values = new FormData(form);
-    const getText = (name: string) => {
-      const value = values.get(name);
-      return typeof value === 'string' ? value : '';
-    };
-    const subject = getText('sujet');
-    void formState
-      .submit({
-        nom: getText('nom'),
-        email: getText('email'),
-        telephone: getText('telephone') || undefined,
-        sujet: subject || undefined,
-        message: getText('message') || undefined,
-        terrainId: getText('terrainId') || undefined,
-        reservation: subject === 'Acquérir un terrain' && Boolean(terrainId),
-      })
-      .then((success) => {
-        if (success) form.reset();
-      });
-  }
+export function ContactModal({ title = 'Nous contacter', terrainId, initialSujet, onClose }: ContactModalProps) {
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-ink/65 p-5 backdrop-blur-sm">
-      <div className="relative w-full max-w-lg rounded-2xl bg-white p-7 shadow-2xl sm:p-9">
-        <button
-          type="button"
-          className="absolute right-5 top-5 text-slate-400"
-          aria-label="Fermer"
-          onClick={onClose}
-        >
-          <X />
-        </button>
-        <p className="eyebrow">Parlons de votre projet</p>
-        <h2 className="mt-2 font-display text-3xl">Nous vous rappelons.</h2>
-        <p className="mt-3 text-sm leading-6 text-slate-500">
-          Laissez-nous vos coordonnées, un conseiller MTM vous recontactera
-          rapidement.
-        </p>
-        <form className="mt-6 space-y-3" onSubmit={handleSubmit}>
-          <input
-            className="input"
-            name="nom"
-            required
-            placeholder="Nom complet"
-          />
-          <input
-            className="input"
-            name="email"
-            required
-            type="email"
-            autoComplete="email"
-            placeholder="Adresse e-mail"
-          />
-          <input className="input" name="telephone" placeholder="Téléphone" />
-          <input type="hidden" name="terrainId" value={terrainId ?? ''} />
-          <select className="input" name="sujet" defaultValue={initialSubject}>
-            <option value="">Je souhaite...</option>
-            <option value="Acquérir un terrain">Acquérir un terrain / Réserver</option>
-            <option value="Demander une visite">Demander une visite</option>
-            <option value="Demander une vérification">Demander une vérification foncière</option>
-            <option value="Parler de gestion locative">Parler de gestion locative</option>
-          </select>
-          <textarea
-            className="input min-h-[80px]"
-            name="message"
-            placeholder="Votre message..."
-          />
-          {formState.error && (
-            <p className="text-sm text-red-600">{formState.error}</p>
-          )}
-          {formState.isSuccess && (
-            <p className="text-sm text-green-600">
-              Votre demande a été transmise à MTM avec succès.
-            </p>
-          )}
-          <button
-            type="submit"
-            className="mt-2 w-full rounded-xl bg-coral py-3.5 font-bold text-white"
-            disabled={formState.isSubmitting}
-          >
-            {formState.isSubmitting ? 'Envoi...' : 'Envoyer ma demande'}{' '}
-            <ArrowRight className="ml-2 inline" size={16} />
-          </button>
-        </form>
-      </div>
-    </div>
+    <Modal title={title} onClose={onClose}>
+      <ContactForm terrainId={terrainId} initialSujet={initialSujet} onSuccess={onClose} />
+    </Modal>
   );
 }

@@ -1,71 +1,61 @@
-import { useState } from 'react';
-import { sendContact, sendReservationRequest } from '../services/public-api';
+import { useCallback, useState } from 'react';
+import { sendContactMessage } from '../api/contact';
+import { ApiError } from '../api/client';
+import { hasErrors, validateContactForm, type ContactFormValues, type FieldErrors } from '../utils/validation';
 
-type ContactFormValues = {
-  nom: string;
-  email: string;
-  telephone?: string;
-  sujet?: string;
-  message?: string;
+const EMPTY_VALUES: ContactFormValues = { nom: '', email: '', telephone: '', sujet: '', message: '' };
+
+export interface UseContactFormOptions {
   terrainId?: string;
-  reservation?: boolean;
-};
-
-function buildDefaultPublicMessage(sujet?: string): string {
-  switch (sujet?.trim()) {
-    case 'Acquérir un terrain':
-      return 'Je souhaite acquérir un terrain et recevoir un accompagnement MTM pour la réservation.';
-    case 'Demander une visite':
-      return 'Je souhaite planifier une visite du terrain et obtenir un rendez-vous avec un conseiller MTM.';
-    case 'Demander une vérification':
-      return 'Je souhaite demander une vérification foncière et un accompagnement MTM sur ce projet.';
-    case 'Parler de gestion locative':
-      return 'Je souhaite échanger sur une gestion locative ou un accompagnement MTM associé à ce terrain.';
-    default:
-      return 'Demande depuis le site public';
-  }
+  initialSujet?: string;
 }
 
-export function useContactForm(onSuccess?: () => void) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isSuccess, setIsSuccess] = useState(false);
+export function useContactForm({ terrainId, initialSujet }: UseContactFormOptions = {}) {
+  const [values, setValues] = useState<ContactFormValues>({
+    ...EMPTY_VALUES,
+    sujet: initialSujet ?? '',
+  });
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  async function submit(values: ContactFormValues): Promise<boolean> {
-    setIsSubmitting(true);
-    setError(null);
-    setIsSuccess(false);
+  const setValue = useCallback((field: keyof ContactFormValues, value: string) => {
+    setValues((previous) => ({ ...previous, [field]: value }));
+  }, []);
 
+  const reset = useCallback(() => {
+    setValues({ ...EMPTY_VALUES, sujet: initialSujet ?? '' });
+    setErrors({});
+    setSubmitted(false);
+    setSubmitError(null);
+  }, [initialSujet]);
+
+  const submit = useCallback(async () => {
+    const fieldErrors = validateContactForm(values);
+    setErrors(fieldErrors);
+    if (hasErrors(fieldErrors)) return;
+
+    setSubmitting(true);
+    setSubmitError(null);
     try {
-      const { reservation, sujet, ...requestValues } = values;
-      const message =
-        (values.message && values.message.trim()) ||
-        buildDefaultPublicMessage(values.sujet);
-      const payload = {
-        ...requestValues,
-        sujet,
-        message,
-      };
-      const reservationPayload = {
-        ...requestValues,
-        message:
-          message,
-      };
-      if (reservation && values.terrainId) {
-        await sendReservationRequest(reservationPayload);
-      } else {
-        await sendContact(payload);
-      }
-      setIsSuccess(true);
-      onSuccess?.();
-      return true;
-    } catch {
-      setError('Impossible d’envoyer le message. Veuillez réessayer.');
-      return false;
+      await sendContactMessage({
+        nom: values.nom.trim(),
+        email: values.email.trim(),
+        telephone: values.telephone.trim() || undefined,
+        sujet: values.sujet.trim() || undefined,
+        message: values.message.trim(),
+        terrainId,
+      });
+      setSubmitted(true);
+    } catch (error) {
+      setSubmitError(
+        error instanceof ApiError ? error.message : "L'envoi a échoué. Merci de réessayer.",
+      );
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
-  }
+  }, [values, terrainId]);
 
-  return { submit, isSubmitting, error, isSuccess };
+  return { values, setValue, errors, submitting, submitted, submitError, submit, reset };
 }

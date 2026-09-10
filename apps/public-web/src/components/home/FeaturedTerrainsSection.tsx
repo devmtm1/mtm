@@ -1,52 +1,42 @@
-import { ArrowRight } from 'lucide-react';
-import type { Terrain } from '../../domain/terrains/types';
+import { useMemo } from 'react';
+import { useTerrainsCatalog } from '../../hooks/useTerrainsCatalog';
 import { TerrainCard } from '../terrains/TerrainCard';
+import { SectionHeading } from '../ui/SectionHeading';
+import { Spinner } from '../ui/Spinner';
+import { EmptyState } from '../ui/EmptyState';
+import { LinkButton } from '../ui/LinkButton';
+import { ROUTES } from '../../routes';
 
-type FeaturedTerrainsSectionProps = {
-  terrains: Terrain[];
-  onSelect: (terrain: Terrain) => void;
-  onViewAll: () => void;
-};
-
-export function FeaturedTerrainsSection({
-  terrains,
-  onSelect,
-  onViewAll,
-}: Readonly<FeaturedTerrainsSectionProps>) {
-  if (!terrains.length) return null;
+export function FeaturedTerrainsSection() {
+  const filters = useMemo(() => ({ misEnAvant: true, pageSize: 6 }), []);
+  const { data, loading, error } = useTerrainsCatalog(filters);
 
   return (
-    <section
-      id="terrains-mis-en-avant"
-      className="reveal-section mx-auto max-w-7xl px-5 pb-12 pt-20 lg:px-10 lg:pt-24"
-    >
-      <div className="catalog-heading flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-        <div>
-          <p className="eyebrow">Mis en avant</p>
-          <h2 className="section-title">
-            Nos terrains
-            <br />
-            <i>à ne pas manquer.</i>
-          </h2>
-        </div>
-        <button
-          type="button"
-          className="self-start border-b border-ink pb-1 text-sm font-bold transition hover:text-coral sm:self-end"
-          onClick={onViewAll}
-        >
-          Voir tous les terrains{' '}
-          <ArrowRight className="ml-2 inline" size={15} />
-        </button>
+    <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
+        <SectionHeading
+          eyebrow="Sélection MTM"
+          title="Terrains mis en avant"
+          description="Une sélection d'opportunités vérifiées, prêtes à la commercialisation."
+        />
+        <LinkButton to={ROUTES.catalog} variant="secondary">
+          Voir tous les terrains
+        </LinkButton>
       </div>
-      <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {terrains.map((terrain, index) => (
-          <TerrainCard
-            key={terrain.id}
-            terrain={terrain}
-            index={index}
-            onSelect={onSelect}
-          />
-        ))}
+
+      <div className="mt-8">
+        {loading && <Spinner />}
+        {error && <EmptyState title="Impossible de charger les terrains" description={error} />}
+        {!loading && !error && data && data.items.length === 0 && (
+          <EmptyState title="Aucun terrain mis en avant pour le moment" />
+        )}
+        {!loading && !error && data && data.items.length > 0 && (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {data.items.map((terrain) => (
+              <TerrainCard key={terrain.id} terrain={terrain} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

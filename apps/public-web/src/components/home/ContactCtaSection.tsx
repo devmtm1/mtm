@@ -1,27 +1,17 @@
-import { ArrowRight, MessageCircle } from 'lucide-react';
-export function ContactCtaSection({
-  onContact,
-}: Readonly<{ onContact: () => void }>) {
+import { LinkButton } from '../ui/LinkButton';
+import { ROUTES } from '../../routes';
+
+export function ContactCtaSection() {
   return (
-    <section className="cta-section">
-      <div className="cta-section-inner mx-auto max-w-7xl px-5 py-16 lg:px-10 lg:py-20">
-        <div className="cta-copy">
-          <span className="cta-icon"><MessageCircle size={20} /></span>
-          <div>
-            <p className="eyebrow text-light">Un projet en tête ?</p>
-            <h2>Parlons de ce qui compte pour vous.</h2>
-          </div>
-        </div>
-        <div className="cta-action">
-          <p>Un premier échange suffit pour comprendre votre besoin et vous orienter.</p>
-        <button
-          type="button"
-          className="cta-button"
-          onClick={onContact}
-        >
-          Prendre rendez-vous <ArrowRight size={16} />
-        </button>
-        </div>
+    <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
+      <div className="flex flex-col items-center gap-4 rounded-lg border border-mtm-border bg-mtm-surface px-6 py-12 text-center shadow-card">
+        <h2 className="font-display text-2xl font-bold text-mtm-text">
+          Une question ? Un projet en tête ?
+        </h2>
+        <p className="max-w-xl text-sm text-mtm-muted">
+          Notre équipe vous accompagne, où que vous soyez, y compris depuis l'étranger.
+        </p>
+        <LinkButton to={ROUTES.contact}>Contactez-nous</LinkButton>
       </div>
     </section>
   );

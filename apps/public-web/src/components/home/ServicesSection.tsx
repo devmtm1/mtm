@@ -1,74 +1,58 @@
-import {
-  ArrowRight,
-  Building2,
-  ClipboardCheck,
-  FileCog,
-  Home,
-} from 'lucide-react';
+import { Building2, FileCheck2, Key, LandPlot } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ROUTES } from '../../routes';
+import { SectionHeading } from '../ui/SectionHeading';
 
-const services = [
+const SERVICES = [
   {
-    id: 'gestion-locative',
-    number: '01',
+    icon: LandPlot,
+    title: 'Vente de terrains',
+    description: 'Terrains vérifiés, titrés et prêts à la commercialisation, partout au Sénégal.',
+    to: ROUTES.catalog,
+  },
+  {
+    icon: Key,
     title: 'Gestion locative',
-    description:
-      'Confier vos biens, suivre vos revenus et simplifier la relation avec vos locataires.',
-    icon: Home,
+    description: 'Suivi des loyers, des locataires et des biens confiés, en toute transparence.',
+    to: ROUTES.gestionLocative,
   },
   {
-    id: 'verification-fonciere',
-    number: '02',
-    title: 'Vérification foncière',
-    description:
-      'Faire vérifier un terrain à distance avec un rapport clair, documenté et traçable.',
-    icon: ClipboardCheck,
-  },
-  {
-    id: 'construction',
-    number: '03',
-    title: 'Construction',
-    description:
-      'Donner vie à votre projet grâce à un suivi structuré du devis à la livraison.',
     icon: Building2,
+    title: 'Construction',
+    description: "Accompagnement de vos projets de construction, du devis à la livraison.",
+    to: ROUTES.construction,
   },
   {
-    id: 'demarches',
-    number: '04',
-    title: 'Démarches',
-    description:
-      'Formalités administratives, permis de construire et raccordements gérés pour vous.',
-    icon: FileCog,
+    icon: FileCheck2,
+    title: 'Démarches administratives',
+    description: "Vérification foncière et démarches auprès des administrations compétentes.",
+    to: ROUTES.demarches,
   },
 ];
 
 export function ServicesSection() {
   return (
-    <section
-      id="services"
-      className="reveal-section border-y border-slate-200 bg-white"
-    >
-      <div className="mx-auto max-w-7xl px-5 py-20 lg:px-10 lg:py-28">
-        <p className="eyebrow">Nos services</p>
-        <h2 className="section-title">
-          Un seul partenaire pour
-          <br />
-          <i>tous vos projets.</i>
-        </h2>
-        <div className="services-grid mt-10">
-          {services.map(({ id, number, title, description, icon: Icon }) => (
-            <article className="service-card" id={id} key={id}>
-              <div className="service-card-topline">
-                <span className="service-number">{number}</span>
-                <span className="service-icon"><Icon size={20} strokeWidth={1.7} /></span>
-              </div>
-              <h3>{title}</h3>
-              <p>{description}</p>
-              <a href="#contact">
-                En savoir plus <ArrowRight size={15} />
-              </a>
-            </article>
-          ))}
-        </div>
+    <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+      <SectionHeading
+        eyebrow="Nos services"
+        title="Un accompagnement complet"
+        description="De l'acquisition à la gestion, MTM Immobilier couvre l'ensemble de votre projet."
+        align="center"
+      />
+      <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {SERVICES.map(({ icon: Icon, title, description, to }) => (
+          <Link
+            key={title}
+            to={to}
+            className="flex flex-col gap-3 rounded-lg border border-mtm-border bg-mtm-surface p-5 shadow-card transition-shadow hover:shadow-lg"
+          >
+            <span className="flex h-11 w-11 items-center justify-center rounded-md bg-mtm-primary/10 text-mtm-primary">
+              <Icon className="h-6 w-6" aria-hidden="true" />
+            </span>
+            <h3 className="font-display text-base font-bold text-mtm-text">{title}</h3>
+            <p className="text-sm text-mtm-muted">{description}</p>
+          </Link>
+        ))}
       </div>
     </section>
   );

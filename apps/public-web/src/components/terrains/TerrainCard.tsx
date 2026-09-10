@@ -1,72 +1,58 @@
-import { ArrowRight, MapPin } from 'lucide-react';
-import type { CSSProperties } from 'react';
-import type { Terrain } from '../../domain/terrains/types';
+import { Link } from 'react-router-dom';
+import { MapPin } from 'lucide-react';
+import type { Terrain } from '../../types/terrain';
+import { formatMoney, formatSuperficie } from '../../utils/format';
+import { ROUTES } from '../../routes';
 
-type TerrainCardProps = {
-  terrain: Terrain;
-  index: number;
-  onSelect: (terrain: Terrain) => void;
-};
+export function TerrainCard({ terrain }: { terrain: Terrain }) {
+  const cover = terrain.medias.find((media) => media.type === 'photo') ?? terrain.medias[0];
+  const location = [terrain.commune, terrain.region].filter(Boolean).join(', ');
 
-export function TerrainCard({
-  terrain,
-  index,
-  onSelect,
-}: Readonly<TerrainCardProps>) {
   return (
-    <article
-      className="terrain-card group"
-      style={{ '--card-index': index } as CSSProperties}
+    <Link
+      to={ROUTES.terrainDetail(terrain.id)}
+      className="group flex flex-col overflow-hidden rounded-lg border border-mtm-border bg-mtm-surface shadow-card transition-shadow hover:shadow-lg"
     >
-      <div className="terrain-card-media relative aspect-[1.75] overflow-hidden">
-        <img
-          className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
-          src={terrain.image}
-          alt={`${terrain.name}, ${terrain.location}`}
-          loading="lazy"
-        />
-        <span className="terrain-card-tag absolute left-2.5 top-2.5 rounded-full bg-white/95 px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-wide text-ink">
-          {terrain.tag}
-        </span>
-        <span className="terrain-card-status absolute bottom-2.5 right-2.5 rounded-full bg-ink/90 px-2 py-0.5 text-[0.62rem] font-semibold text-white">
-          {terrain.status}
-        </span>
-      </div>
-      <div className="terrain-card-body p-3.5">
-        <div className="terrain-card-reference">
-          <p>{terrain.referenceInterne ?? terrain.id}</p>
-          {terrain.misEnAvant && (
-            <span className="terrain-card-featured">Mis en avant</span>
-          )}
-        </div>
-        <h3 className="mt-1 font-display text-base leading-snug text-ink">
-          {terrain.name}
-        </h3>
-        <p className="terrain-card-location mt-1 text-[0.78rem] text-slate-500">
-          <MapPin size={13} /> {terrain.location}
-        </p>
-        <div className="terrain-card-details mt-3 grid grid-cols-2 gap-2 border-t border-slate-100 pt-3">
-          <div>
-            <p className="text-[0.68rem] text-slate-400">Superficie</p>
-            <p className="mt-0.5 text-[0.8rem] font-semibold text-ink">
-              {terrain.size}
-            </p>
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-mtm-border">
+        {cover ? (
+          <img
+            src={cover.secureUrl}
+            alt={terrain.nom}
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-sm text-mtm-muted">
+            Photo à venir
           </div>
-          <div className="text-right">
-            <p className="text-[0.68rem] text-slate-400">Prix </p>
-            <p className="mt-0.5 text-[0.8rem] font-semibold text-ink">
-              {terrain.price}
-            </p>
-          </div>
-        </div>
-        <button
-          type="button"
-          className="card-action mt-3 w-full rounded-lg px-3 py-2 text-[0.78rem] font-bold"
-          onClick={() => onSelect(terrain)}
-        >
-          Découvrir ce terrain <ArrowRight size={14} className="ml-1 inline" />
-        </button>
+        )}
+        {terrain.misEnAvant && (
+          <span className="absolute left-3 top-3 rounded-full bg-mtm-primary px-2.5 py-1 text-xs font-semibold text-white shadow-card">
+            Mis en avant
+          </span>
+        )}
       </div>
-    </article>
+
+      <div className="flex flex-1 flex-col gap-2 p-4">
+        <span className="text-xs font-semibold uppercase tracking-wide text-mtm-muted">
+          {terrain.referenceInterne}
+        </span>
+        <h3 className="font-display text-base font-bold text-mtm-text">{terrain.nom}</h3>
+        {location && (
+          <p className="flex items-center gap-1.5 text-sm text-mtm-muted">
+            <MapPin className="h-4 w-4 shrink-0" aria-hidden="true" />
+            {location}
+          </p>
+        )}
+        <div className="mt-auto flex items-center justify-between pt-2">
+          <span className="text-sm text-mtm-muted">
+            {formatSuperficie(terrain.superficie, terrain.uniteSuperficie)}
+          </span>
+          <span className="font-display text-base font-bold text-mtm-primary">
+            {formatMoney(terrain.prixPublic)}
+          </span>
+        </div>
+      </div>
+    </Link>
   );
 }
