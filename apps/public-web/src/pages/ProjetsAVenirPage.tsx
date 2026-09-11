@@ -1,7 +1,13 @@
 import { PageIntro } from '../components/layout/PageIntro';
 import { ShowcaseGrid } from '../components/showcase/ShowcaseGrid';
+import { usePageMetadata } from '../hooks/usePageMetadata';
 
 export function ProjetsAVenirPage() {
+  usePageMetadata({
+    title: 'Projets à venir',
+    description: 'Les prochains projets et programmes immobiliers préparés par MTM Immobilier au Sénégal.',
+  });
+
   return (
     <div>
       <PageIntro

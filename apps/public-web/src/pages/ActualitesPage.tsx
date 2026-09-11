@@ -1,6 +1,7 @@
 import { PageIntro } from '../components/layout/PageIntro';
 import { useContentBlocks } from '../hooks/useContentBlocks';
-import { Spinner } from '../components/ui/Spinner';
+import { usePageMetadata } from '../hooks/usePageMetadata';
+import { ArticleListSkeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Badge } from '../components/ui/Badge';
 
@@ -33,6 +34,11 @@ export function ActualitesPage() {
   const { data, loading, error } = useContentBlocks();
   const articles = data ? buildNewsItems(data) : [];
 
+  usePageMetadata({
+    title: 'Actualités et conseils',
+    description: 'Conseils et actualités de MTM Immobilier pour investir sereinement dans l’immobilier au Sénégal.',
+  });
+
   return (
     <div>
       <PageIntro
@@ -41,7 +47,7 @@ export function ActualitesPage() {
         description="Nos derniers conseils pour investir sereinement dans l'immobilier au Sénégal."
       />
       <section className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
-        {loading && <Spinner />}
+        {loading && <ArticleListSkeleton />}
         {error && <EmptyState title="Impossible de charger les actualités" description={error} />}
         {!loading && !error && articles.length === 0 && (
           <EmptyState title="Aucune actualité publiée pour le moment" />

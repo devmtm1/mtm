@@ -118,14 +118,17 @@ describe('MandatsService', () => {
     prismaMock.mandat.findUnique.mockResolvedValue({ id: 'existing' });
 
     await expect(
-      service.create({
-        referenceInterne: 'M-001',
-        proprietaireId: 'p1',
-        typeMandat: 'Vente',
-        dateDebut: '2026-01-01',
-        dateFin: '2027-01-01',
-        statut: 'Brouillon',
-      }, internalUser),
+      service.create(
+        {
+          referenceInterne: 'M-001',
+          proprietaireId: 'p1',
+          typeMandat: 'Vente',
+          dateDebut: '2026-01-01',
+          dateFin: '2027-01-01',
+          statut: 'Brouillon',
+        },
+        internalUser,
+      ),
     ).rejects.toThrow(ConflictException);
     expect(prismaMock.mandat.create).not.toHaveBeenCalled();
   });
@@ -137,14 +140,17 @@ describe('MandatsService', () => {
     });
 
     await expect(
-      service.create({
-        referenceInterne: 'M-002',
-        proprietaireId: 'p1',
-        typeMandat: 'Vente',
-        dateDebut: '2026-01-01',
-        dateFin: '2027-01-01',
-        statut: 'Invalide',
-      }, internalUser),
+      service.create(
+        {
+          referenceInterne: 'M-002',
+          proprietaireId: 'p1',
+          typeMandat: 'Vente',
+          dateDebut: '2026-01-01',
+          dateFin: '2027-01-01',
+          statut: 'Invalide',
+        },
+        internalUser,
+      ),
     ).rejects.toThrow(BadRequestException);
     expect(prismaMock.mandat.create).not.toHaveBeenCalled();
   });
@@ -156,11 +162,16 @@ describe('MandatsService', () => {
     });
 
     await expect(
-      service.addDocument('m1', { type: 'photo' }, {
-        buffer: Buffer.from('%PDF-1.7'),
-        mimetype: 'application/pdf',
-        size: 1024,
-      } as Express.Multer.File, internalUser),
+      service.addDocument(
+        'm1',
+        { type: 'photo' },
+        {
+          buffer: Buffer.from('%PDF-1.7'),
+          mimetype: 'application/pdf',
+          size: 1024,
+        } as Express.Multer.File,
+        internalUser,
+      ),
     ).rejects.toThrow(BadRequestException);
     expect(cloudinaryMock.upload).not.toHaveBeenCalled();
   });

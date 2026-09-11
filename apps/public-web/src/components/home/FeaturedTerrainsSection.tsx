@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useTerrainsCatalog } from '../../hooks/useTerrainsCatalog';
 import { TerrainCard } from '../terrains/TerrainCard';
 import { SectionHeading } from '../ui/SectionHeading';
-import { Spinner } from '../ui/Spinner';
+import { CardGridSkeleton } from '../ui/Skeleton';
 import { EmptyState } from '../ui/EmptyState';
 import { LinkButton } from '../ui/LinkButton';
 import { ROUTES } from '../../routes';
@@ -25,7 +25,7 @@ export function FeaturedTerrainsSection() {
       </div>
 
       <div className="mt-8">
-        {loading && <Spinner />}
+        {loading && <CardGridSkeleton count={3} />}
         {error && <EmptyState title="Impossible de charger les terrains" description={error} />}
         {!loading && !error && data && data.items.length === 0 && (
           <EmptyState title="Aucun terrain mis en avant pour le moment" />

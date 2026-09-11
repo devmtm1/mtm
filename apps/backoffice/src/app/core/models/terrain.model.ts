@@ -41,6 +41,7 @@ export interface TerrainDetail extends TerrainListItem {
   vocation: string | null;
   proximiteAxes: string | null;
   pointsInteret: TerrainPointInteret[] | null;
+  description: string | null;
   notesInternes: string | null;
   proprietaire: ProprietaireSummary | null;
   commercialResponsable: { id: string; firstName: string; lastName: string } | null;
@@ -132,6 +133,7 @@ export interface CreateTerrainPayload {
   vocation?: string;
   proximiteAxes?: string;
   pointsInteret?: TerrainPointInteret[];
+  description?: string;
   notesInternes?: string;
   commercialResponsableId?: string;
   /** Obligatoire côté API si un champ sensible (prix, marge, commission, propriétaire) est modifié. */

@@ -39,10 +39,7 @@ export function validateUploadedAsset(
   }
 }
 
-function matchesSignature(
-  file: Express.Multer.File,
-  kind: AssetKind,
-): boolean {
+function matchesSignature(file: Express.Multer.File, kind: AssetKind): boolean {
   const buffer = file.buffer;
   const mimetype = file.mimetype;
 

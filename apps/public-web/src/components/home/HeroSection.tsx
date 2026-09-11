@@ -39,25 +39,39 @@ export function HeroSection() {
   return (
     <section className="relative overflow-hidden bg-mtm-primary-dark">
       {playVideo && (
-        <video
-          className="absolute inset-0 h-full w-full object-cover"
-          src="/video.mp4"
-          autoPlay
-          muted
-          loop
-          playsInline
+        <>
+          <video
+            className="absolute inset-0 h-full w-full object-cover"
+            src="/video.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            aria-hidden="true"
+          />
+          {/* Voile sombre neutre : il garantit le contraste du texte blanc sans
+              teinter la vidéo. Une couche de marque très légère par-dessus
+              conserve l'identité MTM — un aplat rouge opaque, lui, délavait
+              complètement l'image. */}
+          <div
+            className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/25"
+            aria-hidden="true"
+          />
+          <div className="absolute inset-0 bg-mtm-primary-dark/20 mix-blend-multiply" aria-hidden="true" />
+        </>
+      )}
+      {!playVideo && (
+        // Sans vidéo (mobile, mouvement réduit), l'aplat de marque suffit :
+        // on l'anime seulement d'un léger halo pour éviter la surface plate.
+        <div
+          className="absolute inset-0 opacity-60"
+          style={{
+            backgroundImage:
+              'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.14), transparent 45%), radial-gradient(circle at 80% 0%, rgba(255,255,255,0.08), transparent 40%)',
+          }}
           aria-hidden="true"
         />
       )}
-      <div className="absolute inset-0 bg-mtm-primary-dark/75" aria-hidden="true" />
-      <div
-        className="absolute inset-0 opacity-40"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.12), transparent 45%), radial-gradient(circle at 80% 0%, rgba(255,255,255,0.08), transparent 40%)',
-        }}
-        aria-hidden="true"
-      />
       <div className="relative mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 py-20 sm:px-6 sm:py-28">
         <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
           Terrains · Gestion locative · Construction

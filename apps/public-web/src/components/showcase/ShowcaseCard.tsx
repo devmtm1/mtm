@@ -1,18 +1,18 @@
 import { MapPin } from 'lucide-react';
 import type { ShowcaseItem } from '../../types/showcase';
 import { formatDate } from '../../utils/format';
+import { MediaImage } from '../ui/MediaImage';
 
 export function ShowcaseCard({ item }: { item: ShowcaseItem }) {
   return (
     <article className="flex flex-col overflow-hidden rounded-lg border border-mtm-border bg-mtm-surface shadow-card">
       <div className="aspect-[4/3] w-full overflow-hidden bg-mtm-border">
-        {item.imageUrl ? (
-          <img src={item.imageUrl} alt={item.title} loading="lazy" className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-sm text-mtm-muted">
-            Image à venir
-          </div>
-        )}
+        <MediaImage
+          src={item.imageUrl}
+          alt={item.title}
+          fallbackLabel="Image à venir"
+          className="h-full w-full object-cover"
+        />
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
         <h3 className="font-display text-base font-bold text-mtm-text">{item.title}</h3>

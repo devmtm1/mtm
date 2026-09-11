@@ -1,7 +1,13 @@
 import { PageIntro } from '../components/layout/PageIntro';
 import { ShowcaseGrid } from '../components/showcase/ShowcaseGrid';
+import { usePageMetadata } from '../hooks/usePageMetadata';
 
 export function RealisationsPage() {
+  usePageMetadata({
+    title: 'Nos réalisations',
+    description: 'Un aperçu des projets fonciers et immobiliers menés à bien par MTM Immobilier.',
+  });
+
   return (
     <div>
       <PageIntro

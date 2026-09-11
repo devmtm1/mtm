@@ -20,6 +20,7 @@ const baseTerrain: Terrain = {
   dimensions: null,
   prixPublic: 15000000,
   misEnAvant: true,
+  description: null,
   accesRoutier: null,
   eauDisponible: null,
   electriciteDisponible: null,

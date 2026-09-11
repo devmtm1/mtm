@@ -42,6 +42,16 @@ export class TerrainsController {
     return this.terrains.findPublic(query);
   }
 
+  /**
+   * Options de filtres du catalogue public. Déclaré avant `public/:id` pour
+   * que « options » ne soit pas capté comme un identifiant.
+   */
+  @Public()
+  @Get('public/options')
+  getPublicFilterOptions() {
+    return this.terrains.getPublicFilterOptions();
+  }
+
   @Public()
   @Get('public/:id')
   findPublicOne(@Param('id', ParseUUIDPipe) id: string) {

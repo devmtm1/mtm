@@ -89,7 +89,14 @@ describe('Parcours J1.6 Ventes (e2e)', () => {
 
     fakePrisma.seedSystemSetting({
       key: 'ventes.statuts',
-      value: ['en_cours', 'pre_reserve', 'reserve', 'paiement_partiel', 'solde', 'annule'],
+      value: [
+        'en_cours',
+        'pre_reserve',
+        'reserve',
+        'paiement_partiel',
+        'solde',
+        'annule',
+      ],
     });
     fakePrisma.seedSystemSetting({
       key: 'ventes.transitions',
@@ -108,7 +115,15 @@ describe('Parcours J1.6 Ventes (e2e)', () => {
     });
     fakePrisma.seedSystemSetting({
       key: 'ventes.documentTypes',
-      value: ['bon_reservation', 'recu', 'facture', 'contrat', 'etat_paiement', 'justificatif', 'autre'],
+      value: [
+        'bon_reservation',
+        'recu',
+        'facture',
+        'contrat',
+        'etat_paiement',
+        'justificatif',
+        'autre',
+      ],
     });
     fakePrisma.seedSystemSetting({
       key: 'ventes.echeancesDefaut',

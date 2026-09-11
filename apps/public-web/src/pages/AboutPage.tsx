@@ -1,6 +1,7 @@
 import { Handshake, ShieldCheck, Users } from 'lucide-react';
 import { PageIntro } from '../components/layout/PageIntro';
 import { useContentBlocks } from '../hooks/useContentBlocks';
+import { usePageMetadata } from '../hooks/usePageMetadata';
 
 const VALUES = [
   {
@@ -28,6 +29,11 @@ const DEFAULT_TEXT =
 
 export function AboutPage() {
   const { data } = useContentBlocks();
+  usePageMetadata({
+    title: 'À propos',
+    description:
+      'MTM Immobilier : une agence immobilière au Sénégal fondée sur la transparence, la proximité à distance et l’engagement auprès de la diaspora.',
+  });
   const tagline = data?.find((block) => block.key === 'about.title')?.content ?? DEFAULT_TAGLINE;
   const text = data?.find((block) => block.key === 'about.text')?.content ?? DEFAULT_TEXT;
 

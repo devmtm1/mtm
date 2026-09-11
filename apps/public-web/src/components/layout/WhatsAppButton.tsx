@@ -1,11 +1,12 @@
 import { MessageCircle } from 'lucide-react';
-
-const WHATSAPP_NUMBER = '221770000000';
+import { useSiteContact } from '../../hooks/useSiteContact';
 
 export function WhatsAppButton() {
+  const { whatsapp } = useSiteContact();
+
   return (
     <a
-      href={`https://wa.me/${WHATSAPP_NUMBER}`}
+      href={`https://wa.me/${whatsapp}`}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Discuter sur WhatsApp"

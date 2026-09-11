@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { Play } from 'lucide-react';
 import type { TerrainMedia } from '../../types/terrain';
+import { MediaImage } from '../ui/MediaImage';
 
 export function TerrainGallery({ medias, alt }: { medias: TerrainMedia[]; alt: string }) {
   const photosAndVideos = medias.filter((media) => media.type !== 'plan');
@@ -20,7 +22,13 @@ export function TerrainGallery({ medias, alt }: { medias: TerrainMedia[]; alt: s
         {active.type === 'video' ? (
           <video src={active.secureUrl} controls className="h-full w-full object-cover" />
         ) : (
-          <img src={active.secureUrl} alt={active.title ?? alt} className="h-full w-full object-cover" />
+          <MediaImage
+            src={active.secureUrl}
+            alt={active.title ?? alt}
+            loading="eager"
+            fallbackLabel="Photo indisponible"
+            className="h-full w-full object-cover"
+          />
         )}
       </div>
 
@@ -32,16 +40,26 @@ export function TerrainGallery({ medias, alt }: { medias: TerrainMedia[]; alt: s
               type="button"
               onClick={() => setActiveId(media.id)}
               aria-label={media.title ?? 'Voir ce média'}
-              className={`h-16 w-20 shrink-0 overflow-hidden rounded-md border-2 transition-colors ${
+              className={`relative h-16 w-20 shrink-0 overflow-hidden rounded-md border-2 transition-colors ${
                 media.id === active.id ? 'border-mtm-primary' : 'border-transparent'
               }`}
             >
-              <img
-                src={media.secureUrl}
-                alt=""
-                aria-hidden="true"
-                className="h-full w-full object-cover"
-              />
+              {media.type === 'video' ? (
+                // Une vignette <img> pointant sur un fichier vidéo ne s'affiche
+                // pas : on rend un aperçu explicite avec une icône de lecture.
+                <span className="flex h-full w-full items-center justify-center bg-mtm-text/80 text-white">
+                  <Play className="h-5 w-5" aria-hidden="true" />
+                </span>
+              ) : (
+                <MediaImage
+                  src={media.secureUrl}
+                  alt=""
+                  aria-hidden
+                  compact
+                  fallbackLabel="Photo indisponible"
+                  className="h-full w-full object-cover"
+                />
+              )}
             </button>
           ))}
         </div>

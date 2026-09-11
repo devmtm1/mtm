@@ -1,8 +1,17 @@
 import { Mail, MapPin, Phone } from 'lucide-react';
 import { PageIntro } from '../components/layout/PageIntro';
 import { ContactForm } from '../components/contact/ContactForm';
+import { toTelHref, useSiteContact } from '../hooks/useSiteContact';
+import { usePageMetadata } from '../hooks/usePageMetadata';
 
 export function ContactPage() {
+  const contact = useSiteContact();
+  usePageMetadata({
+    title: 'Contact',
+    description:
+      'Contactez MTM Immobilier pour une visite, une vérification de terrain ou un projet immobilier au Sénégal — réponse rapide, y compris depuis l’étranger.',
+  });
+
   return (
     <div>
       <PageIntro
@@ -19,7 +28,7 @@ export function ContactPage() {
             </span>
             <div>
               <p className="text-sm font-semibold text-mtm-text">Adresse</p>
-              <p className="text-sm text-mtm-muted">Dakar, Sénégal</p>
+              <p className="text-sm text-mtm-muted">{contact.adresse}</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
@@ -28,8 +37,8 @@ export function ContactPage() {
             </span>
             <div>
               <p className="text-sm font-semibold text-mtm-text">Téléphone</p>
-              <a href="tel:+221770000000" className="text-sm text-mtm-muted hover:text-mtm-primary">
-                +221 77 000 00 00
+              <a href={toTelHref(contact.telephone)} className="text-sm text-mtm-muted hover:text-mtm-primary">
+                {contact.telephone}
               </a>
             </div>
           </div>
@@ -40,10 +49,10 @@ export function ContactPage() {
             <div>
               <p className="text-sm font-semibold text-mtm-text">E-mail</p>
               <a
-                href="mailto:contact@mtm-immobilier.sn"
+                href={`mailto:${contact.email}`}
                 className="text-sm text-mtm-muted hover:text-mtm-primary"
               >
-                contact@mtm-immobilier.sn
+                {contact.email}
               </a>
             </div>
           </div>

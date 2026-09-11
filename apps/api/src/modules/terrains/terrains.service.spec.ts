@@ -75,13 +75,16 @@ describe('TerrainsService', () => {
     prismaMock.terrain.findUnique.mockResolvedValue({ id: 'existing' });
 
     await expect(
-      service.create({
-        referenceInterne: 'T-001',
-        nom: 'Terrain test',
-        statutJuridique: 'Bail',
-        niveauVerification: 'Non vérifié',
-        statutCommercial: 'Brouillon',
-      }, internalUser),
+      service.create(
+        {
+          referenceInterne: 'T-001',
+          nom: 'Terrain test',
+          statutJuridique: 'Bail',
+          niveauVerification: 'Non vérifié',
+          statutCommercial: 'Brouillon',
+        },
+        internalUser,
+      ),
     ).rejects.toThrow(ConflictException);
     expect(prismaMock.terrain.create).not.toHaveBeenCalled();
   });
@@ -90,13 +93,16 @@ describe('TerrainsService', () => {
     prismaMock.terrain.findUnique.mockResolvedValue(null);
 
     await expect(
-      service.create({
-        referenceInterne: 'T-001',
-        nom: 'Terrain test',
-        statutJuridique: 'Bail',
-        niveauVerification: 'Non vérifié',
-        statutCommercial: 'Statut inconnu',
-      }, internalUser),
+      service.create(
+        {
+          referenceInterne: 'T-001',
+          nom: 'Terrain test',
+          statutJuridique: 'Bail',
+          niveauVerification: 'Non vérifié',
+          statutCommercial: 'Statut inconnu',
+        },
+        internalUser,
+      ),
     ).rejects.toThrow(BadRequestException);
     expect(prismaMock.terrain.create).not.toHaveBeenCalled();
   });

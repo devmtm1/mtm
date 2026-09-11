@@ -647,6 +647,21 @@ async function main(): Promise<void> {
     { key: 'news.3.title', title: 'Actualité 3', content: 'Comprendre les statuts fonciers', type: 'text', ordre: 36 },
     { key: 'news.3.tag', title: 'Tag actualité 3', content: 'Territoire', type: 'stat', ordre: 37 },
     { key: 'news.3.excerpt', title: 'Extrait actualité 3', content: 'Un éclairage pour mieux lire les documents d\'un bien.', type: 'text', ordre: 38 },
+    // --- Coordonnées de l'entreprise (affichées dans le pied de page, la page
+    // Contact et le bouton WhatsApp du site public) : administrables sans
+    // intervention développeur, conformément à la section 5 du CDC.
+    { key: 'contact.adresse', title: 'Adresse', content: 'Dakar, Sénégal', type: 'text', ordre: 40 },
+    { key: 'contact.telephone', title: 'Téléphone', content: '+221 77 000 00 00', type: 'text', ordre: 41 },
+    { key: 'contact.email', title: 'E-mail', content: 'contact@mtm-immobilier.sn', type: 'text', ordre: 42 },
+    { key: 'contact.whatsapp', title: 'Numéro WhatsApp (format international, sans +)', content: '221770000000', type: 'text', ordre: 43 },
+    // --- Pages de services (Phase 2 côté métier, présentation éditable dès maintenant).
+    // Une ligne par point/étape, séparées par un retour à la ligne.
+    { key: 'gestion-locative.intro', title: 'Gestion locative — introduction', content: 'Confiez-nous la gestion de vos biens : nous nous occupons des locataires, des loyers et du suivi administratif, pour une tranquillité d’esprit totale.', type: 'text', ordre: 50 },
+    { key: 'gestion-locative.points', title: 'Gestion locative — prestations (une par ligne)', content: 'Recherche et sélection de locataires\nEncaissement des loyers et suivi des impayés\nÉtats des lieux d’entrée et de sortie\nGestion des cautions et des incidents\nRapports réguliers transmis au propriétaire', type: 'text', ordre: 51 },
+    { key: 'construction.intro', title: 'Construction — introduction', content: 'Du devis à la livraison, MTM Immobilier accompagne vos projets de construction avec un suivi rigoureux et transparent.', type: 'text', ordre: 52 },
+    { key: 'construction.etapes', title: 'Construction — étapes (une par ligne, format « Titre | Description »)', content: 'Étude et devis | Analyse de votre terrain et de votre programme, chiffrage détaillé.\nPlanification | Planning de chantier avec jalons et points de contrôle réguliers.\nSuivi de chantier | Journal de chantier, photos et rapports partagés avec vous.\nLivraison | Réception des travaux et remise des documents du projet.', type: 'text', ordre: 53 },
+    { key: 'demarches.intro', title: 'Démarches — introduction', content: 'Vous envisagez d’acheter un terrain, notamment depuis l’étranger ? Notre équipe se déplace pour vérifier le bien avant votre engagement. Tarif communiqué sur devis selon la nature du dossier.', type: 'text', ordre: 54 },
+    { key: 'demarches.etapes', title: 'Démarches — étapes (une par ligne, format « Titre | Description »)', content: 'Demande | Vous nous transmettez le terrain concerné et vos pièces disponibles.\nÉtude de faisabilité | Une étude préalable peut être réalisée avant engagement complet.\nVérification physique | Visite sur site : constat, photos, accès, environnement.\nVérification administrative | Consultation des administrations compétentes (mairie, service des Domaines...).\nRapport | Conclusion structurée et recommandation : favorable, défavorable ou à compléter.', type: 'text', ordre: 55 },
   ];
 
   for (const block of contentBlocks) {

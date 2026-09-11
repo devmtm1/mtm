@@ -1,6 +1,6 @@
 import type { ShowcaseCategory } from '../../types/showcase';
 import { useShowcase } from '../../hooks/useShowcase';
-import { Spinner } from '../ui/Spinner';
+import { CardGridSkeleton } from '../ui/Skeleton';
 import { EmptyState } from '../ui/EmptyState';
 import { ShowcaseCard } from './ShowcaseCard';
 
@@ -13,7 +13,7 @@ interface ShowcaseGridProps {
 export function ShowcaseGrid({ category, emptyLabel, limit }: ShowcaseGridProps) {
   const { data, loading, error } = useShowcase(category);
 
-  if (loading) return <Spinner label="Chargement..." />;
+  if (loading) return <CardGridSkeleton variant="showcase" count={limit ?? 3} />;
   if (error) return <EmptyState title="Impossible de charger le contenu" description={error} />;
   if (!data || data.length === 0) return <EmptyState title={emptyLabel} />;
 

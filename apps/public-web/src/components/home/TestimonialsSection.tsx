@@ -1,13 +1,14 @@
 import { Quote } from 'lucide-react';
 import { useContentBlocks } from '../../hooks/useContentBlocks';
 import { SectionHeading } from '../ui/SectionHeading';
-import { Spinner } from '../ui/Spinner';
 
 export function TestimonialsSection() {
   const { data, loading, error } = useContentBlocks('testimonial');
 
-  if (loading) return <Spinner />;
-  if (error || !data || data.length === 0) return null;
+  // Section facultative sous la ligne de flottaison : un spinner sur fond
+  // clair suivi d'un bloc sombre faisait un flash inutile. Elle apparaît
+  // simplement une fois les témoignages disponibles.
+  if (loading || error || !data || data.length === 0) return null;
 
   return (
     <section className="bg-mtm-primary-dark py-16">

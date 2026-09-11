@@ -7,10 +7,11 @@ import { TerrainMap } from '../components/terrains/TerrainMap';
 import { PointsInteretList } from '../components/terrains/PointsInteretList';
 import { ContactModal } from '../components/contact/ContactModal';
 import { ReservationModal } from '../components/reservation/ReservationModal';
-import { Spinner } from '../components/ui/Spinner';
+import { TerrainDetailSkeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
+import { usePageMetadata } from '../hooks/usePageMetadata';
 import { formatMoney, formatSuperficie } from '../utils/format';
 
 type ActiveModal = 'visite' | 'infos' | 'reservation' | null;
@@ -20,7 +21,16 @@ export function TerrainDetailPage() {
   const { data: terrain, loading, error } = useTerrain(id);
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
 
-  if (loading) return <Spinner label="Chargement du terrain..." />;
+  const location = [terrain?.commune, terrain?.region].filter(Boolean).join(', ');
+
+  // Titre dynamique : le nom du terrain (et sa localisation) identifie la
+  // fiche dans les onglets, l'historique et les résultats de recherche.
+  usePageMetadata({
+    title: terrain ? [terrain.nom, location].filter(Boolean).join(' – ') : 'Fiche terrain',
+    description: terrain?.description?.slice(0, 160) ?? undefined,
+  });
+
+  if (loading) return <TerrainDetailSkeleton />;
   if (error || !terrain) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
@@ -31,8 +41,6 @@ export function TerrainDetailPage() {
       </div>
     );
   }
-
-  const location = [terrain.commune, terrain.region].filter(Boolean).join(', ');
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
@@ -60,6 +68,15 @@ export function TerrainDetailPage() {
           </div>
 
           <TerrainGallery medias={terrain.medias} alt={terrain.nom} />
+
+          {terrain.description && (
+            <section>
+              <h2 className="font-display text-lg font-bold text-mtm-text">Description</h2>
+              <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-mtm-muted">
+                {terrain.description}
+              </p>
+            </section>
+          )}
 
           <section>
             <h2 className="font-display text-lg font-bold text-mtm-text">Caractéristiques</h2>

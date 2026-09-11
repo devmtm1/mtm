@@ -1,7 +1,12 @@
 import { PageIntro } from '../components/layout/PageIntro';
 import { ContactForm } from '../components/contact/ContactForm';
+import { useEditableContent, type EditableStep } from '../hooks/useEditableContent';
+import { usePageMetadata } from '../hooks/usePageMetadata';
 
-const STEPS = [
+const FALLBACK_INTRO =
+  "Vous envisagez d'acheter un terrain, notamment depuis l'étranger ? Notre équipe se déplace pour vérifier le bien avant votre engagement. Tarif communiqué sur devis selon la nature du dossier.";
+
+const FALLBACK_STEPS: EditableStep[] = [
   { title: 'Demande', description: 'Vous nous transmettez le terrain concerné et vos pièces disponibles.' },
   { title: 'Étude de faisabilité', description: 'Une étude préalable peut être réalisée avant engagement complet.' },
   { title: 'Vérification physique', description: 'Visite sur site : constat, photos, accès, environnement.' },
@@ -16,17 +21,24 @@ const STEPS = [
 ];
 
 export function DemarchesPage() {
+  const { text, steps } = useEditableContent();
+  usePageMetadata({
+    title: 'Démarches administratives et vérification foncière',
+    description:
+      'Faites vérifier un terrain au Sénégal avant d’acheter : visite sur site, contrôle administratif et rapport structuré par MTM Immobilier.',
+  });
+
   return (
     <div>
       <PageIntro
         eyebrow="Nos services"
         title="Démarches administratives"
-        description="Vous envisagez d'acheter un terrain, notamment depuis l'étranger ? Notre équipe se déplace pour vérifier le bien avant votre engagement. Tarif communiqué sur devis selon la nature du dossier."
+        description={text('demarches.intro', FALLBACK_INTRO)}
       />
 
       <section className="mx-auto max-w-4xl px-4 py-14 sm:px-6">
         <ol className="flex flex-col gap-4">
-          {STEPS.map((step, index) => (
+          {steps('demarches.etapes', FALLBACK_STEPS).map((step, index) => (
             <li
               key={step.title}
               className="flex items-start gap-4 rounded-lg border border-mtm-border bg-mtm-surface p-4 shadow-card"
@@ -36,7 +48,7 @@ export function DemarchesPage() {
               </span>
               <div>
                 <h2 className="font-display text-base font-bold text-mtm-text">{step.title}</h2>
-                <p className="mt-1 text-sm text-mtm-muted">{step.description}</p>
+                {step.description && <p className="mt-1 text-sm text-mtm-muted">{step.description}</p>}
               </div>
             </li>
           ))}

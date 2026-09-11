@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { ChevronDown, Menu, User, X } from 'lucide-react';
 import { ROUTES } from '../../routes';
 import { useAuth } from '../../contexts/auth-context-store';
@@ -9,6 +9,7 @@ const PRIMARY_LINKS = [
   { to: ROUTES.catalog, label: 'Nos terrains' },
   { to: ROUTES.realisations, label: 'Nos réalisations' },
   { to: ROUTES.projetsAVenir, label: 'Projets à venir' },
+  { to: ROUTES.about, label: 'À propos' },
 ];
 
 const SERVICE_LINKS = [
@@ -27,7 +28,26 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const { user } = useAuth();
+  const { pathname } = useLocation();
   const clientLabel = user ? user.firstName : 'Espace client';
+
+  // Filet de sécurité : tout changement de route referme les menus, quelle
+  // que soit la façon dont la navigation a été déclenchée (clic, clavier,
+  // bouton Retour du navigateur).
+  useEffect(() => {
+    setMobileOpen(false);
+    setServicesOpen(false);
+  }, [pathname]);
+
+  // Échap referme le menu déroulant, comme attendu de tout menu au clavier.
+  useEffect(() => {
+    if (!servicesOpen) return;
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') setServicesOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [servicesOpen]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-mtm-border bg-mtm-surface/95 backdrop-blur">
@@ -37,7 +57,7 @@ export function Header() {
           <span className="font-display text-lg font-bold text-mtm-text">MTM Immobilier</span>
         </NavLink>
 
-        <nav className="hidden items-center gap-7 md:flex">
+        <nav className="hidden items-center gap-6 lg:flex">
           {PRIMARY_LINKS.map((link) => (
             <NavLink key={link.to} to={link.to} className={navLinkClass} end={link.to === ROUTES.home}>
               {link.label}
@@ -64,6 +84,7 @@ export function Header() {
                   <NavLink
                     key={link.to}
                     to={link.to}
+                    onClick={() => setServicesOpen(false)}
                     className="block px-4 py-2 text-sm text-mtm-text hover:bg-mtm-bg hover:text-mtm-primary"
                   >
                     {link.label}
@@ -90,7 +111,7 @@ export function Header() {
 
         <button
           type="button"
-          className="inline-flex items-center justify-center rounded-md p-2 text-mtm-text md:hidden"
+          className="inline-flex items-center justify-center rounded-md p-2 text-mtm-text lg:hidden"
           onClick={() => setMobileOpen((open) => !open)}
           aria-label={mobileOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
           aria-expanded={mobileOpen}
@@ -100,7 +121,7 @@ export function Header() {
       </div>
 
       {mobileOpen && (
-        <nav className="border-t border-mtm-border bg-mtm-surface px-4 pb-4 md:hidden">
+        <nav className="border-t border-mtm-border bg-mtm-surface px-4 pb-4 lg:hidden">
           <ul className="flex flex-col gap-1 pt-2">
             {[...PRIMARY_LINKS, ...SERVICE_LINKS, { to: ROUTES.actualites, label: 'Actualités' }, { to: ROUTES.clientPortal, label: clientLabel }, { to: ROUTES.contact, label: 'Contact' }].map(
               (link) => (

@@ -170,7 +170,9 @@ export class VentesService {
     });
     const value = configured?.value;
     if (!Array.isArray(value)) {
-      throw new BadRequestException('Aucune règle de commission n’est configurée');
+      throw new BadRequestException(
+        'Aucune règle de commission n’est configurée',
+      );
     }
     const rule = value.find(
       (item): item is CommissionRule =>
@@ -283,7 +285,13 @@ export class VentesService {
     const request = await this.prisma.reservationRequest.findUnique({
       where: { id: requestId },
       include: {
-        terrain: { select: { id: true, statutCommercial: true, commercialResponsableId: true } },
+        terrain: {
+          select: {
+            id: true,
+            statutCommercial: true,
+            commercialResponsableId: true,
+          },
+        },
         dossierVente: { select: { id: true } },
       },
     });
@@ -296,7 +304,10 @@ export class VentesService {
     if (['Vendu', 'Indisponible'].includes(request.terrain.statutCommercial)) {
       throw new ConflictException('Ce terrain n’est plus disponible');
     }
-    if (!this.hasGlobalScope(user.roles) && request.terrain.commercialResponsableId !== user.id) {
+    if (
+      !this.hasGlobalScope(user.roles) &&
+      request.terrain.commercialResponsableId !== user.id
+    ) {
       throw new ForbiddenException(
         'Vous ne pouvez pas convertir une demande sur un terrain qui ne vous est pas attribué',
       );
@@ -357,7 +368,10 @@ export class VentesService {
       select: { id: true, nom: true, statutCommercial: true },
     });
     if (!terrain) throw new NotFoundException('Terrain introuvable');
-    if (['Vendu', 'Indisponible'].includes(terrain.statutCommercial)) {
+    // Liste blanche : seul un terrain explicitement « Disponible » accepte une
+    // demande publique. Une liste noire laissait passer « Suspendu », « Brouillon »
+    // et « Réservé », et testait un statut « Indisponible » qui n'existe pas.
+    if (terrain.statutCommercial !== 'Disponible') {
       throw new ConflictException('Ce terrain n’est plus disponible');
     }
     return this.prisma.reservationRequest.create({
@@ -379,20 +393,42 @@ export class VentesService {
       include: {
         prospect: {
           select: {
-            id: true, nom: true, prenom: true, email: true, telephone: true,
-            paysResidence: true, besoins: true, preferences: true,
+            id: true,
+            nom: true,
+            prenom: true,
+            email: true,
+            telephone: true,
+            paysResidence: true,
+            besoins: true,
+            preferences: true,
           },
         },
         terrain: {
           select: {
-            id: true, referenceInterne: true, nom: true, parcelleMatricule: true,
-            statutJuridique: true, typeDocumentFoncier: true,
-            niveauVerification: true, region: true, commune: true,
-            localisationDetail: true, latitude: true, longitude: true,
-            superficie: true, uniteSuperficie: true, dimensions: true,
-            prixPublic: true, statutCommercial: true, accesRoutier: true,
-            eauDisponible: true, electriciteDisponible: true, voisinage: true,
-            vocation: true, proximiteAxes: true, pointsInteret: true,
+            id: true,
+            referenceInterne: true,
+            nom: true,
+            parcelleMatricule: true,
+            statutJuridique: true,
+            typeDocumentFoncier: true,
+            niveauVerification: true,
+            region: true,
+            commune: true,
+            localisationDetail: true,
+            latitude: true,
+            longitude: true,
+            superficie: true,
+            uniteSuperficie: true,
+            dimensions: true,
+            prixPublic: true,
+            statutCommercial: true,
+            accesRoutier: true,
+            eauDisponible: true,
+            electriciteDisponible: true,
+            voisinage: true,
+            vocation: true,
+            proximiteAxes: true,
+            pointsInteret: true,
           },
         },
         mandat: { select: { id: true, referenceInterne: true, statut: true } },
@@ -419,10 +455,12 @@ export class VentesService {
     };
     const summary = this.withFinancialSummary(dossier, effectiveUser);
     const { documents, commissions, paiements, ...base } = summary;
-    const mappedDocuments = documents.map(({ storageKey, resourceType, ...document }) => ({
-      ...document,
-      secureUrl: this.cloudinary.url(storageKey, resourceType, false),
-    }));
+    const mappedDocuments = documents.map(
+      ({ storageKey, resourceType, ...document }) => ({
+        ...document,
+        secureUrl: this.cloudinary.url(storageKey, resourceType, false),
+      }),
+    );
 
     const response: Record<string, unknown> = {
       ...base,
@@ -489,6 +527,59 @@ export class VentesService {
     return { ...user, resetToken: rawToken };
   }
 
+  /**
+   * Demandes soumises par le client depuis le site public (section 4 CDC :
+   * « demandes » dans l'espace client). Le rattachement se fait sur l'e-mail
+   * du prospect, seul lien disponible pour une demande déposée sans compte.
+   */
+  async getClientDemandes(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { clientProspect: { select: { email: true } } },
+    });
+    const email = user?.clientProspect?.email;
+    if (!email)
+      throw new ForbiddenException('Ce compte n’est pas rattaché à un client');
+
+    const [contacts, reservationRequests] = await Promise.all([
+      this.prisma.contact.findMany({
+        where: { email },
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          sujet: true,
+          message: true,
+          createdAt: true,
+          lu: true,
+          terrain: { select: { referenceInterne: true, nom: true } },
+        },
+      }),
+      this.prisma.reservationRequest.findMany({
+        where: { email },
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          statut: true,
+          message: true,
+          createdAt: true,
+          terrain: { select: { referenceInterne: true, nom: true } },
+        },
+      }),
+    ]);
+
+    return {
+      messages: contacts.map((contact) => ({
+        id: contact.id,
+        sujet: contact.sujet,
+        message: contact.message,
+        createdAt: contact.createdAt,
+        traite: contact.lu,
+        terrain: contact.terrain,
+      })),
+      reservations: reservationRequests,
+    };
+  }
+
   async getClientPortal(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -551,10 +642,12 @@ export class VentesService {
         0,
       ),
       prixVente: dossier.prixVente === null ? null : Number(dossier.prixVente),
-      documents: dossier.documents.map(({ storageKey, resourceType, ...document }) => ({
-        ...document,
-        secureUrl: this.cloudinary.url(storageKey, resourceType, false),
-      })),
+      documents: dossier.documents.map(
+        ({ storageKey, resourceType, ...document }) => ({
+          ...document,
+          secureUrl: this.cloudinary.url(storageKey, resourceType, false),
+        }),
+      ),
     }));
   }
 
@@ -572,14 +665,24 @@ export class VentesService {
         isPublic: true,
         dossierVente: { prospectId: user.clientProspectId },
       },
-      select: { id: true, title: true, type: true, storageKey: true, resourceType: true },
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        storageKey: true,
+        resourceType: true,
+      },
     });
     if (!document) throw new NotFoundException('Document client introuvable');
     return {
       id: document.id,
       title: document.title,
       type: document.type,
-      secureUrl: this.cloudinary.url(document.storageKey, document.resourceType, false),
+      secureUrl: this.cloudinary.url(
+        document.storageKey,
+        document.resourceType,
+        false,
+      ),
     };
   }
 
@@ -638,7 +741,7 @@ export class VentesService {
       const baseMontant = Math.floor(prixVenteNumber / echeanceCount);
       const remainder = prixVenteNumber - baseMontant * echeanceCount;
       const now = new Date();
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+
       await this.prisma.echeancePaiement.createMany({
         data: Array.from({ length: echeanceCount }, (_, index) => ({
           dossierVenteId: dossier.id,
@@ -657,13 +760,22 @@ export class VentesService {
     return this.findOne(dossier.id, user);
   }
 
-  async createReservation(id: string, dto: CreateReservationDto, user: MandatUser) {
+  async createReservation(
+    id: string,
+    dto: CreateReservationDto,
+    user: MandatUser,
+  ) {
     try {
       return await this.prisma.$transaction(
         async (transaction) => {
           const dossier = await transaction.dossierVente.findFirst({
             where: { id, ...this.ownershipFilter(user) },
-            select: { id: true, terrainId: true, prixVente: true, statut: true },
+            select: {
+              id: true,
+              terrainId: true,
+              prixVente: true,
+              statut: true,
+            },
           });
           if (!dossier)
             throw new NotFoundException('Dossier de vente introuvable');
@@ -672,9 +784,7 @@ export class VentesService {
               'Un terrain est requis pour réserver',
             );
           if (['solde', 'annule'].includes(dossier.statut)) {
-            throw new ConflictException(
-              'Ce dossier ne peut plus être réservé',
-            );
+            throw new ConflictException('Ce dossier ne peut plus être réservé');
           }
           if (
             dossier.prixVente !== null &&
@@ -697,11 +807,10 @@ export class VentesService {
               'Une réservation active existe déjà pour ce terrain',
             );
 
-          const dureeBlocage = dto.dureeBlocageJours ?? (await this.getDefaultEcheanceCount());
+          const dureeBlocage =
+            dto.dureeBlocageJours ?? (await this.getDefaultEcheanceCount());
           const dateExpiration = new Date();
-          dateExpiration.setDate(
-            dateExpiration.getDate() + dureeBlocage,
-          );
+          dateExpiration.setDate(dateExpiration.getDate() + dureeBlocage);
 
           const reservation = await transaction.reservation.create({
             data: {
@@ -873,8 +982,7 @@ export class VentesService {
           );
 
           const newStatut =
-            dossier.prixVente !== null &&
-            paidAfter >= Number(dossier.prixVente)
+            dossier.prixVente !== null && paidAfter >= Number(dossier.prixVente)
               ? 'solde'
               : 'paiement_partiel';
 
@@ -892,7 +1000,10 @@ export class VentesService {
 
           if (newStatut === 'solde' && dossier.terrainId) {
             await transaction.terrain.updateMany({
-              where: { id: dossier.terrainId, statutCommercial: { in: ['Réservé', 'Disponible'] } },
+              where: {
+                id: dossier.terrainId,
+                statutCommercial: { in: ['Réservé', 'Disponible'] },
+              },
               data: { statutCommercial: 'Vendu' },
             });
             await transaction.dossierVente.update({
@@ -925,7 +1036,11 @@ export class VentesService {
     }
   }
 
-  async createCommission(id: string, dto: CreateCommissionDto, user: MandatUser) {
+  async createCommission(
+    id: string,
+    dto: CreateCommissionDto,
+    user: MandatUser,
+  ) {
     await this.ensureAccessible(id, user);
     const [dossier, commercial, rule] = await Promise.all([
       this.prisma.dossierVente.findUnique({
@@ -1128,7 +1243,10 @@ export class VentesService {
       if (dto.statut === 'annule') {
         if (dossier.reservations.length) {
           await transaction.reservation.updateMany({
-            where: { id: dossier.reservations[0].id, statut: { in: ['active', 'prolongee'] } },
+            where: {
+              id: dossier.reservations[0].id,
+              statut: { in: ['active', 'prolongee'] },
+            },
             data: { statut: 'annulee' },
           });
         }
@@ -1172,11 +1290,7 @@ export class VentesService {
     if (!allowedDocumentTypes.includes(dto.type))
       throw new BadRequestException('Type de document invalide');
     /* eslint-disable @typescript-eslint/no-unsafe-argument */
-    const uploaded = await this.cloudinary.upload(
-      file,
-      `ventes/${id}`,
-      false,
-    );
+    const uploaded = await this.cloudinary.upload(file, `ventes/${id}`, false);
     /* eslint-enable @typescript-eslint/no-unsafe-argument */
     return this.prisma.documentVente.create({
       data: {
@@ -1284,7 +1398,9 @@ export class VentesService {
     const xrefOffset = currentOffset;
     const xrefEntries = ['0000000000 65535 f \n'];
     for (let index = 1; index < offsets.length; index++) {
-      xrefEntries.push(`${String(offsets[index]).padStart(10, '0')} 00000 n \n`);
+      xrefEntries.push(
+        `${String(offsets[index]).padStart(10, '0')} 00000 n \n`,
+      );
     }
 
     pdfParts.push(
@@ -1410,7 +1526,9 @@ export class VentesService {
         data: {
           montantPaye,
           statut:
-            montantPaye >= Number(echeance.montantPrevu) ? 'payee' : 'partielle',
+            montantPaye >= Number(echeance.montantPrevu)
+              ? 'payee'
+              : 'partielle',
         },
       });
       montantRestant -= montantAffecte;
@@ -1446,10 +1564,7 @@ export class VentesService {
     };
   }
 
-  async getEcheances(
-    id: string,
-    user: MandatUser,
-  ): Promise<unknown[]> {
+  async getEcheances(id: string, user: MandatUser): Promise<unknown[]> {
     await this.ensureAccessible(id, user);
     return this.prisma.echeancePaiement.findMany({
       where: { dossierVenteId: id },
@@ -1568,7 +1683,9 @@ export class VentesService {
         },
         {},
       ),
-      totalPaiements: canViewFinancials ? Number(totalPaiements._sum.montant ?? 0) : 0,
+      totalPaiements: canViewFinancials
+        ? Number(totalPaiements._sum.montant ?? 0)
+        : 0,
       totalCommissionsPayees: canViewFinancials
         ? Number(totalCommissions._sum.montantPaye ?? 0)
         : 0,

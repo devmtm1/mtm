@@ -608,7 +608,9 @@ export class MandatsService {
     validateUploadedAsset(file, 'document');
     if (
       dto.isPublic &&
-      !user.roles.some((role) => ['administrateur', 'direction'].includes(role)) &&
+      !user.roles.some((role) =>
+        ['administrateur', 'direction'].includes(role),
+      ) &&
       !user.permissions.includes('mandats:publier')
     ) {
       throw new BadRequestException(

@@ -207,7 +207,15 @@ describe('VentesService', () => {
     });
     prismaMock.dossierVente.findFirst.mockResolvedValue({ id: 'd1' });
     prismaMock.systemSetting.findUnique.mockResolvedValue({
-      value: ['bon_reservation', 'recu', 'facture', 'contrat', 'etat_paiement', 'justificatif', 'autre'],
+      value: [
+        'bon_reservation',
+        'recu',
+        'facture',
+        'contrat',
+        'etat_paiement',
+        'justificatif',
+        'autre',
+      ],
     });
     prismaMock.documentVente.create.mockResolvedValue({
       id: 'doc1',
@@ -240,7 +248,13 @@ describe('VentesService', () => {
       id: 'd1',
       statut: 'paiement_partiel',
       prixVente: 1000,
-      reservations: [{ id: 'r1', statut: 'active', dateExpiration: new Date(Date.now() + 86400000) }],
+      reservations: [
+        {
+          id: 'r1',
+          statut: 'active',
+          dateExpiration: new Date(Date.now() + 86400000),
+        },
+      ],
       paiements: [{ montant: 600, statut: 'valide' }],
     });
     prismaMock.dossierVente.findFirst.mockResolvedValue({ id: 'd1' });
@@ -260,8 +274,18 @@ describe('VentesService', () => {
   it('affiche les documents de son propre dossier lors d’une recherche et masque les fichiers sensibles', async () => {
     prismaMock.dossierVente.findFirst.mockResolvedValue({ id: 'd1' });
     prismaMock.documentVente.findMany.mockResolvedValue([
-      { id: 'doc-public', isPublic: true, storageKey: 'doc-public', resourceType: 'raw' },
-      { id: 'doc-private', isPublic: false, storageKey: 'doc-private', resourceType: 'raw' },
+      {
+        id: 'doc-public',
+        isPublic: true,
+        storageKey: 'doc-public',
+        resourceType: 'raw',
+      },
+      {
+        id: 'doc-private',
+        isPublic: false,
+        storageKey: 'doc-private',
+        resourceType: 'raw',
+      },
     ]);
 
     const result = await service.searchDocuments(
@@ -270,7 +294,9 @@ describe('VentesService', () => {
     );
 
     expect(result).toHaveLength(2);
-    expect(result.every((document) => document.id.startsWith('doc-'))).toBe(true);
+    expect(result.every((document) => document.id.startsWith('doc-'))).toBe(
+      true,
+    );
     expect(result.every((document) => !('storageKey' in document))).toBe(true);
     expect(result[0].secureUrl).toBe('https://example.com/document.pdf');
   });
@@ -368,10 +394,24 @@ describe('VentesService', () => {
         reservationRequestId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
-        prospect: { id: 'p1', nom: 'Martin', prenom: 'Alice', email: 'alice@test.fr' },
-        terrain: { id: 't1', referenceInterne: 'T-001', nom: 'Parcelle A', statutCommercial: 'Réservé' },
+        prospect: {
+          id: 'p1',
+          nom: 'Martin',
+          prenom: 'Alice',
+          email: 'alice@test.fr',
+        },
+        terrain: {
+          id: 't1',
+          referenceInterne: 'T-001',
+          nom: 'Parcelle A',
+          statutCommercial: 'Réservé',
+        },
         mandat: null,
-        commercialResponsable: { id: 'u1', firstName: 'Jean', lastName: 'Dupont' },
+        commercialResponsable: {
+          id: 'u1',
+          firstName: 'Jean',
+          lastName: 'Dupont',
+        },
         reservations: [],
         paiements: [{ montant: 500, statut: 'valide' }],
         _count: { documents: 0, commissions: 0 },

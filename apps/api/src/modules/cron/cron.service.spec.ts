@@ -27,7 +27,9 @@ describe('CronService', () => {
     await service.handleMandatsEcheances();
 
     expect(prisma.mandat.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { statut: 'Actif', dateFin: expect.any(Object) } }),
+      expect.objectContaining({
+        where: { statut: 'Actif', dateFin: expect.any(Object) },
+      }),
     );
     expect(audit.record).toHaveBeenCalledWith(
       expect.objectContaining({

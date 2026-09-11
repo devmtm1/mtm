@@ -44,7 +44,9 @@ export class CronService {
             action: 'mandat.echeance_imminente',
             entityType: 'Mandat',
             entityId: mandat.id,
-            createdAt: { gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()) },
+            createdAt: {
+              gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+            },
           },
           select: { id: true },
         });
@@ -139,7 +141,9 @@ export class CronService {
       if (!dossier) continue;
 
       const hasValidatedPayments = dossier.paiements.length > 0;
-      const isSoldOrPartiallyPaid = ['solde', 'paiement_partiel'].includes(dossier.statut);
+      const isSoldOrPartiallyPaid = ['solde', 'paiement_partiel'].includes(
+        dossier.statut,
+      );
 
       if (hasValidatedPayments || isSoldOrPartiallyPaid) {
         await this.audit.record({
@@ -158,7 +162,10 @@ export class CronService {
 
       await this.prisma.$transaction(async (transaction) => {
         const updated = await transaction.reservation.updateMany({
-          where: { id: reservation.id, statut: { in: ['active', 'prolongee'] } },
+          where: {
+            id: reservation.id,
+            statut: { in: ['active', 'prolongee'] },
+          },
           data: { statut: 'expiree' },
         });
         if (updated.count !== 1) return;

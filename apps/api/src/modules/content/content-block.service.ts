@@ -61,8 +61,9 @@ export class ContentBlockService {
     user: { id: string; roles: string[]; permissions: string[] },
   ) {
     const canPublish =
-      user.roles.some((role) => ['administrateur', 'direction'].includes(role)) ||
-      user.permissions.includes('content:publier');
+      user.roles.some((role) =>
+        ['administrateur', 'direction'].includes(role),
+      ) || user.permissions.includes('content:publier');
     return this.prisma.contentBlock.create({
       data: {
         ...dto,

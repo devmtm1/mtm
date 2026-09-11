@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { PageIntro } from '../components/layout/PageIntro';
 import { useAuth } from '../contexts/auth-context-store';
 import { useClientPortal } from '../hooks/useClientPortal';
-import { Spinner } from '../components/ui/Spinner';
+import { ClientDemandesSection } from '../components/client/ClientDemandesSection';
+import { ArticleListSkeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
+import { usePageMetadata } from '../hooks/usePageMetadata';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { formatMoney, formatDate } from '../utils/format';
@@ -14,6 +16,7 @@ export function ClientPortalPage() {
   const { user, accessToken, logout } = useAuth();
   const navigate = useNavigate();
   const { data: dossiers, loading, error } = useClientPortal(accessToken);
+  usePageMetadata({ title: 'Mon espace client' });
 
   async function handleLogout(): Promise<void> {
     await logout();
@@ -32,13 +35,17 @@ export function ClientPortalPage() {
           </Button>
         </div>
 
-        {loading && <Spinner label="Chargement de vos dossiers..." />}
+        {loading && <ArticleListSkeleton count={2} />}
         {error && <EmptyState title="Impossible de charger vos dossiers" description={error} />}
         {!loading && !error && dossiers && dossiers.length === 0 && (
           <EmptyState
             title="Aucun dossier pour le moment"
             description="Vos dossiers de vente apparaîtront ici dès qu'un commercial MTM vous en aura rattaché un."
           />
+        )}
+
+        {!loading && !error && dossiers && dossiers.length > 0 && (
+          <h2 className="mb-4 font-display text-lg font-bold text-mtm-text">Mes dossiers</h2>
         )}
 
         {!loading && !error && dossiers && dossiers.length > 0 && (
@@ -136,6 +143,8 @@ export function ClientPortalPage() {
             ))}
           </div>
         )}
+
+        <ClientDemandesSection token={accessToken} />
       </section>
     </div>
   );

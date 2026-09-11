@@ -59,6 +59,13 @@ export class CreateTerrainDto {
   @ApiPropertyOptional() @IsOptional() @IsNumber() @Min(0) commission?: number;
   @ApiProperty() @IsString() statutCommercial!: string;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() misEnAvant?: boolean;
+  @ApiPropertyOptional({
+    description: 'Descriptif commercial affiché sur la fiche publique',
+  })
+  @IsOptional()
+  @IsString()
+  @Length(0, 5000)
+  description?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() accesRoutier?: string;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() eauDisponible?: boolean;
   @ApiPropertyOptional()

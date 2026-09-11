@@ -826,7 +826,9 @@ export class CrmService {
     validateUploadedAsset(file, 'document');
     if (
       dto.isPublic &&
-      !user.roles.some((role) => ['administrateur', 'direction'].includes(role)) &&
+      !user.roles.some((role) =>
+        ['administrateur', 'direction'].includes(role),
+      ) &&
       !user.permissions.includes('crm:publier')
     ) {
       throw new BadRequestException(

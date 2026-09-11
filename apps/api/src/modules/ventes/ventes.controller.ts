@@ -78,6 +78,11 @@ export class VentesController {
     return this.ventes.getClientPortal(user.id);
   }
 
+  @Get('client/portal/demandes')
+  getClientDemandes(@CurrentUser() user: AuthenticatedUser) {
+    return this.ventes.getClientDemandes(user.id);
+  }
+
   @Get('client/portal/documents/:documentId')
   getClientDocument(
     @Param('documentId', ParseUUIDPipe) documentId: string,

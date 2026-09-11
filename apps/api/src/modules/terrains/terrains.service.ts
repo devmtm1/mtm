@@ -18,12 +18,20 @@ import type {
 } from './dto/public-terrain.dto';
 import { validateUploadedAsset } from '../../common/storage/asset-validation';
 
+// Second critère indispensable : les médias ajoutés en back-office partagent
+// souvent le même sortOrder (0), et sans lui l'ordre — donc la photo de
+// couverture — changeait d'une requête à l'autre.
+const mediaOrderBy: Prisma.TerrainMediaOrderByWithRelationInput[] = [
+  { sortOrder: 'asc' },
+  { createdAt: 'asc' },
+];
+
 const terrainInclude = {
   proprietaire: true,
   commercialResponsable: {
     select: { id: true, firstName: true, lastName: true },
   },
-  medias: { orderBy: { sortOrder: 'asc' as const } },
+  medias: { orderBy: mediaOrderBy },
   documents: { orderBy: { createdAt: 'desc' as const } },
 };
 
@@ -43,6 +51,7 @@ const publicTerrainSelect = {
   dimensions: true,
   prixPublic: true,
   misEnAvant: true,
+  description: true,
   accesRoutier: true,
   eauDisponible: true,
   electriciteDisponible: true,
@@ -52,7 +61,7 @@ const publicTerrainSelect = {
   pointsInteret: true,
   medias: {
     where: { isPublic: true },
-    orderBy: { sortOrder: 'asc' as const },
+    orderBy: mediaOrderBy,
   },
   documents: {
     where: { isPublic: true },
@@ -178,8 +187,26 @@ export class TerrainsService {
   async findPublic(query: QueryTerrainDto) {
     const page = query.page > 0 ? query.page : 1;
     const pageSize = Math.min(query.pageSize > 0 ? query.pageSize : 25, 200);
+    const search = query.search?.trim();
     const where = {
       statutCommercial: 'Disponible',
+      // Recherche libre du catalogue public : restreinte aux champs publics
+      // (jamais parcelleMatricule ni notes internes).
+      ...(search
+        ? {
+            OR: [
+              { nom: { contains: search, mode: 'insensitive' as const } },
+              {
+                referenceInterne: {
+                  contains: search,
+                  mode: 'insensitive' as const,
+                },
+              },
+              { commune: { contains: search, mode: 'insensitive' as const } },
+              { region: { contains: search, mode: 'insensitive' as const } },
+            ],
+          }
+        : {}),
       ...(query.misEnAvant !== undefined
         ? { misEnAvant: query.misEnAvant }
         : {}),
@@ -353,6 +380,38 @@ export class TerrainsService {
     };
   }
 
+  /**
+   * Options des filtres du catalogue public. Les statuts juridiques viennent
+   * du paramétrage administrable (section 25 CDC) ; les zones et vocations
+   * sont dérivées des terrains réellement publiés, pour que les filtres
+   * proposés correspondent toujours aux données disponibles.
+   */
+  async getPublicFilterOptions() {
+    const [legal, published] = await Promise.all([
+      this.settings.getRawValue('terrains.statutJuridique'),
+      this.prisma.terrain.findMany({
+        where: { statutCommercial: 'Disponible' },
+        select: { region: true, commune: true, vocation: true },
+      }),
+    ]);
+
+    const distinct = (values: (string | null)[]): string[] =>
+      [
+        ...new Set(
+          values.filter((value): value is string => Boolean(value?.trim())),
+        ),
+      ].sort((a, b) => a.localeCompare(b, 'fr'));
+
+    return {
+      statutJuridique: this.asOptions(legal, [
+        ...DEFAULT_TERRAIN_OPTIONS.statutJuridique,
+      ]),
+      region: distinct(published.map((terrain) => terrain.region)),
+      commune: distinct(published.map((terrain) => terrain.commune)),
+      vocation: distinct(published.map((terrain) => terrain.vocation)),
+    };
+  }
+
   async addMedia(
     id: string,
     dto: CreateTerrainAssetDto,
@@ -458,6 +517,7 @@ export class TerrainsService {
       dimensions: Record<string, unknown> | null;
       prixPublic: number | null;
       misEnAvant: boolean;
+      description: string | null;
       accesRoutier: string | null;
       eauDisponible: boolean | null;
       electriciteDisponible: boolean | null;
@@ -537,6 +597,7 @@ export class TerrainsService {
       dimensions: source.dimensions,
       prixPublic: source.prixPublic,
       misEnAvant: source.misEnAvant,
+      description: source.description,
       accesRoutier: source.accesRoutier,
       eauDisponible: source.eauDisponible,
       electriciteDisponible: source.electriciteDisponible,

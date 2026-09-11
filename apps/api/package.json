@@ -24,7 +24,12 @@
     "db:seed": "npm run prisma:seed",
     "prisma:studio": "prisma studio",
     "audit:purge": "./scripts/purge-audit-logs.sh",
-    "documents:purge": "ts-node scripts/purge-documents.ts"
+    "documents:purge": "ts-node scripts/purge-documents.ts",
+    "medias:check-orphans": "ts-node scripts/check-orphan-medias.ts",
+    "demo:terrains": "ts-node scripts/seed-demo-terrains.ts",
+    "demo:showcase": "ts-node scripts/seed-demo-showcase.ts",
+    "demo:terrain-photos": "ts-node scripts/seed-demo-terrain-photos.ts",
+    "demo:showcase-photos": "ts-node scripts/seed-demo-showcase-photos.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",

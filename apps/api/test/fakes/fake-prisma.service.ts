@@ -437,9 +437,7 @@ export class FakePrismaService {
     return this.seedContact(partial);
   }
 
-  seedProprietaire(
-    partial: Partial<FakeProprietaire> = {},
-  ): FakeProprietaire {
+  seedProprietaire(partial: Partial<FakeProprietaire> = {}): FakeProprietaire {
     const proprietaire: FakeProprietaire = {
       id: fakeUuid(),
       firstName: 'Proprietaire',
@@ -504,7 +502,11 @@ export class FakePrismaService {
   // --- API façon Prisma ---
 
   terrain = {
-    findUnique: ({ where }: { where: { id?: string; referenceInterne?: string } }) => {
+    findUnique: ({
+      where,
+    }: {
+      where: { id?: string; referenceInterne?: string };
+    }) => {
       const terrain = where.id
         ? this.terrains.get(where.id)
         : Array.from(this.terrains.values()).find(
@@ -515,7 +517,8 @@ export class FakePrismaService {
     create: ({ data }: { data: Partial<FakeTerrain> }) => {
       const terrain: FakeTerrain = {
         id: data.id ?? fakeUuid(),
-        referenceInterne: data.referenceInterne ?? `T-${fakeUuid().slice(0, 8)}`,
+        referenceInterne:
+          data.referenceInterne ?? `T-${fakeUuid().slice(0, 8)}`,
         nom: data.nom ?? 'Terrain',
         parcelleMatricule: data.parcelleMatricule ?? null,
         informationsCadastrales: data.informationsCadastrales ?? null,
@@ -552,7 +555,13 @@ export class FakePrismaService {
       this.terrains.set(terrain.id, terrain);
       return Promise.resolve(terrain);
     },
-    updateMany: ({ where, data }: { where: { id?: string; statutCommercial?: string | { in: string[] } }; data: Partial<FakeTerrain> }) => {
+    updateMany: ({
+      where,
+      data,
+    }: {
+      where: { id?: string; statutCommercial?: string | { in: string[] } };
+      data: Partial<FakeTerrain>;
+    }) => {
       let list = Array.from(this.terrains.values());
       if (where.id) list = list.filter((t) => t.id === where.id);
       const statutCommercialIn =
@@ -562,7 +571,9 @@ export class FakePrismaService {
           ? where.statutCommercial.in
           : undefined;
       if (statutCommercialIn) {
-        list = list.filter((t) => statutCommercialIn.includes(t.statutCommercial));
+        list = list.filter((t) =>
+          statutCommercialIn.includes(t.statutCommercial),
+        );
       }
       for (const terrain of list) {
         const merged = { ...terrain, ...data, updatedAt: new Date() };
@@ -617,9 +628,7 @@ export class FakePrismaService {
           return 0;
         });
       }
-      const paginated = take
-        ? list.slice(skip, skip + take)
-        : list.slice(skip);
+      const paginated = take ? list.slice(skip, skip + take) : list.slice(skip);
       return Promise.resolve(
         paginated.map((t) => this.hydrateTerrain(t, { include, select })),
       );
@@ -661,8 +670,14 @@ export class FakePrismaService {
         continue;
       }
       const value = terrain[key as keyof FakeTerrain];
-      if (condition && typeof condition === 'object' && 'contains' in condition) {
-        const contains = (condition as { contains: string }).contains.toLowerCase();
+      if (
+        condition &&
+        typeof condition === 'object' &&
+        'contains' in condition
+      ) {
+        const contains = (
+          condition as { contains: string }
+        ).contains.toLowerCase();
         if (!toSearchable(value).toLowerCase().includes(contains)) return false;
         continue;
       }
@@ -672,8 +687,10 @@ export class FakePrismaService {
         ('gte' in condition || 'lte' in condition)
       ) {
         const range = condition as { gte?: number; lte?: number };
-        if (range.gte !== undefined && !(Number(value) >= range.gte)) return false;
-        if (range.lte !== undefined && !(Number(value) <= range.lte)) return false;
+        if (range.gte !== undefined && !(Number(value) >= range.gte))
+          return false;
+        if (range.lte !== undefined && !(Number(value) <= range.lte))
+          return false;
         continue;
       }
       if (value !== condition) return false;
@@ -702,10 +719,10 @@ export class FakePrismaService {
     }
 
     const proprietaire = terrain.proprietaireId
-      ? this.proprietaires.get(terrain.proprietaireId) ?? null
+      ? (this.proprietaires.get(terrain.proprietaireId) ?? null)
       : null;
     const commercialResponsable = terrain.commercialResponsableId
-      ? this.users.get(terrain.commercialResponsableId) ?? null
+      ? (this.users.get(terrain.commercialResponsableId) ?? null)
       : null;
 
     return {
@@ -763,11 +780,20 @@ export class FakePrismaService {
         if (!matches) return false;
         continue;
       }
-      if (key === 'id' && condition && typeof condition === 'object' && 'not' in condition) {
+      if (
+        key === 'id' &&
+        condition &&
+        typeof condition === 'object' &&
+        'not' in condition
+      ) {
         if (mandat.id === (condition as { not: string }).not) return false;
         continue;
       }
-      if (key === 'proprietaire' && condition && typeof condition === 'object') {
+      if (
+        key === 'proprietaire' &&
+        condition &&
+        typeof condition === 'object'
+      ) {
         const proprietaire = this.proprietaires.get(mandat.proprietaireId);
         const sub = condition as Record<string, { contains: string }>;
         const matches = Object.entries(sub).every(([field, cond]) => {
@@ -781,7 +807,12 @@ export class FakePrismaService {
         if (!matches) return false;
         continue;
       }
-      if (key === 'lots' && condition && typeof condition === 'object' && 'some' in condition) {
+      if (
+        key === 'lots' &&
+        condition &&
+        typeof condition === 'object' &&
+        'some' in condition
+      ) {
         const someWhere = (condition as { some: { terrainId?: string } }).some;
         const hasMatch = Array.from(this.mandatLots.values()).some(
           (lot) =>
@@ -792,8 +823,14 @@ export class FakePrismaService {
         continue;
       }
       const value = (mandat as unknown as Record<string, unknown>)[key];
-      if (condition && typeof condition === 'object' && 'contains' in condition) {
-        const contains = (condition as { contains: string }).contains.toLowerCase();
+      if (
+        condition &&
+        typeof condition === 'object' &&
+        'contains' in condition
+      ) {
+        const contains = (
+          condition as { contains: string }
+        ).contains.toLowerCase();
         if (!toSearchable(value).toLowerCase().includes(contains)) return false;
         continue;
       }
@@ -805,11 +842,13 @@ export class FakePrismaService {
         const range = condition as { gte?: Date | number; lte?: Date | number };
         const comparable = value instanceof Date ? value.getTime() : value;
         if (range.gte !== undefined) {
-          const gte = range.gte instanceof Date ? range.gte.getTime() : range.gte;
+          const gte =
+            range.gte instanceof Date ? range.gte.getTime() : range.gte;
           if (!(Number(comparable) >= Number(gte))) return false;
         }
         if (range.lte !== undefined) {
-          const lte = range.lte instanceof Date ? range.lte.getTime() : range.lte;
+          const lte =
+            range.lte instanceof Date ? range.lte.getTime() : range.lte;
           if (!(Number(comparable) <= Number(lte))) return false;
         }
         continue;
@@ -822,7 +861,7 @@ export class FakePrismaService {
   private hydrateMandat(mandat: FakeMandat): Record<string, unknown> {
     const proprietaire = this.proprietaires.get(mandat.proprietaireId) ?? null;
     const commercialResponsable = mandat.commercialResponsableId
-      ? this.users.get(mandat.commercialResponsableId) ?? null
+      ? (this.users.get(mandat.commercialResponsableId) ?? null)
       : null;
     const lots = Array.from(this.mandatLots.values())
       .filter((lot) => lot.mandatId === mandat.id)
@@ -977,24 +1016,30 @@ export class FakePrismaService {
       const w = where as { mandat?: Record<string, unknown> } | undefined;
       if (w?.mandat) {
         const mandatIds = Array.from(this.mandats.values())
-          .filter((m) => this.matchesMandatWhere(m, w.mandat as Record<string, unknown>))
+          .filter((m) =>
+            this.matchesMandatWhere(m, w.mandat as Record<string, unknown>),
+          )
           .map((m) => m.id);
         list = list.filter((lot) => mandatIds.includes(lot.mandatId));
       }
       return Promise.resolve(list.length);
     },
-    groupBy: ({
-      where,
-      by,
-    }: {
-      where?: Record<string, unknown>;
-      by: string[];
-    } = { by: [] }) => {
+    groupBy: (
+      {
+        where,
+        by,
+      }: {
+        where?: Record<string, unknown>;
+        by: string[];
+      } = { by: [] },
+    ) => {
       let list = Array.from(this.mandatLots.values());
       const w = where as { mandat?: Record<string, unknown> } | undefined;
       if (w?.mandat) {
         const mandatIds = Array.from(this.mandats.values())
-          .filter((m) => this.matchesMandatWhere(m, w.mandat as Record<string, unknown>))
+          .filter((m) =>
+            this.matchesMandatWhere(m, w.mandat as Record<string, unknown>),
+          )
           .map((m) => m.id);
         list = list.filter((lot) => mandatIds.includes(lot.mandatId));
       }
@@ -1070,10 +1115,19 @@ export class FakePrismaService {
           ? (w.statut as { in: string[] }).in
           : undefined;
       if (statutIn) {
-        list = list.filter((reservation) => statutIn.includes(reservation.statut));
+        list = list.filter((reservation) =>
+          statutIn.includes(reservation.statut),
+        );
       }
-      if (w?.dateExpiration && typeof w.dateExpiration === 'object' && 'gt' in w.dateExpiration) {
-        list = list.filter((reservation) => reservation.dateExpiration > (w.dateExpiration as { gt: Date }).gt);
+      if (
+        w?.dateExpiration &&
+        typeof w.dateExpiration === 'object' &&
+        'gt' in w.dateExpiration
+      ) {
+        list = list.filter(
+          (reservation) =>
+            reservation.dateExpiration > (w.dateExpiration as { gt: Date }).gt,
+        );
       }
       return Promise.resolve(list[0] ?? null);
     },
@@ -1095,15 +1149,29 @@ export class FakePrismaService {
       this.reservations.set(reservation.id, reservation);
       return Promise.resolve(reservation);
     },
-    updateMany: ({ where, data }: { where: { id?: string; statut?: { in: string[] } }; data: Partial<FakeReservation> }) => {
+    updateMany: ({
+      where,
+      data,
+    }: {
+      where: { id?: string; statut?: { in: string[] } };
+      data: Partial<FakeReservation>;
+    }) => {
       let list = Array.from(this.reservations.values());
-      if (where.id) list = list.filter((reservation) => reservation.id === where.id);
-      const statutIn = where.statut && 'in' in where.statut ? where.statut.in : undefined;
+      if (where.id)
+        list = list.filter((reservation) => reservation.id === where.id);
+      const statutIn =
+        where.statut && 'in' in where.statut ? where.statut.in : undefined;
       if (statutIn) {
-        list = list.filter((reservation) => statutIn.includes(reservation.statut));
+        list = list.filter((reservation) =>
+          statutIn.includes(reservation.statut),
+        );
       }
       for (const reservation of list) {
-        this.reservations.set(reservation.id, { ...reservation, ...data, updatedAt: new Date() });
+        this.reservations.set(reservation.id, {
+          ...reservation,
+          ...data,
+          updatedAt: new Date(),
+        });
       }
       return Promise.resolve({ count: list.length });
     },
@@ -1127,10 +1195,18 @@ export class FakePrismaService {
       }
       return Promise.resolve({ count: data.length });
     },
-    findMany: ({ where, orderBy }: { where?: Record<string, unknown>; orderBy?: Record<string, string> } = {}) => {
+    findMany: ({
+      where,
+      orderBy,
+    }: {
+      where?: Record<string, unknown>;
+      orderBy?: Record<string, string>;
+    } = {}) => {
       let list = Array.from(this.echeancesPaiement.values());
       if (where?.dossierVenteId) {
-        list = list.filter((item) => item.dossierVenteId === where.dossierVenteId);
+        list = list.filter(
+          (item) => item.dossierVenteId === where.dossierVenteId,
+        );
       }
       if (orderBy) {
         const key = Object.keys(orderBy)[0];
@@ -1145,7 +1221,13 @@ export class FakePrismaService {
       }
       return Promise.resolve(list);
     },
-    update: ({ where, data }: { where: { id: string }; data: Partial<FakeEcheancePaiement> }) => {
+    update: ({
+      where,
+      data,
+    }: {
+      where: { id: string };
+      data: Partial<FakeEcheancePaiement>;
+    }) => {
       const existing = this.echeancesPaiement.get(where.id);
       if (!existing) throw new Error('Echeance not found (fake prisma)');
       const merged = { ...existing, ...data, updatedAt: new Date() };
@@ -1155,10 +1237,18 @@ export class FakePrismaService {
   };
 
   paiement = {
-    aggregate: async ({ where, _sum }: { where: Record<string, unknown>; _sum?: Record<string, string> }) => {
+    aggregate: async ({
+      where,
+      _sum,
+    }: {
+      where: Record<string, unknown>;
+      _sum?: Record<string, string>;
+    }) => {
       let list = Array.from(this.paiements.values());
       if (where.dossierVenteId) {
-        list = list.filter((payment) => payment.dossierVenteId === where.dossierVenteId);
+        list = list.filter(
+          (payment) => payment.dossierVenteId === where.dossierVenteId,
+        );
       }
       if (where.statut) {
         list = list.filter((payment) => payment.statut === where.statut);
@@ -1168,11 +1258,16 @@ export class FakePrismaService {
         if (dossierWhere.commercialResponsableId) {
           list = list.filter((payment) => {
             const dossier = this.dossiersVente.get(payment.dossierVenteId);
-            return dossier?.commercialResponsableId === dossierWhere.commercialResponsableId;
+            return (
+              dossier?.commercialResponsableId ===
+              dossierWhere.commercialResponsableId
+            );
           });
         }
       }
-      const sum = _sum?.montant ? list.reduce((acc, item) => acc + Number(item.montant), 0) : 0;
+      const sum = _sum?.montant
+        ? list.reduce((acc, item) => acc + Number(item.montant), 0)
+        : 0;
       return Promise.resolve({ _sum: { montant: sum } });
     },
     create: ({ data }: { data: Partial<FakePaiement> }) => {
@@ -1196,11 +1291,21 @@ export class FakePrismaService {
     findFirst: ({ where }: { where: Record<string, unknown> }) => {
       let list = Array.from(this.paiements.values());
       if (where.id) list = list.filter((payment) => payment.id === where.id);
-      if (where.dossierVenteId) list = list.filter((payment) => payment.dossierVenteId === where.dossierVenteId);
-      if (where.statut) list = list.filter((payment) => payment.statut === where.statut);
+      if (where.dossierVenteId)
+        list = list.filter(
+          (payment) => payment.dossierVenteId === where.dossierVenteId,
+        );
+      if (where.statut)
+        list = list.filter((payment) => payment.statut === where.statut);
       return Promise.resolve(list[0] ?? null);
     },
-    update: ({ where, data }: { where: { id: string }; data: Partial<FakePaiement> }) => {
+    update: ({
+      where,
+      data,
+    }: {
+      where: { id: string };
+      data: Partial<FakePaiement>;
+    }) => {
       const existing = this.paiements.get(where.id);
       if (!existing) throw new Error('Paiement not found (fake prisma)');
       const merged = { ...existing, ...data, updatedAt: new Date() };
@@ -1210,7 +1315,13 @@ export class FakePrismaService {
   };
 
   commissionVente = {
-    aggregate: async ({ where, _sum }: { where: Record<string, unknown>; _sum?: Record<string, string> }) => {
+    aggregate: async ({
+      where,
+      _sum,
+    }: {
+      where: Record<string, unknown>;
+      _sum?: Record<string, string>;
+    }) => {
       let list = Array.from(this.commissionsVente.values());
       if (where.dossierVente) {
         const dossierWhere = where.dossierVente as Record<string, unknown>;
@@ -1218,17 +1329,26 @@ export class FakePrismaService {
           const dossier = this.dossiersVente.get(commission.dossierVenteId);
           return dossier && dossierWhere.commercialResponsableId === undefined
             ? true
-            : dossier?.commercialResponsableId === dossierWhere.commercialResponsableId;
+            : dossier?.commercialResponsableId ===
+                dossierWhere.commercialResponsableId;
         });
       }
       if (where.commercialId) {
-        list = list.filter((commission) => commission.commercialId === where.commercialId);
+        list = list.filter(
+          (commission) => commission.commercialId === where.commercialId,
+        );
       }
       if (where.statut) {
         list = list.filter((commission) => commission.statut === where.statut);
       }
       const sumKey = _sum && Object.keys(_sum)[0];
-      const sum = sumKey ? list.reduce((acc, item) => acc + Number(item[sumKey as keyof FakeCommissionVente] ?? 0), 0) : 0;
+      const sum = sumKey
+        ? list.reduce(
+            (acc, item) =>
+              acc + Number(item[sumKey as keyof FakeCommissionVente] ?? 0),
+            0,
+          )
+        : 0;
       return Promise.resolve({ _sum: { [sumKey ?? 'montantEstime']: sum } });
     },
     create: ({ data }: { data: Partial<FakeCommissionVente> }) => {
@@ -1253,11 +1373,21 @@ export class FakePrismaService {
     },
     findFirst: ({ where }: { where: Record<string, unknown> }) => {
       let list = Array.from(this.commissionsVente.values());
-      if (where.id) list = list.filter((commission) => commission.id === where.id);
-      if (where.dossierVenteId) list = list.filter((commission) => commission.dossierVenteId === where.dossierVenteId);
+      if (where.id)
+        list = list.filter((commission) => commission.id === where.id);
+      if (where.dossierVenteId)
+        list = list.filter(
+          (commission) => commission.dossierVenteId === where.dossierVenteId,
+        );
       return Promise.resolve(list[0] ?? null);
     },
-    update: ({ where, data }: { where: { id: string }; data: Partial<FakeCommissionVente> }) => {
+    update: ({
+      where,
+      data,
+    }: {
+      where: { id: string };
+      data: Partial<FakeCommissionVente>;
+    }) => {
       const existing = this.commissionsVente.get(where.id);
       if (!existing) throw new Error('Commission not found (fake prisma)');
       const merged = { ...existing, ...data, updatedAt: new Date() };
@@ -1270,7 +1400,8 @@ export class FakePrismaService {
     findFirst: ({ where }: { where: Record<string, unknown> }) => {
       let list = Array.from(this.documentsVente.values());
       if (where.id) list = list.filter((doc) => doc.id === where.id);
-      if (where.isPublic) list = list.filter((doc) => doc.isPublic === where.isPublic);
+      if (where.isPublic)
+        list = list.filter((doc) => doc.isPublic === where.isPublic);
       if (where.dossierVente) {
         const dossierWhere = where.dossierVente as Record<string, unknown>;
         list = list.filter((doc) => {
@@ -1280,22 +1411,39 @@ export class FakePrismaService {
       }
       return Promise.resolve(list[0] ?? null);
     },
-    findMany: ({ where, include, orderBy, take }: { where?: Record<string, unknown>; include?: Record<string, unknown>; orderBy?: Record<string, string>; take?: number } = {}) => {
+    findMany: ({
+      where,
+      include,
+      orderBy,
+      take,
+    }: {
+      where?: Record<string, unknown>;
+      include?: Record<string, unknown>;
+      orderBy?: Record<string, string>;
+      take?: number;
+    } = {}) => {
       let list = Array.from(this.documentsVente.values());
       const w = where;
       if (w?.dossierVenteId) {
         const dossierVenteId = w.dossierVenteId as string | { in: string[] };
         if (typeof dossierVenteId === 'string') {
           list = list.filter((doc) => doc.dossierVenteId === dossierVenteId);
-        } else if (typeof dossierVenteId === 'object' && 'in' in dossierVenteId) {
-          list = list.filter((doc) => dossierVenteId.in.includes(doc.dossierVenteId));
+        } else if (
+          typeof dossierVenteId === 'object' &&
+          'in' in dossierVenteId
+        ) {
+          list = list.filter((doc) =>
+            dossierVenteId.in.includes(doc.dossierVenteId),
+          );
         }
       }
       if (w?.type) list = list.filter((doc) => doc.type === w.type);
       if (w?.createdAt && typeof w.createdAt === 'object') {
         const createdAtWhere = w.createdAt as Record<string, Date>;
-        if (createdAtWhere.gte) list = list.filter((doc) => doc.createdAt >= createdAtWhere.gte);
-        if (createdAtWhere.lte) list = list.filter((doc) => doc.createdAt <= createdAtWhere.lte);
+        if (createdAtWhere.gte)
+          list = list.filter((doc) => doc.createdAt >= createdAtWhere.gte);
+        if (createdAtWhere.lte)
+          list = list.filter((doc) => doc.createdAt <= createdAtWhere.lte);
       }
       if (orderBy) {
         const key = Object.keys(orderBy)[0];
@@ -1312,7 +1460,21 @@ export class FakePrismaService {
         });
       }
       if (take && take > 0) list = list.slice(0, take);
-      return Promise.resolve(list.map((doc) => ({ ...doc, dossierVente: this.dossiersVente.get(doc.dossierVenteId) ? { id: this.dossiersVente.get(doc.dossierVenteId)!.id, referenceInterne: this.dossiersVente.get(doc.dossierVenteId)!.referenceInterne, prospectId: this.dossiersVente.get(doc.dossierVenteId)!.prospectId } : null, createdBy: null })));
+      return Promise.resolve(
+        list.map((doc) => ({
+          ...doc,
+          dossierVente: this.dossiersVente.get(doc.dossierVenteId)
+            ? {
+                id: this.dossiersVente.get(doc.dossierVenteId)!.id,
+                referenceInterne: this.dossiersVente.get(doc.dossierVenteId)!
+                  .referenceInterne,
+                prospectId: this.dossiersVente.get(doc.dossierVenteId)!
+                  .prospectId,
+              }
+            : null,
+          createdBy: null,
+        })),
+      );
     },
     create: ({ data }: { data: Partial<FakeDocumentVente> }) => {
       const doc: FakeDocumentVente = {
@@ -1884,14 +2046,26 @@ export class FakePrismaService {
   };
 
   dossierVente = {
-    findMany: ({ where, include, orderBy, take }: { where?: Record<string, unknown>; include?: Record<string, unknown>; orderBy?: Record<string, string>; take?: number } = {}) => {
+    findMany: ({
+      where,
+      include,
+      orderBy,
+      take,
+    }: {
+      where?: Record<string, unknown>;
+      include?: Record<string, unknown>;
+      orderBy?: Record<string, string>;
+      take?: number;
+    } = {}) => {
       let list = Array.from(this.dossiersVente.values());
       const w = where;
       if (w?.prospectId) {
         list = list.filter((d) => d.prospectId === w.prospectId);
       }
       if (w?.commercialResponsableId) {
-        list = list.filter((d) => d.commercialResponsableId === w.commercialResponsableId);
+        list = list.filter(
+          (d) => d.commercialResponsableId === w.commercialResponsableId,
+        );
       }
       if (w?.terrainId) {
         list = list.filter((d) => d.terrainId === w.terrainId);
@@ -1901,8 +2075,10 @@ export class FakePrismaService {
       }
       if (w?.createdAt && typeof w.createdAt === 'object') {
         const createdAtWhere = w.createdAt as Record<string, Date>;
-        if (createdAtWhere.gte) list = list.filter((d) => d.createdAt >= createdAtWhere.gte);
-        if (createdAtWhere.lte) list = list.filter((d) => d.createdAt <= createdAtWhere.lte);
+        if (createdAtWhere.gte)
+          list = list.filter((d) => d.createdAt >= createdAtWhere.gte);
+        if (createdAtWhere.lte)
+          list = list.filter((d) => d.createdAt <= createdAtWhere.lte);
       }
       if (orderBy) {
         const key = Object.keys(orderBy)[0];
@@ -1919,50 +2095,105 @@ export class FakePrismaService {
         });
       }
       if (take && take > 0) list = list.slice(0, take);
-      return Promise.resolve(list.map((dossier) => ({
-        ...dossier,
-        prospect: this.prospects.get(dossier.prospectId) ?? null,
-        terrain: this.terrains.get(dossier.terrainId ?? '') ?? null,
-        mandat: null,
-        commercialResponsable: dossier.commercialResponsableId ? this.users.get(dossier.commercialResponsableId) ?? null : null,
-        reservations: Array.from(this.reservations.values()).filter((r) => r.dossierVenteId === dossier.id),
-        paiements: Array.from(this.paiements.values()).filter((p) => p.dossierVenteId === dossier.id),
-        commissions: Array.from(this.commissionsVente.values()).filter((c) => c.dossierVenteId === dossier.id),
-        documents: Array.from(this.documentsVente.values()).filter((d) => d.dossierVenteId === dossier.id),
-        _count: { documents: 0, commissions: 0 },
-      })));
+      return Promise.resolve(
+        list.map((dossier) => ({
+          ...dossier,
+          prospect: this.prospects.get(dossier.prospectId) ?? null,
+          terrain: this.terrains.get(dossier.terrainId ?? '') ?? null,
+          mandat: null,
+          commercialResponsable: dossier.commercialResponsableId
+            ? (this.users.get(dossier.commercialResponsableId) ?? null)
+            : null,
+          reservations: Array.from(this.reservations.values()).filter(
+            (r) => r.dossierVenteId === dossier.id,
+          ),
+          paiements: Array.from(this.paiements.values()).filter(
+            (p) => p.dossierVenteId === dossier.id,
+          ),
+          commissions: Array.from(this.commissionsVente.values()).filter(
+            (c) => c.dossierVenteId === dossier.id,
+          ),
+          documents: Array.from(this.documentsVente.values()).filter(
+            (d) => d.dossierVenteId === dossier.id,
+          ),
+          _count: { documents: 0, commissions: 0 },
+        })),
+      );
     },
-    findUnique: ({ where, include }: { where: { id: string }; include?: Record<string, unknown> } = { where: { id: '' } }) => {
+    findUnique: (
+      {
+        where,
+        include,
+      }: { where: { id: string }; include?: Record<string, unknown> } = {
+        where: { id: '' },
+      },
+    ) => {
       const dossier = this.dossiersVente.get(where.id);
       if (!dossier) return Promise.resolve(null);
       const result: Record<string, unknown> = {
         ...dossier,
         prospect: this.prospects.get(dossier.prospectId) ?? null,
-        terrain: dossier.terrainId ? this.terrains.get(dossier.terrainId) ?? null : null,
+        terrain: dossier.terrainId
+          ? (this.terrains.get(dossier.terrainId) ?? null)
+          : null,
         mandat: null,
-        commercialResponsable: dossier.commercialResponsableId ? this.users.get(dossier.commercialResponsableId) ?? null : null,
-        reservations: Array.from(this.reservations.values()).filter((r) => r.dossierVenteId === dossier.id),
-        paiements: Array.from(this.paiements.values()).filter((p) => p.dossierVenteId === dossier.id),
-        commissions: Array.from(this.commissionsVente.values()).filter((c) => c.dossierVenteId === dossier.id),
-        documents: Array.from(this.documentsVente.values()).filter((d) => d.dossierVenteId === dossier.id),
+        commercialResponsable: dossier.commercialResponsableId
+          ? (this.users.get(dossier.commercialResponsableId) ?? null)
+          : null,
+        reservations: Array.from(this.reservations.values()).filter(
+          (r) => r.dossierVenteId === dossier.id,
+        ),
+        paiements: Array.from(this.paiements.values()).filter(
+          (p) => p.dossierVenteId === dossier.id,
+        ),
+        commissions: Array.from(this.commissionsVente.values()).filter(
+          (c) => c.dossierVenteId === dossier.id,
+        ),
+        documents: Array.from(this.documentsVente.values()).filter(
+          (d) => d.dossierVenteId === dossier.id,
+        ),
       };
       if (include?._count) {
-        result._count = { documents: (result.documents as unknown[]).length, commissions: (result.commissions as unknown[]).length };
+        result._count = {
+          documents: (result.documents as unknown[]).length,
+          commissions: (result.commissions as unknown[]).length,
+        };
       }
       return Promise.resolve(result);
     },
-    findFirst: ({ where }: { where: Record<string, unknown> } = { where: {} }) => {
+    findFirst: (
+      { where }: { where: Record<string, unknown> } = { where: {} },
+    ) => {
       let list = Array.from(this.dossiersVente.values());
       if (where.id) list = list.filter((dossier) => dossier.id === where.id);
-      if (where.terrainId) list = list.filter((dossier) => dossier.terrainId === where.terrainId);
-      if (where.prospectId) list = list.filter((dossier) => dossier.prospectId === where.prospectId);
-      if (where.commercialResponsableId) list = list.filter((dossier) => dossier.commercialResponsableId === where.commercialResponsableId);
-      if (where.statut) list = list.filter((dossier) => dossier.statut === where.statut);
-      if (where.reservationRequestId) list = list.filter((dossier) => dossier.reservationRequestId === where.reservationRequestId);
+      if (where.terrainId)
+        list = list.filter((dossier) => dossier.terrainId === where.terrainId);
+      if (where.prospectId)
+        list = list.filter(
+          (dossier) => dossier.prospectId === where.prospectId,
+        );
+      if (where.commercialResponsableId)
+        list = list.filter(
+          (dossier) =>
+            dossier.commercialResponsableId === where.commercialResponsableId,
+        );
+      if (where.statut)
+        list = list.filter((dossier) => dossier.statut === where.statut);
+      if (where.reservationRequestId)
+        list = list.filter(
+          (dossier) =>
+            dossier.reservationRequestId === where.reservationRequestId,
+        );
       if (where.createdAt && typeof where.createdAt === 'object') {
         const createdAtWhere = where.createdAt as Record<string, Date>;
-        if (createdAtWhere.gte) list = list.filter((dossier) => dossier.createdAt >= createdAtWhere.gte);
-        if (createdAtWhere.lte) list = list.filter((dossier) => dossier.createdAt <= createdAtWhere.lte);
+        if (createdAtWhere.gte)
+          list = list.filter(
+            (dossier) => dossier.createdAt >= createdAtWhere.gte,
+          );
+        if (createdAtWhere.lte)
+          list = list.filter(
+            (dossier) => dossier.createdAt <= createdAtWhere.lte,
+          );
       }
       return Promise.resolve(list[0] ?? null);
     },
@@ -1970,15 +2201,31 @@ export class FakePrismaService {
       let list = Array.from(this.dossiersVente.values());
       const w = where;
       if (w?.commercialResponsableId) {
-        list = list.filter((dossier) => dossier.commercialResponsableId === w.commercialResponsableId);
+        list = list.filter(
+          (dossier) =>
+            dossier.commercialResponsableId === w.commercialResponsableId,
+        );
       }
       return Promise.resolve(list.length);
     },
-    groupBy: ({ by, where, _count }: { by: string[]; where?: Record<string, unknown>; _count?: Record<string, unknown> } = { by: [], where: {} }) => {
+    groupBy: (
+      {
+        by,
+        where,
+        _count,
+      }: {
+        by: string[];
+        where?: Record<string, unknown>;
+        _count?: Record<string, unknown>;
+      } = { by: [], where: {} },
+    ) => {
       let list = Array.from(this.dossiersVente.values());
       const w = where;
       if (w?.commercialResponsableId) {
-        list = list.filter((dossier) => dossier.commercialResponsableId === w.commercialResponsableId);
+        list = list.filter(
+          (dossier) =>
+            dossier.commercialResponsableId === w.commercialResponsableId,
+        );
       }
       const groups = new Map<string, number>();
       for (const dossier of list) {
@@ -1986,7 +2233,12 @@ export class FakePrismaService {
         const val = dossier[key as keyof FakeDossierVente] as string;
         groups.set(val, (groups.get(val) || 0) + 1);
       }
-      return Promise.resolve(Array.from(groups.entries()).map(([statut, count]) => ({ statut, _count: { statut: count } })));
+      return Promise.resolve(
+        Array.from(groups.entries()).map(([statut, count]) => ({
+          statut,
+          _count: { statut: count },
+        })),
+      );
     },
     create: ({ data }: { data: Partial<FakeDossierVente> }) => {
       const dossier: FakeDossierVente = {
@@ -2008,7 +2260,13 @@ export class FakePrismaService {
       this.dossiersVente.set(dossier.id, dossier);
       return Promise.resolve(dossier);
     },
-    update: ({ where, data }: { where: { id: string }; data: Partial<FakeDossierVente> }) => {
+    update: ({
+      where,
+      data,
+    }: {
+      where: { id: string };
+      data: Partial<FakeDossierVente>;
+    }) => {
       const existing = this.dossiersVente.get(where.id);
       if (!existing) throw new Error('DossierVente not found (fake prisma)');
       const merged = { ...existing, ...data, updatedAt: new Date() };

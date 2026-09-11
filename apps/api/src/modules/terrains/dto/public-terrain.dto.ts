@@ -43,6 +43,7 @@ export interface PublicTerrainResponse {
   dimensions: Record<string, unknown> | null;
   prixPublic: number | null;
   misEnAvant: boolean;
+  description: string | null;
   accesRoutier: string | null;
   eauDisponible: boolean | null;
   electriciteDisponible: boolean | null;

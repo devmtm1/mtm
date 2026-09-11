@@ -103,7 +103,12 @@ export class ContactService {
     if (!contact) throw new NotFoundException('Message de contact introuvable');
 
     const isManager = user.roles.some((role) =>
-      ['administrateur', 'direction', 'manager', 'responsable_commercial'].includes(role),
+      [
+        'administrateur',
+        'direction',
+        'manager',
+        'responsable_commercial',
+      ].includes(role),
     );
     if (
       commercialResponsableId &&
@@ -121,9 +126,12 @@ export class ContactService {
         include: { roles: { include: { role: { select: { name: true } } } } },
       });
       const isCommercial = target?.roles.some((item) =>
-        ['commercial', 'responsable_commercial', 'manager', 'administrateur'].includes(
-          item.role.name,
-        ),
+        [
+          'commercial',
+          'responsable_commercial',
+          'manager',
+          'administrateur',
+        ].includes(item.role.name),
       );
       if (!target?.isActive || !isCommercial) {
         throw new BadRequestException(

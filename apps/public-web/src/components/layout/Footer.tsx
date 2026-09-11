@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
 import { Mail, MapPin, Phone } from 'lucide-react';
 import { ROUTES } from '../../routes';
+import { toTelHref, useSiteContact } from '../../hooks/useSiteContact';
 
 export function Footer() {
   const year = new Date().getFullYear();
+  const contact = useSiteContact();
 
   return (
     <footer className="border-t border-mtm-border bg-mtm-primary-dark text-white">
@@ -35,16 +37,18 @@ export function Footer() {
           <ul className="mt-4 flex flex-col gap-3 text-sm text-white/80">
             <li className="flex items-start gap-2">
               <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-              <span>Dakar, Sénégal</span>
+              <span>{contact.adresse}</span>
             </li>
             <li className="flex items-center gap-2">
               <Phone className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <a href="tel:+221770000000" className="hover:text-white">+221 77 000 00 00</a>
+              <a href={toTelHref(contact.telephone)} className="hover:text-white">
+                {contact.telephone}
+              </a>
             </li>
             <li className="flex items-center gap-2">
               <Mail className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <a href="mailto:contact@mtm-immobilier.sn" className="hover:text-white">
-                contact@mtm-immobilier.sn
+              <a href={`mailto:${contact.email}`} className="hover:text-white">
+                {contact.email}
               </a>
             </li>
           </ul>

@@ -111,6 +111,7 @@ model Terrain {
   commission              Decimal?             @db.Decimal(15, 2)
   statutCommercial        String
   misEnAvant              Boolean              @default(false)
+  description             String? // descriptif commercial public du terrain (section 7 CDC)
   accesRoutier            String?
   eauDisponible           Boolean?
   electriciteDisponible   Boolean?
