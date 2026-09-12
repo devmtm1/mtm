@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useTerrainsCatalog } from '../../hooks/useTerrainsCatalog';
 import { TerrainCard } from '../terrains/TerrainCard';
+import { FEATURED_GRID } from '../terrains/terrain-grid';
 import { SectionHeading } from '../ui/SectionHeading';
 import { CardGridSkeleton } from '../ui/Skeleton';
 import { EmptyState } from '../ui/EmptyState';
@@ -25,15 +26,15 @@ export function FeaturedTerrainsSection() {
       </div>
 
       <div className="mt-8">
-        {loading && <CardGridSkeleton count={3} />}
+        {loading && <CardGridSkeleton count={6} gridClassName={FEATURED_GRID} compact />}
         {error && <EmptyState title="Impossible de charger les terrains" description={error} />}
         {!loading && !error && data && data.items.length === 0 && (
           <EmptyState title="Aucun terrain mis en avant pour le moment" />
         )}
         {!loading && !error && data && data.items.length > 0 && (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className={FEATURED_GRID}>
             {data.items.map((terrain) => (
-              <TerrainCard key={terrain.id} terrain={terrain} />
+              <TerrainCard key={terrain.id} terrain={terrain} compact />
             ))}
           </div>
         )}

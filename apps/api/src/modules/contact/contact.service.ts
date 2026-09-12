@@ -4,7 +4,13 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { InternalNotificationService } from '../../common/mail/internal-notification.service';
 import { PrismaService } from '../../database/prisma.service';
+import {
+  COMMERCIAL_ROLES,
+  hasAnyRole,
+  SUPERVISION_ROLES,
+} from '../rbac/role-groups';
 import { CreateContactDto } from './dto/create-contact.dto';
 import type { Contact } from '@prisma/client';
 
@@ -12,15 +18,20 @@ import type { Contact } from '@prisma/client';
 export class ContactService {
   private readonly logger = new Logger(ContactService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: InternalNotificationService,
+  ) {}
 
   async create(dto: CreateContactDto): Promise<Contact> {
+    let terrainLabel: string | undefined;
     if (dto.terrainId) {
       const terrain = await this.prisma.terrain.findUnique({
         where: { id: dto.terrainId },
-        select: { id: true },
+        select: { id: true, referenceInterne: true, nom: true },
       });
       if (!terrain) throw new NotFoundException('Terrain introuvable');
+      terrainLabel = `${terrain.referenceInterne} — ${terrain.nom}`;
     }
     const contact = await this.prisma.contact.create({
       data: {
@@ -32,6 +43,20 @@ export class ContactService {
         terrainId: dto.terrainId,
       },
     });
+
+    // Notification à l'équipe : non bloquante, la demande est déjà enregistrée.
+    void this.notifications.notify(
+      `Nouveau message : ${dto.sujet || 'sans sujet'}`,
+      [
+        `De : ${dto.nom} <${dto.email}>`,
+        dto.telephone ? `Téléphone : ${dto.telephone}` : '',
+        terrainLabel ? `Terrain : ${terrainLabel}` : '',
+        '',
+        dto.message,
+        '',
+        'À traiter dans le back-office (Contacts / CRM).',
+      ],
+    );
 
     // --- Génération automatique de prospect CRM ---
     try {
@@ -102,14 +127,7 @@ export class ContactService {
     const contact = await this.prisma.contact.findUnique({ where: { id } });
     if (!contact) throw new NotFoundException('Message de contact introuvable');
 
-    const isManager = user.roles.some((role) =>
-      [
-        'administrateur',
-        'direction',
-        'manager',
-        'responsable_commercial',
-      ].includes(role),
-    );
+    const isManager = hasAnyRole(user.roles, SUPERVISION_ROLES);
     if (
       commercialResponsableId &&
       !isManager &&
@@ -125,13 +143,9 @@ export class ContactService {
         where: { id: commercialResponsableId },
         include: { roles: { include: { role: { select: { name: true } } } } },
       });
-      const isCommercial = target?.roles.some((item) =>
-        [
-          'commercial',
-          'responsable_commercial',
-          'manager',
-          'administrateur',
-        ].includes(item.role.name),
+      const isCommercial = hasAnyRole(
+        target?.roles.map((item) => item.role.name) ?? [],
+        COMMERCIAL_ROLES,
       );
       if (!target?.isActive || !isCommercial) {
         throw new BadRequestException(

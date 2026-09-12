@@ -27,6 +27,30 @@ export default {
       },
       boxShadow: {
         card: '0 1px 2px rgba(31, 41, 55, 0.06), 0 1px 3px rgba(31, 41, 55, 0.08)',
+        'card-hover': '0 6px 16px rgba(31, 41, 55, 0.10), 0 2px 4px rgba(31, 41, 55, 0.06)',
+      },
+      // Mouvements courts et discrets (≤ 250 ms), toujours utilisés derrière
+      // `motion-safe:` pour respecter la préférence « réduire les animations ».
+      keyframes: {
+        'fade-in': { from: { opacity: '0' }, to: { opacity: '1' } },
+        'rise-in': {
+          from: { opacity: '0', transform: 'translateY(8px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        'scale-in': {
+          from: { opacity: '0', transform: 'scale(0.96)' },
+          to: { opacity: '1', transform: 'scale(1)' },
+        },
+        'slide-down': {
+          from: { opacity: '0', transform: 'translateY(-6px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+      animation: {
+        'fade-in': 'fade-in 200ms ease-out both',
+        'page-in': 'rise-in 250ms ease-out both',
+        'scale-in': 'scale-in 180ms ease-out both',
+        'slide-down': 'slide-down 160ms ease-out both',
       },
     },
   },

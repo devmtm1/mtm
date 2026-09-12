@@ -1,12 +1,9 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import cookieParser from 'cookie-parser';
 import { authenticator } from 'otplib';
 import request from 'supertest';
-import { AppModule } from '../src/app.module';
-import { PrismaService } from '../src/database/prisma.service';
-import { FakePrismaService } from './fakes/fake-prisma.service';
+import { createE2eApp, type E2eContext } from './helpers/e2e-app';
+import { describeE2e } from './helpers/e2e-database';
 
 /**
  * Test e2e du parcours Mandats J1.4 :
@@ -17,9 +14,10 @@ import { FakePrismaService } from './fakes/fake-prisma.service';
  *  - alertes d'échéance
  *  - suppression d'un mandat
  */
-describe('Parcours Mandats J1.4 (e2e)', () => {
+describeE2e('Parcours Mandats J1.4 (e2e)', () => {
   let app: INestApplication;
-  let fakePrisma: FakePrismaService;
+  let context: E2eContext;
+  let data: E2eContext['data'];
 
   const ADMIN_PASSWORD = 'AdminPassword123!';
   const ADMIN_2FA_SECRET = 'JBSWY3DPEHPK3PXP';
@@ -32,38 +30,11 @@ describe('Parcours Mandats J1.4 (e2e)', () => {
   let lotAId: string;
 
   beforeAll(async () => {
-    process.env.NODE_ENV = 'test';
-    process.env.DATABASE_URL = 'postgresql://fake:fake@localhost:5432/fake';
-    process.env.JWT_ACCESS_SECRET = 'e2e-test-access-secret-min-32-characters';
-    process.env.JWT_REFRESH_SECRET =
-      'e2e-test-refresh-secret-min-32-characters';
-    process.env.JWT_ACCESS_EXPIRES_IN = '15m';
-    process.env.JWT_REFRESH_EXPIRES_IN = '7d';
-    process.env.CORS_ORIGIN = 'http://localhost:4200';
+    context = await createE2eApp();
+    app = context.app;
+    data = context.data;
 
-    fakePrisma = new FakePrismaService();
-
-    const moduleRef: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(PrismaService)
-      .useValue(fakePrisma)
-      .compile();
-
-    app = moduleRef.createNestApplication();
-    app.setGlobalPrefix('api');
-    app.use(cookieParser());
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-        transformOptions: { enableImplicitConversion: true },
-      }),
-    );
-    await app.init();
-
-    const adminRole = fakePrisma.seedRole('administrateur', true);
+    const adminRole = await data.seedRole('administrateur', true);
     const adminPermissions = [
       'mandats:consulter',
       'mandats:creer',
@@ -73,27 +44,27 @@ describe('Parcours Mandats J1.4 (e2e)', () => {
       'audit:consulter',
     ];
     for (const name of adminPermissions) {
-      const permission = fakePrisma.seedPermission(name);
-      fakePrisma.linkRolePermission(adminRole.id, permission.id);
+      const permission = await data.seedPermission(name);
+      await data.linkRolePermission(adminRole.id, permission.id);
     }
 
-    fakePrisma.seedSystemSetting({
+    await data.seedSystemSetting({
       key: 'mandats.typeMandat',
       value: ['Vente', 'Location', 'Gestion'],
     });
-    fakePrisma.seedSystemSetting({
+    await data.seedSystemSetting({
       key: 'mandats.statut',
       value: ['Brouillon', 'Actif', 'Expiré', 'Résilié', 'Clôturé'],
     });
-    fakePrisma.seedSystemSetting({
+    await data.seedSystemSetting({
       key: 'mandats.statutLot',
       value: ['Confie', 'Disponible', 'Réservé', 'Vendu'],
     });
-    fakePrisma.seedSystemSetting({ key: 'mandats.commissionRate', value: 5 });
+    await data.seedSystemSetting({ key: 'mandats.commissionRate', value: 5 });
 
     const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 4);
     adminEmail = 'admin@mtm-immobilier.sn';
-    const adminUser = fakePrisma.seedUser({
+    const adminUser = await data.seedUser({
       email: adminEmail,
       password: hashedPassword,
       firstName: 'Admin',
@@ -101,31 +72,35 @@ describe('Parcours Mandats J1.4 (e2e)', () => {
       twoFactorEnabled: true,
       twoFactorSecret: ADMIN_2FA_SECRET,
     });
-    fakePrisma.linkUserRole(adminUser.id, adminRole.id);
+    await data.linkUserRole(adminUser.id, adminRole.id);
 
-    const proprietaire = fakePrisma.seedProprietaire({
+    const proprietaire = await data.seedProprietaire({
       firstName: 'Jean',
       lastName: 'Propriétaire',
       email: 'jean@test.sn',
     });
     proprietaireId = proprietaire.id;
 
-    const terrainA = await fakePrisma.terrain.create({
+    const terrainA = await data.terrain.create({
       data: {
         referenceInterne: 'TER-MANDAT-A',
         nom: 'Terrain A',
         proprietaireId,
+        statutJuridique: 'Titre foncier',
+        niveauVerification: 'Vérifié',
         statutCommercial: 'Disponible',
         prixPublic: 10000000,
       },
     });
     terrainAId = terrainA.id;
 
-    const terrainB = await fakePrisma.terrain.create({
+    const terrainB = await data.terrain.create({
       data: {
         referenceInterne: 'TER-MANDAT-B',
         nom: 'Terrain B',
         proprietaireId,
+        statutJuridique: 'Titre foncier',
+        niveauVerification: 'Vérifié',
         statutCommercial: 'Disponible',
         prixPublic: 6000000,
       },
@@ -134,7 +109,7 @@ describe('Parcours Mandats J1.4 (e2e)', () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    await context.close();
   });
 
   it('étape 1 — connexion de l’administrateur', async () => {
@@ -229,7 +204,7 @@ describe('Parcours Mandats J1.4 (e2e)', () => {
   });
 
   it('étape 5 — passage du lot en « Vendu » met à jour le suivi financier', async () => {
-    await fakePrisma.terrain.update({
+    await data.terrain.update({
       where: { id: terrainAId },
       data: { statutCommercial: 'Vendu' },
     });

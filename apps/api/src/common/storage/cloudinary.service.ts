@@ -81,7 +81,7 @@ export class CloudinaryService {
     });
   }
 
-  private isConfigured(): boolean {
+  isConfigured(): boolean {
     return Boolean(
       this.config.get('CLOUDINARY_CLOUD_NAME') &&
       this.config.get('CLOUDINARY_API_KEY') &&

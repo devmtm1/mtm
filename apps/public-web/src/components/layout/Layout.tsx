@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { WhatsAppButton } from './WhatsAppButton';
@@ -8,6 +8,10 @@ import { RouteAnnouncer } from './RouteAnnouncer';
 const MAIN_ID = 'contenu-principal';
 
 export function Layout() {
+  // Clé sur le chemin seul : un changement de page rejoue l'animation
+  // d'entrée, un changement de filtres (query string) sur la même page non.
+  const { pathname } = useLocation();
+
   return (
     <div className="flex min-h-screen flex-col bg-mtm-bg text-mtm-text">
       <ScrollManager />
@@ -25,7 +29,9 @@ export function Layout() {
       {/* `tabIndex={-1}` rend le conteneur focusable par programme : c'est la
           cible du focus après chaque changement de route (voir RouteAnnouncer). */}
       <main id={MAIN_ID} tabIndex={-1} className="flex-1 outline-none">
-        <Outlet />
+        <div key={pathname} className="motion-safe:animate-page-in">
+          <Outlet />
+        </div>
       </main>
       <Footer />
       <WhatsAppButton />

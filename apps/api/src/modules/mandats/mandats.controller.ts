@@ -27,12 +27,20 @@ import { CreateMandatLotDto } from './dto/create-mandat-lot.dto';
 import { UpdateMandatLotDto } from './dto/update-mandat-lot.dto';
 import { CreateMandatDocumentDto } from './dto/create-mandat-document.dto';
 import { MandatsService } from './mandats.service';
+import { MandatsFinanceService } from './mandats-finance.service';
+import { MandatsAlertesService } from './mandats-alertes.service';
+import { MandatsLotsService } from './mandats-lots.service';
+import { MandatsDocumentsService } from './mandats-documents.service';
 
 @ApiTags('mandats')
 @Controller('mandats')
 export class MandatsController {
   constructor(
     private readonly mandats: MandatsService,
+    private readonly finance: MandatsFinanceService,
+    private readonly alertes: MandatsAlertesService,
+    private readonly lots: MandatsLotsService,
+    private readonly documents: MandatsDocumentsService,
     private readonly audit: AuditService,
   ) {}
 
@@ -50,7 +58,7 @@ export class MandatsController {
   @Get('stats') @RequirePermissions('mandats:consulter') getStats(
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.mandats.getStats(user);
+    return this.finance.getStats(user);
   }
 
   @Get(':id/financial')
@@ -59,20 +67,20 @@ export class MandatsController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.mandats.getFinancialSummary(id, user);
+    return this.finance.getFinancialSummary(id, user);
   }
 
   @Get('expirants') @RequirePermissions('mandats:consulter') getExpirants(
     @CurrentUser() user: AuthenticatedUser,
     @Query('jours') jours?: string,
   ) {
-    return this.mandats.getExpirants(jours ? Number(jours) : undefined, user);
+    return this.alertes.getExpirants(jours ? Number(jours) : undefined, user);
   }
 
   @Post('alerts/check')
   @RequirePermissions('mandats:administrer')
   checkAlerts() {
-    return this.mandats.checkAlerts();
+    return this.alertes.checkAlerts();
   }
 
   @Get(':id') @RequirePermissions('mandats:consulter') findOne(
@@ -86,7 +94,7 @@ export class MandatsController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.mandats.getHistory(id, user);
+    return this.documents.getHistory(id, user);
   }
 
   @Post() @RequirePermissions('mandats:creer') async create(
@@ -155,7 +163,7 @@ export class MandatsController {
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    const lot = await this.mandats.addLot(id, dto, user);
+    const lot = await this.lots.addLot(id, dto, user);
     await this.audit.record({
       userId: user.id,
       action: 'mandat.lot.created',
@@ -182,7 +190,7 @@ export class MandatsController {
     @Req() req: Request,
   ) {
     const before = await this.mandats.findOne(id, user);
-    const lot = await this.mandats.updateLot(id, lotId, dto, user);
+    const lot = await this.lots.updateLot(id, lotId, dto, user);
     await this.audit.record({
       userId: user.id,
       action: 'mandat.lot.updated',
@@ -207,7 +215,7 @@ export class MandatsController {
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    await this.mandats.removeLot(id, lotId, user);
+    await this.lots.removeLot(id, lotId, user);
     await this.audit.record({
       userId: user.id,
       action: 'mandat.lot.deleted',
@@ -229,7 +237,7 @@ export class MandatsController {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     if (!file) throw new BadRequestException('Un document est obligatoire');
-    const document = await this.mandats.addDocument(id, dto, file, user);
+    const document = await this.documents.addDocument(id, dto, file, user);
     await this.audit.record({
       userId: user.id,
       action: 'mandat.document.created',
@@ -247,7 +255,7 @@ export class MandatsController {
     @Param('documentId', ParseUUIDPipe) documentId: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    await this.mandats.removeDocument(id, documentId, user);
+    await this.documents.removeDocument(id, documentId, user);
     await this.audit.record({
       userId: user.id,
       action: 'mandat.document.deleted',

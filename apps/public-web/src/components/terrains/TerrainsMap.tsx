@@ -6,6 +6,7 @@ import type { Terrain } from '../../types/terrain';
 import { formatMoney, formatSuperficie } from '../../utils/format';
 import { ROUTES } from '../../routes';
 import { markerIcon } from './leaflet-icon';
+import { observeMapResize } from './map-resize';
 import { EmptyState } from '../ui/EmptyState';
 
 /**
@@ -38,25 +39,36 @@ export function TerrainsMap({ terrains }: { terrains: Terrain[] }) {
       const position: [number, number] = [terrain.latitude!, terrain.longitude!];
       bounds.push(position);
 
+      // Construction par nœuds (jamais innerHTML) : le nom vient du
+      // back-office et ne doit pas pouvoir injecter de balisage.
       const popup = document.createElement('div');
-      popup.innerHTML = `
-        <strong>${terrain.nom}</strong><br />
-        <span>${formatSuperficie(terrain.superficie, terrain.uniteSuperficie)} · ${formatMoney(terrain.prixPublic)}</span><br />
-      `;
+      popup.className = 'flex flex-col gap-1 font-sans';
+      const name = document.createElement('strong');
+      name.textContent = terrain.nom;
+      const details = document.createElement('span');
+      details.textContent = `${formatSuperficie(terrain.superficie, terrain.uniteSuperficie)} · ${formatMoney(terrain.prixPublic)}`;
       const link = document.createElement('button');
       link.type = 'button';
       link.textContent = 'Voir la fiche';
-      link.style.cssText =
-        'margin-top:6px;color:#B43036;font-weight:600;text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;';
+      link.className = 'self-start font-semibold text-mtm-primary underline hover:text-mtm-primary-dark';
       link.addEventListener('click', () => navigateRef.current(ROUTES.terrainDetail(terrain.id)));
-      popup.appendChild(link);
+      popup.append(name, details, link);
 
       L.marker(position, { icon: markerIcon }).addTo(map).bindPopup(popup);
     }
 
-    map.fitBounds(L.latLngBounds(bounds).pad(0.2), { maxZoom: 13 });
+    const fit = (): void => {
+      map.fitBounds(L.latLngBounds(bounds).pad(0.2), { maxZoom: 13, animate: false });
+    };
+    fit();
+    const stopObserving = observeMapResize(map, containerRef.current);
+    // Le cadrage dépend de la taille du conteneur : on le refait une fois
+    // celle-ci stabilisée (voir map-resize.ts).
+    const frame = requestAnimationFrame(fit);
 
     return () => {
+      cancelAnimationFrame(frame);
+      stopObserving();
       map.remove();
     };
   }, [located]);

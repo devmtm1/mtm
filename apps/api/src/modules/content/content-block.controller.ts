@@ -73,7 +73,7 @@ export class ContentBlockController {
 
   @Delete(':key')
   @RequirePermissions('content:supprimer')
-  remove(@Param('key') key: string) {
-    return this.content.remove(key);
+  remove(@Param('key') key: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.content.remove(key, user.id);
   }
 }

@@ -1,5 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { AuditService } from '../audit/audit.service';
 import { ContentBlockService } from './content-block.service';
 
 describe('ContentBlockService public contract', () => {
@@ -20,7 +21,11 @@ describe('ContentBlockService public contract', () => {
         update: jest.fn(),
       },
     };
-    service = new ContentBlockService(prismaMock as unknown as PrismaService);
+    const auditMock = { record: jest.fn().mockResolvedValue(undefined) };
+    service = new ContentBlockService(
+      prismaMock as unknown as PrismaService,
+      auditMock as unknown as AuditService,
+    );
   });
 
   it('ne retourne que les contenus actifs et les champs publics', async () => {

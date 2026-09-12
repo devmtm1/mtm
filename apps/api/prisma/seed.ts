@@ -596,6 +596,19 @@ async function main(): Promise<void> {
     },
   });
 
+  // --- Durée de blocage d'une réservation, en jours (section 12 CDC) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'reservations.dureeBlocageJours' },
+    update: {},
+    create: {
+      key: 'reservations.dureeBlocageJours',
+      value: 15,
+      description:
+        'Durée de blocage par défaut d\'un terrain réservé (jours), quand elle n\'est pas précisée à la réservation',
+      isSensitive: false,
+    },
+  });
+
   await prisma.systemSetting.upsert({
     where: { key: 'ventes.reglesCommissions' },
     update: {},

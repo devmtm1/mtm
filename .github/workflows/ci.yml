@@ -39,6 +39,8 @@ jobs:
     env:
       NODE_ENV: test
       DATABASE_URL: postgresql://mtm_test:mtm_test@localhost:5432/mtm_immobilier_test?schema=public
+      # Les e2e vident cette base : le service Postgres du job est jetable.
+      E2E_DATABASE_URL: postgresql://mtm_test:mtm_test@localhost:5432/mtm_immobilier_test?schema=public
       JWT_ACCESS_SECRET: ci-access-secret-min-32-characters-long
       JWT_REFRESH_SECRET: ci-refresh-secret-min-32-characters-long
       CORS_ORIGIN: http://localhost:4200
@@ -85,13 +87,9 @@ jobs:
         working-directory: apps/api
         run: npm run test
 
-      - name: E2E tests (critical path)
+      - name: E2E tests (PostgreSQL réel)
         working-directory: apps/api
         run: npm run test:e2e
-
-      - name: Verify PostgreSQL-backed e2e
-        working-directory: apps/api
-        run: npm run test:e2e -- --runInBand postgres.e2e-spec.ts
 
   backoffice:
     name: Back-office (Angular)

@@ -9,10 +9,17 @@ const TONE_CLASSES: Record<Tone, string> = {
   neutral: 'bg-mtm-border/60 text-mtm-muted',
 };
 
-export function Badge({ tone = 'neutral', children }: { tone?: Tone; children: ReactNode }) {
+interface BadgeProps {
+  tone?: Tone;
+  children: ReactNode;
+  /** Classes additionnelles (ex. masquage responsive). */
+  className?: string;
+}
+
+export function Badge({ tone = 'neutral', children, className = '' }: BadgeProps) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${TONE_CLASSES[tone]}`}
+      className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${TONE_CLASSES[tone]} ${className}`}
     >
       {children}
     </span>

@@ -27,19 +27,23 @@ import { UpdateTerrainDto } from './dto/update-terrain.dto';
 import { UpdateTerrainStatusDto } from './dto/update-terrain-status.dto';
 import { CreateTerrainAssetDto } from './dto/create-terrain-asset.dto';
 import { TerrainsService } from './terrains.service';
+import { TerrainsPublicService } from './terrains-public.service';
+import { TerrainsAssetsService } from './terrains-assets.service';
 
 @ApiTags('terrains')
 @Controller('terrains')
 export class TerrainsController {
   constructor(
     private readonly terrains: TerrainsService,
+    private readonly publicCatalog: TerrainsPublicService,
+    private readonly assets: TerrainsAssetsService,
     private readonly audit: AuditService,
   ) {}
 
   @Public()
   @Get('public')
   findPublic(@Query() query: QueryTerrainDto) {
-    return this.terrains.findPublic(query);
+    return this.publicCatalog.findPublic(query);
   }
 
   /**
@@ -49,13 +53,13 @@ export class TerrainsController {
   @Public()
   @Get('public/options')
   getPublicFilterOptions() {
-    return this.terrains.getPublicFilterOptions();
+    return this.publicCatalog.getPublicFilterOptions();
   }
 
   @Public()
   @Get('public/:id')
   findPublicOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.terrains.findPublicOne(id);
+    return this.publicCatalog.findPublicOne(id);
   }
 
   @Get() @RequirePermissions('terrains:consulter') findAll(
@@ -209,7 +213,7 @@ export class TerrainsController {
   ) {
     if (!file)
       throw new BadRequestException('Un fichier média est obligatoire');
-    const media = await this.terrains.addMedia(id, dto, file, user);
+    const media = await this.assets.addMedia(id, dto, file, user);
     await this.audit.record({
       userId: user.id,
       action: 'terrain.media.created',
@@ -230,7 +234,7 @@ export class TerrainsController {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     if (!file) throw new BadRequestException('Un document est obligatoire');
-    const document = await this.terrains.addDocument(id, dto, file, user);
+    const document = await this.assets.addDocument(id, dto, file, user);
     await this.audit.record({
       userId: user.id,
       action: 'terrain.document.created',
@@ -248,7 +252,7 @@ export class TerrainsController {
     @Param('mediaId', ParseUUIDPipe) mediaId: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    await this.terrains.removeMedia(id, mediaId, user);
+    await this.assets.removeMedia(id, mediaId, user);
     await this.audit.record({
       userId: user.id,
       action: 'terrain.media.deleted',
@@ -265,7 +269,7 @@ export class TerrainsController {
     @Param('documentId', ParseUUIDPipe) documentId: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    await this.terrains.removeDocument(id, documentId, user);
+    await this.assets.removeDocument(id, documentId, user);
     await this.audit.record({
       userId: user.id,
       action: 'terrain.document.deleted',

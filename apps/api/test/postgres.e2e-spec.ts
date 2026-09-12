@@ -1,78 +1,30 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import cookieParser from 'cookie-parser';
 import request from 'supertest';
-import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/database/prisma.service';
+import { createE2eApp, truncateAll, type E2eContext } from './helpers/e2e-app';
+import { describeE2e } from './helpers/e2e-database';
 
-/** Vérifie le démarrage et les requêtes avec le vrai PrismaService. */
-describe('PostgreSQL réel (e2e)', () => {
+/**
+ * Projection publique, authentification et santé sur la vraie base : les
+ * requêtes SQL générées par Prisma sont exercées, pas seulement le câblage.
+ */
+describeE2e('PostgreSQL réel (e2e)', () => {
+  let context: E2eContext;
   let app: INestApplication;
   let prisma: PrismaService;
 
   beforeAll(async () => {
-    process.env.NODE_ENV = 'test';
-    const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleRef.createNestApplication();
-    app.setGlobalPrefix('api');
-    app.use(cookieParser());
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-      }),
-    );
-    await app.init();
-    prisma = moduleRef.get(PrismaService);
-
-    await prisma.$executeRawUnsafe(`
-      DO $$
-      DECLARE
-        r RECORD;
-      BEGIN
-        FOR r IN
-          SELECT tablename FROM pg_tables
-          WHERE schemaname = 'public' AND tablename NOT LIKE '_prisma%'
-        LOOP
-          EXECUTE format('TRUNCATE TABLE %I RESTART IDENTITY CASCADE', r.tablename);
-        END LOOP;
-      END $$;
-    `);
+    context = await createE2eApp();
+    app = context.app;
+    prisma = context.prisma;
   });
 
   afterAll(async () => {
-    await app.close();
+    await context.close();
   });
 
-  afterEach(async () => {
-    await prisma.mandatLot.deleteMany();
-    await prisma.mandatDocument.deleteMany();
-    await prisma.mandat.deleteMany();
-    await prisma.dossierVente.deleteMany();
-    await prisma.documentCrm.deleteMany();
-    await prisma.activiteCrm.deleteMany();
-    await prisma.prospect.deleteMany();
-    await prisma.contact.deleteMany();
-    await prisma.contentBlock.deleteMany();
-    await prisma.systemSetting.deleteMany();
-    await prisma.refreshToken.deleteMany();
-    await prisma.passwordResetToken.deleteMany();
-    await prisma.userRole.deleteMany();
-    await prisma.rolePermission.deleteMany();
-    await prisma.user.deleteMany();
-    await prisma.role.deleteMany();
-    await prisma.permission.deleteMany();
-    await prisma.terrainDocument.deleteMany();
-    await prisma.terrainMedia.deleteMany();
-    await prisma.terrain.deleteMany();
-    await prisma.proprietaire.deleteMany();
-    await prisma.auditLog.deleteMany();
-  });
+  afterEach(() => truncateAll(prisma));
 
   it('répond au healthcheck avec une requête PostgreSQL réelle', async () => {
     const response = await request(app.getHttpServer()).get('/api/health');
@@ -144,7 +96,7 @@ describe('PostgreSQL réel (e2e)', () => {
     });
 
     const hashedPassword = await bcrypt.hash('AdminPassword123!', 12);
-    const admin = await prisma.user.create({
+    await prisma.user.create({
       data: {
         email: 'admin-e2e@mtm-immobilier.sn',
         password: hashedPassword,

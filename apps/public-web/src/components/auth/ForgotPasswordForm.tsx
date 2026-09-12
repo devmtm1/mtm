@@ -6,10 +6,18 @@ import { ApiError } from '../../api/client';
 import { confirmPasswordReset, requestPasswordReset } from '../../api/auth';
 import { PASSWORD_HELP_TEXT, validatePasswordComplexity } from '../../utils/password';
 
-export function ForgotPasswordForm({ onBackToLogin }: { onBackToLogin: () => void }) {
-  const [step, setStep] = useState<'request' | 'sent' | 'confirm' | 'done'>('request');
+interface ForgotPasswordFormProps {
+  onBackToLogin: () => void;
+  /** Jeton reçu par e-mail (lien « ?reset=… ») : on saute directement à l'étape de saisie du mot de passe. */
+  initialToken?: string;
+}
+
+export function ForgotPasswordForm({ onBackToLogin, initialToken }: ForgotPasswordFormProps) {
+  const [step, setStep] = useState<'request' | 'sent' | 'confirm' | 'done'>(
+    initialToken ? 'confirm' : 'request',
+  );
   const [email, setEmail] = useState('');
-  const [token, setToken] = useState('');
+  const [token, setToken] = useState(initialToken ?? '');
   const [newPassword, setNewPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);

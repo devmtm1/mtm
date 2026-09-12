@@ -1,4 +1,4 @@
-import { Mail, MapPin, Phone } from 'lucide-react';
+import { Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
 import { PageIntro } from '../components/layout/PageIntro';
 import { ContactForm } from '../components/contact/ContactForm';
 import { toTelHref, useSiteContact } from '../hooks/useSiteContact';
@@ -37,7 +37,7 @@ export function ContactPage() {
             </span>
             <div>
               <p className="text-sm font-semibold text-mtm-text">Téléphone</p>
-              <a href={toTelHref(contact.telephone)} className="text-sm text-mtm-muted hover:text-mtm-primary">
+              <a href={toTelHref(contact.telephone)} className="text-sm text-mtm-muted transition-colors hover:text-mtm-primary">
                 {contact.telephone}
               </a>
             </div>
@@ -50,12 +50,35 @@ export function ContactPage() {
               <p className="text-sm font-semibold text-mtm-text">E-mail</p>
               <a
                 href={`mailto:${contact.email}`}
-                className="text-sm text-mtm-muted hover:text-mtm-primary"
+                className="text-sm text-mtm-muted transition-colors hover:text-mtm-primary"
               >
                 {contact.email}
               </a>
             </div>
           </div>
+          <div className="flex items-start gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-mtm-success/10 text-mtm-success">
+              <MessageCircle className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-mtm-text">WhatsApp</p>
+              <a
+                href={`https://wa.me/${contact.whatsapp}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-mtm-muted transition-colors hover:text-mtm-primary"
+              >
+                Écrire directement à un conseiller
+              </a>
+            </div>
+          </div>
+
+          {/* Réassurance : la page contact est la porte d'entrée de la
+              diaspora, qui ne peut pas passer à l'agence. */}
+          <p className="mt-2 rounded-lg border border-mtm-border bg-mtm-surface p-4 text-sm text-mtm-muted">
+            Vous êtes à l’étranger ? Nous organisons visites, vérifications et rendez-vous à distance,
+            avec photos et visioconférence.
+          </p>
         </div>
 
         <div className="rounded-lg border border-mtm-border bg-mtm-surface p-6 shadow-card">

@@ -1,3 +1,5 @@
+import type { Request, Response } from 'express';
+import { requestContextMiddleware } from '../../common/request-context/request-context';
 import { AuditService } from './audit.service';
 import { PrismaService } from '../../database/prisma.service';
 
@@ -36,6 +38,32 @@ describe('AuditService', () => {
           entityType: 'User',
           entityId: 'u2',
           ipAddress: '127.0.0.1',
+        }),
+      });
+    });
+
+    it("complète IP et navigateur depuis la requête en cours quand l'appelant ne les fournit pas", async () => {
+      const req = { ip: '41.82.0.1', headers: { 'user-agent': 'Mozilla/5.0' } };
+      await new Promise<void>((resolve, reject) => {
+        requestContextMiddleware(
+          req as unknown as Request,
+          {} as Response,
+          () => {
+            service
+              .record({
+                userId: 'u1',
+                action: 'terrain.created',
+                entityType: 'Terrain',
+              })
+              .then(resolve, reject);
+          },
+        );
+      });
+
+      expect(prismaMock.auditLog.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          ipAddress: '41.82.0.1',
+          userAgent: 'Mozilla/5.0',
         }),
       });
     });

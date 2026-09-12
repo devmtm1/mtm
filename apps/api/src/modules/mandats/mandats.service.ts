@@ -6,15 +6,16 @@ import {
 } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
-import { AuditService } from '../audit/audit.service';
+import {
+  MandatsAccessService,
+  type MandatUser,
+} from './mandats-access.service';
+import { DEFAULT_MANDAT_OPTIONS } from './mandats-defaults';
+import { SettingsService } from '../settings/settings.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import { CreateMandatDto } from './dto/create-mandat.dto';
 import { UpdateMandatDto } from './dto/update-mandat.dto';
 import { QueryMandatDto } from './dto/query-mandat.dto';
-import { CreateMandatLotDto } from './dto/create-mandat-lot.dto';
-import { UpdateMandatLotDto } from './dto/update-mandat-lot.dto';
-import { CreateMandatDocumentDto } from './dto/create-mandat-document.dto';
-import { validateUploadedAsset } from '../../common/storage/asset-validation';
 
 const mandatInclude = {
   proprietaire: {
@@ -52,20 +53,19 @@ const mandatInclude = {
   _count: { select: { lots: true, documents: true } },
 } as const;
 
-const DEFAULT_MANDAT_OPTIONS = {
-  typeMandat: ['Vente', 'Location', 'Gestion'],
-  statut: ['Brouillon', 'Actif', 'Expiré', 'Résilié', 'Clôturé'],
-  statutLot: ['Confie', 'Disponible', 'Réservé', 'Vendu'],
-};
-
-type MandatUser = { id: string; roles: string[]; permissions: string[] };
-
+/**
+ * Fiche mandat (J1.4, section 10 CDC) : recherche dans le périmètre,
+ * consultation, création, mise à jour, suppression, référentiels. Lots,
+ * documents, finances et alertes d'échéance sont portés par les services
+ * voisins du module.
+ */
 @Injectable()
 export class MandatsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly audit: AuditService,
     private readonly cloudinary: CloudinaryService,
+    private readonly settings: SettingsService,
+    private readonly access: MandatsAccessService,
   ) {}
 
   async findAll(query: QueryMandatDto, user: MandatUser) {
@@ -74,7 +74,7 @@ export class MandatsService {
     const search = query.search?.trim();
 
     const where: Prisma.MandatWhereInput = {
-      ...this.ownershipFilter(user),
+      ...this.access.ownershipFilter(user),
       ...(search
         ? {
             OR: [
@@ -145,7 +145,7 @@ export class MandatsService {
 
   async findOne(id: string, user: MandatUser) {
     const mandat = await this.prisma.mandat.findFirst({
-      where: { id, ...this.ownershipFilter(user) },
+      where: { id, ...this.access.ownershipFilter(user) },
       include: mandatInclude,
     });
     if (!mandat) throw new NotFoundException('Mandat introuvable');
@@ -154,249 +154,20 @@ export class MandatsService {
 
   async getOptions() {
     const [typeMandat, statut, statutLot] = await Promise.all([
-      this.prisma.systemSetting.findUnique({
-        where: { key: 'mandats.typeMandat' },
-      }),
-      this.prisma.systemSetting.findUnique({
-        where: { key: 'mandats.statut' },
-      }),
-      this.prisma.systemSetting.findUnique({
-        where: { key: 'mandats.statutLot' },
-      }),
-    ]);
-
-    return {
-      typeMandat: this.asOptions(
-        typeMandat?.value,
+      this.settings.getStringList(
+        'mandats.typeMandat',
         DEFAULT_MANDAT_OPTIONS.typeMandat,
       ),
-      statut: this.asOptions(statut?.value, DEFAULT_MANDAT_OPTIONS.statut),
-      statutLot: this.asOptions(
-        statutLot?.value,
+      this.settings.getStringList(
+        'mandats.statut',
+        DEFAULT_MANDAT_OPTIONS.statut,
+      ),
+      this.settings.getStringList(
+        'mandats.statutLot',
         DEFAULT_MANDAT_OPTIONS.statutLot,
       ),
-    };
-  }
-
-  async getStats(user: MandatUser) {
-    const now = new Date();
-    const [totalMandats, actifs, expirant30Jours, totalLots] =
-      await Promise.all([
-        this.prisma.mandat.count({ where: this.ownershipFilter(user) }),
-        this.prisma.mandat.count({
-          where: {
-            ...this.ownershipFilter(user),
-            statut: 'Actif',
-            dateFin: { gte: now },
-          },
-        }),
-        this.prisma.mandat.count({
-          where: {
-            ...this.ownershipFilter(user),
-            statut: 'Actif',
-            dateFin: {
-              lte: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
-              gte: now,
-            },
-          },
-        }),
-        this.prisma.mandatLot.count({
-          where: { mandat: this.ownershipFilter(user) },
-        }),
-      ]);
-
-    const lotsByStatut = await this.prisma.mandatLot.groupBy({
-      by: ['statutLot'],
-      where: { mandat: this.ownershipFilter(user) },
-      _count: { statutLot: true },
-    });
-
-    const financial = await this.computeGlobalFinancials(user);
-
-    return {
-      totalMandats,
-      actifs,
-      expirant30Jours,
-      totalLots,
-      lotsParStatut: lotsByStatut.reduce<Record<string, number>>(
-        (acc, item) => {
-          acc[item.statutLot] = item._count.statutLot;
-          return acc;
-        },
-        {},
-      ),
-      financial,
-    };
-  }
-
-  async getFinancialSummary(id: string, user: MandatUser) {
-    await this.ensureAccessible(id, user);
-    const mandat = await this.prisma.mandat.findFirst({
-      where: { id, ...this.ownershipFilter(user) },
-      include: {
-        lots: {
-          include: {
-            terrain: {
-              select: { id: true, prixPublic: true, statutCommercial: true },
-            },
-          },
-        },
-      },
-    });
-    if (!mandat) throw new NotFoundException('Mandat introuvable');
-    const commissionRate = await this.getCommissionRate();
-    const summary = this.computeFinancials(mandat.lots, commissionRate);
-    return { mandatId: id, ...summary };
-  }
-
-  private async computeGlobalFinancials(user: MandatUser) {
-    const mandats = await this.prisma.mandat.findMany({
-      where: this.ownershipFilter(user),
-      include: {
-        lots: {
-          include: {
-            terrain: { select: { prixPublic: true, statutCommercial: true } },
-          },
-        },
-      },
-    });
-    const commissionRate = await this.getCommissionRate();
-
-    let chiffreAffaires = 0;
-    let commissions = 0;
-    let reste = 0;
-
-    for (const mandat of mandats) {
-      const summary = this.computeFinancials(mandat.lots, commissionRate);
-      chiffreAffaires += summary.chiffreAffaires;
-      commissions += summary.commissionsEstimees;
-      reste += summary.resteACommercialiser;
-    }
-
-    return {
-      chiffreAffaires,
-      commissionsEstimees: commissions,
-      resteACommercialiser: reste,
-    };
-  }
-
-  private computeFinancials(
-    lots: Array<{
-      terrain: {
-        prixPublic: Prisma.Decimal | null;
-        statutCommercial: string;
-      } | null;
-    }>,
-    commissionRate: number,
-  ) {
-    let chiffreAffaires = 0;
-    let resteACommercialiser = 0;
-
-    for (const lot of lots) {
-      const prix = Number(lot?.terrain?.prixPublic ?? 0);
-      if (lot?.terrain?.statutCommercial === 'Vendu') {
-        chiffreAffaires += prix;
-      } else {
-        resteACommercialiser += prix;
-      }
-    }
-
-    return {
-      chiffreAffaires,
-      resteACommercialiser,
-      commissionsEstimees: Math.round(chiffreAffaires * (commissionRate / 100)),
-    };
-  }
-
-  private async getCommissionRate(): Promise<number> {
-    const setting = await this.prisma.systemSetting.findUnique({
-      where: { key: 'mandats.commissionRate' },
-      select: { value: true },
-    });
-    const value = setting?.value;
-    return typeof value === 'number' && value >= 0 && value <= 100 ? value : 5;
-  }
-
-  async getExpirants(jours: number = 30, user: MandatUser) {
-    const now = new Date();
-    const dateLimite = new Date(now.getTime() + jours * 24 * 60 * 60 * 1000);
-    return this.prisma.mandat.findMany({
-      where: {
-        ...this.ownershipFilter(user),
-        statut: 'Actif',
-        dateFin: {
-          lte: dateLimite,
-          gte: now,
-        },
-      },
-      include: {
-        proprietaire: {
-          select: { id: true, firstName: true, lastName: true, email: true },
-        },
-        commercialResponsable: {
-          select: { id: true, firstName: true, lastName: true },
-        },
-        _count: { select: { lots: true } },
-      },
-      orderBy: { dateFin: 'asc' },
-    });
-  }
-
-  async checkAlerts() {
-    const alertResults = await this.prisma.$transaction(async (tx) => {
-      const now = new Date();
-      const mandats = await tx.mandat.findMany({
-        where: {
-          statut: 'Actif',
-          dateFin: { gte: now },
-        },
-        include: {
-          proprietaire: {
-            select: { email: true, firstName: true, lastName: true },
-          },
-          commercialResponsable: {
-            select: { email: true, firstName: true, lastName: true },
-          },
-        },
-      });
-
-      const alerts: Array<{
-        mandatId: string;
-        referenceInterne: string;
-        joursRestants: number;
-        destinataires: string[];
-      }> = [];
-
-      for (const mandat of mandats) {
-        const joursRestants = Math.ceil(
-          (mandat.dateFin.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-        );
-
-        if (joursRestants <= (mandat.alerteEcheanceJours ?? 30)) {
-          const destinataires: string[] = [];
-          if (mandat.proprietaire?.email)
-            destinataires.push(mandat.proprietaire.email);
-          if (mandat.commercialResponsable?.email)
-            destinataires.push(mandat.commercialResponsable.email);
-
-          if (destinataires.length) {
-            alerts.push({
-              mandatId: mandat.id,
-              referenceInterne: mandat.referenceInterne,
-              joursRestants,
-              destinataires,
-            });
-          }
-        }
-      }
-
-      return alerts;
-    });
-
-    return {
-      generatedAt: new Date().toISOString(),
-      alerts: alertResults,
-    };
+    ]);
+    return { typeMandat, statut, statutLot };
   }
 
   async create(dto: CreateMandatDto, user: MandatUser) {
@@ -411,7 +182,7 @@ export class MandatsService {
     await this.validateStatus(dto.statut);
     if (
       dto.commercialResponsableId &&
-      !this.hasGlobalScope(user.roles) &&
+      !this.access.hasGlobalScope(user.roles) &&
       dto.commercialResponsableId !== user.id
     ) {
       throw new BadRequestException(
@@ -441,7 +212,7 @@ export class MandatsService {
   }
 
   async update(id: string, dto: UpdateMandatDto, user: MandatUser) {
-    await this.ensureAccessible(id, user);
+    await this.access.ensureAccessible(id, user);
     await this.validateStatus(dto.statut);
     if (dto.dateDebut && dto.dateFin) {
       this.validateDateRange(dto.dateDebut, dto.dateFin);
@@ -475,7 +246,7 @@ export class MandatsService {
     };
     if (
       dto.commercialResponsableId &&
-      !this.hasGlobalScope(user.roles) &&
+      !this.access.hasGlobalScope(user.roles) &&
       dto.commercialResponsableId !== user.id
     ) {
       throw new BadRequestException(
@@ -491,210 +262,8 @@ export class MandatsService {
   }
 
   async remove(id: string, user: MandatUser): Promise<void> {
-    await this.ensureAccessible(id, user);
+    await this.access.ensureAccessible(id, user);
     await this.prisma.mandat.delete({ where: { id } });
-  }
-
-  async addLot(mandatId: string, dto: CreateMandatLotDto, user: MandatUser) {
-    await this.ensureAccessible(mandatId, user);
-    const terrain = await this.prisma.terrain.findUnique({
-      where: { id: dto.terrainId },
-      select: { id: true },
-    });
-    if (!terrain) throw new NotFoundException('Terrain introuvable');
-
-    const mandat = await this.prisma.mandat.findUnique({
-      where: { id: mandatId },
-      select: { exclusivite: true, statut: true },
-    });
-    if (mandat?.exclusivite && mandat.statut === 'Actif') {
-      const conflicting = await this.prisma.mandat.findFirst({
-        where: {
-          id: { not: mandatId },
-          statut: 'Actif',
-          exclusivite: true,
-          lots: { some: { terrainId: dto.terrainId } },
-        },
-        select: { id: true },
-      });
-      if (conflicting) {
-        throw new ConflictException(
-          'Ce terrain est déjà couvert par un mandat exclusif actif',
-        );
-      }
-    }
-
-    const existing = await this.prisma.mandatLot.findFirst({
-      where: { mandatId, terrainId: dto.terrainId },
-    });
-    if (existing)
-      throw new ConflictException('Ce terrain est déjà rattaché à ce mandat');
-
-    return this.prisma.mandatLot.create({
-      data: {
-        mandatId,
-        terrainId: dto.terrainId,
-        statutLot: dto.statutLot ?? 'Confie',
-      },
-      include: {
-        terrain: {
-          select: {
-            id: true,
-            referenceInterne: true,
-            nom: true,
-            commune: true,
-            region: true,
-            superficie: true,
-            prixPublic: true,
-            statutCommercial: true,
-          },
-        },
-      },
-    });
-  }
-
-  async updateLot(
-    mandatId: string,
-    lotId: string,
-    dto: UpdateMandatLotDto,
-    user: MandatUser,
-  ) {
-    await this.ensureAccessible(mandatId, user);
-    const lot = await this.prisma.mandatLot.findFirst({
-      where: { id: lotId, mandatId },
-    });
-    if (!lot) throw new NotFoundException('Lot introuvable dans ce mandat');
-
-    return this.prisma.mandatLot.update({
-      where: { id: lotId },
-      data: dto,
-      include: {
-        terrain: {
-          select: {
-            id: true,
-            referenceInterne: true,
-            nom: true,
-            commune: true,
-            region: true,
-            superficie: true,
-            prixPublic: true,
-            statutCommercial: true,
-          },
-        },
-      },
-    });
-  }
-
-  async removeLot(
-    mandatId: string,
-    lotId: string,
-    user: MandatUser,
-  ): Promise<void> {
-    await this.ensureAccessible(mandatId, user);
-    const lot = await this.prisma.mandatLot.findFirst({
-      where: { id: lotId, mandatId },
-    });
-    if (!lot) throw new NotFoundException('Lot introuvable dans ce mandat');
-    await this.prisma.mandatLot.delete({ where: { id: lotId } });
-  }
-
-  async addDocument(
-    mandatId: string,
-    dto: CreateMandatDocumentDto,
-    file: Express.Multer.File,
-    user: MandatUser,
-  ) {
-    await this.ensureAccessible(mandatId, user);
-    validateUploadedAsset(file, 'document');
-    if (
-      dto.isPublic &&
-      !user.roles.some((role) =>
-        ['administrateur', 'direction'].includes(role),
-      ) &&
-      !user.permissions.includes('mandats:publier')
-    ) {
-      throw new BadRequestException(
-        'La publication nécessite la permission mandats:publier',
-      );
-    }
-    await this.validateDocumentType(dto.type);
-    const uploaded = await this.cloudinary.upload(
-      file,
-      `mtm/mandats/${mandatId}/documents`,
-      dto.isPublic ?? false,
-    );
-    return this.prisma.mandatDocument.create({
-      data: {
-        mandatId,
-        type: dto.type,
-        title: dto.title,
-        isPublic: dto.isPublic ?? false,
-        storageKey: uploaded.publicId,
-        resourceType: uploaded.resourceType,
-      },
-    });
-  }
-
-  async removeDocument(
-    mandatId: string,
-    documentId: string,
-    user: MandatUser,
-  ): Promise<void> {
-    await this.ensureAccessible(mandatId, user);
-    const document = await this.prisma.mandatDocument.findFirst({
-      where: { id: documentId, mandatId },
-    });
-    if (!document) return;
-    await this.prisma.mandatDocument.delete({ where: { id: documentId } });
-    await this.cloudinary.destroy(
-      document.storageKey,
-      document.resourceType,
-      document.isPublic,
-    );
-  }
-
-  async getHistory(mandatId: string, user: MandatUser) {
-    await this.ensureAccessible(mandatId, user);
-    const [items, total] = await Promise.all([
-      this.prisma.auditLog.findMany({
-        where: { entityType: 'Mandat', entityId: mandatId },
-        orderBy: { createdAt: 'desc' },
-        take: 100,
-        include: {
-          user: {
-            select: { id: true, email: true, firstName: true, lastName: true },
-          },
-        },
-      }),
-      this.prisma.auditLog.count({
-        where: { entityType: 'Mandat', entityId: mandatId },
-      }),
-    ]);
-    return { items, total };
-  }
-
-  private async ensureAccessible(id: string, user: MandatUser): Promise<void> {
-    const exists = await this.prisma.mandat.findFirst({
-      where: { id, ...this.ownershipFilter(user) },
-      select: { id: true },
-    });
-    if (!exists) throw new NotFoundException('Mandat introuvable');
-  }
-
-  private ownershipFilter(user: MandatUser): Prisma.MandatWhereInput {
-    if (this.hasGlobalScope(user.roles)) return {};
-    return { commercialResponsableId: user.id };
-  }
-
-  private hasGlobalScope(roles: string[]): boolean {
-    return roles.some((role) =>
-      [
-        'administrateur',
-        'direction',
-        'manager',
-        'responsable_commercial',
-      ].includes(role),
-    );
   }
 
   private validateDateRange(dateDebut: string, dateFin: string): void {
@@ -705,42 +274,14 @@ export class MandatsService {
     }
   }
 
-  private async validateStatus(statut?: string): Promise<void> {
-    if (!statut) return;
-    const configured = await this.prisma.systemSetting.findUnique({
-      where: { key: 'mandats.statut' },
-    });
-    const allowed: string[] = Array.isArray(configured?.value)
-      ? (configured.value as unknown[]).filter(
-          (item): item is string => typeof item === 'string',
-        )
-      : [...DEFAULT_MANDAT_OPTIONS.statut];
-    if (!allowed.includes(statut)) {
-      throw new BadRequestException('Statut de mandat invalide');
-    }
+  private validateStatus(statut?: string): Promise<void> {
+    return this.settings.assertInList(
+      'mandats.statut',
+      DEFAULT_MANDAT_OPTIONS.statut,
+      statut,
+      'Statut de mandat invalide',
+    );
   }
-
-  private async validateDocumentType(type: string): Promise<void> {
-    const configured = await this.prisma.systemSetting.findUnique({
-      where: { key: 'mandats.documentTypes' },
-    });
-    const allowed: string[] = Array.isArray(configured?.value)
-      ? (configured.value as unknown[]).filter(
-          (item): item is string => typeof item === 'string',
-        )
-      : [
-          'contrat',
-          'avenant',
-          'preuve_signature',
-          'correspondance',
-          'justificatif',
-          'autre',
-        ];
-    if (!allowed.includes(type)) {
-      throw new BadRequestException('Type de document invalide');
-    }
-  }
-
   private toInternal<T extends Record<string, unknown>>(mandat: T): T {
     const value: T & {
       lots?: Array<Record<string, unknown>>;
@@ -763,12 +304,5 @@ export class MandatsService {
         ),
       })),
     };
-  }
-
-  private asOptions(value: unknown, fallback: string[]): string[] {
-    return Array.isArray(value) &&
-      value.every((item) => typeof item === 'string')
-      ? value
-      : fallback;
   }
 }

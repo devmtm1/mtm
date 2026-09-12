@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -64,6 +65,51 @@ export class SettingsService {
       where: { key },
     });
     return setting?.value;
+  }
+
+  /**
+   * Liste de chaînes paramétrée (statuts, types, priorités…), avec repli sur
+   * les valeurs par défaut du code si le paramètre est absent ou mal formé.
+   * Point d'entrée unique pour la section 25 du cahier des charges
+   * (« modifiable sans code ») : les modules métier ne lisent jamais
+   * SystemSetting directement pour ce besoin.
+   */
+  async getStringList(
+    key: string,
+    fallback: readonly string[],
+  ): Promise<string[]> {
+    return SettingsService.asStringList(await this.getRawValue(key), fallback);
+  }
+
+  /** Nombre paramétré, strictement positif, avec repli. */
+  async getPositiveNumber(key: string, fallback: number): Promise<number> {
+    const value = await this.getRawValue(key);
+    return typeof value === 'number' && value > 0 ? value : fallback;
+  }
+
+  /**
+   * Vérifie qu'une valeur appartient à la liste paramétrée sous `key`.
+   * `undefined` passe (champ optionnel non renseigné) ; sinon lève une
+   * BadRequestException avec le libellé fourni.
+   */
+  async assertInList(
+    key: string,
+    fallback: readonly string[],
+    value: string | undefined,
+    invalidMessage: string,
+  ): Promise<void> {
+    if (value === undefined) return;
+    const allowed = await this.getStringList(key, fallback);
+    if (!allowed.includes(value)) {
+      throw new BadRequestException(invalidMessage);
+    }
+  }
+
+  static asStringList(value: unknown, fallback: readonly string[]): string[] {
+    return Array.isArray(value) &&
+      value.every((item): item is string => typeof item === 'string')
+      ? value
+      : [...fallback];
   }
 
   async create(dto: CreateSettingDto, updatedById: string) {

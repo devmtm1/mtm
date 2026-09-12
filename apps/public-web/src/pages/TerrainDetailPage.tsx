@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { CalendarCheck, MapPin, MessageSquare } from 'lucide-react';
+import { Link, useParams } from 'react-router-dom';
+import { ArrowLeft, CalendarCheck, Globe2, MapPin, MessageSquare, ShieldCheck, UserCheck } from 'lucide-react';
+import { ROUTES } from '../routes';
 import { useTerrain } from '../hooks/useTerrain';
 import { TerrainGallery } from '../components/terrains/TerrainGallery';
 import { TerrainMap } from '../components/terrains/TerrainMap';
@@ -43,7 +44,15 @@ export function TerrainDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+      <Link
+        to={ROUTES.catalog}
+        className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-mtm-muted transition-colors hover:text-mtm-primary"
+      >
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+        Retour au catalogue
+      </Link>
+
       <div className="grid gap-10 lg:grid-cols-[1.6fr_1fr]">
         <div className="flex flex-col gap-8">
           <div>
@@ -177,6 +186,23 @@ export function TerrainDetailPage() {
               Réserver ce terrain
             </Button>
           </div>
+
+          {/* Réassurance : les trois engagements du cahier des charges qui
+              comptent au moment de cliquer (sections 6 et 7). */}
+          <ul className="mt-6 flex flex-col gap-2 border-t border-mtm-border pt-5 text-sm text-mtm-muted">
+            <li className="flex items-start gap-2">
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-mtm-success" aria-hidden="true" />
+              Terrain contrôlé par nos équipes avant publication
+            </li>
+            <li className="flex items-start gap-2">
+              <Globe2 className="mt-0.5 h-4 w-4 shrink-0 text-mtm-success" aria-hidden="true" />
+              Suivi à distance pour la diaspora
+            </li>
+            <li className="flex items-start gap-2">
+              <UserCheck className="mt-0.5 h-4 w-4 shrink-0 text-mtm-success" aria-hidden="true" />
+              Un interlocuteur dédié jusqu’à la signature
+            </li>
+          </ul>
         </aside>
       </div>
 

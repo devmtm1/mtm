@@ -11,20 +11,29 @@ export function Skeleton({ className = '' }: { className?: string }) {
   return <div className={`animate-pulse rounded bg-mtm-border/60 ${className}`} aria-hidden="true" />;
 }
 
-/** Silhouette d'une carte terrain (image 4/3 + référence, titre, badges, prix). */
-export function TerrainCardSkeleton() {
+/**
+ * Silhouette d'une carte terrain (image 4/3 + référence, titre, badges, prix).
+ * `compact` reproduit les dimensions de la variante mobile de TerrainCard.
+ */
+export function TerrainCardSkeleton({ compact = false }: { compact?: boolean }) {
   return (
     <div className="flex flex-col overflow-hidden rounded-lg border border-mtm-border bg-mtm-surface shadow-card">
       <Skeleton className="aspect-[4/3] w-full rounded-none" />
-      <div className="flex flex-1 flex-col gap-2 p-4">
+      <div className={`flex flex-1 flex-col ${compact ? 'gap-1.5 p-3 sm:gap-2 sm:p-4' : 'gap-2 p-4'}`}>
         <Skeleton className="h-3 w-20" />
-        <Skeleton className="h-5 w-3/4" />
+        <Skeleton className={compact ? 'h-10 w-3/4 sm:h-12' : 'h-12 w-3/4'} />
         <Skeleton className="h-4 w-1/2" />
         <div className="flex gap-1.5">
-          <Skeleton className="h-5 w-24 rounded-full" />
-          <Skeleton className="h-5 w-16 rounded-full" />
+          <Skeleton className="h-6 w-24 rounded-full" />
+          <Skeleton className={`h-6 w-16 rounded-full ${compact ? 'hidden sm:block' : ''}`} />
         </div>
-        <div className="mt-auto flex items-center justify-between pt-2">
+        <div
+          className={`mt-auto pt-2 ${
+            compact
+              ? 'flex flex-col-reverse gap-0.5 sm:flex-row sm:items-center sm:justify-between'
+              : 'flex items-center justify-between'
+          }`}
+        >
           <Skeleton className="h-4 w-16" />
           <Skeleton className="h-5 w-28" />
         </div>
@@ -47,21 +56,33 @@ export function ShowcaseCardSkeleton() {
   );
 }
 
-/** Grille de silhouettes, calquée sur la grille réelle (3 colonnes en large). */
+const DEFAULT_GRID = 'grid gap-6 sm:grid-cols-2 lg:grid-cols-3';
+
+/**
+ * Grille de silhouettes. `gridClassName` doit être la même constante que
+ * la grille réelle qu'elle remplace, sinon la mise en page saute à l'arrivée
+ * des données.
+ */
 export function CardGridSkeleton({
   count = 6,
   variant = 'terrain',
+  gridClassName = DEFAULT_GRID,
+  compact = false,
 }: {
   count?: number;
   variant?: 'terrain' | 'showcase';
+  gridClassName?: string;
+  compact?: boolean;
 }) {
-  const Card = variant === 'terrain' ? TerrainCardSkeleton : ShowcaseCardSkeleton;
-
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
-      {Array.from({ length: count }, (_, index) => (
-        <Card key={index} />
-      ))}
+    <div className={gridClassName} aria-hidden="true">
+      {Array.from({ length: count }, (_, index) =>
+        variant === 'terrain' ? (
+          <TerrainCardSkeleton key={index} compact={compact} />
+        ) : (
+          <ShowcaseCardSkeleton key={index} />
+        ),
+      )}
     </div>
   );
 }

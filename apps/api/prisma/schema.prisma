@@ -60,6 +60,8 @@ model User {
   reservationsCreees       Reservation[]        @relation("ReservationCreator")
   paiementsEnregistres     Paiement[]           @relation("PaiementRecorder")
   commissionsVente         CommissionVente[]    @relation("CommissionCommercial")
+  objectifsCommerciaux     ObjectifCommercial[] @relation("ObjectifCommercial")
+  objectifsDefinis         ObjectifCommercial[] @relation("ObjectifCreator")
   documentsVenteCrees      DocumentVente[]      @relation("DocumentVenteCreator")
 
   @@map("users")
@@ -674,6 +676,29 @@ model ContentBlock {
 // Portfolio structuré pour "Nos réalisations" et "Projets à venir"
 // (section 5/6 du CDC) — distinct de ContentBlock qui ne porte qu'un
 // texte libre par clé, insuffisant pour une liste d'éléments illustrés.
+/// Objectif mensuel d'un commercial (tableau de bord J1.6, section 12 CDC :
+/// « ventes, objectifs, commissions »). Chaque cible est optionnelle : un
+/// manager peut ne fixer qu'un chiffre d'affaires, ou qu'un nombre de ventes.
+model ObjectifCommercial {
+  id                   String   @id @default(uuid())
+  commercialId         String
+  commercial           User     @relation("ObjectifCommercial", fields: [commercialId], references: [id], onDelete: Cascade)
+  /// Mois ciblé, au format AAAA-MM
+  periode              String
+  cibleVentes          Int?
+  cibleChiffreAffaires Decimal? @db.Decimal(15, 2)
+  cibleCommissions     Decimal? @db.Decimal(15, 2)
+  notes                String?
+  createdById          String?
+  createdBy            User?    @relation("ObjectifCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@unique([commercialId, periode])
+  @@index([periode])
+  @@map("objectifs_commerciaux")
+}
+
 model ShowcaseItem {
   id           String    @id @default(uuid())
   category     String // "realisation" | "projet_a_venir"

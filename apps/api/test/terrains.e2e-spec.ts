@@ -1,12 +1,9 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import cookieParser from 'cookie-parser';
 import { authenticator } from 'otplib';
 import request from 'supertest';
-import { AppModule } from '../src/app.module';
-import { PrismaService } from '../src/database/prisma.service';
-import { FakePrismaService } from './fakes/fake-prisma.service';
+import { createE2eApp, type E2eContext } from './helpers/e2e-app';
+import { describeE2e } from './helpers/e2e-database';
 
 /**
  * Test e2e du parcours Terrains J1.1 / J1.2 :
@@ -17,9 +14,10 @@ import { FakePrismaService } from './fakes/fake-prisma.service';
  *  - catalogue public + filtre par vocation (audit Phase 1)
  *  - non-exposition des champs internes sur la fiche publique
  */
-describe('Parcours Terrains J1.1/J1.2 (e2e)', () => {
+describeE2e('Parcours Terrains J1.1/J1.2 (e2e)', () => {
   let app: INestApplication;
-  let fakePrisma: FakePrismaService;
+  let context: E2eContext;
+  let data: E2eContext['data'];
 
   const ADMIN_PASSWORD = 'AdminPassword123!';
   const ADMIN_2FA_SECRET = 'JBSWY3DPEHPK3PXP';
@@ -30,38 +28,11 @@ describe('Parcours Terrains J1.1/J1.2 (e2e)', () => {
   let terrainId: string;
 
   beforeAll(async () => {
-    process.env.NODE_ENV = 'test';
-    process.env.DATABASE_URL = 'postgresql://fake:fake@localhost:5432/fake';
-    process.env.JWT_ACCESS_SECRET = 'e2e-test-access-secret-min-32-characters';
-    process.env.JWT_REFRESH_SECRET =
-      'e2e-test-refresh-secret-min-32-characters';
-    process.env.JWT_ACCESS_EXPIRES_IN = '15m';
-    process.env.JWT_REFRESH_EXPIRES_IN = '7d';
-    process.env.CORS_ORIGIN = 'http://localhost:4200';
+    context = await createE2eApp();
+    app = context.app;
+    data = context.data;
 
-    fakePrisma = new FakePrismaService();
-
-    const moduleRef: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(PrismaService)
-      .useValue(fakePrisma)
-      .compile();
-
-    app = moduleRef.createNestApplication();
-    app.setGlobalPrefix('api');
-    app.use(cookieParser());
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-        transformOptions: { enableImplicitConversion: true },
-      }),
-    );
-    await app.init();
-
-    const adminRole = fakePrisma.seedRole('administrateur', true);
+    const adminRole = await data.seedRole('administrateur', true);
     const adminPermissions = [
       'terrains:consulter',
       'terrains:creer',
@@ -71,26 +42,26 @@ describe('Parcours Terrains J1.1/J1.2 (e2e)', () => {
       'audit:consulter',
     ];
     for (const name of adminPermissions) {
-      const permission = fakePrisma.seedPermission(name);
-      fakePrisma.linkRolePermission(adminRole.id, permission.id);
+      const permission = await data.seedPermission(name);
+      await data.linkRolePermission(adminRole.id, permission.id);
     }
 
-    fakePrisma.seedSystemSetting({
+    await data.seedSystemSetting({
       key: 'terrains.statutJuridique',
       value: ['Titre foncier', 'Bail', 'Régularisation en cours'],
     });
-    fakePrisma.seedSystemSetting({
+    await data.seedSystemSetting({
       key: 'terrains.niveauVerification',
       value: ['Non vérifié', 'En cours', 'Vérifié'],
     });
-    fakePrisma.seedSystemSetting({
+    await data.seedSystemSetting({
       key: 'terrains.statutCommercial',
       value: ['Brouillon', 'Disponible', 'Réservé', 'Vendu'],
     });
 
     const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 4);
     adminEmail = 'admin@mtm-immobilier.sn';
-    const adminUser = fakePrisma.seedUser({
+    const adminUser = await data.seedUser({
       email: adminEmail,
       password: hashedPassword,
       firstName: 'Admin',
@@ -98,27 +69,27 @@ describe('Parcours Terrains J1.1/J1.2 (e2e)', () => {
       twoFactorEnabled: true,
       twoFactorSecret: ADMIN_2FA_SECRET,
     });
-    fakePrisma.linkUserRole(adminUser.id, adminRole.id);
+    await data.linkUserRole(adminUser.id, adminRole.id);
 
     // Un commercial sans la permission terrains:consulter_financier, pour
     // vérifier le masquage des champs sensibles (prix d'acquisition, marge).
-    const commercialRole = fakePrisma.seedRole('commercial');
-    fakePrisma.linkRolePermission(
+    const commercialRole = await data.seedRole('commercial');
+    await data.linkRolePermission(
       commercialRole.id,
-      fakePrisma.seedPermission('terrains:consulter').id,
+      (await data.seedPermission('terrains:consulter')).id,
     );
-    const commercialUser = fakePrisma.seedUser({
+    const commercialUser = await data.seedUser({
       email: 'commercial@mtm-immobilier.sn',
       password: await bcrypt.hash('password', 4),
       firstName: 'Fatou',
       lastName: 'Diop',
     });
-    fakePrisma.linkUserRole(commercialUser.id, commercialRole.id);
+    await data.linkUserRole(commercialUser.id, commercialRole.id);
     commercialUserId = commercialUser.id;
   });
 
   afterAll(async () => {
-    await app.close();
+    await context.close();
   });
 
   it('étape 1 — connexion de l’administrateur', async () => {

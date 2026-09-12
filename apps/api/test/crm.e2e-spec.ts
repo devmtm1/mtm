@@ -1,13 +1,10 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import cookieParser from 'cookie-parser';
 import { authenticator } from 'otplib';
 import { randomUUID } from 'crypto';
 import request from 'supertest';
-import { AppModule } from '../src/app.module';
-import { PrismaService } from '../src/database/prisma.service';
-import { FakePrismaService } from './fakes/fake-prisma.service';
+import { createE2eApp, type E2eContext } from './helpers/e2e-app';
+import { describeE2e } from './helpers/e2e-database';
 
 /**
  * Test e2e du parcours CRM J1.5 :
@@ -18,9 +15,10 @@ import { FakePrismaService } from './fakes/fake-prisma.service';
  *  - assignation commercial
  *  - conversion contact → prospect
  */
-describe('Parcours CRM J1.5 (e2e)', () => {
+describeE2e('Parcours CRM J1.5 (e2e)', () => {
   let app: INestApplication;
-  let fakePrisma: FakePrismaService;
+  let context: E2eContext;
+  let data: E2eContext['data'];
 
   const ADMIN_PASSWORD = 'AdminPassword123!';
   const ADMIN_2FA_SECRET = 'JBSWY3DPEHPK3PXP';
@@ -29,38 +27,11 @@ describe('Parcours CRM J1.5 (e2e)', () => {
   let prospectId: string;
 
   beforeAll(async () => {
-    process.env.NODE_ENV = 'test';
-    process.env.DATABASE_URL = 'postgresql://fake:fake@localhost:5432/fake';
-    process.env.JWT_ACCESS_SECRET = 'e2e-test-access-secret-min-32-characters';
-    process.env.JWT_REFRESH_SECRET =
-      'e2e-test-refresh-secret-min-32-characters';
-    process.env.JWT_ACCESS_EXPIRES_IN = '15m';
-    process.env.JWT_REFRESH_EXPIRES_IN = '7d';
-    process.env.CORS_ORIGIN = 'http://localhost:4200';
+    context = await createE2eApp();
+    app = context.app;
+    data = context.data;
 
-    fakePrisma = new FakePrismaService();
-
-    const moduleRef: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(PrismaService)
-      .useValue(fakePrisma)
-      .compile();
-
-    app = moduleRef.createNestApplication();
-    app.setGlobalPrefix('api');
-    app.use(cookieParser());
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-        transformOptions: { enableImplicitConversion: true },
-      }),
-    );
-    await app.init();
-
-    const adminRole = fakePrisma.seedRole('administrateur', true);
+    const adminRole = await data.seedRole('administrateur', true);
     const permissionNames = [
       'crm:consulter',
       'crm:creer',
@@ -71,11 +42,11 @@ describe('Parcours CRM J1.5 (e2e)', () => {
       'audit:consulter',
     ];
     for (const name of permissionNames) {
-      const permission = fakePrisma.seedPermission(name);
-      fakePrisma.linkRolePermission(adminRole.id, permission.id);
+      const permission = await data.seedPermission(name);
+      await data.linkRolePermission(adminRole.id, permission.id);
     }
 
-    fakePrisma.seedSystemSetting({
+    await data.seedSystemSetting({
       key: 'crm.pipelineStages',
       value: [
         'nouveau_contact',
@@ -88,19 +59,19 @@ describe('Parcours CRM J1.5 (e2e)', () => {
         'perdu',
       ],
     });
-    fakePrisma.seedSystemSetting({
+    await data.seedSystemSetting({
       key: 'crm.activiteTypes',
       value: ['appel', 'rendez-vous', 'tache', 'relance', 'email', 'note'],
     });
-    fakePrisma.seedSystemSetting({
+    await data.seedSystemSetting({
       key: 'crm.activiteStats',
       value: ['a_faire', 'realise', 'reporte', 'annule'],
     });
-    fakePrisma.seedSystemSetting({
+    await data.seedSystemSetting({
       key: 'crm.priorites',
       value: ['basse', 'moyenne', 'haute'],
     });
-    fakePrisma.seedSystemSetting({
+    await data.seedSystemSetting({
       key: 'crm.documentTypes',
       value: [
         'contrat',
@@ -114,7 +85,7 @@ describe('Parcours CRM J1.5 (e2e)', () => {
 
     const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 4);
     adminEmail = 'admin@mtm-immobilier.sn';
-    const adminUser = fakePrisma.seedUser({
+    const adminUser = await data.seedUser({
       email: adminEmail,
       password: hashedPassword,
       firstName: 'Admin',
@@ -122,11 +93,11 @@ describe('Parcours CRM J1.5 (e2e)', () => {
       twoFactorEnabled: true,
       twoFactorSecret: ADMIN_2FA_SECRET,
     });
-    fakePrisma.linkUserRole(adminUser.id, adminRole.id);
+    await data.linkUserRole(adminUser.id, adminRole.id);
   });
 
   afterAll(async () => {
-    await app.close();
+    await context.close();
   });
 
   it('étape 1 — connexion de l’administrateur', async () => {
@@ -234,17 +205,17 @@ describe('Parcours CRM J1.5 (e2e)', () => {
   });
 
   it('étape 7 — assignation d’un commercial', async () => {
-    const commercialRole = fakePrisma.seedRole('commercial');
-    const commercialUser = fakePrisma.seedUser({
+    const commercialRole = await data.seedRole('commercial');
+    const commercialUser = await data.seedUser({
       email: 'commercial@mtm-immobilier.sn',
       password: await bcrypt.hash('password', 4),
       firstName: 'Fatou',
       lastName: 'Diop',
     });
-    fakePrisma.linkUserRole(commercialUser.id, commercialRole.id);
-    fakePrisma.linkRolePermission(
+    await data.linkUserRole(commercialUser.id, commercialRole.id);
+    await data.linkRolePermission(
       commercialRole.id,
-      fakePrisma.seedPermission('crm:consulter').id,
+      (await data.seedPermission('crm:consulter')).id,
     );
 
     const response = await request(app.getHttpServer())
@@ -258,7 +229,7 @@ describe('Parcours CRM J1.5 (e2e)', () => {
 
   it('étape 8 — conversion contact public → prospect', async () => {
     const contactId = randomUUID();
-    const contact = fakePrisma.createContact({
+    const contact = await data.createContact({
       id: contactId,
       nom: 'Aminata Diallo',
       email: 'aminata@example.com',

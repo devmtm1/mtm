@@ -1,6 +1,7 @@
 import { PageIntro } from '../components/layout/PageIntro';
 import { ShowcaseGrid } from '../components/showcase/ShowcaseGrid';
 import { usePageMetadata } from '../hooks/usePageMetadata';
+import { CtaBand } from '../components/ui/CtaBand';
 
 export function RealisationsPage() {
   usePageMetadata({
@@ -18,6 +19,7 @@ export function RealisationsPage() {
       <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
         <ShowcaseGrid category="realisation" emptyLabel="Aucune réalisation publiée pour le moment" />
       </section>
+      <CtaBand />
     </div>
   );
 }

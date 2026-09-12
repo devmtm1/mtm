@@ -2,6 +2,7 @@ import { Handshake, ShieldCheck, Users } from 'lucide-react';
 import { PageIntro } from '../components/layout/PageIntro';
 import { useContentBlocks } from '../hooks/useContentBlocks';
 import { usePageMetadata } from '../hooks/usePageMetadata';
+import { CtaBand } from '../components/ui/CtaBand';
 
 const VALUES = [
   {
@@ -59,6 +60,7 @@ export function AboutPage() {
           ))}
         </div>
       </section>
+      <CtaBand title="Envie de travailler avec nous ?" />
     </div>
   );
 }

@@ -31,4 +31,18 @@ export const envValidationSchema = Joi.object({
   CLOUDINARY_CLOUD_NAME: Joi.string().optional(),
   CLOUDINARY_API_KEY: Joi.string().optional(),
   CLOUDINARY_API_SECRET: Joi.string().optional(),
+
+  // E-mails transactionnels (SMTP générique). Optionnels en dev (journalisés),
+  // indispensables en production : voir MailService.
+  SMTP_HOST: Joi.string().optional(),
+  SMTP_PORT: Joi.number().default(587),
+  SMTP_USER: Joi.string().optional(),
+  SMTP_PASS: Joi.string().optional(),
+  MAIL_FROM: Joi.string().optional(),
+  // Adresse interne qui reçoit les demandes du site public (contact,
+  // réservation). À défaut, le bloc de contenu contact.email est utilisé.
+  CONTACT_NOTIFY_EMAIL: Joi.string().email().optional(),
+  // URLs publiques des deux interfaces, pour les liens dans les e-mails.
+  PUBLIC_WEB_URL: Joi.string().uri().default('http://localhost:5173'),
+  BACKOFFICE_URL: Joi.string().uri().default('http://localhost:4200'),
 });

@@ -8,6 +8,7 @@ import { envValidationSchema } from './config/env.validation';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { HealthModule } from './modules/health/health.module';
+import { MailModule } from './common/mail/mail.module';
 import { PrismaModule } from './database/prisma.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -41,6 +42,7 @@ import { CronModule } from './modules/cron/cron.module';
       },
     ]),
     PrismaModule,
+    MailModule,
     UsersModule,
     AuthModule,
     RbacModule,

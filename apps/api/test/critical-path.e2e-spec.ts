@@ -1,12 +1,9 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import cookieParser from 'cookie-parser';
 import { authenticator } from 'otplib';
 import request from 'supertest';
-import { AppModule } from '../src/app.module';
-import { PrismaService } from '../src/database/prisma.service';
-import { FakePrismaService } from './fakes/fake-prisma.service';
+import { createE2eApp, type E2eContext } from './helpers/e2e-app';
+import { describeE2e } from './helpers/e2e-database';
 
 /**
  * Test e2e du parcours critique de la Phase 0, correspondant exactement
@@ -16,17 +13,13 @@ import { FakePrismaService } from './fakes/fake-prisma.service';
  *    lui attribuer un rôle, et voir l'action tracée dans le journal
  *    d'audit."
  *
- * PrismaService est remplacé par un double in-memory (FakePrismaService)
- * car le client Prisma généré n'est pas disponible dans ce sandbox
- * (voir apps/api/prisma/PRISMA_NOTES.md). Ce test vérifie donc le
- * câblage HTTP réel — routing, guards, ValidationPipe, contrôleurs,
- * services — mais PAS la traduction SQL réelle de Prisma. Ce dernier
- * point doit être revérifié une fois `prisma generate` exécuté avec un
- * accès réseau complet (voir PRISMA_NOTES.md pour la procédure).
+ * Exécuté sur une vraie base PostgreSQL de test (voir helpers/e2e-app.ts) :
+ * routage, guards, validation, services ET requêtes SQL sont réels.
  */
-describe('Parcours critique Phase 0 (e2e)', () => {
+describeE2e('Parcours critique Phase 0 (e2e)', () => {
   let app: INestApplication;
-  let fakePrisma: FakePrismaService;
+  let context: E2eContext;
+  let data: E2eContext['data'];
 
   const ADMIN_PASSWORD = 'AdminPassword123!';
   const ADMIN_2FA_SECRET = 'JBSWY3DPEHPK3PXP';
@@ -34,38 +27,11 @@ describe('Parcours critique Phase 0 (e2e)', () => {
   let accessToken: string;
 
   beforeAll(async () => {
-    process.env.NODE_ENV = 'test';
-    process.env.DATABASE_URL = 'postgresql://fake:fake@localhost:5432/fake';
-    process.env.JWT_ACCESS_SECRET = 'e2e-test-access-secret-min-32-characters';
-    process.env.JWT_REFRESH_SECRET =
-      'e2e-test-refresh-secret-min-32-characters';
-    process.env.JWT_ACCESS_EXPIRES_IN = '15m';
-    process.env.JWT_REFRESH_EXPIRES_IN = '7d';
-    process.env.CORS_ORIGIN = 'http://localhost:4200';
+    context = await createE2eApp();
+    app = context.app;
+    data = context.data;
 
-    fakePrisma = new FakePrismaService();
-
-    const moduleRef: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(PrismaService)
-      .useValue(fakePrisma)
-      .compile();
-
-    app = moduleRef.createNestApplication();
-    app.setGlobalPrefix('api');
-    app.use(cookieParser());
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-        transformOptions: { enableImplicitConversion: true },
-      }),
-    );
-    await app.init();
-
-    const adminRole = fakePrisma.seedRole('administrateur', true);
+    const adminRole = await data.seedRole('administrateur', true);
     const permissionNames = [
       'users:consulter',
       'users:creer',
@@ -75,13 +41,13 @@ describe('Parcours critique Phase 0 (e2e)', () => {
       'audit:consulter',
     ];
     for (const name of permissionNames) {
-      const permission = fakePrisma.seedPermission(name);
-      fakePrisma.linkRolePermission(adminRole.id, permission.id);
+      const permission = await data.seedPermission(name);
+      await data.linkRolePermission(adminRole.id, permission.id);
     }
 
     const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 4);
     adminEmail = 'admin@mtm-immobilier.sn';
-    const adminUser = fakePrisma.seedUser({
+    const adminUser = await data.seedUser({
       email: adminEmail,
       password: hashedPassword,
       firstName: 'Admin',
@@ -89,11 +55,11 @@ describe('Parcours critique Phase 0 (e2e)', () => {
       twoFactorEnabled: true,
       twoFactorSecret: ADMIN_2FA_SECRET,
     });
-    fakePrisma.linkUserRole(adminUser.id, adminRole.id);
+    await data.linkUserRole(adminUser.id, adminRole.id);
   });
 
   afterAll(async () => {
-    await app.close();
+    await context.close();
   });
 
   it('GET /api/health est accessible sans authentification', async () => {
@@ -148,7 +114,7 @@ describe('Parcours critique Phase 0 (e2e)', () => {
   let createdUserId: string;
 
   it('étape 2 — création d’un nouvel utilisateur', async () => {
-    const commercialRole = fakePrisma.seedRole('commercial_test');
+    const commercialRole = await data.seedRole('commercial_test');
     commercialRoleId = commercialRole.id;
 
     const response = await request(app.getHttpServer())
@@ -228,7 +194,7 @@ describe('Parcours critique Phase 0 (e2e)', () => {
 
     beforeAll(async () => {
       const hashedTempPassword = await bcrypt.hash(TEMP_PASSWORD, 4);
-      fakePrisma.seedUser({
+      await data.seedUser({
         email: 'temp-user@mtm-immobilier.sn',
         password: hashedTempPassword,
         firstName: 'Temp',

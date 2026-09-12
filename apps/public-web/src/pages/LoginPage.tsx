@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { PageIntro } from '../components/layout/PageIntro';
 import { LoginForm } from '../components/auth/LoginForm';
 import { TwoFactorForm } from '../components/auth/TwoFactorForm';
@@ -14,7 +14,10 @@ type ViewMode = 'login' | 'twoFactor' | 'forgotPassword';
 export function LoginPage() {
   const { user, bootstrapping } = useAuth();
   usePageMetadata({ title: 'Connexion à l’espace client' });
-  const [mode, setMode] = useState<ViewMode>('login');
+  // Lien de réinitialisation reçu par e-mail : ouvre directement le formulaire.
+  const [searchParams] = useSearchParams();
+  const resetToken = searchParams.get('reset') ?? undefined;
+  const [mode, setMode] = useState<ViewMode>(resetToken ? 'forgotPassword' : 'login');
   const [pendingCredentials, setPendingCredentials] = useState<{ email: string; password: string } | null>(null);
 
   if (bootstrapping) return null;
@@ -38,7 +41,7 @@ export function LoginPage() {
               onCancel={() => setMode('login')}
             />
           ) : mode === 'forgotPassword' ? (
-            <ForgotPasswordForm onBackToLogin={() => setMode('login')} />
+            <ForgotPasswordForm onBackToLogin={() => setMode('login')} initialToken={resetToken} />
           ) : (
             <LoginForm
               onRequiresTwoFactor={(email, password) => {

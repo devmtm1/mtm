@@ -2,21 +2,28 @@ import { HealthService } from './health.service';
 import { PrismaService } from '../../database/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
+import { MailService } from '../../common/mail/mail.service';
 
 describe('HealthService', () => {
   let service: HealthService;
   let prismaMock: { $queryRaw: jest.Mock };
   let configMock: { get: jest.Mock };
   let cloudinaryMock: { isConfigured: jest.Mock };
+  let mailMock: { isConfigured: jest.Mock; verify: jest.Mock };
 
   beforeEach(() => {
     prismaMock = { $queryRaw: jest.fn() };
     configMock = { get: jest.fn() };
     cloudinaryMock = { isConfigured: jest.fn() };
+    mailMock = {
+      isConfigured: jest.fn().mockReturnValue(false),
+      verify: jest.fn(),
+    };
     service = new HealthService(
       prismaMock as unknown as PrismaService,
       configMock as unknown as ConfigService,
       cloudinaryMock as unknown as CloudinaryService,
+      mailMock as unknown as MailService,
     );
   });
 

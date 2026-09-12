@@ -1,13 +1,10 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import cookieParser from 'cookie-parser';
 import { authenticator } from 'otplib';
-import { randomUUID } from 'crypto';
+
 import request from 'supertest';
-import { AppModule } from '../src/app.module';
-import { PrismaService } from '../src/database/prisma.service';
-import { FakePrismaService } from './fakes/fake-prisma.service';
+import { createE2eApp, type E2eContext } from './helpers/e2e-app';
+import { describeE2e } from './helpers/e2e-database';
 
 /**
  * Test e2e du parcours J1.6 — Ventes, réservations, paiements, commissions, GED :
@@ -19,9 +16,10 @@ import { FakePrismaService } from './fakes/fake-prisma.service';
  *  - dashboard commercial
  *  - recherche documents
  */
-describe('Parcours J1.6 Ventes (e2e)', () => {
+describeE2e('Parcours J1.6 Ventes (e2e)', () => {
   let app: INestApplication;
-  let fakePrisma: FakePrismaService;
+  let context: E2eContext;
+  let data: E2eContext['data'];
 
   const ADMIN_PASSWORD = 'AdminPassword123!';
   const ADMIN_2FA_SECRET = 'JBSWY3DPEHPK3PXP';
@@ -33,38 +31,11 @@ describe('Parcours J1.6 Ventes (e2e)', () => {
   let paymentId: string;
 
   beforeAll(async () => {
-    process.env.NODE_ENV = 'test';
-    process.env.DATABASE_URL = 'postgresql://fake:fake@localhost:5432/fake';
-    process.env.JWT_ACCESS_SECRET = 'e2e-test-access-secret-min-32-characters';
-    process.env.JWT_REFRESH_SECRET =
-      'e2e-test-refresh-secret-min-32-characters';
-    process.env.JWT_ACCESS_EXPIRES_IN = '15m';
-    process.env.JWT_REFRESH_EXPIRES_IN = '7d';
-    process.env.CORS_ORIGIN = 'http://localhost:4200';
+    context = await createE2eApp();
+    app = context.app;
+    data = context.data;
 
-    fakePrisma = new FakePrismaService();
-
-    const moduleRef: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(PrismaService)
-      .useValue(fakePrisma)
-      .compile();
-
-    app = moduleRef.createNestApplication();
-    app.setGlobalPrefix('api');
-    app.use(cookieParser());
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-        transformOptions: { enableImplicitConversion: true },
-      }),
-    );
-    await app.init();
-
-    const adminRole = fakePrisma.seedRole('administrateur', true);
+    const adminRole = await data.seedRole('administrateur', true);
     const permissionNames = [
       'ventes:consulter',
       'ventes:creer',
@@ -83,11 +54,11 @@ describe('Parcours J1.6 Ventes (e2e)', () => {
       'terrains:valider',
     ];
     for (const name of permissionNames) {
-      const permission = fakePrisma.seedPermission(name);
-      fakePrisma.linkRolePermission(adminRole.id, permission.id);
+      const permission = await data.seedPermission(name);
+      await data.linkRolePermission(adminRole.id, permission.id);
     }
 
-    fakePrisma.seedSystemSetting({
+    await data.seedSystemSetting({
       key: 'ventes.statuts',
       value: [
         'en_cours',
@@ -98,7 +69,7 @@ describe('Parcours J1.6 Ventes (e2e)', () => {
         'annule',
       ],
     });
-    fakePrisma.seedSystemSetting({
+    await data.seedSystemSetting({
       key: 'ventes.transitions',
       value: {
         en_cours: ['pre_reserve', 'reserve', 'annule'],
@@ -109,11 +80,11 @@ describe('Parcours J1.6 Ventes (e2e)', () => {
         annule: ['en_cours'],
       },
     });
-    fakePrisma.seedSystemSetting({
+    await data.seedSystemSetting({
       key: 'paiements.modesAutorises',
       value: ['especes', 'virement', 'en_ligne'],
     });
-    fakePrisma.seedSystemSetting({
+    await data.seedSystemSetting({
       key: 'ventes.documentTypes',
       value: [
         'bon_reservation',
@@ -125,14 +96,14 @@ describe('Parcours J1.6 Ventes (e2e)', () => {
         'autre',
       ],
     });
-    fakePrisma.seedSystemSetting({
+    await data.seedSystemSetting({
       key: 'ventes.echeancesDefaut',
       value: 3,
     });
 
     const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 4);
     adminEmail = 'admin@mtm-immobilier.sn';
-    const adminUser = fakePrisma.seedUser({
+    const adminUser = await data.seedUser({
       email: adminEmail,
       password: hashedPassword,
       firstName: 'Admin',
@@ -140,11 +111,11 @@ describe('Parcours J1.6 Ventes (e2e)', () => {
       twoFactorEnabled: true,
       twoFactorSecret: ADMIN_2FA_SECRET,
     });
-    fakePrisma.linkUserRole(adminUser.id, adminRole.id);
+    await data.linkUserRole(adminUser.id, adminRole.id);
   });
 
   afterAll(async () => {
-    await app.close();
+    await context.close();
   });
 
   it('étape 1 — connexion de l’administrateur', async () => {
@@ -234,7 +205,9 @@ describe('Parcours J1.6 Ventes (e2e)', () => {
 
     expect(response.status).toBe(201);
     expect(response.body.id).toEqual(expect.any(String));
-    expect(response.body.montantAcompte).toBe(1000000);
+    // Les Decimal Prisma sont sérialisés en chaîne — c'est le contrat réel
+    // que consomme le back-office (vente.model.ts : number | string).
+    expect(Number(response.body.montantAcompte)).toBe(1000000);
   });
 
   it('étape 6 — création d’un paiement', async () => {

@@ -3,6 +3,8 @@ import {
   Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
+import { getRequestContext } from '../../common/request-context/request-context';
 import { PrismaService } from '../../database/prisma.service';
 
 export interface RecordAuditInput {
@@ -38,6 +40,7 @@ export class AuditService {
   constructor(private readonly prisma: PrismaService) {}
 
   async record(input: RecordAuditInput): Promise<void> {
+    const context = getRequestContext();
     try {
       await this.prisma.auditLog.create({
         data: {
@@ -45,15 +48,14 @@ export class AuditService {
           action: input.action,
           entityType: input.entityType,
           entityId: input.entityId ?? undefined,
-          // Prisma attend un type JSON très strict ; toJson() retourne `unknown`,
-          // le cast est donc nécessaire ici.
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-assignment
-          oldValue: this.toJson(input.oldValue) as any,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-assignment
-          newValue: this.toJson(input.newValue) as any,
+          // toJson() produit une valeur sérialisable ; Prisma exige son type
+          // JSON nominal, d'où le cast explicite (pas de `any`).
+          oldValue: this.toJson(input.oldValue) as Prisma.InputJsonValue,
+          newValue: this.toJson(input.newValue) as Prisma.InputJsonValue,
           justification: input.justification,
-          ipAddress: input.ipAddress,
-          userAgent: input.userAgent,
+          // Complétés depuis la requête en cours si l'appelant ne les fournit pas.
+          ipAddress: input.ipAddress ?? context?.ipAddress,
+          userAgent: input.userAgent ?? context?.userAgent,
         },
       });
     } catch (error) {
@@ -163,8 +165,7 @@ export class AuditService {
     if (Array.isArray(value)) return value.map((item) => this.serialize(item));
     const record = value as Record<string, unknown>;
     if (typeof record.toJSON === 'function') {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      return this.serialize(record.toJSON());
+      return this.serialize((record.toJSON as () => unknown)());
     }
     const plain: Record<string, unknown> = {};
     for (const key of Object.keys(record)) {

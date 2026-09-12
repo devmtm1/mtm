@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../database/prisma.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
+import { MailService } from '../../common/mail/mail.service';
 
 export interface HealthStatus {
   status: 'ok' | 'error';
@@ -10,6 +11,8 @@ export interface HealthStatus {
   database: 'up' | 'down';
   storage: 'up' | 'down' | 'skipped';
   auth: 'up' | 'down';
+  /** « skipped » hors production sans SMTP ; « down » en production sans SMTP. */
+  mail: 'up' | 'down' | 'skipped';
 }
 
 @Injectable()
@@ -20,14 +23,19 @@ export class HealthService {
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
     private readonly cloudinaryService: CloudinaryService,
+    private readonly mailService: MailService,
   ) {}
 
   async check(): Promise<HealthStatus> {
     const database = await this.checkDatabase();
     const storage = this.checkStorage();
     const auth = this.checkAuth();
+    const mail = await this.checkMail();
 
-    const hasCriticalFailure = database === 'down' || auth === 'down';
+    // Sans e-mail en production, la réinitialisation de mot de passe et les
+    // notifications de demandes sont hors service : c'est critique.
+    const hasCriticalFailure =
+      database === 'down' || auth === 'down' || mail === 'down';
 
     return {
       status: hasCriticalFailure ? 'error' : 'ok',
@@ -36,7 +44,17 @@ export class HealthService {
       database,
       storage,
       auth,
+      mail,
     };
+  }
+
+  private async checkMail(): Promise<'up' | 'down' | 'skipped'> {
+    if (!this.mailService.isConfigured()) {
+      return this.configService.get<string>('NODE_ENV') === 'production'
+        ? 'down'
+        : 'skipped';
+    }
+    return (await this.mailService.verify()) ? 'up' : 'down';
   }
 
   private async checkDatabase(): Promise<'up' | 'down'> {
@@ -49,45 +67,19 @@ export class HealthService {
     }
   }
 
-  private checkStorage(): 'up' | 'down' | 'skipped' {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const cloudName = this.configService.get('CLOUDINARY_CLOUD_NAME');
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const apiKey = this.configService.get('CLOUDINARY_API_KEY');
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const apiSecret = this.configService.get('CLOUDINARY_API_SECRET');
-
-    if (!cloudName || !apiKey || !apiSecret) {
-      return 'skipped';
-    }
-
-    try {
-      const configured = !!cloudName && !!apiKey && !!apiSecret;
-      return configured ? 'up' : 'down';
-    } catch (error) {
-      this.logger.error('Échec du vérification du stockage', error);
-      return 'down';
-    }
+  /** « skipped » sans identifiants Cloudinary : le stockage n'est pas requis en local. */
+  private checkStorage(): 'up' | 'skipped' {
+    return this.cloudinaryService.isConfigured() ? 'up' : 'skipped';
   }
 
   private checkAuth(): 'up' | 'down' {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const accessSecret = this.configService.get('JWT_ACCESS_SECRET');
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const refreshSecret = this.configService.get('JWT_REFRESH_SECRET');
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (!accessSecret || accessSecret.length < 32) {
-      this.logger.error('JWT_ACCESS_SECRET manquant ou trop court');
-      return 'down';
+    for (const key of ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET']) {
+      const secret = this.configService.get<string>(key);
+      if (!secret || secret.length < 32) {
+        this.logger.error(`${key} manquant ou trop court`);
+        return 'down';
+      }
     }
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (!refreshSecret || refreshSecret.length < 32) {
-      this.logger.error('JWT_REFRESH_SECRET manquant ou trop court');
-      return 'down';
-    }
-
     return 'up';
   }
 }

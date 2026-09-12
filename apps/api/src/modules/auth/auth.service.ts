@@ -12,6 +12,7 @@ import type { AuthConfig } from '../../config/auth.config';
 import { parseDurationToMs } from '../../common/utils/duration.util';
 import { PrismaService } from '../../database/prisma.service';
 import { UsersService, UserWithRoles } from '../users/users.service';
+import { MailService } from '../../common/mail/mail.service';
 import { AuditService } from '../audit/audit.service';
 import { TwoFactorService } from './two-factor.service';
 import { JwtPayload, LoginResponse } from './auth.types';
@@ -43,6 +44,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly twoFactorService: TwoFactorService,
     private readonly auditService: AuditService,
+    private readonly mailService: MailService,
   ) {
     this.authConfig = this.configService.get<AuthConfig>('auth')!;
   }
@@ -210,10 +212,38 @@ export class AuthService {
     });
     await this.recordAudit(user.id, 'auth.password_reset.requested', context);
 
-    // A mail/SMS provider will replace this development-only handoff.
-    return process.env.NODE_ENV === 'production'
-      ? { accepted: true }
-      : { accepted: true, developmentToken: rawToken };
+    // Un compte client se connecte sur le site public, un compte interne sur
+    // le back-office : le lien renvoie vers la bonne interface.
+    const isClient = user.clientProspectId !== null;
+    const baseUrl = this.configService.get<string>(
+      isClient ? 'PUBLIC_WEB_URL' : 'BACKOFFICE_URL',
+    );
+    const loginPath = isClient ? '/espace-client/connexion' : '/login';
+    const link = `${baseUrl}${loginPath}?reset=${rawToken}`;
+    const sent = await this.mailService.send({
+      to: user.email,
+      subject: 'Réinitialisation de votre mot de passe — MTM Immobilier',
+      text: [
+        `Bonjour ${user.firstName},`,
+        'Vous avez demandé à réinitialiser votre mot de passe. Ouvrez ce lien dans les 30 minutes :',
+        link,
+        `Si le lien ne fonctionne pas, saisissez ce code dans le formulaire « Mot de passe oublié » : ${rawToken}`,
+        'Si vous n’êtes pas à l’origine de cette demande, ignorez ce message : votre mot de passe reste inchangé.',
+      ].join('\n\n'),
+    });
+    if (!sent) {
+      this.logger.error(
+        `Jeton de réinitialisation non délivré à ${user.email} : SMTP indisponible`,
+      );
+    }
+
+    // Hors production et sans SMTP, le jeton est renvoyé pour permettre de
+    // tester le parcours ; jamais en production.
+    const exposeToken =
+      process.env.NODE_ENV !== 'production' && !this.mailService.isConfigured();
+    return exposeToken
+      ? { accepted: true, developmentToken: rawToken }
+      : { accepted: true };
   }
 
   async resetPassword(

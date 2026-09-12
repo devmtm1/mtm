@@ -29,12 +29,20 @@ import { CreateDocumentCrmDto } from './dto/create-document-crm.dto';
 import { TransitionPipelineDto } from './dto/transition-pipeline.dto';
 import { ConvertContactDto } from './dto/convert-contact.dto';
 import { CrmService } from './crm.service';
+import { CrmOptionsService } from './crm-options.service';
+import { CrmActivitesService } from './crm-activites.service';
+import { CrmDocumentsService } from './crm-documents.service';
+import { CrmReportingService } from './crm-reporting.service';
 
 @ApiTags('crm')
 @Controller('crm/prospects')
 export class CrmController {
   constructor(
     private readonly crm: CrmService,
+    private readonly options: CrmOptionsService,
+    private readonly activites: CrmActivitesService,
+    private readonly documents: CrmDocumentsService,
+    private readonly reporting: CrmReportingService,
     private readonly audit: AuditService,
   ) {}
 
@@ -46,17 +54,17 @@ export class CrmController {
   }
 
   @Get('options') @RequirePermissions('crm:consulter') getOptions() {
-    return this.crm.getOptions();
+    return this.options.getOptions();
   }
 
   @Get('stats') @RequirePermissions('crm:consulter') getStats(
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.crm.getStats(user);
+    return this.reporting.getStats(user);
   }
 
   @Get('commercials') @RequirePermissions('crm:consulter') getCommercials() {
-    return this.crm.getCommercials();
+    return this.reporting.getCommercials();
   }
 
   @Get('upcoming-tasks') @RequirePermissions('crm:consulter') upcomingTasks(
@@ -64,14 +72,14 @@ export class CrmController {
     @Query('limit') limit?: string,
   ) {
     const n = limit ? Math.min(Math.max(Number(limit), 1), 100) : 20;
-    return this.crm.getUpcomingTasks(user, n);
+    return this.activites.getUpcomingTasks(user, n);
   }
 
   @Get(':id/timeline') @RequirePermissions('crm:consulter') getTimeline(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.crm.getTimeline(id, user);
+    return this.reporting.getTimeline(id, user);
   }
 
   @Patch(':id/pipeline')
@@ -171,7 +179,7 @@ export class CrmController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.crm.getHistory(id, user);
+    return this.reporting.getHistory(id, user);
   }
 
   @Post() @RequirePermissions('crm:creer') async create(
@@ -240,7 +248,7 @@ export class CrmController {
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    const activite = await this.crm.addActivite(id, dto, user);
+    const activite = await this.activites.addActivite(id, dto, user);
     await this.audit.record({
       userId: user.id,
       action: 'prospect.activite.created',
@@ -263,7 +271,12 @@ export class CrmController {
     @Req() req: Request,
   ) {
     const before = await this.crm.findOne(id, user);
-    const activite = await this.crm.updateActivite(id, activiteId, dto, user);
+    const activite = await this.activites.updateActivite(
+      id,
+      activiteId,
+      dto,
+      user,
+    );
     await this.audit.record({
       userId: user.id,
       action: 'prospect.activite.updated',
@@ -289,7 +302,7 @@ export class CrmController {
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    await this.crm.removeActivite(id, activiteId, user);
+    await this.activites.removeActivite(id, activiteId, user);
     await this.audit.record({
       userId: user.id,
       action: 'prospect.activite.deleted',
@@ -311,7 +324,7 @@ export class CrmController {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     if (!file) throw new BadRequestException('Un document est obligatoire');
-    const document = await this.crm.addDocument(id, dto, file, user);
+    const document = await this.documents.addDocument(id, dto, file, user);
     await this.audit.record({
       userId: user.id,
       action: 'prospect.document.created',
@@ -329,7 +342,7 @@ export class CrmController {
     @Param('documentId', ParseUUIDPipe) documentId: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    await this.crm.removeDocument(id, documentId, user);
+    await this.documents.removeDocument(id, documentId, user);
     await this.audit.record({
       userId: user.id,
       action: 'prospect.document.deleted',

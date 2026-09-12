@@ -9,12 +9,14 @@ import {
   ParseUUIDPipe,
   Post,
   Query,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
+import type { Response } from 'express';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
@@ -30,12 +32,22 @@ import { ConvertReservationRequestDto } from './dto/convert-reservation-request.
 import { CreateClientAccountDto } from './dto/create-client-account.dto';
 import { UpdateVenteStatusDto } from './dto/update-vente-status.dto';
 import { VentesService } from './ventes.service';
+import { VentesDocumentsService } from './ventes-documents.service';
+import { ClientPortalService } from './client-portal.service';
+import { VentesReportingService } from './ventes-reporting.service';
+import { VentesPaiementsService } from './ventes-paiements.service';
+import { VentesCommissionsService } from './ventes-commissions.service';
 
 @ApiTags('ventes')
 @Controller('ventes')
 export class VentesController {
   constructor(
     private readonly ventes: VentesService,
+    private readonly documents: VentesDocumentsService,
+    private readonly clientPortal: ClientPortalService,
+    private readonly reporting: VentesReportingService,
+    private readonly paiements: VentesPaiementsService,
+    private readonly commissions: VentesCommissionsService,
     private readonly audit: AuditService,
   ) {}
 
@@ -61,6 +73,35 @@ export class VentesController {
     return this.ventes.findAll(user);
   }
 
+  /**
+   * Export CSV des dossiers. POST (et non GET) : la justification voyage
+   * dans le corps, jamais dans l'URL — les journaux de proxy la garderaient.
+   */
+  @Post('export')
+  @RequirePermissions('ventes:exporter')
+  async exportCsv(
+    @Body('justification') justification: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Res() res: Response,
+  ) {
+    if (!justification || justification.trim().length < 3) {
+      throw new BadRequestException(
+        'Une justification minimale de 3 caractères est obligatoire pour exporter les dossiers de vente',
+      );
+    }
+    const csv = await this.reporting.exportCsv(user, justification.trim());
+    const date = new Date().toISOString().slice(0, 10);
+    res
+      .status(200)
+      .setHeader('Content-Type', 'text/csv; charset=utf-8')
+      .setHeader(
+        'Content-Disposition',
+        `attachment; filename="dossiers-vente-${date}.csv"`,
+      )
+      // BOM UTF-8 : Excel affiche correctement les accents.
+      .send('﻿' + csv);
+  }
+
   @Get('reservation-requests')
   @RequirePermissions('ventes:consulter')
   findReservationRequests(@CurrentUser() user: AuthenticatedUser) {
@@ -70,17 +111,17 @@ export class VentesController {
   @Post('client-accounts')
   @RequirePermissions('clients:creer')
   createClientAccount(@Body() dto: CreateClientAccountDto) {
-    return this.ventes.createClientAccount(dto);
+    return this.clientPortal.createClientAccount(dto);
   }
 
   @Get('client/portal')
   getClientPortal(@CurrentUser() user: AuthenticatedUser) {
-    return this.ventes.getClientPortal(user.id);
+    return this.clientPortal.getClientPortal(user.id);
   }
 
   @Get('client/portal/demandes')
   getClientDemandes(@CurrentUser() user: AuthenticatedUser) {
-    return this.ventes.getClientDemandes(user.id);
+    return this.clientPortal.getClientDemandes(user.id);
   }
 
   @Get('client/portal/documents/:documentId')
@@ -88,7 +129,7 @@ export class VentesController {
     @Param('documentId', ParseUUIDPipe) documentId: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.ventes.getClientDocument(user.id, documentId);
+    return this.clientPortal.getClientDocument(user.id, documentId);
   }
 
   @Post('reservation-requests/:requestId/convert')
@@ -116,7 +157,7 @@ export class VentesController {
   @Get('dashboard/stats')
   @RequirePermissions('ventes:consulter')
   async getDashboardStats(@CurrentUser() user: AuthenticatedUser) {
-    return this.ventes.getDashboardStats(user);
+    return this.reporting.getDashboardStats(user);
   }
 
   @Get('dashboard/commercial/:commercialId')
@@ -125,7 +166,7 @@ export class VentesController {
     @Param('commercialId', ParseUUIDPipe) commercialId: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.ventes.getCommercialPerformance(commercialId, user);
+    return this.reporting.getCommercialPerformance(commercialId, user);
   }
 
   @Get('documents/search')
@@ -139,7 +180,7 @@ export class VentesController {
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
   ) {
-    return this.ventes.searchDocuments(
+    return this.documents.searchDocuments(
       { dossierVenteId, prospectId, terrainId, type, dateFrom, dateTo },
       user,
     );
@@ -196,7 +237,7 @@ export class VentesController {
     @Body() dto: CreatePaiementDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    const result = await this.ventes.createPaiement(id, dto, user);
+    const result = await this.paiements.createPaiement(id, dto, user);
     await this.audit.record({
       userId: user.id,
       action: 'vente.paiement.created',
@@ -214,7 +255,7 @@ export class VentesController {
     @Param('paymentId', ParseUUIDPipe) paymentId: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    const result = await this.ventes.validatePaiement(id, paymentId, user);
+    const result = await this.paiements.validatePaiement(id, paymentId, user);
     await this.audit.record({
       userId: user.id,
       action: 'vente.paiement.validated',
@@ -232,7 +273,7 @@ export class VentesController {
     @Body() dto: CreateCommissionDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    const commission = await this.ventes.createCommission(id, dto, user);
+    const commission = await this.commissions.createCommission(id, dto, user);
     await this.audit.record({
       userId: user.id,
       action: 'vente.commission.created',
@@ -250,7 +291,7 @@ export class VentesController {
     @Param('commissionId', ParseUUIDPipe) commissionId: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    const commission = await this.ventes.validateCommission(
+    const commission = await this.commissions.validateCommission(
       id,
       commissionId,
       user,
@@ -272,7 +313,11 @@ export class VentesController {
     @Param('commissionId', ParseUUIDPipe) commissionId: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    const commission = await this.ventes.payCommission(id, commissionId, user);
+    const commission = await this.commissions.payCommission(
+      id,
+      commissionId,
+      user,
+    );
     await this.audit.record({
       userId: user.id,
       action: 'vente.commission.paid',
@@ -313,7 +358,7 @@ export class VentesController {
         'La publication du document nécessite la permission ventes:publier',
       );
     }
-    const document = await this.ventes.generateDocument(
+    const document = await this.documents.generateDocument(
       id,
       dto,
       user,
@@ -335,8 +380,7 @@ export class VentesController {
   async addDocument(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateDocumentVenteDto,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    @UploadedFile() file: any,
+    @UploadedFile() file: Express.Multer.File | undefined,
     @CurrentUser() user: AuthenticatedUser,
   ) {
     if (!file) throw new BadRequestException('Un document est obligatoire');
@@ -345,7 +389,7 @@ export class VentesController {
         'La publication du document nécessite la permission ventes:publier',
       );
     }
-    const document = await this.ventes.addDocument(
+    const document = await this.documents.addDocument(
       id,
       dto,
       file,
@@ -369,7 +413,7 @@ export class VentesController {
     @Param('documentId', ParseUUIDPipe) documentId: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    await this.ventes.removeDocument(id, documentId, user);
+    await this.documents.removeDocument(id, documentId, user);
     await this.audit.record({
       userId: user.id,
       action: 'vente.document.deleted',
@@ -385,6 +429,6 @@ export class VentesController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<unknown[]> {
-    return this.ventes.getEcheances(id, user);
+    return this.paiements.getEcheances(id, user);
   }
 }

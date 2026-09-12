@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
 import { TwoFactorService } from './two-factor.service';
 import { UsersService } from '../users/users.service';
+import { MailService } from '../../common/mail/mail.service';
 import { AuditService } from '../audit/audit.service';
 import { PrismaService } from '../../database/prisma.service';
 
@@ -58,6 +59,7 @@ describe('AuthService', () => {
     twoFactorSecret: null,
     twoFactorRecoveryCodes: null,
     lastLoginAt: null,
+    clientProspectId: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     roles: [],
@@ -136,6 +138,11 @@ describe('AuthService', () => {
       record: jest.fn().mockResolvedValue(undefined),
     } as unknown as AuditService;
 
+    const mailService = {
+      send: jest.fn().mockResolvedValue(true),
+      isConfigured: jest.fn().mockReturnValue(false),
+    } as unknown as MailService;
+
     service = new AuthService(
       usersService as unknown as UsersService,
       prismaMock as unknown as PrismaService,
@@ -143,6 +150,7 @@ describe('AuthService', () => {
       configService,
       twoFactorService,
       auditService,
+      mailService,
     );
   });
 

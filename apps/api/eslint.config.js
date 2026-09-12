@@ -23,7 +23,7 @@ module.exports = tseslint.config(
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'warn',
-        { argsIgnorePattern: '^_' },
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', ignoreRestSiblings: true },
       ],
       '@typescript-eslint/no-floating-promises': 'warn',
     },
@@ -32,13 +32,16 @@ module.exports = tseslint.config(
     ignores: ['dist/', 'node_modules/', 'coverage/'],
   },
   {
+    // Tests : réponses supertest et doublures Jest sont `any` par nature. Ces
+    // règles y produisaient 240 avertissements sans valeur qui noyaient les
+    // signaux utiles ; elles restent en erreur sur le code source (src/ hors spec).
     files: ['test/**/*.ts', 'src/**/*.spec.ts'],
     rules: {
-      '@typescript-eslint/no-unsafe-argument': 'warn',
-      '@typescript-eslint/no-unsafe-assignment': 'warn',
-      '@typescript-eslint/no-unsafe-call': 'warn',
-      '@typescript-eslint/no-unsafe-member-access': 'warn',
-      '@typescript-eslint/no-unsafe-return': 'warn',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
     },
   },
 );

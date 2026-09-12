@@ -3,6 +3,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { PointInteret } from '../../types/terrain';
 import { markerIcon } from './leaflet-icon';
+import { observeMapResize } from './map-resize';
 
 interface TerrainMapProps {
   latitude: number;
@@ -41,7 +42,10 @@ export function TerrainMap({ latitude, longitude, title, pointsInteret }: Terrai
         );
     }
 
+    const stopObserving = observeMapResize(map, containerRef.current);
+
     return () => {
+      stopObserving();
       map.remove();
       mapRef.current = null;
     };

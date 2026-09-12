@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Mail, MapPin, Phone } from 'lucide-react';
+import { Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
 import { ROUTES } from '../../routes';
 import { toTelHref, useSiteContact } from '../../hooks/useSiteContact';
 
@@ -9,8 +9,8 @@ export function Footer() {
 
   return (
     <footer className="border-t border-mtm-border bg-mtm-primary-dark text-white">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-4">
-        <div className="md:col-span-2">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
+        <div className="sm:col-span-2 lg:col-span-1">
           <div className="flex items-center gap-2.5">
             <img src="/logomtm.jpeg" alt="MTM Immobilier" className="h-11 w-11 rounded-full object-cover" />
             <span className="font-display text-lg font-bold">MTM Immobilier</span>
@@ -21,14 +21,25 @@ export function Footer() {
           </p>
         </div>
 
+        <nav aria-label="Services">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-white/60">Services</h3>
+          <ul className="mt-4 flex flex-col gap-2 text-sm text-white/80">
+            <li><Link to={ROUTES.catalog} className="transition-colors hover:text-white">Vente de terrains</Link></li>
+            <li><Link to={ROUTES.gestionLocative} className="transition-colors hover:text-white">Gestion locative</Link></li>
+            <li><Link to={ROUTES.construction} className="transition-colors hover:text-white">Construction</Link></li>
+            <li><Link to={ROUTES.demarches} className="transition-colors hover:text-white">Démarches administratives</Link></li>
+          </ul>
+        </nav>
+
         <nav aria-label="Liens rapides">
           <h3 className="text-sm font-semibold uppercase tracking-wide text-white/60">Explorer</h3>
           <ul className="mt-4 flex flex-col gap-2 text-sm text-white/80">
-            <li><Link to={ROUTES.catalog} className="hover:text-white">Nos terrains</Link></li>
-            <li><Link to={ROUTES.realisations} className="hover:text-white">Nos réalisations</Link></li>
-            <li><Link to={ROUTES.projetsAVenir} className="hover:text-white">Projets à venir</Link></li>
-            <li><Link to={ROUTES.about} className="hover:text-white">À propos</Link></li>
-            <li><Link to={ROUTES.actualites} className="hover:text-white">Actualités</Link></li>
+            <li><Link to={ROUTES.realisations} className="transition-colors hover:text-white">Nos réalisations</Link></li>
+            <li><Link to={ROUTES.projetsAVenir} className="transition-colors hover:text-white">Projets à venir</Link></li>
+            <li><Link to={ROUTES.about} className="transition-colors hover:text-white">À propos</Link></li>
+            <li><Link to={ROUTES.actualites} className="transition-colors hover:text-white">Actualités</Link></li>
+            <li><Link to={ROUTES.contact} className="transition-colors hover:text-white">Contact</Link></li>
+            <li><Link to={ROUTES.clientPortal} className="transition-colors hover:text-white">Espace client</Link></li>
           </ul>
         </nav>
 
@@ -41,13 +52,24 @@ export function Footer() {
             </li>
             <li className="flex items-center gap-2">
               <Phone className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <a href={toTelHref(contact.telephone)} className="hover:text-white">
+              <a href={toTelHref(contact.telephone)} className="transition-colors hover:text-white">
                 {contact.telephone}
               </a>
             </li>
             <li className="flex items-center gap-2">
+              <MessageCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <a
+                href={`https://wa.me/${contact.whatsapp}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-colors hover:text-white"
+              >
+                WhatsApp
+              </a>
+            </li>
+            <li className="flex items-center gap-2">
               <Mail className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <a href={`mailto:${contact.email}`} className="hover:text-white">
+              <a href={`mailto:${contact.email}`} className="transition-colors hover:text-white">
                 {contact.email}
               </a>
             </li>

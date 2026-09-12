@@ -5,7 +5,7 @@ import { MediaImage } from '../ui/MediaImage';
 
 export function ShowcaseCard({ item }: { item: ShowcaseItem }) {
   return (
-    <article className="flex flex-col overflow-hidden rounded-lg border border-mtm-border bg-mtm-surface shadow-card">
+    <article className="flex flex-col overflow-hidden rounded-lg border border-mtm-border bg-mtm-surface shadow-card transition-shadow duration-200 hover:shadow-card-hover">
       <div className="aspect-[4/3] w-full overflow-hidden bg-mtm-border">
         <MediaImage
           src={item.imageUrl}

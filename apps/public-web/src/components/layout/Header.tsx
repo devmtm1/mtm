@@ -18,9 +18,13 @@ const SERVICE_LINKS = [
   { to: ROUTES.demarches, label: 'Démarches administratives' },
 ];
 
+// Lien actif : couleur + filet sous le libellé, pour que l'état ne repose pas
+// sur la seule couleur (lisibilité, daltonisme).
 function navLinkClass({ isActive }: { isActive: boolean }): string {
-  return `text-sm font-semibold transition-colors ${
-    isActive ? 'text-mtm-primary' : 'text-mtm-text hover:text-mtm-primary'
+  return `relative py-1 text-sm font-semibold transition-colors after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-mtm-primary after:transition-transform after:duration-200 ${
+    isActive
+      ? 'text-mtm-primary after:scale-x-100'
+      : 'text-mtm-text hover:text-mtm-primary after:scale-x-0 hover:after:scale-x-100'
   }`;
 }
 
@@ -30,6 +34,7 @@ export function Header() {
   const { user } = useAuth();
   const { pathname } = useLocation();
   const clientLabel = user ? user.firstName : 'Espace client';
+  const servicesActive = SERVICE_LINKS.some((link) => pathname.startsWith(link.to));
 
   // Filet de sécurité : tout changement de route referme les menus, quelle
   // que soit la façon dont la navigation a été déclenchée (clic, clavier,
@@ -50,7 +55,7 @@ export function Header() {
   }, [servicesOpen]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-mtm-border bg-mtm-surface/95 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-mtm-border bg-mtm-surface/95 shadow-[0_1px_0_rgba(31,41,55,0.04)] backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <NavLink to={ROUTES.home} className="flex items-center gap-2.5" onClick={() => setMobileOpen(false)}>
           <img src="/logomtm.jpeg" alt="MTM Immobilier" className="h-11 w-11 rounded-full object-cover" />
@@ -71,15 +76,20 @@ export function Header() {
           >
             <button
               type="button"
-              className="flex items-center gap-1 text-sm font-semibold text-mtm-text hover:text-mtm-primary"
+              className={`flex items-center gap-1 py-1 text-sm font-semibold transition-colors hover:text-mtm-primary ${
+                servicesActive ? 'text-mtm-primary' : 'text-mtm-text'
+              }`}
               onClick={() => setServicesOpen((open) => !open)}
               aria-expanded={servicesOpen}
             >
               Services
-              <ChevronDown className="h-4 w-4" aria-hidden="true" />
+              <ChevronDown
+                className={`h-4 w-4 transition-transform duration-200 ${servicesOpen ? 'rotate-180' : ''}`}
+                aria-hidden="true"
+              />
             </button>
             {servicesOpen && (
-              <div className="absolute left-0 top-full w-56 rounded-md border border-mtm-border bg-mtm-surface py-2 shadow-card">
+              <div className="absolute left-0 top-full w-56 rounded-md border border-mtm-border bg-mtm-surface py-2 shadow-card-hover motion-safe:animate-slide-down">
                 {SERVICE_LINKS.map((link) => (
                   <NavLink
                     key={link.to}
@@ -121,14 +131,19 @@ export function Header() {
       </div>
 
       {mobileOpen && (
-        <nav className="border-t border-mtm-border bg-mtm-surface px-4 pb-4 lg:hidden">
+        <nav className="border-t border-mtm-border bg-mtm-surface px-4 pb-4 motion-safe:animate-slide-down lg:hidden">
           <ul className="flex flex-col gap-1 pt-2">
             {[...PRIMARY_LINKS, ...SERVICE_LINKS, { to: ROUTES.actualites, label: 'Actualités' }, { to: ROUTES.clientPortal, label: clientLabel }, { to: ROUTES.contact, label: 'Contact' }].map(
               (link) => (
                 <li key={link.to}>
                   <NavLink
                     to={link.to}
-                    className="block rounded-md px-3 py-2.5 text-sm font-semibold text-mtm-text hover:bg-mtm-bg hover:text-mtm-primary"
+                    className={({ isActive }) =>
+                      `block rounded-md px-3 py-2.5 text-sm font-semibold transition-colors ${
+                        isActive ? 'bg-mtm-primary/5 text-mtm-primary' : 'text-mtm-text hover:bg-mtm-bg hover:text-mtm-primary'
+                      }`
+                    }
+                    end={link.to === ROUTES.home}
                     onClick={() => setMobileOpen(false)}
                   >
                     {link.label}

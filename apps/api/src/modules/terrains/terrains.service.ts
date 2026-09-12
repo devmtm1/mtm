@@ -6,25 +6,13 @@ import {
 } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
+import { CloudinaryService } from '../../common/storage/cloudinary.service';
+import { TerrainsAccessService } from './terrains-access.service';
+import { mediaOrderBy } from './terrain-queries';
 import { CreateTerrainDto } from './dto/create-terrain.dto';
 import { QueryTerrainDto } from './dto/query-terrain.dto';
 import { UpdateTerrainDto } from './dto/update-terrain.dto';
-import { CreateTerrainAssetDto } from './dto/create-terrain-asset.dto';
-import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import { SettingsService } from '../settings/settings.service';
-import type {
-  PublicPointInteret,
-  PublicTerrainResponse,
-} from './dto/public-terrain.dto';
-import { validateUploadedAsset } from '../../common/storage/asset-validation';
-
-// Second critère indispensable : les médias ajoutés en back-office partagent
-// souvent le même sortOrder (0), et sans lui l'ordre — donc la photo de
-// couverture — changeait d'une requête à l'autre.
-const mediaOrderBy: Prisma.TerrainMediaOrderByWithRelationInput[] = [
-  { sortOrder: 'asc' },
-  { createdAt: 'asc' },
-];
 
 const terrainInclude = {
   proprietaire: true,
@@ -35,41 +23,7 @@ const terrainInclude = {
   documents: { orderBy: { createdAt: 'desc' as const } },
 };
 
-const publicTerrainSelect = {
-  id: true,
-  referenceInterne: true,
-  nom: true,
-  statutJuridique: true,
-  niveauVerification: true,
-  region: true,
-  commune: true,
-  localisationDetail: true,
-  latitude: true,
-  longitude: true,
-  superficie: true,
-  uniteSuperficie: true,
-  dimensions: true,
-  prixPublic: true,
-  misEnAvant: true,
-  description: true,
-  accesRoutier: true,
-  eauDisponible: true,
-  electriciteDisponible: true,
-  voisinage: true,
-  vocation: true,
-  proximiteAxes: true,
-  pointsInteret: true,
-  medias: {
-    where: { isPublic: true },
-    orderBy: mediaOrderBy,
-  },
-  documents: {
-    where: { isPublic: true },
-    orderBy: { createdAt: 'desc' as const },
-  },
-} as const;
-
-const DEFAULT_TERRAIN_OPTIONS = {
+export const DEFAULT_TERRAIN_OPTIONS = {
   statutJuridique: [
     'Titre foncier',
     'Bail',
@@ -81,12 +35,19 @@ const DEFAULT_TERRAIN_OPTIONS = {
   statutCommercial: ['Brouillon', 'Disponible', 'Réservé', 'Vendu', 'Suspendu'],
 } as const;
 
+/**
+ * Fiche terrain interne (J1.1, section 8 CDC) : recherche dans le périmètre
+ * de l'utilisateur, création, mise à jour avec justification des champs
+ * sensibles, changement de statut, référentiels. Le catalogue public, les
+ * médias/documents et les règles d'accès sont portés par les services voisins.
+ */
 @Injectable()
 export class TerrainsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cloudinary: CloudinaryService,
     private readonly settings: SettingsService,
+    private readonly access: TerrainsAccessService,
   ) {}
 
   async findAll(
@@ -96,7 +57,7 @@ export class TerrainsService {
     const page = query.page > 0 ? query.page : 1;
     const pageSize = Math.min(query.pageSize > 0 ? query.pageSize : 25, 200);
     const search = query.search?.trim();
-    const ownership = this.ownershipFilter(user);
+    const ownership = this.access.ownershipFilter(user);
     const where = {
       ...ownership,
       ...(search
@@ -177,98 +138,11 @@ export class TerrainsService {
 
   async findOne(id: string, user?: { roles: string[]; permissions: string[] }) {
     const terrain = await this.prisma.terrain.findFirst({
-      where: { id, ...this.ownershipFilter(user) },
+      where: { id, ...this.access.ownershipFilter(user) },
       include: terrainInclude,
     });
     if (!terrain) throw new NotFoundException('Terrain introuvable');
     return this.toInternal(terrain, user);
-  }
-
-  async findPublic(query: QueryTerrainDto) {
-    const page = query.page > 0 ? query.page : 1;
-    const pageSize = Math.min(query.pageSize > 0 ? query.pageSize : 25, 200);
-    const search = query.search?.trim();
-    const where = {
-      statutCommercial: 'Disponible',
-      // Recherche libre du catalogue public : restreinte aux champs publics
-      // (jamais parcelleMatricule ni notes internes).
-      ...(search
-        ? {
-            OR: [
-              { nom: { contains: search, mode: 'insensitive' as const } },
-              {
-                referenceInterne: {
-                  contains: search,
-                  mode: 'insensitive' as const,
-                },
-              },
-              { commune: { contains: search, mode: 'insensitive' as const } },
-              { region: { contains: search, mode: 'insensitive' as const } },
-            ],
-          }
-        : {}),
-      ...(query.misEnAvant !== undefined
-        ? { misEnAvant: query.misEnAvant }
-        : {}),
-      ...(query.statutJuridique
-        ? { statutJuridique: query.statutJuridique }
-        : {}),
-      ...(query.niveauVerification
-        ? { niveauVerification: query.niveauVerification }
-        : {}),
-      ...(query.region ? { region: query.region } : {}),
-      ...(query.commune ? { commune: query.commune } : {}),
-      ...(query.vocation ? { vocation: query.vocation } : {}),
-      ...(query.superficieMin !== undefined || query.superficieMax !== undefined
-        ? {
-            superficie: {
-              ...(query.superficieMin !== undefined
-                ? { gte: query.superficieMin }
-                : {}),
-              ...(query.superficieMax !== undefined
-                ? { lte: query.superficieMax }
-                : {}),
-            },
-          }
-        : {}),
-      ...(query.prixPublicMin !== undefined || query.prixPublicMax !== undefined
-        ? {
-            prixPublic: {
-              ...(query.prixPublicMin !== undefined
-                ? { gte: query.prixPublicMin }
-                : {}),
-              ...(query.prixPublicMax !== undefined
-                ? { lte: query.prixPublicMax }
-                : {}),
-            },
-          }
-        : {}),
-    };
-    const [items, total] = await Promise.all([
-      this.prisma.terrain.findMany({
-        where,
-        select: publicTerrainSelect,
-        orderBy: { [query.sortBy]: query.sortOrder },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-      }),
-      this.prisma.terrain.count({ where }),
-    ]);
-    return {
-      items: items.map((item) => this.toPublic(item)),
-      total,
-      page,
-      pageSize,
-    };
-  }
-
-  async findPublicOne(id: string) {
-    const terrain = await this.prisma.terrain.findFirst({
-      where: { id, statutCommercial: 'Disponible' },
-      select: publicTerrainSelect,
-    });
-    if (!terrain) throw new NotFoundException('Terrain introuvable');
-    return this.toPublic(terrain);
   }
 
   async create(
@@ -303,7 +177,7 @@ export class TerrainsService {
     dto: UpdateTerrainDto,
     user: { roles: string[]; permissions: string[] },
   ) {
-    await this.ensureAccessible(id, user);
+    await this.access.ensureAccessible(id, user);
     await this.validateStatuses(dto);
     this.assertJustificationForSensitiveFields(
       dto as unknown as Record<string, unknown>,
@@ -335,7 +209,7 @@ export class TerrainsService {
     justification: string | undefined,
     user: { roles: string[]; permissions: string[] },
   ) {
-    await this.ensureAccessible(id, user);
+    await this.access.ensureAccessible(id, user);
     await this.validateStatuses({ [field]: value });
     if (field === 'statutJuridique' && !justification?.trim()) {
       throw new BadRequestException(
@@ -357,286 +231,19 @@ export class TerrainsService {
       this.settings.getRawValue('terrains.statutCommercial'),
     ]);
     return {
-      statutJuridique: this.asOptions(legal, [
-        'Titre foncier',
-        'Bail',
-        'Délibération',
-        'Morcellement',
-        'Régularisation en cours',
-      ]),
-      niveauVerification: this.asOptions(verification, [
-        'Non vérifié',
-        'En cours',
-        'Vérifié',
-        'À compléter',
-      ]),
-      statutCommercial: this.asOptions(commercial, [
-        'Brouillon',
-        'Disponible',
-        'Réservé',
-        'Vendu',
-        'Suspendu',
-      ]),
+      statutJuridique: SettingsService.asStringList(
+        legal,
+        DEFAULT_TERRAIN_OPTIONS.statutJuridique,
+      ),
+      niveauVerification: SettingsService.asStringList(
+        verification,
+        DEFAULT_TERRAIN_OPTIONS.niveauVerification,
+      ),
+      statutCommercial: SettingsService.asStringList(
+        commercial,
+        DEFAULT_TERRAIN_OPTIONS.statutCommercial,
+      ),
     };
-  }
-
-  /**
-   * Options des filtres du catalogue public. Les statuts juridiques viennent
-   * du paramétrage administrable (section 25 CDC) ; les zones et vocations
-   * sont dérivées des terrains réellement publiés, pour que les filtres
-   * proposés correspondent toujours aux données disponibles.
-   */
-  async getPublicFilterOptions() {
-    const [legal, published] = await Promise.all([
-      this.settings.getRawValue('terrains.statutJuridique'),
-      this.prisma.terrain.findMany({
-        where: { statutCommercial: 'Disponible' },
-        select: { region: true, commune: true, vocation: true },
-      }),
-    ]);
-
-    const distinct = (values: (string | null)[]): string[] =>
-      [
-        ...new Set(
-          values.filter((value): value is string => Boolean(value?.trim())),
-        ),
-      ].sort((a, b) => a.localeCompare(b, 'fr'));
-
-    return {
-      statutJuridique: this.asOptions(legal, [
-        ...DEFAULT_TERRAIN_OPTIONS.statutJuridique,
-      ]),
-      region: distinct(published.map((terrain) => terrain.region)),
-      commune: distinct(published.map((terrain) => terrain.commune)),
-      vocation: distinct(published.map((terrain) => terrain.vocation)),
-    };
-  }
-
-  async addMedia(
-    id: string,
-    dto: CreateTerrainAssetDto,
-    file: Express.Multer.File,
-    user: { roles: string[]; permissions: string[] },
-  ) {
-    await this.ensureAccessible(id, user);
-    validateUploadedAsset(file, 'media');
-    this.assertCanPublish(dto.isPublic, user);
-    const uploaded = await this.cloudinary.upload(
-      file,
-      `mtm/terrains/${id}/media`,
-      dto.isPublic ?? false,
-    );
-    return this.prisma.terrainMedia.create({
-      data: {
-        terrainId: id,
-        type: dto.type,
-        title: dto.title,
-        isPublic: dto.isPublic ?? false,
-        storageKey: uploaded.publicId,
-        resourceType: uploaded.resourceType,
-      },
-    });
-  }
-
-  async addDocument(
-    id: string,
-    dto: CreateTerrainAssetDto,
-    file: Express.Multer.File,
-    user: { roles: string[]; permissions: string[] },
-  ) {
-    await this.ensureAccessible(id, user);
-    validateUploadedAsset(file, 'document');
-    this.assertCanPublish(dto.isPublic, user);
-    const uploaded = await this.cloudinary.upload(
-      file,
-      `mtm/terrains/${id}/documents`,
-      dto.isPublic ?? false,
-    );
-    return this.prisma.terrainDocument.create({
-      data: {
-        terrainId: id,
-        type: dto.type,
-        title: dto.title,
-        isPublic: dto.isPublic ?? false,
-        storageKey: uploaded.publicId,
-        resourceType: uploaded.resourceType,
-      },
-    });
-  }
-
-  async removeMedia(
-    id: string,
-    mediaId: string,
-    user: { roles: string[]; permissions: string[] },
-  ): Promise<void> {
-    await this.ensureAccessible(id, user);
-    const media = await this.prisma.terrainMedia.findFirst({
-      where: { id: mediaId, terrainId: id },
-    });
-    if (!media) return;
-    await this.prisma.terrainMedia.delete({ where: { id: mediaId } });
-    await this.cloudinary.destroy(
-      media.storageKey,
-      media.resourceType,
-      media.isPublic,
-    );
-  }
-
-  async removeDocument(
-    id: string,
-    documentId: string,
-    user: { roles: string[]; permissions: string[] },
-  ): Promise<void> {
-    await this.ensureAccessible(id, user);
-    const document = await this.prisma.terrainDocument.findFirst({
-      where: { id: documentId, terrainId: id },
-    });
-    if (!document) return;
-    await this.prisma.terrainDocument.delete({ where: { id: documentId } });
-    await this.cloudinary.destroy(
-      document.storageKey,
-      document.resourceType,
-      document.isPublic,
-    );
-  }
-
-  toPublic(terrain: Record<string, unknown>): PublicTerrainResponse {
-    const source = terrain as {
-      id: string;
-      referenceInterne: string;
-      nom: string;
-      statutJuridique: string;
-      niveauVerification: string;
-      region: string | null;
-      commune: string | null;
-      localisationDetail: string | null;
-      latitude: number | null;
-      longitude: number | null;
-      superficie: number | null;
-      uniteSuperficie: string | null;
-      dimensions: Record<string, unknown> | null;
-      prixPublic: number | null;
-      misEnAvant: boolean;
-      description: string | null;
-      accesRoutier: string | null;
-      eauDisponible: boolean | null;
-      electriciteDisponible: boolean | null;
-      voisinage: string | null;
-      vocation: string | null;
-      proximiteAxes: string | null;
-      pointsInteret: PublicPointInteret[] | null;
-      medias: Array<{
-        id: string;
-        type: string;
-        title: string | null;
-        isPublic: boolean;
-        sortOrder: number;
-        storageKey: string;
-        resourceType: string;
-        capturedAt: string | null;
-        createdAt: string;
-      }> | null;
-      documents: Array<{
-        id: string;
-        type: string;
-        title: string | null;
-        isPublic: boolean;
-        version: number;
-        storageKey: string;
-        resourceType: string;
-        createdAt: string;
-      }> | null;
-      createdAt: string;
-      updatedAt: string;
-    };
-
-    const medias =
-      source.medias?.map((media) => ({
-        id: media.id,
-        type: media.type,
-        title: media.title,
-        isPublic: media.isPublic,
-        sortOrder: media.sortOrder,
-        secureUrl: this.cloudinary.url(
-          media.storageKey,
-          media.resourceType,
-          true,
-        ),
-        capturedAt: media.capturedAt,
-        createdAt: media.createdAt,
-      })) ?? [];
-
-    const documents =
-      source.documents?.map((document) => ({
-        id: document.id,
-        type: document.type,
-        title: document.title,
-        isPublic: document.isPublic,
-        version: document.version,
-        secureUrl: this.cloudinary.url(
-          document.storageKey,
-          document.resourceType,
-          true,
-        ),
-        createdAt: document.createdAt,
-      })) ?? [];
-
-    return {
-      id: source.id,
-      referenceInterne: source.referenceInterne,
-      nom: source.nom,
-      statutJuridique: source.statutJuridique,
-      niveauVerification: source.niveauVerification,
-      region: source.region,
-      commune: source.commune,
-      localisationDetail: source.localisationDetail,
-      latitude: source.latitude,
-      longitude: source.longitude,
-      superficie: source.superficie,
-      uniteSuperficie: source.uniteSuperficie,
-      dimensions: source.dimensions,
-      prixPublic: source.prixPublic,
-      misEnAvant: source.misEnAvant,
-      description: source.description,
-      accesRoutier: source.accesRoutier,
-      eauDisponible: source.eauDisponible,
-      electriciteDisponible: source.electriciteDisponible,
-      voisinage: source.voisinage,
-      vocation: source.vocation,
-      proximiteAxes: source.proximiteAxes,
-      pointsInteret: source.pointsInteret,
-      medias,
-      documents,
-      createdAt: source.createdAt,
-      updatedAt: source.updatedAt,
-    };
-  }
-
-  private async ensureAccessible(
-    id: string,
-    user: { roles: string[]; permissions: string[] },
-  ): Promise<void> {
-    const terrain = await this.prisma.terrain.findFirst({
-      where: { id, ...this.ownershipFilter(user) },
-      select: { id: true },
-    });
-    if (!terrain) throw new NotFoundException('Terrain introuvable');
-  }
-
-  private ownershipFilter(user?: { id?: string; roles?: string[] }) {
-    if (!user || this.hasGlobalScope(user.roles ?? [])) return {};
-    return { commercialResponsableId: user.id };
-  }
-
-  private hasGlobalScope(roles: string[]): boolean {
-    return roles.some((role) =>
-      [
-        'administrateur',
-        'direction',
-        'manager',
-        'responsable_commercial',
-      ].includes(role),
-    );
   }
 
   private async validateStatuses(
@@ -654,15 +261,12 @@ export class TerrainsService {
     ] as const;
 
     for (const field of fields) {
-      const value = data[field];
-      if (value === undefined) continue;
-      const configured = await this.settings.getRawValue(`terrains.${field}`);
-      const allowed: string[] = Array.isArray(configured)
-        ? configured.filter((item): item is string => typeof item === 'string')
-        : [...DEFAULT_TERRAIN_OPTIONS[field]];
-      if (!allowed.includes(value)) {
-        throw new BadRequestException(`Statut de terrain invalide : ${field}`);
-      }
+      await this.settings.assertInList(
+        `terrains.${field}`,
+        DEFAULT_TERRAIN_OPTIONS[field],
+        data[field],
+        `Statut de terrain invalide : ${field}`,
+      );
     }
   }
 
@@ -685,23 +289,6 @@ export class TerrainsService {
     ) {
       throw new BadRequestException(
         'Une justification est obligatoire pour modifier un champ sensible (prix d’acquisition, marge, commission, propriétaire)',
-      );
-    }
-  }
-
-  private assertCanPublish(
-    isPublic: boolean | undefined,
-    user: { roles: string[]; permissions: string[] },
-  ): void {
-    if (
-      isPublic &&
-      !user.roles.some((role) =>
-        ['administrateur', 'direction'].includes(role),
-      ) &&
-      !user.permissions.includes('terrains:publier')
-    ) {
-      throw new BadRequestException(
-        'La publication nécessite la permission terrains:publier',
       );
     }
   }
@@ -747,12 +334,5 @@ export class TerrainsService {
       })),
     };
     return result;
-  }
-
-  private asOptions(value: unknown, fallback: string[]): string[] {
-    return Array.isArray(value) &&
-      value.every((item) => typeof item === 'string')
-      ? value
-      : fallback;
   }
 }
