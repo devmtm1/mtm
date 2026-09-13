@@ -14,6 +14,7 @@ import { VentesWorkflowService } from './ventes-workflow.service';
 import { VentesAccessService, type MandatUser } from './ventes-access.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import { CreateDossierVenteDto } from './dto/create-dossier-vente.dto';
+import { UpdateDossierVenteDto } from './dto/update-dossier-vente.dto';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { CreatePublicReservationRequestDto } from './dto/create-public-reservation-request.dto';
 import { ConvertReservationRequestDto } from './dto/convert-reservation-request.dto';
@@ -126,7 +127,7 @@ export class VentesService {
 
   async findReservationRequests(user: MandatUser) {
     return this.prisma.reservationRequest.findMany({
-      where: this.access.hasGlobalScope(user.roles)
+      where: this.access.hasGlobalScope(user)
         ? {}
         : { terrain: { commercialResponsableId: user.id } },
       orderBy: { createdAt: 'desc' },
@@ -171,7 +172,7 @@ export class VentesService {
       throw new ConflictException('Ce terrain n’est plus disponible');
     }
     if (
-      !this.access.hasGlobalScope(user.roles) &&
+      !this.access.hasGlobalScope(user) &&
       request.terrain.commercialResponsableId !== user.id
     ) {
       throw new ForbiddenException(
@@ -432,6 +433,86 @@ export class VentesService {
     }
 
     return this.findOne(dossier.id, user);
+  }
+
+  /**
+   * Compléter un dossier ouvert (terrain, prix, commercial, notes). Le
+   * terrain doit être « Disponible » ; changer le prix recalcule
+   * l'échéancier tant qu'aucune échéance n'a été réglée.
+   */
+  async update(id: string, dto: UpdateDossierVenteDto, user: MandatUser) {
+    const dossier = await this.prisma.dossierVente.findFirst({
+      where: { id, ...this.access.ownershipFilter(user) },
+      select: { id: true, statut: true, terrainId: true, prixVente: true },
+    });
+    if (!dossier) throw new NotFoundException('Dossier de vente introuvable');
+    if (['solde', 'annule'].includes(dossier.statut)) {
+      throw new ConflictException(
+        'Ce dossier est clos et ne peut plus être modifié',
+      );
+    }
+
+    if (dto.terrainId && dto.terrainId !== dossier.terrainId) {
+      const terrain = await this.prisma.terrain.findUnique({
+        where: { id: dto.terrainId },
+        select: { id: true, statutCommercial: true },
+      });
+      if (!terrain) throw new NotFoundException('Terrain introuvable');
+      if (terrain.statutCommercial !== 'Disponible') {
+        throw new BadRequestException(
+          'Seul un terrain « Disponible » peut être rattaché à un dossier',
+        );
+      }
+      await this.assertMandatExclusivity(dto.terrainId, dto.mandatId);
+    }
+
+    const before = await this.findOne(id, user);
+    await this.prisma.dossierVente.update({
+      where: { id },
+      data: {
+        ...(dto.terrainId !== undefined ? { terrainId: dto.terrainId } : {}),
+        ...(dto.mandatId !== undefined ? { mandatId: dto.mandatId } : {}),
+        ...(dto.commercialResponsableId !== undefined
+          ? { commercialResponsableId: dto.commercialResponsableId }
+          : {}),
+        ...(dto.prixVente !== undefined ? { prixVente: dto.prixVente } : {}),
+        ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
+      },
+    });
+
+    const priceChanged =
+      dto.prixVente !== undefined &&
+      Number(dto.prixVente) !== Number(dossier.prixVente ?? 0);
+    if (priceChanged && dto.prixVente !== undefined && dto.prixVente > 0) {
+      const paid = await this.prisma.echeancePaiement.count({
+        where: { dossierVenteId: id, statut: 'payee' },
+      });
+      if (paid === 0) {
+        await this.prisma.echeancePaiement.deleteMany({
+          where: { dossierVenteId: id },
+        });
+        const echeanceCount = await this.workflow.getDefaultEcheanceCount();
+        const baseMontant = Math.floor(dto.prixVente / echeanceCount);
+        const remainder = dto.prixVente - baseMontant * echeanceCount;
+        const now = new Date();
+        await this.prisma.echeancePaiement.createMany({
+          data: Array.from({ length: echeanceCount }, (_, index) => ({
+            dossierVenteId: id,
+            numero: index + 1,
+            dateEcheance: new Date(
+              now.getFullYear(),
+              now.getMonth() + index,
+              now.getDate(),
+            ),
+            montantPrevu: baseMontant + (index < remainder ? 1 : 0),
+            statut: index === 0 ? 'en_attente' : 'planifiee',
+          })),
+        });
+      }
+    }
+
+    const after = await this.findOne(id, user);
+    return { before, dossier: after };
   }
 
   async createReservation(

@@ -1,22 +1,122 @@
 <div class="roles-page">
-  <div class="roles-header">
-    <h1>Rôles &amp; permissions</h1>
-    @if (canCreate()) {
-      <button mat-flat-button color="primary" class="btn-mtm-accent" (click)="openCreateDialog()">
-        <svg lucideShieldPlus class="btn-icon"></svg>
-        Nouveau rôle
-      </button>
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Administration</p>
+      <h1 class="page-header__title">Rôles &amp; permissions</h1>
+      <p class="page-header__subtitle">
+        Un rôle est un ensemble de droits « module : action » (consulter, créer, valider, publier…). Chaque
+        utilisateur a un rôle ; modifier un rôle change les droits de tous ses utilisateurs.
+      </p>
+    </div>
+    @if (canCreate) {
+      <div class="page-header__actions">
+        <button mat-flat-button color="primary" type="button" (click)="openCreateDialog()">
+          <svg class="btn-icon" lucideShieldPlus aria-hidden="true"></svg>Nouveau rôle
+        </button>
+      </div>
     }
-  </div>
+  </header>
 
-  <ag-grid-angular
-    class="roles-grid"
-    [theme]="theme"
-    [rowData]="rowData()"
-    [columnDefs]="columnDefs"
-    [loading]="loading()"
-    [animateRows]="true"
-    [pagination]="true"
-    [paginationPageSize]="10"
-  />
+  <section class="kpi-row" aria-label="Synthèse">
+    @if (loading()) {
+      @for (i of [1, 2, 3]; track i) {
+        <div class="kpi skeleton" aria-hidden="true"></div>
+      }
+    } @else {
+      <div class="kpi kpi--primary">
+        <span class="kpi__icon"><svg lucideShield aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ roles().length }}</strong>
+          <span>Rôles</span>
+          <small>{{ usersCount() }} compte{{ usersCount() > 1 ? 's' : '' }} répartis</small>
+        </span>
+      </div>
+      <div class="kpi" [class.kpi--muted]="unusedRoles().length > 0">
+        <span class="kpi__icon"><svg lucideUsers aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ unusedRoles().length }}</strong>
+          <span>Sans utilisateur</span>
+          <small>{{ unusedRoles().length > 0 ? 'Prêts pour de futurs recrutements' : 'Tous les rôles sont attribués' }}</small>
+        </span>
+      </div>
+      <div class="kpi" [class.kpi--warning]="emptyRoles().length > 0" [class.kpi--success]="emptyRoles().length === 0">
+        <span class="kpi__icon"><svg lucideKeyRound aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ emptyRoles().length }}</strong>
+          <span>Sans aucune permission</span>
+          <small>{{ emptyRoles().length > 0 ? 'Leurs utilisateurs ne verraient rien' : 'Chaque rôle donne au moins un accès' }}</small>
+        </span>
+      </div>
+    }
+  </section>
+
+  @if (loading()) {
+    <div class="role-cards">
+      @for (i of [1, 2, 3, 4]; track i) {
+        <div class="skeleton" style="height: 220px"></div>
+      }
+    </div>
+  } @else {
+    <div class="role-cards">
+      @for (role of sorted(); track role.id) {
+        @let count = role._count?.users ?? 0;
+        <article class="role-card page-card" [class.is-system]="role.isSystem">
+          <div class="role-card__head">
+            <div>
+              <h2>{{ roleLabel(role.name) }}</h2>
+              <p class="role-card__tech">{{ role.name }}</p>
+            </div>
+            <div class="role-card__pills">
+              @if (role.isSystem) {
+                <span class="status-pill" matTooltip="Livré avec l’application : ne peut pas être supprimé"><svg lucideLock aria-hidden="true"></svg>Système</span>
+              }
+              @if (isSensitive(role)) {
+                <span class="status-pill status-pill--warning" matTooltip="Double authentification obligatoire pour ce rôle">2FA obligatoire</span>
+              }
+            </div>
+          </div>
+
+          <p class="role-card__help">{{ roleHelp(role.name) || role.description || 'Aucune description.' }}</p>
+
+          <p class="role-card__count" [class.is-empty]="count === 0">
+            <svg lucideUsers aria-hidden="true"></svg>
+            {{ count === 0 ? 'Aucun utilisateur' : count + ' utilisateur' + (count > 1 ? 's' : '') }}
+            · {{ role.permissions.length }} permission{{ role.permissions.length > 1 ? 's' : '' }}
+          </p>
+
+          @if (role.name === 'client') {
+            <p class="detail-note">Réservé à l’espace client du site public : pas d’accès au back-office.</p>
+          } @else if (modules(role).length === 0) {
+            <p class="detail-note">Ce rôle ne donne encore accès à aucun module.</p>
+          } @else {
+            <ul class="role-card__modules">
+              @for (module of modules(role); track module.resource) {
+                <li>
+                  <strong>{{ module.label }}</strong>
+                  <span>{{ module.full ? 'Accès complet (administrer)' : module.actions.join(', ') }}</span>
+                </li>
+              }
+            </ul>
+          }
+
+          <div class="role-card__actions">
+            @if (canAdminister) {
+              <button mat-stroked-button type="button" (click)="openPermissionsDialog(role)">
+                <svg class="btn-icon" lucideKeyRound aria-hidden="true"></svg>Permissions
+              </button>
+            }
+            @if (canModify) {
+              <button mat-button type="button" (click)="openEditDialog(role)">Description</button>
+            }
+            <span class="role-card__spacer"></span>
+            @if (canDelete && !role.isSystem) {
+              <button mat-icon-button type="button" class="role-card__delete" (click)="remove(role)" [matTooltip]="count > 0 ? 'Changez d’abord le rôle de ses utilisateurs' : 'Supprimer ce rôle'" aria-label="Supprimer">
+                <svg lucideTrash2 aria-hidden="true"></svg>
+              </button>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  }
 </div>

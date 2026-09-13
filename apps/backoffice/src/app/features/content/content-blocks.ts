@@ -1,179 +1,193 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatInputModule } from '@angular/material/input';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
-import { MatTableModule } from '@angular/material/table';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { FormsModule } from '@angular/forms';
-import { LucidePencil, LucideTrash2, LucidePlus } from '@lucide/angular';
+import { MatDialog } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { LucideEye, LucideEyeOff, LucideFileText, LucideMessageSquareQuote, LucideNewspaper, LucidePencil, LucidePlus, LucideTrash2 } from '@lucide/angular';
 import { ContentBlockApiService, type ContentBlock } from '../../core/services/api/content-block-api.service';
 import { SessionService } from '../../core/services/session.service';
+import { NotificationService } from '../../shared/services/notification.service';
 import { ContentEditorDialog } from './content-editor-dialog';
+import { NEWS_KEY_PATTERN, SITE_CONTENT_SECTIONS, TESTIMONIAL_TYPE, slotByKey, type ContentSlot } from './site-content-catalog';
 
+interface NewsGroup {
+  index: number;
+  title?: ContentBlock;
+  tag?: ContentBlock;
+  excerpt?: ContentBlock;
+  isActive: boolean;
+}
+
+/**
+ * Contenus du site public, présentés par page et par emplacement (J1.5).
+ * L'utilisateur voit « Titre principal de la page d'accueil » avec sa valeur
+ * actuelle, pas une clé technique : chaque emplacement se modifie en un clic
+ * et revient au texte par défaut du site si on le vide.
+ */
 @Component({
   selector: 'app-content-blocks',
   standalone: true,
-  imports: [
-    MatButtonModule,
-    MatDialogModule,
-    MatTableModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatCheckboxModule,
-    FormsModule,
-    LucidePencil,
-    LucideTrash2,
-    LucidePlus,
-  ],
-  template: `
-    <div class="page-container">
-      <div class="page-header">
-        <div>
-          <h1>Contenus du site</h1>
-          <p>Gérez les contenus textuels, témoignages et éléments du site public.</p>
-        </div>
-        @if (canCreate) { <button mat-flat-button color="primary" (click)="openEditor()">
-          <svg lucidePlus aria-hidden="true"></svg>
-          Nouveau contenu
-        </button> }
-      </div>
-
-      <table mat-table [dataSource]="blocks()" class="w-full">
-        <ng-container matColumnDef="key">
-          <th mat-header-cell *matHeaderCellDef>Clé</th>
-          <td mat-cell *matCellDef="let b">{{ b.key }}</td>
-        </ng-container>
-        <ng-container matColumnDef="type">
-          <th mat-header-cell *matHeaderCellDef>Type</th>
-          <td mat-cell *matCellDef="let b">{{ b.type }}</td>
-        </ng-container>
-        <ng-container matColumnDef="title">
-          <th mat-header-cell *matHeaderCellDef>Titre</th>
-          <td mat-cell *matCellDef="let b">{{ b.title || '—' }}</td>
-        </ng-container>
-        <ng-container matColumnDef="ordre">
-          <th mat-header-cell *matHeaderCellDef>Ordre</th>
-          <td mat-cell *matCellDef="let b">{{ b.ordre }}</td>
-        </ng-container>
-        <ng-container matColumnDef="isActive">
-          <th mat-header-cell *matHeaderCellDef>Actif</th>
-          <td mat-cell *matCellDef="let b">
-            <span [class]="b.isActive ? 'badge-yes' : 'badge-no'">
-              {{ b.isActive ? 'Oui' : 'Non' }}
-            </span>
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef>Actions</th>
-          <td mat-cell *matCellDef="let b">
-            @if (canModify) { <button mat-button (click)="openEditor(b)">
-              <svg lucidePencil aria-hidden="true"></svg>
-            </button> }
-            @if (canPublish) { <button mat-button (click)="publish(b)">
-              {{ b.isActive ? 'Dépublier' : 'Publier' }}
-            </button> }
-            @if (canDelete) { <button mat-button color="warn" (click)="remove(b)">
-              <svg lucideTrash2 aria-hidden="true"></svg>
-            </button> }
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-      </table>
-
-      @if (!loading() && blocks().length === 0) {
-        <p class="empty">
-          Aucun contenu pour le moment.
-        </p>
-      }
-    </div>
-  `,
-  styles: [`
-    .page-container {
-      padding: 24px;
-      background: var(--mtm-card-bg);
-      border: 1px solid var(--mtm-border);
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(31, 41, 55, 0.04);
-    }
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-      gap: 16px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--mtm-border);
-    }
-    .page-header h1 {
-      font-family: var(--mtm-font-display);
-      font-size: 1.5rem;
-      margin: 0;
-      color: var(--mtm-text-dark);
-    }
-    .page-header p {
-      color: var(--mtm-text-muted);
-      font-size: 0.9rem;
-      margin: 6px 0 0;
-    }
-    table { border-spacing: 0; }
-    th {
-      padding: 12px 8px;
-      text-align: left;
-      border-bottom: 2px solid var(--mtm-border);
-      font-weight: 600;
-      color: var(--mtm-text-dark);
-    }
-    td {
-      padding: 10px 8px;
-      border-bottom: 1px solid var(--mtm-border);
-      color: var(--mtm-text-dark);
-    }
-    .badge-yes {
-      background: var(--mtm-success-bg);
-      color: var(--mtm-success);
-      padding: 2px 8px;
-      border-radius: 9999px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-    .badge-no {
-      background: var(--mtm-red-subtle);
-      color: var(--mtm-red-primary);
-      padding: 2px 8px;
-      border-radius: 9999px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-    .empty {
-      text-align: center;
-      padding: 40px;
-      color: var(--mtm-text-muted);
-    }
-    button[mat-button] { padding: 4px 8px; }
-  `],
+  imports: [MatButtonModule, MatTooltipModule, LucideEye, LucideEyeOff, LucideFileText, LucideMessageSquareQuote, LucideNewspaper, LucidePencil, LucidePlus, LucideTrash2],
+  templateUrl: './content-blocks.html',
+  styleUrl: './content-blocks.scss',
 })
-export class ContentBlocks {
+export class ContentBlocks implements OnInit {
   private readonly api = inject(ContentBlockApiService);
   private readonly dialog = inject(MatDialog);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly notify = inject(NotificationService);
   private readonly session = inject(SessionService);
+
   protected readonly canCreate = this.session.hasPermission('content:creer');
   protected readonly canModify = this.session.hasPermission('content:modifier');
   protected readonly canPublish = this.session.hasPermission('content:publier');
   protected readonly canDelete = this.session.hasPermission('content:supprimer');
+  protected readonly canEdit = this.canCreate || this.canModify;
 
+  protected readonly sections = SITE_CONTENT_SECTIONS;
   protected readonly loading = signal(true);
+  protected readonly busyKey = signal<string | null>(null);
   protected readonly blocks = signal<ContentBlock[]>([]);
-  protected readonly displayedColumns = ['key', 'type', 'title', 'ordre', 'isActive', 'actions'];
 
-  constructor() {
+  private readonly byKey = computed(() => new Map(this.blocks().map((block) => [block.key, block])));
+
+  protected readonly testimonials = computed(() => this.blocks().filter((block) => block.type === TESTIMONIAL_TYPE).sort((a, b) => a.ordre - b.ordre));
+
+  protected readonly news = computed<NewsGroup[]>(() => {
+    const groups = new Map<number, NewsGroup>();
+    for (const block of this.blocks()) {
+      const match = NEWS_KEY_PATTERN.exec(block.key);
+      if (!match) continue;
+      const index = Number(match[1]);
+      const group = groups.get(index) ?? { index, isActive: false };
+      group[match[2] as 'title' | 'tag' | 'excerpt'] = block;
+      groups.set(index, group);
+    }
+    return [...groups.values()].map((group) => ({ ...group, isActive: !!(group.title ?? group.excerpt ?? group.tag)?.isActive })).sort((a, b) => a.index - b.index);
+  });
+
+  /** Blocs que ni le catalogue ni les témoignages/actualités ne couvrent. */
+  protected readonly others = computed(() => this.blocks().filter((block) => block.type !== TESTIMONIAL_TYPE && !NEWS_KEY_PATTERN.test(block.key) && !slotByKey(block.key)));
+
+  protected readonly filledCount = computed(() => this.sections.reduce((sum, section) => sum + section.slots.filter((slot) => this.byKey().has(slot.key)).length, 0));
+  protected readonly slotCount = this.sections.reduce((sum, section) => sum + section.slots.length, 0);
+  protected readonly unpublishedCount = computed(() => this.blocks().filter((block) => !block.isActive).length);
+
+  ngOnInit(): void {
     this.load();
+  }
+
+  protected blockFor(slot: ContentSlot): ContentBlock | undefined {
+    return this.byKey().get(slot.key);
+  }
+
+  /** Aperçu court ; les listes (une entrée par ligne) gardent leurs sauts de ligne. */
+  protected preview(block: ContentBlock | undefined, max = 160, keepLines = false): string {
+    if (!block) return '';
+    if (keepLines) {
+      const lines = block.content.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+      const shown = lines.slice(0, 4).map((line) => (line.length > max ? `${line.slice(0, max)}…` : line));
+      return lines.length > 4 ? `${shown.join('\n')}\n… et ${lines.length - 4} de plus` : shown.join('\n');
+    }
+    const text = block.content.replace(/\s+/g, ' ').trim();
+    return text.length > max ? `${text.slice(0, max)}…` : text;
+  }
+
+  protected editSlot(slot: ContentSlot): void {
+    if (!this.canEdit) return;
+    ContentEditorDialog.open(this.dialog, { kind: 'slot', slot, existing: this.blockFor(slot) ?? null }).subscribe((saved) => saved && this.load());
+  }
+
+  protected editTestimonial(existing?: ContentBlock): void {
+    if (!this.canEdit) return;
+    const nextOrder = this.testimonials().reduce((max, item) => Math.max(max, item.ordre + 1), 1);
+    ContentEditorDialog.open(this.dialog, { kind: 'testimonial', existing: existing ?? null, nextOrder }).subscribe((saved) => saved && this.load());
+  }
+
+  protected editNews(group?: NewsGroup): void {
+    if (!this.canEdit) return;
+    const nextNewsIndex = this.news().reduce((max, item) => Math.max(max, item.index + 1), 1);
+    ContentEditorDialog.open(this.dialog, { kind: 'news', news: group, nextNewsIndex }).subscribe((saved) => saved && this.load());
+  }
+
+  protected editCustom(existing?: ContentBlock): void {
+    if (!this.canEdit) return;
+    ContentEditorDialog.open(this.dialog, { kind: 'custom', existing: existing ?? null }).subscribe((saved) => saved && this.load());
+  }
+
+  protected togglePublish(block: ContentBlock): void {
+    if (!this.canPublish) return;
+    this.busyKey.set(block.key);
+    this.api.publish(block.key, !block.isActive).subscribe({
+      next: () => {
+        this.notify.success(block.isActive ? 'Contenu masqué du site' : 'Contenu publié sur le site');
+        this.load();
+      },
+      error: (error: unknown) => {
+        this.busyKey.set(null);
+        this.notify.error(error, 'Impossible de changer la publication');
+      },
+    });
+  }
+
+  protected toggleNewsPublish(group: NewsGroup): void {
+    if (!this.canPublish) return;
+    const targets = [group.title, group.tag, group.excerpt].filter((block): block is ContentBlock => !!block);
+    const isActive = !group.isActive;
+    this.busyKey.set(`news.${group.index}`);
+    const next = (remaining: ContentBlock[]): void => {
+      const [first, ...rest] = remaining;
+      if (!first) {
+        this.notify.success(isActive ? 'Actualité publiée' : 'Actualité masquée du site');
+        this.load();
+        return;
+      }
+      this.api.publish(first.key, isActive).subscribe({
+        next: () => next(rest),
+        error: (error: unknown) => {
+          this.busyKey.set(null);
+          this.notify.error(error, 'Impossible de changer la publication');
+          this.load();
+        },
+      });
+    };
+    next(targets);
+  }
+
+  protected remove(block: ContentBlock, label: string): void {
+    if (!this.canDelete || !confirm(`Supprimer « ${label} » ? Le site reviendra à son affichage par défaut.`)) return;
+    this.busyKey.set(block.key);
+    this.api.remove(block.key).subscribe({
+      next: () => {
+        this.notify.success('Contenu supprimé');
+        this.load();
+      },
+      error: (error: unknown) => {
+        this.busyKey.set(null);
+        this.notify.error(error, 'Impossible de supprimer ce contenu');
+      },
+    });
+  }
+
+  protected removeNews(group: NewsGroup): void {
+    if (!this.canDelete || !confirm(`Supprimer l’actualité « ${group.title?.content ?? group.index} » ?`)) return;
+    const targets = [group.title, group.tag, group.excerpt].filter((block): block is ContentBlock => !!block);
+    this.busyKey.set(`news.${group.index}`);
+    const next = (remaining: ContentBlock[]): void => {
+      const [first, ...rest] = remaining;
+      if (!first) {
+        this.notify.success('Actualité supprimée');
+        this.load();
+        return;
+      }
+      this.api.remove(first.key).subscribe({
+        next: () => next(rest),
+        error: (error: unknown) => {
+          this.busyKey.set(null);
+          this.notify.error(error, 'Impossible de supprimer cette actualité');
+          this.load();
+        },
+      });
+    };
+    next(targets);
   }
 
   private load(): void {
@@ -182,51 +196,13 @@ export class ContentBlocks {
       next: (data) => {
         this.blocks.set(data);
         this.loading.set(false);
+        this.busyKey.set(null);
       },
-      error: () => {
+      error: (error: unknown) => {
         this.loading.set(false);
-        this.snackBar.open('Erreur de chargement', 'Fermer', { duration: 3000 });
+        this.busyKey.set(null);
+        this.notify.error(error, 'Erreur lors du chargement des contenus');
       },
-    });
-  }
-
-  openEditor(block?: ContentBlock): void {
-    const ref = this.dialog.open(ContentEditorDialog, {
-      width: '600px',
-      data: block ?? null,
-    });
-    ref.afterClosed().subscribe((result) => {
-      if (result?.created || result?.updated) {
-        this.snackBar.open(
-          result.created ? 'Contenu créé' : 'Contenu mis à jour',
-          'Fermer',
-          { duration: 2000 },
-        );
-        this.load();
-      }
-    });
-  }
-
-  remove(block: ContentBlock): void {
-    if (!confirm(`Supprimer "${block.key}" ?`)) return;
-    this.api.remove(block.key).subscribe({
-      next: () => {
-        this.snackBar.open('Contenu supprimé', 'Fermer', { duration: 2000 });
-        this.load();
-      },
-      error: () => {
-        this.snackBar.open('Erreur', 'Fermer', { duration: 3000 });
-      },
-    });
-  }
-
-  publish(block: ContentBlock): void {
-    this.api.publish(block.key, !block.isActive).subscribe({
-      next: () => {
-        this.snackBar.open(block.isActive ? 'Contenu dépublié' : 'Contenu publié', 'Fermer', { duration: 2000 });
-        this.load();
-      },
-      error: () => this.snackBar.open('Permission de publication insuffisante', 'Fermer', { duration: 3000 }),
     });
   }
 }

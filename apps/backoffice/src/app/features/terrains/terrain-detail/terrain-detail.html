@@ -1,25 +1,319 @@
-@if (loading()) { <div class="state">Chargement de la fiche terrain...</div> } @else if (terrain) {
-<section class="detail-page">
-  <header class="detail-header"><div class="detail-heading"><button mat-button class="back-button" type="button" (click)="goBack()"><svg lucideArrowLeft aria-hidden="true"></svg></button><div><div class="detail-title-line"><h1>{{ terrain.nom }}</h1><span class="status-badge">{{ terrain.statutCommercial }}</span></div><p class="detail-subtitle">{{ terrain.referenceInterne }} · {{ terrain.statutJuridique }} · {{ terrain.niveauVerification }}</p></div></div><div class="header-actions">@if (canModify) { <button mat-stroked-button type="button"><span>Plus d’actions</span></button><button mat-flat-button color="primary" (click)="edit()"><svg lucidePencil aria-hidden="true"></svg><span>Modifier</span></button> }</div></header>
-
-  <section class="hero-grid">
-    <div class="gallery-panel"><div class="gallery-main">@if (primaryImage(); as imageUrl) { <img [src]="imageUrl" [alt]="terrain.nom"> } @else { <div class="gallery-empty"><svg lucideImage aria-hidden="true"></svg><span>Aucune photo publique</span></div> }<span class="gallery-count">{{ terrain.medias.length }} média{{ terrain.medias.length > 1 ? 's' : '' }}</span></div>@if (terrain.medias.length) { <div class="gallery-thumbs">@for (media of terrain.medias; track media.id) { @if (isImage(media.resourceType)) { <a [href]="media.secureUrl" target="_blank" rel="noopener"><img [src]="media.secureUrl" [alt]="media.title || media.type"></a> } @else { <a class="media-link" [href]="media.secureUrl" target="_blank" rel="noopener">{{ media.type }}</a> } }</div> }</div>
-    <section class="summary-panel"><div class="panel-heading"><div><span class="eyebrow">Fiche terrain</span><h2>{{ terrain.nom }}</h2></div><svg lucideLandPlot aria-hidden="true"></svg></div><p class="location"><svg lucideMapPin aria-hidden="true"></svg>{{ terrain.commune || 'Localisation non renseignée' }}{{ terrain.region ? ', ' + terrain.region : '' }}</p><p class="description">{{ terrain.localisationDetail || 'Aucune description détaillée renseignée pour ce terrain.' }}</p><div class="fact-grid"><div><span>Superficie</span><strong>{{ formatNumber(terrain.superficie) }} m²</strong></div><div><span>Parcelle / matricule</span><strong>{{ terrain.parcelleMatricule || '—' }}</strong></div><div><span>Document foncier</span><strong>{{ terrain.typeDocumentFoncier || '—' }}</strong></div><div><span>Coordonnées GPS</span><strong>{{ terrain.latitude || '—' }}, {{ terrain.longitude || '—' }}</strong></div></div></section>
-    <section class="finance-panel"><h2>Informations financières</h2><dl><div><dt>Prix public</dt><dd class="price">{{ formatMoney(terrain.prixPublic) }}</dd></div>@if (canViewFinancials) { <div><dt>Prix d’acquisition</dt><dd>{{ formatMoney(terrain.prixAcquisition) }}</dd></div><div><dt>Marge</dt><dd>{{ formatMoney(terrain.marge) }}</dd></div><div><dt>Commission</dt><dd>{{ formatMoney(terrain.commission) }}</dd></div> } @else { <div class="finance-restricted"><small>Données d’acquisition & marge réservées aux utilisateurs autorisés (Finances / Direction)</small></div> }</dl><div class="finance-status"><span>Statut commercial</span><strong>{{ terrain.statutCommercial }}</strong></div></section>
+@if (loading()) {
+  <section class="detail-page" aria-busy="true">
+    <div class="skeleton" style="height: 20px; width: 120px"></div>
+    <div class="skeleton" style="height: 36px; width: 45%"></div>
+    <div class="hero-grid">
+      <div class="skeleton" style="height: 320px"></div>
+      <div class="skeleton" style="height: 320px"></div>
+    </div>
   </section>
+} @else if (terrain(); as t) {
+  <section class="detail-page" [class.is-busy]="busy()">
+    <a class="back-link" href="/terrains" (click)="$event.preventDefault(); goBack()">
+      <svg lucideArrowLeft aria-hidden="true"></svg>Retour à la liste des terrains
+    </a>
 
-  <nav class="detail-tabs" aria-label="Sections de la fiche"><button type="button" class="is-active" (click)="scrollToSection('general')">Informations générales</button><button type="button" (click)="scrollToSection('features')">Caractéristiques</button><button type="button" (click)="scrollToSection('location')">Localisation</button><button type="button" (click)="scrollToSection('documents')">Documents</button><button type="button" (click)="scrollToSection('history')">Historique</button></nav>
-  <section class="content-grid">
-    <section class="detail-section" id="general"><h2>Informations générales</h2><dl class="info-list"><div><dt>Référence interne</dt><dd>{{ terrain.referenceInterne }}</dd></div><div><dt>Nom du terrain</dt><dd>{{ terrain.nom }}</dd></div><div><dt>Statut juridique</dt><dd>{{ terrain.statutJuridique }}</dd></div><div><dt>Niveau de vérification</dt><dd>{{ terrain.niveauVerification }}</dd></div><div><dt>Dimensions</dt><dd>{{ terrain.dimensions || '—' }}</dd></div></dl></section>
-    <section class="detail-section" id="features"><h2>Caractéristiques</h2><dl class="info-list"><div><dt>Accès routier</dt><dd>{{ terrain.accesRoutier || '—' }}</dd></div><div><dt>Eau disponible</dt><dd>{{ terrain.eauDisponible === null ? '—' : terrain.eauDisponible ? 'Oui' : 'Non' }}</dd></div><div><dt>Électricité disponible</dt><dd>{{ terrain.electriciteDisponible === null ? '—' : terrain.electriciteDisponible ? 'Oui' : 'Non' }}</dd></div><div><dt>Vocation</dt><dd>{{ terrain.vocation || '—' }}</dd></div><div><dt>Voisinage</dt><dd>{{ terrain.voisinage || '—' }}</dd></div><div><dt>Proximité des axes</dt><dd>{{ terrain.proximiteAxes || '—' }}</dd></div></dl></section>
-    <section class="detail-section" id="location"><h2><svg lucideMapPin aria-hidden="true"></svg> Localisation</h2><p class="location-copy">{{ terrain.localisationDetail || 'Aucun détail de localisation renseigné.' }}</p>@if (mapUrl) { <div #mapContainer class="bo-terrain-map"></div><a class="bo-terrain-map-link" [href]="mapUrl" target="_blank" rel="noopener noreferrer"><svg lucideExternalLink aria-hidden="true"></svg> Ouvrir dans OpenStreetMap</a> } @else { <p class="muted">Coordonnées GPS non renseignées : la carte ne peut pas être affichée.</p> }<dl class="info-list"><div><dt>Région</dt><dd>{{ terrain.region || '—' }}</dd></div><div><dt>Commune</dt><dd>{{ terrain.commune || '—' }}</dd></div><div><dt>Latitude</dt><dd>{{ terrain.latitude || '—' }}</dd></div><div><dt>Longitude</dt><dd>{{ terrain.longitude || '—' }}</dd></div></dl></section>
-    <section class="detail-section" id="documents"><h2><svg lucideFileText aria-hidden="true"></svg> Documents associés</h2>@if (canModify) { <label class="asset-upload">Ajouter un document<input type="file" accept="application/pdf,image/*,.doc,.docx" (change)="uploadAsset($event, 'documents')"></label> } @if (terrain.documents.length) { <ul class="asset-list">@for (document of terrain.documents; track document.id) { <li><a [href]="document.secureUrl" target="_blank" rel="noopener">{{ document.title || document.type }}</a><small>v{{ document.version }} · {{ document.isPublic ? 'Public' : 'Interne' }}</small></li> }</ul> } @else { <p class="muted">Aucun document associé.</p> }</section>
-    <section class="detail-section" id="history"><h2>Historique</h2><dl class="info-list"><div><dt>Créé le</dt><dd>{{ terrain.createdAt | date:'dd/MM/yyyy HH:mm' }}</dd></div><div><dt>Dernière mise à jour</dt><dd>{{ terrain.updatedAt | date:'dd/MM/yyyy HH:mm' }}</dd></div></dl>  @if (canModify) {
-    <button mat-stroked-button type="button" (click)="openHistory()"><svg lucideClock aria-hidden="true"></svg>Voir l'historique complet du journal d'audit</button>
-  } @else {
-    <button mat-stroked-button type="button" (click)="openHistory()"><svg lucideClock aria-hidden="true"></svg>Voir l'historique complet du journal d'audit</button>
-  }
-  <p class="muted">Les modifications sensibles sont conservées dans le journal d’audit MTM.</p></section>
+    <header class="detail-header">
+      <div class="detail-header__main">
+        <p class="eyebrow">{{ t.referenceInterne }}</p>
+        <h1>{{ t.nom }}</h1>
+        <p class="detail-header__location">
+          <svg lucideMapPin aria-hidden="true"></svg>{{ t.commune || 'Commune non renseignée' }}{{ t.region ? ', ' + t.region : '' }}
+        </p>
+        <div class="status-line">
+          <span [class]="pill(commercialStatus, t.statutCommercial)" [matTooltip]="help(commercialStatus, t.statutCommercial)">{{ t.statutCommercial }}</span>
+          <span [class]="pill(legalStatus, t.statutJuridique)" [matTooltip]="help(legalStatus, t.statutJuridique)">{{ t.statutJuridique }}</span>
+          <span [class]="pill(verificationStatus, t.niveauVerification)" [matTooltip]="help(verificationStatus, t.niveauVerification)">{{ t.niveauVerification }}</span>
+          @if (t.misEnAvant) {
+            <span class="status-pill status-pill--primary" matTooltip="Affiché en priorité sur la page d’accueil du site"><svg lucideStar aria-hidden="true"></svg>Mis en avant</span>
+          }
+        </div>
+      </div>
+      <div class="detail-header__actions">
+        @if (publicUrl(); as url) {
+          <a mat-stroked-button [href]="url" target="_blank" rel="noopener" matTooltip="Ouvrir la fiche telle que la voient les visiteurs">
+            <svg class="btn-icon" lucideGlobe aria-hidden="true"></svg>Voir sur le site
+          </a>
+        }
+        @if (canModify) {
+          <button mat-stroked-button type="button" [matMenuTriggerFor]="statusMenu">
+            Changer un statut<svg class="btn-icon btn-icon--after" lucideChevronDown aria-hidden="true"></svg>
+          </button>
+          <mat-menu #statusMenu="matMenu" xPosition="before">
+            <button mat-menu-item type="button" (click)="changeStatus('commercial')">
+              <span class="menu-line"><strong>Commercialisation</strong><small>Visible sur le site, réservé, vendu…</small></span>
+            </button>
+            @if (canValidate) {
+              <button mat-menu-item type="button" (click)="changeStatus('juridique')">
+                <span class="menu-line"><strong>Statut juridique</strong><small>Titre foncier, bail, délibération…</small></span>
+              </button>
+              <button mat-menu-item type="button" (click)="changeStatus('verification')">
+                <span class="menu-line"><strong>Niveau de vérification</strong><small>Contrôle des documents par MTM</small></span>
+              </button>
+            }
+          </mat-menu>
+          <button mat-flat-button color="primary" type="button" (click)="edit()">
+            <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Modifier la fiche
+          </button>
+        }
+      </div>
+    </header>
+
+    <!-- Bandeau : ce qu'il reste à faire pour une fiche prête à être publiée -->
+    @if (canModify && todo().length) {
+      <aside class="todo-banner" aria-label="Fiche à compléter">
+        <strong>Pour une fiche complète, il reste {{ todo().length }} point{{ todo().length > 1 ? 's' : '' }} :</strong>
+        <ul>
+          @for (item of todo(); track item.label) {
+            <li><span>{{ item.label }}</span><small>{{ item.hint }}</small></li>
+          }
+        </ul>
+      </aside>
+    }
+
+    <section class="hero-grid">
+      <!-- Galerie -->
+      <div class="page-card gallery">
+        <div class="gallery__main">
+          @if (mainImage(); as imageUrl) {
+            <img [src]="imageUrl" [alt]="t.nom" />
+          } @else {
+            <div class="gallery__empty">
+              <svg lucideCamera aria-hidden="true"></svg>
+              <span>Aucune photo</span>
+              @if (canModify) {
+                <small>Ajoutez une photo publique : c’est la première chose que voient les visiteurs.</small>
+              }
+            </div>
+          }
+        </div>
+        @if (images().length || canModify) {
+          <div class="gallery__thumbs">
+            @for (media of images(); track media.id) {
+              <div class="gallery__thumb" [class.is-active]="mainImage() === media.secureUrl">
+                <button type="button" (click)="showMedia(media.secureUrl)" [attr.aria-label]="media.title || 'Photo'">
+                  <img [src]="media.secureUrl" [alt]="media.title || ''" loading="lazy" />
+                </button>
+                <span class="gallery__thumb-flag" [matTooltip]="media.isPublic ? 'Visible sur le site public' : 'Photo interne, non publiée'">
+                  @if (media.isPublic) {
+                    <svg lucideEye aria-hidden="true"></svg>
+                  } @else {
+                    <svg lucideEyeOff aria-hidden="true"></svg>
+                  }
+                </span>
+                @if (canModify) {
+                  <button type="button" class="gallery__thumb-delete" (click)="removeMedia(media.id)" aria-label="Supprimer la photo" matTooltip="Supprimer">
+                    <svg lucideTrash2 aria-hidden="true"></svg>
+                  </button>
+                }
+              </div>
+            }
+            @if (canModify) {
+              <label class="gallery__add" matTooltip="Photo visible sur le site public">
+                <svg lucidePlus aria-hidden="true"></svg><span>Photo publique</span>
+                <input type="file" accept="image/*,video/*" multiple (change)="uploadAsset($event, 'media', true)" [disabled]="busy()" />
+              </label>
+              <label class="gallery__add gallery__add--internal" matTooltip="Photo conservée en interne uniquement">
+                <svg lucidePlus aria-hidden="true"></svg><span>Photo interne</span>
+                <input type="file" accept="image/*,video/*" multiple (change)="uploadAsset($event, 'media', false)" [disabled]="busy()" />
+              </label>
+            }
+          </div>
+        }
+        @if (otherMedias().length) {
+          <ul class="gallery__files">
+            @for (media of otherMedias(); track media.id) {
+              <li>
+                <a [href]="media.secureUrl" target="_blank" rel="noopener">{{ media.title || (media.type | mtmLabel) }}</a>
+                <small>{{ media.isPublic ? 'Public' : 'Interne' }}</small>
+                @if (canModify) {
+                  <button mat-icon-button type="button" (click)="removeMedia(media.id)" aria-label="Supprimer"><svg lucideTrash2 aria-hidden="true"></svg></button>
+                }
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      <!-- Résumé commercial -->
+      <div class="page-card summary">
+        <h2>En un coup d’œil</h2>
+        <dl class="fact-list">
+          <div>
+            <dt>Prix public</dt>
+            <dd class="fact-list__price">{{ t.prixPublic | mtmMoney }}</dd>
+          </div>
+          <div>
+            <dt>Superficie</dt>
+            <dd>{{ formatNumber(t.superficie) }} m²</dd>
+          </div>
+          <div>
+            <dt>Vocation</dt>
+            <dd>{{ t.vocation || '—' }}</dd>
+          </div>
+          <div>
+            <dt>Propriétaire</dt>
+            <dd>
+              @if (t.proprietaire) {
+                {{ t.proprietaire.firstName }} {{ t.proprietaire.lastName }}
+                @if (t.proprietaire.phone) {
+                  <small>{{ t.proprietaire.phone }}</small>
+                }
+              } @else {
+                —
+              }
+            </dd>
+          </div>
+          <div>
+            <dt>Commercial responsable</dt>
+            <dd>{{ t.commercialResponsable ? t.commercialResponsable.firstName + ' ' + t.commercialResponsable.lastName : '—' }}</dd>
+          </div>
+        </dl>
+
+        @if (canViewFinancials) {
+          <h3>Données internes <span class="status-pill">jamais publiées</span></h3>
+          <dl class="fact-list fact-list--compact">
+            <div>
+              <dt>Prix d’acquisition</dt>
+              <dd>{{ t.prixAcquisition | mtmMoney }}</dd>
+            </div>
+            <div>
+              <dt>Marge</dt>
+              <dd>{{ t.marge | mtmMoney }}</dd>
+            </div>
+            <div>
+              <dt>Commission</dt>
+              <dd>{{ t.commission | mtmMoney }}</dd>
+            </div>
+          </dl>
+        }
+
+        @if (canPublish && canModify) {
+          <div class="feature-toggle">
+            <mat-slide-toggle [checked]="t.misEnAvant" [disabled]="busy() || !published()" (change)="toggleFeatured($event.checked)">
+              Mettre en avant sur la page d’accueil
+            </mat-slide-toggle>
+            <small>
+              @if (published()) {
+                Le terrain apparaît dans la sélection de la page d’accueil du site.
+              } @else {
+                Disponible uniquement pour un terrain au statut « Disponible ».
+              }
+            </small>
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="content-grid">
+      <section class="page-card detail-section">
+        <h2>Identité du terrain</h2>
+        <dl class="info-list">
+          <div><dt>Référence interne</dt><dd>{{ t.referenceInterne }}</dd></div>
+          <div><dt>Parcelle / matricule</dt><dd>{{ t.parcelleMatricule || '—' }}</dd></div>
+          <div><dt>Document foncier</dt><dd>{{ t.typeDocumentFoncier || '—' }}</dd></div>
+          <div>
+            <dt>Statut juridique</dt>
+            <dd><span [class]="pill(legalStatus, t.statutJuridique)">{{ t.statutJuridique }}</span><small>{{ help(legalStatus, t.statutJuridique) }}</small></dd>
+          </div>
+          <div>
+            <dt>Vérification</dt>
+            <dd><span [class]="pill(verificationStatus, t.niveauVerification)">{{ t.niveauVerification }}</span><small>{{ help(verificationStatus, t.niveauVerification) }}</small></dd>
+          </div>
+          <div><dt>Dimensions</dt><dd>{{ dimensionsText(t) }}</dd></div>
+        </dl>
+      </section>
+
+      <section class="page-card detail-section">
+        <h2>Caractéristiques</h2>
+        <dl class="info-list">
+          <div><dt>Accès routier</dt><dd>{{ t.accesRoutier || '—' }}</dd></div>
+          <div><dt>Eau</dt><dd>{{ yesNo(t.eauDisponible) }}</dd></div>
+          <div><dt>Électricité</dt><dd>{{ yesNo(t.electriciteDisponible) }}</dd></div>
+          <div><dt>Voisinage</dt><dd>{{ t.voisinage || '—' }}</dd></div>
+          <div><dt>Proximité des axes</dt><dd>{{ t.proximiteAxes || '—' }}</dd></div>
+        </dl>
+        @if (t.pointsInteret?.length) {
+          <h3>Points d’intérêt à proximité</h3>
+          <ul class="poi-list">
+            @for (point of t.pointsInteret; track $index) {
+              <li>
+                <strong>{{ point.nom }}</strong>
+                @if (point.type) { <span>{{ point.type }}</span> }
+                @if (point.distanceKm !== null && point.distanceKm !== undefined) { <small>{{ point.distanceKm }} km</small> }
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <section class="page-card detail-section detail-section--wide">
+        <h2>Localisation</h2>
+        <p class="detail-section__text">{{ t.localisationDetail || 'Aucun détail de localisation renseigné.' }}</p>
+        @if (hasGps()) {
+          <div #mapContainer class="bo-terrain-map"></div>
+          <a class="inline-link" [href]="mapUrl()" target="_blank" rel="noopener noreferrer">
+            <svg lucideExternalLink aria-hidden="true"></svg>Ouvrir dans OpenStreetMap
+          </a>
+        } @else {
+          <div class="detail-note">
+            Coordonnées GPS non renseignées : la carte ne peut pas être affichée, ni ici ni sur le site public.
+            @if (canModify) {
+              <button mat-button type="button" (click)="edit()">Ajouter les coordonnées</button>
+            }
+          </div>
+        }
+      </section>
+
+      <section class="page-card detail-section">
+        <h2>Présentation publique</h2>
+        <p class="detail-section__text">{{ t.description || 'Aucune description publique. Elle est affichée sur la fiche du site.' }}</p>
+        @if (t.notesInternes) {
+          <h3>Notes internes <span class="status-pill">jamais publiées</span></h3>
+          <p class="detail-section__text">{{ t.notesInternes }}</p>
+        }
+      </section>
+
+      <section class="page-card detail-section">
+        <div class="detail-section__head">
+          <h2>Documents</h2>
+          @if (canModify) {
+            <label class="upload-button">
+              <svg lucideUpload aria-hidden="true"></svg>Ajouter
+              <input type="file" accept="application/pdf,image/*,.doc,.docx" multiple (change)="uploadAsset($event, 'documents', false)" [disabled]="busy()" />
+            </label>
+          }
+        </div>
+        @if (t.documents.length) {
+          <ul class="doc-list">
+            @for (document of t.documents; track document.id) {
+              <li>
+                <svg lucideFileText aria-hidden="true"></svg>
+                <a [href]="document.secureUrl" target="_blank" rel="noopener">{{ document.title || (document.type | mtmLabel) }}</a>
+                <span class="status-pill" [class.status-pill--info]="document.isPublic">{{ document.isPublic ? 'Public' : 'Interne' }}</span>
+                @if (canModify) {
+                  <button mat-icon-button type="button" (click)="removeDocument(document.id)" aria-label="Supprimer le document" matTooltip="Supprimer">
+                    <svg lucideTrash2 aria-hidden="true"></svg>
+                  </button>
+                }
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="detail-section__text">Aucun document. Ajoutez le titre, le plan ou tout justificatif : ils restent internes sauf mention contraire.</p>
+        }
+      </section>
+
+      <section class="page-card detail-section">
+        <h2>Suivi</h2>
+        <dl class="info-list">
+          <div><dt>Créé le</dt><dd>{{ t.createdAt | date: 'dd/MM/yyyy à HH:mm' }}</dd></div>
+          <div><dt>Dernière modification</dt><dd>{{ t.updatedAt | date: 'dd/MM/yyyy à HH:mm' }}</dd></div>
+        </dl>
+        <button mat-stroked-button type="button" (click)="openHistory()">
+          <svg class="btn-icon" lucideClock aria-hidden="true"></svg>Voir l’historique des modifications
+        </button>
+      </section>
+    </section>
   </section>
-</section>
 }

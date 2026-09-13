@@ -1,88 +1,174 @@
-<div class="page-container">
-  <div class="page-header">
+<div class="showcase-page">
+  <header class="page-header">
     <div>
-      <h1>Réalisations &amp; projets à venir</h1>
-      <p>Portfolio illustré affiché sur la page d’accueil du site public.</p>
+      <p class="eyebrow">Contenu</p>
+      <h1 class="page-header__title">Réalisations &amp; projets à venir</h1>
+      <p class="page-header__subtitle">
+        Le portfolio illustré du site public. Chaque carte montre une photo, un titre, un lieu et une courte
+        description ; elle n’apparaît sur le site qu’une fois publiée.
+      </p>
     </div>
     @if (canCreate) {
-      <button mat-flat-button color="primary" type="button" (click)="openEditor()">
-        <svg lucidePlus aria-hidden="true"></svg>
-        Nouvel élément
-      </button>
+      <div class="page-header__actions">
+        <button mat-flat-button color="primary" type="button" (click)="openEditor()">
+          <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouvel élément
+        </button>
+      </div>
     }
+  </header>
+
+  <section class="kpi-row" aria-label="Synthèse">
+    @if (loading()) {
+      @for (i of [1, 2, 3]; track i) {
+        <div class="kpi skeleton" aria-hidden="true"></div>
+      }
+    } @else {
+      <div class="kpi kpi--primary">
+        <span class="kpi__icon"><svg lucideImage aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ publishedCount() }}<span class="kpi__of">/ {{ items().length }}</span></strong>
+          <span>Visibles sur le site</span>
+          <small>{{ countOf('realisation') }} réalisation{{ countOf('realisation') > 1 ? 's' : '' }} · {{ countOf('projet_a_venir') }} projet{{ countOf('projet_a_venir') > 1 ? 's' : '' }} à venir</small>
+        </span>
+      </div>
+      <div class="kpi" [class.kpi--warning]="withoutImage().length > 0" [class.kpi--success]="withoutImage().length === 0">
+        <span class="kpi__icon"><svg lucideImageOff aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ withoutImage().length }}</strong>
+          <span>Sans photo</span>
+          <small>{{ withoutImage().length > 0 ? 'Le site affiche « Image à venir » à leur place' : 'Toutes les cartes ont une photo' }}</small>
+        </span>
+      </div>
+      <div class="kpi" [class.kpi--attention]="unpublished().length > 0">
+        <span class="kpi__icon"><svg lucideEyeOff aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ unpublished().length }}</strong>
+          <span>Non publiés</span>
+          <small>{{ unpublished().length > 0 ? 'Préparés mais invisibles pour les visiteurs' : 'Tout est en ligne' }}</small>
+        </span>
+      </div>
+    }
+  </section>
+
+  @if (!loading() && withoutImage().length > 0 && canModify) {
+    <aside class="alert-banner" role="status">
+      <div class="alert-banner__head">
+        <svg lucideImageOff aria-hidden="true"></svg>
+        <strong>{{ withoutImage().length }} élément{{ withoutImage().length > 1 ? 's' : '' }} sans photo</strong>
+      </div>
+      <p>Ajoutez une photo depuis la carte (bouton « Photo ») : c’est ce que les visiteurs voient en premier.</p>
+    </aside>
+  }
+
+  <div class="list-toolbar">
+    <div class="list-toolbar__title">
+      <h2>Portfolio</h2>
+      <p>Classé par ordre d’affichage, comme sur le site.</p>
+    </div>
+    <div class="view-switch" role="group" aria-label="Filtrer par catégorie">
+      <button type="button" class="view-switch__text" [class.is-active]="categoryFilter() === null" (click)="setFilter(null)">Tout</button>
+      @for (category of categories; track category.value) {
+        <button type="button" class="view-switch__text" [class.is-active]="categoryFilter() === category.value" (click)="setFilter(category.value)">{{ category.label }}</button>
+      }
+    </div>
   </div>
 
-  <div class="category-tabs">
-    <button type="button" [class.is-active]="categoryFilter() === null" (click)="setFilter(null)">Tous</button>
-    <button type="button" [class.is-active]="categoryFilter() === 'realisation'" (click)="setFilter('realisation')">Réalisations</button>
-    <button type="button" [class.is-active]="categoryFilter() === 'projet_a_venir'" (click)="setFilter('projet_a_venir')">Projets à venir</button>
-  </div>
+  @if (loading()) {
+    <div class="cards">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="skeleton" style="height: 280px"></div>
+      }
+    </div>
+  } @else {
+    @for (category of visibleCategories(); track category.value) {
+      <section class="page-card detail-section" [attr.aria-labelledby]="'cat-' + category.value">
+        <div class="detail-section__head">
+          <div>
+            <h2 [id]="'cat-' + category.value">{{ category.label }} <span class="count">{{ countOf(category.value) }}</span></h2>
+            <p class="detail-section__hint">{{ category.help }}</p>
+          </div>
+          @if (canCreate) {
+            <button mat-stroked-button type="button" (click)="openEditor(undefined, category.value)">
+              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Ajouter
+            </button>
+          }
+        </div>
 
-  <table mat-table [dataSource]="filtered()" class="w-full">
-    <ng-container matColumnDef="image">
-      <th mat-header-cell *matHeaderCellDef>Image</th>
-      <td mat-cell *matCellDef="let item">
-        @if (item.imageUrl) {
-          <img class="thumb" [src]="item.imageUrl" [alt]="item.title" />
+        @if (itemsOf(category.value).length === 0) {
+          <div class="empty-state">
+            <svg lucideImage aria-hidden="true"></svg>
+            <h3>Rien dans cette catégorie</h3>
+            <p>La section correspondante du site reste vide tant qu’aucun élément n’est publié.</p>
+            @if (canCreate) {
+              <button mat-flat-button color="primary" type="button" (click)="openEditor(undefined, category.value)">Ajouter le premier</button>
+            }
+          </div>
         } @else {
-          <span class="thumb thumb--empty">—</span>
+          <ul class="cards">
+            @for (item of itemsOf(category.value); track item.id) {
+              <li class="card" [class.is-hidden]="!item.isActive" [class.is-busy]="busyId() === item.id">
+                <div class="card__media">
+                  @if (item.imageUrl) {
+                    <img [src]="item.imageUrl" [alt]="item.title" loading="lazy" />
+                  } @else {
+                    <div class="card__placeholder">
+                      <svg lucideImageOff aria-hidden="true"></svg>
+                      <span>Aucune photo</span>
+                    </div>
+                  }
+                  <span class="status-pill card__state" [class.status-pill--success]="item.isActive" [class.status-pill--warning]="!item.isActive">{{ item.isActive ? 'Publié' : 'Non publié' }}</span>
+                  <span class="card__order" matTooltip="Ordre d’affichage sur le site">#{{ item.ordre }}</span>
+                </div>
+                <div class="card__body">
+                  <h3>{{ item.title }}</h3>
+                  <p class="card__meta">
+                    @if (item.location) {
+                      <span><svg lucideMapPin aria-hidden="true"></svg>{{ item.location }}</span>
+                    }
+                    @if (item.date) {
+                      <span>{{ item.date | date: 'MMMM yyyy' }}</span>
+                    }
+                    @if (!item.location && !item.date) {
+                      <span class="cell-muted">Lieu et date non renseignés</span>
+                    }
+                  </p>
+                  @if (item.description) {
+                    <p class="card__text">{{ item.description }}</p>
+                  } @else {
+                    <p class="card__text cell-muted">Pas de description.</p>
+                  }
+                </div>
+                <div class="card__actions">
+                  @if (canModify) {
+                    <label class="upload-button" [matTooltip]="item.imageUrl ? 'Remplacer la photo' : 'Ajouter une photo'">
+                      <svg lucideUpload aria-hidden="true"></svg>Photo
+                      <input type="file" accept="image/*" (change)="selectImage($event, item)" />
+                    </label>
+                    <button mat-stroked-button type="button" (click)="openEditor(item)">
+                      <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Modifier
+                    </button>
+                  }
+                  <span class="card__spacer"></span>
+                  @if (canPublish) {
+                    <button mat-icon-button type="button" (click)="togglePublish(item)" [matTooltip]="item.isActive ? 'Retirer du site' : 'Publier sur le site'" [attr.aria-label]="item.isActive ? 'Retirer du site' : 'Publier'">
+                      @if (item.isActive) {
+                        <svg lucideEyeOff aria-hidden="true"></svg>
+                      } @else {
+                        <svg lucideEye aria-hidden="true"></svg>
+                      }
+                    </button>
+                  }
+                  @if (canDelete) {
+                    <button mat-icon-button type="button" class="card__delete" (click)="remove(item)" matTooltip="Supprimer" aria-label="Supprimer">
+                      <svg lucideTrash2 aria-hidden="true"></svg>
+                    </button>
+                  }
+                </div>
+              </li>
+            }
+          </ul>
         }
-      </td>
-    </ng-container>
-    <ng-container matColumnDef="category">
-      <th mat-header-cell *matHeaderCellDef>Catégorie</th>
-      <td mat-cell *matCellDef="let item">{{ label(item.category) }}</td>
-    </ng-container>
-    <ng-container matColumnDef="title">
-      <th mat-header-cell *matHeaderCellDef>Titre</th>
-      <td mat-cell *matCellDef="let item">{{ item.title }}</td>
-    </ng-container>
-    <ng-container matColumnDef="location">
-      <th mat-header-cell *matHeaderCellDef>Lieu</th>
-      <td mat-cell *matCellDef="let item">{{ item.location || '—' }}</td>
-    </ng-container>
-    <ng-container matColumnDef="date">
-      <th mat-header-cell *matHeaderCellDef>Date</th>
-      <td mat-cell *matCellDef="let item">{{ item.date ? (item.date | date:'dd/MM/yyyy') : '—' }}</td>
-    </ng-container>
-    <ng-container matColumnDef="ordre">
-      <th mat-header-cell *matHeaderCellDef>Ordre</th>
-      <td mat-cell *matCellDef="let item">{{ item.ordre }}</td>
-    </ng-container>
-    <ng-container matColumnDef="isActive">
-      <th mat-header-cell *matHeaderCellDef>Actif</th>
-      <td mat-cell *matCellDef="let item">
-        <span [class]="item.isActive ? 'badge-yes' : 'badge-no'">{{ item.isActive ? 'Oui' : 'Non' }}</span>
-      </td>
-    </ng-container>
-    <ng-container matColumnDef="actions">
-      <th mat-header-cell *matHeaderCellDef>Actions</th>
-      <td mat-cell *matCellDef="let item">
-        @if (canModify) {
-          <button mat-button type="button" (click)="openEditor(item)" aria-label="Modifier">
-            <svg lucidePencil aria-hidden="true"></svg>
-          </button>
-          <label class="upload-button" aria-label="Changer l’image">
-            <svg lucideUpload aria-hidden="true"></svg>
-            <input type="file" accept="image/*" (change)="selectImage($event, item)" />
-          </label>
-        }
-        @if (canPublish) {
-          <button mat-button type="button" (click)="publish(item)">{{ item.isActive ? 'Dépublier' : 'Publier' }}</button>
-        }
-        @if (canDelete) {
-          <button mat-button color="warn" type="button" (click)="remove(item)" aria-label="Supprimer">
-            <svg lucideTrash2 aria-hidden="true"></svg>
-          </button>
-        }
-      </td>
-    </ng-container>
-
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-  </table>
-
-  @if (!loading() && !filtered().length) {
-    <p class="empty">Aucun élément pour le moment.</p>
+      </section>
+    }
   }
 </div>

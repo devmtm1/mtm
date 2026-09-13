@@ -45,6 +45,7 @@ describe('ProprietairesService', () => {
           lastName: true,
           email: true,
           phone: true,
+          _count: { select: { terrains: true, mandats: true } },
         },
         orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
       });

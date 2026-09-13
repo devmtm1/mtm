@@ -119,7 +119,11 @@ export interface VenteDetail {
 
 export interface VenteDashboardStats {
   totalDossiers: number;
-  dossiersParStatut: Record<string, number>;
+  dossiersParStatut: Partial<Record<string, number>>;
+  /** Nouveaux dossiers par mois (6 derniers mois, du plus ancien au plus récent). */
+  dossiersParMois: { periode: string; valeur: number }[];
+  /** Encaissements validés par mois ; tableau vide sans droit financier. */
+  encaissementsParMois: { periode: string; valeur: number }[];
   totalPaiementsValides: number;
   totalCommissionsEstimees: number;
   totalCommissionsValidees: number;
@@ -158,4 +162,30 @@ export interface VenteEcheance {
   montantPaye: number | string;
   statut: string;
   createdAt: string;
+}
+
+/** Référentiels renvoyés par GET /ventes/options. */
+export interface VenteOptions {
+  statuts: string[];
+  transitions: Record<string, string[]>;
+  modesPaiement: string[];
+  reglesCommissions: { id: string; typeRegle: 'pourcentage' | 'montant_fixe'; description: string }[];
+  /** Types de documents acceptés sur un dossier (paramètre ventes.documentTypes). */
+  documentTypes: string[];
+  /** Sous-ensemble que l'API sait produire en PDF à partir du dossier. */
+  generatedDocumentTypes: string[];
+  /** Durée de blocage par défaut d'une réservation (paramètre reservations.dureeBlocageJours). */
+  dureeReservationJours: number;
+}
+
+/** Réponse de POST /ventes/client-accounts. */
+export interface ClientAccountCreated {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  /** true si l'e-mail d'invitation est parti. */
+  invitationSent: boolean;
+  /** Jeton de première connexion, uniquement quand l'e-mail n'a pas pu partir. */
+  resetToken?: string;
 }

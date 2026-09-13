@@ -1,58 +1,64 @@
-<h2 class="dialog-title">
-  {{ isEdit ? 'Modifier le propriétaire' : 'Nouveau propriétaire' }}
-</h2>
+<h2 mat-dialog-title>{{ isEdit ? 'Modifier le propriétaire' : 'Nouveau propriétaire' }}</h2>
+<mat-dialog-content>
+  <p class="dialog-intro">
+    @if (isEdit) {
+      Coordonnées de la personne qui confie ses biens à MTM.
+    } @else {
+      Personne physique ou morale qui confie un terrain à MTM. Prénom et nom suffisent pour commencer.
+    }
+  </p>
+  <form id="proprietaire-form" [formGroup]="form" (ngSubmit)="$event.preventDefault(); submit()" class="proprietaire-form">
+    <mat-form-field appearance="outline">
+      <mat-label>Prénom</mat-label>
+      <input matInput formControlName="firstName" autocomplete="off" />
+      @if (form.controls.firstName.hasError('required')) {
+        <mat-error>Le prénom est obligatoire.</mat-error>
+      }
+      @if (form.controls.firstName.hasError('maxlength')) {
+        <mat-error>100 caractères maximum.</mat-error>
+      }
+    </mat-form-field>
 
-<form id="proprietaire-form" [formGroup]="form" (ngSubmit)="$event.preventDefault(); submit()" class="proprietaire-form">
-  <mat-form-field appearance="outline">
-    <mat-label>Prénom</mat-label>
-    <input matInput formControlName="firstName" />
-    @if (form.controls.firstName.hasError('required')) {
-      <mat-error>Le prénom est obligatoire.</mat-error>
-    }
-    @if (form.controls.firstName.hasError('maxlength')) {
-      <mat-error>100 caractères maximum.</mat-error>
-    }
-  </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Nom</mat-label>
+      <input matInput formControlName="lastName" autocomplete="off" />
+      @if (form.controls.lastName.hasError('required')) {
+        <mat-error>Le nom est obligatoire.</mat-error>
+      }
+      @if (form.controls.lastName.hasError('maxlength')) {
+        <mat-error>100 caractères maximum.</mat-error>
+      }
+    </mat-form-field>
 
-  <mat-form-field appearance="outline">
-    <mat-label>Nom</mat-label>
-    <input matInput formControlName="lastName" />
-    @if (form.controls.lastName.hasError('required')) {
-      <mat-error>Le nom est obligatoire.</mat-error>
-    }
-    @if (form.controls.lastName.hasError('maxlength')) {
-      <mat-error>100 caractères maximum.</mat-error>
-    }
-  </mat-form-field>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Téléphone</mat-label>
+      <input matInput formControlName="phone" type="tel" placeholder="77 000 00 00" />
+      <mat-hint>Pour le joindre au sujet de ses terrains.</mat-hint>
+      @if (form.controls.phone.hasError('maxlength')) {
+        <mat-error>30 caractères maximum.</mat-error>
+      }
+    </mat-form-field>
 
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>E-mail</mat-label>
-    <input matInput formControlName="email" />
-    @if (form.controls.email.hasError('email')) {
-      <mat-error>Adresse e-mail invalide.</mat-error>
-    }
-  </mat-form-field>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>E-mail</mat-label>
+      <input matInput formControlName="email" type="email" />
+      @if (form.controls.email.hasError('email')) {
+        <mat-error>Adresse e-mail invalide.</mat-error>
+      }
+    </mat-form-field>
 
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Téléphone</mat-label>
-    <input matInput formControlName="phone" />
-    @if (form.controls.phone.hasError('maxlength')) {
-      <mat-error>30 caractères maximum.</mat-error>
-    }
-  </mat-form-field>
-
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Notes</mat-label>
-    <textarea matInput rows="3" formControlName="notes"></textarea>
-    @if (form.controls.notes.hasError('maxlength')) {
-      <mat-error>500 caractères maximum.</mat-error>
-    }
-  </mat-form-field>
-</form>
-
-<footer class="dialog-actions">
-  <button mat-button type="button" (click)="cancel()">Annuler</button>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Notes</mat-label>
+      <textarea matInput rows="2" formControlName="notes" placeholder="Ex. Représenté par son fils pour les visites"></textarea>
+      @if (form.controls.notes.hasError('maxlength')) {
+        <mat-error>500 caractères maximum.</mat-error>
+      }
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-stroked-button type="button" (click)="cancel()">Annuler</button>
   <button mat-flat-button color="primary" type="submit" form="proprietaire-form" [disabled]="form.invalid">
-    {{ isEdit ? 'Mettre à jour' : 'Créer' }}
+    {{ isEdit ? 'Enregistrer' : 'Créer le propriétaire' }}
   </button>
-</footer>
+</mat-dialog-actions>

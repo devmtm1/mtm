@@ -1,12 +1,36 @@
-<h2 mat-dialog-title class="user-dialog-title">{{ isEdit ? 'Modifier l’utilisateur' : 'Nouvel utilisateur' }}</h2>
+<h2 mat-dialog-title>{{ isEdit ? 'Modifier le compte' : 'Nouvel utilisateur' }}</h2>
 
 <form class="user-dialog-form" [formGroup]="form" (ngSubmit)="submit()">
   <mat-dialog-content class="user-dialog-content">
+    @if (!isEdit) {
+      <p class="user-dialog-intro">
+        La personne se connectera avec son e-mail et le mot de passe provisoire ci-dessous, qu’elle devra changer à sa première connexion.
+      </p>
+    }
+
+    <div class="two-columns">
+      <mat-form-field appearance="outline">
+        <mat-label>Prénom</mat-label>
+        <input matInput formControlName="firstName" autocomplete="off" />
+        @if (form.controls.firstName.hasError('required') && form.controls.firstName.touched) {
+          <mat-error>Le prénom est requis.</mat-error>
+        }
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Nom</mat-label>
+        <input matInput formControlName="lastName" autocomplete="off" />
+        @if (form.controls.lastName.hasError('required') && form.controls.lastName.touched) {
+          <mat-error>Le nom est requis.</mat-error>
+        }
+      </mat-form-field>
+    </div>
+
     <mat-form-field appearance="outline">
       <mat-label>Adresse e-mail</mat-label>
-      <input matInput type="email" formControlName="email" />
+      <input matInput type="email" formControlName="email" autocomplete="off" placeholder="prenom.nom@mtm-immobilier.sn" />
+      <mat-hint>Sert d’identifiant de connexion.</mat-hint>
       @if (form.controls.email.hasError('required') && form.controls.email.touched) {
-        <mat-error>L'adresse e-mail est requise.</mat-error>
+        <mat-error>L’adresse e-mail est requise.</mat-error>
       }
       @if (form.controls.email.hasError('email') && form.controls.email.touched) {
         <mat-error>Adresse e-mail invalide.</mat-error>
@@ -14,56 +38,54 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline">
-      <mat-label>Prénom</mat-label>
-      <input matInput formControlName="firstName" />
-      @if (form.controls.firstName.hasError('required') && form.controls.firstName.touched) {
-        <mat-error>Le prénom est requis.</mat-error>
-      }
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Nom</mat-label>
-      <input matInput formControlName="lastName" />
-      @if (form.controls.lastName.hasError('required') && form.controls.lastName.touched) {
-        <mat-error>Le nom est requis.</mat-error>
-      }
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>{{ isEdit ? 'Nouveau mot de passe (optionnel)' : 'Mot de passe provisoire' }}</mat-label>
-      <input matInput type="password" formControlName="password" />
-      @if (!isEdit) {
-        <mat-hint>Au moins 6 caractères. À faire changer à la première connexion.</mat-hint>
-      }
-      @if (!isEdit && form.controls.password.hasError('required') && form.controls.password.touched) {
-        <mat-error>Le mot de passe est requis.</mat-error>
-      }
-      @if (form.controls.password.hasError('minlength') && form.controls.password.touched) {
-        <mat-error>Le mot de passe doit contenir au moins 6 caractères.</mat-error>
-      }
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
       <mat-label>Rôle</mat-label>
-      <mat-select formControlName="roleId">
+      <mat-select formControlName="roleId" panelClass="role-panel">
         @for (role of roles(); track role.id) {
-          <mat-option [value]="role.id">{{ role.name }}</mat-option>
+          <mat-option [value]="role.id">{{ roleLabel(role.name) }}</mat-option>
         }
       </mat-select>
+      @if (selectedRole(); as role) {
+        <mat-hint>{{ roleHelp(role.name) || role.description }}</mat-hint>
+      } @else {
+        <mat-hint>Le rôle définit ce que la personne peut voir et faire.</mat-hint>
+      }
       @if (form.controls.roleId.hasError('required') && form.controls.roleId.touched) {
         <mat-error>Le rôle est requis.</mat-error>
       }
     </mat-form-field>
 
+    @if (selectedRoleNeedsTwoFactor()) {
+      <p class="form-note">Rôle sensible : la double authentification sera exigée dès la première connexion.</p>
+    }
+
+    <div class="password-block">
+      <mat-form-field appearance="outline">
+        <mat-label>{{ isEdit ? 'Nouveau mot de passe provisoire (facultatif)' : 'Mot de passe provisoire' }}</mat-label>
+        <input matInput [type]="showPassword() ? 'text' : 'password'" formControlName="password" autocomplete="new-password" />
+        <mat-hint>12 caractères minimum avec majuscule, minuscule, chiffre et caractère spécial.{{ isEdit ? ' Le saisir déconnecte la personne et l’oblige à le changer.' : '' }}</mat-hint>
+        @if (form.controls.password.hasError('required') && form.controls.password.touched) {
+          <mat-error>Le mot de passe est requis.</mat-error>
+        }
+        @if ((form.controls.password.hasError('minlength') || form.controls.password.hasError('pattern')) && form.controls.password.touched) {
+          <mat-error>12 caractères minimum, avec majuscule, minuscule, chiffre et caractère spécial.</mat-error>
+        }
+      </mat-form-field>
+      <div class="password-block__tools">
+        <button mat-button type="button" (click)="regeneratePassword()">Générer</button>
+        <button mat-button type="button" (click)="toggleShowPassword()">{{ showPassword() ? 'Masquer' : 'Afficher' }}</button>
+        <button mat-button type="button" (click)="copyPassword()" [disabled]="!form.controls.password.value">Copier</button>
+      </div>
+    </div>
+
     @if (errorMessage()) {
-      <p class="user-dialog-error">{{ errorMessage() }}</p>
+      <p class="user-dialog-error" role="alert">{{ errorMessage() }}</p>
     }
   </mat-dialog-content>
 
-  <mat-dialog-actions class="user-dialog-actions" align="end">
-    <button mat-button type="button" (click)="cancel()">Annuler</button>
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button type="button" (click)="cancel()">Annuler</button>
     <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
-      Créer
+      {{ saving() ? 'Enregistrement…' : (isEdit ? 'Enregistrer' : 'Créer le compte') }}
     </button>
   </mat-dialog-actions>
 </form>

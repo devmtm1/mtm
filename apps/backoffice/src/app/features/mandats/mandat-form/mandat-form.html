@@ -1,101 +1,219 @@
-<div class="mandat-form-page">
-  <header class="mandat-form-header">
-    <div class="detail-heading">
-      <button mat-button class="back-button" type="button" (click)="goBack()"><svg lucideArrowLeft aria-hidden="true"></svg></button>
-      <div><div class="detail-title-line"><h1>{{ mandatId ? 'Modifier le mandat' : 'Nouveau mandat' }}</h1></div><p class="detail-subtitle">{{ mandatId ? mandat?.referenceInterne : 'Créer une fiche mandat complète' }}</p></div>
+<section class="form-page" aria-labelledby="mandat-form-title">
+  <a class="back-link" href="/mandats" (click)="$event.preventDefault(); goBack()">
+    <svg lucideArrowLeft aria-hidden="true"></svg>{{ isEdit ? 'Retour à la fiche' : 'Retour à la liste des mandats' }}
+  </a>
+
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Mandats</p>
+      <h1 id="mandat-form-title" class="page-header__title">{{ isEdit ? 'Modifier le mandat' : 'Nouveau mandat' }}</h1>
+      <p class="page-header__subtitle">
+        Le mandat est le contrat par lequel un propriétaire confie ses terrains à MTM. Une fois créé,
+        vous lui rattacherez les terrains concernés depuis sa fiche.
+      </p>
     </div>
   </header>
 
-  <form [formGroup]="form" (ngSubmit)="submit()">
-    <section class="form-grid">
-      <section class="form-section">
-        <h2>Identification</h2>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Référence interne *</mat-label>
-          <input matInput formControlName="referenceInterne">
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Propriétaire *</mat-label>
-          <mat-select formControlName="proprietaireId">
-            <mat-option value="">Sélectionner un propriétaire</mat-option>
-            @for (p of proprietaires; track p.id) {
-              <mat-option [value]="p.id">{{ p.lastName }} {{ p.firstName }}</mat-option>
-            }
-          </mat-select>
-          <button mat-button type="button" matSuffix (click)="addProprietaire(); $event.stopPropagation()">
-            Nouveau propriétaire
-          </button>
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Commercial responsable</mat-label>
-          <mat-select formControlName="commercialResponsableId">
-            <mat-option value="">Non assigné</mat-option>
-            <mat-option value="__none__">Aucun</mat-option>
-          </mat-select>
-        </mat-form-field>
-      </section>
-
-      <section class="form-section">
-        <h2>Durée & type</h2>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Type de mandat *</mat-label>
-          <mat-select formControlName="typeMandat">
-            @for (t of options.typeMandat; track t) { <mat-option [value]="t">{{ t }}</mat-option> }
-          </mat-select>
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Date de début *</mat-label>
-          <input matInput type="date" formControlName="dateDebut">
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Date de fin *</mat-label>
-          <input matInput type="date" formControlName="dateFin">
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Statut *</mat-label>
-          <mat-select formControlName="statut">
-            @for (s of options.statut; track s) { <mat-option [value]="s">{{ s }}</mat-option> }
-          </mat-select>
-        </mat-form-field>
-      </section>
-
-      <section class="form-section">
-        <h2>Conditions commerciales</h2>
-        <mat-checkbox formControlName="exclusivite">Exclusivité</mat-checkbox>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Prix / conditions</mat-label>
-          <textarea matInput formControlName="prixConditions" rows="3"></textarea>
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Commissions</mat-label>
-          <textarea matInput formControlName="commissions" rows="3"></textarea>
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Clauses particulières</mat-label>
-          <textarea matInput formControlName="clauses" rows="3"></textarea>
-        </mat-form-field>
-      </section>
-
-      <section class="form-section">
-        <h2>Suivi & alertes</h2>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Objectifs de commercialisation</mat-label>
-          <textarea matInput formControlName="objectifsCommercialisation" rows="3"></textarea>
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Alerte avant échéance (jours)</mat-label>
-          <input matInput type="number" formControlName="alerteEcheanceJours" min="1">
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Restrictions contractuelles (JSON)</mat-label>
-          <textarea matInput formControlName="restrictionsContractuelles" rows="4"></textarea>
-        </mat-form-field>
-      </section>
-    </section>
-
-    <div class="form-actions">
-      <button mat-button type="button" (click)="goBack()">Annuler</button>
-      <button mat-flat-button color="primary" type="submit" [disabled]="saving || form.invalid">{{ saving ? 'Enregistrement...' : 'Enregistrer' }}</button>
+  @if (loading()) {
+    <div class="page-card">
+      <div class="skeleton" style="height: 24px; width: 40%; margin-bottom: 16px"></div>
+      <div class="skeleton" style="height: 56px; margin-bottom: 12px"></div>
+      <div class="skeleton" style="height: 56px"></div>
     </div>
-  </form>
-</div>
+  } @else {
+    <form class="form-body" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="two-columns">
+        <div class="two-columns__main">
+          <!-- Parties -->
+          <section class="page-card form-block">
+            <div class="form-block__head">
+              <h2>Les parties</h2>
+              <p>Qui confie, et qui suit le dossier chez MTM.</p>
+            </div>
+            <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Référence du mandat</mat-label>
+                <input matInput formControlName="referenceInterne" placeholder="M-2026-007" autocomplete="off" />
+                <mat-hint>Votre numérotation interne, unique.</mat-hint>
+                <mat-error>La référence est obligatoire.</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Propriétaire</mat-label>
+                <mat-select formControlName="proprietaireId">
+                  @for (proprietaire of proprietaires(); track proprietaire.id) {
+                    <mat-option [value]="proprietaire.id">
+                      {{ proprietaire.lastName }} {{ proprietaire.firstName }}{{ proprietaire.phone ? ' · ' + proprietaire.phone : '' }}
+                    </mat-option>
+                  }
+                </mat-select>
+                <mat-hint>Personne qui signe le mandat.</mat-hint>
+                <mat-error>Choisissez le propriétaire.</mat-error>
+              </mat-form-field>
+              <div class="form-grid__side">
+                <button mat-stroked-button type="button" (click)="addProprietaire()">
+                  <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau propriétaire
+                </button>
+                <small>Si la personne n’est pas encore enregistrée.</small>
+              </div>
+              <mat-form-field appearance="outline">
+                <mat-label>Commercial responsable</mat-label>
+                <mat-select formControlName="commercialResponsableId">
+                  <mat-option value="">Non assigné pour l’instant</mat-option>
+                  @for (commercial of commercials(); track commercial.id) {
+                    <mat-option [value]="commercial.id">{{ commercial.firstName }} {{ commercial.lastName }}</mat-option>
+                  }
+                </mat-select>
+                <mat-hint>Reçoit les alertes d’échéance et suit la commercialisation.</mat-hint>
+              </mat-form-field>
+            </div>
+          </section>
+
+          <!-- Contrat -->
+          <section class="page-card form-block">
+            <div class="form-block__head">
+              <h2>Le contrat</h2>
+              <p>Type, durée et exclusivité. Les alertes d’échéance se calculent à partir de la date de fin.</p>
+            </div>
+            <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Type de mandat</mat-label>
+                <mat-select formControlName="typeMandat">
+                  @for (type of options().typeMandat; track type) {
+                    <mat-option [value]="type">{{ type }}</mat-option>
+                  }
+                </mat-select>
+                <mat-hint>{{ typeHelp[form.controls.typeMandat.value] || 'Nature de la mission confiée à MTM.' }}</mat-hint>
+                <mat-error>Choisissez un type.</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Statut</mat-label>
+                <mat-select formControlName="statut">
+                  @for (statut of options().statut; track statut) {
+                    <mat-option [value]="statut">{{ statut }}</mat-option>
+                  }
+                </mat-select>
+                <mat-hint>{{ help(form.controls.statut.value) }}</mat-hint>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Date de début</mat-label>
+                <input matInput type="date" formControlName="dateDebut" />
+                <mat-error>Indiquez la date de début.</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" [class.mat-form-field-invalid]="form.hasError('period') && form.controls.dateFin.touched">
+                <mat-label>Date de fin</mat-label>
+                <input matInput type="date" formControlName="dateFin" [min]="form.controls.dateDebut.value" />
+                @if (form.hasError('period')) {
+                  <mat-hint class="hint-error">La date de fin doit suivre la date de début.</mat-hint>
+                } @else if (duration(); as d) {
+                  <mat-hint>Durée : {{ d.months }} mois ({{ d.days }} jours).</mat-hint>
+                } @else {
+                  <mat-hint>Fin du mandat : déclenche l’alerte et le passage en « Expiré ».</mat-hint>
+                }
+                <mat-error>Indiquez la date de fin.</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Alerte avant échéance (jours)</mat-label>
+                <input matInput type="number" min="1" max="365" formControlName="alerteEcheanceJours" />
+                <mat-hint>Le responsable est prévenu ce nombre de jours avant la fin.</mat-hint>
+                <mat-error>Entre 1 et 365 jours.</mat-error>
+              </mat-form-field>
+              <div class="form-grid__side">
+                <mat-slide-toggle formControlName="exclusivite">Mandat exclusif</mat-slide-toggle>
+                <small>
+                  @if (form.controls.exclusivite.value) {
+                    MTM est le seul intermédiaire : un terrain ne peut pas être dans deux mandats exclusifs actifs.
+                  } @else {
+                    Le propriétaire peut confier ses biens à d’autres intermédiaires.
+                  }
+                </small>
+              </div>
+            </div>
+          </section>
+
+          <!-- Conditions -->
+          <section class="page-card form-block">
+            <div class="form-block__head">
+              <h2>Conditions et restrictions</h2>
+              <p>Ce qui a été négocié avec le propriétaire. Reste interne à MTM.</p>
+            </div>
+            <div class="form-grid">
+              <mat-form-field appearance="outline" class="wide">
+                <mat-label>Prix et conditions de vente</mat-label>
+                <textarea matInput rows="2" formControlName="prixConditions" placeholder="Ex. Prix plancher 14 000 000 FCFA, paiement en 3 fois accepté"></textarea>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="wide">
+                <mat-label>Commissions</mat-label>
+                <textarea matInput rows="2" formControlName="commissions" placeholder="Ex. 5 % du prix de vente, à la charge de l’acheteur"></textarea>
+                <mat-hint>Le calcul automatique utilise le taux paramétré ; précisez ici les accords particuliers.</mat-hint>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="wide">
+                <mat-label>Clauses particulières</mat-label>
+                <textarea matInput rows="2" formControlName="clauses" placeholder="Ex. Visites uniquement le samedi, avec préavis de 48 h"></textarea>
+              </mat-form-field>
+            </div>
+
+            <div class="restrictions" formGroupName="restrictions">
+              <h3>Restrictions contractuelles</h3>
+              <p class="restrictions__hint">Engagements pris par le propriétaire pendant la durée du mandat.</p>
+              @for (option of restrictionOptions; track option.key) {
+                <mat-checkbox [formControlName]="option.key" class="restrictions__item">
+                  <span class="restrictions__label">{{ option.label }}</span>
+                  <small>{{ option.help }}</small>
+                </mat-checkbox>
+              }
+            </div>
+            <mat-form-field appearance="outline" class="wide">
+              <mat-label>Autres restrictions</mat-label>
+              <textarea matInput rows="2" formControlName="restrictionsAutres" placeholder="Ex. Interdiction de panneau publicitaire sur le terrain"></textarea>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="wide">
+              <mat-label>Objectifs de commercialisation</mat-label>
+              <textarea matInput rows="2" formControlName="objectifsCommercialisation" placeholder="Ex. Vendre les 4 lots avant fin décembre"></textarea>
+            </mat-form-field>
+          </section>
+        </div>
+
+        <aside class="preview" aria-label="Résumé">
+          <p class="preview__title">Résumé</p>
+          <dl class="preview__facts">
+            <div><dt>Type</dt><dd>{{ form.controls.typeMandat.value || '—' }}</dd></div>
+            <div><dt>Exclusivité</dt><dd>{{ form.controls.exclusivite.value ? 'Oui' : 'Non' }}</dd></div>
+            <div>
+              <dt>Durée</dt>
+              <dd>
+                @if (duration(); as d) {
+                  {{ d.months }} mois
+                } @else {
+                  —
+                }
+              </dd>
+            </div>
+            <div>
+              <dt>Statut</dt>
+              <dd>{{ form.controls.statut.value }}</dd>
+            </div>
+          </dl>
+          <p class="preview__status">
+            @if (form.controls.statut.value === 'Actif') {
+              Le suivi des lots et les alertes d’échéance seront actifs.
+            } @else {
+              Aucune alerte tant que le mandat n’est pas « Actif ».
+            }
+          </p>
+          @if (!isEdit) {
+            <p class="preview__next">Étape suivante après création : rattacher les terrains et joindre le contrat signé.</p>
+          }
+        </aside>
+      </div>
+
+      <footer class="form-footer">
+        <button mat-stroked-button type="button" (click)="goBack()">Annuler</button>
+        <span class="form-footer__step">Les champs marqués * sont obligatoires.</span>
+        <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+          <svg class="btn-icon" lucideSave aria-hidden="true"></svg>{{ saving() ? 'Enregistrement…' : isEdit ? 'Enregistrer les modifications' : 'Créer le mandat' }}
+        </button>
+      </footer>
+    </form>
+  }
+</section>

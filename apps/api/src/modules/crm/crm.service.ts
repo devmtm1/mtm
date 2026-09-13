@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
-import { CrmAccessService } from './crm-access.service';
+import { CrmAccessService, type CrmUser } from './crm-access.service';
 import { CrmOptionsService } from './crm-options.service';
 import { CreateProspectDto } from './dto/create-prospect.dto';
 import { UpdateProspectDto } from './dto/update-prospect.dto';
@@ -32,6 +32,22 @@ const prospectInclude = {
 } as const;
 
 /**
+ * La liste n'a pas besoin de tout l'historique : seulement le commercial,
+ * les compteurs et la prochaine action à faire (colonne « Prochaine action »).
+ */
+const prospectListInclude = {
+  commercialResponsable: {
+    select: { id: true, firstName: true, lastName: true },
+  },
+  activites: {
+    where: { statut: 'a_faire' },
+    orderBy: { dateEcheance: 'asc' as const },
+    take: 1,
+  },
+  _count: { select: { activites: true, documents: true, dossiers: true } },
+} as const;
+
+/**
  * Fiche prospect et pipeline commercial (J1.5, section 13 CDC) : recherche,
  * consultation, création, mise à jour, affectation, transitions de pipeline
  * et conversion d'un contact public en prospect.
@@ -44,10 +60,7 @@ export class CrmService {
     private readonly options: CrmOptionsService,
   ) {}
 
-  async findAll(
-    query: QueryProspectDto,
-    user: { id: string; roles: string[] },
-  ) {
+  async findAll(query: QueryProspectDto, user: CrmUser) {
     const page = query.page > 0 ? query.page : 1;
     const pageSize = Math.min(query.pageSize > 0 ? query.pageSize : 25, 200);
     const search = query.search?.trim();
@@ -85,7 +98,7 @@ export class CrmService {
     const [items, total] = await Promise.all([
       this.prisma.prospect.findMany({
         where,
-        include: prospectInclude,
+        include: prospectListInclude,
         orderBy: { [query.sortBy]: query.sortOrder },
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -101,7 +114,7 @@ export class CrmService {
     };
   }
 
-  async findOne(id: string, user: { id: string; roles: string[] }) {
+  async findOne(id: string, user: CrmUser) {
     await this.access.assertOwnership(id, user);
     const prospect = await this.prisma.prospect.findUnique({
       where: { id },
@@ -111,7 +124,7 @@ export class CrmService {
     return prospect;
   }
 
-  async findOne360(id: string, user: { id: string; roles: string[] }) {
+  async findOne360(id: string, user: CrmUser) {
     await this.access.assertOwnership(id, user);
     const prospect = await this.prisma.prospect.findUnique({
       where: { id },
@@ -228,7 +241,7 @@ export class CrmService {
   async assignCommercial(
     prospectId: string,
     commercialResponsableId: string | null,
-    user: { id: string; roles: string[] },
+    user: CrmUser,
   ) {
     if (!this.access.isManager(user)) {
       throw new BadRequestException(
@@ -251,7 +264,7 @@ export class CrmService {
   async transitionPipeline(
     id: string,
     nextStage: string,
-    user: { id: string; roles: string[] },
+    user: CrmUser,
     justification?: string,
   ) {
     const before = await this.findOne(id, user);
@@ -356,7 +369,7 @@ export class CrmService {
     return prospect;
   }
 
-  async create(dto: CreateProspectDto, user: { id: string; roles: string[] }) {
+  async create(dto: CreateProspectDto, user: CrmUser) {
     await this.options.assertPipelineStage(dto.statutPipeline);
     const isManager = this.access.isManager(user);
     if (
@@ -386,11 +399,7 @@ export class CrmService {
     return prospect;
   }
 
-  async update(
-    id: string,
-    dto: UpdateProspectDto,
-    user: { id: string; roles: string[] },
-  ) {
+  async update(id: string, dto: UpdateProspectDto, user: CrmUser) {
     await this.access.assertOwnership(id, user);
     await this.options.assertPipelineStage(dto.statutPipeline);
     const data: Prisma.ProspectUncheckedUpdateInput = {
@@ -439,10 +448,7 @@ export class CrmService {
     return prospect;
   }
 
-  async remove(
-    id: string,
-    user: { id: string; roles: string[] },
-  ): Promise<void> {
+  async remove(id: string, user: CrmUser): Promise<void> {
     await this.access.assertOwnership(id, user);
     await this.prisma.prospect.delete({ where: { id } });
   }

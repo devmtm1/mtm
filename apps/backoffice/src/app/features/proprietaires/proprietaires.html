@@ -1,42 +1,129 @@
 <div class="proprietaires-page">
   <header class="page-header">
     <div>
-      <p class="eyebrow">J1.4 · Portefeuille</p>
+      <p class="eyebrow">Cœur commercial</p>
       <h1 class="page-header__title">Propriétaires</h1>
-      <p class="page-header__subtitle">Portefeuille des propriétaires fonciers rattachés à MTM Immobilier.</p>
+      <p class="page-header__subtitle">
+        Les personnes qui confient leurs terrains à MTM. Depuis une fiche, vous retrouvez leurs
+        terrains et leurs mandats, et vous pouvez en créer de nouveaux.
+      </p>
     </div>
-    @if (canCreate()) {
-      <button mat-flat-button color="primary" type="button" (click)="openCreate()">
-        <svg lucidePlus aria-hidden="true"></svg><span>Nouveau propriétaire</span>
-      </button>
-    }
-  </header>
-
-  <div class="proprietaires-toolbar">
-    <mat-form-field appearance="outline" class="proprietaires-search">
-      <mat-label>Rechercher</mat-label>
-      <svg matPrefix lucideSearch aria-hidden="true"></svg>
-      <input matInput [value]="searchTerm()" (input)="searchTerm.set($any($event.target).value)" placeholder="Nom, email, téléphone...">
-    </mat-form-field>
-    <p class="proprietaires-count">{{ filtered().length }} résultat{{ filtered().length > 1 ? 's' : '' }}</p>
-  </div>
-
-  @if (loading()) {
-    <div class="page-card"><p>Chargement...</p></div>
-  } @else if (!filtered().length) {
-    <div class="page-card"><p>Aucun propriétaire trouvé.</p></div>
-  } @else {
-    <div class="proprietaires-grid">
-      @for (proprietaire of filtered(); track proprietaire.id) {
-        <article class="proprietaire-card" role="button" tabindex="0" (click)="openDetail(proprietaire.id)" (keyup.enter)="openDetail(proprietaire.id)">
-          <span class="proprietaire-card__icon"><svg lucideIdCard aria-hidden="true"></svg></span>
-          <div class="proprietaire-card__body">
-            <h3>{{ proprietaire.firstName }} {{ proprietaire.lastName }}</h3>
-            <p>{{ proprietaire.email || 'Email non renseigné' }}</p>
-            <p>{{ proprietaire.phone || 'Téléphone non renseigné' }}</p>
-          </div>
-        </article>
+    <div class="page-header__actions">
+      @if (canCreate()) {
+        <button mat-flat-button color="primary" type="button" (click)="openCreate()">
+          <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau propriétaire
+        </button>
       }
     </div>
-  }
+  </header>
+
+  <section class="kpi-row" aria-label="Synthèse">
+    @if (loading()) {
+      @for (i of [1, 2, 3, 4]; track i) {
+        <div class="kpi skeleton" aria-hidden="true"></div>
+      }
+    } @else {
+      <button type="button" class="kpi" (click)="resetFilters()">
+        <span class="kpi__icon"><svg lucideIdCard aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ stats().total }}</strong>
+          <span>Propriétaires</span>
+        </span>
+      </button>
+      <div class="kpi kpi--primary">
+        <span class="kpi__icon"><svg lucideLandPlot aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ stats().terrains }}</strong>
+          <span>Terrains confiés</span>
+        </span>
+      </div>
+      <button type="button" class="kpi kpi--success" (click)="setScope('avec-mandat')">
+        <span class="kpi__icon"><svg lucideScrollText aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ stats().mandats }}</strong>
+          <span>Mandats signés</span>
+          <small>Voir les propriétaires sous mandat</small>
+        </span>
+      </button>
+      <button type="button" class="kpi" [class.kpi--warning]="stats().sansTerrain > 0" [class.kpi--muted]="stats().sansTerrain === 0" (click)="setScope('sans-terrain')">
+        <span class="kpi__icon"><svg lucideUserX aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ stats().sansTerrain }}</strong>
+          <span>Sans terrain</span>
+          <small>Enregistrés mais rien de confié : à relancer</small>
+        </span>
+      </button>
+    }
+  </section>
+
+  <section class="page-section" aria-labelledby="proprietaires-list-title">
+    <div class="list-toolbar">
+      <div class="list-toolbar__title">
+        <h2 id="proprietaires-list-title">Liste des propriétaires</h2>
+        <p>
+          @if (loading()) {
+            Chargement…
+          } @else {
+            {{ filtered().length }} propriétaire{{ filtered().length > 1 ? 's' : '' }}
+            @if (hasActiveFilters()) {
+              correspondant aux filtres
+            }
+          }
+        </p>
+      </div>
+      <form class="list-filters" (submit)="$event.preventDefault()">
+        <mat-form-field appearance="outline" class="list-filters__search" subscriptSizing="dynamic">
+          <mat-label>Rechercher</mat-label>
+          <svg matPrefix class="list-filters__icon" lucideSearch aria-hidden="true"></svg>
+          <input matInput [value]="searchTerm()" (input)="searchTerm.set($any($event.target).value)" placeholder="Nom, téléphone, e-mail…" autocomplete="off" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Afficher</mat-label>
+          <mat-select [value]="scope()" (valueChange)="setScope($event)">
+            <mat-option value="">Tous</mat-option>
+            <mat-option value="avec-mandat">Sous mandat</mat-option>
+            <mat-option value="sans-terrain">Sans terrain confié</mat-option>
+          </mat-select>
+        </mat-form-field>
+        @if (hasActiveFilters()) {
+          <button mat-button type="button" class="list-filters__reset" (click)="resetFilters()">
+            <svg class="btn-icon" lucideX aria-hidden="true"></svg>Effacer
+          </button>
+        }
+      </form>
+    </div>
+
+    @if (!loading() && filtered().length === 0) {
+      <div class="empty-state">
+        <svg lucideIdCard aria-hidden="true"></svg>
+        @if (hasActiveFilters()) {
+          <h3>Aucun propriétaire ne correspond</h3>
+          <p>Modifiez la recherche ou effacez les filtres.</p>
+          <button mat-stroked-button type="button" (click)="resetFilters()">Effacer les filtres</button>
+        } @else {
+          <h3>Aucun propriétaire pour le moment</h3>
+          <p>Enregistrez d’abord le propriétaire (prénom, nom, téléphone) ; vous lui rattacherez ensuite ses terrains et son mandat.</p>
+          @if (canCreate()) {
+            <button mat-flat-button color="primary" type="button" (click)="openCreate()">
+              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Créer le premier propriétaire
+            </button>
+          }
+        }
+      </div>
+    } @else {
+      <ag-grid-angular
+        class="list-grid"
+        [theme]="theme"
+        [rowData]="filtered()"
+        [columnDefs]="columnDefs"
+        [loading]="loading()"
+        domLayout="autoHeight"
+        [pagination]="true"
+        [paginationPageSize]="20"
+        [rowHeight]="52"
+        [suppressCellFocus]="true"
+        (rowClicked)="$event.data && openDetail($event.data.id)"
+      />
+    }
+  </section>
 </div>

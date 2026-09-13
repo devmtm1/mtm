@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
-import { hasAnyRole, SUPERVISION_ROLES } from '../rbac/role-groups';
+import { hasSupervisionScope } from '../rbac/role-groups';
 
 export type MandatUser = { id: string; roles: string[]; permissions: string[] };
 
@@ -15,12 +15,12 @@ export class VentesAccessService {
   constructor(private readonly prisma: PrismaService) {}
 
   /** La comptabilité voit aussi tous les dossiers : elle valide et paie. */
-  hasGlobalScope(roles: string[]): boolean {
-    return hasAnyRole(roles, [...SUPERVISION_ROLES, 'comptable']);
+  hasGlobalScope(user: MandatUser): boolean {
+    return hasSupervisionScope(user, 'ventes', ['comptable']);
   }
 
   ownershipFilter(user: MandatUser): Prisma.DossierVenteWhereInput {
-    if (this.hasGlobalScope(user.roles)) return {};
+    if (this.hasGlobalScope(user)) return {};
     return { commercialResponsableId: user.id };
   }
 
@@ -34,7 +34,7 @@ export class VentesAccessService {
 
   canViewFinancials(user: MandatUser): boolean {
     return (
-      this.hasGlobalScope(user.roles) ||
+      this.hasGlobalScope(user) ||
       user.permissions.includes('ventes:consulter_financier')
     );
   }

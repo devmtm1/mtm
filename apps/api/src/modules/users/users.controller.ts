@@ -227,6 +227,7 @@ export class UsersController {
     lastName: string;
     isActive: boolean;
     twoFactorEnabled: boolean;
+    mustChangePassword?: boolean;
     lastLoginAt: Date | null;
     createdAt: Date;
     roles?: { role: { name: string } }[];
@@ -238,6 +239,7 @@ export class UsersController {
       lastName: user.lastName,
       isActive: user.isActive,
       twoFactorEnabled: user.twoFactorEnabled,
+      mustChangePassword: user.mustChangePassword ?? false,
       lastLoginAt: user.lastLoginAt,
       createdAt: user.createdAt,
       roles: user.roles?.map((r) => r.role.name) ?? [],

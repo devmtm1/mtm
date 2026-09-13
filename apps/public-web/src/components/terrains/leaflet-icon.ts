@@ -10,7 +10,7 @@ import L from 'leaflet';
  */
 const PIN_SVG = `
 <svg xmlns="http://www.w3.org/2000/svg" width="26" height="38" viewBox="0 0 26 38">
-  <path d="M13 0C5.82 0 0 5.82 0 13c0 9.75 13 25 13 25s13-15.25 13-25c0-7.18-5.82-13-13-13z" fill="#B43036"/>
+  <path d="M13 0C5.82 0 0 5.82 0 13c0 9.75 13 25 13 25s13-15.25 13-25c0-7.18-5.82-13-13-13z" fill="#B52C36"/>
   <circle cx="13" cy="13" r="5" fill="#FFFFFF"/>
 </svg>`.trim();
 

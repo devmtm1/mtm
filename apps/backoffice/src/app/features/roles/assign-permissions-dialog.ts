@@ -4,9 +4,11 @@ import { forkJoin, Observable } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { PermissionsApiService } from '../../core/services/api/permissions-api.service';
 import { RolesApiService } from '../../core/services/api/roles-api.service';
 import type { Permission, RoleListItem } from '../../core/models/role.model';
+import { permissionActionHelp, permissionActionLabel, resourceLabel, roleLabel } from '../admin/admin-labels';
 
 export interface AssignPermissionsDialogData {
   role: RoleListItem;
@@ -14,12 +16,13 @@ export interface AssignPermissionsDialogData {
 
 interface PermissionGroup {
   resource: string;
+  label: string;
   permissions: Permission[];
 }
 
 @Component({
   selector: 'app-assign-permissions-dialog',
-  imports: [FormsModule, MatButtonModule, MatCheckboxModule, MatDialogModule],
+  imports: [FormsModule, MatButtonModule, MatCheckboxModule, MatDialogModule, MatTooltipModule],
   templateUrl: './assign-permissions-dialog.html',
   styleUrl: './assign-permissions-dialog.scss',
 })
@@ -49,14 +52,22 @@ export class AssignPermissionsDialog implements OnInit {
         }
         this.groups.set(
           Array.from(byResource.entries())
-            .map(([resource, perms]) => ({ resource, permissions: perms }))
-            .sort((a, b) => a.resource.localeCompare(b.resource)),
+            .map(([resource, perms]) => ({
+              resource,
+              label: resourceLabel(resource),
+              permissions: perms,
+            }))
+            .sort((a, b) => a.label.localeCompare(b.label, 'fr')),
         );
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
     });
   }
+
+  protected readonly roleLabel = roleLabel;
+  protected readonly actionLabel = permissionActionLabel;
+  protected readonly actionHelp = permissionActionHelp;
 
   isChecked(permissionName: string): boolean {
     return this.selected.has(permissionName);

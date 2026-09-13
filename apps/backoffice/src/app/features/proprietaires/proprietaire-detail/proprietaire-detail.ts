@@ -1,10 +1,20 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { LucideArrowLeft, LucideIdCard, LucidePencil, LucideTrash2 } from '@lucide/angular';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import {
+  LucideArrowLeft,
+  LucideChevronDown,
+  LucideLandPlot,
+  LucideMail,
+  LucidePencil,
+  LucidePhone,
+  LucidePlus,
+  LucideScrollText,
+} from '@lucide/angular';
 import { ProprietairesApiService, type ProprietaireDetail as ProprietaireDetailModel } from '../../../core/services/api/proprietaires-api.service';
 import { TerrainsApiService } from '../../../core/services/api/terrains-api.service';
 import { MandatsApiService } from '../../../core/services/api/mandats-api.service';
@@ -12,10 +22,33 @@ import { SessionService } from '../../../core/services/session.service';
 import { ProprietaireDialog } from '../../terrains/proprietaire-dialog';
 import type { ProprietaireSummary, TerrainListItem } from '../../../core/models/terrain.model';
 import type { MandatListItem } from '../../../core/models/mandat.model';
+import { NotificationService } from '../../../shared/services/notification.service';
+import { MoneyPipe } from '../../../shared/pipes/money.pipe';
+import { COMMERCIAL_STATUS, pillClass as terrainPill, statusHelp as terrainHelp } from '../../terrains/terrain-status';
+import { MANDAT_STATUS, echeanceInfo, pillClass as mandatPill, statusHelp as mandatHelp } from '../../mandats/mandat-status';
 
+/**
+ * Fiche propriétaire (J1.4) : coordonnées, puis tout ce qu'il a confié à
+ * MTM — terrains et mandats — avec les raccourcis pour en créer.
+ */
 @Component({
   selector: 'app-proprietaire-detail',
-  imports: [DatePipe, MatButtonModule, MatDialogModule, LucideArrowLeft, LucideIdCard, LucidePencil, LucideTrash2],
+  imports: [
+    MoneyPipe,
+    DatePipe,
+    MatButtonModule,
+    MatDialogModule,
+    MatMenuModule,
+    MatTooltipModule,
+    LucideArrowLeft,
+    LucideChevronDown,
+    LucideLandPlot,
+    LucideMail,
+    LucidePencil,
+    LucidePhone,
+    LucidePlus,
+    LucideScrollText,
+  ],
   templateUrl: './proprietaire-detail.html',
   styleUrl: './proprietaire-detail.scss',
 })
@@ -27,70 +60,149 @@ export class ProprietaireDetail implements OnInit {
   private readonly mandatsApi = inject(MandatsApiService);
   private readonly session = inject(SessionService);
   private readonly dialog = inject(MatDialog);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly notify = inject(NotificationService);
 
   protected readonly proprietaire = signal<ProprietaireDetailModel | null>(null);
-  protected readonly terrains = signal<TerrainListItem[]>([]);
-  protected readonly mandats = signal<MandatListItem[]>([]);
+  protected readonly terrains = signal<TerrainListItem[] | null>(null);
+  protected readonly mandats = signal<MandatListItem[] | null>(null);
   protected readonly loading = signal(true);
-  protected readonly canModify = computed(() => this.session.hasPermission('proprietaires:modifier'));
-  protected readonly canDelete = computed(() => this.session.hasPermission('proprietaires:supprimer'));
+  protected readonly canModify = this.session.hasPermission('proprietaires:modifier');
+  protected readonly canDelete = this.session.hasPermission('proprietaires:supprimer');
+  protected readonly canSeeTerrains = this.session.hasPermission('terrains:consulter');
+  protected readonly canCreateTerrain = this.session.hasPermission('terrains:creer');
+  protected readonly canSeeMandats = this.session.hasPermission('mandats:consulter');
+  protected readonly canCreateMandat = this.session.hasPermission('mandats:creer');
+
+  protected readonly activeMandats = computed(() => (this.mandats() ?? []).filter((mandat) => mandat.statut === 'Actif').length);
+  protected readonly terrainsDisponibles = computed(() => (this.terrains() ?? []).filter((terrain) => terrain.statutCommercial === 'Disponible').length);
+
+  /** Ce qui manque pour que la relation soit exploitable. */
+  protected readonly todo = computed(() => {
+    const proprietaire = this.proprietaire();
+    const terrains = this.terrains();
+    const mandats = this.mandats();
+    if (!proprietaire || terrains === null || mandats === null) return [];
+    const items: { label: string; hint: string }[] = [];
+    if (!proprietaire.phone && !proprietaire.email) items.push({ label: 'Renseigner un moyen de contact', hint: 'Téléphone ou e-mail, pour le joindre.' });
+    if (terrains.length === 0) items.push({ label: 'Enregistrer ses terrains', hint: 'Créez la fiche de chaque parcelle confiée.' });
+    if (terrains.length > 0 && mandats.length === 0) items.push({ label: 'Formaliser un mandat', hint: 'Sans mandat signé, MTM n’est pas autorisée à commercialiser.' });
+    return items;
+  });
 
   private id: string | null = null;
 
   ngOnInit(): void {
     this.id = this.route.snapshot.paramMap.get('id');
-    if (!this.id) { this.goBack(); return; }
+    if (!this.id) {
+      this.goBack();
+      return;
+    }
     this.load(this.id);
   }
 
-  protected goBack(): void { this.router.navigate(['/proprietaires']); }
-  protected openTerrain(id: string): void { this.router.navigate(['/terrains', id]); }
-  protected openMandat(id: string): void { this.router.navigate(['/mandats', id]); }
+  protected goBack(): void {
+    void this.router.navigate(['/proprietaires']);
+  }
 
-  protected formatMoney(value: number | string | null | undefined): string {
-    return value === null || value === undefined ? '—' : `${Number(value).toLocaleString('fr-FR')} FCFA`;
+  protected openTerrain(id: string): void {
+    void this.router.navigate(['/terrains', id]);
+  }
+
+  protected openMandat(id: string): void {
+    void this.router.navigate(['/mandats', id]);
+  }
+
+  protected newTerrain(): void {
+    void this.router.navigate(['/terrains/nouveau'], { queryParams: { proprietaireId: this.id } });
+  }
+
+  protected newMandat(): void {
+    void this.router.navigate(['/mandats/nouveau'], { queryParams: { proprietaireId: this.id } });
+  }
+
+  protected terrainPill(value: string): string {
+    return terrainPill(COMMERCIAL_STATUS, value);
+  }
+
+  protected terrainHelp(value: string): string {
+    return terrainHelp(COMMERCIAL_STATUS, value);
+  }
+
+  protected mandatPill(value: string): string {
+    return mandatPill(MANDAT_STATUS, value);
+  }
+
+  protected mandatHelp(value: string): string {
+    return mandatHelp(MANDAT_STATUS, value);
+  }
+
+  protected echeance(mandat: MandatListItem): { label: string; tone: string } {
+    return echeanceInfo(mandat.dateFin, mandat.statut, mandat.alerteEcheanceJours);
+  }
+
+  protected location(terrain: TerrainListItem): string {
+    return [terrain.commune, terrain.region].filter(Boolean).join(', ') || 'Localisation non renseignée';
   }
 
   protected edit(): void {
     const current = this.proprietaire();
     if (!current || !this.id) return;
-    const ref = this.dialog.open(ProprietaireDialog, {
-      width: '520px',
-      maxWidth: 'calc(100vw - 32px)',
-      data: { proprietaire: current as ProprietaireSummary },
-    });
-    ref.afterClosed().subscribe((payload: Omit<ProprietaireSummary, 'id'> | undefined) => {
-      if (!payload || !this.id) return;
-      this.api.update(this.id, payload).subscribe({
-        next: () => { this.snackBar.open('Propriétaire mis à jour', 'Fermer', { duration: 3000 }); this.load(this.id!); },
-        error: () => this.snackBar.open('Impossible de mettre à jour le propriétaire', 'Fermer', { duration: 4000 }),
+    this.dialog
+      .open(ProprietaireDialog, { width: '520px', maxWidth: 'calc(100vw - 32px)', data: { proprietaire: current as ProprietaireSummary } })
+      .afterClosed()
+      .subscribe((payload: Omit<ProprietaireSummary, 'id'> | undefined) => {
+        if (!payload || !this.id) return;
+        this.api.update(this.id, payload).subscribe({
+          next: () => {
+            this.notify.success('Propriétaire mis à jour');
+            this.load(this.id!);
+          },
+          error: (error: unknown) => this.notify.error(error, 'Impossible de mettre à jour le propriétaire'),
+        });
       });
-    });
   }
 
   protected remove(): void {
-    if (!this.id) return;
-    if (!confirm('Supprimer ce propriétaire ? Cette action est irréversible.')) return;
+    const current = this.proprietaire();
+    if (!this.id || !current) return;
+    if (!confirm(`Supprimer ${current.firstName} ${current.lastName} ? Impossible s’il a encore un mandat.`)) return;
     this.api.remove(this.id).subscribe({
-      next: () => { this.snackBar.open('Propriétaire supprimé', 'Fermer', { duration: 3000 }); this.goBack(); },
-      error: () => this.snackBar.open('Impossible de supprimer ce propriétaire (des terrains ou mandats y sont peut-être rattachés)', 'Fermer', { duration: 5000 }),
+      next: () => {
+        this.notify.success('Propriétaire supprimé');
+        this.goBack();
+      },
+      error: (error: unknown) => this.notify.error(error, 'Impossible de supprimer : des mandats y sont encore rattachés'),
     });
   }
 
   private load(id: string): void {
     this.loading.set(true);
     this.api.findOne(id).subscribe({
-      next: (proprietaire) => { this.proprietaire.set(proprietaire); this.loading.set(false); },
-      error: () => { this.loading.set(false); this.snackBar.open('Propriétaire introuvable', 'Fermer', { duration: 4000 }); this.goBack(); },
+      next: (proprietaire) => {
+        this.proprietaire.set(proprietaire);
+        this.loading.set(false);
+      },
+      error: (error: unknown) => {
+        this.loading.set(false);
+        this.notify.error(error, 'Propriétaire introuvable');
+        this.goBack();
+      },
     });
-    this.terrainsApi.findAll({ proprietaireId: id, pageSize: 100 }).subscribe({
-      next: (page) => this.terrains.set(page.items),
-      error: () => this.snackBar.open('Impossible de charger les terrains liés', 'Fermer', { duration: 4000 }),
-    });
-    this.mandatsApi.findAll({ proprietaireId: id, pageSize: 100 }).subscribe({
-      next: (page) => this.mandats.set(page.items),
-      error: () => this.snackBar.open('Impossible de charger les mandats liés', 'Fermer', { duration: 4000 }),
-    });
+    if (this.canSeeTerrains) {
+      this.terrainsApi.findAll({ proprietaireId: id, pageSize: 100 }).subscribe({
+        next: (page) => this.terrains.set(page.items),
+        error: () => this.terrains.set([]),
+      });
+    } else {
+      this.terrains.set([]);
+    }
+    if (this.canSeeMandats) {
+      this.mandatsApi.findAll({ proprietaireId: id, pageSize: 100 }).subscribe({
+        next: (page) => this.mandats.set(page.items),
+        error: () => this.mandats.set([]),
+      });
+    } else {
+      this.mandats.set([]);
+    }
   }
 }

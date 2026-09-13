@@ -23,6 +23,22 @@ const terrainInclude = {
   documents: { orderBy: { createdAt: 'desc' as const } },
 };
 
+/**
+ * La liste n'a besoin que de la vignette : charger tous les médias et
+ * documents de chaque terrain alourdissait inutilement la réponse.
+ */
+const terrainListInclude = {
+  proprietaire: { select: { id: true, firstName: true, lastName: true } },
+  commercialResponsable: {
+    select: { id: true, firstName: true, lastName: true },
+  },
+  medias: {
+    where: { isPublic: true, type: 'photo' },
+    orderBy: mediaOrderBy,
+    take: 1,
+  },
+};
+
 export const DEFAULT_TERRAIN_OPTIONS = {
   statutJuridique: [
     'Titre foncier',
@@ -121,7 +137,7 @@ export class TerrainsService {
     const [items, total] = await Promise.all([
       this.prisma.terrain.findMany({
         where,
-        include: terrainInclude,
+        include: terrainListInclude,
         orderBy: { [query.sortBy]: query.sortOrder },
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -222,6 +238,54 @@ export class TerrainsService {
       include: terrainInclude,
     });
     return this.toInternal(terrain, user);
+  }
+
+  /**
+   * Synthèse du portefeuille pour l'écran liste : répartition par statut
+   * commercial et points de vigilance (fiches sans GPS, sans photo publique,
+   * non vérifiées), dans le périmètre de l'utilisateur.
+   */
+  async getStats(user: { id: string; roles: string[]; permissions: string[] }) {
+    const where = this.access.ownershipFilter(user);
+    const [
+      total,
+      parStatut,
+      misEnAvant,
+      sansGps,
+      nonVerifies,
+      avecPhotoPublique,
+    ] = await Promise.all([
+      this.prisma.terrain.count({ where }),
+      this.prisma.terrain.groupBy({
+        by: ['statutCommercial'],
+        where,
+        _count: { statutCommercial: true },
+      }),
+      this.prisma.terrain.count({ where: { ...where, misEnAvant: true } }),
+      this.prisma.terrain.count({
+        where: { ...where, OR: [{ latitude: null }, { longitude: null }] },
+      }),
+      this.prisma.terrain.count({
+        where: { ...where, niveauVerification: { not: 'Vérifié' } },
+      }),
+      this.prisma.terrain.count({
+        where: {
+          ...where,
+          medias: { some: { isPublic: true, type: 'photo' } },
+        },
+      }),
+    ]);
+    return {
+      total,
+      parStatut: parStatut.reduce<Record<string, number>>((acc, item) => {
+        acc[item.statutCommercial] = item._count.statutCommercial;
+        return acc;
+      }, {}),
+      misEnAvant,
+      sansGps,
+      nonVerifies,
+      sansPhotoPublique: total - avecPhotoPublique,
+    };
   }
 
   async getOptions() {

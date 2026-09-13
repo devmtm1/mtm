@@ -84,6 +84,7 @@ export interface MandatOptions {
   typeMandat: string[];
   statut: string[];
   statutLot: string[];
+  documentTypes: string[];
 }
 
 export interface MandatStats {
@@ -91,7 +92,7 @@ export interface MandatStats {
   actifs: number;
   expirant30Jours: number;
   totalLots: number;
-  lotsParStatut: Record<string, number>;
+  lotsParStatut: Partial<Record<string, number>>;
   financial: {
     chiffreAffaires: number;
     commissionsEstimees: number;

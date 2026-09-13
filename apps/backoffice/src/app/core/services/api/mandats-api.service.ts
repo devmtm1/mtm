@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
+import { shareReplay } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import type {
   CreateMandatPayload,
@@ -20,6 +21,10 @@ export class MandatsApiService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/mandats`;
 
+  /** Référentiels mis en cache pour la session (voir TerrainsApiService). */
+  private options$?: Observable<MandatOptions>;
+  private proprietaires$?: Observable<ProprietaireSummary[]>;
+
   findAll(query: MandatQuery = {}): Observable<MandatPage> {
     let params = new HttpParams();
     Object.entries(query).forEach(([key, value]) => {
@@ -33,7 +38,10 @@ export class MandatsApiService {
   }
 
   getOptions(): Observable<MandatOptions> {
-    return this.http.get<MandatOptions>(`${this.baseUrl}/options`);
+    this.options$ ??= this.http
+      .get<MandatOptions>(`${this.baseUrl}/options`)
+      .pipe(shareReplay({ bufferSize: 1, refCount: false }));
+    return this.options$;
   }
 
   getStats(): Observable<MandatStats> {
@@ -55,16 +63,18 @@ export class MandatsApiService {
   }
 
   getProprietaires(): Observable<ProprietaireSummary[]> {
-    return this.http.get<ProprietaireSummary[]>(`${environment.apiUrl}/proprietaires`);
+    this.proprietaires$ ??= this.http
+      .get<ProprietaireSummary[]>(`${environment.apiUrl}/proprietaires`)
+      .pipe(shareReplay({ bufferSize: 1, refCount: false }));
+    return this.proprietaires$;
   }
 
   createProprietaire(
     payload: Omit<ProprietaireSummary, 'id'>,
   ): Observable<ProprietaireSummary> {
-    return this.http.post<ProprietaireSummary>(
-      `${environment.apiUrl}/proprietaires`,
-      payload,
-    );
+    return this.http
+      .post<ProprietaireSummary>(`${environment.apiUrl}/proprietaires`, payload)
+      .pipe(tap(() => (this.proprietaires$ = undefined)));
   }
 
   create(payload: CreateMandatPayload): Observable<MandatDetail> {
@@ -73,6 +83,11 @@ export class MandatsApiService {
 
   update(id: string, payload: Partial<CreateMandatPayload>): Observable<MandatDetail> {
     return this.http.patch<MandatDetail>(`${this.baseUrl}/${id}`, payload);
+  }
+
+  /** Changement de statut seul (dialogue « Changer le statut »). */
+  updateStatus(id: string, statut: string): Observable<MandatDetail> {
+    return this.update(id, { statut });
   }
 
   remove(id: string): Observable<{ success: boolean }> {

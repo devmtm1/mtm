@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { hasAnyRole, SUPERVISION_ROLES } from '../rbac/role-groups';
+import { hasSupervisionScope } from '../rbac/role-groups';
 import { AuditService } from '../audit/audit.service';
 import { PERIODE_PATTERN, UpsertObjectifDto } from './dto/upsert-objectif.dto';
 
@@ -55,7 +55,7 @@ export class ObjectifsService {
   ) {}
 
   private isManagement(user: ScopedUser): boolean {
-    return hasAnyRole(user.roles, SUPERVISION_ROLES);
+    return hasSupervisionScope(user, 'ventes');
   }
 
   private assertCanView(user: ScopedUser, commercialId: string): void {

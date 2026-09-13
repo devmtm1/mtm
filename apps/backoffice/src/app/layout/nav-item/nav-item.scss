@@ -36,7 +36,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--mtm-purple-light);
+    outline: 2px solid var(--mtm-primary-light);
     outline-offset: -2px;
   }
 
@@ -55,17 +55,17 @@
 }
 
 .nav-item--active {
-  background-color: var(--mtm-purple-subtle);
-  color: var(--mtm-purple-primary);
+  background-color: var(--mtm-primary-subtle);
+  color: var(--mtm-primary);
   font-weight: 600;
 
   &::before {
-    background-color: var(--mtm-purple-primary);
+    background-color: var(--mtm-primary);
   }
 
   &:hover {
-    background-color: var(--mtm-purple-subtle);
-    color: var(--mtm-purple-primary);
+    background-color: var(--mtm-primary-subtle);
+    color: var(--mtm-primary);
   }
 }
 
@@ -147,13 +147,13 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--mtm-purple-light);
+    outline: 2px solid var(--mtm-primary-light);
     outline-offset: -2px;
   }
 
   &--active {
-    background-color: var(--mtm-purple-subtle);
-    color: var(--mtm-purple-primary);
+    background-color: var(--mtm-primary-subtle);
+    color: var(--mtm-primary);
     font-weight: 600;
   }
 }

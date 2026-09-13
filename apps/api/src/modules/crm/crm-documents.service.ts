@@ -4,7 +4,7 @@ import { hasAnyRole, PUBLISHER_ROLES } from '../rbac/role-groups';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import { validateUploadedAsset } from '../../common/storage/asset-validation';
 import { CreateDocumentCrmDto } from './dto/create-document-crm.dto';
-import { CrmAccessService } from './crm-access.service';
+import { CrmAccessService, type CrmUser } from './crm-access.service';
 import { CrmOptionsService } from './crm-options.service';
 
 /** Documents rattachés à un prospect (GED de base, section 17 CDC). */
@@ -56,7 +56,7 @@ export class CrmDocumentsService {
   async removeDocument(
     prospectId: string,
     documentId: string,
-    user: { id: string; roles: string[] },
+    user: CrmUser,
   ): Promise<void> {
     await this.access.assertOwnership(prospectId, user);
     const document = await this.prisma.documentCrm.findFirst({

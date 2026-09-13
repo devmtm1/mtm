@@ -1,7 +1,10 @@
 <h2 mat-dialog-title class="permissions-dialog-title">
   <span>Permissions</span>
-  <small>{{ data.role.name }}</small>
+  <small>{{ roleLabel(data.role.name) }}</small>
 </h2>
+<p class="permissions-dialog-hint">
+  Survolez une action pour en lire la portée. « Administrer » donne la vue complète du module (tous les dossiers), comme un manager.
+</p>
 
 <mat-dialog-content class="permissions-dialog-content">
   @if (loading()) {
@@ -9,14 +12,16 @@
   } @else {
     @for (group of groups(); track group.resource) {
       <section class="permissions-group" [attr.aria-labelledby]="'permission-group-' + group.resource">
-        <h3 class="permissions-group-title" [id]="'permission-group-' + group.resource">{{ group.resource }}</h3>
+        <h3 class="permissions-group-title" [id]="'permission-group-' + group.resource">{{ group.label }}</h3>
         <div class="permissions-group-items">
           @for (permission of group.permissions; track permission.id) {
             <mat-checkbox
               [checked]="isChecked(permission.name)"
               (change)="toggle(permission.name)"
+              [matTooltip]="actionHelp(permission.action)"
+              matTooltipPosition="above"
             >
-              {{ permission.action }}
+              {{ actionLabel(permission.action) }}
             </mat-checkbox>
           }
         </div>

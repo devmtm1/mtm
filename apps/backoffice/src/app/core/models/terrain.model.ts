@@ -6,7 +6,9 @@ export interface ProprietaireSummary {
   lastName: string;
   email: string | null;
   phone: string | null;
-  notes: string | null;
+  notes?: string | null;
+  /** Renvoyé par la liste et la fiche : terrains et mandats rattachés. */
+  _count?: { terrains: number; mandats: number };
 }
 
 export interface TerrainListItem {
@@ -21,9 +23,11 @@ export interface TerrainListItem {
   commune: string | null;
   superficie: NumericOrString;
   prixPublic: NumericOrString;
-   statutCommercial: string;
+  statutCommercial: string;
   misEnAvant: boolean;
   medias?: TerrainMedia[];
+  /** Renvoyé par la liste (sélection réduite) ; complet dans TerrainDetail. */
+  proprietaire?: { id: string; firstName: string; lastName: string } | null;
 }
 
 export interface TerrainDetail extends TerrainListItem {
@@ -96,6 +100,16 @@ export interface TerrainPointInteret {
   distanceKm?: number;
   latitude?: number;
   longitude?: number;
+}
+
+/** Synthèse du portefeuille (GET /terrains/stats). */
+export interface TerrainStats {
+  total: number;
+  parStatut: Partial<Record<string, number>>;
+  misEnAvant: number;
+  sansGps: number;
+  nonVerifies: number;
+  sansPhotoPublique: number;
 }
 
 export interface TerrainOptions {

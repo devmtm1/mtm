@@ -1,138 +1,300 @@
-import { Component, OnInit, computed, signal, inject } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { DatePipe, LowerCasePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { LucideArrowLeft, LucideFileText, LucidePencil, LucidePlus, LucideUser, LucideClock, LucideTrash, LucideUpload } from '@lucide/angular';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import {
+  LucideArrowLeft,
+  LucideBanknote,
+  LucideCalendarClock,
+  LucideChevronDown,
+  LucideClock,
+  LucideFileText,
+  LucideLandPlot,
+  LucidePencil,
+  LucidePercent,
+  LucidePhone,
+  LucidePlus,
+  LucideTrash2,
+  LucideTrendingUp,
+  LucideUpload,
+  LucideUser,
+} from '@lucide/angular';
 import { MandatsApiService } from '../../../core/services/api/mandats-api.service';
 import { SessionService } from '../../../core/services/session.service';
-import type { MandatDetail as MandatDetailModel, MandatFinancialSummary, MandatLotItem } from '../../../core/models/mandat.model';
+import type { MandatDetail as MandatDetailModel, MandatFinancialSummary, MandatLotItem, MandatOptions } from '../../../core/models/mandat.model';
+import { NotificationService } from '../../../shared/services/notification.service';
+import { LabelPipe } from '../../../shared/pipes/label.pipe';
+import { MoneyPipe } from '../../../shared/pipes/money.pipe';
+import { StatusChoiceDialog } from '../../../shared/dialogs/status-choice-dialog';
 import { MandatHistoryDialog } from './mandat-history-dialog';
 import { MandatLotDialog } from './mandat-lot-dialog';
+import { MandatDocumentDialog } from './mandat-document-dialog';
+import {
+  LOT_STATUS,
+  LOT_STATUS_LABELS,
+  MANDAT_STATUS,
+  TYPE_MANDAT_HELP,
+  echeanceInfo,
+  lotLabel,
+  pillClass,
+  restrictionLines,
+  statusChoices,
+  statusHelp,
+} from '../mandat-status';
 
+/**
+ * Fiche mandat (J1.4) : le contrat avec le propriétaire, les lots confiés
+ * et leur avancement commercial, les documents et l'historique.
+ */
 @Component({
   selector: 'app-mandat-detail',
-  imports: [DatePipe, MatButtonModule, MatDialogModule, LucideArrowLeft, LucideFileText, LucidePencil, LucidePlus, LucideUser, LucideClock, LucideTrash, LucideUpload],
+  imports: [
+    LabelPipe,
+    MoneyPipe,
+    DatePipe,
+    LowerCasePipe,
+    MatButtonModule,
+    MatDialogModule,
+    MatMenuModule,
+    MatTooltipModule,
+    LucideArrowLeft,
+    LucideBanknote,
+    LucideCalendarClock,
+    LucideChevronDown,
+    LucideClock,
+    LucideFileText,
+    LucideLandPlot,
+    LucidePencil,
+    LucidePercent,
+    LucidePhone,
+    LucidePlus,
+    LucideTrash2,
+    LucideTrendingUp,
+    LucideUpload,
+    LucideUser,
+  ],
   templateUrl: './mandat-detail.html',
   styleUrl: './mandat-detail.scss',
 })
 export class MandatDetail implements OnInit {
-  private readonly route: ActivatedRoute = inject(ActivatedRoute);
-  private readonly router: Router = inject(Router);
-  private readonly api: MandatsApiService = inject(MandatsApiService);
-  private readonly session: SessionService = inject(SessionService);
-  private readonly snackBar: MatSnackBar = inject(MatSnackBar);
-  private readonly dialog: MatDialog = inject(MatDialog);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly api = inject(MandatsApiService);
+  private readonly session = inject(SessionService);
+  private readonly notify = inject(NotificationService);
+  private readonly dialog = inject(MatDialog);
 
-  protected mandat: MandatDetailModel | null = null;
+  protected readonly mandat = signal<MandatDetailModel | null>(null);
   protected readonly loading = signal(true);
-  protected readonly canModify = this.session.hasPermission('mandats:modifier');
-  protected readonly pendingDocuments = signal<{ file: File }[]>([]);
+  protected readonly busy = signal(false);
   protected readonly financial = signal<MandatFinancialSummary | null>(null);
+  protected readonly options = signal<MandatOptions | null>(null);
+  protected readonly canModify = this.session.hasPermission('mandats:modifier');
+  protected readonly canDelete = this.session.hasPermission('mandats:supprimer');
+
+  protected readonly echeance = computed(() => {
+    const mandat = this.mandat();
+    return mandat ? echeanceInfo(mandat.dateFin, mandat.statut, mandat.alerteEcheanceJours) : null;
+  });
+
   protected readonly lotsByStatus = computed<Record<string, number>>(() => {
     const counts: Record<string, number> = {};
-    for (const lot of this.mandat?.lots ?? []) {
-      counts[lot.statutLot] = (counts[lot.statutLot] || 0) + 1;
-    }
+    for (const lot of this.mandat()?.lots ?? []) counts[lot.statutLot] = (counts[lot.statutLot] || 0) + 1;
     return counts;
   });
 
+  protected readonly restrictions = computed(() => restrictionLines(this.mandat()?.restrictionsContractuelles));
+
+  /** Ce qu'il reste à faire pour un mandat exploitable. */
+  protected readonly todo = computed(() => {
+    const mandat = this.mandat();
+    if (!mandat) return [];
+    const items: { label: string; hint: string }[] = [];
+    if (mandat.lots.length === 0) items.push({ label: 'Rattacher les terrains concernés', hint: 'Sans lot, le mandat ne porte sur rien.' });
+    if (!mandat.documents.some((document) => document.type === 'contrat')) items.push({ label: 'Joindre le contrat signé', hint: 'Preuve de l’accord avec le propriétaire.' });
+    if (mandat.statut === 'Brouillon') items.push({ label: 'Passer le mandat en « Actif »', hint: 'Une fois signé, pour déclencher le suivi et les alertes.' });
+    const echeance = this.echeance();
+    if (echeance && (echeance.tone === 'warning' || echeance.tone === 'danger')) items.push({ label: 'Traiter l’échéance', hint: `${echeance.label} : prolonger, clôturer ou renouveler.` });
+    return items;
+  });
+
+  protected readonly mandatStatus = MANDAT_STATUS;
+  protected readonly lotStatus = LOT_STATUS;
+  protected readonly typeHelp = TYPE_MANDAT_HELP;
+  protected readonly lotLabel = lotLabel;
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    if (!id) { this.goBack(); return; }
+    if (!id) {
+      this.goBack();
+      return;
+    }
+    this.api.getOptions().subscribe({ next: (options) => this.options.set(options) });
     this.api.findOne(id).subscribe({
-      next: (mandat) => { this.mandat = mandat; this.loading.set(false); this.loadFinancial(id); },
-      error: () => { this.loading.set(false); this.snackBar.open('Mandat introuvable', 'Fermer', { duration: 4000 }); this.goBack(); },
+      next: (mandat) => {
+        this.mandat.set(mandat);
+        this.loading.set(false);
+        this.loadFinancial(id);
+      },
+      error: (error: unknown) => {
+        this.loading.set(false);
+        this.notify.error(error, 'Mandat introuvable');
+        this.goBack();
+      },
+    });
+  }
+
+  protected goBack(): void {
+    void this.router.navigate(['/mandats']);
+  }
+
+  protected edit(): void {
+    const mandat = this.mandat();
+    if (mandat) void this.router.navigate(['/mandats', mandat.id, 'modifier']);
+  }
+
+  protected openTerrain(lot: MandatLotItem): void {
+    void this.router.navigate(['/terrains', lot.terrain.id]);
+  }
+
+  protected openProprietaire(): void {
+    const mandat = this.mandat();
+    if (mandat) void this.router.navigate(['/proprietaires', mandat.proprietaire.id]);
+  }
+
+  protected pill(map: Record<string, { tone: string }>, value: string | null | undefined): string {
+    return pillClass(map as never, value);
+  }
+
+  protected help(map: Record<string, { help: string }>, value: string | null | undefined): string {
+    return statusHelp(map as never, value);
+  }
+
+  protected formatLocation(lot: MandatLotItem): string {
+    return [lot.terrain.commune, lot.terrain.region].filter((value): value is string => Boolean(value)).join(', ') || 'Localisation non renseignée';
+  }
+
+  // --- Actions ------------------------------------------------------------
+
+  protected changeStatus(): void {
+    const mandat = this.mandat();
+    const options = this.options();
+    if (!mandat || !options) return;
+    StatusChoiceDialog.open(this.dialog, {
+      title: 'Changer le statut du mandat',
+      intro: 'Le statut indique où en est le contrat avec le propriétaire. Un mandat « Actif » déclenche le suivi des lots et les alertes d’échéance.',
+      subject: `Mandat ${mandat.referenceInterne}`,
+      current: mandat.statut,
+      choices: statusChoices(MANDAT_STATUS, options.statut),
+    }).subscribe((result) => {
+      if (result) this.run(this.api.updateStatus(mandat.id, result.value), 'Statut du mandat mis à jour');
+    });
+  }
+
+  protected addLot(): void {
+    const mandat = this.mandat();
+    if (!mandat) return;
+    this.dialog
+      .open(MandatLotDialog, { width: '560px', maxWidth: 'calc(100vw - 32px)', data: { mandat, options: this.options() } })
+      .afterClosed()
+      .subscribe((result: { terrainId: string; statutLot: string } | undefined) => {
+        if (result) this.run(this.api.addLot(mandat.id, result), 'Terrain rattaché au mandat');
+      });
+  }
+
+  protected changeLotStatus(lot: MandatLotItem): void {
+    const mandat = this.mandat();
+    const options = this.options();
+    if (!mandat || !options) return;
+    StatusChoiceDialog.open(this.dialog, {
+      title: 'Avancement du lot',
+      intro: 'Suit la commercialisation de ce terrain dans le cadre du mandat. « Vendu » alimente le chiffre d’affaires du mandat.',
+      subject: `Lot ${lot.terrain.referenceInterne} — ${lot.terrain.nom}`,
+      current: lot.statutLot,
+      choices: statusChoices(LOT_STATUS, options.statutLot, LOT_STATUS_LABELS),
+    }).subscribe((result) => {
+      if (result) this.run(this.api.updateLot(mandat.id, lot.id, { statutLot: result.value }), 'Lot mis à jour');
+    });
+  }
+
+  protected removeLot(lot: MandatLotItem): void {
+    const mandat = this.mandat();
+    if (!mandat || !confirm(`Retirer le terrain ${lot.terrain.referenceInterne} de ce mandat ?`)) return;
+    this.run(this.api.removeLot(mandat.id, lot.id), 'Terrain retiré du mandat');
+  }
+
+  protected addDocument(): void {
+    const mandat = this.mandat();
+    if (!mandat) return;
+    this.dialog
+      .open(MandatDocumentDialog, { width: '520px', maxWidth: 'calc(100vw - 32px)', data: { documentTypes: this.options()?.documentTypes ?? [] } })
+      .afterClosed()
+      .subscribe((result: { file: File; type: string; title: string } | undefined) => {
+        if (result) this.run(this.api.addDocument(mandat.id, result.file, result.type, result.title), 'Document ajouté');
+      });
+  }
+
+  protected removeDocument(documentId: string): void {
+    const mandat = this.mandat();
+    if (!mandat || !confirm('Supprimer ce document ?')) return;
+    this.run(this.api.removeDocument(mandat.id, documentId), 'Document supprimé');
+  }
+
+  protected removeMandat(): void {
+    const mandat = this.mandat();
+    if (!mandat || !confirm(`Supprimer définitivement le mandat ${mandat.referenceInterne} ? Cette action est tracée.`)) return;
+    this.busy.set(true);
+    this.api.remove(mandat.id).subscribe({
+      next: () => {
+        this.notify.success('Mandat supprimé');
+        this.goBack();
+      },
+      error: (error: unknown) => {
+        this.busy.set(false);
+        this.notify.error(error, 'Impossible de supprimer le mandat');
+      },
+    });
+  }
+
+  protected openHistory(): void {
+    const mandat = this.mandat();
+    if (!mandat) return;
+    MandatHistoryDialog.open(this.dialog, this.api, mandat);
+  }
+
+  // --- Interne ------------------------------------------------------------
+
+  private run(request$: { subscribe: (observer: { next: () => void; error: (error: unknown) => void }) => unknown }, successMessage: string): void {
+    this.busy.set(true);
+    request$.subscribe({
+      next: () => {
+        this.notify.success(successMessage);
+        this.reload();
+      },
+      error: (error: unknown) => {
+        this.busy.set(false);
+        this.notify.error(error, 'L’opération a échoué');
+      },
+    });
+  }
+
+  private reload(): void {
+    const mandat = this.mandat();
+    if (!mandat) return;
+    this.api.findOne(mandat.id).subscribe({
+      next: (fresh) => {
+        this.mandat.set(fresh);
+        this.busy.set(false);
+        this.loadFinancial(fresh.id);
+      },
+      error: () => this.busy.set(false),
     });
   }
 
   private loadFinancial(id: string): void {
-    this.api.getFinancialSummary(id).subscribe({
-      next: (summary) => this.financial.set(summary),
-      error: () => {
-        // Silently ignore financial summary load failure
-      },
-    });
-  }
-
-  protected goBack(): void { this.router.navigate(['/mandats']); }
-  protected edit(): void { if (this.mandat) this.router.navigate(['/mandats', this.mandat.id, 'modifier']); }
-
-  protected restrictionsJson(): string {
-    return this.mandat?.restrictionsContractuelles ? JSON.stringify(this.mandat.restrictionsContractuelles, null, 2) : '—';
-  }
-
-  protected formatMoney(value: number | string | null): string { return value === null ? '—' : `${Number(value).toLocaleString('fr-FR')} FCFA`; }
-  protected formatNumber(value: number | string | null): string { return value === null ? '—' : Number(value).toLocaleString('fr-FR'); }
-  protected formatLocation(lot: MandatLotItem): string { return [lot.terrain.commune, lot.terrain.region].filter((value): value is string => Boolean(value)).join(', ') || 'Localisation non renseignée'; }
-  protected scrollToSection(sectionId: string): void {
-    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  protected openHistory(): void {
-    if (!this.mandat) return;
-    this.dialog.open(MandatHistoryDialog, {
-      width: '600px',
-      maxWidth: 'calc(100vw - 32px)',
-      data: { mandatId: this.mandat.id },
-    });
-  }
-
-  protected openAddLot(): void {
-    if (!this.mandat) return;
-    this.dialog.open(MandatLotDialog, {
-      width: '500px',
-      maxWidth: 'calc(100vw - 32px)',
-      data: { mandatId: this.mandat.id },
-    }).afterClosed().subscribe((result) => {
-      if (result) {
-        this.api.addLot(this.mandat!.id, result).subscribe({
-          next: () => { this.snackBar.open('Lot ajouté', 'Fermer', { duration: 3000 }); this.api.findOne(this.mandat!.id).subscribe((m) => { this.mandat = m; }); },
-          error: () => this.snackBar.open('Erreur lors de l’ajout du lot', 'Fermer', { duration: 4000 }),
-        });
-      }
-    });
-  }
-
-  protected editLot(lot: MandatLotItem): void {
-    if (!this.mandat) return;
-    this.dialog.open(MandatLotDialog, {
-      width: '500px',
-      maxWidth: 'calc(100vw - 32px)',
-      data: { mandatId: this.mandat.id, lot },
-    }).afterClosed().subscribe((result) => {
-      if (result && lot.id) {
-        this.api.updateLot(this.mandat!.id, lot.id, result).subscribe({
-          next: () => { this.snackBar.open('Lot mis à jour', 'Fermer', { duration: 3000 }); this.api.findOne(this.mandat!.id).subscribe((m) => { this.mandat = m; }); },
-          error: () => this.snackBar.open('Erreur lors de la mise à jour du lot', 'Fermer', { duration: 4000 }),
-        });
-      }
-    });
-  }
-
-  protected selectDocument(event: Event): void {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file || !this.mandat) return;
-    this.pendingDocuments.update((docs) => [...docs, { file }]);
-    this.api.addDocument(this.mandat.id, file, 'contrat').subscribe({
-      next: () => {
-        this.pendingDocuments.update((docs) => docs.filter((d) => d.file !== file));
-        this.snackBar.open('Document ajouté', 'Fermer', { duration: 3000 });
-        this.api.findOne(this.mandat!.id).subscribe((m) => { this.mandat = m; });
-      },
-      error: () => {
-        this.pendingDocuments.update((docs) => docs.filter((d) => d.file !== file));
-        this.snackBar.open('Impossible d’ajouter le document', 'Fermer', { duration: 4000 });
-      },
-    });
-  }
-
-  protected removeDocument(documentId: string): void {
-    if (!this.mandat) return;
-    this.api.removeDocument(this.mandat.id, documentId).subscribe({
-      next: () => { this.snackBar.open('Document supprimé', 'Fermer', { duration: 3000 }); this.api.findOne(this.mandat!.id).subscribe((m) => { this.mandat = m; }); },
-      error: () => this.snackBar.open('Impossible de supprimer le document', 'Fermer', { duration: 4000 }),
-    });
+    this.api.getFinancialSummary(id).subscribe({ next: (summary) => this.financial.set(summary), error: () => this.financial.set(null) });
   }
 }

@@ -1,10 +1,13 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { RouterLink } from '@angular/router';
+import { LucideKeyRound, LucideShieldAlert, LucideShieldCheck } from '@lucide/angular';
+import { NotificationService } from '../../shared/services/notification.service';
+import { requiresTwoFactor, roleHelp, roleLabel } from '../admin/admin-labels';
 import { AuthService } from '../../core/services/auth.service';
 import { SessionService } from '../../core/services/session.service';
 import { Router } from '@angular/router';
@@ -21,13 +24,7 @@ interface DisableForm {
 
 @Component({
   selector: 'app-security',
-  imports: [
-    ReactiveFormsModule,
-    MatButtonModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-  ],
+  imports: [ReactiveFormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatInputModule, LucideKeyRound, LucideShieldAlert, LucideShieldCheck],
   templateUrl: './security.html',
   styleUrl: './security.scss',
 })
@@ -35,6 +32,12 @@ export class Security {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   protected readonly sessionService = inject(SessionService);
+  private readonly notify = inject(NotificationService);
+
+  protected readonly user = this.sessionService.user;
+  protected readonly roleLabel = roleLabel;
+  protected readonly roleHelp = roleHelp;
+  protected readonly twoFactorRequired = computed(() => requiresTwoFactor(this.user()?.roles ?? []));
 
   protected readonly step = signal<TwoFactorStep>('status');
   protected readonly loading = signal(false);
@@ -95,9 +98,24 @@ export class Security {
       },
       error: () => {
         this.loading.set(false);
-        this.errorMessage.set('Code invalide.');
+        this.errorMessage.set('Code invalide ou expiré : vérifiez l’heure de votre téléphone et réessayez avec le code affiché maintenant.');
       },
     });
+  }
+
+  /** Clé à saisir manuellement si le QR code ne peut pas être scanné. */
+  protected manualSecret(): string {
+    const url = this.otpauthUrl();
+    if (!url) return '';
+    const match = /[?&]secret=([^&]+)/.exec(url);
+    return match ? decodeURIComponent(match[1]).replace(/(.{4})/g, '$1 ').trim() : '';
+  }
+
+  protected copyCodes(): void {
+    void navigator.clipboard?.writeText(this.recoveryCodes().join('\n')).then(
+      () => this.notify.success('Codes copiés : collez-les dans un endroit sûr'),
+      () => this.notify.error(null, 'Copie impossible : notez les codes manuellement'),
+    );
   }
 
   finishRecoveryCodes(): void {

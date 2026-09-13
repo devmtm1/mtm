@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -34,6 +34,7 @@ const SENSITIVE_ROLES = new Set([
 @Component({
   selector: 'app-login',
   imports: [
+    RouterLink,
     ReactiveFormsModule,
     MatButtonModule,
     MatCardModule,
@@ -51,6 +52,19 @@ const SENSITIVE_ROLES = new Set([
 export class Login {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+
+  constructor() {
+    // Le lien de réinitialisation envoyé par e-mail pointe sur /login?reset=<jeton> :
+    // on l'achemine vers l'écran dédié avec le jeton prérempli.
+    const resetToken = this.route.snapshot.queryParamMap.get('reset');
+    if (resetToken) {
+      void this.router.navigate(['/password-reset'], {
+        queryParams: { token: resetToken },
+        replaceUrl: true,
+      });
+    }
+  }
 
   protected readonly loading = signal(false);
   protected readonly errorMessage = signal<string | null>(null);

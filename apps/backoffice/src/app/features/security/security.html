@@ -1,110 +1,186 @@
 <div class="security-page">
-  <h1>Sécurité</h1>
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Mon compte</p>
+      <h1 class="page-header__title">Sécurité</h1>
+      <p class="page-header__subtitle">Votre identité dans l’application, votre mot de passe et la double authentification.</p>
+    </div>
+  </header>
 
-  <mat-card class="security-card">
-    <mat-card-content>
-      <h2 class="security-card-title">Double authentification (2FA)</h2>
+  @if (twoFactorRequired() && !user()?.twoFactorEnabled) {
+    <aside class="alert-banner" role="status">
+      <div class="alert-banner__head">
+        <svg lucideShieldAlert aria-hidden="true"></svg>
+        <strong>Double authentification obligatoire pour votre rôle</strong>
+      </div>
+      <p>
+        Votre rôle donne accès à des données sensibles : activez la double authentification ci-dessous pour
+        accéder au reste du back-office. Cela prend deux minutes avec une application gratuite sur votre téléphone.
+      </p>
+    </aside>
+  }
 
-      @if (step() === 'status') {
-        <p class="security-status">
-          Statut :
-          @if (sessionService.user()?.twoFactorEnabled) {
-            <strong class="security-status--on">Activée</strong>
-          } @else {
-            <strong class="security-status--off">Désactivée</strong>
-          }
-        </p>
-
-        @if (sessionService.user()?.twoFactorEnabled) {
-          <button mat-stroked-button color="warn" (click)="startDisable()">
-            Désactiver la double authentification
-          </button>
-        } @else {
-          <button mat-flat-button color="primary" [disabled]="loading()" (click)="startSetup()">
-            Activer la double authentification
-          </button>
-        }
-      }
-
-      @if (step() === 'setup') {
-        <p class="security-hint">
-          Scannez ce QR code avec votre application d'authentification
-          (Google Authenticator, Authy...), puis saisissez le code généré
-          pour confirmer l'activation.
-        </p>
-
-        @if (qrCodeDataUrl()) {
-          <img [src]="qrCodeDataUrl()" alt="QR code d'activation 2FA" class="security-qr" />
-        }
-
-        <form [formGroup]="confirmForm" (ngSubmit)="confirmSetup()">
-          <mat-form-field appearance="outline">
-            <mat-label>Code de vérification</mat-label>
-            <input
-              matInput
-              type="text"
-              inputmode="numeric"
-              maxlength="6"
-              formControlName="code"
-            />
-          </mat-form-field>
-
-          @if (errorMessage()) {
-            <p class="security-error">{{ errorMessage() }}</p>
-          }
-
-          <div class="security-actions">
-            <button mat-button type="button" (click)="cancelSetup()">Annuler</button>
-            <button mat-flat-button color="primary" type="submit" [disabled]="loading()">
-              Confirmer
-            </button>
-          </div>
-        </form>
-      }
-
-      @if (step() === 'recovery-codes') {
-        <div class="recovery-box">
-          <h3>Codes de secours générés</h3>
-          <p class="security-hint">
-            Veuillez conserver ces 8 codes de secours en lieu sûr. Chaque code ne peut être utilisé qu'une seule fois si vous n'avez plus accès à votre application d'authentification.
-          </p>
-          <ul class="recovery-codes-list">
-            @for (code of recoveryCodes(); track code) {
-              <li><code>{{ code }}</code></li>
-            }
-          </ul>
-          <div class="security-actions">
-            <button mat-flat-button color="primary" type="button" (click)="finishRecoveryCodes()">
-              J'ai sauvegardé mes codes de secours
-            </button>
-          </div>
+  <div class="content-grid">
+    <section class="page-card detail-section" aria-labelledby="account-title">
+      <div class="detail-section__head">
+        <div>
+          <h2 id="account-title">Mon identité</h2>
+          <p class="detail-section__hint">Les informations rattachées à vos actions dans le journal.</p>
         </div>
-      }
+      </div>
+      <dl class="info-list">
+        <div><dt>Nom</dt><dd>{{ user()?.firstName }} {{ user()?.lastName }}</dd></div>
+        <div><dt>E-mail de connexion</dt><dd>{{ user()?.email }}</dd></div>
+        <div class="is-wide">
+          <dt>Rôle</dt>
+          <dd>
+            @for (role of user()?.roles ?? []; track role) {
+              <span class="status-pill status-pill--info">{{ roleLabel(role) }}</span>
+              <span class="cell-muted role-help">{{ roleHelp(role) }}</span>
+            } @empty {
+              <span class="cell-muted">Aucun rôle attribué : contactez un administrateur.</span>
+            }
+          </dd>
+        </div>
+      </dl>
+      <p class="detail-note">Pour changer votre nom ou votre e-mail, demandez à un administrateur.</p>
+    </section>
 
-      @if (step() === 'disable') {
-        <p class="security-hint">
-          Confirmez votre mot de passe pour désactiver la double
-          authentification.
-        </p>
+    <section class="page-card detail-section" aria-labelledby="password-title">
+      <div class="detail-section__head">
+        <div>
+          <h2 id="password-title">Mot de passe</h2>
+          <p class="detail-section__hint">12 caractères minimum, avec majuscule, minuscule, chiffre et caractère spécial.</p>
+        </div>
+      </div>
+      <p class="detail-section__text">
+        Changez-le si vous pensez qu’il est connu de quelqu’un d’autre. Vous resterez connecté sur cet appareil ; les
+        autres sessions seront fermées.
+      </p>
+      <div class="detail-section__actions">
+        <a mat-stroked-button routerLink="/change-password">
+          <svg class="btn-icon" lucideKeyRound aria-hidden="true"></svg>Changer mon mot de passe
+        </a>
+      </div>
+    </section>
 
-        <form [formGroup]="disableForm" (ngSubmit)="confirmDisable()">
-          <mat-form-field appearance="outline">
-            <mat-label>Mot de passe actuel</mat-label>
-            <input matInput type="password" formControlName="currentPassword" />
-          </mat-form-field>
+    <section class="page-card detail-section detail-section--wide" aria-labelledby="twofa-title">
+      <div class="detail-section__head">
+        <div>
+          <h2 id="twofa-title">Double authentification (2FA)</h2>
+          <p class="detail-section__hint">Un code à 6 chiffres, généré par votre téléphone, est demandé à chaque connexion en plus du mot de passe.</p>
+        </div>
+        @if (user()?.twoFactorEnabled) {
+          <span class="status-pill status-pill--success"><svg lucideShieldCheck aria-hidden="true"></svg>Activée</span>
+        } @else {
+          <span class="status-pill" [class.status-pill--warning]="twoFactorRequired()">{{ twoFactorRequired() ? 'À activer' : 'Désactivée' }}</span>
+        }
+      </div>
 
-          @if (errorMessage()) {
-            <p class="security-error">{{ errorMessage() }}</p>
+      @switch (step()) {
+        @case ('status') {
+          @if (user()?.twoFactorEnabled) {
+            <p class="detail-section__text">
+              Votre compte est protégé. Si vous changez de téléphone, désactivez puis réactivez la double
+              authentification ; si vous l’avez perdu, un administrateur peut la réinitialiser.
+            </p>
+            <div class="detail-section__actions">
+              <button mat-stroked-button type="button" (click)="startDisable()">Désactiver la double authentification</button>
+            </div>
+          } @else {
+            <ol class="steps">
+              <li><strong>Installez</strong> une application d’authentification sur votre téléphone (Google Authenticator, Microsoft Authenticator, Authy…).</li>
+              <li><strong>Scannez</strong> le QR code affiché à l’étape suivante.</li>
+              <li><strong>Saisissez</strong> le code à 6 chiffres affiché par l’application pour confirmer.</li>
+              <li><strong>Conservez</strong> les codes de secours : ils remplacent le téléphone en cas de perte.</li>
+            </ol>
+            <div class="detail-section__actions">
+              <button mat-flat-button color="primary" type="button" [disabled]="loading()" (click)="startSetup()">
+                <svg class="btn-icon" lucideShieldCheck aria-hidden="true"></svg>{{ loading() ? 'Préparation…' : 'Activer la double authentification' }}
+              </button>
+            </div>
+            @if (errorMessage()) {
+              <p class="hint-error" role="alert">{{ errorMessage() }}</p>
+            }
           }
+        }
 
-          <div class="security-actions">
-            <button mat-button type="button" (click)="cancelDisable()">Annuler</button>
-            <button mat-flat-button color="warn" type="submit" [disabled]="loading()">
-              Désactiver
-            </button>
+        @case ('setup') {
+          <div class="setup">
+            <div class="setup__qr">
+              @if (qrCodeDataUrl()) {
+                <img [src]="qrCodeDataUrl()" alt="QR code d’activation de la double authentification" />
+              }
+              @if (otpauthUrl()) {
+                <details class="setup__manual">
+                  <summary>Impossible de scanner ?</summary>
+                  <p>Dans l’application, choisissez « Saisir une clé manuellement » et collez : <code>{{ manualSecret() }}</code></p>
+                </details>
+              }
+            </div>
+            <form class="setup__form" [formGroup]="confirmForm" (ngSubmit)="confirmSetup()">
+              <p class="detail-section__text">Scannez le QR code avec l’application, puis saisissez le code à 6 chiffres qu’elle affiche.</p>
+              <mat-form-field appearance="outline">
+                <mat-label>Code à 6 chiffres</mat-label>
+                <input matInput type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" formControlName="code" />
+                @if (confirmForm.controls.code.invalid && confirmForm.controls.code.touched) {
+                  <mat-error>Saisissez les 6 chiffres affichés par l’application.</mat-error>
+                }
+              </mat-form-field>
+              @if (errorMessage()) {
+                <p class="hint-error" role="alert">{{ errorMessage() }}</p>
+              }
+              <div class="detail-section__actions">
+                <button mat-button type="button" (click)="cancelSetup()">Annuler</button>
+                <button mat-flat-button color="primary" type="submit" [disabled]="loading()">{{ loading() ? 'Vérification…' : 'Confirmer l’activation' }}</button>
+              </div>
+            </form>
           </div>
-        </form>
+        }
+
+        @case ('recovery-codes') {
+          <div class="recovery">
+            <div class="alert-banner">
+              <div class="alert-banner__head">
+                <svg lucideShieldAlert aria-hidden="true"></svg>
+                <strong>Conservez ces codes de secours maintenant</strong>
+              </div>
+              <p>Ils ne seront plus affichés. Chaque code sert une seule fois si vous n’avez plus votre téléphone. Rangez-les hors de l’ordinateur (imprimés, gestionnaire de mots de passe).</p>
+            </div>
+            <ul class="recovery__codes">
+              @for (code of recoveryCodes(); track code) {
+                <li><code>{{ code }}</code></li>
+              }
+            </ul>
+            <div class="detail-section__actions">
+              <button mat-stroked-button type="button" (click)="copyCodes()">Copier les codes</button>
+              <button mat-flat-button color="primary" type="button" (click)="finishRecoveryCodes()">J’ai conservé mes codes</button>
+            </div>
+          </div>
+        }
+
+        @case ('disable') {
+          <form class="setup__form" [formGroup]="disableForm" (ngSubmit)="confirmDisable()">
+            <p class="detail-section__text">
+              Confirmez votre mot de passe pour désactiver la double authentification.
+              @if (twoFactorRequired()) {
+                <strong>Votre rôle l’exige : vous devrez la réactiver avant d’utiliser le back-office.</strong>
+              }
+            </p>
+            <mat-form-field appearance="outline">
+              <mat-label>Mot de passe actuel</mat-label>
+              <input matInput type="password" formControlName="currentPassword" autocomplete="current-password" />
+            </mat-form-field>
+            @if (errorMessage()) {
+              <p class="hint-error" role="alert">{{ errorMessage() }}</p>
+            }
+            <div class="detail-section__actions">
+              <button mat-button type="button" (click)="cancelDisable()">Annuler</button>
+              <button mat-flat-button color="warn" type="submit" [disabled]="loading()">Désactiver</button>
+            </div>
+          </form>
+        }
       }
-    </mat-card-content>
-  </mat-card>
+    </section>
+  </div>
 </div>

@@ -62,6 +62,16 @@ export class SessionService {
     return this.userSignal()?.roles?.includes(roleName) ?? false;
   }
 
+  /**
+   * Vue « tous dossiers » d'un module — même règle que l'API
+   * (rôles de supervision du seed ou permission `<module>:administrer`).
+   * Ne sert qu'à adapter les libellés : l'API reste juge du périmètre.
+   */
+  hasSupervisionScope(module: string): boolean {
+    const supervision = ['administrateur', 'direction', 'manager', 'responsable_commercial'];
+    return supervision.some((role) => this.hasRole(role)) || this.hasPermission(`${module}:administrer`);
+  }
+
   hasAllPermissions(permissions: string[]): boolean {
     return permissions.every((p) => this.hasPermission(p));
   }

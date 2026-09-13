@@ -1,48 +1,97 @@
-<h2 mat-dialog-title class="setting-dialog-title">{{ isEdit ? 'Modifier le paramètre' : 'Nouveau paramètre' }}</h2>
-
-<form class="setting-dialog-form" [formGroup]="form" (ngSubmit)="submit()">
-  <mat-dialog-content class="setting-dialog-content">
-    <mat-form-field appearance="outline">
-      <mat-label>Clé</mat-label>
-      <input matInput formControlName="key" placeholder="ex: commission.taux_defaut" />
-      <mat-hint>Minuscules, chiffres, points et underscores.</mat-hint>
-      @if (form.controls.key.hasError('required') && form.controls.key.touched) {
-        <mat-error>La clé est requise.</mat-error>
+<h2 mat-dialog-title>{{ title() }}</h2>
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <mat-dialog-content class="setting-dialog">
+    @if (slot) {
+      <p class="setting-dialog__intro">{{ slot.help }}</p>
+      @if (slot.warning) {
+        <p class="setting-dialog__warning">{{ slot.warning }}</p>
       }
-      @if (form.controls.key.hasError('pattern') && form.controls.key.touched) {
-        <mat-error>Format invalide.</mat-error>
+    } @else {
+      <p class="setting-dialog__intro">Paramètre hors catalogue : l’application ne le lit que si le développeur l’a prévu. Indiquez la clé exacte convenue.</p>
+    }
+
+    @if (isCustom) {
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Clé technique</mat-label>
+        <input matInput formControlName="key" placeholder="ex. ventes.delaiRelanceJours" autocomplete="off" />
+        <mat-hint>Minuscules, chiffres, points et tirets bas.</mat-hint>
+        @if (form.controls.key.hasError('pattern') && form.controls.key.touched) {
+          <mat-error>Minuscules, chiffres, points et tirets bas uniquement.</mat-error>
+        }
+      </mat-form-field>
+
+      <fieldset class="kind-choice">
+        <legend>Type de valeur</legend>
+        <mat-radio-group formControlName="kind" class="kind-choice__group">
+          @for (option of kinds; track option.value) {
+            <mat-radio-button [value]="option.value" class="kind-choice__item">
+              <strong>{{ option.label }}</strong>
+              <small>{{ option.help }}</small>
+            </mat-radio-button>
+          }
+        </mat-radio-group>
+      </fieldset>
+    }
+
+    @switch (kind) {
+      @case ('number') {
+        <mat-form-field appearance="outline" class="number-field">
+          <mat-label>Valeur</mat-label>
+          <input matInput type="number" step="any" formControlName="value" />
+          @if (slot?.unit) {
+            <span matTextSuffix>{{ slot?.unit }}</span>
+          }
+          @if (form.controls.value.hasError('required') && form.controls.value.touched) {
+            <mat-error>La valeur est requise.</mat-error>
+          }
+        </mat-form-field>
       }
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Valeur</mat-label>
-      <input matInput formControlName="value" placeholder="5, &quot;texte&quot;, true..." />
-      <mat-hint>Nombre, texte ou JSON.</mat-hint>
-      @if (form.controls.value.hasError('required') && form.controls.value.touched) {
-        <mat-error>La valeur est requise.</mat-error>
+      @case ('list') {
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Valeurs (une par ligne)</mat-label>
+          <textarea matInput rows="8" formControlName="value" spellcheck="false"></textarea>
+          <mat-hint>{{ listCount() }} valeur{{ listCount() > 1 ? 's' : '' }} · l’ordre des lignes est l’ordre d’affichage.</mat-hint>
+          @if (form.controls.value.hasError('required') && form.controls.value.touched) {
+            <mat-error>Indiquez au moins une valeur.</mat-error>
+          }
+        </mat-form-field>
       }
-    </mat-form-field>
+      @case ('json') {
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Valeur (format JSON)</mat-label>
+          <textarea matInput rows="12" formControlName="value" spellcheck="false" class="mono"></textarea>
+          <mat-hint>Structure technique : vérifiée avant envoi.</mat-hint>
+        </mat-form-field>
+      }
+      @default {
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Valeur</mat-label>
+          <input matInput formControlName="value" />
+          @if (form.controls.value.hasError('required') && form.controls.value.touched) {
+            <mat-error>La valeur est requise.</mat-error>
+          }
+        </mat-form-field>
+      }
+    }
 
-    <mat-form-field appearance="outline">
-      <mat-label>Description</mat-label>
-      <input matInput formControlName="description" />
-    </mat-form-field>
-
-    @if (!isEdit) {
-      <mat-checkbox formControlName="isSensitive">
-        Paramètre sensible (nécessite la permission settings:administrer)
-      </mat-checkbox>
+    @if (isCustom) {
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Description</mat-label>
+        <input matInput formControlName="description" placeholder="À quoi sert ce paramètre" />
+      </mat-form-field>
+      @if (!isEdit) {
+        <mat-checkbox formControlName="isSensitive">Valeur sensible (masquée sauf pour les administrateurs)</mat-checkbox>
+      }
     }
 
     @if (errorMessage()) {
-      <p class="setting-dialog-error">{{ errorMessage() }}</p>
+      <p class="setting-dialog__error" role="alert">{{ errorMessage() }}</p>
     }
   </mat-dialog-content>
-
-  <mat-dialog-actions class="setting-dialog-actions" align="end">
-    <button mat-button type="button" (click)="cancel()">Annuler</button>
+  <mat-dialog-actions align="end">
+    <button mat-stroked-button type="button" (click)="cancel()">Annuler</button>
     <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
-      {{ isEdit ? 'Enregistrer' : 'Créer' }}
+      {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
     </button>
   </mat-dialog-actions>
 </form>

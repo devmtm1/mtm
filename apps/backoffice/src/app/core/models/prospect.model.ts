@@ -28,6 +28,7 @@ export interface DocumentCrmItem {
 
 export interface DossierVenteSummary {
   id: string;
+  referenceInterne: string;
   statut: string;
   createdAt: string;
   terrain?: {
@@ -49,17 +50,19 @@ export interface ProspectListItem {
   telephone: string | null;
   statutPipeline: string;
   score: number | null;
+  budgetMin: number | null;
+  budgetMax: number | null;
+  sourceAcquisition: string | null;
   commercialResponsable: CommercialSummary | null;
+  /** Liste : la prochaine action « à faire » uniquement. Fiche : toutes. */
+  activites?: ActiviteCrmItem[];
   _count: { activites: number; documents: number; dossiers: number };
   createdAt: string;
 }
 
 export interface ProspectDetail extends ProspectListItem {
   paysResidence: string | null;
-  sourceAcquisition: string | null;
   besoins: string | null;
-  budgetMin: number | null;
-  budgetMax: number | null;
   preferences: string | null;
   activites: ActiviteCrmItem[];
   documents: DocumentCrmItem[];
@@ -125,7 +128,14 @@ export interface ProspectTimeline {
   overdue: { id: string; titre: string; dateEcheance: string | null; priorite: string }[];
   activites: { id: string; titre: string; statut: string; dateEcheance: string | null }[];
   audits: { id: string; action: string; createdAt: string; user: { firstName: string; lastName: string } | null }[];
-  dossiers: { id: string; statut: string; createdAt: string; terrain?: { referenceInterne: string }; mandat?: { referenceInterne: string } }[];
+  dossiers: {
+    id: string;
+    referenceInterne: string;
+    statut: string;
+    createdAt: string;
+    terrain?: { referenceInterne: string; nom?: string } | null;
+    mandat?: { referenceInterne: string } | null;
+  }[];
 }
 
 export interface CreateProspectPayload {

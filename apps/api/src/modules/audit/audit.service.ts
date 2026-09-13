@@ -77,7 +77,8 @@ export class AuditService {
       ...(filters.userId ? { userId: filters.userId } : {}),
       ...(filters.entityType ? { entityType: filters.entityType } : {}),
       ...(filters.entityId ? { entityId: filters.entityId } : {}),
-      ...(filters.action ? { action: filters.action } : {}),
+      // Préfixe accepté (« vente. ») pour filtrer par famille d'actions.
+      ...(filters.action ? { action: { startsWith: filters.action } } : {}),
       ...(filters.from || filters.to
         ? {
             createdAt: {
@@ -130,7 +131,7 @@ export class AuditService {
         ...(filters.userId ? { userId: filters.userId } : {}),
         ...(filters.entityType ? { entityType: filters.entityType } : {}),
         ...(filters.entityId ? { entityId: filters.entityId } : {}),
-        ...(filters.action ? { action: filters.action } : {}),
+        ...(filters.action ? { action: { startsWith: filters.action } } : {}),
         ...(filters.from || filters.to
           ? {
               createdAt: {

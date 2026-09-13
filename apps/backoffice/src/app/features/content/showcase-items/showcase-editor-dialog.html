@@ -1,45 +1,65 @@
-<h2 mat-dialog-title>{{ editing ? 'Modifier' : 'Créer' }} un élément de portfolio</h2>
-<mat-dialog-content class="dialog-content">
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Catégorie</mat-label>
-    <mat-select [(ngModel)]="form.category">
-      <mat-option value="realisation">Réalisation</mat-option>
-      <mat-option value="projet_a_venir">Projet à venir</mat-option>
-    </mat-select>
-  </mat-form-field>
+<h2 mat-dialog-title>{{ editing ? 'Modifier l’élément' : 'Nouvel élément du portfolio' }}</h2>
+<mat-dialog-content class="dialog-content" [formGroup]="form">
+  <p class="dialog-intro">
+    Une carte du portfolio = une photo, un titre, un lieu et quelques lignes. Le site l’affiche telle quelle.
+  </p>
+
+  <fieldset class="choice">
+    <legend>Catégorie</legend>
+    <mat-radio-group formControlName="category" class="choice__group">
+      @for (category of categories; track category.value) {
+        <mat-radio-button [value]="category.value" class="choice__item">
+          <strong>{{ category.label }}</strong>
+          <small>{{ category.help }}</small>
+        </mat-radio-button>
+      }
+    </mat-radio-group>
+  </fieldset>
 
   <mat-form-field appearance="outline" class="full-width">
     <mat-label>Titre</mat-label>
-    <input matInput [(ngModel)]="form.title" />
+    <input matInput formControlName="title" placeholder="Ex. Résidence Les Almadies" />
+    @if (form.controls.title.touched && form.controls.title.hasError('required')) {
+      <mat-error>Le titre est obligatoire.</mat-error>
+    }
   </mat-form-field>
+
+  <div class="two-columns">
+    <mat-form-field appearance="outline">
+      <mat-label>Lieu</mat-label>
+      <input matInput formControlName="location" placeholder="Saly, Mbour…" />
+      <mat-hint>Ville ou quartier, tel qu’affiché aux visiteurs.</mat-hint>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Date</mat-label>
+      <input matInput type="date" formControlName="date" />
+      <mat-hint>Livraison (réalisation) ou lancement prévu (projet).</mat-hint>
+    </mat-form-field>
+  </div>
 
   <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Lieu</mat-label>
-    <input matInput [(ngModel)]="form.location" placeholder="Saly, Mbour..." />
-  </mat-form-field>
-
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Date</mat-label>
-    <input matInput type="date" [(ngModel)]="form.date" />
-  </mat-form-field>
-
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Ordre d'affichage</mat-label>
-    <input matInput type="number" [(ngModel)]="form.ordre" />
-  </mat-form-field>
-
-  <mat-form-field appearance="outline" class="full-width textarea-field">
     <mat-label>Description</mat-label>
-    <textarea matInput rows="4" [(ngModel)]="form.description"></textarea>
+    <textarea matInput rows="4" formControlName="description" placeholder="Ce qui a été fait, la surface, le nombre de lots…"></textarea>
+    <mat-hint>Deux ou trois phrases suffisent ; le site coupe les textes trop longs.</mat-hint>
   </mat-form-field>
+
+  <mat-form-field appearance="outline" class="order-field">
+    <mat-label>Ordre d’affichage</mat-label>
+    <input matInput type="number" min="0" formControlName="ordre" />
+    <mat-hint>Les plus petits numéros s’affichent en premier.</mat-hint>
+  </mat-form-field>
+
+  @if (canPublish) {
+    <mat-checkbox formControlName="isActive">Visible sur le site</mat-checkbox>
+  }
 
   @if (!editing) {
-    <p class="hint">L’image se rajoute une fois l’élément créé, depuis la liste.</p>
+    <p class="form-note">La photo s’ajoute juste après, depuis la carte (bouton « Photo »). Sans photo, le site affiche « Image à venir ».</p>
   }
 </mat-dialog-content>
 <mat-dialog-actions align="end">
-  <button mat-button type="button" (click)="cancel()">Annuler</button>
+  <button mat-stroked-button type="button" mat-dialog-close>Annuler</button>
   <button mat-flat-button color="primary" type="button" [disabled]="saving()" (click)="submit()">
-    {{ saving() ? 'Enregistrement...' : (editing ? 'Mettre à jour' : 'Créer') }}
+    {{ saving() ? 'Enregistrement…' : (editing ? 'Enregistrer' : 'Créer') }}
   </button>
 </mat-dialog-actions>

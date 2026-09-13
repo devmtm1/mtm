@@ -73,6 +73,30 @@ export class TerrainsController {
     return this.terrains.getOptions();
   }
 
+  @Get('stats') @RequirePermissions('terrains:consulter') getStats(
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.terrains.getStats(user);
+  }
+
+  /**
+   * Historique d'une fiche (journal d'audit filtré sur ce terrain). Accessible
+   * à quiconque peut consulter le terrain : voir qui a changé un prix ou un
+   * statut fait partie de la lecture normale d'une fiche.
+   */
+  @Get(':id/history')
+  @RequirePermissions('terrains:consulter')
+  async getHistory(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    await this.terrains.findOne(id, user);
+    return this.audit.findAll(
+      { entityType: 'Terrain', entityId: id },
+      { page: 1, pageSize: 100 },
+    );
+  }
+
   @Get(':id') @RequirePermissions('terrains:consulter') findOne(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: AuthenticatedUser,

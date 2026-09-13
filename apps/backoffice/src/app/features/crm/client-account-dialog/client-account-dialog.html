@@ -1,28 +1,40 @@
 <h2 mat-dialog-title>Créer l’accès espace client</h2>
 
-<mat-dialog-content>
+<mat-dialog-content class="account-dialog">
   @if (!created) {
-    <p class="mb-4 text-sm text-gray-600">
-      Le compte sera créé pour <strong>{{ data.name }}</strong> avec l’adresse <strong>{{ data.email }}</strong>.
+    <p class="account-dialog__intro">
+      L’espace client permet à <strong>{{ data.name }}</strong> de suivre ses dossiers, paiements et documents sur le
+      site public. Un e-mail d’invitation part à <strong>{{ data.email }}</strong> : il y choisit son mot de passe.
     </p>
-    <mat-form-field appearance="outline" class="w-full">
-      <mat-label>Mot de passe temporaire</mat-label>
-      <input matInput type="text" [formControl]="form.controls.password" autocomplete="new-password">
-      <mat-hint>12 caractères minimum avec majuscule, minuscule, chiffre et caractère spécial.</mat-hint>
+    <mat-form-field appearance="outline" class="account-dialog__field">
+      <mat-label>Mot de passe de secours</mat-label>
+      <input matInput type="text" [formControl]="form.controls.password" autocomplete="new-password" />
+      <mat-hint>À communiquer seulement si l’e-mail n’arrive pas. {{ passwordHint }}</mat-hint>
       @if (form.controls.password.invalid && form.controls.password.touched) {
         <mat-error>Le mot de passe ne respecte pas les règles requises.</mat-error>
       }
     </mat-form-field>
-    <button mat-stroked-button type="button" (click)="regeneratePassword()">Générer un autre mot de passe</button>
+    <button mat-button type="button" (click)="regeneratePassword()">Générer un autre mot de passe</button>
     @if (error) {
-      <p class="mt-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">{{ error }}</p>
+      <p class="account-dialog__box account-dialog__box--error">{{ error }}</p>
     }
+  } @else if (invitationSent) {
+    <div class="account-dialog__box account-dialog__box--success">
+      <strong>Compte créé — invitation envoyée à {{ data.email }}.</strong>
+      <p>Le client a 7 jours pour choisir son mot de passe via le lien reçu.</p>
+      <p><small>Si l’e-mail n’arrive pas, mot de passe de secours : <code>{{ createdPassword }}</code> (à transmettre par un canal sûr).</small></p>
+    </div>
   } @else {
-    <div class="rounded border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-      <p class="font-semibold">Compte client créé.</p>
-      <p class="mt-3"><strong>Email :</strong> {{ data.email }}</p>
-      <p class="mt-1"><strong>Mot de passe :</strong> {{ createdPassword }}</p>
-      <p class="mt-3 text-xs">Transmettez ces identifiants au client par un canal sécurisé.</p>
+    <div class="account-dialog__box account-dialog__box--warning">
+      <strong>Compte créé, mais l’e-mail d’invitation n’a pas pu partir.</strong>
+      <p>Transmettez au client, par un canal sûr :</p>
+      <dl>
+        <div><dt>E-mail</dt><dd>{{ data.email }}</dd></div>
+        @if (invitationLink) {
+          <div><dt>Lien de première connexion (7 jours)</dt><dd class="is-break">{{ invitationLink }}</dd></div>
+        }
+        <div><dt>Mot de passe temporaire</dt><dd><code>{{ createdPassword }}</code></dd></div>
+      </dl>
     </div>
   }
 </mat-dialog-content>
@@ -31,7 +43,7 @@
   @if (!created) {
     <button mat-stroked-button type="button" mat-dialog-close>Annuler</button>
     <button mat-flat-button color="primary" type="button" (click)="create()" [disabled]="form.invalid || creating">
-      {{ creating ? 'Création...' : 'Créer le compte' }}
+      {{ creating ? 'Création…' : 'Créer le compte et inviter' }}
     </button>
   } @else {
     <button mat-stroked-button type="button" (click)="copyCredentials()">Copier les identifiants</button>

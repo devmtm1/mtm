@@ -27,16 +27,59 @@
 
   <div class="header__right">
     <!-- Recherche globale ERP — raccourci Ctrl+K / Cmd+K -->
-    <div class="header__search" role="search">
-      <svg lucideSearch class="header__search-icon" aria-hidden="true"></svg>
-      <input
-        #searchInput
-        type="text"
-        class="header__search-input"
-        placeholder="Rechercher un dossier, un bien, un client…"
-        aria-label="Recherche globale"
-      />
-      <kbd class="header__search-kbd" aria-hidden="true">Ctrl K</kbd>
+    <div class="header__search-wrap" (focusout)="onSearchBlur($event)">
+      <div class="header__search" role="search">
+        <svg lucideSearch class="header__search-icon" aria-hidden="true"></svg>
+        <input
+          #searchInput
+          type="text"
+          class="header__search-input"
+          placeholder="Rechercher un terrain, un prospect, un dossier…"
+          aria-label="Recherche globale"
+          autocomplete="off"
+          role="combobox"
+          [attr.aria-expanded]="searchOpen()"
+          aria-controls="global-search-results"
+          [value]="searchTerm()"
+          (input)="onSearchInput($event)"
+          (focus)="searchOpen.set(searchTerm().length >= 2)"
+          (keydown)="onSearchKeydown($event)"
+        />
+        @if (searchLoading()) {
+          <span class="header__search-spinner" aria-hidden="true"></span>
+        } @else {
+          <kbd class="header__search-kbd" aria-hidden="true">Ctrl K</kbd>
+        }
+      </div>
+      @if (searchOpen()) {
+        <div id="global-search-results" class="search-panel" role="listbox" aria-label="Résultats de la recherche">
+          @if (searchResults().length === 0) {
+            <p class="search-panel__empty">
+              {{ searchLoading() ? 'Recherche…' : 'Aucun résultat pour « ' + searchTerm() + ' »' }}
+            </p>
+          } @else {
+            @for (group of searchGroups(); track group.label) {
+              <p class="search-panel__group">{{ group.label }}</p>
+              @for (result of group.items; track result.id) {
+                <button
+                  type="button"
+                  class="search-panel__item"
+                  role="option"
+                  [class.is-active]="result === activeResult()"
+                  [attr.aria-selected]="result === activeResult()"
+                  (mousedown)="$event.preventDefault()"
+                  (click)="openResult(result)"
+                >
+                  <span class="search-panel__title">{{ result.title }}</span>
+                  @if (result.hint) {
+                    <span class="search-panel__hint">{{ result.hint }}</span>
+                  }
+                </button>
+              }
+            }
+          }
+        </div>
+      }
     </div>
 
     <button
@@ -54,33 +97,45 @@
       }
     </button>
 
-    <!-- Notifications — structure prête pour les futurs flux
-         (système, métier, alertes, tâches, documents à valider) -->
+    <!-- Points d'attention : mandats expirants, tâches en retard, demandes web et réservations à traiter -->
     <button
       mat-icon-button
       type="button"
       class="header__icon-btn"
       [matMenuTriggerFor]="notificationsMenu"
+      (menuOpened)="refreshFeed()"
       [matBadge]="notificationCount()"
       [matBadgeHidden]="notificationCount() === 0"
       matBadgeSize="small"
       matBadgeColor="warn"
-      matTooltip="Notifications"
-      aria-label="Notifications"
+      matTooltip="Points d’attention"
+      [attr.aria-label]="notificationCount() ? notificationCount() + ' points d’attention' : 'Points d’attention'"
     >
       <svg lucideBell class="header__icon-svg" aria-hidden="true"></svg>
     </button>
 
     <mat-menu #notificationsMenu="matMenu" xPosition="before" overlayPanelClass="mtm-menu-panel">
-      <div class="menu-header">Notifications</div>
+      <div class="menu-header">Points d’attention</div>
       <mat-divider />
-      <div class="menu-empty">
-        <svg lucideBellOff class="menu-empty__icon" aria-hidden="true"></svg>
-        <p class="menu-empty__title">Aucune notification</p>
-        <p class="menu-empty__hint">
-          Les alertes système et métier apparaîtront ici.
-        </p>
-      </div>
+      @if (feed().length === 0) {
+        <div class="menu-empty">
+          <svg lucideBellOff class="menu-empty__icon" aria-hidden="true"></svg>
+          <p class="menu-empty__title">Rien à signaler</p>
+          <p class="menu-empty__hint">
+            Mandats à échéance, tâches en retard, demandes web et réservations à traiter apparaîtront ici.
+          </p>
+        </div>
+      } @else {
+        @for (item of feed(); track item.id) {
+          <button mat-menu-item type="button" class="feed-item" (click)="openFeedItem(item)">
+            <span [class]="'feed-item__dot feed-item__dot--' + item.severity" aria-hidden="true"></span>
+            <span class="feed-item__text">
+              <span class="feed-item__title">{{ item.title }}</span>
+              <span class="feed-item__detail">{{ item.detail }}</span>
+            </span>
+          </button>
+        }
+      }
     </mat-menu>
 
     <!-- Profil utilisateur (données réelles de la session) -->

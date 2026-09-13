@@ -1,54 +1,61 @@
-import { Component, inject, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
-import { MatButtonModule } from '@angular/material/button';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { LucideX } from '@lucide/angular';
-import { TerrainsApiService, AuditHistoryItem } from '../../core/services/api/terrains-api.service';
+import type { MatDialog } from '@angular/material/dialog';
+import { HistoryDialog } from '../../shared/dialogs/history-dialog';
+import type { TerrainsApiService } from '../../core/services/api/terrains-api.service';
 
-@Component({
-  selector: 'app-terrain-history-dialog',
-  imports: [DatePipe, MatButtonModule, MatDialogModule, LucideX],
-  templateUrl: './terrain-history-dialog.html',
-  styleUrl: './terrain-history-dialog.scss',
-})
-export class TerrainHistoryDialog {
-  private readonly terrainsApi = inject(TerrainsApiService);
-  private readonly dialogRef = inject(MatDialogRef<TerrainHistoryDialog>);
-  protected readonly dialogData = inject<{ terrainId: string }>(MAT_DIALOG_DATA);
+const ACTION_LABELS: Record<string, string> = {
+  'terrain.created': 'Création de la fiche',
+  'terrain.updated': 'Modification de la fiche',
+  'terrain.statutJuridique.updated': 'Changement du statut juridique',
+  'terrain.niveauVerification.updated': 'Changement du niveau de vérification',
+  'terrain.statutCommercial.updated': 'Changement de la commercialisation',
+  'terrain.media.created': 'Ajout d’une photo ou vidéo',
+  'terrain.media.deleted': 'Suppression d’une photo ou vidéo',
+  'terrain.document.created': 'Ajout d’un document',
+  'terrain.document.deleted': 'Suppression d’un document',
+};
 
-  protected readonly loading = signal(true);
-  protected readonly history = signal<AuditHistoryItem[]>([]);
-  protected readonly errorMessage = signal<string | null>(null);
+const FIELD_LABELS: Record<string, string> = {
+  referenceInterne: 'Référence',
+  nom: 'Nom',
+  parcelleMatricule: 'Parcelle / matricule',
+  proprietaireId: 'Propriétaire',
+  statutJuridique: 'Statut juridique',
+  typeDocumentFoncier: 'Document foncier',
+  niveauVerification: 'Vérification',
+  statutCommercial: 'Commercialisation',
+  region: 'Région',
+  commune: 'Commune',
+  localisationDetail: 'Localisation',
+  latitude: 'Latitude',
+  longitude: 'Longitude',
+  superficie: 'Superficie',
+  prixAcquisition: 'Prix d’acquisition',
+  prixPublic: 'Prix public',
+  marge: 'Marge',
+  commission: 'Commission',
+  misEnAvant: 'Mis en avant',
+  description: 'Description publique',
+  notesInternes: 'Notes internes',
+  vocation: 'Vocation',
+  accesRoutier: 'Accès routier',
+  eauDisponible: 'Eau',
+  electriciteDisponible: 'Électricité',
+  voisinage: 'Voisinage',
+  proximiteAxes: 'Proximité des axes',
+  title: 'Titre',
+  type: 'Type',
+  isPublic: 'Public',
+};
 
-   constructor() {
-    this.terrainsApi.getHistory(this.dialogData.terrainId).subscribe({
-      next: (response: { items: AuditHistoryItem[] }) => {
-        this.history.set(response.items);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.errorMessage.set('Impossible de charger l’historique.');
-        this.loading.set(false);
-      },
+/** Historique d'un terrain, sur le dialogue d'historique partagé. */
+export const TerrainHistoryDialog = {
+  open(dialog: MatDialog, api: TerrainsApiService, terrain: { id: string; nom: string }): void {
+    HistoryDialog.open(dialog, {
+      subject: `Terrain ${terrain.nom}`,
+      load: () => api.getHistory(terrain.id),
+      actionLabels: ACTION_LABELS,
+      fieldLabels: FIELD_LABELS,
+      moneyFields: ['prixAcquisition', 'prixPublic', 'marge', 'commission'],
     });
-  }
-
-  close(): void {
-    this.dialogRef.close();
-  }
-
-  protected formatAction(action: string): string {
-    const labels: Record<string, string> = {
-      'terrain.created': 'Création du terrain',
-      'terrain.updated': 'Modification du terrain',
-      'terrain.statutJuridique.updated': 'Changement de statut juridique',
-      'terrain.niveauVerification.updated': 'Changement de niveau de vérification',
-      'terrain.statutCommercial.updated': 'Changement de statut commercial',
-      'terrain.media.created': 'Ajout d’un média',
-      'terrain.media.deleted': 'Suppression d’un média',
-      'terrain.document.created': 'Ajout d’un document',
-      'terrain.document.deleted': 'Suppression d’un document',
-    };
-    return labels[action] ?? action;
-  }
-}
+  },
+};

@@ -8,18 +8,18 @@ export default {
         // (pixels les plus saturés du "M" et du mot-symbole) — source unique
         // de vérité pour toute la palette du site, ne jamais redéfinir une
         // couleur de marque ailleurs que dans ce fichier.
-        'mtm-primary': '#B43036',
-        'mtm-primary-dark': '#751F23',
-        'mtm-secondary': '#1F4C7A',
-        'mtm-secondary-dark': '#14314F',
+        'mtm-primary': '#B52C36',
+        'mtm-primary-dark': '#83191D',
+        'mtm-secondary': '#1A4974',
+        'mtm-secondary-dark': '#233D5B',
         'mtm-bg': '#F7F8FA',
         'mtm-surface': '#FFFFFF',
         'mtm-border': '#E5E7EB',
         'mtm-text': '#1F2937',
         'mtm-muted': '#6B7280',
-        'mtm-success': '#059669',
-        'mtm-warning': '#D97706',
-        'mtm-error': '#DC2626',
+        'mtm-success': '#047857',
+        'mtm-warning': '#B45309',
+        'mtm-error': '#B52C36',
       },
       fontFamily: {
         display: ['"Outfit"', 'system-ui', 'sans-serif'],

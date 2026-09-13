@@ -1,156 +1,249 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { HttpErrorResponse } from '@angular/common/http';
-import { LucideArrowLeft } from '@lucide/angular';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { LucideArrowLeft, LucidePlus, LucideSave } from '@lucide/angular';
+import { of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { MandatsApiService } from '../../../core/services/api/mandats-api.service';
+import { CrmApiService } from '../../../core/services/api/crm-api.service';
+import { SessionService } from '../../../core/services/session.service';
+import type { CreateMandatPayload, MandatDetail, MandatOptions, ProprietaireSummary } from '../../../core/models/mandat.model';
+import type { CommercialSummary } from '../../../core/models/prospect.model';
+import { NotificationService } from '../../../shared/services/notification.service';
 import { ProprietaireDialog } from '../../terrains/proprietaire-dialog';
-import type { CreateMandatPayload, MandatDetail, ProprietaireSummary } from '../../../core/models/mandat.model';
+import { MANDAT_STATUS, RESTRICTION_OPTIONS, TYPE_MANDAT_HELP, joursRestants, statusHelp } from '../mandat-status';
 
+/** La date de fin doit suivre la date de début. */
+function periodValidator(group: AbstractControl): ValidationErrors | null {
+  const debut = group.get('dateDebut')?.value as string;
+  const fin = group.get('dateFin')?.value as string;
+  return debut && fin && fin < debut ? { period: true } : null;
+}
+
+function toDateInput(value: string | null | undefined): string {
+  return value ? value.slice(0, 10) : '';
+}
+
+/**
+ * Création / modification d'un mandat (J1.4). Un seul écran en trois blocs :
+ * les parties, le contrat, les conditions. Les restrictions contractuelles
+ * sont des cases à cocher (plus de JSON à saisir).
+ */
 @Component({
   selector: 'app-mandat-form',
-  imports: [FormsModule, ReactiveFormsModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatCheckboxModule, LucideArrowLeft],
+  imports: [
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatSlideToggleModule,
+    MatTooltipModule,
+    LucideArrowLeft,
+    LucidePlus,
+    LucideSave,
+  ],
   templateUrl: './mandat-form.html',
   styleUrl: './mandat-form.scss',
 })
 export class MandatForm implements OnInit {
-  private readonly route: ActivatedRoute = inject(ActivatedRoute);
-  private readonly router: Router = inject(Router);
-  private readonly api: MandatsApiService = inject(MandatsApiService);
-  private readonly formBuilder: FormBuilder = inject(FormBuilder);
-  private readonly snackBar: MatSnackBar = inject(MatSnackBar);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly api = inject(MandatsApiService);
+  private readonly crmApi = inject(CrmApiService);
+  private readonly session = inject(SessionService);
+  private readonly formBuilder = inject(FormBuilder);
+  private readonly notify = inject(NotificationService);
   private readonly dialog = inject(MatDialog);
+  private readonly destroyRef = inject(DestroyRef);
 
-  protected mandatId: string | null = null;
-  protected mandat: MandatDetail | null = null;
-  protected saving = false;
-  protected options = { typeMandat: [], statut: [] } as { typeMandat: string[]; statut: string[] };
-  protected proprietaires: ProprietaireSummary[] = [];
+  protected readonly mandatId: string | null = this.route.snapshot.paramMap.get('id');
+  protected readonly isEdit = this.mandatId !== null;
+  protected readonly loading = signal(this.isEdit);
+  protected readonly saving = signal(false);
+  protected readonly options = signal<MandatOptions>({ typeMandat: [], statut: [], statutLot: [], documentTypes: [] });
+  protected readonly proprietaires = signal<ProprietaireSummary[]>([]);
+  protected readonly commercials = signal<CommercialSummary[]>([]);
+  protected readonly restrictionOptions = RESTRICTION_OPTIONS;
+  protected readonly mandatStatus = MANDAT_STATUS;
+  protected readonly typeHelp = TYPE_MANDAT_HELP;
 
-  protected addProprietaire(): void {
-    const ref = this.dialog.open(ProprietaireDialog, {
-      width: '520px',
-      maxWidth: 'calc(100vw - 32px)',
-    });
-    ref.afterClosed().subscribe((payload: Omit<ProprietaireSummary, 'id'> | undefined) => {
-      if (!payload) return;
-      this.api.createProprietaire(payload).subscribe({
-        next: (proprietaire) => {
-          this.proprietaires = [...this.proprietaires, proprietaire].sort((a, b) =>
-            `${a.lastName}${a.firstName}`.localeCompare(`${b.lastName}${b.firstName}`),
-          );
-          this.form.controls.proprietaireId.setValue(proprietaire.id);
-          this.snackBar.open('Propriétaire créé et sélectionné', 'Fermer', { duration: 3000 });
-        },
-        error: (error: HttpErrorResponse) => {
-          this.snackBar.open(this.getApiErrorMessage(error), 'Fermer', { duration: 4000 });
-        },
-      });
-    });
-  }
+  protected readonly form = this.formBuilder.nonNullable.group(
+    {
+      referenceInterne: ['', [Validators.required, Validators.maxLength(100)]],
+      proprietaireId: ['', Validators.required],
+      commercialResponsableId: [''],
+      typeMandat: ['', Validators.required],
+      dateDebut: [toDateInput(new Date().toISOString()), Validators.required],
+      dateFin: ['', Validators.required],
+      exclusivite: [false],
+      alerteEcheanceJours: [30, [Validators.min(1), Validators.max(365)]],
+      statut: ['Brouillon', Validators.required],
+      prixConditions: [''],
+      commissions: [''],
+      clauses: [''],
+      restrictions: this.formBuilder.nonNullable.group(
+        Object.fromEntries(RESTRICTION_OPTIONS.map((option) => [option.key, [false]])) as Record<string, [boolean]>,
+      ),
+      restrictionsAutres: [''],
+      objectifsCommercialisation: [''],
+    },
+    { validators: periodValidator },
+  );
 
-  protected readonly form = this.formBuilder.nonNullable.group({
-    referenceInterne: ['', [Validators.required, Validators.maxLength(100)]],
-    proprietaireId: ['', Validators.required],
-    commercialResponsableId: [''],
-    typeMandat: ['', Validators.required],
-    dateDebut: ['', Validators.required],
-    dateFin: ['', Validators.required],
-    exclusivite: [false],
-    prixConditions: [''],
-    commissions: [''],
-    clauses: [''],
-    restrictionsContractuelles: [''],
-    objectifsCommercialisation: [''],
-    alerteEcheanceJours: [30, [Validators.min(1)]],
-    statut: ['Brouillon', Validators.required],
+  private readonly formValue = signal(this.form.getRawValue());
+
+  /** Durée lisible du contrat, recalculée en direct. */
+  protected readonly duration = computed(() => {
+    const { dateDebut, dateFin } = this.formValue();
+    if (!dateDebut || !dateFin || dateFin < dateDebut) return null;
+    const days = Math.round((new Date(dateFin).getTime() - new Date(dateDebut).getTime()) / 86_400_000);
+    const months = Math.round(days / 30.44);
+    const remaining = joursRestants(dateFin);
+    return { days, months, remaining };
   });
 
   ngOnInit(): void {
-    this.api.getOptions().subscribe({ next: (options) => { this.options = options; } });
-    this.api.getProprietaires().subscribe({ next: (proprietaires) => { this.proprietaires = proprietaires; } });
-    this.mandatId = this.route.snapshot.paramMap.get('id');
+    this.api.getOptions().subscribe({
+      next: (options) => {
+        this.options.set(options);
+        if (!this.isEdit && !this.form.controls.typeMandat.value && options.typeMandat.length) this.form.controls.typeMandat.setValue(options.typeMandat[0]);
+      },
+    });
+    this.api.getProprietaires().subscribe({ next: (list) => this.proprietaires.set(list) });
+    if (this.session.hasPermission('crm:consulter')) {
+      this.crmApi
+        .getCommercials()
+        .pipe(catchError(() => of([] as CommercialSummary[])))
+        .subscribe((list) => this.commercials.set(list));
+    }
+    this.form.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.formValue.set(this.form.getRawValue()));
+
+    const preselected = this.route.snapshot.queryParamMap.get('proprietaireId');
+    if (preselected) this.form.controls.proprietaireId.setValue(preselected);
+
     if (this.mandatId) {
       this.api.findOne(this.mandatId).subscribe({
-        next: (mandat) => {
-          this.mandat = mandat;
-          this.form.patchValue(this.toFormValue(mandat));
+        next: (mandat) => this.hydrate(mandat),
+        error: (error: unknown) => {
+          this.notify.error(error, 'Mandat introuvable');
+          this.goBack();
         },
-        error: () => this.goBack(),
       });
     }
   }
 
+  protected help(value: string | null | undefined): string {
+    return statusHelp(MANDAT_STATUS, value);
+  }
+
+  protected addProprietaire(): void {
+    this.dialog
+      .open(ProprietaireDialog, { width: '520px', maxWidth: 'calc(100vw - 32px)' })
+      .afterClosed()
+      .subscribe((payload: Omit<ProprietaireSummary, 'id'> | undefined) => {
+        if (!payload) return;
+        this.api.createProprietaire(payload).subscribe({
+          next: (proprietaire) => {
+            this.proprietaires.update((list) => [...list, proprietaire].sort((a, b) => `${a.lastName}${a.firstName}`.localeCompare(`${b.lastName}${b.firstName}`)));
+            this.form.controls.proprietaireId.setValue(proprietaire.id);
+            this.notify.success('Propriétaire créé et sélectionné');
+          },
+          error: (error: unknown) => this.notify.error(error, 'Impossible de créer le propriétaire'),
+        });
+      });
+  }
+
   protected submit(): void {
-    if (this.form.invalid || this.saving) { this.form.markAllAsTouched(); return; }
-    this.saving = true;
-    const value = this.form.getRawValue();
-    const payload = this.cleanPayload(value);
+    if (this.saving()) return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.notify.info(this.form.hasError('period') ? 'La date de fin doit être postérieure à la date de début.' : 'Complétez les champs obligatoires signalés.');
+      return;
+    }
+    this.saving.set(true);
+    const payload = this.toPayload();
     const request$ = this.mandatId ? this.api.update(this.mandatId, payload) : this.api.create(payload);
     request$.subscribe({
-      next: (mandat: MandatDetail) => {
-        this.saving = false;
-        this.snackBar.open(this.mandatId ? 'Mandat mis à jour' : 'Mandat créé', 'Fermer', { duration: 3000 });
-        this.router.navigate(['/mandats', mandat.id]);
+      next: (mandat) => {
+        this.saving.set(false);
+        this.notify.success(this.mandatId ? 'Mandat mis à jour' : 'Mandat créé — rattachez maintenant les terrains concernés');
+        void this.router.navigate(['/mandats', mandat.id]);
       },
-      error: (error: HttpErrorResponse) => {
-        this.saving = false;
-        this.snackBar.open(this.getApiErrorMessage(error), 'Fermer', { duration: 4000 });
+      error: (error: unknown) => {
+        this.saving.set(false);
+        this.notify.error(error, 'Impossible d’enregistrer le mandat');
       },
     });
   }
 
-  protected goBack(): void { this.router.navigate(['/mandats']); }
+  protected goBack(): void {
+    if (this.mandatId) void this.router.navigate(['/mandats', this.mandatId]);
+    else void this.router.navigate(['/mandats']);
+  }
 
-  private toFormValue(mandat: MandatDetail) {
-    return {
+  protected controlInvalid(name: string): boolean {
+    const control = this.form.get(name);
+    return !!control && control.invalid && control.touched;
+  }
+
+  private hydrate(mandat: MandatDetail): void {
+    const restrictions = mandat.restrictionsContractuelles ?? {};
+    this.form.patchValue({
       referenceInterne: mandat.referenceInterne,
       proprietaireId: mandat.proprietaire?.id ?? '',
       commercialResponsableId: mandat.commercialResponsable?.id ?? '',
       typeMandat: mandat.typeMandat,
-      dateDebut: mandat.dateDebut,
-      dateFin: mandat.dateFin,
+      dateDebut: toDateInput(mandat.dateDebut),
+      dateFin: toDateInput(mandat.dateFin),
       exclusivite: !!mandat.exclusivite,
+      alerteEcheanceJours: mandat.alerteEcheanceJours ?? 30,
+      statut: mandat.statut,
       prixConditions: mandat.prixConditions ?? '',
       commissions: mandat.commissions ?? '',
       clauses: mandat.clauses ?? '',
-      restrictionsContractuelles: mandat.restrictionsContractuelles ? JSON.stringify(mandat.restrictionsContractuelles, null, 2) : '',
+      restrictions: Object.fromEntries(RESTRICTION_OPTIONS.map((option) => [option.key, restrictions[option.key] === true])),
+      restrictionsAutres: typeof restrictions['autres'] === 'string' ? restrictions['autres'] : typeof restrictions['raw'] === 'string' ? restrictions['raw'] : '',
       objectifsCommercialisation: mandat.objectifsCommercialisation ?? '',
-      alerteEcheanceJours: mandat.alerteEcheanceJours ?? 30,
-      statut: mandat.statut,
+    });
+    this.formValue.set(this.form.getRawValue());
+    this.loading.set(false);
+  }
+
+  private toPayload(): CreateMandatPayload {
+    const value = this.form.getRawValue();
+    const restrictions: Record<string, unknown> = {};
+    for (const option of RESTRICTION_OPTIONS) {
+      if (value.restrictions[option.key]) restrictions[option.key] = true;
+    }
+    if (value.restrictionsAutres.trim()) restrictions['autres'] = value.restrictionsAutres.trim();
+    const text = (item: string) => (item.trim() ? item.trim() : undefined);
+    return {
+      referenceInterne: value.referenceInterne.trim(),
+      proprietaireId: value.proprietaireId,
+      commercialResponsableId: value.commercialResponsableId || undefined,
+      typeMandat: value.typeMandat,
+      dateDebut: value.dateDebut,
+      dateFin: value.dateFin,
+      exclusivite: value.exclusivite,
+      alerteEcheanceJours: value.alerteEcheanceJours,
+      statut: value.statut,
+      prixConditions: text(value.prixConditions),
+      commissions: text(value.commissions),
+      clauses: text(value.clauses),
+      restrictionsContractuelles: Object.keys(restrictions).length ? restrictions : undefined,
+      objectifsCommercialisation: text(value.objectifsCommercialisation),
     };
-  }
-
-  private cleanPayload(value: ReturnType<typeof this.form.getRawValue>): CreateMandatPayload {
-    let restrictionsContractuelles: Record<string, unknown> | undefined;
-    try {
-      restrictionsContractuelles = value.restrictionsContractuelles ? JSON.parse(value.restrictionsContractuelles) : undefined;
-    } catch {
-      restrictionsContractuelles = { raw: value.restrictionsContractuelles };
-    }
-
-    const stringFields = ['prixConditions', 'commissions', 'clauses', 'objectifsCommercialisation', 'restrictionsContractuelles'] as const;
-    const cleaned: Record<string, unknown> = { ...value, restrictionsContractuelles };
-    for (const field of stringFields) {
-      if (typeof cleaned[field] === 'string' && cleaned[field].trim() === '') {
-        cleaned[field] = undefined;
-      }
-    }
-    if (!(cleaned['commercialResponsableId'] as string | undefined)) cleaned['commercialResponsableId'] = undefined;
-    return cleaned as unknown as CreateMandatPayload;
-  }
-
-  private getApiErrorMessage(error: HttpErrorResponse): string {
-    const message = error.error?.message;
-    if (Array.isArray(message)) return message.join(' ');
-    if (typeof message === 'string' && message.trim()) return message;
-    return 'Impossible d’enregistrer le mandat';
   }
 }

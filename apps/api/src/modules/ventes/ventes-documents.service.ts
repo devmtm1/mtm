@@ -11,22 +11,16 @@ import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import { validateUploadedAsset } from '../../common/storage/asset-validation';
 import { CreateDocumentVenteDto } from './dto/create-document-vente.dto';
 import { VentesAccessService, type MandatUser } from './ventes-access.service';
+import {
+  DEFAULT_DOCUMENT_TYPES,
+  GENERATED_DOCUMENT_TYPES,
+} from './ventes-workflow.service';
 
 /**
  * GED des dossiers de vente (J1.6, section 17 CDC) : dépôt, génération PDF
  * (bon de réservation, reçu, facture, contrat, état de paiement), suppression
  * et recherche des documents.
  */
-const DOCUMENT_TYPES = [
-  'bon_reservation',
-  'recu',
-  'facture',
-  'contrat',
-  'etat_paiement',
-  'justificatif',
-  'autre',
-];
-
 @Injectable()
 export class VentesDocumentsService {
   constructor(
@@ -37,7 +31,10 @@ export class VentesDocumentsService {
   ) {}
 
   private getAllowedDocumentTypes(): Promise<string[]> {
-    return this.settings.getStringList('ventes.documentTypes', DOCUMENT_TYPES);
+    return this.settings.getStringList(
+      'ventes.documentTypes',
+      DEFAULT_DOCUMENT_TYPES,
+    );
   }
 
   async addDocument(
@@ -75,8 +72,13 @@ export class VentesDocumentsService {
   ) {
     await this.access.ensureAccessible(id, user);
     const allowedDocumentTypes = await this.getAllowedDocumentTypes();
-    if (!allowedDocumentTypes.includes(dto.type))
-      throw new BadRequestException('Type de document invalide');
+    if (
+      !allowedDocumentTypes.includes(dto.type) ||
+      !GENERATED_DOCUMENT_TYPES.includes(dto.type)
+    )
+      throw new BadRequestException(
+        'Ce type de document ne peut pas être généré automatiquement',
+      );
 
     const dossier = await this.prisma.dossierVente.findUnique({
       where: { id },

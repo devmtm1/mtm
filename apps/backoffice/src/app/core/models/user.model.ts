@@ -5,6 +5,8 @@ export interface UserListItem {
   lastName: string;
   isActive: boolean;
   twoFactorEnabled: boolean;
+  /** Mot de passe provisoire : à changer à la prochaine connexion. */
+  mustChangePassword?: boolean;
   lastLoginAt: string | null;
   createdAt: string;
   roles: string[];

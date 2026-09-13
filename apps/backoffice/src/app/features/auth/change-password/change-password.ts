@@ -1,7 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { LucideAlertCircle, LucideKeyRound } from '@lucide/angular';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -9,6 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { AuthService } from '../../../core/services/auth.service';
 import { SessionService } from '../../../core/services/session.service';
 import { matchFieldsValidator } from '../../../core/validators/match-fields.validator';
+import { passwordPolicyValidator, PASSWORD_POLICY_HINT } from '../../../core/validators/password-policy.validator';
 
 interface ChangePasswordForm {
   currentPassword: FormControl<string>;
@@ -19,6 +21,9 @@ interface ChangePasswordForm {
 @Component({
   selector: 'app-change-password',
   imports: [
+    RouterLink,
+    LucideAlertCircle,
+    LucideKeyRound,
     ReactiveFormsModule,
     MatButtonModule,
     MatCardModule,
@@ -26,9 +31,10 @@ interface ChangePasswordForm {
     MatInputModule,
   ],
   templateUrl: './change-password.html',
-  styleUrl: './change-password.scss',
+  styleUrl: '../login/login.scss',
 })
 export class ChangePassword {
+  protected readonly passwordHint = PASSWORD_POLICY_HINT;
   private readonly authService = inject(AuthService);
   private readonly sessionService = inject(SessionService);
   private readonly router = inject(Router);
@@ -46,7 +52,7 @@ export class ChangePassword {
       }),
       newPassword: new FormControl('', {
         nonNullable: true,
-        validators: [Validators.required, Validators.minLength(6)],
+        validators: [Validators.required, passwordPolicyValidator()],
       }),
       confirmPassword: new FormControl('', {
         nonNullable: true,

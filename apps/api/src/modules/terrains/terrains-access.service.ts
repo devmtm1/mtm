@@ -6,7 +6,7 @@ import {
 import { PrismaService } from '../../database/prisma.service';
 import {
   hasAnyRole,
-  SUPERVISION_ROLES,
+  hasSupervisionScope,
   PUBLISHER_ROLES,
 } from '../rbac/role-groups';
 
@@ -30,13 +30,20 @@ export class TerrainsAccessService {
     if (!terrain) throw new NotFoundException('Terrain introuvable');
   }
 
-  ownershipFilter(user?: { id?: string; roles?: string[] }) {
-    if (!user || this.hasGlobalScope(user.roles ?? [])) return {};
+  ownershipFilter(user?: {
+    id?: string;
+    roles?: string[];
+    permissions?: string[];
+  }) {
+    if (!user || this.hasGlobalScope(user)) return {};
     return { commercialResponsableId: user.id };
   }
 
-  hasGlobalScope(roles: string[]): boolean {
-    return hasAnyRole(roles, SUPERVISION_ROLES);
+  hasGlobalScope(user: { roles?: string[]; permissions?: string[] }): boolean {
+    return hasSupervisionScope(
+      { roles: user.roles ?? [], permissions: user.permissions },
+      'terrains',
+    );
   }
 
   assertCanPublish(

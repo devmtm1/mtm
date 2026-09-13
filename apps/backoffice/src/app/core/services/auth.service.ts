@@ -73,6 +73,24 @@ export class AuthService {
     );
   }
 
+  /**
+   * Demande de réinitialisation : réponse toujours « acceptée » (anti-énumération).
+   * Hors production sans SMTP, l'API renvoie le jeton pour la recette.
+   */
+  requestPasswordReset(email: string): Observable<{ accepted: true; developmentToken?: string }> {
+    return this.rawHttp.post<{ accepted: true; developmentToken?: string }>(
+      `${environment.apiUrl}/auth/password-reset/request`,
+      { email },
+    );
+  }
+
+  confirmPasswordReset(token: string, newPassword: string): Observable<{ success: boolean }> {
+    return this.rawHttp.post<{ success: boolean }>(
+      `${environment.apiUrl}/auth/password-reset/confirm`,
+      { token, newPassword },
+    );
+  }
+
   changePassword(
     currentPassword: string,
     newPassword: string,

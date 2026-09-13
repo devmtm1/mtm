@@ -1,13 +1,30 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
+import { shareReplay } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
-import type { CreateTerrainPayload, TerrainDetail, TerrainOptions, TerrainPage, TerrainQuery, ProprietaireSummary } from '../../models/terrain.model';
+import type {
+  CreateTerrainPayload,
+  ProprietaireSummary,
+  TerrainDetail,
+  TerrainOptions,
+  TerrainPage,
+  TerrainQuery,
+  TerrainStats,
+} from '../../models/terrain.model';
 
 @Injectable({ providedIn: 'root' })
 export class TerrainsApiService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/terrains`;
+
+  /**
+   * Référentiels mis en cache pour la durée de la session : ils changent
+   * rarement (Paramètres) et sont demandés par chaque formulaire — les
+   * recharger à chaque écran faisait attendre l'utilisateur inutilement.
+   */
+  private options$?: Observable<TerrainOptions>;
+  private proprietaires$?: Observable<ProprietaireSummary[]>;
 
   findAll(query: TerrainQuery = {}): Observable<TerrainPage> {
     let params = new HttpParams();
@@ -21,26 +38,41 @@ export class TerrainsApiService {
     return this.http.get<TerrainDetail>(`${this.baseUrl}/${id}`);
   }
 
+  getStats(): Observable<TerrainStats> {
+    return this.http.get<TerrainStats>(`${this.baseUrl}/stats`);
+  }
+
   getOptions(): Observable<TerrainOptions> {
-    return this.http.get<TerrainOptions>(`${this.baseUrl}/options`);
+    this.options$ ??= this.http
+      .get<TerrainOptions>(`${this.baseUrl}/options`)
+      .pipe(shareReplay({ bufferSize: 1, refCount: false }));
+    return this.options$;
   }
 
   getProprietaires(): Observable<ProprietaireSummary[]> {
-    return this.http.get<ProprietaireSummary[]>(`${environment.apiUrl}/proprietaires`);
+    this.proprietaires$ ??= this.http
+      .get<ProprietaireSummary[]>(`${environment.apiUrl}/proprietaires`)
+      .pipe(shareReplay({ bufferSize: 1, refCount: false }));
+    return this.proprietaires$;
   }
 
   createProprietaire(payload: Omit<ProprietaireSummary, 'id'>): Observable<ProprietaireSummary> {
-    return this.http.post<ProprietaireSummary>(`${environment.apiUrl}/proprietaires`, payload);
+    return this.http
+      .post<ProprietaireSummary>(`${environment.apiUrl}/proprietaires`, payload)
+      .pipe(tap(() => (this.proprietaires$ = undefined)));
   }
 
-  updateProprietaire(id: string, payload: Partial<Omit<ProprietaireSummary, 'id'>>): Observable<ProprietaireSummary> {
-    return this.http.patch<ProprietaireSummary>(`${environment.apiUrl}/proprietaires/${id}`, payload);
+  updateProprietaire(
+    id: string,
+    payload: Partial<Omit<ProprietaireSummary, 'id'>>,
+  ): Observable<ProprietaireSummary> {
+    return this.http
+      .patch<ProprietaireSummary>(`${environment.apiUrl}/proprietaires/${id}`, payload)
+      .pipe(tap(() => (this.proprietaires$ = undefined)));
   }
 
   getHistory(id: string): Observable<{ items: AuditHistoryItem[] }> {
-    return this.http.get<{ items: AuditHistoryItem[] }>(`${environment.apiUrl}/audit`, {
-      params: { entityType: 'Terrain', entityId: id, pageSize: '100' },
-    });
+    return this.http.get<{ items: AuditHistoryItem[] }>(`${this.baseUrl}/${id}/history`);
   }
 
   create(payload: CreateTerrainPayload): Observable<TerrainDetail> {
@@ -51,27 +83,52 @@ export class TerrainsApiService {
     return this.http.patch<TerrainDetail>(`${this.baseUrl}/${id}`, payload);
   }
 
+  /** Mise en avant sur la page d'accueil du site public (le terrain doit être « Disponible »). */
+  setFeatured(id: string, misEnAvant: boolean): Observable<TerrainDetail> {
+    return this.update(id, { misEnAvant });
+  }
+
   updateJuridicalStatus(id: string, value: string, justification?: string) {
-    return this.http.patch<TerrainDetail>(`${this.baseUrl}/${id}/juridical-status`, {
-      value,
-      ...(justification ? { justification } : {}),
-    });
+    return this.updateStatus(id, 'juridical-status', value, justification);
   }
 
   updateVerificationStatus(id: string, value: string, justification?: string) {
-    return this.http.patch<TerrainDetail>(`${this.baseUrl}/${id}/verification-status`, {
+    return this.updateStatus(id, 'verification-status', value, justification);
+  }
+
+  updateCommercialStatus(id: string, value: string, justification?: string) {
+    return this.updateStatus(id, 'commercial-status', value, justification);
+  }
+
+  private updateStatus(id: string, path: string, value: string, justification?: string) {
+    return this.http.patch<TerrainDetail>(`${this.baseUrl}/${id}/${path}`, {
       value,
       ...(justification ? { justification } : {}),
     });
   }
 
-  upload(id: string, kind: 'media' | 'documents', file: File, type: string, title?: string, isPublic = false): Observable<unknown> {
+  upload(
+    id: string,
+    kind: 'media' | 'documents',
+    file: File,
+    type: string,
+    title?: string,
+    isPublic = false,
+  ): Observable<unknown> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('type', type);
     if (title) formData.append('title', title);
     formData.append('isPublic', String(isPublic));
     return this.http.post<unknown>(`${this.baseUrl}/${id}/${kind}`, formData);
+  }
+
+  removeMedia(id: string, mediaId: string): Observable<{ success: boolean }> {
+    return this.http.delete<{ success: boolean }>(`${this.baseUrl}/${id}/media/${mediaId}`);
+  }
+
+  removeDocument(id: string, documentId: string): Observable<{ success: boolean }> {
+    return this.http.delete<{ success: boolean }>(`${this.baseUrl}/${id}/documents/${documentId}`);
   }
 }
 

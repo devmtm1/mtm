@@ -1,0 +1,14 @@
+# Fins de ligne normalisees : LF dans le depot quel que soit l OS du poste.
+# (Les remplacements de chaines echouaient silencieusement sur des fichiers en CRLF.)
+* text=auto eol=lf
+
+# Binaires
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.mp4 binary
+*.woff binary
+*.woff2 binary
+*.pdf binary

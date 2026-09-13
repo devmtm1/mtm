@@ -153,7 +153,7 @@ export class MandatsService {
   }
 
   async getOptions() {
-    const [typeMandat, statut, statutLot] = await Promise.all([
+    const [typeMandat, statut, statutLot, documentTypes] = await Promise.all([
       this.settings.getStringList(
         'mandats.typeMandat',
         DEFAULT_MANDAT_OPTIONS.typeMandat,
@@ -166,8 +166,12 @@ export class MandatsService {
         'mandats.statutLot',
         DEFAULT_MANDAT_OPTIONS.statutLot,
       ),
+      this.settings.getStringList(
+        'mandats.documentTypes',
+        DEFAULT_MANDAT_OPTIONS.documentTypes,
+      ),
     ]);
-    return { typeMandat, statut, statutLot };
+    return { typeMandat, statut, statutLot, documentTypes };
   }
 
   async create(dto: CreateMandatDto, user: MandatUser) {
@@ -182,7 +186,7 @@ export class MandatsService {
     await this.validateStatus(dto.statut);
     if (
       dto.commercialResponsableId &&
-      !this.access.hasGlobalScope(user.roles) &&
+      !this.access.hasGlobalScope(user) &&
       dto.commercialResponsableId !== user.id
     ) {
       throw new BadRequestException(
@@ -246,7 +250,7 @@ export class MandatsService {
     };
     if (
       dto.commercialResponsableId &&
-      !this.access.hasGlobalScope(user.roles) &&
+      !this.access.hasGlobalScope(user) &&
       dto.commercialResponsableId !== user.id
     ) {
       throw new BadRequestException(

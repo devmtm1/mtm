@@ -6,11 +6,12 @@ import {
 import { PrismaService } from '../../database/prisma.service';
 import {
   hasAnyRole,
-  SUPERVISION_ROLES,
+  hasSupervisionScope,
   COMMERCIAL_ROLES,
 } from '../rbac/role-groups';
 
-export type CrmUser = { id: string; roles: string[] };
+/** Utilisateur authentifié tel que le CRM en a besoin pour décider du périmètre. */
+export type CrmUser = { id: string; roles: string[]; permissions?: string[] };
 
 /**
  * Règles de périmètre du CRM, partagées par tous les services du module :
@@ -22,14 +23,11 @@ export class CrmAccessService {
   constructor(private readonly prisma: PrismaService) {}
 
   /** Vue manager : accès à tous les prospects (direction incluse, section 24). */
-  isManager(user: { id: string; roles: string[] }): boolean {
-    return hasAnyRole(user.roles, SUPERVISION_ROLES);
+  isManager(user: CrmUser): boolean {
+    return hasSupervisionScope(user, 'crm');
   }
 
-  async assertOwnership(
-    prospectId: string,
-    user: { id: string; roles: string[] },
-  ): Promise<void> {
+  async assertOwnership(prospectId: string, user: CrmUser): Promise<void> {
     if (this.isManager(user)) return;
     const prospect = await this.prisma.prospect.findUnique({
       where: { id: prospectId },

@@ -19,6 +19,9 @@ export class ProprietairesService {
         lastName: true,
         email: true,
         phone: true,
+        // Nombre de terrains et de mandats : la liste montre d'un coup d'œil
+        // les propriétaires actifs et ceux qui n'ont encore rien confié.
+        _count: { select: { terrains: true, mandats: true } },
       },
       orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
     });
@@ -36,6 +39,7 @@ export class ProprietairesService {
         notes: true,
         createdAt: true,
         updatedAt: true,
+        _count: { select: { terrains: true, mandats: true } },
       },
     });
     if (!proprietaire) {

@@ -1,52 +1,47 @@
-import { Component, inject, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MandatsApiService, AuditHistoryItem } from '../../../core/services/api/mandats-api.service';
+import type { MatDialog } from '@angular/material/dialog';
+import { HistoryDialog } from '../../../shared/dialogs/history-dialog';
+import type { MandatsApiService } from '../../../core/services/api/mandats-api.service';
 
-@Component({
-  selector: 'app-mandat-history-dialog',
-  imports: [DatePipe, MatButtonModule, MatDialogModule],
-  templateUrl: './mandat-history-dialog.html',
-  styleUrl: './mandat-history-dialog.scss',
-})
-export class MandatHistoryDialog {
-  private readonly api = inject(MandatsApiService);
-  private readonly dialogRef = inject(MatDialogRef<MandatHistoryDialog>);
-  protected readonly dialogData = inject<{ mandatId: string }>(MAT_DIALOG_DATA);
+const ACTION_LABELS: Record<string, string> = {
+  'mandat.created': 'Création du mandat',
+  'mandat.updated': 'Modification du mandat',
+  'mandat.deleted': 'Suppression du mandat',
+  'mandat.lot.created': 'Terrain rattaché',
+  'mandat.lot.updated': 'Avancement d’un lot modifié',
+  'mandat.lot.deleted': 'Terrain retiré',
+  'mandat.document.created': 'Ajout d’un document',
+  'mandat.document.deleted': 'Suppression d’un document',
+};
 
-  protected readonly loading = signal(true);
-  protected readonly history = signal<AuditHistoryItem[]>([]);
-  protected readonly errorMessage = signal<string | null>(null);
+const FIELD_LABELS: Record<string, string> = {
+  referenceInterne: 'Référence',
+  proprietaireId: 'Propriétaire',
+  commercialResponsableId: 'Commercial responsable',
+  typeMandat: 'Type',
+  dateDebut: 'Début',
+  dateFin: 'Fin',
+  exclusivite: 'Exclusivité',
+  prixConditions: 'Prix et conditions',
+  commissions: 'Commissions',
+  clauses: 'Clauses',
+  restrictionsContractuelles: 'Restrictions',
+  objectifsCommercialisation: 'Objectifs',
+  alerteEcheanceJours: 'Alerte (jours)',
+  statut: 'Statut',
+  statutLot: 'Avancement du lot',
+  terrainId: 'Terrain',
+  title: 'Titre',
+  type: 'Type',
+};
 
-  constructor() {
-    this.api.getHistory(this.dialogData.mandatId).subscribe({
-      next: (response: { items: AuditHistoryItem[] }) => {
-        this.history.set(response.items);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.errorMessage.set('Impossible de charger l’historique.');
-        this.loading.set(false);
-      },
+/** Historique d'un mandat, sur le dialogue d'historique partagé. */
+export const MandatHistoryDialog = {
+  open(dialog: MatDialog, api: MandatsApiService, mandat: { id: string; referenceInterne: string }): void {
+    HistoryDialog.open(dialog, {
+      subject: `Mandat ${mandat.referenceInterne}`,
+      load: () => api.getHistory(mandat.id),
+      actionLabels: ACTION_LABELS,
+      fieldLabels: FIELD_LABELS,
     });
-  }
-
-  close(): void {
-    this.dialogRef.close();
-  }
-
-  protected formatAction(action: string): string {
-    const labels: Record<string, string> = {
-      'mandat.created': 'Création du mandat',
-      'mandat.updated': 'Modification du mandat',
-      'mandat.deleted': 'Suppression du mandat',
-      'mandat.lot.created': 'Ajout d’un lot',
-      'mandat.lot.updated': 'Modification d’un lot',
-      'mandat.lot.deleted': 'Suppression d’un lot',
-      'mandat.document.created': 'Ajout d’un document',
-      'mandat.document.deleted': 'Suppression d’un document',
-    };
-    return labels[action] ?? action;
-  }
-}
+  },
+};

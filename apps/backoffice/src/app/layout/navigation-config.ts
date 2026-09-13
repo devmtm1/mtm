@@ -7,11 +7,14 @@ import {
   LucideSettings,
   LucideFileClock,
   LucideFileText,
+  LucideInbox,
+  LucideImages,
   LucideLandPlot,
   LucideScrollText,
   LucideUserSearch,
   LucideReceipt,
   LucideIdCard,
+  LucideTarget,
 } from '@lucide/angular';
 
 /**
@@ -96,6 +99,12 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         icon: LucideReceipt,
         permission: 'ventes:consulter',
       },
+      {
+        label: 'Objectifs',
+        route: '/ventes/objectifs',
+        icon: LucideTarget,
+        permission: 'ventes:consulter',
+      },
     ],
   },
   {
@@ -104,19 +113,19 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
       {
         label: 'Demandes web',
         route: '/contacts',
-        icon: LucideFileText,
-        permission: 'settings:consulter',
+        icon: LucideInbox,
+        permission: 'contact:consulter',
       },
       {
         label: 'Contenus du site',
         route: '/content',
         icon: LucideFileText,
-        permission: 'settings:consulter',
+        permission: 'content:consulter',
       },
       {
         label: 'Réalisations & projets',
         route: '/content/showcase',
-        icon: LucideFileText,
+        icon: LucideImages,
         permission: 'content:consulter',
       },
     ],

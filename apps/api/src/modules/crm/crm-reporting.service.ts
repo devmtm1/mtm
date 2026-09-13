@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
-import { CrmAccessService } from './crm-access.service';
+import { CrmAccessService, type CrmUser } from './crm-access.service';
 
 /**
  * Lecture transversale du CRM : liste des commerciaux, statistiques du
@@ -50,7 +50,7 @@ export class CrmReportingService {
     }));
   }
 
-  async getStats(user: { id: string; roles: string[] }) {
+  async getStats(user: CrmUser) {
     const isManager = this.access.isManager(user);
     const now = new Date();
     const startOfDay = new Date(now);
@@ -97,7 +97,7 @@ export class CrmReportingService {
     };
   }
 
-  async getTimeline(prospectId: string, user: { id: string; roles: string[] }) {
+  async getTimeline(prospectId: string, user: CrmUser) {
     await this.access.assertOwnership(prospectId, user);
     await this.access.ensureExists(prospectId);
     const [prospect, activites, audits, dossiers] = await Promise.all([
@@ -161,7 +161,7 @@ export class CrmReportingService {
     };
   }
 
-  async getHistory(prospectId: string, user: { id: string; roles: string[] }) {
+  async getHistory(prospectId: string, user: CrmUser) {
     await this.access.assertOwnership(prospectId, user);
     const [items, total] = await Promise.all([
       this.prisma.auditLog.findMany({

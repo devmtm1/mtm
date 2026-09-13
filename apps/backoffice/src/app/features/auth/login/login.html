@@ -67,6 +67,7 @@
                 Se Connecter
               }
             </button>
+            <a mat-button routerLink="/password-reset" class="full-width login-forgot-link">Mot de passe oublié ?</a>
           </form>
         } @else {
           <div class="login-card-header">
@@ -110,7 +111,7 @@
             <button
               mat-flat-button
               type="submit"
-              class="login-submit btn-mtm-accent"
+              class="login-submit btn-mtm-primary"
               [disabled]="loading()"
             >
               @if (loading()) {

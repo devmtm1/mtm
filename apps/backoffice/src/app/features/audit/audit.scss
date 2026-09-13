@@ -1,128 +1,27 @@
 .audit-page {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  max-width: 1380px;
-  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
 }
 
-.audit-panel {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px solid var(--mtm-border);
-  border-radius: 8px;
-  background: var(--mtm-card-bg);
-}
-
-.audit-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 18px 20px 14px;
-  border-bottom: 1px solid var(--mtm-border);
-
-  h1 {
-    margin: 4px 0;
-    font-family: var(--mtm-font-display);
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: var(--mtm-text-dark);
+:host ::ng-deep .list-grid {
+  .ag-cell {
+    display: flex;
+    align-items: center;
   }
 
-  p {
-    margin: 0;
-    color: var(--mtm-text-muted);
-    font-size: 0.84rem;
-  }
-}
+  .who-cell {
+    display: grid;
+    gap: 1px;
+    line-height: 1.3;
 
-.audit-eyebrow {
-  color: var(--mtm-purple-primary);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.audit-total {
-  padding-top: 6px;
-  color: var(--mtm-text-muted);
-  font-size: 0.78rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.audit-filters {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 20px 6px;
-}
-
-.audit-filter-field {
-  width: 190px;
-  margin: 0;
-}
-
-.audit-filter-field--action {
-  width: 240px;
-}
-
-.audit-filters ::ng-deep .mat-mdc-form-field-subscript-wrapper {
-  display: none;
-}
-
-.audit-filters ::ng-deep .mat-mdc-text-field-wrapper {
-  height: 42px;
-}
-
-.audit-filters ::ng-deep .mat-mdc-form-field-flex {
-  height: 42px;
-  align-items: center;
-}
-
-.audit-filters ::ng-deep .mat-mdc-form-field-infix {
-  display: flex;
-  align-items: center;
-  min-height: 42px;
-  padding-top: 8px;
-  padding-bottom: 8px;
-}
-
-.audit-filters ::ng-deep .mat-mdc-input-element {
-  line-height: 24px;
-}
-
-.audit-filters button {
-  height: 42px;
-}
-
-.audit-grid {
-  width: 100%;
-}
-
-:host ::ng-deep .audit-grid .ag-cell {
-  display: flex;
-  align-items: center;
-}
-
-:host ::ng-deep .audit-grid .ag-cell-value {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-@media (max-width: 720px) {
-  .audit-filters {
-    align-items: stretch;
-    flex-direction: column;
-    padding: 14px 16px 6px;
+    strong {
+      font-size: 0.88rem;
+    }
   }
 
-  .audit-filter-field,
-  .audit-filter-field--action {
-    width: 100%;
+  .mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.72rem;
   }
 }

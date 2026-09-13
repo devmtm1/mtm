@@ -1,199 +1,357 @@
-<section class="vente-detail-page">
-  <header class="page-header">
-    <div>
-      <p class="eyebrow">Ventes</p>
-      <h1 class="page-header__title">Dossier de vente</h1>
+@if (loading()) {
+  <section class="detail-page" aria-busy="true">
+    <div class="skeleton" style="height: 20px; width: 160px"></div>
+    <div class="skeleton" style="height: 36px; width: 40%"></div>
+    <div class="content-grid">
+      <div class="skeleton" style="height: 240px"></div>
+      <div class="skeleton" style="height: 240px"></div>
     </div>
+  </section>
+} @else if (dossier(); as d) {
+  <section class="detail-page" [class.is-busy]="busy()">
+    <a class="back-link" href="/ventes" (click)="$event.preventDefault(); goBack()">
+      <svg lucideArrowLeft aria-hidden="true"></svg>Retour aux dossiers de vente
+    </a>
 
-    <button mat-stroked-button type="button" (click)="goBack()">Retour</button>
-  </header>
-
-  @if (loading()) {
-    <div class="page-card loading-state">
-      <mat-progress-spinner mode="indeterminate" diameter="28"></mat-progress-spinner>
-      <span>Chargement du dossier...</span>
-    </div>
-  } @else if (dossier(); as dossier) {
-    <div class="summary-grid">
-      <mat-card class="detail-card">
-        <mat-card-header>
-          <mat-card-title>Informations</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="detail-row"><span>Référence</span><strong>{{ dossier.referenceInterne || '—' }}</strong></div>
-          <div class="detail-row"><span>Statut</span><strong>{{ dossier.statut }}</strong></div>
-          <div class="detail-row"><span>Prix vente</span><strong>{{ dossier.prixVente | currency:'XOF':'symbol':'1.0-0':'fr' }}</strong></div>
-          <div class="detail-row"><span>Montant payé</span><strong>{{ dossier.montantPaye | currency:'XOF':'symbol':'1.0-0':'fr' }}</strong></div>
-          <div class="detail-row"><span>Solde restant</span><strong>{{ dossier.soldeRestant | currency:'XOF':'symbol':'1.0-0':'fr' }}</strong></div>
-          <div class="detail-row"><span>Créé le</span><strong>{{ dossier.createdAt | date:'dd/MM/yyyy' }}</strong></div>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card class="detail-card">
-        <mat-card-header>
-          <mat-card-title>Prospect</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="detail-row"><span>Nom</span><strong>{{ dossier.prospect.nom }}</strong></div>
-          <div class="detail-row"><span>Prénom</span><strong>{{ dossier.prospect.prenom || '—' }}</strong></div>
-          <div class="detail-row"><span>Email</span><strong>{{ dossier.prospect.email || '—' }}</strong></div>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card class="detail-card">
-        <mat-card-header>
-          <mat-card-title>Terrain</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="detail-row"><span>Référence</span><strong>{{ dossier.terrain?.referenceInterne || '—' }}</strong></div>
-          <div class="detail-row"><span>Nom</span><strong>{{ dossier.terrain?.nom || '—' }}</strong></div>
-          <div class="detail-row"><span>Statut commercial</span><strong>{{ dossier.terrain?.statutCommercial || '—' }}</strong></div>
-        </mat-card-content>
-      </mat-card>
-    </div>
-
-    <section class="page-section detail-section">
-      <div class="section-header">
-        <h2>Réservations</h2>
-      </div>
-
-      @if (dossier.reservations.length) {
-        <div class="list-wrap">
-          @for (reservation of dossier.reservations; track reservation.id) {
-            <div class="list-item">
-              <div class="list-item__content">
-                <strong>Réservation {{ reservation.id.slice(0, 8) }}</strong>
-                <p>Statut : {{ reservation.statut }}</p>
-              </div>
-              <div class="meta-list">
-                <span>Montant acompte : {{ reservation.montantAcompte | currency:'XOF':'symbol':'1.0-0':'fr' }}</span>
-                <span>Expiration : {{ reservation.dateExpiration | date:'dd/MM/yyyy' }}</span>
-              </div>
-            </div>
+    <header class="detail-header">
+      <div class="detail-header__main">
+        <p class="eyebrow">Dossier de vente · {{ reference() }}</p>
+        <h1>
+          @if (canSeeProspect) {
+            <button type="button" class="link-button" (click)="openProspect()" matTooltip="Ouvrir la fiche du client">{{ client() }}</button>
+          } @else {
+            {{ client() }}
+          }
+        </h1>
+        <p class="detail-header__meta">
+          <span>
+            <svg lucideLandPlot aria-hidden="true"></svg>
+            @if (d.terrain) {
+              @if (canSeeTerrain) {
+                <button type="button" class="link-button" (click)="openTerrain()">{{ d.terrain.referenceInterne }} — {{ d.terrain.nom }}</button>
+              } @else {
+                {{ d.terrain.referenceInterne }} — {{ d.terrain.nom }}
+              }
+            } @else {
+              Terrain non défini
+            }
+          </span>
+          @if (d.commercialResponsable) {
+            <span><svg lucideUser aria-hidden="true"></svg>Suivi par {{ d.commercialResponsable.firstName }} {{ d.commercialResponsable.lastName }}</span>
+          }
+          <span>Ouvert le {{ d.createdAt | date: 'dd/MM/yyyy' }}</span>
+        </p>
+        <div class="status-line">
+          <span [class]="statusPill(d.statut)" [matTooltip]="statusHelp(d.statut)">{{ statusLabel(d.statut) }}</span>
+          @if (reservation(); as r) {
+            <span class="status-pill" [class.status-pill--warning]="(reservationDays() ?? 99) > 7" [class.status-pill--danger]="(reservationDays() ?? 99) <= 7" [matTooltip]="'Terrain bloqué jusqu’au ' + (r.dateExpiration | date: 'dd/MM/yyyy')">
+              Réservé · expire dans {{ reservationDays() }} j
+            </span>
+          }
+          @if (pendingPayments().length) {
+            <span class="status-pill status-pill--warning">{{ pendingPayments().length }} paiement{{ pendingPayments().length > 1 ? 's' : '' }} à valider</span>
           }
         </div>
-      } @else {
-        <div class="empty-state">Aucune réservation.</div>
-      }
-    </section>
-
-    <section class="page-section detail-section">
-      <div class="section-header">
-        <h2>Paiements</h2>
-        @if (canValidate && pendingPayment()) {
-          <button mat-flat-button color="primary" type="button" (click)="validatePendingPayment()">
-            Valider le paiement en attente
+      </div>
+      <div class="detail-header__actions">
+        @if (canModify && !closed()) {
+          <button mat-stroked-button type="button" (click)="addPayment()">
+            <svg class="btn-icon" lucideBanknote aria-hidden="true"></svg>Enregistrer un paiement
           </button>
+          @if (canReserve()) {
+            <button mat-stroked-button type="button" (click)="reserve()">Réserver le terrain</button>
+          }
+        }
+        @if (canModify) {
+          @if (!closed()) {
+            <button mat-stroked-button type="button" (click)="editDossier()" matTooltip="Terrain, prix, commercial, notes">
+              <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Compléter
+            </button>
+          }
+          <button mat-flat-button color="primary" type="button" (click)="changeStatus()">Changer le statut</button>
+          <button mat-icon-button type="button" [matMenuTriggerFor]="moreMenu" aria-label="Plus d’actions">
+            <svg class="btn-icon" lucideChevronDown aria-hidden="true"></svg>
+          </button>
+          <mat-menu #moreMenu="matMenu" xPosition="before">
+            <button mat-menu-item type="button" (click)="openDocumentDialog('generate')" [disabled]="!d.terrain">
+              <span class="menu-line"><strong>Générer un document</strong><small>Bon de réservation, reçu, facture, contrat, état de paiement</small></span>
+            </button>
+            <button mat-menu-item type="button" (click)="openDocumentDialog('upload')">
+              <span class="menu-line"><strong>Ajouter un document</strong><small>Contrat signé, justificatif de paiement…</small></span>
+            </button>
+            @if (canAdminister) {
+              <button mat-menu-item type="button" (click)="addCommission()">
+                <span class="menu-line"><strong>Créer une commission</strong><small>Calculée selon une règle paramétrée</small></span>
+              </button>
+            }
+            <button mat-menu-item type="button" (click)="openDocumentsSearch()">
+              <span class="menu-line"><strong>Rechercher dans les documents</strong><small>GED : tous les documents de ce dossier</small></span>
+            </button>
+          </mat-menu>
         }
       </div>
+    </header>
 
-      @if (dossier.paiements?.length) {
-        <div class="list-wrap">
-          @for (payment of dossier.paiements; track payment.id) {
-            <div class="list-item">
-              <div class="list-item__content">
-                <strong>{{ payment.reference || 'Paiement' }}</strong>
-                <p>Mode : {{ payment.mode }} — Statut : {{ payment.statut }}</p>
-              </div>
-              <div class="meta-list">
-                <span>{{ payment.montant | currency:'XOF':'symbol':'1.0-0':'fr' }}</span>
-                <span>{{ payment.datePaiement | date:'dd/MM/yyyy' }}</span>
-              </div>
-            </div>
+    @if (canModify && todo().length) {
+      <aside class="todo-banner" aria-label="À faire">
+        <strong>À faire sur ce dossier :</strong>
+        <ul>
+          @for (item of todo(); track item.label) {
+            <li><span>{{ item.label }}</span><small>{{ item.hint }}</small></li>
           }
-        </div>
-      } @else {
-        <div class="empty-state">Aucun paiement.</div>
-      }
-    </section>
+        </ul>
+      </aside>
+    }
 
-    <section class="page-section detail-section">
-      <div class="section-header">
-        <h2>Commissions</h2>
+    <!-- Où en est le paiement -->
+    <section class="page-card pay-summary" aria-label="Avancement du paiement">
+      <div class="pay-summary__facts">
+        <div>
+          <span>Prix de vente</span>
+          <strong>{{ d.prixVente | mtmMoney }}</strong>
+        </div>
+        <div>
+          <span>Payé (validé)</span>
+          <strong class="is-success">{{ d.montantPaye | mtmMoney }}</strong>
+        </div>
+        <div>
+          <span>Reste dû</span>
+          <strong class="is-primary">{{ d.soldeRestant | mtmMoney }}</strong>
+        </div>
+        <div>
+          <span>Échéances</span>
+          <strong>{{ echeances().length || '—' }}</strong>
+        </div>
       </div>
-
-      @if (dossier.commissions?.length) {
-        <div class="list-wrap">
-          @for (commission of dossier.commissions; track commission.id) {
-            <div class="list-item">
-              <div class="list-item__content">
-                <strong>{{ commission.commercial?.firstName || 'Commercial' }} {{ commission.commercial?.lastName || '' }}</strong>
-                <p>Type : {{ commission.typeRegle }} — Statut : {{ commission.statut }}</p>
-              </div>
-              <div class="meta-list">
-                <span>{{ commission.montantEstime | currency:'XOF':'symbol':'1.0-0':'fr' }}</span>
-                @if (commission.statut === 'estimee' && canValidate) {
-                  <span>
-                    <button mat-stroked-button type="button" (click)="validateCommission(commission.id)">Valider</button>
-                  </span>
-                }
-                @if (commission.statut === 'validee' && canPay) {
-                  <span>
-                    <button mat-stroked-button type="button" (click)="payCommission(commission.id)">Payer</button>
-                  </span>
-                }
-              </div>
-            </div>
-          }
+      @if (percent() !== null) {
+        <div class="pay-progress pay-progress--large">
+          <span class="pay-progress__bar"><span class="pay-progress__fill" [class.is-complete]="percent()! >= 100" [style.width.%]="percent()"></span></span>
+          <small>{{ percent() }} % du prix encaissé{{ percent()! >= 100 ? ' — le dossier peut être soldé' : '' }}</small>
         </div>
       } @else {
-        <div class="empty-state">Aucune commission.</div>
+        <p class="pay-summary__note">Fixez le prix de vente pour suivre l’avancement du paiement.</p>
       }
     </section>
 
-    <section class="page-section detail-section">
-      <div class="section-header">
-        <h2>Échéances</h2>
-      </div>
-
-      @if (echeances().length) {
-        <div class="list-wrap">
-          @for (echeance of echeances(); track echeance.id) {
-            <div class="list-item">
-              <div class="list-item__content">
-                <strong>Échéance {{ echeance.numero }}</strong>
-                <p>Statut : {{ echeance.statut }}</p>
-              </div>
-              <div class="meta-list">
-                <span>{{ echeance.montantPrevu | currency:'XOF':'symbol':'1.0-0':'fr' }}</span>
-                <span>{{ echeance.dateEcheance | date:'dd/MM/yyyy' }}</span>
-              </div>
-            </div>
+    <section class="content-grid">
+      <!-- Paiements -->
+      <section class="page-card detail-section detail-section--wide">
+        <div class="detail-section__head">
+          <div>
+            <h2>Paiements</h2>
+            <p class="detail-section__hint">Chaque paiement reçu est enregistré puis validé par une personne habilitée.</p>
+          </div>
+          @if (canModify && !closed()) {
+            <button mat-stroked-button type="button" (click)="addPayment()">
+              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Enregistrer un paiement
+            </button>
           }
         </div>
-      } @else {
-        <div class="empty-state">Aucune échéance.</div>
-      }
-    </section>
-
-    <section class="page-section detail-section">
-      <div class="section-header">
-        <h2>Documents</h2>
-        <button mat-button type="button" (click)="openDocumentsSearch()">Recherche GED avancée</button>
-      </div>
-
-      @if (dossier.documents.length) {
-        <div class="list-wrap">
-          @for (document of dossier.documents; track document.id) {
-            <div class="list-item">
-              <div class="list-item__content">
-                <strong>{{ document.title || document.type }}</strong>
-                <p>{{ document.type }} • v{{ document.version }}</p>
-              </div>
-              <div class="meta-list">
-                <span>{{ document.createdAt | date:'dd/MM/yyyy' }}</span>
-                @if (document.secureUrl) {
-                  <a mat-stroked-button [href]="document.secureUrl" target="_blank" rel="noopener noreferrer">
-                    Ouvrir
-                  </a>
+        @if (payments().length) {
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Mode</th>
+                  <th>Référence</th>
+                  <th class="is-right">Montant</th>
+                  <th>Statut</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (payment of payments(); track payment.id) {
+                  <tr>
+                    <td>{{ payment.datePaiement | date: 'dd/MM/yyyy' }}</td>
+                    <td>{{ mode(payment) }}</td>
+                    <td>{{ payment.reference || '—' }}</td>
+                    <td class="is-right"><strong>{{ payment.montant | mtmMoney }}</strong></td>
+                    <td><span [class]="paymentPill(payment)">{{ paymentLabel(payment) }}</span></td>
+                    <td class="is-right">
+                      @if (payment.statut === 'en_attente' && canValidate) {
+                        <button mat-stroked-button type="button" (click)="validatePayment(payment)" matTooltip="Confirme que le paiement est bien reçu">
+                          <svg class="btn-icon" lucideCheck aria-hidden="true"></svg>Valider
+                        </button>
+                      }
+                    </td>
+                  </tr>
                 }
-              </div>
-            </div>
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="detail-note">
+            Aucun paiement enregistré.
+            @if (canModify && !closed()) {
+              <button mat-button type="button" (click)="addPayment()">Enregistrer le premier paiement</button>
+            }
+          </div>
+        }
+
+        @if (echeances().length) {
+          <h3>Échéancier</h3>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>N°</th>
+                  <th>Date</th>
+                  <th class="is-right">Prévu</th>
+                  <th class="is-right">Payé</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (echeance of echeances(); track echeance.id) {
+                  <tr>
+                    <td>{{ echeance.numero }}</td>
+                    <td>{{ echeance.dateEcheance | date: 'dd/MM/yyyy' }}</td>
+                    <td class="is-right">{{ echeance.montantPrevu | mtmMoney }}</td>
+                    <td class="is-right">{{ echeance.montantPaye | mtmMoney }}</td>
+                    <td><span [class]="echeancePill(echeance)">{{ echeanceLabel(echeance) }}</span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+
+      <!-- Réservation -->
+      <section class="page-card detail-section">
+        <div class="detail-section__head">
+          <div>
+            <h2>Réservation</h2>
+            <p class="detail-section__hint">Bloque le terrain pour ce client pendant une durée convenue.</p>
+          </div>
+          @if (canReserve()) {
+            <button mat-stroked-button type="button" (click)="reserve()">Réserver</button>
           }
         </div>
-      } @else {
-        <div class="empty-state">Aucun document.</div>
+        @if (d.reservations.length) {
+          <ul class="stack-list">
+            @for (r of d.reservations; track r.id) {
+              <li>
+                <div class="stack-list__line">
+                  <span [class]="reservationPill(r)">{{ reservationLabel(r) }}</span>
+                  <strong>{{ r.montantAcompte | mtmMoney }} d’acompte</strong>
+                </div>
+                <small>
+                  {{ r.reference || 'Sans référence' }} · {{ r.dureeBlocageJours }} jours · expire le {{ r.dateExpiration | date: 'dd/MM/yyyy' }}
+                </small>
+              </li>
+            }
+          </ul>
+        } @else if (!d.terrain) {
+          <div class="detail-note">
+            Définissez d’abord le terrain vendu.
+            @if (canModify && !closed()) {
+              <button mat-button type="button" (click)="editDossier()">Compléter le dossier</button>
+            }
+          </div>
+        } @else {
+          <p class="detail-section__text">Aucune réservation. Réservez dès que le client verse un acompte : le terrain est alors retiré du site public.</p>
+        }
+      </section>
+
+      <!-- Commissions -->
+      @if (canViewFinancials) {
+        <section class="page-card detail-section">
+          <div class="detail-section__head">
+            <div>
+              <h2>Commissions</h2>
+              <p class="detail-section__hint">Estimée → validée par un responsable → payée une fois le dossier soldé.</p>
+            </div>
+            @if (canAdminister) {
+              <button mat-stroked-button type="button" (click)="addCommission()">
+                <svg class="btn-icon" lucidePercent aria-hidden="true"></svg>Créer
+              </button>
+            }
+          </div>
+          @if (commissions().length) {
+            <ul class="stack-list">
+              @for (commission of commissions(); track commission.id) {
+                <li>
+                  <div class="stack-list__line">
+                    <span [class]="commissionPill(commission)" [matTooltip]="commissionHelp(commission)">{{ commissionLabel(commission) }}</span>
+                    <strong>{{ (commission.montantPaye ?? commission.montantValide ?? commission.montantEstime) | mtmMoney }}</strong>
+                    <span class="stack-list__who">{{ commission.commercial ? commission.commercial.firstName + ' ' + commission.commercial.lastName : 'Commercial' }}</span>
+                  </div>
+                  <small>
+                    {{ commission.typeRegle | mtmLabel }}
+                    @if (commission.taux !== null) { · {{ commission.taux }} % }
+                    @if (commission.montantFixe !== null) { · {{ commission.montantFixe | mtmMoney }} }
+                    · estimée {{ commission.montantEstime | mtmMoney }}
+                  </small>
+                  @if (commission.statut === 'estimee' && canValidate) {
+                    <button mat-stroked-button type="button" (click)="validateCommission(commission)">Valider</button>
+                  } @else if (commission.statut === 'validee' && canPay) {
+                    <button mat-stroked-button type="button" (click)="payCommission(commission)" [disabled]="d.statut !== 'solde'" [matTooltip]="d.statut !== 'solde' ? 'Payable une fois le dossier soldé' : ''">Marquer payée</button>
+                  }
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="detail-section__text">Aucune commission. Un responsable peut en créer une à partir des règles paramétrées.</p>
+          }
+        </section>
       }
+
+      <!-- Documents -->
+      <section class="page-card detail-section" [class.detail-section--wide]="!canViewFinancials">
+        <div class="detail-section__head">
+          <div>
+            <h2>Documents</h2>
+            <p class="detail-section__hint">Générés par MTM (bon de réservation, reçu, facture, contrat, état de paiement) ou déposés (contrat signé, justificatifs).</p>
+          </div>
+          @if (canModify) {
+            <span class="detail-section__buttons">
+              <button mat-stroked-button type="button" (click)="openDocumentDialog('generate')" [disabled]="!d.terrain" matTooltip="PDF produit à partir des informations du dossier">
+                <svg class="btn-icon" lucideSparkles aria-hidden="true"></svg>Générer
+              </button>
+              <button mat-stroked-button type="button" (click)="openDocumentDialog('upload')">
+                <svg class="btn-icon" lucideUpload aria-hidden="true"></svg>Ajouter
+              </button>
+            </span>
+          }
+        </div>
+        @if (d.documents.length) {
+          <ul class="doc-list">
+            @for (document of d.documents; track document.id) {
+              <li>
+                <svg lucideFileText aria-hidden="true"></svg>
+                <a [href]="document.secureUrl" target="_blank" rel="noopener">{{ document.title || (document.type | mtmLabel) }}</a>
+                <span class="status-pill">{{ document.type | mtmLabel }}</span>
+                @if (document.isPublic) {
+                  <span class="status-pill status-pill--info" matTooltip="Visible par le client dans son espace">Client</span>
+                }
+                <small>v{{ document.version }} · {{ document.createdAt | date: 'dd/MM/yyyy' }}</small>
+                @if (canModify) {
+                  <button mat-icon-button type="button" (click)="removeDocument(document.id)" aria-label="Supprimer" matTooltip="Supprimer">
+                    <svg class="btn-icon" lucideTrash2 aria-hidden="true"></svg>
+                  </button>
+                }
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="detail-section__text">Aucun document. Générez le bon de réservation dès la réservation, puis le reçu à chaque paiement.</p>
+        }
+      </section>
+
+      <!-- Informations -->
+      <section class="page-card detail-section">
+        <h2>Informations</h2>
+        <dl class="info-list">
+          <div><dt>Client</dt><dd>{{ client() }}<small>{{ d.prospect.email || '' }}</small></dd></div>
+          <div><dt>Terrain</dt><dd>{{ d.terrain ? d.terrain.referenceInterne + ' — ' + d.terrain.nom : 'Non défini' }}<small>{{ d.terrain?.statutCommercial || '' }}</small></dd></div>
+          <div><dt>Mandat</dt><dd>{{ d.mandat?.referenceInterne || '—' }}</dd></div>
+          <div><dt>Commercial</dt><dd>{{ d.commercialResponsable ? d.commercialResponsable.firstName + ' ' + d.commercialResponsable.lastName : '—' }}</dd></div>
+          <div><dt>Ouvert le</dt><dd>{{ d.createdAt | date: 'dd/MM/yyyy à HH:mm' }}</dd></div>
+          <div><dt>Dernière modification</dt><dd>{{ d.updatedAt | date: 'dd/MM/yyyy à HH:mm' }}</dd></div>
+        </dl>
+      </section>
     </section>
-  }
-</section>
+  </section>
+}

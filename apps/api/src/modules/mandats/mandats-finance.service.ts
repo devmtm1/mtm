@@ -23,38 +23,44 @@ export class MandatsFinanceService {
 
   async getStats(user: MandatUser) {
     const now = new Date();
-    const [totalMandats, actifs, expirant30Jours, totalLots] =
-      await Promise.all([
-        this.prisma.mandat.count({ where: this.access.ownershipFilter(user) }),
-        this.prisma.mandat.count({
-          where: {
-            ...this.access.ownershipFilter(user),
-            statut: 'Actif',
-            dateFin: { gte: now },
+    // Toutes les requêtes partent en parallèle : chaque aller-retour vers la
+    // base distante coûte cher, les enchaîner faisait attendre l'écran.
+    const [
+      totalMandats,
+      actifs,
+      expirant30Jours,
+      totalLots,
+      lotsByStatut,
+      financial,
+    ] = await Promise.all([
+      this.prisma.mandat.count({ where: this.access.ownershipFilter(user) }),
+      this.prisma.mandat.count({
+        where: {
+          ...this.access.ownershipFilter(user),
+          statut: 'Actif',
+          dateFin: { gte: now },
+        },
+      }),
+      this.prisma.mandat.count({
+        where: {
+          ...this.access.ownershipFilter(user),
+          statut: 'Actif',
+          dateFin: {
+            lte: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
+            gte: now,
           },
-        }),
-        this.prisma.mandat.count({
-          where: {
-            ...this.access.ownershipFilter(user),
-            statut: 'Actif',
-            dateFin: {
-              lte: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
-              gte: now,
-            },
-          },
-        }),
-        this.prisma.mandatLot.count({
-          where: { mandat: this.access.ownershipFilter(user) },
-        }),
-      ]);
-
-    const lotsByStatut = await this.prisma.mandatLot.groupBy({
-      by: ['statutLot'],
-      where: { mandat: this.access.ownershipFilter(user) },
-      _count: { statutLot: true },
-    });
-
-    const financial = await this.computeGlobalFinancials(user);
+        },
+      }),
+      this.prisma.mandatLot.count({
+        where: { mandat: this.access.ownershipFilter(user) },
+      }),
+      this.prisma.mandatLot.groupBy({
+        by: ['statutLot'],
+        where: { mandat: this.access.ownershipFilter(user) },
+        _count: { statutLot: true },
+      }),
+      this.computeGlobalFinancials(user),
+    ]);
 
     return {
       totalMandats,
@@ -93,17 +99,19 @@ export class MandatsFinanceService {
   }
 
   private async computeGlobalFinancials(user: MandatUser) {
-    const mandats = await this.prisma.mandat.findMany({
-      where: this.access.ownershipFilter(user),
-      include: {
-        lots: {
-          include: {
-            terrain: { select: { prixPublic: true, statutCommercial: true } },
+    const [mandats, commissionRate] = await Promise.all([
+      this.prisma.mandat.findMany({
+        where: this.access.ownershipFilter(user),
+        include: {
+          lots: {
+            include: {
+              terrain: { select: { prixPublic: true, statutCommercial: true } },
+            },
           },
         },
-      },
-    });
-    const commissionRate = await this.getCommissionRate();
+      }),
+      this.getCommissionRate(),
+    ]);
 
     let chiffreAffaires = 0;
     let commissions = 0;
@@ -123,8 +131,14 @@ export class MandatsFinanceService {
     };
   }
 
+  /**
+   * Un lot compte dans le chiffre d'affaires dès qu'il est marqué vendu —
+   * sur le lot lui-même ou sur la fiche terrain (les deux sont tenus par
+   * des personnes différentes, l'un ou l'autre suffit).
+   */
   private computeFinancials(
     lots: Array<{
+      statutLot?: string;
       terrain: {
         prixPublic: Prisma.Decimal | null;
         statutCommercial: string;
@@ -137,7 +151,10 @@ export class MandatsFinanceService {
 
     for (const lot of lots) {
       const prix = Number(lot?.terrain?.prixPublic ?? 0);
-      if (lot?.terrain?.statutCommercial === 'Vendu') {
+      if (
+        lot?.statutLot === 'Vendu' ||
+        lot?.terrain?.statutCommercial === 'Vendu'
+      ) {
         chiffreAffaires += prix;
       } else {
         resteACommercialiser += prix;

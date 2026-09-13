@@ -1,31 +1,242 @@
 <div class="terrains-page">
-  <header class="terrains-header">
-    <div><span class="terrains-eyebrow"><svg lucideLandPlot aria-hidden="true"></svg> Cœur commercial</span><h1>Terrains</h1><p>Référentiel foncier et commercial de MTM Immobilier.</p></div>
-    @if (canCreate()) { <button mat-flat-button color="primary" class="btn-mtm-primary terrains-create-button" (click)="openCreate()"><svg class="terrains-create-icon" lucidePlus aria-hidden="true"></svg><span>Nouveau terrain</span></button> }
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Cœur commercial</p>
+      <h1 class="page-header__title">Terrains</h1>
+      <p class="page-header__subtitle">
+        Toutes les parcelles suivies par MTM. Un terrain n’apparaît sur le site public que lorsqu’il
+        est <strong>Disponible</strong>.
+      </p>
+    </div>
+    <div class="page-header__actions">
+      @if (canCreate()) {
+        <button mat-flat-button color="primary" type="button" (click)="openCreate()">
+          <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau terrain
+        </button>
+      }
+    </div>
   </header>
 
-  <section class="terrain-statistics" aria-label="Synthèse des terrains">
-    <article class="terrain-stat terrain-stat--total"><span class="terrain-stat__icon"><svg lucideLandPlot aria-hidden="true"></svg></span><div><strong>{{ total() }}</strong><span>Terrains référencés</span><small>Dans le portefeuille MTM</small></div></article>
-    <article class="terrain-stat terrain-stat--available"><span class="terrain-stat__icon">✓</span><div><strong>{{ availableCount() }}</strong><span>Disponibles</span><small>Prêts à commercialiser</small></div></article>
-    <article class="terrain-stat terrain-stat--reserved"><span class="terrain-stat__icon">⌁</span><div><strong>{{ reservedCount() }}</strong><span>Réservés</span><small>Dossiers en cours</small></div></article>
-    <article class="terrain-stat terrain-stat--sold"><span class="terrain-stat__icon">◆</span><div><strong>{{ soldCount() }}</strong><span>Vendus</span><small>Transactions finalisées</small></div></article>
+  <!-- Chiffres clés : chaque tuile est un raccourci vers le filtre correspondant. -->
+  <section class="kpi-row" aria-label="Synthèse du portefeuille">
+    @if (stats(); as s) {
+      <button type="button" class="kpi" (click)="resetFilters()">
+        <span class="kpi__icon"><svg lucideLandPlot aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ s.total }}</strong>
+          <span>Terrains référencés</span>
+        </span>
+      </button>
+      <button type="button" class="kpi kpi--success" (click)="filterByStatus('Disponible')">
+        <span class="kpi__icon"><svg lucideCircleCheck aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ s.parStatut['Disponible'] ?? 0 }}</strong>
+          <span>Disponibles</span>
+          <small>Publiés sur le site</small>
+        </span>
+      </button>
+      <button type="button" class="kpi kpi--warning" (click)="filterByStatus('Réservé')">
+        <span class="kpi__icon"><svg lucideStar aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ s.parStatut['Réservé'] ?? 0 }}</strong>
+          <span>Réservés</span>
+          <small>Dossier de vente en cours</small>
+        </span>
+      </button>
+      <button type="button" class="kpi kpi--primary" (click)="filterByStatus('Vendu')">
+        <span class="kpi__icon"><svg lucideCircleCheck aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ s.parStatut['Vendu'] ?? 0 }}</strong>
+          <span>Vendus</span>
+        </span>
+      </button>
+      <div class="kpi kpi--attention" [class.kpi--muted]="toComplete() === 0">
+        <span class="kpi__icon"><svg lucideAlertTriangle aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ toComplete() }}</strong>
+          <span>Fiches à compléter</span>
+          <small>
+            @if (toComplete() === 0) {
+              Toutes les fiches sont complètes
+            } @else {
+              <span matTooltip="Sans coordonnées GPS : pas de carte sur le site"
+                ><svg lucideMapPinOff aria-hidden="true"></svg>{{ s.sansGps }} sans GPS</span
+              >
+              <span matTooltip="Sans photo publique : fiche peu attractive sur le site"
+                ><svg lucideCamera aria-hidden="true"></svg>{{ s.sansPhotoPublique }} sans photo</span
+              >
+            }
+          </small>
+        </span>
+      </div>
+    } @else {
+      @for (i of [1, 2, 3, 4, 5]; track i) {
+        <div class="kpi skeleton" aria-hidden="true"></div>
+      }
+    }
   </section>
 
-  <section class="terrains-table-shell" aria-labelledby="terrains-list-title">
-    <div class="terrains-toolbar">
-      <div><h2 id="terrains-list-title">Référentiel des terrains</h2><p>{{ total() }} résultat{{ total() > 1 ? 's' : '' }}</p></div>
-      <div class="view-switch" role="group" aria-label="Mode d’affichage"><button type="button" [class.is-active]="viewMode() === 'table'" (click)="setViewMode('table')" aria-label="Afficher en tableau" title="Tableau"><svg lucideList aria-hidden="true"></svg></button><button type="button" [class.is-active]="viewMode() === 'grid'" (click)="setViewMode('grid')" aria-label="Afficher en grille" title="Grille"><svg lucideGrid2X2 aria-hidden="true"></svg></button></div>
-      <form class="filters" [formGroup]="filters" (ngSubmit)="applyFilters()">
-        <mat-form-field class="filters__search" appearance="outline"><mat-label>Rechercher</mat-label><svg class="filters__search-icon" matPrefix lucideSearch aria-hidden="true"></svg><input id="terrain-search" matInput formControlName="search"></mat-form-field>
-        <mat-form-field class="filters__status" appearance="outline"><mat-label>Statut commercial</mat-label><mat-select formControlName="statutCommercial"><mat-option value="">Tous</mat-option><mat-option value="Brouillon">Brouillon</mat-option><mat-option value="Disponible">Disponible</mat-option><mat-option value="Réservé">Réservé</mat-option><mat-option value="Vendu">Vendu</mat-option></mat-select></mat-form-field>
-        <mat-form-field class="filters__status" appearance="outline"><mat-label>Statut juridique</mat-label><mat-select formControlName="statutJuridique"><mat-option value="">Tous</mat-option><mat-option value="Titre foncier">Titre foncier</mat-option><mat-option value="Bail">Bail</mat-option><mat-option value="Délibération">Délibération</mat-option><mat-option value="Morcellement">Morcellement</mat-option></mat-select></mat-form-field>
-        <mat-form-field class="filters__status" appearance="outline"><mat-label>Vocation</mat-label><input matInput formControlName="vocation" placeholder="résidentiel, commercial..."></mat-form-field>
-        <button class="filters__submit" mat-stroked-button type="submit">Filtrer</button>
+  <section class="page-section" aria-labelledby="terrains-list-title">
+    <div class="list-toolbar">
+      <div class="list-toolbar__title">
+        <h2 id="terrains-list-title">Liste des terrains</h2>
+        <p>
+          @if (loading()) {
+            Chargement…
+          } @else {
+            {{ total() }} terrain{{ total() > 1 ? 's' : '' }}
+            @if (hasActiveFilters()) {
+              correspondant aux filtres
+            }
+          }
+        </p>
+      </div>
+      <form class="list-filters" [formGroup]="filters" (ngSubmit)="$event.preventDefault()">
+        <mat-form-field appearance="outline" class="list-filters__search" subscriptSizing="dynamic">
+          <mat-label>Rechercher</mat-label>
+          <svg matPrefix class="list-filters__icon" lucideSearch aria-hidden="true"></svg>
+          <input matInput formControlName="search" placeholder="Référence, nom, parcelle…" autocomplete="off" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Commercialisation</mat-label>
+          <mat-select formControlName="statutCommercial">
+            <mat-option value="">Tous</mat-option>
+            @for (option of options().statutCommercial; track option) {
+              <mat-option [value]="option">{{ option }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Statut juridique</mat-label>
+          <mat-select formControlName="statutJuridique">
+            <mat-option value="">Tous</mat-option>
+            @for (option of options().statutJuridique; track option) {
+              <mat-option [value]="option">{{ option }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Vérification</mat-label>
+          <mat-select formControlName="niveauVerification">
+            <mat-option value="">Tous</mat-option>
+            @for (option of options().niveauVerification; track option) {
+              <mat-option [value]="option">{{ option }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        @if (hasActiveFilters()) {
+          <button mat-button type="button" class="list-filters__reset" (click)="resetFilters()">
+            <svg class="btn-icon" lucideX aria-hidden="true"></svg>Effacer
+          </button>
+        }
+        <div class="view-switch" role="group" aria-label="Mode d’affichage">
+          <button
+            type="button"
+            [class.is-active]="viewMode() === 'table'"
+            (click)="setViewMode('table')"
+            aria-label="Afficher en tableau"
+            matTooltip="Tableau"
+          >
+            <svg lucideList aria-hidden="true"></svg>
+          </button>
+          <button
+            type="button"
+            [class.is-active]="viewMode() === 'grid'"
+            (click)="setViewMode('grid')"
+            aria-label="Afficher en cartes"
+            matTooltip="Cartes avec photo"
+          >
+            <svg lucideGrid2X2 aria-hidden="true"></svg>
+          </button>
+        </div>
       </form>
     </div>
-    @if (viewMode() === 'table') { <ag-grid-angular class="terrains-grid" [theme]="theme" [rowData]="rowData()" [columnDefs]="columnDefs" [loading]="loading()" domLayout="autoHeight" [pagination]="true" [paginationPageSize]="10" [rowHeight]="52" /> } @else {
-      <div class="terrains-grid-view" aria-label="Terrains en grille">
-        @for (terrain of rowData(); track terrain.id) { <article class="terrain-card"><div class="terrain-card__topline"><span class="terrain-card__reference">{{ terrain.referenceInterne }}</span><span class="terrain-card__status">{{ terrain.statutCommercial }}</span></div>@if (thumbnail(terrain); as imageUrl) { <img class="terrain-card__image" [src]="imageUrl" [alt]="terrain.nom"> }<h3>{{ terrain.nom }}</h3><p class="terrain-card__location"><svg lucideLandPlot aria-hidden="true"></svg>{{ formatLocation(terrain) }}</p><dl class="terrain-card__details"><div><dt>Superficie</dt><dd>{{ terrain.superficie === null ? '—' : terrain.superficie + ' m²' }}</dd></div><div><dt>Prix public</dt><dd>{{ formatMoney(terrain.prixPublic) }}</dd></div></dl><div class="terrain-card__actions"><button type="button" class="grid-icon-btn" (click)="openDetail(terrain.id)" aria-label="Voir les détails" title="Voir les détails"><svg lucideEye aria-hidden="true"></svg></button>@if (canModify()) {<button type="button" class="grid-icon-btn" (click)="openEdit(terrain.id)" aria-label="Modifier le terrain" title="Modifier le terrain"><svg lucidePencil aria-hidden="true"></svg></button>}</div></article> } @empty { <p class="terrains-empty">Aucun terrain trouvé.</p> }
+
+    @if (!loading() && rowData().length === 0) {
+      <div class="empty-state">
+        <svg lucideLandPlot aria-hidden="true"></svg>
+        @if (hasActiveFilters()) {
+          <h3>Aucun terrain ne correspond à ces filtres</h3>
+          <p>Modifiez la recherche ou effacez les filtres pour revoir tout le portefeuille.</p>
+          <button mat-stroked-button type="button" (click)="resetFilters()">Effacer les filtres</button>
+        } @else {
+          <h3>Aucun terrain pour le moment</h3>
+          <p>
+            Commencez par créer la fiche d’un terrain : identité, localisation, prix et photos. Elle
+            pourra ensuite être publiée sur le site en passant son statut à « Disponible ».
+          </p>
+          @if (canCreate()) {
+            <button mat-flat-button color="primary" type="button" (click)="openCreate()">
+              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Créer le premier terrain
+            </button>
+          }
+        }
+      </div>
+    } @else if (viewMode() === 'table') {
+      <ag-grid-angular
+        class="list-grid"
+        [theme]="theme"
+        [rowData]="rowData()"
+        [columnDefs]="columnDefs"
+        [loading]="loading()"
+        domLayout="autoHeight"
+        [pagination]="true"
+        [paginationPageSize]="20"
+        [rowHeight]="52"
+        [suppressCellFocus]="true"
+        (rowClicked)="$event.data && openDetail($event.data.id)"
+      />
+    } @else {
+      <div class="terrain-cards" aria-label="Terrains en cartes">
+        @if (loading()) {
+          @for (i of [1, 2, 3, 4]; track i) {
+            <div class="terrain-card terrain-card--skeleton" aria-hidden="true">
+              <div class="skeleton terrain-card__image"></div>
+              <div class="skeleton" style="height: 18px; width: 70%"></div>
+              <div class="skeleton" style="height: 14px; width: 50%"></div>
+            </div>
+          }
+        } @else {
+          @for (terrain of rowData(); track terrain.id) {
+            <article class="terrain-card" (click)="openDetail(terrain.id)" tabindex="0" (keyup.enter)="openDetail(terrain.id)">
+              @if (thumbnail(terrain); as imageUrl) {
+                <img class="terrain-card__image" [src]="imageUrl" [alt]="terrain.nom" loading="lazy" />
+              } @else {
+                <div class="terrain-card__image terrain-card__image--empty">
+                  <svg lucideCamera aria-hidden="true"></svg><span>Pas de photo publique</span>
+                </div>
+              }
+              <div class="terrain-card__body">
+                <div class="terrain-card__topline">
+                  <span class="terrain-card__reference">{{ terrain.referenceInterne }}</span>
+                  <span [class]="pillClass(commercialStatus, terrain.statutCommercial)">{{ terrain.statutCommercial }}</span>
+                </div>
+                <h3>{{ terrain.nom }}</h3>
+                <p class="terrain-card__location">{{ formatLocation(terrain) }}</p>
+                <dl class="terrain-card__facts">
+                  <div>
+                    <dt>Superficie</dt>
+                    <dd>{{ terrain.superficie === null ? '—' : terrain.superficie + ' m²' }}</dd>
+                  </div>
+                  <div>
+                    <dt>Prix public</dt>
+                    <dd>{{ terrain.prixPublic | mtmMoney }}</dd>
+                  </div>
+                </dl>
+                <div class="terrain-card__actions">
+                  <button mat-button type="button" (click)="openDetail(terrain.id); $event.stopPropagation()">
+                    <svg class="btn-icon" lucideEye aria-hidden="true"></svg>Fiche
+                  </button>
+                  @if (canModify()) {
+                    <button mat-button type="button" (click)="openEdit(terrain.id); $event.stopPropagation()">
+                      <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Modifier
+                    </button>
+                  }
+                </div>
+              </div>
+            </article>
+          }
+        }
       </div>
     }
   </section>

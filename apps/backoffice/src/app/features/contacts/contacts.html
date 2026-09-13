@@ -1,86 +1,145 @@
 <div class="contacts-page">
   <header class="page-header">
     <div>
-      <p class="eyebrow">Contacts</p>
-      <h1 class="page-header__title">Demandes de Contact Web</h1>
-      <p class="page-header__subtitle">Messages reçus depuis le site public et demandes de visite.</p>
-    </div>
-
-    <div class="contacts-filters">
-      <button mat-stroked-button [color]="filterLu() === undefined ? 'primary' : ''" (click)="setFilter(undefined)">Tous</button>
-      <button mat-stroked-button [color]="filterLu() === false ? 'primary' : ''" (click)="setFilter(false)">Non lus</button>
-      <button mat-stroked-button [color]="filterLu() === true ? 'primary' : ''" (click)="setFilter(true)">Lus</button>
+      <p class="eyebrow">Contenu</p>
+      <h1 class="page-header__title">Demandes web</h1>
+      <p class="page-header__subtitle">
+        Messages envoyés depuis le formulaire de contact du site public. Lisez-les, puis créez le prospect
+        pour qu’un commercial rappelle la personne.
+      </p>
     </div>
   </header>
 
-  @if (loading()) {
-    <div class="page-card contacts-state">
-      <p>Chargement des messages de contact...</p>
-    </div>
-  } @else if (contacts().length === 0) {
-    <div class="page-card contacts-state contacts-state--empty">
-      <p class="contacts-state__title">Aucun message de contact correspondant aux critères.</p>
-      <p class="contacts-state__description">Les demandes reçues depuis le site public apparaîtront ici.</p>
-    </div>
-  } @else {
-    <section class="page-section contacts-table-section">
-      <div class="contacts-table-wrapper">
-        <table mat-table [dataSource]="contacts()" class="contacts-table">
-          <ng-container matColumnDef="nom">
-            <th mat-header-cell *matHeaderCellDef>Nom</th>
-            <td mat-cell *matCellDef="let element" class="contacts-name">{{ element.nom }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="email">
-            <th mat-header-cell *matHeaderCellDef>Email</th>
-            <td mat-cell *matCellDef="let element">{{ element.email || '—' }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="telephone">
-            <th mat-header-cell *matHeaderCellDef>Téléphone</th>
-            <td mat-cell *matCellDef="let element">{{ element.telephone || '—' }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="sujet">
-            <th mat-header-cell *matHeaderCellDef>Sujet / Message</th>
-            <td mat-cell *matCellDef="let element" class="contacts-message-cell">
-              <span class="contacts-message-cell__label">{{ element.sujet || 'Contact public' }}</span>
-              <span class="contacts-message-cell__text">{{ element.message }}</span>
-            </td>
-          </ng-container>
-
-          <ng-container matColumnDef="date">
-            <th mat-header-cell *matHeaderCellDef>Date</th>
-            <td mat-cell *matCellDef="let element">{{ element.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
-          </ng-container>
-
-          <ng-container matColumnDef="statut">
-            <th mat-header-cell *matHeaderCellDef>Statut</th>
-            <td mat-cell *matCellDef="let element">
-              @if (element.lu) {
-                <span class="status-badge status-badge--muted">Lu</span>
-              } @else {
-                <span class="status-badge status-badge--warning">Nouveau</span>
-              }
-            </td>
-          </ng-container>
-
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef class="contacts-actions-header">Actions</th>
-            <td mat-cell *matCellDef="let element" class="contacts-actions-cell">
-              @if (!element.lu) {
-                <button mat-button color="accent" type="button" (click)="markAsRead(element)">Marquer lu</button>
-              }
-              <button mat-flat-button color="primary" type="button" (click)="convertToProspect(element)">
-                Convertir en Prospect CRM
-              </button>
-            </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        </table>
+  <section class="kpi-row" aria-label="Synthèse">
+    @if (loading()) {
+      @for (i of [1, 2, 3]; track i) {
+        <div class="kpi skeleton" aria-hidden="true"></div>
+      }
+    } @else {
+      <button type="button" class="kpi" [class.kpi--warning]="unreadCount() > 0" [class.kpi--success]="unreadCount() === 0" (click)="setScope('unread')">
+        <span class="kpi__icon"><svg lucideMail aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ unreadCount() }}</strong>
+          <span>Non lus</span>
+          <small>{{ unreadCount() === 0 ? 'Toutes les demandes sont traitées' : 'À lire et à rappeler' }}</small>
+        </span>
+      </button>
+      <div class="kpi kpi--primary">
+        <span class="kpi__icon"><svg lucideInbox aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ weekCount() }}</strong>
+          <span>Reçus ces 7 derniers jours</span>
+        </span>
       </div>
-    </section>
-  }
+      <button type="button" class="kpi" (click)="resetFilters()">
+        <span class="kpi__icon"><svg lucideMailOpen aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ contacts().length }}</strong>
+          <span>Demandes au total</span>
+        </span>
+      </button>
+    }
+  </section>
+
+  <section class="page-section" aria-labelledby="contacts-title">
+    <div class="list-toolbar">
+      <div class="list-toolbar__title">
+        <h2 id="contacts-title">Messages</h2>
+        <p>
+          @if (loading()) {
+            Chargement…
+          } @else {
+            {{ filtered().length }} message{{ filtered().length > 1 ? 's' : '' }}
+          }
+        </p>
+      </div>
+      <form class="list-filters" (submit)="$event.preventDefault()">
+        <mat-form-field appearance="outline" class="list-filters__search" subscriptSizing="dynamic">
+          <mat-label>Rechercher</mat-label>
+          <svg matPrefix class="list-filters__icon" lucideSearch aria-hidden="true"></svg>
+          <input matInput [value]="search()" (input)="search.set($any($event.target).value)" placeholder="Nom, e-mail, sujet, texte…" autocomplete="off" />
+        </mat-form-field>
+        <div class="view-switch" role="group" aria-label="Filtrer">
+          <button type="button" class="view-switch__text" [class.is-active]="scope() === 'all'" (click)="setScope('all')">Tous</button>
+          <button type="button" class="view-switch__text" [class.is-active]="scope() === 'unread'" (click)="setScope('unread')">Non lus</button>
+          <button type="button" class="view-switch__text" [class.is-active]="scope() === 'read'" (click)="setScope('read')">Lus</button>
+        </div>
+        @if (hasActiveFilters()) {
+          <button mat-button type="button" class="list-filters__reset" (click)="resetFilters()">
+            <svg class="btn-icon" lucideX aria-hidden="true"></svg>Effacer
+          </button>
+        }
+      </form>
+    </div>
+
+    @if (loading()) {
+      <div class="messages">
+        <div class="skeleton" style="height: 120px"></div>
+        <div class="skeleton" style="height: 120px"></div>
+      </div>
+    } @else if (filtered().length === 0) {
+      <div class="empty-state">
+        <svg lucideInbox aria-hidden="true"></svg>
+        @if (hasActiveFilters()) {
+          <h3>Aucun message ne correspond</h3>
+          <p>Modifiez la recherche ou le filtre.</p>
+          <button mat-stroked-button type="button" (click)="resetFilters()">Tout afficher</button>
+        } @else {
+          <h3>Aucune demande pour le moment</h3>
+          <p>Les messages envoyés depuis la page Contact du site public apparaîtront ici.</p>
+        }
+      </div>
+    } @else {
+      <ul class="messages">
+        @for (contact of filtered(); track contact.id) {
+          <li class="message" [class.is-unread]="!contact.lu" [class.is-busy]="busyId() === contact.id">
+            <div class="message__head">
+              <div class="message__who">
+                <strong>{{ contact.nom }}</strong>
+                <span class="message__contact">
+                  @if (contact.telephone) {
+                    <a [href]="'tel:' + contact.telephone"><svg lucidePhone aria-hidden="true"></svg>{{ contact.telephone }}</a>
+                  }
+                  @if (contact.email) {
+                    <a [href]="'mailto:' + contact.email"><svg lucideMail aria-hidden="true"></svg>{{ contact.email }}</a>
+                  }
+                </span>
+              </div>
+              <div class="message__meta">
+                @if (!contact.lu) {
+                  <span class="status-pill status-pill--warning">Nouveau</span>
+                } @else {
+                  <span class="status-pill">Lu</span>
+                }
+                <small>{{ contact.createdAt | date: 'dd/MM/yyyy à HH:mm' }}</small>
+              </div>
+            </div>
+            <div class="message__body">
+              <p class="message__subject">
+                <span class="status-pill status-pill--info">{{ contact.sujet || 'Contact' }}</span>
+                @if (contact.terrain) {
+                  <button type="button" class="link-button message__terrain" (click)="openTerrain(contact)" [disabled]="!canSeeTerrain">
+                    <svg lucideLandPlot aria-hidden="true"></svg>Concerne le terrain {{ contact.terrain.referenceInterne }}
+                  </button>
+                }
+              </p>
+              <p class="message__text">{{ contact.message }}</p>
+            </div>
+            <div class="message__actions">
+              @if (!contact.lu) {
+                <button mat-button type="button" (click)="markAsRead(contact)">
+                  <svg class="btn-icon" lucideCheck aria-hidden="true"></svg>Marquer comme lu
+                </button>
+              }
+              @if (canConvert) {
+                <button mat-flat-button color="primary" type="button" (click)="convertToProspect(contact)" matTooltip="Crée la fiche prospect (ou la retrouve si la personne existe déjà) et ouvre le CRM">
+                  <svg class="btn-icon" lucideUserPlus aria-hidden="true"></svg>Créer le prospect
+                </button>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </section>
 </div>

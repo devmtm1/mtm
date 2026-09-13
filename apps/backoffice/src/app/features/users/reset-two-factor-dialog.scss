@@ -19,7 +19,7 @@
   flex: 0 0 36px;
   border-radius: 50%;
   background: rgba(217, 119, 6, 0.12);
-  color: var(--mtm-warning, #d97706);
+  color: var(--mtm-warning);
 }
 
 .reset-two-factor-dialog__icon svg {
@@ -64,7 +64,7 @@
   height: 16px;
   flex: 0 0 16px;
   margin-top: 2px;
-  color: var(--mtm-warning, #d97706);
+  color: var(--mtm-warning);
 }
 
 .reset-two-factor-dialog__actions {
@@ -79,12 +79,12 @@
 }
 
 .reset-two-factor-dialog__confirm {
-  background: var(--mtm-warning, #d97706) !important;
+  background: var(--mtm-warning) !important;
   color: #ffffff !important;
 }
 
 .reset-two-factor-dialog__confirm:hover {
-  background: #b45309 !important;
+  background: color-mix(in srgb, var(--mtm-warning) 85%, black) !important;
 }
 
 @media (max-width: 520px) {

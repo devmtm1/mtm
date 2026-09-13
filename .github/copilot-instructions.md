@@ -249,12 +249,24 @@ L'interface doit avoir une apparence :
 - aspect landing page ;
 - aspect template SaaS générique.
 
-Le violet constitue la couleur principale de l'identité MTM.
+Les couleurs sont exactement celles du logo MTM Immobilier (logomtm.jpeg) :
+bleu marine du cube et du mot IMMOBILIER, rouge carmin du mot MTM et de
+l'anneau, bleu clair des facettes du cube. Aucune autre teinte de marque.
 
-Palette de référence :
+Palette de référence (valeurs mesurées sur le logo) :
 
-Primary: #4B1D73
-Primary Dark: #32124F
+Primary (bleu marine): #1A4974
+Primary Dark: #233D5B
+Primary Medium (survol): #2C6499
+Primary Light: #CFE0EE
+Primary Subtle (fonds): #EAF1F7
+
+Accent (rouge carmin): #B52C36
+Accent Dark: #83191D
+Accent Subtle: #F8E8E9
+
+Info (bleu clair): #5EA8C7
+Info Background: #E9F4F9
 
 Background: #F7F8FA
 Surface: #FFFFFF
@@ -264,12 +276,53 @@ Border: #E5E7EB
 Text: #1F2937
 Muted: #6B7280
 
-Success: #059669
-Warning: #D97706
-Error: #DC2626
+Success: #047857
+Warning: #B45309
+Error: #B52C36 (le rouge de marque sert aussi d'alerte)
 
-Le violet doit être utilisé comme couleur d'identité et d'accent,
-pas comme couleur dominante de chaque composant.
+Règles d'usage :
+
+- le bleu marine est la couleur principale : boutons primaires, liens,
+  éléments actifs, eyebrows, icônes de section ;
+- le rouge carmin est l'accent de marque et la couleur des actions
+  sensibles (suppression, erreur, retard) ; il ne sert pas de couleur de
+  décoration diffuse ;
+- le bleu clair signale une information ou une mise en évidence secondaire ;
+- aucune couleur codée en dur dans les composants : uniquement les tokens
+  `--mtm-*` de `styles.scss` (back-office) et la palette Tailwind
+  `mtm-*` (site public), dérivés de ces valeurs ;
+- pas de dégradé de couleur : aplats uniquement ;
+- icônes : Lucide exclusivement (jamais de glyphe texte, jamais de
+  Material Icons) ;
+- typographie : Plus Jakarta Sans (texte) et Outfit (titres), y compris
+  pour les composants Angular Material (thème configuré, pas Roboto) ;
+- libellés : toujours en français, y compris les grilles AG Grid et les
+  codes techniques de l'API (statuts, types) qui passent par le pipe
+  `mtmLabel`.
+
+Structure commune des écrans du back-office (blocs de `styles.scss`) :
+
+- liste : `.page-header` (eyebrow, titre, sous-titre qui explique à quoi
+  sert l'écran, actions à droite) → `.kpi-row` (3 tuiles cliquables qui
+  filtrent) → `.page-section` avec `.list-toolbar` (titre + compteur,
+  `.list-filters`, `.view-switch`) → `.list-grid` AG Grid (lignes
+  cliquables, actions épinglées à droite) ou cartes ; `.empty-state`
+  expliqué avec l'action à faire ;
+- fiche : `.detail-header` (statuts en `.status-pill` avec aide au survol),
+  `.todo-banner` (ce qu'il reste à faire), `.content-grid` de
+  `.page-card.detail-section` (`__head` avec `__hint` qui explique la
+  section) ;
+- dialogues : toujours un texte d'introduction qui dit ce que le choix
+  produit, une aide (`mat-hint`) par champ, un bouton dont le libellé
+  nomme l'action (« Créer le compte », pas « OK ») ; statuts via
+  `StatusChoiceDialog`, historique via `HistoryDialog` ;
+- jamais de clé technique à l'écran : chaque module déclare un catalogue
+  (`terrain-status.ts`, `crm-status.ts`, `ventes-status.ts`,
+  `site-content-catalog.ts`, `settings-catalog.ts`, `admin/admin-labels.ts`)
+  qui associe libellé, aide et couleur à chaque code ; un code inconnu passe
+  par `businessLabel()` ;
+- tout ce qui est référentiel (options, listes de commerciaux) est mis en
+  cache côté service (`shareReplay`) pour des transitions rapides.
 
 ---
 

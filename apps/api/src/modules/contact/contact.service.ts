@@ -9,7 +9,7 @@ import { PrismaService } from '../../database/prisma.service';
 import {
   COMMERCIAL_ROLES,
   hasAnyRole,
-  SUPERVISION_ROLES,
+  hasSupervisionScope,
 } from '../rbac/role-groups';
 import { CreateContactDto } from './dto/create-contact.dto';
 import type { Contact } from '@prisma/client';
@@ -122,12 +122,12 @@ export class ContactService {
   async convertToProspect(
     id: string,
     commercialResponsableId: string | undefined,
-    user: { id: string; roles: string[] },
+    user: { id: string; roles: string[]; permissions?: string[] },
   ) {
     const contact = await this.prisma.contact.findUnique({ where: { id } });
     if (!contact) throw new NotFoundException('Message de contact introuvable');
 
-    const isManager = hasAnyRole(user.roles, SUPERVISION_ROLES);
+    const isManager = hasSupervisionScope(user, 'crm');
     if (
       commercialResponsableId &&
       !isManager &&

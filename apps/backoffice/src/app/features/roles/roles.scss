@@ -1,31 +1,121 @@
 .roles-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+}
+
+.role-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.role-card {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  height: 100%;
-}
+  gap: 10px;
 
-.roles-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 20px;
-  border: 1px solid var(--mtm-border);
-  border-radius: 14px;
-  background: var(--mtm-card-bg);
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.03);
+  &__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
 
-  h1 {
-    margin: 0;
-    font-size: 1.35rem;
-    font-weight: 700;
-    color: var(--mtm-purple-primary);
-    letter-spacing: -0.02em;
+    h2 {
+      margin: 0;
+      font-family: var(--mtm-font-display);
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
   }
-}
 
-.roles-grid {
-  flex: 1;
-  min-height: 480px;
-  width: 100%;
+  &__tech {
+    margin: 2px 0 0;
+    color: var(--mtm-text-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.72rem;
+  }
+
+  &__pills {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px;
+
+    .status-pill svg {
+      width: 11px;
+      height: 11px;
+      margin-right: 4px;
+    }
+  }
+
+  &__help {
+    margin: 0;
+    color: var(--mtm-text-dark);
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+
+  &__count {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    color: var(--mtm-text-muted);
+    font-size: 0.8rem;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    &.is-empty {
+      font-style: italic;
+    }
+  }
+
+  &__modules {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+      display: grid;
+      grid-template-columns: minmax(110px, 40%) minmax(0, 1fr);
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: var(--mtm-bg-surface);
+      font-size: 0.8rem;
+      line-height: 1.4;
+
+      strong {
+        color: var(--mtm-primary);
+      }
+
+      span {
+        color: var(--mtm-text-dark);
+      }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid var(--mtm-border);
+  }
+
+  &__spacer {
+    flex: 1;
+  }
+
+  &__delete {
+    color: var(--mtm-accent);
+  }
 }

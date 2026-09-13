@@ -11,6 +11,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/login/login').then((m) => m.Login),
   },
   {
+    path: 'password-reset',
+    loadComponent: () =>
+      import('./features/auth/password-reset/password-reset').then((m) => m.PasswordReset),
+  },
+  {
     path: 'change-password',
     canActivate: [authGuard],
     loadComponent: () =>
@@ -85,7 +90,7 @@ export const routes: Routes = [
       },
       {
         path: 'contacts',
-        canActivate: [permissionsGuard(['settings:consulter'])],
+        canActivate: [permissionsGuard(['contact:consulter'])],
         loadComponent: () =>
           import('./features/contacts/contacts').then((m) => m.Contacts),
       },
@@ -165,13 +170,12 @@ export const routes: Routes = [
             (m) => m.ProspectForm,
           ),
       },
+      // Routes fixes d'abord : « ventes/:id » capturerait « objectifs » et « documents ».
       {
-        path: 'ventes/:id',
+        path: 'ventes/objectifs',
         canActivate: [permissionsGuard(['ventes:consulter'])],
         loadComponent: () =>
-          import('./features/ventes/vente-detail/vente-detail').then(
-            (m) => m.VenteDetailPage,
-          ),
+          import('./features/ventes/objectifs/objectifs').then((m) => m.Objectifs),
       },
       {
         path: 'ventes/documents',
@@ -179,6 +183,14 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/ventes/documents/documents').then(
             (m) => m.VenteDocumentsPage,
+          ),
+      },
+      {
+        path: 'ventes/:id',
+        canActivate: [permissionsGuard(['ventes:consulter'])],
+        loadComponent: () =>
+          import('./features/ventes/vente-detail/vente-detail').then(
+            (m) => m.VenteDetailPage,
           ),
       },
       {
@@ -195,14 +207,8 @@ export const routes: Routes = [
             (m) => m.ProspectForm,
           ),
       },
-      {
-        path: 'crm/prospects/:id/360',
-        canActivate: [permissionsGuard(['crm:consulter'])],
-        loadComponent: () =>
-          import('./features/crm/prospect-360/prospect-360').then(
-            (m) => m.Prospect360,
-          ),
-      },
+      // L'ancienne « vue 360° » est intégrée à la fiche prospect.
+      { path: 'crm/prospects/:id/360', redirectTo: 'crm/prospects/:id' },
       {
         path: 'crm/prospects/:id',
         canActivate: [permissionsGuard(['crm:consulter'])],

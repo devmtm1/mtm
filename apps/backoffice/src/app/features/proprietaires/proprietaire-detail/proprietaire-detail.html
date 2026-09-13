@@ -1,72 +1,227 @@
-<section class="detail-page">
-  <header class="detail-header">
-    <div class="detail-heading">
-      <button mat-button class="back-button" type="button" (click)="goBack()"><svg lucideArrowLeft aria-hidden="true"></svg></button>
-      <div>
-        <div class="detail-title-line">
-          <span class="detail-icon"><svg lucideIdCard aria-hidden="true"></svg></span>
-          <h1>{{ proprietaire()?.firstName }} {{ proprietaire()?.lastName }}</h1>
-        </div>
-        <p class="detail-subtitle">{{ proprietaire()?.email || 'Email non renseigné' }} · {{ proprietaire()?.phone || 'Téléphone non renseigné' }}</p>
+@if (loading()) {
+  <section class="detail-page" aria-busy="true">
+    <div class="skeleton" style="height: 20px; width: 160px"></div>
+    <div class="skeleton" style="height: 36px; width: 40%"></div>
+    <div class="content-grid">
+      <div class="skeleton" style="height: 220px"></div>
+      <div class="skeleton" style="height: 220px"></div>
+    </div>
+  </section>
+} @else if (proprietaire(); as p) {
+  <section class="detail-page">
+    <a class="back-link" href="/proprietaires" (click)="$event.preventDefault(); goBack()">
+      <svg lucideArrowLeft aria-hidden="true"></svg>Retour à la liste des propriétaires
+    </a>
+
+    <header class="detail-header">
+      <div class="detail-header__main">
+        <p class="eyebrow">Propriétaire</p>
+        <h1>{{ p.firstName }} {{ p.lastName }}</h1>
+        <p class="detail-header__meta">
+          @if (p.phone) {
+            <a [href]="'tel:' + p.phone"><svg lucidePhone aria-hidden="true"></svg>{{ p.phone }}</a>
+          }
+          @if (p.email) {
+            <a [href]="'mailto:' + p.email"><svg lucideMail aria-hidden="true"></svg>{{ p.email }}</a>
+          }
+          @if (!p.phone && !p.email) {
+            <span>Aucun moyen de contact renseigné</span>
+          }
+          <span>Enregistré le {{ p.createdAt | date: 'dd/MM/yyyy' }}</span>
+        </p>
       </div>
-    </div>
-    <div class="header-actions">
-      @if (canModify()) { <button mat-flat-button color="primary" type="button" (click)="edit()"><svg lucidePencil aria-hidden="true"></svg><span>Modifier</span></button> }
-      @if (canDelete()) { <button mat-stroked-button color="warn" type="button" (click)="remove()"><svg lucideTrash2 aria-hidden="true"></svg><span>Supprimer</span></button> }
-    </div>
-  </header>
+      <div class="detail-header__actions">
+        @if (canCreateMandat) {
+          <button mat-stroked-button type="button" (click)="newMandat()" matTooltip="Créer un mandat pour ce propriétaire">
+            <svg class="btn-icon" lucideScrollText aria-hidden="true"></svg>Nouveau mandat
+          </button>
+        }
+        @if (canCreateTerrain) {
+          <button mat-stroked-button type="button" (click)="newTerrain()" matTooltip="Créer un terrain rattaché à ce propriétaire">
+            <svg class="btn-icon" lucideLandPlot aria-hidden="true"></svg>Nouveau terrain
+          </button>
+        }
+        @if (canModify) {
+          <button mat-flat-button color="primary" type="button" (click)="edit()">
+            <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Modifier
+          </button>
+        }
+        @if (canDelete) {
+          <button mat-icon-button type="button" [matMenuTriggerFor]="moreMenu" aria-label="Plus d’actions">
+            <svg class="btn-icon" lucideChevronDown aria-hidden="true"></svg>
+          </button>
+          <mat-menu #moreMenu="matMenu" xPosition="before">
+            <button mat-menu-item type="button" (click)="remove()">
+              <span class="menu-line"><strong>Supprimer le propriétaire</strong><small>Possible uniquement sans mandat rattaché</small></span>
+            </button>
+          </mat-menu>
+        }
+      </div>
+    </header>
 
-  @if (loading()) {
-    <div class="page-card"><p>Chargement...</p></div>
-  } @else {
+    @if (canModify && todo().length) {
+      <aside class="todo-banner" aria-label="À compléter">
+        <strong>À faire :</strong>
+        <ul>
+          @for (item of todo(); track item.label) {
+            <li><span>{{ item.label }}</span><small>{{ item.hint }}</small></li>
+          }
+        </ul>
+      </aside>
+    }
+
+    <section class="kpi-row" aria-label="Synthèse">
+      <div class="kpi kpi--primary">
+        <span class="kpi__icon"><svg lucideLandPlot aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ terrains()?.length ?? p._count.terrains }}</strong>
+          <span>Terrains confiés</span>
+          <small>dont {{ terrainsDisponibles() }} publié{{ terrainsDisponibles() > 1 ? 's' : '' }} sur le site</small>
+        </span>
+      </div>
+      <div class="kpi" [class.kpi--success]="activeMandats() > 0" [class.kpi--muted]="activeMandats() === 0">
+        <span class="kpi__icon"><svg lucideScrollText aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ activeMandats() }}<small class="kpi__of">/ {{ mandats()?.length ?? p._count.mandats }}</small></strong>
+          <span>Mandats actifs</span>
+          <small>Sur l’ensemble de ses mandats</small>
+        </span>
+      </div>
+    </section>
+
     <section class="content-grid">
-      <section class="detail-section">
-        <h2>Informations générales</h2>
+      <!-- Terrains -->
+      @if (canSeeTerrains) {
+        <section class="page-card detail-section detail-section--wide">
+          <div class="detail-section__head">
+            <div>
+              <h2>Terrains</h2>
+              <p class="detail-section__hint">Parcelles enregistrées au nom de ce propriétaire.</p>
+            </div>
+            @if (canCreateTerrain) {
+              <button mat-stroked-button type="button" (click)="newTerrain()">
+                <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Ajouter un terrain
+              </button>
+            }
+          </div>
+          @if (terrains() === null) {
+            <div class="skeleton" style="height: 48px"></div>
+          } @else if (terrains()!.length) {
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Terrain</th>
+                    <th>Localisation</th>
+                    <th class="is-right">Superficie</th>
+                    <th class="is-right">Prix public</th>
+                    <th>Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (terrain of terrains(); track terrain.id) {
+                    <tr class="is-clickable" (click)="openTerrain(terrain.id)">
+                      <td><strong>{{ terrain.referenceInterne }}</strong> — {{ terrain.nom }}</td>
+                      <td>{{ location(terrain) }}</td>
+                      <td class="is-right">{{ terrain.superficie ? terrain.superficie + ' m²' : '—' }}</td>
+                      <td class="is-right">{{ terrain.prixPublic | mtmMoney }}</td>
+                      <td><span [class]="terrainPill(terrain.statutCommercial)" [matTooltip]="terrainHelp(terrain.statutCommercial)">{{ terrain.statutCommercial }}</span></td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <div class="detail-note">
+              Aucun terrain enregistré pour ce propriétaire.
+              @if (canCreateTerrain) {
+                <button mat-button type="button" (click)="newTerrain()">Créer sa première fiche terrain</button>
+              }
+            </div>
+          }
+        </section>
+      }
+
+      <!-- Mandats -->
+      @if (canSeeMandats) {
+        <section class="page-card detail-section detail-section--wide">
+          <div class="detail-section__head">
+            <div>
+              <h2>Mandats</h2>
+              <p class="detail-section__hint">Contrats signés avec MTM et leur échéance.</p>
+            </div>
+            @if (canCreateMandat) {
+              <button mat-stroked-button type="button" (click)="newMandat()">
+                <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau mandat
+              </button>
+            }
+          </div>
+          @if (mandats() === null) {
+            <div class="skeleton" style="height: 48px"></div>
+          } @else if (mandats()!.length) {
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Référence</th>
+                    <th>Type</th>
+                    <th>Période</th>
+                    <th>Échéance</th>
+                    <th class="is-right">Lots</th>
+                    <th>Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (mandat of mandats(); track mandat.id) {
+                    <tr class="is-clickable" (click)="openMandat(mandat.id)">
+                      <td><strong>{{ mandat.referenceInterne }}</strong>{{ mandat.exclusivite ? ' · exclusif' : '' }}</td>
+                      <td>{{ mandat.typeMandat }}</td>
+                      <td>{{ mandat.dateDebut | date: 'dd/MM/yyyy' }} → {{ mandat.dateFin | date: 'dd/MM/yyyy' }}</td>
+                      <td>
+                        @if (echeance(mandat); as e) {
+                          @if (e.label !== '—') {
+                            <span class="status-pill" [class.status-pill--warning]="e.tone === 'warning'" [class.status-pill--danger]="e.tone === 'danger'">{{ e.label }}</span>
+                          } @else {
+                            —
+                          }
+                        }
+                      </td>
+                      <td class="is-right">{{ mandat._count.lots }}</td>
+                      <td><span [class]="mandatPill(mandat.statut)" [matTooltip]="mandatHelp(mandat.statut)">{{ mandat.statut }}</span></td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <div class="detail-note">
+              Aucun mandat. Sans mandat signé, MTM n’est pas autorisée à commercialiser ses terrains.
+              @if (canCreateMandat) {
+                <button mat-button type="button" (click)="newMandat()">Créer un mandat</button>
+              }
+            </div>
+          }
+        </section>
+      }
+
+      <section class="page-card detail-section">
+        <h2>Coordonnées</h2>
         <dl class="info-list">
-          <div><dt>Prénom</dt><dd>{{ proprietaire()?.firstName }}</dd></div>
-          <div><dt>Nom</dt><dd>{{ proprietaire()?.lastName }}</dd></div>
-          <div><dt>Email</dt><dd>{{ proprietaire()?.email || '—' }}</dd></div>
-          <div><dt>Téléphone</dt><dd>{{ proprietaire()?.phone || '—' }}</dd></div>
-          <div><dt>Rattaché depuis</dt><dd>{{ proprietaire()?.createdAt ? (proprietaire()!.createdAt | date:'dd/MM/yyyy') : '—' }}</dd></div>
+          <div><dt>Prénom</dt><dd>{{ p.firstName }}</dd></div>
+          <div><dt>Nom</dt><dd>{{ p.lastName }}</dd></div>
+          <div><dt>Téléphone</dt><dd>{{ p.phone || '—' }}</dd></div>
+          <div><dt>E-mail</dt><dd>{{ p.email || '—' }}</dd></div>
         </dl>
-        @if (proprietaire()?.notes) {
-          <div class="detail-section__full"><h3>Notes</h3><p>{{ proprietaire()?.notes }}</p></div>
-        }
       </section>
 
-      <section class="detail-section" id="terrains">
-        <h2>Terrains ({{ terrains().length }})</h2>
-        @if (terrains().length) {
-          <div class="link-list">
-            @for (terrain of terrains(); track terrain.id) {
-              <button type="button" class="link-list__item" (click)="openTerrain(terrain.id)">
-                <strong>{{ terrain.referenceInterne }} · {{ terrain.nom }}</strong>
-                <small>{{ terrain.commune || '—' }} · {{ formatMoney(terrain.prixPublic) }}</small>
-                <span class="status-badge">{{ terrain.statutCommercial }}</span>
-              </button>
-            }
-          </div>
-        } @else {
-          <p class="muted">Aucun terrain rattaché à ce propriétaire.</p>
-        }
-      </section>
-
-      <section class="detail-section" id="mandats">
-        <h2>Mandats ({{ mandats().length }})</h2>
-        @if (mandats().length) {
-          <div class="link-list">
-            @for (mandat of mandats(); track mandat.id) {
-              <button type="button" class="link-list__item" (click)="openMandat(mandat.id)">
-                <strong>{{ mandat.referenceInterne }}</strong>
-                <small>{{ mandat.typeMandat }} · {{ mandat.dateDebut | date:'dd/MM/yyyy' }} → {{ mandat.dateFin | date:'dd/MM/yyyy' }}</small>
-                <span class="status-badge">{{ mandat.statut }}</span>
-              </button>
-            }
-          </div>
-        } @else {
-          <p class="muted">Aucun mandat rattaché à ce propriétaire.</p>
-        }
+      <section class="page-card detail-section">
+        <h2>Notes internes</h2>
+        <p class="detail-section__text">{{ p.notes || 'Aucune note. Utilisez « Modifier » pour consigner un contexte utile (disponibilités, représentant, particularités).' }}</p>
+        <dl class="info-list">
+          <div><dt>Enregistré le</dt><dd>{{ p.createdAt | date: 'dd/MM/yyyy à HH:mm' }}</dd></div>
+          <div><dt>Dernière modification</dt><dd>{{ p.updatedAt | date: 'dd/MM/yyyy à HH:mm' }}</dd></div>
+        </dl>
       </section>
     </section>
-  }
-</section>
+  </section>
+}

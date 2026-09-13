@@ -296,6 +296,118 @@ async function main(): Promise<void> {
     }
   }
 
+  // --- Terrains et mandats (J1.1 / J1.4) ---
+  // Le CDC demande qu'un commercial puisse créer et faire évoluer une fiche
+  // terrain ; l'encadrement valide les statuts et publie sur le site.
+  const landPermissionsByRole: Record<string, string[]> = {
+    commercial: ['terrains:consulter', 'terrains:creer', 'terrains:modifier', 'mandats:consulter'],
+    responsable_commercial: [
+      'terrains:consulter',
+      'terrains:creer',
+      'terrains:modifier',
+      'terrains:valider',
+      'terrains:publier',
+      'terrains:exporter',
+      'mandats:consulter',
+      'mandats:creer',
+      'mandats:modifier',
+      'mandats:valider',
+    ],
+    manager: [
+      'terrains:consulter',
+      'terrains:creer',
+      'terrains:modifier',
+      'terrains:valider',
+      'terrains:publier',
+      'terrains:exporter',
+      'mandats:consulter',
+      'mandats:creer',
+      'mandats:modifier',
+      'mandats:valider',
+      'mandats:exporter',
+    ],
+    direction: [
+      'terrains:consulter',
+      'terrains:creer',
+      'terrains:modifier',
+      'terrains:valider',
+      'terrains:publier',
+      'terrains:exporter',
+      'terrains:administrer',
+      'mandats:consulter',
+      'mandats:creer',
+      'mandats:modifier',
+      'mandats:valider',
+      'mandats:exporter',
+      'mandats:administrer',
+      'proprietaires:consulter',
+      'proprietaires:creer',
+      'proprietaires:modifier',
+    ],
+    comptable: ['terrains:consulter', 'mandats:consulter'],
+    responsable_gestion_locative: ['terrains:consulter'],
+    responsable_demarches: ['terrains:consulter'],
+    responsable_construction: ['terrains:consulter'],
+  };
+  for (const [roleName, permissionNames] of Object.entries(landPermissionsByRole)) {
+    const role = await prisma.role.findUniqueOrThrow({ where: { name: roleName } });
+    for (const permissionName of permissionNames) {
+      const permission = await prisma.permission.findUniqueOrThrow({
+        where: { name: permissionName },
+      });
+      await prisma.rolePermission.upsert({
+        where: { roleId_permissionId: { roleId: role.id, permissionId: permission.id } },
+        update: {},
+        create: { roleId: role.id, permissionId: permission.id },
+      });
+    }
+  }
+  console.log('  Permissions terrains / mandats attribuées');
+
+  // --- Contenu du site et demandes web (J1.2 / J1.5) ---
+  // Les demandes du formulaire de contact sont lues par l'équipe commerciale
+  // (qui les transforme en prospects) ; les textes et le portfolio du site
+  // sont gérés par l'encadrement, la direction publie.
+  const contentPermissionsByRole: Record<string, string[]> = {
+    commercial: ['contact:consulter', 'contact:modifier'],
+    responsable_commercial: ['contact:consulter', 'contact:modifier', 'content:consulter'],
+    manager: [
+      'contact:consulter',
+      'contact:modifier',
+      'contact:supprimer',
+      'content:consulter',
+      'content:creer',
+      'content:modifier',
+      'content:publier',
+      'content:supprimer',
+    ],
+    direction: [
+      'contact:consulter',
+      'contact:modifier',
+      'contact:supprimer',
+      'content:consulter',
+      'content:creer',
+      'content:modifier',
+      'content:publier',
+      'content:supprimer',
+      'content:administrer',
+    ],
+  };
+  for (const [roleName, permissionNames] of Object.entries(contentPermissionsByRole)) {
+    const role = await prisma.role.findUniqueOrThrow({ where: { name: roleName } });
+    for (const permissionName of permissionNames) {
+      const permission = await prisma.permission.findUniqueOrThrow({
+        where: { name: permissionName },
+      });
+      await prisma.rolePermission.upsert({
+        where: { roleId_permissionId: { roleId: role.id, permissionId: permission.id } },
+        update: {},
+        create: { roleId: role.id, permissionId: permission.id },
+      });
+    }
+  }
+  console.log('  Permissions contenu / demandes web attribuées');
+
   // --- Utilisateur administrateur par défaut ---
   const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@mtm-immobilier.sn';
   const hashedPassword = await bcrypt.hash(adminPassword, 12);
@@ -648,9 +760,9 @@ async function main(): Promise<void> {
     { key: 'home.cta.title', title: 'CTA principal', content: 'Découvrir nos terrains', type: 'stat', ordre: 2 },
     { key: 'about.title', title: 'Titre À propos', content: 'Une présence locale,\nune vision ouverte.', type: 'text', ordre: 10 },
     { key: 'about.text', title: 'Texte À propos', content: 'MTM Immobilier accompagne les particuliers, les investisseurs et la diaspora dans leurs projets immobiliers au Sénégal avec une approche fondée sur la proximité et la transparence.', type: 'text', ordre: 11 },
-    { key: 'testimonial.1', title: 'Témoignage 1', content: '"Terrain idéale pour mon projet de construction. L\'équipe MTM a été à l\'écoute tout au long du processus." — Aminata D. · Dakar', type: 'testimonial', ordre: 20 },
-    { key: 'testimonial.2', title: 'Témoignage 2', content: '"Grâce à MTM Immobilier, j\'ai pu acquérir mon terrain à Saly en toute confiance." — Mamadou S. · Saly', type: 'testimonial', ordre: 21 },
-    { key: 'testimonial.3', title: 'Témoignage 3', content: '"Professionnels et réactifs. Je recommande vivement MTM pour toute démarche foncière." — Fatou N. · Thiès', type: 'testimonial', ordre: 22 },
+    { key: 'testimonial.1', title: 'Aminata D. · Dakar', content: 'Terrain idéal pour mon projet de construction. L’équipe MTM a été à l’écoute tout au long du processus.', type: 'testimonial', ordre: 20 },
+    { key: 'testimonial.2', title: 'Mamadou S. · Saly', content: 'Grâce à MTM Immobilier, j’ai pu acquérir mon terrain à Saly en toute confiance.', type: 'testimonial', ordre: 21 },
+    { key: 'testimonial.3', title: 'Fatou N. · Thiès', content: 'Professionnels et réactifs. Je recommande vivement MTM pour toute démarche foncière.', type: 'testimonial', ordre: 22 },
     { key: 'news.1.title', title: 'Actualité 1', content: 'Étapes essentielles avant d\'acheter un terrain', type: 'text', ordre: 30 },
     { key: 'news.1.tag', title: 'Tag actualité 1', content: 'Investissement', type: 'stat', ordre: 31 },
     { key: 'news.1.excerpt', title: 'Extrait actualité 1', content: 'Les points à vérifier pour avancer avec clarté.', type: 'text', ordre: 32 },

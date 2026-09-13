@@ -7,6 +7,9 @@ import { VentesService } from './ventes.service';
  * Tableau de bord commercial et export (J1.6) : indicateurs globaux,
  * performance par commercial, export CSV tracé.
  */
+/** Profondeur des séries mensuelles du tableau de bord. */
+const DASHBOARD_HISTORY_MONTHS = 6;
+
 @Injectable()
 export class VentesReportingService {
   constructor(
@@ -87,9 +90,53 @@ export class VentesReportingService {
       .join('\r\n');
   }
 
+  /** Premier jour du mois, `monthsBack` mois avant aujourd'hui (UTC). */
+  private static monthStart(monthsBack: number): Date {
+    const now = new Date();
+    return new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - monthsBack, 1),
+    );
+  }
+
+  /** Clé « AAAA-MM » d'une date, alignée sur les périodes des objectifs. */
+  private static monthKey(date: Date): string {
+    return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
+  }
+
+  /**
+   * Série mensuelle sur `months` mois (du plus ancien au plus récent), chaque
+   * mois présent même sans donnée pour que les graphiques restent lisibles.
+   */
+  private static monthlySeries(
+    months: number,
+    rows: { date: Date; value: number }[],
+  ): { periode: string; valeur: number }[] {
+    const buckets = new Map<string, number>();
+    for (let back = months - 1; back >= 0; back--) {
+      buckets.set(
+        VentesReportingService.monthKey(
+          VentesReportingService.monthStart(back),
+        ),
+        0,
+      );
+    }
+    for (const row of rows) {
+      const key = VentesReportingService.monthKey(row.date);
+      if (buckets.has(key))
+        buckets.set(key, (buckets.get(key) ?? 0) + row.value);
+    }
+    return [...buckets.entries()].map(([periode, valeur]) => ({
+      periode,
+      valeur,
+    }));
+  }
+
   async getDashboardStats(user: MandatUser) {
     const where = this.access.ownershipFilter(user);
     const canViewFinancials = this.access.canViewFinancials(user);
+    const historyStart = VentesReportingService.monthStart(
+      DASHBOARD_HISTORY_MONTHS - 1,
+    );
     const [
       totalDossiers,
       dossiersParStatut,
@@ -98,6 +145,8 @@ export class VentesReportingService {
       totalCommissionsValidees,
       totalCommissionsPayees,
       ventesRecentes,
+      paiementsRecents,
+      dossiersRecents,
     ] = await Promise.all([
       this.prisma.dossierVente.count({ where }),
       this.prisma.dossierVente.groupBy({
@@ -135,10 +184,37 @@ export class VentesReportingService {
           terrain: { select: { nom: true } },
         },
       }),
+      this.prisma.paiement.findMany({
+        where: {
+          dossierVente: where,
+          statut: 'valide',
+          datePaiement: { gte: historyStart },
+        },
+        select: { datePaiement: true, montant: true },
+      }),
+      this.prisma.dossierVente.findMany({
+        where: { ...where, createdAt: { gte: historyStart } },
+        select: { createdAt: true },
+      }),
     ]);
 
     return {
       totalDossiers,
+      /** Nouveaux dossiers par mois sur les derniers mois (graphique). */
+      dossiersParMois: VentesReportingService.monthlySeries(
+        DASHBOARD_HISTORY_MONTHS,
+        dossiersRecents.map((item) => ({ date: item.createdAt, value: 1 })),
+      ),
+      /** Encaissements validés par mois ; vide sans droit financier. */
+      encaissementsParMois: canViewFinancials
+        ? VentesReportingService.monthlySeries(
+            DASHBOARD_HISTORY_MONTHS,
+            paiementsRecents.map((item) => ({
+              date: item.datePaiement,
+              value: Number(item.montant),
+            })),
+          )
+        : [],
       dossiersParStatut: dossiersParStatut.reduce<Record<string, number>>(
         (acc, item) => {
           acc[item.statut] = item._count.statut;
@@ -163,7 +239,7 @@ export class VentesReportingService {
   }
 
   async getCommercialPerformance(commercialId: string, user: MandatUser) {
-    if (!this.access.hasGlobalScope(user.roles) && commercialId !== user.id) {
+    if (!this.access.hasGlobalScope(user) && commercialId !== user.id) {
       throw new ForbiddenException(
         "Accès refusé aux performances d'un autre commercial",
       );

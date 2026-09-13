@@ -4,7 +4,7 @@
   justify-content: center;
   height: 100vh;
   padding: 16px;
-  background: radial-gradient(circle at 50% 20%, var(--mtm-purple-primary) 0%, var(--mtm-purple-dark) 58%, #1A1026 100%);
+  background: var(--mtm-primary-dark);
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
@@ -16,7 +16,7 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, var(--mtm-red-primary) 0%, var(--mtm-red-hover) 50%, var(--mtm-purple-primary) 100%);
+    background: var(--mtm-accent);
   }
 }
 
@@ -44,7 +44,7 @@
   height: 64px;
   margin-bottom: 8px;
   overflow: hidden;
-  border: 3px solid var(--mtm-purple-light);
+  border: 3px solid var(--mtm-primary-light);
   border-radius: 12px;
   background: #ffffff;
   filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
@@ -58,7 +58,7 @@
 
 .login-title {
   margin: 0;
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--mtm-font-display);
   font-size: 1.45rem;
   font-weight: 800;
   letter-spacing: 0.05em;
@@ -78,9 +78,9 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  background-color: rgba(184, 47, 57, 0.2);
-  color: var(--mtm-red-primary);
-  border: 1px solid rgba(184, 47, 57, 0.4);
+  background-color: var(--mtm-accent);
+  color: #ffffff;
+  border: 1px solid var(--mtm-accent);
   padding: 3px 10px;
   border-radius: 9999px;
 }
@@ -130,22 +130,22 @@
     --mdc-outlined-text-field-container-color: var(--mtm-card-bg);
     --mdc-outlined-text-field-input-text-color: var(--mtm-text-dark);
     --mdc-outlined-text-field-label-text-color: var(--mtm-text-muted);
-    --mdc-outlined-text-field-hover-label-text-color: var(--mtm-purple-primary);
-    --mdc-outlined-text-field-focus-label-text-color: var(--mtm-purple-primary);
+    --mdc-outlined-text-field-hover-label-text-color: var(--mtm-primary);
+    --mdc-outlined-text-field-focus-label-text-color: var(--mtm-primary);
     --mdc-outlined-text-field-outline-color: var(--mtm-border);
-    --mdc-outlined-text-field-hover-outline-color: var(--mtm-purple-primary);
-    --mdc-outlined-text-field-focus-outline-color: var(--mtm-purple-primary);
+    --mdc-outlined-text-field-hover-outline-color: var(--mtm-primary);
+    --mdc-outlined-text-field-focus-outline-color: var(--mtm-primary);
     --mdc-outlined-text-field-input-text-color: var(--mtm-text-dark);
     --mdc-outlined-text-field-label-text-color: var(--mtm-text-muted);
   }
 
   .mat-mdc-input-element {
     color: var(--mtm-text-dark) !important;
-    caret-color: var(--mtm-purple-primary) !important;
+    caret-color: var(--mtm-primary) !important;
 
+    // Le placeholder reste masqué tant que le label n'est pas flottant (comportement Material).
     &::placeholder {
-      color: var(--mtm-text-muted) !important;
-      opacity: 1;
+      color: var(--mtm-text-muted);
     }
   }
 
@@ -154,7 +154,7 @@
   }
 
   .mdc-text-field--focused .mdc-floating-label {
-    color: var(--mtm-purple-primary) !important;
+    color: var(--mtm-primary) !important;
   }
 }
 
@@ -166,9 +166,9 @@
 }
 
 .login-error-box {
-  background-color: #FEF2F2;
-  border: 1px solid #FCA5A5;
-  color: #991B1B;
+  background-color: var(--mtm-error-bg);
+  border: 1px solid var(--mtm-error);
+  color: var(--mtm-error);
   padding: 8px 12px;
   border-radius: 8px;
   font-size: 0.8rem;
@@ -177,7 +177,7 @@
 
 .login-2fa-hint {
   font-size: 0.82rem;
-  color: #64748B;
+  color: var(--mtm-text-muted);
   margin: 0 0 12px;
 }
 

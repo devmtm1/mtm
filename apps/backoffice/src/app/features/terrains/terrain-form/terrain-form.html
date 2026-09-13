@@ -1,35 +1,509 @@
-<section class="terrain-form-page" aria-labelledby="terrain-form-title">
-  <header class="page-header"><div><button mat-button class="page-header__back" type="button" (click)="goBack()"><svg lucideArrowLeft aria-hidden="true"></svg><span>Terrains</span></button><div class="form-title"><span class="form-title__icon"><svg lucideLandPlot aria-hidden="true"></svg></span><div><h1 id="terrain-form-title">{{ terrainId ? 'Modifier le terrain' : 'Ajouter un terrain' }}</h1><p>Étape {{ currentStep() }} sur 4 · Complétez la fiche terrain progressivement.</p></div></div></div><button mat-stroked-button type="button" (click)="goBack()">Annuler</button></header>
+<section class="form-page" aria-labelledby="terrain-form-title">
+  <a class="back-link" href="/terrains" (click)="$event.preventDefault(); goBack()">
+    <svg lucideArrowLeft aria-hidden="true"></svg>{{ isEdit ? 'Retour à la fiche' : 'Retour à la liste des terrains' }}
+  </a>
 
-  <nav class="form-stepper" aria-label="Étapes du formulaire"><button type="button" [class.is-active]="currentStep() === 1" [class.is-complete]="currentStep() > 1" (click)="currentStep.set(1)"><strong>1</strong><span>Identification</span></button><i></i><button type="button" [class.is-active]="currentStep() === 2" [class.is-complete]="currentStep() > 2" (click)="currentStep.set(2)"><strong>2</strong><span>Localisation</span></button><i></i><button type="button" [class.is-active]="currentStep() === 3" [class.is-complete]="currentStep() > 3" (click)="currentStep.set(3)"><strong>3</strong><span>Commercialisation</span></button><i></i><button type="button" [class.is-active]="currentStep() === 4" (click)="currentStep.set(4)"><strong>4</strong><span>Médias et documents</span></button></nav>
-
-  <form id="terrain-form" class="form-wizard" [formGroup]="form" (ngSubmit)="nextStep()">
-    <section class="wizard-panel owner-panel">
-      <div class="form-section__heading"><h2>Propriétaire</h2><p>Rattachez ce terrain à son propriétaire enregistré.</p></div>
-      <mat-form-field appearance="outline" class="owner-field">
-        <mat-label>Propriétaire</mat-label>
-        <mat-select formControlName="proprietaireId">
-          <mat-option value="">Aucun propriétaire sélectionné</mat-option>
-          @for (proprietaire of proprietaires; track proprietaire.id) {
-            <mat-option [value]="proprietaire.id">{{ proprietaire.firstName }} {{ proprietaire.lastName }}{{ proprietaire.phone ? ' · ' + proprietaire.phone : '' }}</mat-option>
-          }
-        </mat-select>
-        <button mat-button type="button" matSuffix (click)="addProprietaire(); $event.stopPropagation()">Nouveau propriétaire</button>
-      </mat-form-field>
-      @if (terrainId) {
-        <mat-form-field appearance="outline" class="owner-field" [class.mat-form-field-invalid]="justificationRequired() && !form.controls.justification.value?.trim()">
-          <mat-label>Justification de la modification</mat-label>
-          <textarea matInput rows="2" formControlName="justification" placeholder="Obligatoire si vous modifiez un prix, une marge, une commission, le propriétaire ou le statut juridique"></textarea>
-          @if (justificationRequired() && !form.controls.justification.value?.trim()) {
-            <mat-hint>Justification obligatoire pour cette modification.</mat-hint>
-          }
-        </mat-form-field>
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Terrains</p>
+      <h1 id="terrain-form-title" class="page-header__title">
+        {{ isEdit ? 'Modifier le terrain' : 'Nouveau terrain' }}
+      </h1>
+      <p class="page-header__subtitle">
+        @if (isEdit) {
+          Modifiez les informations puis enregistrez. Les statuts juridique et de vérification se
+          changent depuis la fiche (« Changer un statut »).
+        } @else {
+          Quatre étapes courtes. Seuls la référence, le nom et les statuts sont obligatoires : le
+          reste peut être complété plus tard depuis la fiche.
+        }
+      </p>
+    </div>
+    <div class="page-header__actions">
+      <button mat-stroked-button type="button" (click)="goBack()">Annuler</button>
+      @if (isEdit) {
+        <button mat-flat-button color="primary" type="button" (click)="submit()" [disabled]="saving() || loading()">
+          <svg class="btn-icon" lucideSave aria-hidden="true"></svg>{{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+        </button>
       }
-    </section>
-    @if (currentStep() === 1) { <section class="wizard-panel"><div class="form-section__heading"><h2>Informations générales</h2><p>Identité juridique et référence interne du terrain.</p></div><div class="form-grid"><mat-form-field appearance="outline"><mat-label>Référence interne</mat-label><input matInput formControlName="referenceInterne"><mat-error>La référence est obligatoire.</mat-error></mat-form-field><mat-form-field appearance="outline"><mat-label>Nom du terrain</mat-label><input matInput formControlName="nom"><mat-error>Le nom est obligatoire.</mat-error></mat-form-field><mat-form-field appearance="outline"><mat-label>Parcelle / matricule</mat-label><input matInput formControlName="parcelleMatricule"></mat-form-field><mat-form-field appearance="outline"><mat-label>Document foncier</mat-label><input matInput formControlName="typeDocumentFoncier"></mat-form-field><mat-form-field appearance="outline"><mat-label>Statut juridique</mat-label><mat-select formControlName="statutJuridique">@for (option of options.statutJuridique; track option) {<mat-option [value]="option">{{ option }}</mat-option>}</mat-select></mat-form-field><mat-form-field appearance="outline"><mat-label>Niveau de vérification</mat-label><mat-select formControlName="niveauVerification">@for (option of options.niveauVerification; track option) {<mat-option [value]="option">{{ option }}</mat-option>}</mat-select></mat-form-field></div></section> }
-    @if (currentStep() === 2) { <section class="wizard-panel"><div class="form-section__heading"><h2>Localisation et caractéristiques</h2><p>Situation, accès et informations utiles à la commercialisation.</p></div><div class="form-grid"><mat-form-field appearance="outline"><mat-label>Région</mat-label><input matInput formControlName="region"></mat-form-field><mat-form-field appearance="outline"><mat-label>Commune</mat-label><input matInput formControlName="commune"></mat-form-field><mat-form-field appearance="outline" class="wide"><mat-label>Localisation détaillée</mat-label><input matInput formControlName="localisationDetail"></mat-form-field><mat-form-field appearance="outline"><mat-label>Superficie (m²)</mat-label><input matInput type="number" formControlName="superficie"></mat-form-field><mat-form-field appearance="outline"><mat-label>Dimensions</mat-label><input matInput formControlName="dimensions"></mat-form-field><mat-form-field appearance="outline"><mat-label>Latitude</mat-label><input matInput type="number" formControlName="latitude"></mat-form-field><mat-form-field appearance="outline"><mat-label>Longitude</mat-label><input matInput type="number" formControlName="longitude"></mat-form-field><mat-form-field appearance="outline" class="wide"><mat-label>Accès routier</mat-label><textarea matInput rows="2" formControlName="accesRoutier"></textarea></mat-form-field><mat-form-field appearance="outline"><mat-label>Vocation</mat-label><input matInput formControlName="vocation"></mat-form-field><mat-form-field appearance="outline"><mat-label>Proximité des axes</mat-label><input matInput formControlName="proximiteAxes"></mat-form-field><mat-form-field appearance="outline"><mat-label>Voisinage</mat-label><textarea matInput rows="2" formControlName="voisinage"></textarea></mat-form-field><mat-form-field appearance="outline"><mat-label>Eau disponible</mat-label><mat-select formControlName="eauDisponible"><mat-option [value]="true">Oui</mat-option><mat-option [value]="false">Non</mat-option></mat-select></mat-form-field><mat-form-field appearance="outline"><mat-label>Électricité disponible</mat-label><mat-select formControlName="electriciteDisponible"><mat-option [value]="true">Oui</mat-option><mat-option [value]="false">Non</mat-option></mat-select></mat-form-field></div><div class="points-interet" formArrayName="pointsInteret"><div class="form-section__heading"><h3>Points d’intérêt</h3><button mat-stroked-button type="button" (click)="addPointInteret()">Ajouter un point d’intérêt</button></div>@for (point of pointsInteretArray.controls; track $index; let i = $index) {<div class="point-interet-row" [formGroupName]="i"><mat-form-field appearance="outline"><mat-label>Nom</mat-label><input matInput formControlName="nom"></mat-form-field><mat-form-field appearance="outline"><mat-label>Type</mat-label><input matInput formControlName="type" placeholder="école, marché..."></mat-form-field><mat-form-field appearance="outline"><mat-label>Distance (km)</mat-label><input matInput type="number" step="0.1" formControlName="distanceKm"></mat-form-field><button mat-icon-button type="button" aria-label="Retirer ce point d’intérêt" (click)="removePointInteret(i)"><svg lucideTrash2 aria-hidden="true"></svg></button></div>} @empty {<p class="hint">Aucun point d’intérêt renseigné.</p>}</div></section> }
-    @if (currentStep() === 3) { <section class="wizard-panel"><div class="form-section__heading"><h2>Commercialisation</h2><p>Données financières internes et statut de mise en vente.</p></div><div class="form-grid"><mat-form-field appearance="outline"><mat-label>Prix d’acquisition (FCFA)</mat-label><input matInput type="number" formControlName="prixAcquisition"></mat-form-field><mat-form-field appearance="outline"><mat-label>Prix public (FCFA)</mat-label><input matInput type="number" formControlName="prixPublic"></mat-form-field><mat-form-field appearance="outline"><mat-label>Marge / majoration</mat-label><input matInput type="number" formControlName="marge"></mat-form-field><mat-form-field appearance="outline"><mat-label>Commission</mat-label><input matInput type="number" formControlName="commission"></mat-form-field><mat-form-field appearance="outline"><mat-label>Statut commercial</mat-label><mat-select formControlName="statutCommercial">@for (option of options.statutCommercial; track option) {<mat-option [value]="option">{{ option }}</mat-option>}</mat-select></mat-form-field><div class="featured-toggle"><mat-checkbox formControlName="misEnAvant"><span class="font-medium">Mettre en avant sur le site public</span></mat-checkbox><p class="hint">Ce terrain sera affiché en priorité sur la page d'accueil.</p></div><mat-form-field appearance="outline"><mat-label>Description publique</mat-label><textarea matInput rows="4" formControlName="description" placeholder="Descriptif commercial affiché sur la fiche publique du site"></textarea><mat-hint>Visible par les visiteurs du site public.</mat-hint></mat-form-field><mat-form-field appearance="outline" class="wide"><mat-label>Notes internes</mat-label><textarea matInput rows="3" formControlName="notesInternes"></textarea><mat-hint>Jamais exposé publiquement.</mat-hint></mat-form-field></div></section> }
-    @if (currentStep() === 4) { <section class="wizard-panel asset-panel"><div class="form-section__heading"><h2>Médias et documents</h2><p>Ajoutez les éléments qui enrichissent la fiche du terrain.</p></div><div class="asset-actions"><label class="asset-button"><span class="asset-button__icon"><svg lucideImage aria-hidden="true"></svg></span><span><strong>Photos, vidéos ou plans</strong><small>JPG, PNG, MP4 · Plusieurs fichiers</small></span><svg class="asset-button__upload" lucideUpload aria-hidden="true"></svg><input type="file" accept="image/*,video/*" multiple (change)="selectAssets($event, 'media')"></label><label class="asset-button"><span class="asset-button__icon"><svg lucideFileText aria-hidden="true"></svg></span><span><strong>Documents justificatifs</strong><small>PDF, images, DOC · Plusieurs fichiers</small></span><svg class="asset-button__upload" lucideUpload aria-hidden="true"></svg><input type="file" accept="application/pdf,image/*,.doc,.docx" multiple (change)="selectAssets($event, 'documents')"></label></div><p class="asset-hint"><svg lucideUpload aria-hidden="true"></svg> Les fichiers seront envoyés vers Cloudinary après l’enregistrement du terrain.</p>@if (selectedAssets.length) { <div class="asset-list"><div class="asset-list__header"><strong>Fichiers à envoyer</strong><span>{{ selectedAssets.length }} élément{{ selectedAssets.length > 1 ? 's' : '' }}</span></div>@for (asset of selectedAssets; track asset.file.name + asset.kind + $index; let index = $index) {<div class="asset-row"><span class="asset-row__type">{{ asset.kind === 'media' ? 'MÉDIA' : 'DOCUMENT' }}</span><span class="asset-row__name">{{ asset.file.name }}</span><select [value]="asset.type" (change)="asset.type = $any($event.target).value"><option value="photo">Photo</option><option value="video">Vidéo</option><option value="plan">Plan</option><option value="document">Document</option><option value="titre-foncier">Titre foncier</option><option value="justificatif">Justificatif</option></select><label><input type="checkbox" [(ngModel)]="asset.isPublic" [ngModelOptions]="{standalone: true}"> Public</label><button mat-icon-button type="button" aria-label="Retirer le fichier" (click)="removeAsset(index)"><svg lucideTrash2 aria-hidden="true"></svg></button></div>}</div> }</section> }
-    <footer class="wizard-actions"><button mat-button type="button" (click)="previousStep()" [disabled]="currentStep() === 1">Précédent</button><span>Étape {{ currentStep() }} / 4</span><button mat-flat-button color="primary" type="submit"><svg lucideSave aria-hidden="true"></svg>{{ currentStep() === 4 ? (terrainId ? 'Enregistrer les modifications' : 'Créer le terrain') : 'Suivant' }}</button></footer>
-  </form>
+    </div>
+  </header>
+
+  <!-- Étapes -->
+  <nav class="stepper" aria-label="Étapes du formulaire">
+    @for (step of steps; track step.index) {
+      <button
+        type="button"
+        class="stepper__step"
+        [class.is-active]="currentStep() === step.index"
+        [class.is-complete]="stepIsComplete(step)"
+        [class.has-error]="stepHasError(step)"
+        [attr.aria-current]="currentStep() === step.index ? 'step' : null"
+        (click)="goToStep(step.index)"
+      >
+        <span class="stepper__number">
+          @if (stepIsComplete(step)) {
+            <svg lucideCheck aria-hidden="true"></svg>
+          } @else {
+            {{ step.index }}
+          }
+        </span>
+        <span class="stepper__text">
+          <strong>{{ step.title }}</strong>
+          <small>{{ step.hint }}</small>
+        </span>
+      </button>
+    }
+  </nav>
+
+  @if (loading()) {
+    <div class="page-card">
+      <div class="skeleton" style="height: 24px; width: 40%; margin-bottom: 16px"></div>
+      <div class="skeleton" style="height: 56px; margin-bottom: 12px"></div>
+      <div class="skeleton" style="height: 56px"></div>
+    </div>
+  } @else {
+    <form class="form-body" [formGroup]="form" (ngSubmit)="nextStep()" novalidate>
+      <!-- ÉTAPE 1 : identité ------------------------------------------------ -->
+      @if (currentStep() === 1) {
+        <section class="page-card form-block">
+          <div class="form-block__head">
+            <h2>Référence et nom</h2>
+            <p>La référence est votre code interne (ex. <code>T-2026-014</code>) ; le nom est celui affiché sur le site.</p>
+          </div>
+          <div class="form-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Référence interne</mat-label>
+              <input matInput formControlName="referenceInterne" placeholder="T-2026-014" autocomplete="off" />
+              <mat-hint>Unique. Sert à retrouver le terrain rapidement.</mat-hint>
+              <mat-error>La référence est obligatoire.</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Nom du terrain</mat-label>
+              <input matInput formControlName="nom" placeholder="Terrain 300 m² Diamniadio Lot 12" />
+              <mat-hint>Visible par les visiteurs du site.</mat-hint>
+              <mat-error>Le nom est obligatoire.</mat-error>
+            </mat-form-field>
+          </div>
+        </section>
+
+        <section class="page-card form-block">
+          <div class="form-block__head">
+            <h2>Propriétaire</h2>
+            <p>Personne qui confie le terrain à MTM. Le mandat de vente lui sera rattaché.</p>
+          </div>
+          <div class="form-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Propriétaire</mat-label>
+              <mat-select formControlName="proprietaireId">
+                <mat-option value="">Non renseigné pour l’instant</mat-option>
+                @for (proprietaire of proprietaires(); track proprietaire.id) {
+                  <mat-option [value]="proprietaire.id">
+                    {{ proprietaire.lastName }} {{ proprietaire.firstName }}{{ proprietaire.phone ? ' · ' + proprietaire.phone : '' }}
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <div class="form-grid__side">
+              <button mat-stroked-button type="button" (click)="addProprietaire()">
+                <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau propriétaire
+              </button>
+              <small>Si la personne n’est pas encore dans la liste.</small>
+            </div>
+          </div>
+        </section>
+
+        <section class="page-card form-block">
+          <div class="form-block__head">
+            <h2>Situation juridique</h2>
+            <p>Quel titre couvre le terrain et jusqu’où MTM l’a vérifié. Ces statuts protègent l’acheteur — et MTM.</p>
+          </div>
+          <div class="form-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Statut juridique</mat-label>
+              <mat-select formControlName="statutJuridique">
+                @for (option of options().statutJuridique; track option) {
+                  <mat-option [value]="option">{{ option }}</mat-option>
+                }
+              </mat-select>
+              <mat-hint>{{ help(legalStatus, form.controls.statutJuridique.value) || 'Type de titre de propriété.' }}</mat-hint>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Niveau de vérification</mat-label>
+              <mat-select formControlName="niveauVerification">
+                @for (option of options().niveauVerification; track option) {
+                  <mat-option [value]="option">{{ option }}</mat-option>
+                }
+              </mat-select>
+              <mat-hint>{{ help(verificationStatus, form.controls.niveauVerification.value) || 'Contrôle effectué par MTM.' }}</mat-hint>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Parcelle / matricule</mat-label>
+              <input matInput formControlName="parcelleMatricule" placeholder="Ex. TF 12345/DG" />
+              <mat-hint>Identifiant cadastral figurant sur le titre.</mat-hint>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Document foncier</mat-label>
+              <input matInput formControlName="typeDocumentFoncier" placeholder="Ex. Titre foncier n° 12345" />
+              <mat-hint>Pièce en votre possession (à joindre à l’étape 4).</mat-hint>
+            </mat-form-field>
+          </div>
+          @if (isEdit) {
+            <p class="form-note">
+              Les statuts juridique et de vérification sont en lecture seule ici : modifiez-les depuis la
+              fiche du terrain (bouton « Changer un statut »), avec justification.
+            </p>
+          } @else if (!canValidate) {
+            <p class="form-note">Seul un utilisateur habilité (validation) peut fixer ces statuts ; ils gardent leur valeur par défaut.</p>
+          }
+        </section>
+      }
+
+      <!-- ÉTAPE 2 : localisation ---------------------------------------------- -->
+      @if (currentStep() === 2) {
+        <section class="page-card form-block">
+          <div class="form-block__head">
+            <h2>Adresse</h2>
+            <p>Le site public filtre par région et commune : renseignez-les avec l’orthographe usuelle.</p>
+          </div>
+          <div class="form-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Région</mat-label>
+              <input matInput formControlName="region" placeholder="Dakar" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Commune</mat-label>
+              <input matInput formControlName="commune" placeholder="Diamniadio" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="wide">
+              <mat-label>Précisions (quartier, repère)</mat-label>
+              <input matInput formControlName="localisationDetail" placeholder="Ex. Cité Sénégindia, à 300 m de l’autoroute" />
+              <mat-hint>Affiché sur la fiche publique.</mat-hint>
+            </mat-form-field>
+          </div>
+        </section>
+
+        <section class="page-card form-block">
+          <div class="form-block__head">
+            <h2><svg lucideMapPin aria-hidden="true"></svg>Position GPS</h2>
+            <p>
+              Permet d’afficher la carte sur le site. Astuce : dans Google Maps, clic droit sur le lieu, puis
+              collez les coordonnées (« 14.7167, -17.4677 ») dans le champ Latitude — les deux se remplissent.
+            </p>
+          </div>
+          <div class="form-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Latitude</mat-label>
+              <input matInput type="number" step="0.000001" formControlName="latitude" (paste)="pasteCoordinates($event)" placeholder="14.7167" />
+              <mat-error>Entre -90 et 90.</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Longitude</mat-label>
+              <input matInput type="number" step="0.000001" formControlName="longitude" (paste)="pasteCoordinates($event)" placeholder="-17.4677" />
+              <mat-error>Entre -180 et 180.</mat-error>
+            </mat-form-field>
+          </div>
+        </section>
+
+        <section class="page-card form-block">
+          <div class="form-block__head">
+            <h2>Surface et environnement</h2>
+            <p>Ce que l’acheteur veut savoir avant de se déplacer.</p>
+          </div>
+          <div class="form-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Superficie (m²)</mat-label>
+              <input matInput type="number" min="0" formControlName="superficie" placeholder="300" />
+              <mat-error>Valeur positive.</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Dimensions</mat-label>
+              <input matInput formControlName="dimensions" placeholder="Ex. 20 m × 15 m" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Vocation</mat-label>
+              <input matInput formControlName="vocation" placeholder="Résidentiel, commercial, agricole…" />
+              <mat-hint>Usage prévu du terrain.</mat-hint>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Proximité des axes</mat-label>
+              <input matInput formControlName="proximiteAxes" placeholder="Ex. 5 min de l’autoroute à péage" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Eau</mat-label>
+              <mat-select formControlName="eauDisponible">
+                <mat-option [value]="null">Non renseigné</mat-option>
+                <mat-option [value]="true">Disponible</mat-option>
+                <mat-option [value]="false">Non disponible</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Électricité</mat-label>
+              <mat-select formControlName="electriciteDisponible">
+                <mat-option [value]="null">Non renseigné</mat-option>
+                <mat-option [value]="true">Disponible</mat-option>
+                <mat-option [value]="false">Non disponible</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="wide">
+              <mat-label>Accès routier</mat-label>
+              <textarea matInput rows="2" formControlName="accesRoutier" placeholder="Ex. Route goudronnée jusqu’au terrain"></textarea>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="wide">
+              <mat-label>Voisinage</mat-label>
+              <textarea matInput rows="2" formControlName="voisinage" placeholder="Ex. Lotissement résidentiel calme, école à proximité"></textarea>
+            </mat-form-field>
+          </div>
+
+          <div class="poi" formArrayName="pointsInteret">
+            <div class="poi__head">
+              <div>
+                <h3>Points d’intérêt à proximité</h3>
+                <small>École, marché, mosquée, hôpital… affichés sur la fiche publique.</small>
+              </div>
+              <button mat-stroked-button type="button" (click)="addPointInteret()">
+                <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Ajouter
+              </button>
+            </div>
+            @for (point of pointsInteretArray.controls; track $index; let i = $index) {
+              <div class="poi__row" [formGroupName]="i">
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <mat-label>Nom</mat-label>
+                  <input matInput formControlName="nom" placeholder="École primaire" />
+                </mat-form-field>
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <mat-label>Type</mat-label>
+                  <input matInput formControlName="type" placeholder="école, marché…" />
+                </mat-form-field>
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <mat-label>Distance (km)</mat-label>
+                  <input matInput type="number" step="0.1" min="0" formControlName="distanceKm" />
+                </mat-form-field>
+                <button mat-icon-button type="button" aria-label="Retirer ce point d’intérêt" (click)="removePointInteret(i)">
+                  <svg lucideTrash2 aria-hidden="true"></svg>
+                </button>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- ÉTAPE 3 : prix et publication ------------------------------------- -->
+      @if (currentStep() === 3) {
+        <div class="two-columns">
+          <div class="two-columns__main">
+            <section class="page-card form-block">
+              <div class="form-block__head">
+                <h2>Prix</h2>
+                <p>
+                  Seul le <strong>prix public</strong> est affiché sur le site. Prix d’acquisition, marge et
+                  commission restent internes.
+                </p>
+              </div>
+              <div class="form-grid">
+                <mat-form-field appearance="outline">
+                  <mat-label>Prix public (FCFA)</mat-label>
+                  <input matInput type="number" min="0" step="1000" formControlName="prixPublic" placeholder="15000000" />
+                  <mat-hint>Prix proposé aux acheteurs.</mat-hint>
+                </mat-form-field>
+                @if (canViewFinancials) {
+                  <mat-form-field appearance="outline">
+                    <mat-label>Prix d’acquisition (FCFA)</mat-label>
+                    <input matInput type="number" min="0" step="1000" formControlName="prixAcquisition" />
+                    <mat-hint>Interne. Ce que MTM ou le propriétaire a payé.</mat-hint>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Marge (FCFA)</mat-label>
+                    <input matInput type="number" step="1000" formControlName="marge" />
+                    @if (computedMargin() !== null && form.controls.marge.value === null) {
+                      <mat-hint>Sera calculée automatiquement : prix public − acquisition.</mat-hint>
+                    } @else {
+                      <mat-hint>Interne. Laissez vide pour un calcul automatique.</mat-hint>
+                    }
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Commission (FCFA)</mat-label>
+                    <input matInput type="number" min="0" step="1000" formControlName="commission" />
+                    <mat-hint>Interne. Rémunération prévue sur la vente.</mat-hint>
+                  </mat-form-field>
+                }
+              </div>
+            </section>
+
+            <section class="page-card form-block">
+              <div class="form-block__head">
+                <h2>Publication</h2>
+                <p>Le statut décide si le terrain est visible sur le site public.</p>
+              </div>
+              <div class="form-grid">
+                <mat-form-field appearance="outline">
+                  <mat-label>Statut commercial</mat-label>
+                  <mat-select formControlName="statutCommercial">
+                    @for (option of options().statutCommercial; track option) {
+                      <mat-option [value]="option">{{ option }}</mat-option>
+                    }
+                  </mat-select>
+                  <mat-hint>{{ help(commercialStatus, form.controls.statutCommercial.value) }}</mat-hint>
+                </mat-form-field>
+                @if (canPublish) {
+                  <div class="form-grid__side">
+                    <mat-checkbox formControlName="misEnAvant" [disabled]="form.controls.statutCommercial.value !== 'Disponible'">Mettre en avant sur la page d’accueil</mat-checkbox>
+                    <small>
+                      @if (form.controls.statutCommercial.value === 'Disponible') {
+                        Affiché dans la sélection de la page d’accueil.
+                      } @else {
+                        Possible uniquement pour un terrain « Disponible ».
+                      }
+                    </small>
+                  </div>
+                }
+                <mat-form-field appearance="outline" class="wide">
+                  <mat-label>Description publique</mat-label>
+                  <textarea matInput rows="5" formControlName="description" placeholder="Décrivez le terrain comme vous le présenteriez à un acheteur : atouts, environnement, projets possibles…"></textarea>
+                  <mat-hint>Texte de présentation affiché sur le site.</mat-hint>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="wide">
+                  <mat-label>Notes internes</mat-label>
+                  <textarea matInput rows="3" formControlName="notesInternes" placeholder="Ex. Propriétaire joignable le matin uniquement"></textarea>
+                  <mat-hint>Jamais publiées. Visibles par l’équipe MTM seulement.</mat-hint>
+                </mat-form-field>
+              </div>
+            </section>
+
+            @if (isEdit && justificationRequired()) {
+              <section class="page-card form-block form-block--attention">
+                <div class="form-block__head">
+                  <h2>Justification obligatoire</h2>
+                  <p>
+                    Vous modifiez un prix, une marge, une commission ou le propriétaire. La raison est enregistrée
+                    dans le journal d’audit avec votre nom.
+                  </p>
+                </div>
+                <mat-form-field appearance="outline" class="wide">
+                  <mat-label>Raison de la modification</mat-label>
+                  <textarea matInput rows="2" formControlName="justification" placeholder="Ex. Nouveau prix négocié avec le propriétaire le 12/09"></textarea>
+                  @if (controlInvalid('justification') || (form.controls.justification.touched && !form.controls.justification.value?.trim())) {
+                    <mat-error>Indiquez la raison de la modification.</mat-error>
+                  }
+                </mat-form-field>
+              </section>
+            }
+          </div>
+
+          <!-- Aperçu de ce que verra le public -->
+          <aside class="preview" aria-label="Aperçu sur le site public">
+            <p class="preview__title">Aperçu sur le site</p>
+            <div class="preview__card">
+              <div class="preview__image"><svg lucideImage aria-hidden="true"></svg></div>
+              <div class="preview__body">
+                <strong>{{ publicPreview().nom }}</strong>
+                <span>{{ publicPreview().location }}</span>
+                <span>{{ publicPreview().superficie }}</span>
+                <em>{{ publicPreview().prix }}</em>
+              </div>
+            </div>
+            <p class="preview__status" [class.is-published]="publicPreview().published">
+              @if (publicPreview().published) {
+                Sera visible sur le site public.
+              } @else {
+                Invisible sur le site tant que le statut n’est pas « Disponible ».
+              }
+            </p>
+          </aside>
+        </div>
+      }
+
+      <!-- ÉTAPE 4 : fichiers -------------------------------------------------- -->
+      @if (currentStep() === 4) {
+        <section class="page-card form-block">
+          <div class="form-block__head">
+            <h2>Photos et vidéos</h2>
+            <p>
+              Une bonne photo fait la différence sur le site. Les fichiers marqués <strong>Public</strong> sont
+              visibles par les visiteurs ; les autres restent internes.
+            </p>
+          </div>
+          <div class="dropzone-row">
+            <label class="dropzone">
+              <svg lucideImage aria-hidden="true"></svg>
+              <strong>Ajouter des photos ou vidéos</strong>
+              <small>JPG, PNG, MP4 · plusieurs fichiers possibles</small>
+              <input type="file" accept="image/*,video/*" multiple (change)="selectAssets($event, 'media')" />
+            </label>
+            <label class="dropzone dropzone--documents">
+              <svg lucideFileText aria-hidden="true"></svg>
+              <strong>Ajouter des documents</strong>
+              <small>Titre, plan, délibération… PDF ou image</small>
+              <input type="file" accept="application/pdf,image/*,.doc,.docx" multiple (change)="selectAssets($event, 'documents')" />
+            </label>
+          </div>
+
+          @if (selectedAssets().length) {
+            <ul class="asset-list">
+              @for (asset of selectedAssets(); track asset.file.name + $index; let index = $index) {
+                <li class="asset-item">
+                  @if (asset.preview) {
+                    <img class="asset-item__thumb" [src]="asset.preview" alt="" />
+                  } @else {
+                    <span class="asset-item__thumb asset-item__thumb--file"><svg lucideFileText aria-hidden="true"></svg></span>
+                  }
+                  <div class="asset-item__fields">
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                      <mat-label>Titre</mat-label>
+                      <input matInput [ngModel]="asset.title" (ngModelChange)="updateAsset(index, { title: $event })" [ngModelOptions]="{ standalone: true }" />
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                      <mat-label>Type</mat-label>
+                      <mat-select [ngModel]="asset.type" (ngModelChange)="updateAsset(index, { type: $event })" [ngModelOptions]="{ standalone: true }">
+                        @if (asset.kind === 'media') {
+                          <mat-option value="photo">Photo</mat-option>
+                          <mat-option value="video">Vidéo</mat-option>
+                          <mat-option value="plan">Plan</mat-option>
+                        } @else {
+                          <mat-option value="document">Document</mat-option>
+                          <mat-option value="titre-foncier">Titre foncier</mat-option>
+                          <mat-option value="justificatif">Justificatif</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+                    <mat-checkbox
+                      [ngModel]="asset.isPublic"
+                      (ngModelChange)="updateAsset(index, { isPublic: $event })"
+                      [ngModelOptions]="{ standalone: true }"
+                      [disabled]="!canPublish"
+                      [matTooltip]="canPublish ? 'Visible par les visiteurs du site' : 'Réservé aux utilisateurs habilités à publier'"
+                    >
+                      Public
+                    </mat-checkbox>
+                  </div>
+                  <button mat-icon-button type="button" aria-label="Retirer le fichier" (click)="removeAsset(index)">
+                    <svg lucideTrash2 aria-hidden="true"></svg>
+                  </button>
+                </li>
+              }
+            </ul>
+            <p class="form-note">
+              <svg lucideUpload aria-hidden="true"></svg>{{ selectedAssets().length }} fichier{{ selectedAssets().length > 1 ? 's' : '' }}
+              envoyé{{ selectedAssets().length > 1 ? 's' : '' }} à l’enregistrement.
+            </p>
+          } @else {
+            <p class="form-note">Aucun fichier sélectionné — vous pourrez en ajouter à tout moment depuis la fiche.</p>
+          }
+        </section>
+      }
+
+      <footer class="form-footer">
+        <button mat-stroked-button type="button" (click)="previousStep()" [disabled]="currentStep() === 1">Précédent</button>
+        <span class="form-footer__step">Étape {{ currentStep() }} sur {{ steps.length }}</span>
+        @if (currentStep() < steps.length) {
+          <button mat-flat-button color="primary" type="submit">Suivant</button>
+        } @else {
+          <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+            <svg class="btn-icon" lucideSave aria-hidden="true"></svg>
+            {{ saving() ? 'Enregistrement…' : isEdit ? 'Enregistrer les modifications' : 'Créer le terrain' }}
+          </button>
+        }
+      </footer>
+    </form>
+  }
 </section>

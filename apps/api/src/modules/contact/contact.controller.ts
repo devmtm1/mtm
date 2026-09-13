@@ -51,7 +51,7 @@ export class ContactController {
   }
 
   @Get()
-  @RequirePermissions('settings:consulter')
+  @RequirePermissions('contact:consulter')
   findAll(@Query('lu') lu?: string) {
     return this.contacts.findAll({
       lu: lu === 'true' ? true : lu === 'false' ? false : undefined,
@@ -59,7 +59,7 @@ export class ContactController {
   }
 
   @Patch(':id/read')
-  @RequirePermissions('settings:consulter')
+  @RequirePermissions('contact:modifier')
   async markRead(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: AuthenticatedUser,

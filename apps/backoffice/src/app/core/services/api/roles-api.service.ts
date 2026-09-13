@@ -17,6 +17,10 @@ export class RolesApiService {
     return this.http.post<RoleListItem>(this.baseUrl, payload);
   }
 
+  update(id: string, payload: { description?: string }): Observable<RoleListItem> {
+    return this.http.patch<RoleListItem>(`${this.baseUrl}/${id}`, payload);
+  }
+
   remove(id: string): Observable<{ success: boolean }> {
     return this.http.delete<{ success: boolean }>(`${this.baseUrl}/${id}`);
   }

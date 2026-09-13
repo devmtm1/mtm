@@ -9,7 +9,8 @@ import { SessionService } from '../services/session.service';
  * Attache le token d'accès (Bearer) à chaque requête vers l'API. Sur un
  * 401 (access token expiré), tente un refresh silencieux via le cookie
  * httpOnly puis rejoue la requête initiale avec le nouveau token. Si le
- * refresh échoue également, nettoie la session et redirige vers /login.
+ * refresh est refusé (401/403), nettoie la session et redirige vers /login ;
+ * une erreur technique du refresh ne déconnecte pas.
  *
  * Les requêtes vers /auth/login et /auth/refresh sont exclues de cette
  * logique : un 401 sur /login est un échec d'identifiants normal (pas une
@@ -55,8 +56,16 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
             return next(retryReq);
           }),
           catchError((refreshError: unknown) => {
-            sessionService.clearSession();
-            void router.navigate(['/login']);
+            // Seul un refus explicite (session révoquée ou expirée) ferme la
+            // session ; une panne passagère (5xx, réseau) ne doit pas
+            // déconnecter l'utilisateur, la prochaine requête retentera.
+            const refused =
+              refreshError instanceof HttpErrorResponse &&
+              (refreshError.status === 401 || refreshError.status === 403);
+            if (refused) {
+              sessionService.clearSession();
+              void router.navigate(['/login']);
+            }
             return throwError(() => refreshError);
           }),
         );

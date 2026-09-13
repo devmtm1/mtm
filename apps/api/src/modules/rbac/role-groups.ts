@@ -31,3 +31,26 @@ export function hasAnyRole(
 ): boolean {
   return roles.some((role) => group.includes(role));
 }
+
+/** Utilisateur authentifié réduit à ce qui décide de son périmètre. */
+export type ScopeUser = {
+  roles: readonly string[];
+  permissions?: readonly string[];
+};
+
+/**
+ * Vue « tous dossiers » d'un module : rôles de supervision du seed, ou
+ * permission `<module>:administrer` — ainsi un rôle créé dans le back-office
+ * (Rôles & permissions) obtient le même périmètre qu'un manager sans
+ * dépendre d'un nom de rôle codé en dur.
+ */
+export function hasSupervisionScope(
+  user: ScopeUser,
+  module: string,
+  extraRoles: readonly string[] = [],
+): boolean {
+  return (
+    hasAnyRole(user.roles, [...SUPERVISION_ROLES, ...extraRoles]) ||
+    (user.permissions ?? []).includes(`${module}:administrer`)
+  );
+}

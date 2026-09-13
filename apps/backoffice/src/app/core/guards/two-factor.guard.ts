@@ -1,13 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateChildFn, Router } from '@angular/router';
 import { SessionService } from '../services/session.service';
-
-const SENSITIVE_ROLES = new Set([
-  'administrateur',
-  'direction',
-  'comptable',
-  'rh',
-]);
+import { SENSITIVE_ROLES } from '../../features/admin/admin-labels';
 
 export const twoFactorGuard: CanActivateChildFn = (childRoute) => {
   const sessionService = inject(SessionService);

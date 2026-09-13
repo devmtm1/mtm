@@ -5,8 +5,10 @@ import { environment } from '../../../../environments/environment';
 import type { ProprietaireSummary } from '../../models/terrain.model';
 
 export interface ProprietaireDetail extends ProprietaireSummary {
+  notes: string | null;
   createdAt: string;
   updatedAt: string;
+  _count: { terrains: number; mandats: number };
 }
 
 @Injectable({ providedIn: 'root' })

@@ -17,8 +17,8 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: var(--mtm-red-subtle);
-  color: var(--mtm-red-primary);
+  background: var(--mtm-accent-subtle);
+  color: var(--mtm-accent);
 }
 
 .delete-user-dialog__icon svg {
@@ -45,7 +45,7 @@
 }
 
 .delete-user-dialog__warning {
-  color: var(--mtm-red-primary) !important;
+  color: var(--mtm-accent) !important;
   font-size: 0.78rem;
   font-weight: 600;
 }
@@ -62,12 +62,12 @@
 }
 
 .delete-user-dialog__confirm {
-  background: var(--mtm-red-primary) !important;
+  background: var(--mtm-accent) !important;
   color: #ffffff !important;
 }
 
 .delete-user-dialog__confirm:hover {
-  background: var(--mtm-red-hover) !important;
+  background: var(--mtm-accent-dark) !important;
 }
 
 @media (max-width: 520px) {

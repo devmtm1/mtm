@@ -1,0 +1,195 @@
+<section class="objectifs-page" [class.is-busy]="busy()">
+  <a class="back-link" href="/ventes" (click)="$event.preventDefault(); goBack()">
+    <svg lucideArrowLeft aria-hidden="true"></svg>Retour aux dossiers de vente
+  </a>
+
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Ventes</p>
+      <h1 class="page-header__title">Objectifs commerciaux</h1>
+      <p class="page-header__subtitle">
+        Cibles du mois par commercial et taux d’atteinte.
+        <strong>Ventes</strong> = dossiers réservés, en paiement ou soldés dans le mois ·
+        <strong>Chiffre d’affaires</strong> = paiements validés · <strong>Commissions</strong> = validées ou payées.
+      </p>
+    </div>
+    <div class="page-header__actions">
+      @if (canManage) {
+        <button mat-flat-button color="primary" type="button" (click)="openDialog()">
+          <svg class="btn-icon" lucideTarget aria-hidden="true"></svg>Fixer un objectif
+        </button>
+      }
+    </div>
+  </header>
+
+  <!-- Choix du mois -->
+  <div class="month-bar">
+    <button mat-icon-button type="button" (click)="shift(-1)" aria-label="Mois précédent" matTooltip="Mois précédent">
+      <svg class="btn-icon" lucideChevronLeft aria-hidden="true"></svg>
+    </button>
+    <div class="month-bar__current">
+      <strong>{{ periodeLabel() }}</strong>
+      <small>
+        @if (isCurrentMonth()) {
+          Mois en cours · {{ monthElapsed() }} % écoulé · {{ daysLeft() }} jour{{ daysLeft() > 1 ? 's' : '' }} restant{{ daysLeft() > 1 ? 's' : '' }}
+        } @else if (isFuture()) {
+          Mois à venir : fixez les cibles dès maintenant
+        } @else {
+          Mois clos
+        }
+      </small>
+    </div>
+    <button mat-icon-button type="button" (click)="shift(1)" aria-label="Mois suivant" matTooltip="Mois suivant">
+      <svg class="btn-icon" lucideChevronRight aria-hidden="true"></svg>
+    </button>
+    <mat-form-field appearance="outline" class="month-bar__input" subscriptSizing="dynamic">
+      <mat-label>Aller au mois</mat-label>
+      <input matInput type="month" [formControl]="periode" />
+    </mat-form-field>
+    @if (!isCurrentMonth()) {
+      <button mat-button type="button" (click)="goToCurrentMonth()">Mois en cours</button>
+    }
+  </div>
+
+  @if (loading()) {
+    <section class="kpi-row">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="kpi skeleton" aria-hidden="true"></div>
+      }
+    </section>
+    <div class="objectifs-grid">
+      @for (i of [1, 2]; track i) {
+        <div class="skeleton" style="height: 220px"></div>
+      }
+    </div>
+  } @else if (rows().length === 0) {
+    <div class="page-card empty-state">
+      <svg lucideTarget aria-hidden="true"></svg>
+      <h3>Aucun commercial à afficher</h3>
+      <p>Les objectifs se fixent pour les utilisateurs ayant un rôle commercial.</p>
+    </div>
+  } @else {
+    <!-- Équipe -->
+    @if (canManage && rows().length > 1) {
+      <section class="kpi-row" aria-label="Totaux de l’équipe">
+        <div class="kpi kpi--primary">
+          <span class="kpi__icon"><svg lucideReceipt aria-hidden="true"></svg></span>
+          <span class="kpi__body">
+            <strong>{{ totals().ventes }}<small class="kpi__of">/ {{ totals().cibleVentes || '—' }}</small></strong>
+            <span>Ventes de l’équipe</span>
+            <small>{{ totals().tauxVentes !== null ? totals().tauxVentes + ' % de l’objectif' : 'Aucune cible fixée' }}</small>
+          </span>
+        </div>
+        <div class="kpi kpi--success">
+          <span class="kpi__icon"><svg lucideBanknote aria-hidden="true"></svg></span>
+          <span class="kpi__body">
+            <strong>{{ totals().chiffreAffaires | mtmMoney }}</strong>
+            <span>Chiffre d’affaires encaissé</span>
+            <small>{{ totals().tauxChiffreAffaires !== null ? totals().tauxChiffreAffaires + ' % de ' + (totals().cibleChiffreAffaires | mtmMoney) : 'Aucune cible fixée' }}</small>
+          </span>
+        </div>
+        <div class="kpi">
+          <span class="kpi__icon"><svg lucidePercent aria-hidden="true"></svg></span>
+          <span class="kpi__body">
+            <strong>{{ totals().commissions | mtmMoney }}</strong>
+            <span>Commissions validées</span>
+            <small>{{ totals().tauxCommissions !== null ? totals().tauxCommissions + ' % de ' + (totals().cibleCommissions | mtmMoney) : 'Aucune cible fixée' }}</small>
+          </span>
+        </div>
+      </section>
+    }
+
+    @if (canManage && withObjectif() < rows().length) {
+      <aside class="alert-banner alert-banner--info" aria-label="Objectifs manquants">
+        <div class="alert-banner__head">
+          <svg lucideTarget aria-hidden="true"></svg>
+          <strong>{{ rows().length - withObjectif() }} commercia{{ rows().length - withObjectif() > 1 ? 'ux' : 'l' }} sans objectif pour {{ periodeLabel() }}</strong>
+          <span>Sans cible, pas de taux d’atteinte ni de suivi sur le tableau de bord.</span>
+          <button mat-stroked-button type="button" (click)="copyPreviousMonth()">
+            <svg class="btn-icon" lucideCopy aria-hidden="true"></svg>Reprendre les cibles du mois précédent
+          </button>
+        </div>
+      </aside>
+    }
+
+    <div class="objectifs-grid">
+      @for (row of rows(); track row.commercial.id) {
+        <article class="page-card objectif-card">
+          <header class="objectif-card__header">
+            <div>
+              <h2>{{ row.commercial.firstName }} {{ row.commercial.lastName }}</h2>
+              @if (!row.progress?.objectif) {
+                <p class="objectif-card__none">Aucun objectif fixé pour {{ periodeLabel() }}.</p>
+              } @else if (row.progress?.objectif?.notes) {
+                <p class="objectif-card__notes">{{ row.progress?.objectif?.notes }}</p>
+              }
+            </div>
+            @if (canManage) {
+              <div class="objectif-card__actions">
+                <button mat-stroked-button type="button" (click)="openDialog(row)">{{ row.objectif ? 'Modifier' : 'Fixer' }}</button>
+                @if (row.objectif) {
+                  <button mat-button type="button" (click)="remove(row)">Supprimer</button>
+                }
+              </div>
+            }
+          </header>
+
+          @if (row.progress; as progress) {
+            <dl class="objectif-metrics">
+              <div class="objectif-metric" [class]="'objectif-metric objectif-metric--' + tone(progress.taux.ventes)">
+                <dt>Ventes engagées <span class="objectif-metric__reading">{{ reading(row, 'ventes') }}</span></dt>
+                <dd>
+                  <strong>{{ progress.realise.ventes }}</strong>
+                  @if (progress.objectif?.cibleVentes !== null && progress.objectif?.cibleVentes !== undefined) {
+                    <span>/ {{ progress.objectif?.cibleVentes }}</span>
+                  }
+                  @if (progress.taux.ventes !== null) {
+                    <em>{{ progress.taux.ventes }} %</em>
+                  }
+                </dd>
+                @if (progress.taux.ventes !== null) {
+                  <span class="objectif-bar"><span class="objectif-bar__fill" [style.width.%]="barValue(progress.taux.ventes)"></span><i class="objectif-bar__pace" [style.left.%]="monthElapsed()" title="Part du mois écoulée"></i></span>
+                }
+              </div>
+              <div class="objectif-metric" [class]="'objectif-metric objectif-metric--' + tone(progress.taux.chiffreAffaires)">
+                <dt>Chiffre d’affaires encaissé <span class="objectif-metric__reading">{{ reading(row, 'chiffreAffaires') }}</span></dt>
+                <dd>
+                  <strong>{{ progress.realise.chiffreAffaires | mtmMoney }}</strong>
+                  @if (progress.objectif?.cibleChiffreAffaires) {
+                    <span>/ {{ progress.objectif?.cibleChiffreAffaires | mtmMoney }}</span>
+                  }
+                  @if (progress.taux.chiffreAffaires !== null) {
+                    <em>{{ progress.taux.chiffreAffaires }} %</em>
+                  }
+                </dd>
+                @if (progress.taux.chiffreAffaires !== null) {
+                  <span class="objectif-bar"><span class="objectif-bar__fill" [style.width.%]="barValue(progress.taux.chiffreAffaires)"></span><i class="objectif-bar__pace" [style.left.%]="monthElapsed()" title="Part du mois écoulée"></i></span>
+                }
+              </div>
+              <div class="objectif-metric" [class]="'objectif-metric objectif-metric--' + tone(progress.taux.commissions)">
+                <dt>Commissions validées <span class="objectif-metric__reading">{{ reading(row, 'commissions') }}</span></dt>
+                <dd>
+                  <strong>{{ progress.realise.commissions | mtmMoney }}</strong>
+                  @if (progress.objectif?.cibleCommissions) {
+                    <span>/ {{ progress.objectif?.cibleCommissions | mtmMoney }}</span>
+                  }
+                  @if (progress.taux.commissions !== null) {
+                    <em>{{ progress.taux.commissions }} %</em>
+                  }
+                </dd>
+                @if (progress.taux.commissions !== null) {
+                  <span class="objectif-bar"><span class="objectif-bar__fill" [style.width.%]="barValue(progress.taux.commissions)"></span><i class="objectif-bar__pace" [style.left.%]="monthElapsed()" title="Part du mois écoulée"></i></span>
+                }
+              </div>
+            </dl>
+            @if (isCurrentMonth() && row.progress.objectif) {
+              <p class="objectif-card__legend">Le trait vertical marque la part du mois écoulée : une barre qui le dépasse est en avance.</p>
+            }
+          } @else {
+            <p class="objectif-card__none">Progression indisponible.</p>
+          }
+        </article>
+      }
+    </div>
+  }
+</section>

@@ -6,6 +6,7 @@ import {
   ForbiddenException,
   Get,
   Param,
+  Patch,
   ParseUUIDPipe,
   Post,
   Query,
@@ -23,6 +24,7 @@ import { RequirePermissions } from '../auth/decorators/require-permissions.decor
 import { Public } from '../auth/decorators/public.decorator';
 import { AuditService } from '../audit/audit.service';
 import { CreateDossierVenteDto } from './dto/create-dossier-vente.dto';
+import { UpdateDossierVenteDto } from './dto/update-dossier-vente.dto';
 import { CreateCommissionDto } from './dto/create-commission.dto';
 import { CreatePaiementDto } from './dto/create-paiement.dto';
 import { CreateReservationDto } from './dto/create-reservation.dto';
@@ -35,6 +37,7 @@ import { VentesService } from './ventes.service';
 import { VentesDocumentsService } from './ventes-documents.service';
 import { ClientPortalService } from './client-portal.service';
 import { VentesReportingService } from './ventes-reporting.service';
+import { VentesWorkflowService } from './ventes-workflow.service';
 import { VentesPaiementsService } from './ventes-paiements.service';
 import { VentesCommissionsService } from './ventes-commissions.service';
 
@@ -46,6 +49,7 @@ export class VentesController {
     private readonly documents: VentesDocumentsService,
     private readonly clientPortal: ClientPortalService,
     private readonly reporting: VentesReportingService,
+    private readonly workflow: VentesWorkflowService,
     private readonly paiements: VentesPaiementsService,
     private readonly commissions: VentesCommissionsService,
     private readonly audit: AuditService,
@@ -100,6 +104,13 @@ export class VentesController {
       )
       // BOM UTF-8 : Excel affiche correctement les accents.
       .send('﻿' + csv);
+  }
+
+  /** Référentiels pour les formulaires (statuts, transitions, modes de paiement, règles). */
+  @Get('options')
+  @RequirePermissions('ventes:consulter')
+  getOptions() {
+    return this.workflow.getOptions();
   }
 
   @Get('reservation-requests')
@@ -210,6 +221,25 @@ export class VentesController {
       newValue: dossier,
     });
     return dossier;
+  }
+
+  @Patch(':id')
+  @RequirePermissions('ventes:modifier')
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateDossierVenteDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const result = await this.ventes.update(id, dto, user);
+    await this.audit.record({
+      userId: user.id,
+      action: 'vente.updated',
+      entityType: 'DossierVente',
+      entityId: id,
+      oldValue: result.before,
+      newValue: result.dossier,
+    });
+    return result.dossier;
   }
 
   @Post(':id/reservations')

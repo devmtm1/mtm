@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { shareReplay } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import type {
   CreateActiviteCrmPayload,
@@ -12,16 +13,8 @@ import type {
   ProspectQuery,
   ProspectStats,
   CommercialSummary,
+  ProspectTimeline,
 } from '../../models/prospect.model';
-
-export interface ProspectTimeline {
-  prospect: ProspectDetail | null;
-  upcoming: { id: string; titre: string; dateEcheance: string | null; priorite: string }[];
-  overdue: { id: string; titre: string; dateEcheance: string | null; priorite: string }[];
-  activites: { id: string; titre: string; statut: string; dateEcheance: string | null }[];
-  audits: { id: string; action: string; createdAt: string; user: { firstName: string; lastName: string } | null }[];
-  dossiers: { id: string; statut: string; createdAt: string; terrain?: { referenceInterne: string }; mandat?: { referenceInterne: string } }[];
-}
 
 export interface UpcomingTask {
   id: string;
@@ -36,6 +29,10 @@ export interface UpcomingTask {
 export class CrmApiService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/crm/prospects`;
+
+  /** Référentiels et liste des commerciaux mis en cache pour la session. */
+  private options$?: Observable<ProspectOptions>;
+  private commercials$?: Observable<CommercialSummary[]>;
 
   findAll(query: ProspectQuery = {}): Observable<ProspectPage> {
     let params = new HttpParams();
@@ -54,7 +51,10 @@ export class CrmApiService {
   }
 
   getOptions(): Observable<ProspectOptions> {
-    return this.http.get<ProspectOptions>(`${this.baseUrl}/options`);
+    this.options$ ??= this.http
+      .get<ProspectOptions>(`${this.baseUrl}/options`)
+      .pipe(shareReplay({ bufferSize: 1, refCount: false }));
+    return this.options$;
   }
 
   getStats(): Observable<ProspectStats> {
@@ -74,7 +74,10 @@ export class CrmApiService {
   }
 
   getCommercials(): Observable<CommercialSummary[]> {
-    return this.http.get<CommercialSummary[]>(`${this.baseUrl}/commercials`);
+    this.commercials$ ??= this.http
+      .get<CommercialSummary[]>(`${this.baseUrl}/commercials`)
+      .pipe(shareReplay({ bufferSize: 1, refCount: false }));
+    return this.commercials$;
   }
 
   create(payload: CreateProspectPayload): Observable<ProspectDetail> {

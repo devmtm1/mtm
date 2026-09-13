@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Prisma } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { createHash, randomBytes } from 'node:crypto';
 import * as bcrypt from 'bcrypt';
@@ -170,16 +171,22 @@ export class AuthService {
       throw new UnauthorizedException('Compte introuvable ou désactivé');
     }
 
-    // Rotation : on révoque l'ancien token et on en émet un nouveau.
-    await this.prisma.refreshToken.update({
-      where: { id: existing.id },
-      data: { revokedAt: new Date() },
-    });
-
+    // Rotation atomique : révocation de l'ancien token et émission du
+    // nouveau dans la même transaction. Sans cela, une coupure de base
+    // entre les deux étapes laissait l'utilisateur sans aucun token valide.
     const accessToken = this.generateAccessToken(user);
-    const refreshToken = await this.issueRefreshToken(user.id, context);
+    const rawToken = randomBytes(64).toString('hex');
+    await this.prisma.$transaction([
+      this.prisma.refreshToken.update({
+        where: { id: existing.id },
+        data: { revokedAt: new Date() },
+      }),
+      this.prisma.refreshToken.create({
+        data: this.refreshTokenData(user.id, rawToken, context),
+      }),
+    ]);
 
-    return { accessToken, refreshToken };
+    return { accessToken, refreshToken: rawToken };
   }
 
   async logout(rawRefreshToken: string | undefined): Promise<void> {
@@ -426,22 +433,27 @@ export class AuthService {
     context: RequestContext,
   ): Promise<string> {
     const rawToken = randomBytes(64).toString('hex');
-    const tokenHash = this.hashToken(rawToken);
-    const expiresAt = new Date(
-      Date.now() + parseDurationToMs(this.authConfig.jwtRefreshExpiresIn),
-    );
-
     await this.prisma.refreshToken.create({
-      data: {
-        userId,
-        tokenHash,
-        expiresAt,
-        ipAddress: context.ipAddress,
-        userAgent: context.userAgent,
-      },
+      data: this.refreshTokenData(userId, rawToken, context),
     });
-
     return rawToken;
+  }
+
+  /** Ligne RefreshToken à insérer pour un token brut (hachage + expiration). */
+  private refreshTokenData(
+    userId: string,
+    rawToken: string,
+    context: RequestContext,
+  ): Prisma.RefreshTokenUncheckedCreateInput {
+    return {
+      userId,
+      tokenHash: this.hashToken(rawToken),
+      expiresAt: new Date(
+        Date.now() + parseDurationToMs(this.authConfig.jwtRefreshExpiresIn),
+      ),
+      ipAddress: context.ipAddress,
+      userAgent: context.userAgent,
+    };
   }
 
   private hashToken(rawToken: string): string {

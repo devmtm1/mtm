@@ -1,0 +1,190 @@
+.objectifs-page {
+  display: grid;
+  gap: 16px;
+
+  &.is-busy {
+    opacity: 0.7;
+    pointer-events: none;
+  }
+}
+
+/* Navigation entre les mois */
+.month-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--mtm-border);
+  border-radius: var(--mtm-radius-md);
+  background: var(--mtm-card-bg);
+
+  &__current {
+    display: grid;
+    min-width: 180px;
+    gap: 2px;
+    text-align: center;
+
+    strong {
+      font-family: var(--mtm-font-display);
+      font-size: 1.05rem;
+      text-transform: capitalize;
+    }
+
+    small {
+      color: var(--mtm-text-muted);
+      font-size: 0.76rem;
+    }
+  }
+
+  &__input {
+    width: 170px;
+    margin-left: auto;
+    --mat-form-field-container-height: 44px;
+    --mat-form-field-container-vertical-padding: 10px;
+  }
+
+  @media (max-width: 720px) {
+    &__input {
+      width: 100%;
+      margin-left: 0;
+    }
+  }
+}
+
+.objectifs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 16px;
+
+  @media (max-width: 480px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.objectif-card {
+  display: grid;
+  gap: 14px;
+
+  &__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+
+    h2 {
+      margin: 0;
+      font-family: var(--mtm-font-display);
+      font-size: 1.05rem;
+    }
+  }
+
+  &__none,
+  &__notes,
+  &__legend {
+    margin: 4px 0 0;
+    color: var(--mtm-text-muted);
+    font-size: 0.82rem;
+  }
+
+  &__legend {
+    font-size: 0.74rem;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}
+
+.objectif-metrics {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+}
+
+.objectif-metric {
+  display: grid;
+  gap: 6px;
+  --metric-color: var(--mtm-primary);
+
+  &--success {
+    --metric-color: var(--mtm-success);
+  }
+
+  &--warning {
+    --metric-color: var(--mtm-warning);
+  }
+
+  dt {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 6px;
+    color: var(--mtm-text-muted);
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__reading {
+    color: var(--metric-color);
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  dd {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px;
+    margin: 0;
+
+    strong {
+      font-size: 1.1rem;
+    }
+
+    span {
+      color: var(--mtm-text-muted);
+      font-size: 0.9rem;
+    }
+
+    em {
+      margin-left: auto;
+      color: var(--metric-color);
+      font-style: normal;
+      font-weight: 700;
+    }
+  }
+}
+
+/* Barre d'atteinte avec repère du temps écoulé */
+.objectif-bar {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--mtm-bg-hover);
+
+  &__fill {
+    display: block;
+    height: 100%;
+    border-radius: 4px;
+    background: var(--metric-color);
+    transition: width 0.3s ease;
+  }
+
+  &__pace {
+    position: absolute;
+    top: -3px;
+    width: 2px;
+    height: 14px;
+    border-radius: 1px;
+    background: var(--mtm-text-muted);
+    opacity: 0.6;
+  }
+}

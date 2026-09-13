@@ -1,42 +1,114 @@
 <div class="users-page">
-  <div class="users-header">
-    <div class="users-heading">
-      <span class="users-eyebrow">Administration</span>
-      <h1>Utilisateurs</h1>
-      <p>Gérez les comptes, les rôles et l’accès au back-office.</p>
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Administration</p>
+      <h1 class="page-header__title">Utilisateurs</h1>
+      <p class="page-header__subtitle">
+        Les comptes qui accèdent au back-office. Chaque personne a un rôle qui définit ce qu’elle peut voir et faire ;
+        désactiver un compte coupe l’accès sans perdre l’historique.
+      </p>
     </div>
-    <div class="users-header__actions">
-      @if (canCreate()) {
-        <button mat-flat-button color="primary" class="btn-mtm-primary users-create-button" (click)="openCreateDialog()">
-          <svg lucideUserPlus class="btn-icon" aria-hidden="true"></svg>
-          <span>Nouvel utilisateur</span>
+    @if (canCreate) {
+      <div class="page-header__actions">
+        <button mat-flat-button color="primary" type="button" (click)="openCreateDialog()">
+          <svg class="btn-icon" lucideUserPlus aria-hidden="true"></svg>Nouvel utilisateur
         </button>
-      }
-    </div>
-  </div>
-
-  <section class="users-table-shell" aria-labelledby="users-list-title">
-    <div class="users-table-toolbar">
-      <div>
-        <h2 id="users-list-title">Liste des comptes</h2>
-          <p aria-live="polite">{{ rowData().length }} compte{{ rowData().length > 1 ? 's' : '' }} autorisé{{ rowData().length > 1 ? 's' : '' }}</p>
       </div>
-      <span class="users-table-toolbar__status">Accès back-office</span>
+    }
+  </header>
+
+  <section class="kpi-row" aria-label="Synthèse">
+    @if (loading()) {
+      @for (i of [1, 2, 3]; track i) {
+        <div class="kpi skeleton" aria-hidden="true"></div>
+      }
+    } @else {
+      <button type="button" class="kpi kpi--success" (click)="setScope('active')">
+        <span class="kpi__icon"><svg lucideUserCheck aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ activeCount() }}</strong>
+          <span>Comptes actifs</span>
+          <small>Peuvent se connecter au back-office</small>
+        </span>
+      </button>
+      <button type="button" class="kpi" [class.kpi--warning]="attention().length > 0" (click)="setScope('attention')">
+        <span class="kpi__icon"><svg lucideShieldAlert aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ attention().length }}</strong>
+          <span>À surveiller</span>
+          <small>{{ attention().length > 0 ? '2FA à activer ou mot de passe provisoire' : 'Tous les comptes sont en ordre' }}</small>
+        </span>
+      </button>
+      <button type="button" class="kpi kpi--muted" (click)="setScope('inactive')">
+        <span class="kpi__icon"><svg lucideUserX aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ inactiveCount() }}</strong>
+          <span>Comptes désactivés</span>
+          <small>Accès coupé, historique conservé</small>
+        </span>
+      </button>
+    }
+  </section>
+
+  <section class="page-section" aria-labelledby="users-title">
+    <div class="list-toolbar">
+      <div class="list-toolbar__title">
+        <h2 id="users-title">Comptes</h2>
+        <p>
+          @if (loading()) {
+            Chargement…
+          } @else {
+            {{ filtered().length }} compte{{ filtered().length > 1 ? 's' : '' }}{{ canModify ? ' · cliquez sur une ligne pour modifier' : '' }}
+          }
+        </p>
+      </div>
+      <form class="list-filters" (submit)="$event.preventDefault()">
+        <mat-form-field appearance="outline" class="list-filters__search" subscriptSizing="dynamic">
+          <mat-label>Rechercher</mat-label>
+          <svg matPrefix class="list-filters__icon" lucideSearch aria-hidden="true"></svg>
+          <input matInput [value]="search()" (input)="search.set($any($event.target).value)" placeholder="Nom, e-mail, rôle…" autocomplete="off" />
+        </mat-form-field>
+        <div class="view-switch" role="group" aria-label="Filtrer">
+          <button type="button" class="view-switch__text" [class.is-active]="scope() === 'all'" (click)="setScope('all')">Tous</button>
+          <button type="button" class="view-switch__text" [class.is-active]="scope() === 'active'" (click)="setScope('active')">Actifs</button>
+          <button type="button" class="view-switch__text" [class.is-active]="scope() === 'attention'" (click)="setScope('attention')">À surveiller</button>
+          <button type="button" class="view-switch__text" [class.is-active]="scope() === 'inactive'" (click)="setScope('inactive')">Désactivés</button>
+        </div>
+        @if (hasActiveFilters()) {
+          <button mat-button type="button" class="list-filters__reset" (click)="resetFilters()">
+            <svg class="btn-icon" lucideX aria-hidden="true"></svg>Effacer
+          </button>
+        }
+      </form>
     </div>
 
-    <ag-grid-angular
-      class="users-grid"
-      [theme]="theme"
-      [rowData]="rowData()"
-      [defaultColDef]="defaultColDef"
-      [columnDefs]="columnDefs"
-      [loading]="loading()"
-      [animateRows]="true"
-      domLayout="autoHeight"
-      [pagination]="true"
-      [paginationPageSize]="10"
-      [headerHeight]="46"
-      [rowHeight]="52"
-    />
+    @if (!loading() && filtered().length === 0) {
+      <div class="empty-state">
+        <svg lucideUserX aria-hidden="true"></svg>
+        @if (hasActiveFilters()) {
+          <h3>Aucun compte ne correspond</h3>
+          <p>Modifiez la recherche ou le filtre.</p>
+          <button mat-stroked-button type="button" (click)="resetFilters()">Tout afficher</button>
+        } @else {
+          <h3>Aucun utilisateur</h3>
+          <p>Créez le premier compte : la personne reçoit un mot de passe provisoire à changer à sa première connexion.</p>
+        }
+      </div>
+    } @else {
+      <ag-grid-angular
+        class="list-grid"
+        [theme]="theme"
+        [rowData]="filtered()"
+        [defaultColDef]="defaultColDef"
+        [columnDefs]="columnDefs"
+        [loading]="loading()"
+        domLayout="autoHeight"
+        [pagination]="true"
+        [paginationPageSize]="20"
+        [rowHeight]="56"
+        [suppressCellFocus]="true"
+        (rowClicked)="onRowClicked($event)"
+      />
+    }
   </section>
 </div>

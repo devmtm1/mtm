@@ -11,6 +11,26 @@ export type CommissionRule = {
 };
 
 /** Référentiels paramétrables en back-office (section 25 CDC), avec repli. */
+/** Types de documents de vente par défaut (paramètre `ventes.documentTypes`). */
+export const DEFAULT_DOCUMENT_TYPES = [
+  'bon_reservation',
+  'recu',
+  'facture',
+  'contrat',
+  'etat_paiement',
+  'justificatif',
+  'autre',
+];
+
+/** Documents que l'API sait générer elle-même (PDF) à partir du dossier. */
+export const GENERATED_DOCUMENT_TYPES = [
+  'bon_reservation',
+  'recu',
+  'facture',
+  'contrat',
+  'etat_paiement',
+];
+
 const VENTES_DEFAULTS = {
   statuts: [
     'en_cours',
@@ -94,6 +114,58 @@ export class VentesWorkflowService {
       'reservations.dureeBlocageJours',
       VENTES_DEFAULTS.dureeReservationJours,
     );
+  }
+
+  /**
+   * Référentiels exposés au back-office (formulaires de statut et de
+   * commission). Les règles de commission sont un paramètre sensible : seuls
+   * l'identifiant, le type et le libellé sont renvoyés, pas les montants.
+   */
+  async getOptions() {
+    const [
+      statuts,
+      transitions,
+      modesPaiement,
+      regles,
+      documentTypes,
+      dureeReservationJours,
+    ] = await Promise.all([
+      this.getAllowedSaleStatuses(),
+      this.getAllowedTransitions(),
+      this.getAllowedPaymentModes(),
+      this.settings.getRawValue('ventes.reglesCommissions'),
+      this.settings.getStringList(
+        'ventes.documentTypes',
+        DEFAULT_DOCUMENT_TYPES,
+      ),
+      this.getDefaultReservationDays(),
+    ]);
+    const reglesCommissions = Array.isArray(regles)
+      ? regles
+          .filter(
+            (item): item is CommissionRule & { description?: string } =>
+              typeof item === 'object' &&
+              item !== null &&
+              typeof (item as CommissionRule).id === 'string',
+          )
+          .map((rule) => ({
+            id: rule.id,
+            typeRegle: rule.typeRegle,
+            description: rule.description ?? rule.id,
+          }))
+      : [];
+    return {
+      statuts,
+      transitions,
+      modesPaiement,
+      reglesCommissions,
+      documentTypes,
+      generatedDocumentTypes: GENERATED_DOCUMENT_TYPES.filter((type) =>
+        documentTypes.includes(type),
+      ),
+      // Durée de blocage proposée par défaut dans le dialogue de réservation.
+      dureeReservationJours,
+    };
   }
 
   async getCommissionRule(regleId: string): Promise<CommissionRule> {

@@ -1,49 +1,161 @@
-<header class="form-header">
-  <button mat-button type="button" (click)="goBack()"><svg lucideArrowLeft aria-hidden="true"></svg></button>
-  <h1>{{ isEdit() ? 'Modifier le prospect' : 'Nouveau prospect' }}</h1>
-</header>
+<section class="form-page" aria-labelledby="prospect-form-title">
+  <a class="back-link" href="/crm/prospects" (click)="$event.preventDefault(); goBack()">
+    <svg lucideArrowLeft aria-hidden="true"></svg>{{ isEdit ? 'Retour à la fiche' : 'Retour à la liste des prospects' }}
+  </a>
 
-<form class="prospect-form" [formGroup]="form" (ngSubmit)="submit()">
-  <section class="form-section">
-    <h2>Identité</h2>
-    <div class="grid">
-      <mat-form-field appearance="outline"><mat-label>Nom</mat-label><input matInput formControlName="nom" required></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Prénom</mat-label><input matInput formControlName="prenom"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Email</mat-label><input matInput formControlName="email" type="email"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Téléphone</mat-label><input matInput formControlName="telephone"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Pays de résidence</mat-label><input matInput formControlName="paysResidence"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Source</mat-label><input matInput formControlName="sourceAcquisition"></mat-form-field>
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Prospects</p>
+      <h1 id="prospect-form-title" class="page-header__title">{{ isEdit ? 'Modifier le prospect' : 'Nouveau prospect' }}</h1>
+      <p class="page-header__subtitle">
+        Un nom et un moyen de contact suffisent pour commencer. Le reste se complète au fil des échanges.
+        @if (isEdit) {
+          L’étape du pipeline se change depuis la fiche (« Changer d’étape »).
+        }
+      </p>
     </div>
-  </section>
+  </header>
 
-  <section class="form-section">
-    <h2>Besoins & budget</h2>
-    <div class="grid">
-      <mat-form-field appearance="outline"><mat-label>Budget min (FCFA)</mat-label><input matInput formControlName="budgetMin" type="number"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Budget max (FCFA)</mat-label><input matInput formControlName="budgetMax" type="number"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Score (0-100)</mat-label><input matInput formControlName="score" type="number" min="0" max="100"></mat-form-field>
-      <mat-form-field appearance="outline" class="full"><mat-label>Besoins</mat-label><textarea matInput rows="4" formControlName="besoins"></textarea></mat-form-field>
-      <mat-form-field appearance="outline" class="full"><mat-label>Préférences</mat-label><textarea matInput rows="3" formControlName="preferences"></textarea></mat-form-field>
+  @if (loading()) {
+    <div class="page-card">
+      <div class="skeleton" style="height: 24px; width: 40%; margin-bottom: 16px"></div>
+      <div class="skeleton" style="height: 56px; margin-bottom: 12px"></div>
+      <div class="skeleton" style="height: 56px"></div>
     </div>
-  </section>
+  } @else {
+    <form class="form-body" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="two-columns">
+        <div class="two-columns__main">
+          <section class="page-card form-block" [class.form-block--attention]="form.hasError('contact') && (form.controls.email.touched || form.controls.telephone.touched)">
+            <div class="form-block__head">
+              <h2>Qui est-ce ?</h2>
+              <p>Au moins un téléphone ou un e-mail : sans cela, impossible de le recontacter.</p>
+            </div>
+            <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Nom</mat-label>
+                <input matInput formControlName="nom" autocomplete="off" />
+                <mat-error>Le nom est obligatoire.</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Prénom</mat-label>
+                <input matInput formControlName="prenom" autocomplete="off" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Téléphone</mat-label>
+                <input matInput type="tel" formControlName="telephone" placeholder="77 000 00 00" />
+                <mat-hint>WhatsApp accepté.</mat-hint>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>E-mail</mat-label>
+                <input matInput type="email" formControlName="email" />
+                <mat-hint>Nécessaire pour lui créer un accès à l’espace client.</mat-hint>
+                <mat-error>Adresse e-mail invalide.</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Pays de résidence</mat-label>
+                <input matInput formControlName="paysResidence" placeholder="Sénégal, France, États-Unis…" />
+                <mat-hint>Utile pour la diaspora : décalage horaire, paiement, procuration.</mat-hint>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Origine du contact</mat-label>
+                <input matInput formControlName="sourceAcquisition" [matAutocomplete]="sources" placeholder="Site web, bouche-à-oreille…" />
+                <mat-autocomplete #sources="matAutocomplete">
+                  @for (source of sourceOptions; track source) {
+                    <mat-option [value]="source">{{ source }}</mat-option>
+                  }
+                </mat-autocomplete>
+                <mat-hint>Comment il a connu MTM.</mat-hint>
+              </mat-form-field>
+            </div>
+            @if (form.hasError('contact') && (form.controls.email.touched || form.controls.telephone.touched)) {
+              <p class="form-note hint-error">Indiquez au moins un téléphone ou un e-mail.</p>
+            }
+          </section>
 
-  <section class="form-section">
-    <h2>Commercial</h2>
-    <div class="grid">
-      <mat-form-field appearance="outline" class="full">
-        <mat-label>Commercial responsable</mat-label>
-        <mat-select formControlName="commercialResponsableId">
-          <mat-option value="">Non assigné</mat-option>
-          @for (c of commercials(); track c.id) {
-            <mat-option [value]="c.id">{{ c.firstName }} {{ c.lastName }}</mat-option>
+          <section class="page-card form-block">
+            <div class="form-block__head">
+              <h2>Ce qu’il cherche</h2>
+              <p>Sert à lui proposer les bons terrains et à mesurer l’adéquation avec le catalogue.</p>
+            </div>
+            <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Budget minimum (FCFA)</mat-label>
+                <input matInput type="number" min="0" step="500000" formControlName="budgetMin" />
+              </mat-form-field>
+              <mat-form-field appearance="outline" [class.mat-form-field-invalid]="form.hasError('budget')">
+                <mat-label>Budget maximum (FCFA)</mat-label>
+                <input matInput type="number" min="0" step="500000" formControlName="budgetMax" />
+                @if (form.hasError('budget')) {
+                  <mat-hint class="hint-error">Doit être supérieur au minimum.</mat-hint>
+                } @else {
+                  <mat-hint>Le dossier de vente vous alertera si le prix dépasse ce budget.</mat-hint>
+                }
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="wide">
+                <mat-label>Besoins</mat-label>
+                <textarea matInput rows="3" formControlName="besoins" placeholder="Ex. Terrain 300 m² pour construire une maison familiale, zone Diamniadio, achat d’ici 6 mois"></textarea>
+                <mat-hint>Type de projet, surface, zone, délai.</mat-hint>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="wide">
+                <mat-label>Préférences</mat-label>
+                <textarea matInput rows="2" formControlName="preferences" placeholder="Ex. Titre foncier uniquement, proche d’une école, paiement échelonné"></textarea>
+              </mat-form-field>
+            </div>
+          </section>
+
+          <section class="page-card form-block">
+            <div class="form-block__head">
+              <h2>Suivi</h2>
+              <p>Qui s’en occupe et quel potentiel vous lui attribuez.</p>
+            </div>
+            <div class="form-grid">
+              @if (isSupervisor) {
+                <mat-form-field appearance="outline">
+                  <mat-label>Commercial responsable</mat-label>
+                  <mat-select formControlName="commercialResponsableId">
+                    <mat-option value="">Non affecté pour l’instant</mat-option>
+                    @for (commercial of commercials(); track commercial.id) {
+                      <mat-option [value]="commercial.id">{{ commercial.firstName }} {{ commercial.lastName }}</mat-option>
+                    }
+                  </mat-select>
+                  <mat-hint>Il verra le prospect dans sa liste et recevra ses rappels.</mat-hint>
+                </mat-form-field>
+              } @else {
+                <p class="form-note">Ce prospect vous est affecté ; un responsable peut le réaffecter depuis la fiche.</p>
+              }
+              <div class="form-grid__side score-field">
+                <label for="score">Score : <strong>{{ form.controls.score.value }}</strong> / 100</label>
+                <mat-slider min="0" max="100" step="5" discrete>
+                  <input matSliderThumb id="score" formControlName="score" />
+                </mat-slider>
+                <small>{{ scoreHint() }}</small>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <aside class="preview" aria-label="Résumé">
+          <p class="preview__title">Résumé</p>
+          <dl class="preview__facts">
+            <div><dt>Nom</dt><dd>{{ form.controls.prenom.value }} {{ form.controls.nom.value || '—' }}</dd></div>
+            <div><dt>Contact</dt><dd>{{ form.controls.telephone.value || form.controls.email.value || '—' }}</dd></div>
+            <div><dt>Budget max</dt><dd>{{ form.controls.budgetMax.value | mtmMoney }}</dd></div>
+            <div><dt>Score</dt><dd>{{ form.controls.score.value }} / 100</dd></div>
+          </dl>
+          @if (!isEdit) {
+            <p class="preview__next">Après création : planifiez la première action (appel, visite) depuis la fiche.</p>
           }
-        </mat-select>
-      </mat-form-field>
-    </div>
-  </section>
+        </aside>
+      </div>
 
-  <div class="form-actions">
-    <button mat-stroked-button type="button" (click)="goBack()">Annuler</button>
-    <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid">{{ isEdit() ? 'Enregistrer' : 'Créer le prospect' }}</button>
-  </div>
-</form>
+      <footer class="form-footer">
+        <button mat-stroked-button type="button" (click)="goBack()">Annuler</button>
+        <span class="form-footer__step">Le nom et un moyen de contact sont obligatoires.</span>
+        <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+          <svg class="btn-icon" lucideSave aria-hidden="true"></svg>{{ saving() ? 'Enregistrement…' : isEdit ? 'Enregistrer les modifications' : 'Créer le prospect' }}
+        </button>
+      </footer>
+    </form>
+  }
+</section>

@@ -1,38 +1,152 @@
 <div class="settings-page">
-  <div class="settings-header">
+  <header class="page-header">
     <div>
-      <span class="settings-eyebrow">Administration</span>
-      <h1>Paramètres</h1>
-      <p>Configurez les valeurs utilisées par le back-office.</p>
+      <p class="eyebrow">Administration</p>
+      <h1 class="page-header__title">Paramètres</h1>
+      <p class="page-header__subtitle">
+        Les listes de valeurs (statuts, types, étapes) et les règles (durées, taux) utilisées par les écrans.
+        Une modification s’applique immédiatement à toute l’équipe et est tracée dans le journal.
+      </p>
     </div>
-    @if (canCreate()) {
-      <button mat-flat-button color="primary" class="btn-mtm-accent" (click)="openCreateDialog()">
-        <svg lucideSlidersHorizontal class="btn-icon"></svg>
-        Nouveau paramètre
-      </button>
-    }
-  </div>
-
-  <section class="settings-table-shell" aria-labelledby="settings-list-title">
-    <div class="settings-table-toolbar">
-      <div>
-        <h2 id="settings-list-title">Configuration de l’application</h2>
-        <p>{{ rowData().length }} paramètre{{ rowData().length > 1 ? 's' : '' }} configuré{{ rowData().length > 1 ? 's' : '' }}</p>
+    @if (canCreate) {
+      <div class="page-header__actions">
+        <button mat-stroked-button type="button" (click)="createCustom()" matTooltip="Réservé aux cas convenus avec le développeur">
+          <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Paramètre libre
+        </button>
       </div>
-      <span class="settings-table-toolbar__hint">Valeurs sensibles protégées</span>
-    </div>
-    <ag-grid-angular
-      class="settings-grid"
-      [theme]="theme"
-      [rowData]="rowData()"
-      [columnDefs]="columnDefs"
-      [loading]="loading()"
-      [animateRows]="true"
-      domLayout="autoHeight"
-      [pagination]="true"
-      [paginationPageSize]="10"
-      [headerHeight]="46"
-      [rowHeight]="52"
-    />
+    }
+  </header>
+
+  <section class="kpi-row" aria-label="Synthèse">
+    @if (loading()) {
+      @for (i of [1, 2, 3]; track i) {
+        <div class="kpi skeleton" aria-hidden="true"></div>
+      }
+    } @else {
+      <div class="kpi kpi--primary">
+        <span class="kpi__icon"><svg lucideSlidersHorizontal aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ settings().length }}</strong>
+          <span>Paramètres configurés</span>
+          <small>{{ slotCount - missing().length }} du catalogue{{ others().length > 0 ? ' · ' + others().length + ' hors catalogue' : '' }}</small>
+        </span>
+      </div>
+      <div class="kpi" [class.kpi--warning]="missing().length > 0" [class.kpi--success]="missing().length === 0">
+        <span class="kpi__icon"><svg lucideSettings aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ missing().length }}</strong>
+          <span>Sur valeur par défaut</span>
+          <small>{{ missing().length > 0 ? 'Non enregistrés : l’application applique ses réglages d’origine' : 'Tout le catalogue est renseigné' }}</small>
+        </span>
+      </div>
+      <div class="kpi kpi--muted">
+        <span class="kpi__icon"><svg lucideLock aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ sensitiveCount() }}</strong>
+          <span>Sensibles</span>
+          <small>{{ canAdminister ? 'Visibles : vous avez le droit d’administrer' : 'Masqués : réservés aux administrateurs' }}</small>
+        </span>
+      </div>
+    }
   </section>
+
+  @if (loading()) {
+    <div class="skeleton" style="height: 240px"></div>
+  } @else {
+    <div class="content-grid">
+      @for (group of groups; track group.id) {
+        <section class="page-card detail-section" [attr.aria-labelledby]="'group-' + group.id">
+          <div class="detail-section__head">
+            <div>
+              <h2 [id]="'group-' + group.id">{{ group.title }}</h2>
+              <p class="detail-section__hint">{{ group.help }}</p>
+            </div>
+          </div>
+          <ul class="setting-list">
+            @for (slot of group.slots; track slot.key) {
+              @let setting = settingFor(slot);
+              @let view = display(setting, slot);
+              <li class="setting" [class.is-empty]="!setting" [class.is-technical]="slot.kind === 'json'">
+                <div class="setting__main">
+                  <div class="setting__head">
+                    <strong>{{ slot.label }}</strong>
+                    @if (setting?.isSensitive) {
+                      <span class="status-pill status-pill--warning" matTooltip="Valeur protégée : visible et modifiable par les administrateurs uniquement"><svg lucideLock aria-hidden="true"></svg>Sensible</span>
+                    }
+                    @if (slot.kind === 'json') {
+                      <span class="status-pill" matTooltip="Format technique : à modifier avec le développeur">Technique</span>
+                    }
+                  </div>
+                  <p class="setting__help">{{ slot.help }}</p>
+                  @switch (view.kind) {
+                    @case ('masked') {
+                      <p class="setting__value setting__value--masked">••••••••  (valeur masquée)</p>
+                    }
+                    @case ('list') {
+                      <ul class="setting__chips">
+                        @for (item of view.items; track $index) {
+                          <li>{{ item }}</li>
+                        }
+                      </ul>
+                    }
+                    @default {
+                      <p class="setting__value" [class.setting__value--empty]="!setting">{{ view.text }}</p>
+                    }
+                  }
+                </div>
+                <div class="setting__actions">
+                  @if ((setting && canModify && !setting.redacted) || (!setting && canCreate)) {
+                    <button mat-stroked-button type="button" (click)="edit(slot, setting)">
+                      <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>{{ setting ? 'Modifier' : 'Définir' }}
+                    </button>
+                  }
+                </div>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+
+      @if (others().length > 0) {
+        <section class="page-card detail-section detail-section--wide" aria-labelledby="group-others">
+          <div class="detail-section__head">
+            <div>
+              <h2 id="group-others">Autres paramètres</h2>
+              <p class="detail-section__hint">Paramètres hors catalogue, ajoutés à la main. L’application ne les lit que si le développeur l’a prévu.</p>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Clé technique</th>
+                  <th>Valeur</th>
+                  <th>Description</th>
+                  <th class="is-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (setting of others(); track setting.id) {
+                  @let view = display(setting);
+                  <tr>
+                    <td><code>{{ setting.key }}</code>@if (setting.isSensitive) { <span class="status-pill status-pill--warning">Sensible</span> }</td>
+                    <td class="cell-muted">{{ view.kind === 'masked' ? '••••••••' : view.kind === 'list' ? view.items?.join(', ') : view.text }}</td>
+                    <td>{{ setting.description || '—' }}</td>
+                    <td class="is-right">
+                      @if (canModify && !setting.redacted) {
+                        <button mat-icon-button type="button" (click)="edit(undefined, setting)" matTooltip="Modifier" aria-label="Modifier"><svg lucidePencil aria-hidden="true"></svg></button>
+                      }
+                      @if (canDelete) {
+                        <button mat-icon-button type="button" class="setting__delete" (click)="remove(setting)" matTooltip="Supprimer" aria-label="Supprimer"><svg lucideTrash2 aria-hidden="true"></svg></button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+    </div>
+  }
 </div>

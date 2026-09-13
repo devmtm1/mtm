@@ -3,7 +3,7 @@ import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateActiviteCrmDto } from './dto/create-activite-crm.dto';
 import { UpdateActiviteCrmDto } from './dto/update-activite-crm.dto';
-import { CrmAccessService } from './crm-access.service';
+import { CrmAccessService, type CrmUser } from './crm-access.service';
 import { CrmOptionsService } from './crm-options.service';
 
 /**
@@ -18,7 +18,7 @@ export class CrmActivitesService {
     private readonly options: CrmOptionsService,
   ) {}
 
-  async getUpcomingTasks(user: { id: string; roles: string[] }, limit = 20) {
+  async getUpcomingTasks(user: CrmUser, limit = 20) {
     const isManager = this.access.isManager(user);
     return this.prisma.activiteCrm.findMany({
       where: {
@@ -45,7 +45,7 @@ export class CrmActivitesService {
   async addActivite(
     prospectId: string,
     dto: CreateActiviteCrmDto,
-    user: { id: string; roles: string[] },
+    user: CrmUser,
   ) {
     await this.access.assertOwnership(prospectId, user);
     await this.options.assertActiviteType(dto.type);
@@ -73,7 +73,7 @@ export class CrmActivitesService {
     prospectId: string,
     activiteId: string,
     dto: UpdateActiviteCrmDto,
-    user: { id: string; roles: string[] },
+    user: CrmUser,
   ) {
     await this.access.assertOwnership(prospectId, user);
     const activite = await this.prisma.activiteCrm.findFirst({
@@ -105,7 +105,7 @@ export class CrmActivitesService {
   async removeActivite(
     prospectId: string,
     activiteId: string,
-    user: { id: string; roles: string[] },
+    user: CrmUser,
   ): Promise<void> {
     await this.access.assertOwnership(prospectId, user);
     const activite = await this.prisma.activiteCrm.findFirst({

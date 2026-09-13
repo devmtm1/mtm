@@ -3,7 +3,11 @@
 // Phase 1 / J1.1-J1.4 : tables métier terrains et mandats.
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  // Relations chargées par jointure SQL (une seule requête) plutôt qu'une
+  // requête par relation : avec une base distante (Neon), chaque aller-retour
+  // coûte ~300 ms — une fiche terrain passait de 5 requêtes à 1.
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {
