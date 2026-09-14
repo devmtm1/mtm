@@ -51,7 +51,7 @@ export function AboutPage() {
         <div className="grid gap-6 sm:grid-cols-3">
           {VALUES.map(({ icon: Icon, title, description }) => (
             <div key={title} className="rounded-lg border border-mtm-border bg-mtm-surface p-6 shadow-card">
-              <span className="flex h-11 w-11 items-center justify-center rounded-md bg-mtm-primary/10 text-mtm-primary">
+              <span className="flex h-11 w-11 items-center justify-center rounded-md bg-mtm-primary-subtle text-mtm-primary">
                 <Icon className="h-6 w-6" aria-hidden="true" />
               </span>
               <h2 className="mt-4 font-display text-base font-bold text-mtm-text">{title}</h2>

@@ -19,6 +19,14 @@ export interface ClientDossierPaiement {
   reference: string | null;
 }
 
+export interface ClientDossierEcheance {
+  numero: number;
+  dateEcheance: string;
+  montantPrevu: number;
+  montantPaye: number;
+  statut: string;
+}
+
 export interface ClientDossierDocument {
   id: string;
   type: string;
@@ -65,6 +73,7 @@ export interface ClientDossier {
   terrain: ClientDossierTerrain | null;
   reservations: ClientDossierReservation[];
   paiements: ClientDossierPaiement[];
+  echeances: ClientDossierEcheance[];
   documents: ClientDossierDocument[];
   montantPaye: number;
 }

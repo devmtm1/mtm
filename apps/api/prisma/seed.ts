@@ -168,7 +168,9 @@ async function main(): Promise<void> {
   const crmPermissionNames = ['crm:consulter', 'crm:creer', 'crm:modifier', 'crm:supprimer'];
   const commercialPermissionNames = ['crm:consulter', 'crm:creer', 'crm:modifier'];
 
-  for (const roleName of ['manager', 'responsable_commercial']) {
+  // La direction a la vue complète sur l'activité commerciale (section 24
+  // CDC) : elle consulte et arbitre les prospects comme un manager.
+  for (const roleName of ['manager', 'responsable_commercial', 'direction']) {
     const role = await prisma.role.findUniqueOrThrow({ where: { name: roleName } });
     for (const permissionName of crmPermissionNames) {
       const permission = await prisma.permission.findUniqueOrThrow({ where: { name: permissionName } });
@@ -200,12 +202,15 @@ async function main(): Promise<void> {
       'ventes:modifier',
       'clients:creer',
     ],
+    // L'encadrement administre les ventes : objectifs, création et
+    // validation des commissions.
     responsable_commercial: [
       'ventes:consulter',
       'ventes:creer',
       'ventes:modifier',
       'ventes:valider',
       'ventes:exporter',
+      'ventes:administrer',
       'ventes:publier',
       'clients:creer',
     ],
@@ -215,9 +220,12 @@ async function main(): Promise<void> {
       'ventes:modifier',
       'ventes:valider',
       'ventes:exporter',
+      'ventes:administrer',
       'ventes:publier',
       'clients:creer',
     ],
+    // La comptabilité contrôle les encaissements et paie les commissions
+    // validées par l'encadrement.
     comptable: [
       'ventes:consulter',
       'ventes:modifier',
@@ -407,6 +415,18 @@ async function main(): Promise<void> {
     }
   }
   console.log('  Permissions contenu / demandes web attribuées');
+
+  // --- Journal d'audit : la direction le consulte et l'exporte (tracé) ---
+  const directionRole = await prisma.role.findUniqueOrThrow({ where: { name: 'direction' } });
+  for (const permissionName of ['audit:consulter', 'audit:exporter']) {
+    const permission = await prisma.permission.findUniqueOrThrow({ where: { name: permissionName } });
+    await prisma.rolePermission.upsert({
+      where: { roleId_permissionId: { roleId: directionRole.id, permissionId: permission.id } },
+      update: {},
+      create: { roleId: directionRole.id, permissionId: permission.id },
+    });
+  }
+  console.log('  Permissions journal d’audit attribuées à la direction');
 
   // --- Utilisateur administrateur par défaut ---
   const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@mtm-immobilier.sn';

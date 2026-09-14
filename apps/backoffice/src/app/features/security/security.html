@@ -147,11 +147,15 @@
               </div>
               <p>Ils ne seront plus affichés. Chaque code sert une seule fois si vous n’avez plus votre téléphone. Rangez-les hors de l’ordinateur (imprimés, gestionnaire de mots de passe).</p>
             </div>
-            <ul class="recovery__codes">
-              @for (code of recoveryCodes(); track code) {
-                <li><code>{{ code }}</code></li>
-              }
-            </ul>
+            @if (recoveryCodes().length > 0) {
+              <ul class="recovery__codes">
+                @for (code of recoveryCodes(); track code) {
+                  <li><code>{{ code }}</code></li>
+                }
+              </ul>
+            } @else {
+              <p class="hint-error">Les codes de secours n’ont pas pu être affichés : désactivez puis réactivez la double authentification pour en obtenir.</p>
+            }
             <div class="detail-section__actions">
               <button mat-stroked-button type="button" (click)="copyCodes()">Copier les codes</button>
               <button mat-flat-button color="primary" type="button" (click)="finishRecoveryCodes()">J’ai conservé mes codes</button>

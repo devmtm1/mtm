@@ -46,6 +46,8 @@
       </mat-select>
       @if (selectedRole(); as role) {
         <mat-hint>{{ roleHelp(role.name) || role.description }}</mat-hint>
+      } @else if (roles().length === 0) {
+        <mat-hint>Chargement des rôles…</mat-hint>
       } @else {
         <mat-hint>Le rôle définit ce que la personne peut voir et faire.</mat-hint>
       }

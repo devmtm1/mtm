@@ -16,3 +16,9 @@ export function formatDate(value: string | null | undefined): string {
     year: 'numeric',
   });
 }
+
+/** « septembre 2026 » : date courte des cartes du portfolio. */
+export function formatMonthYear(value: string | null | undefined): string {
+  if (!value) return '—';
+  return new Date(value).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+}

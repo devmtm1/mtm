@@ -43,7 +43,7 @@ export function DemarchesPage() {
               key={step.title}
               className="flex items-start gap-4 rounded-lg border border-mtm-border bg-mtm-surface p-4 shadow-card"
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-mtm-primary/10 font-display text-sm font-bold text-mtm-primary">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-mtm-primary-subtle font-display text-sm font-bold text-mtm-primary">
                 {index + 1}
               </span>
               <div>

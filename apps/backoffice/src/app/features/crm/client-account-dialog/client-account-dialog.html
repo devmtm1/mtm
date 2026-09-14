@@ -1,7 +1,7 @@
 <h2 mat-dialog-title>Créer l’accès espace client</h2>
 
 <mat-dialog-content class="account-dialog">
-  @if (!created) {
+  @if (!created()) {
     <p class="account-dialog__intro">
       L’espace client permet à <strong>{{ data.name }}</strong> de suivre ses dossiers, paiements et documents sur le
       site public. Un e-mail d’invitation part à <strong>{{ data.email }}</strong> : il y choisit son mot de passe.
@@ -15,14 +15,14 @@
       }
     </mat-form-field>
     <button mat-button type="button" (click)="regeneratePassword()">Générer un autre mot de passe</button>
-    @if (error) {
-      <p class="account-dialog__box account-dialog__box--error">{{ error }}</p>
+    @if (error()) {
+      <p class="account-dialog__box account-dialog__box--error">{{ error() }}</p>
     }
-  } @else if (invitationSent) {
+  } @else if (invitationSent()) {
     <div class="account-dialog__box account-dialog__box--success">
       <strong>Compte créé — invitation envoyée à {{ data.email }}.</strong>
       <p>Le client a 7 jours pour choisir son mot de passe via le lien reçu.</p>
-      <p><small>Si l’e-mail n’arrive pas, mot de passe de secours : <code>{{ createdPassword }}</code> (à transmettre par un canal sûr).</small></p>
+      <p><small>Si l’e-mail n’arrive pas, mot de passe de secours : <code>{{ createdPassword() }}</code> (à transmettre par un canal sûr).</small></p>
     </div>
   } @else {
     <div class="account-dialog__box account-dialog__box--warning">
@@ -33,17 +33,17 @@
         @if (invitationLink) {
           <div><dt>Lien de première connexion (7 jours)</dt><dd class="is-break">{{ invitationLink }}</dd></div>
         }
-        <div><dt>Mot de passe temporaire</dt><dd><code>{{ createdPassword }}</code></dd></div>
+        <div><dt>Mot de passe temporaire</dt><dd><code>{{ createdPassword() }}</code></dd></div>
       </dl>
     </div>
   }
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  @if (!created) {
+  @if (!created()) {
     <button mat-stroked-button type="button" mat-dialog-close>Annuler</button>
-    <button mat-flat-button color="primary" type="button" (click)="create()" [disabled]="form.invalid || creating">
-      {{ creating ? 'Création…' : 'Créer le compte et inviter' }}
+    <button mat-flat-button color="primary" type="button" (click)="create()" [disabled]="form.invalid || creating()">
+      {{ creating() ? 'Création…' : 'Créer le compte et inviter' }}
     </button>
   } @else {
     <button mat-stroked-button type="button" (click)="copyCredentials()">Copier les identifiants</button>

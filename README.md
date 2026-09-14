@@ -74,6 +74,48 @@ des charges : **développement**, **test**, **production**. Chaque
 environnement dispose de son propre fichier de variables d'environnement
 (jamais commité — voir `.env.example`).
 
+### Base PostgreSQL hébergée (Neon)
+
+La base de développement est sur Neon (offre gratuite, réveil à froid de
+plusieurs secondes, ~300 ms par requête). Deux réglages évitent des erreurs
+500 aléatoires (`Transaction not found`, `Timed out fetching a new connection
+from the connection pool`) :
+
+- `DATABASE_URL` doit inclure `connect_timeout=30&pool_timeout=30` (à ajouter
+  aussi sur l'URL de production si elle est sur Neon) ;
+- les transactions interactives Prisma ont un délai étendu dans
+  `PrismaService` (`maxWait` 15 s, `timeout` 60 s).
+
+## Déploiement sur Render
+
+`render.yaml` décrit trois services (Blueprint Render) : l'API (`mtm-api`),
+le back-office (`mtm-backoffice`, site statique Angular) et le site public
+(`mtm-public-web`, site statique Vite). Les deux sites statiques ont une
+règle de réécriture `/* → /index.html` (applications monopages).
+
+Pour ajouter le site public à un compte Render existant :
+
+1. **Dashboard Render → New → Blueprint** sur ce dépôt (ou *Sync* du
+   Blueprint existant) : le service `mtm-public-web` est créé avec
+   `npm run public-web:build` et publie `apps/public-web/dist`.
+   La variable `VITE_API_URL` (URL de l'API, préfixe `/api` inclus) est lue
+   **au moment du build** : la modifier impose un nouveau déploiement.
+2. Sur le service **API**, compléter les variables d'environnement :
+   - `CORS_ORIGIN` : URLs du back-office **et** du site public, séparées par
+     des virgules, sans barre oblique finale ;
+   - `PUBLIC_WEB_URL` : URL du site public (liens d'invitation à l'espace
+     client) ;
+   - `API_PUBLIC_URL` : URL publique de l'API avec `/api` (liens signés vers
+     les documents).
+   L'API redémarre automatiquement après modification.
+3. Vérifier depuis un autre appareil : catalogue des terrains, formulaire de
+   contact, espace client (connexion + documents).
+
+Sans Blueprint, créer manuellement un *Static Site* avec : *Root Directory*
+`.`, *Build Command* `npm run public-web:build`, *Publish Directory*
+`apps/public-web/dist`, la variable `VITE_API_URL` et la règle de
+réécriture `/*` → `/index.html` (onglet *Redirects/Rewrites*).
+
 ## Phase actuelle
 
 Voir `docs/PHASE_0.md` pour le détail du périmètre, des livrables et des

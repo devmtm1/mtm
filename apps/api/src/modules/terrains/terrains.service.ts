@@ -163,7 +163,7 @@ export class TerrainsService {
 
   async create(
     dto: CreateTerrainDto,
-    user: { roles: string[]; permissions: string[] },
+    user: { id: string; roles: string[]; permissions: string[] },
   ) {
     const existing = await this.prisma.terrain.findUnique({
       where: { referenceInterne: dto.referenceInterne },
@@ -173,6 +173,13 @@ export class TerrainsService {
     await this.validateStatuses(dto);
 
     const data = { ...dto } as unknown as Prisma.TerrainUncheckedCreateInput;
+    // Sans rattachement, un commercial ne verrait plus le terrain qu'il
+    // vient de créer (périmètre = ses terrains). Même règle que les
+    // mandats, prospects et dossiers de vente.
+    data.commercialResponsableId = await this.access.resolveResponsable(
+      dto.commercialResponsableId,
+      user,
+    );
     if (
       dto.prixPublic !== undefined &&
       dto.prixAcquisition !== undefined &&
@@ -191,9 +198,15 @@ export class TerrainsService {
   async update(
     id: string,
     dto: UpdateTerrainDto,
-    user: { roles: string[]; permissions: string[] },
+    user: { id: string; roles: string[]; permissions: string[] },
   ) {
     await this.access.ensureAccessible(id, user);
+    if (dto.commercialResponsableId !== undefined) {
+      dto.commercialResponsableId = await this.access.resolveResponsable(
+        dto.commercialResponsableId ?? undefined,
+        user,
+      );
+    }
     await this.validateStatuses(dto);
     this.assertJustificationForSensitiveFields(
       dto as unknown as Record<string, unknown>,

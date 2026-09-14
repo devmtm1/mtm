@@ -120,9 +120,17 @@ export class Contacts implements OnInit {
     this.contactApi.convertToProspect(contact.id, commercialResponsableId).subscribe({
       next: (prospect) => {
         this.busyId.set(null);
+        const result = prospect as { id?: string; commercialResponsableId?: string | null } | null;
+        const me = this.session.user()?.id;
+        // Prospect déjà suivi par un autre commercial : un commercial sans
+        // périmètre global ne pourrait pas ouvrir sa fiche.
+        if (!this.isSupervisor && result?.commercialResponsableId && result.commercialResponsableId !== me) {
+          this.contacts.update((list) => list.map((item) => (item.id === contact.id ? { ...item, lu: true } : item)));
+          this.notify.info('Ce contact correspond à un prospect déjà suivi par un autre commercial : demandez à votre responsable de vous l’affecter.');
+          return;
+        }
         this.notify.success('Prospect créé — planifiez le premier appel');
-        const id = (prospect as { id?: string } | null)?.id;
-        if (id) void this.router.navigate(['/crm/prospects', id]);
+        if (result?.id) void this.router.navigate(['/crm/prospects', result.id]);
         else void this.router.navigate(['/crm/prospects']);
       },
       error: (error: unknown) => {

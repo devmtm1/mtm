@@ -17,7 +17,7 @@ export function RealisationsPage() {
         description="Un aperçu des projets menés à bien par MTM Immobilier."
       />
       <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-        <ShowcaseGrid category="realisation" emptyLabel="Aucune réalisation publiée pour le moment" />
+        <ShowcaseGrid columns={4} category="realisation" emptyLabel="Aucune réalisation publiée pour le moment" />
       </section>
       <CtaBand />
     </div>

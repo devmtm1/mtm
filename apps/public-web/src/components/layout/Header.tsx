@@ -21,7 +21,7 @@ const SERVICE_LINKS = [
 // Lien actif : couleur + filet sous le libellé, pour que l'état ne repose pas
 // sur la seule couleur (lisibilité, daltonisme).
 function navLinkClass({ isActive }: { isActive: boolean }): string {
-  return `relative py-1 text-sm font-semibold transition-colors after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-mtm-primary after:transition-transform after:duration-200 ${
+  return `relative whitespace-nowrap py-1 text-sm font-semibold transition-colors after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-mtm-primary after:transition-transform after:duration-200 ${
     isActive
       ? 'text-mtm-primary after:scale-x-100'
       : 'text-mtm-text hover:text-mtm-primary after:scale-x-0 hover:after:scale-x-100'
@@ -59,10 +59,12 @@ export function Header() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <NavLink to={ROUTES.home} className="flex items-center gap-2.5" onClick={() => setMobileOpen(false)}>
           <img src="/logomtm.jpeg" alt="MTM Immobilier" className="h-11 w-11 rounded-full object-cover" />
-          <span className="font-display text-lg font-bold text-mtm-text">MTM Immobilier</span>
+          <span className="whitespace-nowrap font-display text-lg font-bold">
+            <span className="text-mtm-accent">MTM</span> <span className="text-mtm-primary">Immobilier</span>
+          </span>
         </NavLink>
 
-        <nav className="hidden items-center gap-6 lg:flex">
+        <nav className="hidden items-center gap-5 whitespace-nowrap lg:flex">
           {PRIMARY_LINKS.map((link) => (
             <NavLink key={link.to} to={link.to} className={navLinkClass} end={link.to === ROUTES.home}>
               {link.label}
@@ -140,7 +142,7 @@ export function Header() {
                     to={link.to}
                     className={({ isActive }) =>
                       `block rounded-md px-3 py-2.5 text-sm font-semibold transition-colors ${
-                        isActive ? 'bg-mtm-primary/5 text-mtm-primary' : 'text-mtm-text hover:bg-mtm-bg hover:text-mtm-primary'
+                        isActive ? 'bg-mtm-primary-subtle text-mtm-primary' : 'text-mtm-text hover:bg-mtm-bg hover:text-mtm-primary'
                       }`
                     }
                     end={link.to === ROUTES.home}

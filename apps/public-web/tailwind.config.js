@@ -8,10 +8,21 @@ export default {
         // (pixels les plus saturés du "M" et du mot-symbole) — source unique
         // de vérité pour toute la palette du site, ne jamais redéfinir une
         // couleur de marque ailleurs que dans ce fichier.
-        'mtm-primary': '#B52C36',
-        'mtm-primary-dark': '#83191D',
-        'mtm-secondary': '#1A4974',
-        'mtm-secondary-dark': '#233D5B',
+        // Même priorité que le back-office (section 8 des instructions) :
+        // le bleu marine est la couleur principale (boutons, liens, actifs,
+        // eyebrows, icônes), le rouge carmin est l'accent de marque réservé
+        // au mot-symbole, aux mises en avant et aux erreurs, le bleu clair
+        // signale une information.
+        'mtm-primary': '#1A4974',
+        'mtm-primary-dark': '#233D5B',
+        'mtm-primary-medium': '#2C6499',
+        'mtm-primary-light': '#CFE0EE',
+        'mtm-primary-subtle': '#EAF1F7',
+        'mtm-accent': '#B52C36',
+        'mtm-accent-dark': '#83191D',
+        'mtm-accent-subtle': '#F8E8E9',
+        'mtm-info': '#5EA8C7',
+        'mtm-info-bg': '#E9F4F9',
         'mtm-bg': '#F7F8FA',
         'mtm-surface': '#FFFFFF',
         'mtm-border': '#E5E7EB',
@@ -23,7 +34,7 @@ export default {
       },
       fontFamily: {
         display: ['"Outfit"', 'system-ui', 'sans-serif'],
-        sans: ['"Inter"', 'system-ui', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         card: '0 1px 2px rgba(31, 41, 55, 0.06), 0 1px 3px rgba(31, 41, 55, 0.08)',

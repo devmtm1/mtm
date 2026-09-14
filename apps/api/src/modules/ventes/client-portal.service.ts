@@ -198,6 +198,16 @@ export class ClientPortalService {
             reference: true,
           },
         },
+        echeances: {
+          orderBy: { numero: 'asc' },
+          select: {
+            numero: true,
+            dateEcheance: true,
+            montantPrevu: true,
+            montantPaye: true,
+            statut: true,
+          },
+        },
         documents: {
           where: { isPublic: true },
           select: {
@@ -219,6 +229,11 @@ export class ClientPortalService {
         0,
       ),
       prixVente: dossier.prixVente === null ? null : Number(dossier.prixVente),
+      echeances: dossier.echeances.map((echeance) => ({
+        ...echeance,
+        montantPrevu: Number(echeance.montantPrevu),
+        montantPaye: Number(echeance.montantPaye),
+      })),
       documents: dossier.documents.map(
         ({ storageKey, resourceType, ...document }) => ({
           ...document,

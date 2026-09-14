@@ -31,7 +31,7 @@
     "backoffice:build": "npm install --workspace=apps/backoffice && npm run build --workspace=apps/backoffice",
     "backoffice:lint": "npm run lint --workspace=apps/backoffice",
     "public-web:dev": "npm run dev --workspace=apps/public-web",
-    "public-web:build": "npm run build --workspace=apps/public-web",
+    "public-web:build": "npm install --workspace=apps/public-web && npm run build --workspace=apps/public-web",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f"

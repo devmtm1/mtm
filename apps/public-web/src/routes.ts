@@ -9,6 +9,9 @@ export const ROUTES = {
   demarches: '/demarches-administratives',
   realisations: '/realisations',
   projetsAVenir: '/projets-a-venir',
+  /** Fiche d'une réalisation ou d'un projet à venir, sous sa liste d'origine. */
+  showcaseDetail: (category: string, id: string) =>
+    `${category === 'projet_a_venir' ? '/projets-a-venir' : '/realisations'}/${id}`,
   actualites: '/actualites',
   contact: '/contact',
   clientLogin: '/espace-client/connexion',

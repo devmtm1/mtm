@@ -44,6 +44,12 @@ export class ShowcaseItemController {
     return this.showcase.findAllAdmin();
   }
 
+  @Public()
+  @Get(':id')
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.showcase.findPublicById(id);
+  }
+
   @Post()
   @RequirePermissions('content:creer')
   async create(

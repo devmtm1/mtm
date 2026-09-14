@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
+import { applyPaymentToEcheances } from './echeances.helper';
 import { CreatePaiementDto } from './dto/create-paiement.dto';
 import { VentesAccessService, type MandatUser } from './ventes-access.service';
 import { VentesWorkflowService } from './ventes-workflow.service';
@@ -15,6 +16,16 @@ import { VentesWorkflowService } from './ventes-workflow.service';
  * validation avec bascule automatique du statut, imputation sur les
  * échéances et calcul du solde.
  */
+/** Libellés des statuts pour les messages renvoyés à l'utilisateur. */
+const STATUT_LABELS: Record<string, string> = {
+  en_cours: 'En cours',
+  pre_reserve: 'Pré-réservé',
+  reserve: 'Réservé',
+  paiement_partiel: 'Paiement partiel',
+  solde: 'Soldé',
+  annule: 'Annulé',
+};
+
 @Injectable()
 export class VentesPaiementsService {
   constructor(
@@ -131,7 +142,7 @@ export class VentesPaiementsService {
             where: { id: paymentId },
             data: { statut: 'valide' },
           });
-          await this.applyPaymentToEcheances(
+          await applyPaymentToEcheances(
             transaction,
             id,
             Number(payment.montant),
@@ -142,11 +153,26 @@ export class VentesPaiementsService {
               ? 'solde'
               : 'paiement_partiel';
 
+          // Un paiement validé engage le client : sur un dossier encore
+          // « en cours » ou « pré-réservé », il vaut réservation, et le
+          // terrain est bloqué comme lors d'une réservation classique. Le
+          // passage vers l'état cible suit alors le chemin reserve → cible.
           const allowedTransitions =
             await this.workflow.getAllowedTransitions();
-          if (!allowedTransitions[dossier.statut]?.includes(newStatut)) {
+          // Un dossier déjà « paiement partiel » qui reçoit un nouveau
+          // versement reste dans ce statut : ce n'est pas une transition.
+          const direct =
+            dossier.statut === newStatut ||
+            allowedTransitions[dossier.statut]?.includes(newStatut);
+          const viaReservation =
+            !direct &&
+            allowedTransitions[dossier.statut]?.includes('reserve') &&
+            allowedTransitions['reserve']?.includes(newStatut);
+          if (!direct && !viaReservation) {
             throw new ConflictException(
-              `Transition impossible : ${dossier.statut} vers ${newStatut}`,
+              `Impossible de valider un paiement sur un dossier « ${
+                STATUT_LABELS[dossier.statut] ?? dossier.statut
+              } ». Modifiez d'abord le statut du dossier.`,
             );
           }
 
@@ -155,6 +181,20 @@ export class VentesPaiementsService {
             data: { statut: newStatut },
           });
 
+          if (viaReservation && dossier.terrainId) {
+            await transaction.terrain.updateMany({
+              where: { id: dossier.terrainId, statutCommercial: 'Disponible' },
+              data: { statutCommercial: 'Réservé' },
+            });
+          }
+
+          if (newStatut === 'solde') {
+            // La réservation a rempli son rôle : elle n'expire plus.
+            await transaction.reservation.updateMany({
+              where: { dossierVenteId: id, statut: 'active' },
+              data: { statut: 'confirmee' },
+            });
+          }
           if (newStatut === 'solde' && dossier.terrainId) {
             await transaction.terrain.updateMany({
               where: {
@@ -190,38 +230,6 @@ export class VentesPaiementsService {
         );
       }
       throw error;
-    }
-  }
-
-  private async applyPaymentToEcheances(
-    transaction: Prisma.TransactionClient,
-    dossierVenteId: string,
-    montant: number,
-  ): Promise<void> {
-    let montantRestant = montant;
-    const echeances = await transaction.echeancePaiement.findMany({
-      where: { dossierVenteId },
-      orderBy: { numero: 'asc' },
-    });
-
-    for (const echeance of echeances) {
-      if (montantRestant <= 0) break;
-      const restantEcheance =
-        Number(echeance.montantPrevu) - Number(echeance.montantPaye);
-      if (restantEcheance <= 0) continue;
-      const montantAffecte = Math.min(restantEcheance, montantRestant);
-      const montantPaye = Number(echeance.montantPaye) + montantAffecte;
-      await transaction.echeancePaiement.update({
-        where: { id: echeance.id },
-        data: {
-          montantPaye,
-          statut:
-            montantPaye >= Number(echeance.montantPrevu)
-              ? 'payee'
-              : 'partielle',
-        },
-      });
-      montantRestant -= montantAffecte;
     }
   }
 

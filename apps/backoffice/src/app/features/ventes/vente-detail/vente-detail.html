@@ -170,7 +170,7 @@
                     <td><span [class]="paymentPill(payment)">{{ paymentLabel(payment) }}</span></td>
                     <td class="is-right">
                       @if (payment.statut === 'en_attente' && canValidate) {
-                        <button mat-stroked-button type="button" (click)="validatePayment(payment)" matTooltip="Confirme que le paiement est bien reçu">
+                        <button mat-stroked-button type="button" (click)="validatePayment(payment)" [matTooltip]="validateHint()">
                           <svg class="btn-icon" lucideCheck aria-hidden="true"></svg>Valider
                         </button>
                       }
@@ -261,7 +261,7 @@
           <div class="detail-section__head">
             <div>
               <h2>Commissions</h2>
-              <p class="detail-section__hint">Estimée → validée par un responsable → payée une fois le dossier soldé.</p>
+              <p class="detail-section__hint">Créée et validée par un responsable → payée par la comptabilité une fois le dossier soldé.</p>
             </div>
             @if (canAdminister) {
               <button mat-stroked-button type="button" (click)="addCommission()">
@@ -284,7 +284,7 @@
                     @if (commission.montantFixe !== null) { · {{ commission.montantFixe | mtmMoney }} }
                     · estimée {{ commission.montantEstime | mtmMoney }}
                   </small>
-                  @if (commission.statut === 'estimee' && canValidate) {
+                  @if (commission.statut === 'estimee' && canAdminister) {
                     <button mat-stroked-button type="button" (click)="validateCommission(commission)">Valider</button>
                   } @else if (commission.statut === 'validee' && canPay) {
                     <button mat-stroked-button type="button" (click)="payCommission(commission)" [disabled]="d.statut !== 'solde'" [matTooltip]="d.statut !== 'solde' ? 'Payable une fois le dossier soldé' : ''">Marquer payée</button>

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -45,53 +45,57 @@ export class ClientAccountDialog {
     password: [this.generatePassword(), [Validators.required, passwordPolicyValidator()]],
   });
   protected readonly passwordHint = PASSWORD_POLICY_HINT;
-  protected creating = false;
-  protected created = false;
-  protected createdPassword = '';
-  protected invitationSent = false;
-  protected resetToken: string | null = null;
-  protected error: string | null = null;
+  // Signaux : l'application est sans zone.js, un champ modifié dans un
+  // rappel HTTP ne rafraîchirait pas l'écran (le bouton restait sur
+  // « Création… » alors que le compte était créé).
+  protected readonly creating = signal(false);
+  protected readonly created = signal(false);
+  protected readonly createdPassword = signal('');
+  protected readonly invitationSent = signal(false);
+  protected readonly resetToken = signal<string | null>(null);
+  protected readonly error = signal<string | null>(null);
 
   protected regeneratePassword(): void {
     this.form.controls.password.setValue(this.generatePassword());
   }
 
   protected create(): void {
-    if (this.form.invalid || this.creating) return;
-    this.creating = true;
-    this.error = null;
+    if (this.form.invalid || this.creating()) return;
+    this.creating.set(true);
+    this.error.set(null);
     const password = this.form.controls.password.value;
     this.api.createClientAccount(this.data.prospectId, password).subscribe({
       next: (result) => {
-        this.createdPassword = password;
-        this.invitationSent = result.invitationSent;
-        this.resetToken = result.resetToken ?? null;
-        this.created = true;
-        this.creating = false;
+        this.createdPassword.set(password);
+        this.invitationSent.set(result.invitationSent);
+        this.resetToken.set(result.resetToken ?? null);
+        this.created.set(true);
+        this.creating.set(false);
       },
       error: (error: { error?: { message?: string | string[] }; message?: string }) => {
         const message = error.error?.message ?? error.message;
-        this.error = Array.isArray(message) ? message.join(', ') : message ?? 'Impossible de créer le compte client';
-        this.creating = false;
+        this.error.set(Array.isArray(message) ? message.join(', ') : (message ?? 'Impossible de créer le compte client'));
+        this.creating.set(false);
       },
     });
   }
 
   protected close(): void {
-    this.dialogRef.close(this.created);
+    this.dialogRef.close(this.created());
   }
 
   /** Lien de première connexion à transmettre au client si l'e-mail n'est pas parti. */
   protected get invitationLink(): string | null {
-    return this.resetToken
-      ? `${environment.publicWebUrl}/espace-client/connexion?reset=${this.resetToken}`
+    const token = this.resetToken();
+    return token
+      ? `${environment.publicWebUrl}/espace-client/connexion?reset=${token}`
       : null;
   }
 
   protected async copyCredentials(): Promise<void> {
     const lines = [`Email : ${this.data.email}`];
     if (this.invitationLink) lines.push(`Lien de première connexion (7 jours) : ${this.invitationLink}`);
-    lines.push(`Mot de passe temporaire : ${this.createdPassword}`);
+    lines.push(`Mot de passe temporaire : ${this.createdPassword()}`);
     await navigator.clipboard?.writeText(lines.join('\n'));
   }
 

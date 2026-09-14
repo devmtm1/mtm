@@ -15,6 +15,19 @@ import {
   DEFAULT_DOCUMENT_TYPES,
   GENERATED_DOCUMENT_TYPES,
 } from './ventes-workflow.service';
+import {
+  renderVenteDocument,
+  type VenteDocumentData,
+} from './vente-document-renderer';
+
+/** Préfixe de numérotation par type de document généré. */
+const DOCUMENT_PREFIXES: Record<string, string> = {
+  facture: 'FAC',
+  recu: 'REC',
+  bon_reservation: 'BR',
+  contrat: 'CTR',
+  etat_paiement: 'EP',
+};
 
 /**
  * GED des dossiers de vente (J1.6, section 17 CDC) : dépôt, génération PDF
@@ -85,17 +98,89 @@ export class VentesDocumentsService {
       select: {
         id: true,
         referenceInterne: true,
+        statut: true,
         prixVente: true,
-        prospect: { select: { nom: true, prenom: true, email: true } },
-        terrain: { select: { nom: true, referenceInterne: true } },
+        createdAt: true,
+        prospect: {
+          select: { nom: true, prenom: true, email: true, telephone: true },
+        },
+        terrain: {
+          select: {
+            nom: true,
+            referenceInterne: true,
+            commune: true,
+            region: true,
+            localisationDetail: true,
+            superficie: true,
+            uniteSuperficie: true,
+          },
+        },
         reservations: { orderBy: { createdAt: 'desc' }, take: 1 },
-        paiements: { orderBy: { datePaiement: 'desc' }, take: 5 },
+        paiements: { orderBy: { datePaiement: 'asc' } },
+        echeances: { orderBy: { numero: 'asc' } },
       },
     });
     if (!dossier) throw new NotFoundException('Dossier de vente introuvable');
 
-    const textContent = this.buildGeneratedDocumentText(dto.type, dossier);
-    const buffer = this.buildValidPdf(textContent);
+    const issuedAt = new Date();
+    const sequence = await this.prisma.documentVente.count({
+      where: { dossierVenteId: id, type: dto.type, isGenerated: true },
+    });
+    const data: VenteDocumentData = {
+      type: dto.type,
+      title: dto.title ?? this.defaultDocumentTitle(dto.type),
+      reference: `${DOCUMENT_PREFIXES[dto.type] ?? 'DOC'}-${(dossier.referenceInterne ?? id.slice(0, 8)).replace(/^DV-/, '')}-${String(sequence + 1).padStart(2, '0')}`,
+      issuedAt,
+      company: await this.companyInfo(),
+      dossier: {
+        referenceInterne: dossier.referenceInterne,
+        statut: dossier.statut,
+        prixVente:
+          dossier.prixVente === null ? null : Number(dossier.prixVente),
+        createdAt: dossier.createdAt,
+      },
+      client: {
+        nom:
+          [dossier.prospect?.prenom, dossier.prospect?.nom]
+            .filter(Boolean)
+            .join(' ') || 'Client non renseigné',
+        email: dossier.prospect?.email ?? null,
+        telephone: dossier.prospect?.telephone ?? null,
+      },
+      terrain: dossier.terrain
+        ? {
+            ...dossier.terrain,
+            superficie:
+              dossier.terrain.superficie === null
+                ? null
+                : Number(dossier.terrain.superficie),
+          }
+        : null,
+      reservation: dossier.reservations[0]
+        ? {
+            reference: dossier.reservations[0].reference,
+            montantAcompte: Number(dossier.reservations[0].montantAcompte),
+            dateDebut: dossier.reservations[0].dateDebut,
+            dateExpiration: dossier.reservations[0].dateExpiration,
+            statut: dossier.reservations[0].statut,
+          }
+        : null,
+      paiements: dossier.paiements.map((p) => ({
+        montant: Number(p.montant),
+        datePaiement: p.datePaiement,
+        mode: p.mode,
+        reference: p.reference,
+        statut: p.statut,
+      })),
+      echeances: dossier.echeances.map((e) => ({
+        numero: e.numero,
+        dateEcheance: e.dateEcheance,
+        montantPrevu: Number(e.montantPrevu),
+        montantPaye: Number(e.montantPaye),
+        statut: e.statut,
+      })),
+    };
+    const buffer = renderVenteDocument(data);
     const file = {
       buffer,
       mimetype: 'application/pdf',
@@ -122,61 +207,6 @@ export class VentesDocumentsService {
     });
   }
 
-  private buildValidPdf(text: string): Buffer {
-    const lines = text.split('\n');
-    const escapedLines = lines.map((line) =>
-      line.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)'),
-    );
-
-    const contentLines = escapedLines.flatMap((line) => [
-      `BT`,
-      `/F1 12 Tf`,
-      `50 760 Td`,
-      `(${line}) Tj`,
-      `0 -18 Td`,
-      `ET`,
-    ]);
-
-    const contentStream = contentLines.join('\n');
-    const streamBytes = Buffer.byteLength(contentStream, 'utf8');
-
-    const objects = [
-      '<< /Type /Catalog /Pages 2 0 R >>',
-      '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
-      '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>',
-      `<< /Length ${streamBytes} >>\nstream\n${contentStream}\nendstream`,
-      '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
-    ];
-
-    const pdfParts: Buffer[] = [Buffer.from('%PDF-1.4\n')];
-    const offsets: number[] = [0];
-    let currentOffset = Buffer.byteLength('%PDF-1.4\n');
-
-    for (let index = 0; index < objects.length; index++) {
-      const objectText = `${index + 1} 0 obj\n${objects[index]}\nendobj\n`;
-      offsets.push(currentOffset);
-      pdfParts.push(Buffer.from(objectText, 'utf8'));
-      currentOffset += Buffer.byteLength(objectText, 'utf8');
-    }
-
-    const xrefOffset = currentOffset;
-    const xrefEntries = ['0000000000 65535 f \n'];
-    for (let index = 1; index < offsets.length; index++) {
-      xrefEntries.push(
-        `${String(offsets[index]).padStart(10, '0')} 00000 n \n`,
-      );
-    }
-
-    pdfParts.push(
-      Buffer.from(
-        `xref\n0 ${objects.length + 1}\n${xrefEntries.join('')}trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF\n`,
-        'utf8',
-      ),
-    );
-
-    return Buffer.concat(pdfParts);
-  }
-
   async removeDocument(id: string, documentId: string, user: MandatUser) {
     await this.access.ensureAccessible(id, user);
     const document = await this.prisma.documentVente.findFirst({
@@ -191,59 +221,24 @@ export class VentesDocumentsService {
     await this.prisma.documentVente.delete({ where: { id: documentId } });
   }
 
-  private buildGeneratedDocumentText(
-    type: string,
-    dossier: {
-      referenceInterne: string | null;
-      prixVente: number | string | Prisma.Decimal | null;
-      prospect: {
-        nom: string | null;
-        prenom: string | null;
-        email: string | null;
-      } | null;
-      terrain: { nom: string | null; referenceInterne: string | null } | null;
-      reservations: Array<{
-        reference?: string | null;
-        montantAcompte?: number | string | Prisma.Decimal | null;
-      }>;
-      paiements: Array<{
-        montant?: number | string | Prisma.Decimal | null;
-        reference?: string | null;
-        mode?: string | null;
-      }>;
-    },
-  ): string {
-    const prix = Number(dossier.prixVente ?? 0);
-    const montantAcompte = dossier.reservations[0]
-      ? Number(dossier.reservations[0].montantAcompte ?? 0)
-      : 0;
-    const client =
-      [dossier.prospect?.prenom, dossier.prospect?.nom]
-        .filter(Boolean)
-        .join(' ') || 'Client non renseigné';
-    const terrainNom = dossier.terrain?.nom ?? 'Terrain non renseigné';
-    const documentTypeLabel = this.defaultDocumentTitle(type);
-    const paiementText = dossier.paiements.length
-      ? dossier.paiements
-          .map(
-            (p) =>
-              `${p.reference ?? 'Paiement'} - ${Number(p.montant ?? 0)} FCFA (${p.mode ?? 'N/A'})`,
-          )
-          .join('\n')
-      : 'Aucun paiement enregistré';
-
-    return [
-      `MTM Immobilier`,
-      documentTypeLabel,
-      `Dossier : ${dossier.referenceInterne ?? 'N/A'}`,
-      `Client : ${client}`,
-      `Email : ${dossier.prospect?.email ?? 'N/A'}`,
-      `Terrain : ${terrainNom} (${dossier.terrain?.referenceInterne ?? 'N/A'})`,
-      `Prix de vente : ${prix} FCFA`,
-      `Montant d’acompte : ${montantAcompte} FCFA`,
-      `Historique paiements :`,
-      paiementText,
-    ].join('\n');
+  /** Coordonnées affichées sur les documents : celles publiées sur le site. */
+  private async companyInfo(): Promise<VenteDocumentData['company']> {
+    const blocks = await this.prisma.contentBlock.findMany({
+      where: {
+        key: { in: ['contact.adresse', 'contact.telephone', 'contact.email'] },
+        isActive: true,
+      },
+      select: { key: true, content: true },
+    });
+    const get = (key: string, fallback: string): string =>
+      blocks.find((block) => block.key === key)?.content?.trim() || fallback;
+    return {
+      name: 'MTM Immobilier',
+      tagline: 'Achat · Vente · Gérance immobilière & BTP',
+      adresse: get('contact.adresse', 'Dakar, Sénégal'),
+      telephone: get('contact.telephone', ''),
+      email: get('contact.email', ''),
+    };
   }
 
   private defaultDocumentTitle(type: string): string {

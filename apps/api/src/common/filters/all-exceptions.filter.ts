@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import { ThrottlerException } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 
 interface ErrorResponseBody {
@@ -53,6 +54,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message = (body.message as string | string[]) ?? exception.message;
         error = body.error as string | undefined;
         code = body.code as string | undefined;
+      }
+      // Limitation de débit : le message technique de la librairie
+      // (« ThrottlerException: Too Many Requests ») ne doit pas atteindre
+      // l'utilisateur.
+      if (exception instanceof ThrottlerException) {
+        message =
+          'Trop de tentatives. Merci de patienter une minute avant de réessayer.';
+        code = 'RATE_LIMITED';
       }
     } else if (exception instanceof Error) {
       // Erreur non-HTTP (bug, erreur Prisma non catchée, etc.)

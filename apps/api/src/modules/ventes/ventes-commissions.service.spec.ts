@@ -56,4 +56,65 @@ describe('VentesCommissionsService', () => {
     );
     expect(result.montantEstime).toBe(25000);
   });
+  it.each(['administrateur', 'manager'])(
+    'accepte un bénéficiaire %s (mêmes rôles que la liste des commerciaux)',
+    async (roleName) => {
+      prismaMock.dossierVente.findUnique.mockResolvedValue({
+        id: 'd1',
+        prixVente: 6000000,
+      });
+      prismaMock.dossierVente.findFirst.mockResolvedValue({ id: 'd1' });
+      prismaMock.user.findUnique.mockResolvedValue({
+        id: 'u2',
+        isActive: true,
+        roles: [{ role: { name: roleName } }],
+      });
+      prismaMock.commissionVente.create.mockResolvedValue({ id: 'c2' });
+      prismaMock.dossierVente.update.mockResolvedValue({});
+      prismaMock.systemSetting.findUnique.mockResolvedValue({
+        value: [
+          { id: 'commission-standard', typeRegle: 'pourcentage', taux: 2.5 },
+        ],
+      });
+
+      await commissions.createCommission(
+        'd1',
+        { commercialId: 'u2', regleId: 'commission-standard' },
+        { id: 'u1', roles: ['manager'], permissions: ['ventes:modifier'] },
+      );
+
+      expect(prismaMock.commissionVente.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ montantEstime: 150000 }),
+        }),
+      );
+    },
+  );
+
+  it('refuse un bénéficiaire sans rôle commercial', async () => {
+    prismaMock.dossierVente.findUnique.mockResolvedValue({
+      id: 'd1',
+      prixVente: 6000000,
+    });
+    prismaMock.dossierVente.findFirst.mockResolvedValue({ id: 'd1' });
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'u3',
+      isActive: true,
+      roles: [{ role: { name: 'comptable' } }],
+    });
+    prismaMock.systemSetting.findUnique.mockResolvedValue({
+      value: [
+        { id: 'commission-standard', typeRegle: 'pourcentage', taux: 2.5 },
+      ],
+    });
+
+    await expect(
+      commissions.createCommission(
+        'd1',
+        { commercialId: 'u3', regleId: 'commission-standard' },
+        { id: 'u1', roles: ['manager'], permissions: ['ventes:modifier'] },
+      ),
+    ).rejects.toThrow('rôle commercial');
+    expect(prismaMock.commissionVente.create).not.toHaveBeenCalled();
+  });
 });

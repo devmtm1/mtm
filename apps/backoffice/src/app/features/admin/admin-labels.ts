@@ -66,12 +66,12 @@ export const ACTION_INFO: Record<string, { label: string; help: string }> = {
   consulter_financier: { label: 'Voir le financier', help: 'Voir les montants sensibles (prix d’acquisition, marges, commissions).' },
   creer: { label: 'Créer', help: 'Ajouter de nouveaux éléments.' },
   modifier: { label: 'Modifier', help: 'Mettre à jour les éléments existants.' },
-  valider: { label: 'Valider', help: 'Approuver une étape (paiement, commission, statut).' },
+  valider: { label: 'Valider', help: 'Approuver une étape (paiement reçu, statut de dossier).' },
   supprimer: { label: 'Supprimer', help: 'Retirer un élément — action tracée dans le journal.' },
   exporter: { label: 'Exporter', help: 'Télécharger des données (CSV, journaux) avec justification.' },
-  payer: { label: 'Payer', help: 'Enregistrer ou confirmer un paiement.' },
+  payer: { label: 'Payer', help: 'Marquer une commission validée comme payée au commercial (comptabilité).' },
   publier: { label: 'Publier', help: 'Rendre visible sur le site public ou dans l’espace client.' },
-  administrer: { label: 'Administrer', help: 'Vue complète du module (tous les dossiers, tous les commerciaux) et actes de management.' },
+  administrer: { label: 'Administrer', help: 'Vue complète du module (tous les dossiers, tous les commerciaux) et actes de management : objectifs, création et validation des commissions.' },
 };
 
 export function permissionActionLabel(action: string): string {

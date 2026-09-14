@@ -165,4 +165,28 @@ describe('VentesService', () => {
     expect(result[0].montantPaye).toBeUndefined();
     expect(result[0].soldeRestant).toBeUndefined();
   });
+
+  it('liste les dossiers pour un commercial sans droit financier (paiements non chargés)', async () => {
+    prismaMock.dossierVente.findMany.mockResolvedValue([
+      {
+        id: 'd1',
+        prixVente: 1000,
+        statut: 'en_cours',
+        prospect: null,
+        terrain: null,
+        mandat: null,
+        commercialResponsable: null,
+        reservations: [],
+        _count: { documents: 0, commissions: 0 },
+      },
+    ]);
+    const list = await service.findAll({
+      id: 'u1',
+      roles: ['commercial'],
+      permissions: ['ventes:consulter'],
+    });
+    expect(list).toHaveLength(1);
+    expect(list[0]).not.toHaveProperty('paiements');
+    expect(list[0].montantPaye).toBeUndefined();
+  });
 });

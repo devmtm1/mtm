@@ -163,6 +163,12 @@ export class ContactService {
       },
     });
 
+    // Sans choix explicite, le prospect revient à la personne qui convertit
+    // la demande : un commercial doit voir le prospect qu'il vient de créer
+    // (périmètre = ses prospects). Un prospect existant sans responsable est
+    // rattaché de la même façon ; s'il est déjà suivi par quelqu'un d'autre,
+    // il n'est pas réaffecté sans choix explicite.
+    const responsable = commercialResponsableId ?? user.id;
     if (!prospect) {
       const [prenom, ...rest] = (contact.nom || '').split(' ');
       prospect = await this.prisma.prospect.create({
@@ -174,13 +180,13 @@ export class ContactService {
           sourceAcquisition: 'contact_public',
           besoins: `[${contact.sujet || 'Contact public'}] ${contact.message}`,
           statutPipeline: 'nouveau_contact',
-          commercialResponsableId: commercialResponsableId || undefined,
+          commercialResponsableId: responsable,
         },
       });
-    } else if (commercialResponsableId) {
+    } else if (commercialResponsableId || !prospect.commercialResponsableId) {
       prospect = await this.prisma.prospect.update({
         where: { id: prospect.id },
-        data: { commercialResponsableId },
+        data: { commercialResponsableId: responsable },
       });
     }
 

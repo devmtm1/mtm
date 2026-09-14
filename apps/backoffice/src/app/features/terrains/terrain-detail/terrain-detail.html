@@ -52,6 +52,11 @@
               </button>
             }
           </mat-menu>
+          @if (canAssign) {
+            <button mat-stroked-button type="button" (click)="assignCommercial()" matTooltip="Choisir le commercial qui suit ce terrain">
+              <svg class="btn-icon" lucideUserCheck aria-hidden="true"></svg>{{ t.commercialResponsable ? 'Réaffecter' : 'Affecter' }}
+            </button>
+          }
           <button mat-flat-button color="primary" type="button" (click)="edit()">
             <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Modifier la fiche
           </button>
@@ -166,7 +171,13 @@
           </div>
           <div>
             <dt>Commercial responsable</dt>
-            <dd>{{ t.commercialResponsable ? t.commercialResponsable.firstName + ' ' + t.commercialResponsable.lastName : '—' }}</dd>
+            <dd>
+              @if (t.commercialResponsable) {
+                {{ t.commercialResponsable.firstName }} {{ t.commercialResponsable.lastName }}
+              } @else {
+                <span class="status-pill status-pill--warning">Aucun : seul l’encadrement voit ce terrain</span>
+              }
+            </dd>
           </div>
         </dl>
 

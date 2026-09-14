@@ -28,6 +28,7 @@ export class MandatsAccessService {
   }
 
   hasGlobalScope(user: MandatUser): boolean {
-    return hasSupervisionScope(user, 'mandats');
+    // Le comptable suit les commissions de tous les mandats.
+    return hasSupervisionScope(user, 'mandats', ['comptable']);
   }
 }

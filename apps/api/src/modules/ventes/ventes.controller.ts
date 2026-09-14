@@ -260,8 +260,11 @@ export class VentesController {
     return reservation;
   }
 
+  // Enregistrer un versement reçu fait partie du suivi courant du dossier
+  // (commercial, manager) ; la validation reste soumise à ventes:valider et
+  // le paiement d'une commission à ventes:payer.
   @Post(':id/paiements')
-  @RequirePermissions('ventes:payer')
+  @RequirePermissions('ventes:modifier')
   async pay(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreatePaiementDto,
@@ -296,8 +299,11 @@ export class VentesController {
     return result;
   }
 
+  // Séparation des tâches : l'encadrement décide de la commission (création
+  // et validation, ventes:administrer) ; la comptabilité l'exécute
+  // (ventes:payer) une fois le dossier soldé.
   @Post(':id/commissions')
-  @RequirePermissions('ventes:modifier')
+  @RequirePermissions('ventes:administrer')
   async addCommission(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateCommissionDto,
@@ -315,7 +321,7 @@ export class VentesController {
   }
 
   @Post(':id/commissions/:commissionId/validate')
-  @RequirePermissions('ventes:valider')
+  @RequirePermissions('ventes:administrer')
   async validateCommission(
     @Param('id', ParseUUIDPipe) id: string,
     @Param('commissionId', ParseUUIDPipe) commissionId: string,

@@ -131,7 +131,8 @@ export class SettingFormDialog {
   }
 
   private parse(text: string, kind: SettingKind): unknown {
-    const trimmed = text.trim();
+    // Un champ `type="number"` renvoie un nombre, pas une chaîne.
+    const trimmed = String(text ?? '').trim();
     switch (kind) {
       case 'number': {
         const number = Number(trimmed.replace(',', '.'));

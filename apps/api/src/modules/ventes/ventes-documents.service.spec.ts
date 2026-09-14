@@ -18,10 +18,15 @@ describe('VentesDocumentsService', () => {
       prospect: { nom: 'Martin', prenom: 'Alice' },
       terrain: { nom: 'Parcelle A', referenceInterne: 'T-001' },
       prixVente: 1000000,
+      statut: 'en_cours',
+      createdAt: new Date('2026-09-01T00:00:00Z'),
       reservations: [],
       paiements: [],
+      echeances: [],
     });
     prismaMock.dossierVente.findFirst.mockResolvedValue({ id: 'd1' });
+    prismaMock.documentVente.count.mockResolvedValue(0);
+    prismaMock.contentBlock.findMany.mockResolvedValue([]);
     prismaMock.systemSetting.findUnique.mockResolvedValue({
       value: [
         'bon_reservation',

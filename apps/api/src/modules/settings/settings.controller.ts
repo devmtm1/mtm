@@ -88,6 +88,12 @@ export class SettingsController {
       );
     }
 
+    // Ancienne valeur avant modification : le journal doit montrer
+    // « avant / après » (critère Phase 0). Jamais la valeur brute d'un
+    // paramètre sensible.
+    const previous = sensitive
+      ? undefined
+      : await this.settingsService.getRawValue(key).catch(() => undefined);
     const setting = await this.settingsService.update(
       key,
       dto.value,
@@ -99,7 +105,7 @@ export class SettingsController {
       action: 'setting.updated',
       entityType: 'SystemSetting',
       entityId: setting.id,
-      // On ne journalise jamais la valeur brute d'un paramètre sensible.
+      oldValue: sensitive ? { key } : { key, value: previous },
       newValue: sensitive ? { key } : { key, value: dto.value },
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],

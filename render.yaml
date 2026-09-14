@@ -20,7 +20,16 @@ services:
         generateValue: true
       - key: API_PORT
         value: 3000
+      # Origines autorisées, séparées par des virgules : URL du back-office
+      # ET du site public, sans barre oblique finale
+      # (ex. https://mtm-backoffice.onrender.com,https://mtm-public-web.onrender.com).
       - key: CORS_ORIGIN
+        sync: false
+      # URL publique du site vitrine : liens d'invitation à l'espace client.
+      - key: PUBLIC_WEB_URL
+        sync: false
+      # URL publique de l'API, préfixe /api inclus : liens signés vers les documents.
+      - key: API_PUBLIC_URL
         sync: false
 
   - type: web
@@ -30,6 +39,27 @@ services:
     buildCommand: npm run backoffice:build
     staticPublishPath: apps/backoffice/dist/backoffice/browser
     rootDir: .
+    # Application monopage : toute route inconnue est servie par index.html.
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+  - type: web
+    name: mtm-public-web
+    runtime: static
+    plan: starter
+    buildCommand: npm run public-web:build
+    staticPublishPath: apps/public-web/dist
+    rootDir: .
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      # Lue au moment du build (Vite) : URL de l'API avec le préfixe /api.
+      - key: VITE_API_URL
+        value: https://mtm-2-v2wo.onrender.com/api
 
 databases:
   - name: mtm-db

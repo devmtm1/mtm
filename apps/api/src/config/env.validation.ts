@@ -45,4 +45,7 @@ export const envValidationSchema = Joi.object({
   // URLs publiques des deux interfaces, pour les liens dans les e-mails.
   PUBLIC_WEB_URL: Joi.string().uri().default('http://localhost:5173'),
   BACKOFFICE_URL: Joi.string().uri().default('http://localhost:4200'),
+  // URL publique de l'API (préfixe /api compris) : sert à construire les
+  // liens de téléchargement des documents privés. En local, déduite du port.
+  API_PUBLIC_URL: Joi.string().uri().optional(),
 });

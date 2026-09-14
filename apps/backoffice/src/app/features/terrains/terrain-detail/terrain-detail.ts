@@ -22,9 +22,13 @@ import {
   LucideStar,
   LucideTrash2,
   LucideUpload,
+  LucideUserCheck,
 } from '@lucide/angular';
 import * as L from 'leaflet';
 import { TerrainsApiService } from '../../../core/services/api/terrains-api.service';
+import { CrmApiService } from '../../../core/services/api/crm-api.service';
+import type { CommercialSummary } from '../../../core/models/prospect.model';
+import { StatusChoiceDialog } from '../../../shared/dialogs/status-choice-dialog';
 import { SessionService } from '../../../core/services/session.service';
 import type { TerrainDetail as TerrainDetailModel, TerrainOptions } from '../../../core/models/terrain.model';
 import { environment } from '../../../../environments/environment';
@@ -73,6 +77,7 @@ import {
     LucideStar,
     LucideTrash2,
     LucideUpload,
+    LucideUserCheck,
   ],
   templateUrl: './terrain-detail.html',
   styleUrl: './terrain-detail.scss',
@@ -81,6 +86,7 @@ export class TerrainDetail implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly api = inject(TerrainsApiService);
+  private readonly crmApi = inject(CrmApiService);
   private readonly session = inject(SessionService);
   private readonly notify = inject(NotificationService);
   private readonly dialog = inject(MatDialog);
@@ -92,6 +98,8 @@ export class TerrainDetail implements OnInit, OnDestroy {
   protected readonly activeMedia = signal<string | null>(null);
 
   protected readonly canModify = this.session.hasPermission('terrains:modifier');
+  /** Affecter le terrain à un commercial : encadrement uniquement. */
+  protected readonly canAssign = this.session.hasPermission('terrains:modifier') && this.session.hasSupervisionScope('terrains') && this.session.hasPermission('crm:consulter');
   protected readonly canValidate = this.session.hasPermission('terrains:valider');
   protected readonly canPublish = this.session.hasPermission('terrains:publier') || this.session.hasRole('administrateur') || this.session.hasRole('direction');
   protected readonly canViewFinancials =
@@ -210,6 +218,28 @@ export class TerrainDetail implements OnInit, OnDestroy {
             ? this.api.updateJuridicalStatus(terrain.id, result.value, result.justification)
             : this.api.updateVerificationStatus(terrain.id, result.value, result.justification);
       this.run(request$, 'Statut mis à jour');
+    });
+  }
+
+  /** Choisit le commercial qui suit ce terrain (seul lui et l'encadrement le verront). */
+  protected assignCommercial(): void {
+    const terrain = this.terrain();
+    if (!terrain || !this.canAssign) return;
+    this.crmApi.getCommercials().subscribe({
+      next: (commercials: CommercialSummary[]) => {
+        StatusChoiceDialog.open(this.dialog, {
+          title: 'Affecter à un commercial',
+          intro: 'Le commercial affecté voit ce terrain dans sa liste et peut l’utiliser dans ses dossiers de vente. L’encadrement continue de tout voir.',
+          subject: terrain.nom,
+          current: terrain.commercialResponsable?.id ?? '',
+          choices: commercials.map((commercial) => ({ value: commercial.id, label: `${commercial.firstName} ${commercial.lastName}`, help: '', tone: 'primary' as const })),
+          confirmLabel: 'Affecter',
+        }).subscribe((result) => {
+          if (!result || result.value === terrain.commercialResponsable?.id) return;
+          this.run(this.api.update(terrain.id, { commercialResponsableId: result.value }), 'Terrain affecté');
+        });
+      },
+      error: (error: unknown) => this.notify.error(error, 'Impossible de charger la liste des commerciaux'),
     });
   }
 

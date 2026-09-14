@@ -48,6 +48,14 @@ const LAZY_ROUTES: { path: string; Page: ComponentType }[] = [
     Page: lazyPage(() => import('./pages/ProjetsAVenirPage').then((m) => m.ProjetsAVenirPage)),
   },
   {
+    path: '/realisations/:id',
+    Page: lazyPage(() => import('./pages/ShowcaseDetailPage').then((m) => m.ShowcaseDetailPage)),
+  },
+  {
+    path: '/projets-a-venir/:id',
+    Page: lazyPage(() => import('./pages/ShowcaseDetailPage').then((m) => m.ShowcaseDetailPage)),
+  },
+  {
     path: ROUTES.actualites,
     Page: lazyPage(() => import('./pages/ActualitesPage').then((m) => m.ActualitesPage)),
   },

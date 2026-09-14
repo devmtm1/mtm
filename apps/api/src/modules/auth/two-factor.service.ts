@@ -48,7 +48,12 @@ export class TwoFactorService {
    */
   verifyCode(code: string, secret: string): boolean {
     try {
-      return authenticator.verify({ token: code, secret });
+      // Tolérance d'une période (± 30 s) : le code affiché par le téléphone
+      // reste accepté le temps de le recopier, et une petite dérive d'horloge
+      // entre le téléphone et le serveur ne bloque pas la connexion.
+      return authenticator
+        .clone({ window: 1 })
+        .verify({ token: code, secret });
     } catch {
       return false;
     }

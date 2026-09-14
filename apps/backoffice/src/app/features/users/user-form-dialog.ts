@@ -87,8 +87,12 @@ export class UserFormDialog {
       this.form.controls.password.setValue(generatePassword());
       this.showPassword.set(true);
     }
+    // Un sélecteur sans option ne s'ouvre pas : on le garde désactivé (avec
+    // une aide « Chargement… ») jusqu'à l'arrivée des rôles.
+    this.form.controls.roleId.disable();
     this.rolesApi.findAll().subscribe({
       next: (roles) => {
+        this.form.controls.roleId.enable();
         // Le rôle « client » sert à l'espace client du site, pas au back-office.
         this.roles.set(roles.filter((role) => role.name !== 'client').sort((a, b) => roleLabel(a.name).localeCompare(roleLabel(b.name), 'fr')));
         if (user?.roles[0]) {
@@ -96,7 +100,10 @@ export class UserFormDialog {
           if (currentRole) this.form.controls.roleId.setValue(currentRole.id);
         }
       },
-      error: () => this.errorMessage.set('Impossible de charger les rôles disponibles.'),
+      error: () => {
+        this.form.controls.roleId.enable();
+        this.errorMessage.set('Impossible de charger les rôles disponibles.');
+      },
     });
   }
 

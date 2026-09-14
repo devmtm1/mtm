@@ -1,9 +1,25 @@
 import { HttpBackend, HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, switchMap, tap } from 'rxjs';
+import { Observable, catchError, map, switchMap, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import type { AuthenticatedUser, LoginResponse } from '../models/auth.model';
 import { SessionService } from './session.service';
+
+/**
+ * Le back-office est réservé au personnel MTM : un compte « client »
+ * (espace client du site public) ne s'y connecte pas, même avec des
+ * identifiants valides.
+ */
+export class StaffOnlyError extends Error {
+  constructor() {
+    super('Cet espace est réservé au personnel MTM. Les clients se connectent depuis l’espace client du site.');
+    this.name = 'StaffOnlyError';
+  }
+}
+
+export function isStaffUser(user: Pick<AuthenticatedUser, 'roles'>): boolean {
+  return (user.roles ?? []).some((role) => role !== 'client');
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -30,10 +46,26 @@ export class AuthService {
         { withCredentials: true },
       )
       .pipe(
-        tap((response) => {
+        switchMap((response) => {
+          if (!response.requiresTwoFactor && response.user && !isStaffUser(response.user)) {
+            // On révoque tout de suite le cookie de session posé par l'API
+            // (l'appel est authentifié par le jeton qu'on vient de recevoir) ;
+            // quel que soit son résultat, la connexion est refusée.
+            return this.rawHttp
+              .post(
+                `${environment.apiUrl}/auth/logout`,
+                {},
+                { withCredentials: true, headers: { Authorization: `Bearer ${response.accessToken}` } },
+              )
+              .pipe(
+                catchError(() => [null]),
+                switchMap(() => throwError(() => new StaffOnlyError())),
+              );
+          }
           if (!response.requiresTwoFactor && response.accessToken && response.user) {
             this.sessionService.setSession(response.accessToken, response.user);
           }
+          return [response];
         }),
       );
   }
@@ -68,6 +100,13 @@ export class AuthService {
         // Passe par `http` (pas `rawHttp`) : authInterceptor attache
         // l'Authorization Bearer à partir du token qu'on vient de fixer.
         return this.http.get<AuthenticatedUser>(`${environment.apiUrl}/auth/me`);
+      }),
+      map((user) => {
+        if (!isStaffUser(user)) {
+          this.sessionService.clearSession();
+          throw new StaffOnlyError();
+        }
+        return user;
       }),
       tap((user) => this.sessionService.setUser(user)),
     );

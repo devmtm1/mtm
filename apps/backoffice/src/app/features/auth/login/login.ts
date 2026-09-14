@@ -13,7 +13,7 @@ import {
   LucidePhoneCall,
   LucideLogIn,
 } from '@lucide/angular';
-import { AuthService } from '../../../core/services/auth.service';
+import { AuthService, StaffOnlyError } from '../../../core/services/auth.service';
 
 interface CredentialsForm {
   email: FormControl<string>;
@@ -142,6 +142,7 @@ export class Login {
   }
 
   private toErrorMessage(error: unknown): string {
+    if (error instanceof StaffOnlyError) return error.message;
     if (error instanceof HttpErrorResponse) {
       if (error.status === 401) {
         return this.awaitingTwoFactor()

@@ -1,10 +1,12 @@
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'onDark' | 'onDarkOutline';
+export type ButtonVariant = 'primary' | 'accent' | 'secondary' | 'ghost' | 'onDark' | 'onDarkOutline';
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary:
     'bg-mtm-primary text-white hover:bg-mtm-primary-dark focus-visible:outline-mtm-primary',
+  // Accent de marque : une seule action principale par page (ex. hero).
+  accent: 'bg-mtm-accent text-white hover:bg-mtm-accent-dark focus-visible:outline-mtm-accent',
   secondary:
-    'bg-white text-mtm-primary border border-mtm-primary hover:bg-mtm-primary/5 focus-visible:outline-mtm-primary',
+    'bg-white text-mtm-primary border border-mtm-primary hover:bg-mtm-primary-subtle focus-visible:outline-mtm-primary',
   ghost: 'text-mtm-text hover:bg-mtm-bg focus-visible:outline-mtm-primary',
   // Variantes dédiées aux fonds sombres (ex. hero) : évite de "surcharger" un
   // variant clair via des classes ajoutées en JSX, dont l'ordre ne détermine

@@ -33,6 +33,16 @@ export class ShowcaseItemService {
     return items.map((item) => this.toPublic(item));
   }
 
+  /** Fiche publique d'une réalisation ou d'un projet (publiés uniquement). */
+  async findPublicById(id: string) {
+    const item = await this.prisma.showcaseItem.findFirst({
+      where: { id, isActive: true },
+      select: this.publicSelect,
+    });
+    if (!item) throw new NotFoundException('Élément introuvable');
+    return this.toPublic(item);
+  }
+
   async findAllAdmin() {
     const items = await this.prisma.showcaseItem.findMany({
       orderBy: [{ category: 'asc' }, { ordre: 'asc' }],

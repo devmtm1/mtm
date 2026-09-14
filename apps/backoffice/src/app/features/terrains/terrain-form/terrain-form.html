@@ -104,6 +104,18 @@
                 }
               </mat-select>
             </mat-form-field>
+            @if (canAssign) {
+              <mat-form-field appearance="outline">
+                <mat-label>Commercial responsable</mat-label>
+                <mat-select formControlName="commercialResponsableId">
+                  <mat-option value="">Moi-même</mat-option>
+                  @for (commercial of commercials(); track commercial.id) {
+                    <mat-option [value]="commercial.id">{{ commercial.firstName }} {{ commercial.lastName }}</mat-option>
+                  }
+                </mat-select>
+                <mat-hint>Seul ce commercial (et l’encadrement) verra ce terrain dans le back-office.</mat-hint>
+              </mat-form-field>
+            }
             <div class="form-grid__side">
               <button mat-stroked-button type="button" (click)="addProprietaire()">
                 <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau propriétaire

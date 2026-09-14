@@ -23,7 +23,7 @@ export function ContactPage() {
       <section className="mx-auto grid max-w-5xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1fr_1.3fr]">
         <div className="flex flex-col gap-6">
           <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-mtm-primary/10 text-mtm-primary">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-mtm-primary-subtle text-mtm-primary">
               <MapPin className="h-5 w-5" aria-hidden="true" />
             </span>
             <div>
@@ -32,7 +32,7 @@ export function ContactPage() {
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-mtm-primary/10 text-mtm-primary">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-mtm-primary-subtle text-mtm-primary">
               <Phone className="h-5 w-5" aria-hidden="true" />
             </span>
             <div>
@@ -43,7 +43,7 @@ export function ContactPage() {
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-mtm-primary/10 text-mtm-primary">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-mtm-primary-subtle text-mtm-primary">
               <Mail className="h-5 w-5" aria-hidden="true" />
             </span>
             <div>

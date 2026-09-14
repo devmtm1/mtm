@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react';
 
-type Tone = 'primary' | 'success' | 'warning' | 'neutral';
+type Tone = 'primary' | 'accent' | 'info' | 'success' | 'warning' | 'neutral';
 
 const TONE_CLASSES: Record<Tone, string> = {
-  primary: 'bg-mtm-primary/10 text-mtm-primary',
+  primary: 'bg-mtm-primary-subtle text-mtm-primary',
+  accent: 'bg-mtm-accent-subtle text-mtm-accent',
+  info: 'bg-mtm-info-bg text-mtm-primary-medium',
   success: 'bg-mtm-success/10 text-mtm-success',
   warning: 'bg-mtm-warning/10 text-mtm-warning',
   neutral: 'bg-mtm-border/60 text-mtm-muted',

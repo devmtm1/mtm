@@ -6,7 +6,8 @@ import { changePassword } from '../../api/auth';
 import { useAuth } from '../../contexts/auth-context-store';
 import { PASSWORD_HELP_TEXT, validatePasswordComplexity } from '../../utils/password';
 
-export function ChangePasswordForm() {
+/** `onSuccess` : appelé après le changement (ex. fermer la fenêtre depuis l'espace client). */
+export function ChangePasswordForm({ onSuccess }: { onSuccess?: () => void } = {}) {
   const { accessToken, refreshUser } = useAuth();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -35,6 +36,7 @@ export function ChangePasswordForm() {
       await refreshUser();
       // refreshUser() bascule user.mustChangePassword à false : la page
       // parente réagit et redirige automatiquement vers le portail.
+      onSuccess?.();
     } catch (caught) {
       setError(
         caught instanceof ApiError ? caught.message : 'Le changement de mot de passe a échoué.',

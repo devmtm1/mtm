@@ -139,7 +139,7 @@ export class VenteDetailPage implements OnInit {
     const days = this.reservationDays();
     if (days !== null && days <= 7) items.push({ label: days <= 0 ? 'Réservation expirée' : `Réservation expire dans ${days} j`, hint: 'Encaisser un paiement ou prolonger, sinon le terrain sera libéré.' });
     if (dossier.terrain && !this.reservation() && dossier.statut === 'en_cours') items.push({ label: 'Réserver le terrain', hint: 'Dès que le client s’engage (acompte), pour le bloquer.' });
-    if (this.commissions().some((commission) => commission.statut === 'estimee') && this.canValidate) items.push({ label: 'Valider la commission estimée', hint: 'Confirme le montant dû au commercial.' });
+    if (this.commissions().some((commission) => commission.statut === 'estimee') && this.canAdminister) items.push({ label: 'Valider la commission estimée', hint: 'Confirme le montant dû au commercial ; la comptabilité pourra ensuite la payer.' });
     return items;
   });
 
@@ -289,10 +289,20 @@ export class VenteDetailPage implements OnInit {
     });
   }
 
+  /** Ce que produit la validation selon l'état du dossier. */
+  protected validateHint(): string {
+    const statut = this.dossier()?.statut;
+    if (statut === 'en_cours' || statut === 'pre_reserve') {
+      return 'Confirme la réception : le dossier passe en paiement partiel et le terrain est réservé pour ce client';
+    }
+    return 'Confirme que le paiement est bien reçu';
+  }
+
   protected validatePayment(payment: VentePaiement): void {
     const dossier = this.dossier();
     if (!dossier) return;
-    this.run(this.api.validatePayment(dossier.id, payment.id), 'Paiement validé');
+    const label = dossier.statut === 'en_cours' || dossier.statut === 'pre_reserve' ? 'Paiement validé : dossier en paiement partiel, terrain réservé' : 'Paiement validé';
+    this.run(this.api.validatePayment(dossier.id, payment.id), label);
   }
 
   protected addCommission(): void {

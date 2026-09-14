@@ -48,6 +48,7 @@ export const COMMISSION_STATUS: Record<string, StatusMeaning> = {
 export const ECHEANCE_STATUS: Record<string, StatusMeaning> = {
   en_attente: { tone: 'warning', label: 'À venir', help: 'Échéance non encore réglée.' },
   planifiee: { tone: 'neutral', label: 'Planifiée', help: 'Prochaine échéance.' },
+  partielle: { tone: 'info', label: 'Partielle', help: 'Réglée en partie : le reste est attendu.' },
   payee: { tone: 'success', label: 'Payée', help: 'Réglée.' },
   en_retard: { tone: 'danger', label: 'En retard', help: 'Date dépassée sans paiement.' },
 };

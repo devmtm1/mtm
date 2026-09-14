@@ -13,7 +13,7 @@ export function Footer() {
         <div className="sm:col-span-2 lg:col-span-1">
           <div className="flex items-center gap-2.5">
             <img src="/logomtm.jpeg" alt="MTM Immobilier" className="h-11 w-11 rounded-full object-cover" />
-            <span className="font-display text-lg font-bold">MTM Immobilier</span>
+            <span className="font-display text-lg font-bold"><span className="text-mtm-info">MTM</span> Immobilier</span>
           </div>
           <p className="mt-4 max-w-sm text-sm text-white/70">
             Commercialisation de terrains, gestion locative, construction et démarches

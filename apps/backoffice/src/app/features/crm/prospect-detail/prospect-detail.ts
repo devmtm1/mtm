@@ -304,8 +304,10 @@ export class ProspectDetail implements OnInit {
       .afterClosed()
       .subscribe((created: { id: string } | undefined) => {
         if (!created) return;
-        this.notify.success('Dossier de vente ouvert — suivez-le dans Ventes');
-        this.load(prospect.id);
+        // « Ouvrir le dossier » : on arrive directement sur le dossier créé,
+        // où se font la réservation et les paiements.
+        this.notify.success('Dossier de vente ouvert : réservez le terrain puis enregistrez les paiements ici');
+        void this.router.navigate(['/ventes', created.id]);
       });
   }
 

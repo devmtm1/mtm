@@ -10,6 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import {
   LucideArrowLeft,
   LucideCheck,
@@ -22,6 +23,8 @@ import {
   LucideUpload,
 } from '@lucide/angular';
 import { TerrainsApiService } from '../../../core/services/api/terrains-api.service';
+import { CrmApiService } from '../../../core/services/api/crm-api.service';
+import type { CommercialSummary } from '../../../core/models/prospect.model';
 import type { CreateTerrainPayload, ProprietaireSummary, TerrainDetail, TerrainPointInteret } from '../../../core/models/terrain.model';
 import { SessionService } from '../../../core/services/session.service';
 import { NotificationService } from '../../../shared/services/notification.service';
@@ -87,6 +90,7 @@ export class TerrainForm implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly api = inject(TerrainsApiService);
+  private readonly crmApi = inject(CrmApiService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly notify = inject(NotificationService);
   private readonly dialog = inject(MatDialog);
@@ -104,6 +108,9 @@ export class TerrainForm implements OnInit {
   protected readonly currentStep = signal(1);
   protected readonly options = signal<{ statutJuridique: string[]; niveauVerification: string[]; statutCommercial: string[] }>({ statutJuridique: [], niveauVerification: [], statutCommercial: [] });
   protected readonly proprietaires = signal<ProprietaireSummary[]>([]);
+  /** Commerciaux affectables : réservé à l'encadrement (un commercial est rattaché d'office). */
+  protected readonly commercials = signal<CommercialSummary[]>([]);
+  protected readonly canAssign = this.session.hasSupervisionScope('terrains');
   protected readonly selectedAssets = signal<SelectedAsset[]>([]);
   protected readonly canValidate = this.session.hasPermission('terrains:valider');
   protected readonly canPublish = this.session.hasPermission('terrains:publier') || this.session.hasRole('administrateur') || this.session.hasRole('direction');
@@ -115,6 +122,7 @@ export class TerrainForm implements OnInit {
     nom: ['', [Validators.required, Validators.maxLength(200)]],
     parcelleMatricule: [''],
     proprietaireId: [''],
+    commercialResponsableId: [''],
     statutJuridique: ['Régularisation en cours', Validators.required],
     typeDocumentFoncier: [''],
     niveauVerification: ['Non vérifié', Validators.required],
@@ -188,6 +196,12 @@ export class TerrainForm implements OnInit {
   ngOnInit(): void {
     this.api.getOptions().subscribe({ next: (options) => this.options.set(options) });
     this.api.getProprietaires().subscribe({ next: (proprietaires) => this.proprietaires.set(proprietaires) });
+    if (this.canAssign && this.session.hasPermission('crm:consulter')) {
+      this.crmApi
+        .getCommercials()
+        .pipe(catchError(() => of([] as CommercialSummary[])))
+        .subscribe((list) => this.commercials.set(list));
+    }
     this.form.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.formValue.set(this.form.getRawValue()));
 
     const preselected = this.route.snapshot.queryParamMap.get('proprietaireId');
@@ -394,6 +408,7 @@ export class TerrainForm implements OnInit {
       nom: terrain.nom,
       parcelleMatricule: terrain.parcelleMatricule ?? '',
       proprietaireId: terrain.proprietaire?.id ?? '',
+      commercialResponsableId: terrain.commercialResponsable?.id ?? '',
       statutJuridique: terrain.statutJuridique,
       typeDocumentFoncier: terrain.typeDocumentFoncier ?? '',
       niveauVerification: terrain.niveauVerification,
@@ -446,6 +461,8 @@ export class TerrainForm implements OnInit {
       if (typeof item === 'string' && item.trim() === '') cleaned[key] = undefined;
     }
     if (!this.justificationRequired()) delete cleaned['justification'];
+    // Un commercial ne choisit pas le responsable : l'API le rattache lui-même.
+    if (!this.canAssign) delete cleaned['commercialResponsableId'];
     return cleaned as unknown as CreateTerrainPayload;
   }
 

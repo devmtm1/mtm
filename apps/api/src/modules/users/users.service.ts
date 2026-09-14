@@ -188,8 +188,19 @@ export class UsersService {
     return (await this.findById(user.id))!;
   }
 
+  /**
+   * Comptes du personnel uniquement : les comptes « client » (espace client
+   * du site public) sont gérés depuis la fiche prospect, pas depuis
+   * l'administration des utilisateurs.
+   */
   async findAll(): Promise<UserWithRoles[]> {
     return await this.prisma.user.findMany({
+      where: {
+        OR: [
+          { roles: { none: {} } },
+          { roles: { some: { role: { name: { not: 'client' } } } } },
+        ],
+      },
       include: {
         roles: {
           include: {

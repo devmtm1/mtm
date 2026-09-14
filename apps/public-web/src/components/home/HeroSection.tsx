@@ -79,7 +79,7 @@ export function HeroSection() {
         </h1>
         <p className="max-w-xl text-base text-white/80 sm:text-lg">{subtitle}</p>
         <div className="flex flex-wrap gap-3">
-          <LinkButton to={ROUTES.catalog} variant="onDark">
+          <LinkButton to={ROUTES.catalog} variant="accent">
             {ctaLabel}
           </LinkButton>
           <LinkButton to={ROUTES.demarches} variant="onDarkOutline">

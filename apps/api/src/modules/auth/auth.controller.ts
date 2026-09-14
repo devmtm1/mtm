@@ -182,8 +182,13 @@ export class AuthController {
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: VerifyTwoFactorDto,
   ) {
-    await this.authService.confirmTwoFactorSetup(user.id, dto.code);
-    return { success: true };
+    // Les codes de secours ne sont montrés qu'une fois, à l'activation :
+    // ils doivent donc être renvoyés ici (l'écran Sécurité les affiche).
+    const { recoveryCodes } = await this.authService.confirmTwoFactorSetup(
+      user.id,
+      dto.code,
+    );
+    return { success: true, recoveryCodes };
   }
 
   @Post('2fa/disable')

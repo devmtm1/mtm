@@ -10,6 +10,7 @@ import { Prisma } from '@prisma/client';
 import { UpdateVenteStatusDto } from './dto/update-vente-status.dto';
 import { InternalNotificationService } from '../../common/mail/internal-notification.service';
 import { PrismaService } from '../../database/prisma.service';
+import { applyPaymentToEcheances } from './echeances.helper';
 import { VentesWorkflowService } from './ventes-workflow.service';
 import { VentesAccessService, type MandatUser } from './ventes-access.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
@@ -61,11 +62,12 @@ export class VentesService {
     T extends {
       prixVente: unknown;
       commissionEstimee?: unknown;
-      paiements: Array<{ montant: unknown; statut: string }>;
+      paiements?: Array<{ montant: unknown; statut: string }>;
     },
   >(dossier: T, user: MandatUser) {
     const canViewFinancials = this.access.canViewFinancials(user);
-    const montantPaye = dossier.paiements
+    // Sans droit financier, les paiements ne sont pas chargés (include: false).
+    const montantPaye = (dossier.paiements ?? [])
       .filter((payment) => payment.statut === 'valide')
       .reduce((sum, payment) => sum + Number(payment.montant), 0);
     const prixVente =
@@ -592,6 +594,8 @@ export class VentesService {
                 notes: 'Acompte de réservation',
               },
             });
+            // L'acompte est un encaissement réel : il compte dans l'échéancier.
+            await applyPaymentToEcheances(transaction, id, dto.montantAcompte);
           }
 
           await transaction.dossierVente.update({

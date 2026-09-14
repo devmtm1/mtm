@@ -10,6 +10,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { HealthModule } from './modules/health/health.module';
 import { MailModule } from './common/mail/mail.module';
 import { PrismaModule } from './database/prisma.module';
+import { StorageModule } from './common/storage/storage.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { RbacModule } from './modules/rbac/rbac.module';
@@ -42,6 +43,7 @@ import { CronModule } from './modules/cron/cron.module';
       },
     ]),
     PrismaModule,
+    StorageModule,
     MailModule,
     UsersModule,
     AuthModule,

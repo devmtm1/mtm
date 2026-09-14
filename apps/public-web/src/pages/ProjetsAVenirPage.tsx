@@ -17,7 +17,7 @@ export function ProjetsAVenirPage() {
         description="Découvrez les prochains projets et programmes préparés par MTM Immobilier."
       />
       <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-        <ShowcaseGrid category="projet_a_venir" emptyLabel="Aucun projet à venir publié pour le moment" />
+        <ShowcaseGrid columns={4} category="projet_a_venir" emptyLabel="Aucun projet à venir publié pour le moment" />
       </section>
       <CtaBand />
     </div>

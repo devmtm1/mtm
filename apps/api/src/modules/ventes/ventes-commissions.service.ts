@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { COMMERCIAL_ROLES, hasAnyRole } from '../rbac/role-groups';
 import { CreateCommissionDto } from './dto/create-commission.dto';
 import { VentesAccessService, type MandatUser } from './ventes-access.service';
 import { VentesWorkflowService } from './ventes-workflow.service';
@@ -46,9 +47,12 @@ export class VentesCommissionsService {
     if (!dossier) throw new NotFoundException('Dossier de vente introuvable');
     if (!commercial || !commercial.isActive)
       throw new NotFoundException('Commercial actif introuvable');
+    // Même liste que les bénéficiaires proposés par le back-office
+    // (porteurs possibles d'un dossier : CRM « commerciaux »).
     if (
-      !commercial.roles.some(({ role }) =>
-        ['commercial', 'responsable_commercial', 'manager'].includes(role.name),
+      !hasAnyRole(
+        commercial.roles.map(({ role }) => role.name),
+        COMMERCIAL_ROLES,
       )
     ) {
       throw new BadRequestException(
