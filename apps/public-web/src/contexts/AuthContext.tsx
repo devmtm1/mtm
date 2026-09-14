@@ -5,6 +5,26 @@ import { ApiError } from '../api/client';
 import type { AuthUser } from '../types/auth';
 import { AuthContext } from './auth-context-store';
 
+/** Indice local « une session a été ouverte ici » ; le cookie httpOnly reste la seule vérité. */
+const SESSION_HINT_KEY = 'mtm.client-session';
+
+function hasSessionHint(): boolean {
+  try {
+    return localStorage.getItem(SESSION_HINT_KEY) === '1';
+  } catch {
+    return true; // stockage indisponible : on tente la restauration
+  }
+}
+
+function setSessionHint(active: boolean): void {
+  try {
+    if (active) localStorage.setItem(SESSION_HINT_KEY, '1');
+    else localStorage.removeItem(SESSION_HINT_KEY);
+  } catch {
+    // stockage indisponible (navigation privée) : sans conséquence
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -12,6 +32,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
+    // Un visiteur qui ne s'est jamais connecté n'a pas de cookie de session :
+    // inutile d'interroger l'API (et de journaliser un 403) à chaque visite.
+    if (!hasSessionHint()) {
+      setBootstrapping(false);
+      return;
+    }
     (async () => {
       try {
         const { accessToken: token } = await authApi.refresh();
@@ -23,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch {
         // Pas de session active (cookie absent/expiré) : c'est l'état normal
         // d'un visiteur non connecté, pas une erreur à afficher.
+        setSessionHint(false);
       } finally {
         if (!cancelled) setBootstrapping(false);
       }
@@ -37,6 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!result.requiresTwoFactor) {
       setAccessToken(result.accessToken);
       setUser(result.user);
+      setSessionHint(true);
     }
     return result;
   }, []);
@@ -51,6 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setAccessToken(null);
     setUser(null);
+    setSessionHint(false);
   }, [accessToken]);
 
   const refreshUser = useCallback(async () => {

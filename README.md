@@ -106,7 +106,15 @@ Pour ajouter le site public à un compte Render existant :
    - `PUBLIC_WEB_URL` : URL du site public (liens d'invitation à l'espace
      client) ;
    - `API_PUBLIC_URL` : URL publique de l'API avec `/api` (liens signés vers
-     les documents).
+     les documents) ;
+   - `REFRESH_COOKIE_SAME_SITE=none` : front et API sont sur des sous-domaines
+     distincts d'`onrender.com` (sites différents) ; sans cela le cookie de
+     session n'est jamais envoyé et la connexion ne survit pas à un
+     rechargement (`POST /api/auth/refresh → 403`) ;
+   - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` :
+     **le même compte Cloudinary que celui où les photos ont été envoyées**.
+     La base référence les fichiers par identifiant ; avec un autre compte,
+     toutes les images répondent 404.
    L'API redémarre automatiquement après modification.
 3. Vérifier depuis un autre appareil : catalogue des terrains, formulaire de
    contact, espace client (connexion + documents).

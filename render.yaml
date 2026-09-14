@@ -20,6 +20,10 @@ services:
         generateValue: true
       - key: API_PORT
         value: 3000
+      # Front et API sur des sous-domaines distincts d'onrender.com (sites
+      # différents) : sans SameSite=None le cookie de session n'est jamais envoyé.
+      - key: REFRESH_COOKIE_SAME_SITE
+        value: none
       # Origines autorisées, séparées par des virgules : URL du back-office
       # ET du site public, sans barre oblique finale
       # (ex. https://mtm-backoffice.onrender.com,https://mtm-public-web.onrender.com).

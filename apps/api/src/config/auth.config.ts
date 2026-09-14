@@ -11,7 +11,18 @@ export interface AuthConfig {
   accountLockThreshold: number;
   accountLockDurationMinutes: number;
   twoFactorAppName: string;
+  /**
+   * Attribut SameSite du cookie de session (refresh token). `strict` suffit
+   * quand front et API partagent le même site (localhost, même domaine) ;
+   * `none` est obligatoire quand ils sont sur des sites différents
+   * (ex. *.onrender.com, domaine public-suffix), sinon le navigateur
+   * n'envoie jamais le cookie et la session ne survit pas à un rechargement.
+   */
+  refreshCookieSameSite: 'strict' | 'lax' | 'none';
 }
+
+const toSameSite = (value: string | undefined): 'strict' | 'lax' | 'none' =>
+  value === 'none' || value === 'lax' ? value : 'strict';
 
 const toNumber = (value: string | undefined, fallback: number): number =>
   Number.parseInt(value ?? String(fallback), 10);
@@ -30,4 +41,5 @@ export default registerAs('auth', (): AuthConfig => ({
     15,
   ),
   twoFactorAppName: process.env.TWO_FACTOR_APP_NAME ?? 'MTM Immobilier',
+  refreshCookieSameSite: toSameSite(process.env.REFRESH_COOKIE_SAME_SITE),
 }));

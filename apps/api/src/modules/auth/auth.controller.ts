@@ -10,7 +10,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import type { Request, Response } from 'express';
+import type { CookieOptions, Request, Response } from 'express';
 import type { AuthConfig } from '../../config/auth.config';
 import { parseDurationToMs } from '../../common/utils/duration.util';
 import { AuthService } from './auth.service';
@@ -133,7 +133,7 @@ export class AuthController {
     )?.[REFRESH_COOKIE_NAME];
 
     await this.authService.logout(rawRefreshToken);
-    res.clearCookie(REFRESH_COOKIE_NAME);
+    res.clearCookie(REFRESH_COOKIE_NAME, this.refreshCookieOptions());
 
     return { success: true };
   }
@@ -202,11 +202,25 @@ export class AuthController {
 
   private setRefreshCookie(res: Response, rawRefreshToken: string): void {
     res.cookie(REFRESH_COOKIE_NAME, rawRefreshToken, {
-      httpOnly: true,
-      secure: this.configService.get<string>('app.nodeEnv') === 'production',
-      sameSite: 'strict',
+      ...this.refreshCookieOptions(),
       maxAge: parseDurationToMs(this.authConfig.jwtRefreshExpiresIn),
-      path: '/api',
     });
+  }
+
+  /**
+   * Mêmes attributs à la pose et à la suppression : un cookie posé sur
+   * `path=/api` ne s'efface que si la suppression vise le même chemin.
+   * `SameSite=None` exige `Secure`, ce qui est le cas en production.
+   */
+  private refreshCookieOptions(): CookieOptions {
+    const production =
+      this.configService.get<string>('app.nodeEnv') === 'production';
+    const sameSite = this.authConfig.refreshCookieSameSite;
+    return {
+      httpOnly: true,
+      secure: production || sameSite === 'none',
+      sameSite,
+      path: '/api',
+    };
   }
 }
