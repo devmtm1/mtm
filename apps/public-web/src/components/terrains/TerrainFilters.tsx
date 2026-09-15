@@ -17,6 +17,11 @@ interface TerrainFiltersProps {
    * page et masquait le contenu situé en dessous.
    */
   compact?: boolean;
+  /**
+   * Mode « feuille » (catalogue sur mobile) : les critères seuls, en une
+   * colonne ; la recherche libre et les boutons sont portés par le parent.
+   */
+  sheet?: boolean;
 }
 
 const inputClass =
@@ -32,7 +37,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-export function TerrainFilters({ value, onChange, onSubmit, compact = false }: TerrainFiltersProps) {
+export function TerrainFilters({ value, onChange, onSubmit, compact = false, sheet = false }: TerrainFiltersProps) {
   // Les options viennent de l'API (statuts paramétrables en back-office,
   // zones et vocations dérivées des terrains publiés) — rien n'est figé
   // dans le front, conformément à la section 25 du CDC.
@@ -131,7 +136,11 @@ export function TerrainFilters({ value, onChange, onSubmit, compact = false }: T
     <form
       onSubmit={handleSubmit}
       aria-label="Filtres du catalogue"
-      className="grid gap-3 rounded-lg border border-mtm-border bg-mtm-surface p-4 shadow-card sm:grid-cols-2 lg:grid-cols-4"
+      className={
+        sheet
+          ? 'grid grid-cols-1 gap-4'
+          : 'grid grid-cols-1 gap-3 rounded-lg border border-mtm-border bg-mtm-surface p-4 shadow-card sm:grid-cols-2 lg:grid-cols-4'
+      }
     >
       {regionField}
 
@@ -173,6 +182,7 @@ export function TerrainFilters({ value, onChange, onSubmit, compact = false }: T
           <input
             type="number"
             min={0}
+            inputMode="numeric"
             aria-label="Superficie minimum en m²"
             placeholder="Min"
             className={inputClass}
@@ -183,6 +193,7 @@ export function TerrainFilters({ value, onChange, onSubmit, compact = false }: T
           <input
             type="number"
             min={0}
+            inputMode="numeric"
             aria-label="Superficie maximum en m²"
             placeholder="Max"
             className={inputClass}
@@ -198,6 +209,7 @@ export function TerrainFilters({ value, onChange, onSubmit, compact = false }: T
           <input
             type="number"
             min={0}
+            inputMode="numeric"
             aria-label="Budget minimum en FCFA"
             placeholder="Min"
             className={inputClass}
@@ -208,6 +220,7 @@ export function TerrainFilters({ value, onChange, onSubmit, compact = false }: T
           <input
             type="number"
             min={0}
+            inputMode="numeric"
             aria-label="Budget maximum en FCFA"
             placeholder="Max"
             className={inputClass}
@@ -217,17 +230,19 @@ export function TerrainFilters({ value, onChange, onSubmit, compact = false }: T
         </div>
       </fieldset>
 
-      <Field label="Recherche libre">
-        <input
-          type="text"
-          className={inputClass}
-          placeholder="Référence, nom, commune..."
-          value={value.search ?? ''}
-          onChange={(event) => set('search', event.target.value || undefined)}
-        />
-      </Field>
+      {!sheet && (
+        <Field label="Recherche libre">
+          <input
+            type="text"
+            className={inputClass}
+            placeholder="Référence, nom, commune..."
+            value={value.search ?? ''}
+            onChange={(event) => set('search', event.target.value || undefined)}
+          />
+        </Field>
+      )}
 
-      {submitButton}
+      {!sheet && submitButton}
     </form>
   );
 }
