@@ -51,10 +51,13 @@ export function TerrainMap({ latitude, longitude, title, pointsInteret }: Terrai
     };
   }, [latitude, longitude, title, pointsInteret]);
 
+  // `isolate` : les calques Leaflet ont des z-index élevés (tuiles 400,
+  // contrôles 1000). Sans contexte d'empilement propre, ils passeraient
+  // au-dessus des fenêtres modales (z-50) dès que la carte défile sous elles.
   return (
     <div
       ref={containerRef}
-      className="h-80 w-full overflow-hidden rounded-lg border border-mtm-border"
+      className="isolate h-80 w-full overflow-hidden rounded-lg border border-mtm-border"
       role="img"
       aria-label={`Carte de localisation de ${title}`}
     />

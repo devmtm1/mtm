@@ -56,10 +56,25 @@ export function Modal({ title, onClose, children }: ModalProps) {
     }
 
     document.addEventListener('keydown', handleKeyDown);
-    document.body.style.overflow = 'hidden';
+    // Verrouillage du défilement de la page. `overflow: hidden` ne suffit
+    // pas sur iOS : la page continue de glisser sous la fenêtre. On fige donc
+    // le body à sa position courante, restaurée à la fermeture.
+    const scrollY = window.scrollY;
+    const { style } = document.body;
+    const previous = { position: style.position, top: style.top, left: style.left, right: style.right, overflow: style.overflow };
+    style.position = 'fixed';
+    style.top = `-${scrollY}px`;
+    style.left = '0';
+    style.right = '0';
+    style.overflow = 'hidden';
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
+      style.position = previous.position;
+      style.top = previous.top;
+      style.left = previous.left;
+      style.right = previous.right;
+      style.overflow = previous.overflow;
+      window.scrollTo({ top: scrollY, behavior: 'instant' });
       opener?.focus({ preventScroll: true });
     };
   }, [onClose]);
