@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuditModule } from '../audit/audit.module';
 import { SettingsModule } from '../settings/settings.module';
+import { ContactModule } from '../contact/contact.module';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import { VentesController } from './ventes.controller';
 import { VentesService } from './ventes.service';
@@ -15,7 +16,7 @@ import { ClientPortalService } from './client-portal.service';
 import { VentesReportingService } from './ventes-reporting.service';
 
 @Module({
-  imports: [AuditModule, SettingsModule],
+  imports: [AuditModule, SettingsModule, ContactModule],
   // ObjectifsController en premier : ses routes fixes (/ventes/objectifs)
   // doivent être enregistrées avant /ventes/:id.
   controllers: [ObjectifsController, VentesController],

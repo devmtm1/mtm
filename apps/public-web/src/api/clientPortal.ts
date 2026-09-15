@@ -8,3 +8,23 @@ export function fetchClientPortal(token: string): Promise<ClientDossier[]> {
 export function fetchClientDemandes(token: string): Promise<ClientDemandes> {
   return apiClient.get<ClientDemandes>('/ventes/client/portal/demandes', undefined, { token });
 }
+
+export type ClientDemandeType = 'information' | 'visite' | 'reservation';
+
+export interface ClientDemandePayload {
+  type: ClientDemandeType;
+  message: string;
+  terrainId?: string;
+  sujet?: string;
+}
+
+/**
+ * Demande déposée par un client connecté : l'API prend son identité dans son
+ * compte, la demande est donc toujours rattachée à son espace.
+ */
+export function createClientDemande(
+  token: string,
+  payload: ClientDemandePayload,
+): Promise<{ kind: 'message' | 'reservation'; id: string }> {
+  return apiClient.post('/ventes/client/portal/demandes', payload, { token });
+}

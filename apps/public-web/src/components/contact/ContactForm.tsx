@@ -1,18 +1,22 @@
 import { CheckCircle2 } from 'lucide-react';
 import { useContactForm } from '../../hooks/useContactForm';
+import { ClientIdentityNotice } from './ClientIdentityNotice';
 import { Button } from '../ui/Button';
 import { FormField, fieldInputClass } from '../ui/FormField';
 
 interface ContactFormProps {
   terrainId?: string;
   initialSujet?: string;
+  /** Nature de la demande (client connecté) : « visite » depuis une fiche terrain. */
+  demandeType?: 'information' | 'visite';
   onSuccess?: () => void;
 }
 
-export function ContactForm({ terrainId, initialSujet, onSuccess }: ContactFormProps) {
-  const { values, setValue, errors, submitting, submitted, submitError, submit } = useContactForm({
+export function ContactForm({ terrainId, initialSujet, demandeType, onSuccess }: ContactFormProps) {
+  const { values, setValue, errors, submitting, submitted, submitError, submit, client } = useContactForm({
     terrainId,
     initialSujet,
+    demandeType,
   });
 
   if (submitted) {
@@ -40,6 +44,9 @@ export function ContactForm({ terrainId, initialSujet, onSuccess }: ContactFormP
         void submit();
       }}
     >
+      {client ? (
+        <ClientIdentityNotice client={client} />
+      ) : (
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <FormField label="Nom complet" htmlFor="contact-nom" error={errors.nom} required>
           <input
@@ -63,8 +70,10 @@ export function ContactForm({ terrainId, initialSujet, onSuccess }: ContactFormP
           />
         </FormField>
       </div>
+      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {!client && (
         <FormField label="Téléphone" htmlFor="contact-telephone" error={errors.telephone}>
           <input
             id="contact-telephone"
@@ -75,6 +84,7 @@ export function ContactForm({ terrainId, initialSujet, onSuccess }: ContactFormP
             autoComplete="tel"
           />
         </FormField>
+        )}
 
         <FormField label="Sujet" htmlFor="contact-sujet">
           <input

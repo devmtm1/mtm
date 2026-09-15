@@ -224,6 +224,7 @@ export function TerrainDetailPage() {
       {activeModal === 'visite' && (
         <ContactModal
           title="Demander une visite"
+          demandeType="visite"
           terrainId={terrain.id}
           initialSujet={`Visite du terrain ${terrain.referenceInterne}`}
           onClose={() => setActiveModal(null)}

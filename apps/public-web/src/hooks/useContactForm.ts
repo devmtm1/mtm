@@ -1,16 +1,23 @@
 import { useCallback, useState } from 'react';
 import { sendContactMessage } from '../api/contact';
+import { createClientDemande, type ClientDemandeType } from '../api/clientPortal';
 import { ApiError } from '../api/client';
-import { hasErrors, validateContactForm, type ContactFormValues, type FieldErrors } from '../utils/validation';
+import { useClientSession } from '../contexts/auth-context-store';
+import { hasErrors, validateClientMessage, validateContactForm, type ContactFormValues, type FieldErrors } from '../utils/validation';
 
 const EMPTY_VALUES: ContactFormValues = { nom: '', email: '', telephone: '', sujet: '', message: '' };
 
 export interface UseContactFormOptions {
   terrainId?: string;
   initialSujet?: string;
+  /** Nature de la demande quand elle part d'un client connecté. */
+  demandeType?: Exclude<ClientDemandeType, 'reservation'>;
 }
 
-export function useContactForm({ terrainId, initialSujet }: UseContactFormOptions = {}) {
+export function useContactForm({ terrainId, initialSujet, demandeType = 'information' }: UseContactFormOptions = {}) {
+  // Client connecté : identité prise dans son compte, envoi authentifié pour
+  // que la demande soit rattachée à son espace (et non à l'e-mail saisi).
+  const client = useClientSession();
   const [values, setValues] = useState<ContactFormValues>({
     ...EMPTY_VALUES,
     sujet: initialSujet ?? '',
@@ -32,13 +39,23 @@ export function useContactForm({ terrainId, initialSujet }: UseContactFormOption
   }, [initialSujet]);
 
   const submit = useCallback(async () => {
-    const fieldErrors = validateContactForm(values);
+    const fieldErrors = client ? validateClientMessage(values.message) : validateContactForm(values);
     setErrors(fieldErrors);
     if (hasErrors(fieldErrors)) return;
 
     setSubmitting(true);
     setSubmitError(null);
     try {
+      if (client) {
+        await createClientDemande(client.token, {
+          type: demandeType,
+          message: values.message.trim(),
+          sujet: values.sujet.trim() || undefined,
+          terrainId,
+        });
+        setSubmitted(true);
+        return;
+      }
       await sendContactMessage({
         nom: values.nom.trim(),
         email: values.email.trim(),
@@ -55,7 +72,7 @@ export function useContactForm({ terrainId, initialSujet }: UseContactFormOption
     } finally {
       setSubmitting(false);
     }
-  }, [values, terrainId]);
+  }, [values, terrainId, client, demandeType]);
 
-  return { values, setValue, errors, submitting, submitted, submitError, submit, reset };
+  return { values, setValue, errors, submitting, submitted, submitError, submit, reset, client };
 }

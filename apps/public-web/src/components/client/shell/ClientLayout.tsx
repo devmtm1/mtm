@@ -44,8 +44,9 @@ export function ClientLayout() {
       demandes: demandes.data,
       demandesLoading: demandes.loading,
       demandesError: demandes.error,
+      refetchDemandes: demandes.refetch,
     }),
-    [dossiers.data, dossiers.loading, dossiers.error, demandes.data, demandes.loading, demandes.error],
+    [dossiers.data, dossiers.loading, dossiers.error, demandes.data, demandes.loading, demandes.error, demandes.refetch],
   );
 
   const current = TABS.find((tab) => (tab.end ? pathname === tab.to : pathname.startsWith(tab.to))) ?? TABS[0];

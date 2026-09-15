@@ -11,7 +11,10 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../database/prisma.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import { MailService } from '../../common/mail/mail.service';
+import { ContactService } from '../contact/contact.service';
 import { CreateClientAccountDto } from './dto/create-client-account.dto';
+import { CreateClientDemandeDto } from './dto/create-client-demande.dto';
+import { VentesService } from './ventes.service';
 
 /**
  * Espace client (section 4 CDC) : ouverture du compte rattaché à un prospect,
@@ -25,7 +28,60 @@ export class ClientPortalService {
     private readonly cloudinary: CloudinaryService,
     private readonly config: ConfigService,
     private readonly mail: MailService,
+    private readonly contacts: ContactService,
+    private readonly ventes: VentesService,
   ) {}
+
+  /**
+   * Demande déposée par un client connecté. Son identité vient de son
+   * compte : la demande est ainsi toujours rattachée à son espace, sans
+   * dépendre de ce qu'il aurait saisi dans un formulaire public.
+   */
+  async createClientDemande(userId: string, dto: CreateClientDemandeDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        clientProspect: {
+          select: { nom: true, prenom: true, email: true, telephone: true },
+        },
+      },
+    });
+    const prospect = user?.clientProspect;
+    if (!prospect?.email) {
+      throw new ForbiddenException('Ce compte n’est pas rattaché à un client');
+    }
+    const identity = {
+      nom: [prospect.prenom, prospect.nom].filter(Boolean).join(' '),
+      email: prospect.email,
+      telephone: prospect.telephone ?? undefined,
+    };
+
+    if (dto.type === 'reservation') {
+      if (!dto.terrainId) {
+        throw new BadRequestException(
+          'Indiquez le terrain que vous souhaitez réserver',
+        );
+      }
+      const request = await this.ventes.createPublicReservationRequest({
+        ...identity,
+        terrainId: dto.terrainId,
+        message: dto.message,
+      });
+      return { kind: 'reservation' as const, id: request.id };
+    }
+
+    const contact = await this.contacts.create({
+      ...identity,
+      sujet:
+        dto.sujet?.trim() ||
+        (dto.type === 'visite'
+          ? 'Demande de visite'
+          : 'Demande d’informations'),
+      message: dto.message,
+      terrainId: dto.terrainId,
+    });
+    return { kind: 'message' as const, id: contact.id };
+  }
 
   async createClientAccount(dto: CreateClientAccountDto) {
     const prospect = await this.prisma.prospect.findUnique({
@@ -175,6 +231,7 @@ export class ClientPortalService {
         createdAt: true,
         terrain: {
           select: {
+            id: true,
             referenceInterne: true,
             nom: true,
             region: true,

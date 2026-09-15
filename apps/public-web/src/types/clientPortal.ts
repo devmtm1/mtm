@@ -1,4 +1,5 @@
 export interface ClientDossierTerrain {
+  id: string;
   referenceInterne: string;
   nom: string;
   region: string | null;

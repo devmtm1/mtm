@@ -8,6 +8,8 @@ export interface ClientDataValue {
   demandes: ClientDemandes | null;
   demandesLoading: boolean;
   demandesError: string | null;
+  /** À appeler après l'envoi d'une demande depuis l'espace client. */
+  refetchDemandes: () => void;
 }
 
 /**

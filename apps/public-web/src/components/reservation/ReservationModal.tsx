@@ -3,6 +3,7 @@ import { useReservationRequest } from '../../hooks/useReservationRequest';
 import { Button } from '../ui/Button';
 import { FormField, fieldInputClass } from '../ui/FormField';
 import { Modal } from '../ui/Modal';
+import { ClientIdentityNotice } from '../contact/ClientIdentityNotice';
 
 interface ReservationModalProps {
   terrainId: string;
@@ -11,7 +12,7 @@ interface ReservationModalProps {
 }
 
 export function ReservationModal({ terrainId, terrainNom, onClose }: ReservationModalProps) {
-  const { values, setValue, errors, submitting, submitted, submitError, submit } =
+  const { values, setValue, errors, submitting, submitted, submitError, submit, client } =
     useReservationRequest(terrainId);
 
   return (
@@ -35,10 +36,16 @@ export function ReservationModal({ terrainId, terrainNom, onClose }: Reservation
             void submit();
           }}
         >
-          <p className="text-sm text-mtm-muted">
-            Laissez-nous vos coordonnées : nous revenons vers vous pour finaliser votre
-            réservation et les modalités d'acompte.
-          </p>
+          {client ? (
+            <ClientIdentityNotice client={client} />
+          ) : (
+            <p className="text-sm text-mtm-muted">
+              Laissez-nous vos coordonnées : nous revenons vers vous pour finaliser votre
+              réservation et les modalités d'acompte.
+            </p>
+          )}
+          {!client && (
+          <>
 
           <FormField label="Nom complet" htmlFor="reservation-nom" error={errors.nom} required>
             <input
@@ -73,6 +80,8 @@ export function ReservationModal({ terrainId, terrainNom, onClose }: Reservation
             />
           </FormField>
 
+          </>
+          )}
           <FormField label="Message (optionnel)" htmlFor="reservation-message">
             <textarea
               id="reservation-message"

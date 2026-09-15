@@ -32,6 +32,7 @@ import { CreateDocumentVenteDto } from './dto/create-document-vente.dto';
 import { CreatePublicReservationRequestDto } from './dto/create-public-reservation-request.dto';
 import { ConvertReservationRequestDto } from './dto/convert-reservation-request.dto';
 import { CreateClientAccountDto } from './dto/create-client-account.dto';
+import { CreateClientDemandeDto } from './dto/create-client-demande.dto';
 import { UpdateVenteStatusDto } from './dto/update-vente-status.dto';
 import { VentesService } from './ventes.service';
 import { VentesDocumentsService } from './ventes-documents.service';
@@ -133,6 +134,33 @@ export class VentesController {
   @Get('client/portal/demandes')
   getClientDemandes(@CurrentUser() user: AuthenticatedUser) {
     return this.clientPortal.getClientDemandes(user.id);
+  }
+
+  // Même limitation que les formulaires publics : un client connecté reste
+  // un émetteur externe.
+  @Post('client/portal/demandes')
+  @Throttle({
+    default: {
+      limit: Number.parseInt(process.env.RESERVATION_RATE_LIMIT_MAX ?? '5', 10),
+      ttl:
+        Number.parseInt(process.env.RESERVATION_RATE_LIMIT_TTL ?? '60', 10) *
+        1000,
+    },
+  })
+  async createClientDemande(
+    @Body() dto: CreateClientDemandeDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const result = await this.clientPortal.createClientDemande(user.id, dto);
+    await this.audit.record({
+      userId: user.id,
+      action: 'client.demande.created',
+      entityType:
+        result.kind === 'reservation' ? 'ReservationRequest' : 'Contact',
+      entityId: result.id,
+      newValue: { type: dto.type, terrainId: dto.terrainId ?? null },
+    });
+    return result;
   }
 
   @Get('client/portal/documents/:documentId')

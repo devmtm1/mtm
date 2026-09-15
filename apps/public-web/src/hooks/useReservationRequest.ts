@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react';
 import { sendReservationRequest } from '../api/reservations';
+import { createClientDemande } from '../api/clientPortal';
 import { ApiError } from '../api/client';
+import { useClientSession } from '../contexts/auth-context-store';
 import {
   hasErrors,
   validateReservationForm,
@@ -10,7 +12,11 @@ import {
 
 const EMPTY_VALUES: ReservationFormValues = { nom: '', email: '', telephone: '', message: '' };
 
+/** Message par défaut d'un client connecté qui réserve sans rien écrire. */
+const DEFAULT_CLIENT_MESSAGE = 'Je souhaite réserver ce terrain.';
+
 export function useReservationRequest(terrainId: string) {
+  const client = useClientSession();
   const [values, setValues] = useState<ReservationFormValues>(EMPTY_VALUES);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitting, setSubmitting] = useState(false);
@@ -22,13 +28,22 @@ export function useReservationRequest(terrainId: string) {
   }, []);
 
   const submit = useCallback(async () => {
-    const fieldErrors = validateReservationForm(values);
+    const fieldErrors = client ? {} : validateReservationForm(values);
     setErrors(fieldErrors);
     if (hasErrors(fieldErrors)) return;
 
     setSubmitting(true);
     setSubmitError(null);
     try {
+      if (client) {
+        await createClientDemande(client.token, {
+          type: 'reservation',
+          terrainId,
+          message: values.message.trim() || DEFAULT_CLIENT_MESSAGE,
+        });
+        setSubmitted(true);
+        return;
+      }
       await sendReservationRequest({
         terrainId,
         nom: values.nom.trim(),
@@ -44,7 +59,7 @@ export function useReservationRequest(terrainId: string) {
     } finally {
       setSubmitting(false);
     }
-  }, [values, terrainId]);
+  }, [values, terrainId, client]);
 
-  return { values, setValue, errors, submitting, submitted, submitError, submit };
+  return { values, setValue, errors, submitting, submitted, submitError, submit, client };
 }

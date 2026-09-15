@@ -15,7 +15,7 @@ export function ClientPageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="mb-4 flex items-end justify-between gap-3 sm:mb-6">
+    <div className="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
         {eyebrow && <p className="text-[11px] font-bold uppercase tracking-wider text-mtm-primary">{eyebrow}</p>}
         <h1 className="font-display text-2xl font-bold text-mtm-text sm:text-3xl">{title}</h1>

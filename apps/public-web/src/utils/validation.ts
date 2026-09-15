@@ -61,6 +61,15 @@ export function validateReservationForm(values: ReservationFormValues): FieldErr
   return errors;
 }
 
+/** Client connecté : seul le message est à valider, l'identité vient du compte. */
+export function validateClientMessage(message: string): FieldErrors {
+  const errors: FieldErrors = {};
+  if (message.trim().length < 10 || message.trim().length > 2000) {
+    errors.message = 'Le message doit contenir entre 10 et 2000 caractères.';
+  }
+  return errors;
+}
+
 export function hasErrors(errors: FieldErrors): boolean {
   return Object.values(errors).some((message) => Boolean(message));
 }
