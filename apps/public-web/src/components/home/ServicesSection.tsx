@@ -32,14 +32,14 @@ const SERVICES = [
 
 export function ServicesSection() {
   return (
-    <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+    <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
       <SectionHeading
         eyebrow="Nos services"
         title="Un accompagnement complet"
         description="De l'acquisition à la gestion, MTM Immobilier couvre l'ensemble de votre projet."
         align="center"
       />
-      <div className="mt-10 grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-10 sm:gap-6 lg:grid-cols-4">
         {SERVICES.map(({ icon: Icon, title, description, to }) => (
           <Link
             key={title}
@@ -50,7 +50,7 @@ export function ServicesSection() {
               <Icon className="h-6 w-6" aria-hidden="true" />
             </span>
             <h3 className="font-display text-sm font-bold text-mtm-text sm:text-base">{title}</h3>
-            <p className="text-xs text-mtm-muted sm:text-sm">{description}</p>
+            <p className="line-clamp-2 text-xs text-mtm-muted sm:line-clamp-none sm:text-sm">{description}</p>
           </Link>
         ))}
       </div>

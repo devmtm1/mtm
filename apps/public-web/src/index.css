@@ -6,6 +6,32 @@
   html {
     scroll-behavior: smooth;
   }
+}
+
+@layer components {
+  /* Rangée à faire défiler au pouce (accueil mobile) : cartes alignées sur
+     une grille de défilement, barre de défilement masquée. Un « lg:grid »
+     utilitaire reprend la main sur grand écran. */
+  .snap-row {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: 1rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .snap-row::-webkit-scrollbar {
+    display: none;
+  }
+  .snap-row > * {
+    scroll-snap-align: start;
+    flex: 0 0 auto;
+  }
+}
+
+@layer base {
 
   body {
     @apply bg-mtm-bg text-mtm-text antialiased;

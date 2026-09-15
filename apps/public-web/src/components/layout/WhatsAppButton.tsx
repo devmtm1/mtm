@@ -11,6 +11,8 @@ export function WhatsAppButton() {
   // L'espace client propose déjà WhatsApp dans son encart « Une question ? » :
   // sur mobile, le bouton flottant y masquerait les montants et statuts.
   const inClientArea = segments[0] === 'espace-client';
+  // L'accueil a sa propre barre d'action (Voir les terrains / WhatsApp).
+  const onHome = segments.length === 0;
 
   return (
     <a
@@ -19,7 +21,7 @@ export function WhatsAppButton() {
       rel="noopener noreferrer"
       aria-label="Discuter sur WhatsApp"
       className={`fixed right-4 z-40 h-12 w-12 items-center justify-center rounded-full bg-mtm-success text-white shadow-card transition-transform hover:scale-105 sm:right-5 ${
-        inClientArea ? 'hidden lg:flex' : 'flex'
+        inClientArea || onHome ? 'hidden lg:flex' : 'flex'
       } ${aboveActionBar ? 'bottom-[5.5rem] lg:bottom-5' : 'bottom-5'}`}
     >
       <MessageCircle className="h-6 w-6" aria-hidden="true" />

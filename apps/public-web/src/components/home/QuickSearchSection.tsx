@@ -18,7 +18,7 @@ export function QuickSearchSection() {
   }
 
   return (
-    <section className="relative z-10 mx-auto -mt-10 max-w-6xl px-4 sm:px-6">
+    <section className="relative z-10 mx-auto -mt-10 hidden max-w-6xl px-4 sm:px-6 lg:block">
       <TerrainFilters value={filters} onChange={setFilters} onSubmit={handleSubmit} compact />
     </section>
   );

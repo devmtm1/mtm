@@ -6,6 +6,8 @@ import { RealisationsPreviewSection } from '../components/home/RealisationsPrevi
 import { ServicesSection } from '../components/home/ServicesSection';
 import { TestimonialsSection } from '../components/home/TestimonialsSection';
 import { ContactCtaSection } from '../components/home/ContactCtaSection';
+import { TrustBand } from '../components/home/TrustBand';
+import { HomeActionBar } from '../components/home/HomeActionBar';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 
 export function HomePage() {
@@ -16,15 +18,21 @@ export function HomePage() {
   });
 
   return (
-    <>
+    // Marge basse sur mobile : la barre d'action fixe ne doit pas couvrir le
+    // pied de page.
+    <div className="pb-20 lg:pb-0">
       <HeroSection />
+      {/* Grand écran : la recherche rapide chevauche le bas du hero, le
+          bandeau de confiance vient ensuite ; mobile : bandeau sous le hero. */}
       <QuickSearchSection />
+      <TrustBand />
       <FeaturedTerrainsSection />
       <ServicesSection />
       <UpcomingProjectsSection />
       <RealisationsPreviewSection />
       <TestimonialsSection />
       <ContactCtaSection />
-    </>
+      <HomeActionBar />
+    </div>
   );
 }
