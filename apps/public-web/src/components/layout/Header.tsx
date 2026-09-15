@@ -28,6 +28,12 @@ function navLinkClass({ isActive }: { isActive: boolean }): string {
   }`;
 }
 
+function mobileLinkClass({ isActive }: { isActive: boolean }): string {
+  return `block rounded-md px-3 py-2.5 text-[15px] font-semibold transition-colors ${
+    isActive ? 'bg-mtm-primary-subtle text-mtm-primary' : 'text-mtm-text hover:bg-mtm-bg hover:text-mtm-primary'
+  }`;
+}
+
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
@@ -133,27 +139,46 @@ export function Header() {
       </div>
 
       {mobileOpen && (
-        <nav className="border-t border-mtm-border bg-mtm-surface px-4 pb-4 motion-safe:animate-slide-down lg:hidden">
-          <ul className="flex flex-col gap-1 pt-2">
-            {[...PRIMARY_LINKS, ...SERVICE_LINKS, { to: ROUTES.actualites, label: 'Actualités' }, { to: ROUTES.clientPortal, label: clientLabel }, { to: ROUTES.contact, label: 'Contact' }].map(
-              (link) => (
-                <li key={link.to}>
-                  <NavLink
-                    to={link.to}
-                    className={({ isActive }) =>
-                      `block rounded-md px-3 py-2.5 text-sm font-semibold transition-colors ${
-                        isActive ? 'bg-mtm-primary-subtle text-mtm-primary' : 'text-mtm-text hover:bg-mtm-bg hover:text-mtm-primary'
-                      }`
-                    }
-                    end={link.to === ROUTES.home}
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    {link.label}
-                  </NavLink>
-                </li>
-              ),
-            )}
+        <nav
+          className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-mtm-border bg-mtm-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] motion-safe:animate-slide-down lg:hidden"
+          aria-label="Menu principal"
+        >
+          <ul className="flex flex-col gap-0.5 pt-2">
+            {[...PRIMARY_LINKS, { to: ROUTES.actualites, label: 'Actualités' }].map((link) => (
+              <li key={link.to}>
+                <NavLink to={link.to} className={mobileLinkClass} end={link.to === ROUTES.home} onClick={() => setMobileOpen(false)}>
+                  {link.label}
+                </NavLink>
+              </li>
+            ))}
           </ul>
+          <p className="mt-3 px-3 text-[11px] font-bold uppercase tracking-wider text-mtm-muted">Services</p>
+          <ul className="mt-1 flex flex-col gap-0.5">
+            {SERVICE_LINKS.map((link) => (
+              <li key={link.to}>
+                <NavLink to={link.to} className={mobileLinkClass} onClick={() => setMobileOpen(false)}>
+                  {link.label}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-4 grid grid-cols-2 gap-2 border-t border-mtm-border pt-4">
+            <NavLink
+              to={ROUTES.clientPortal}
+              onClick={() => setMobileOpen(false)}
+              className="inline-flex items-center justify-center gap-1.5 rounded-md border border-mtm-primary px-4 py-2.5 text-sm font-semibold text-mtm-primary"
+            >
+              <User className="h-4 w-4" aria-hidden="true" />
+              {clientLabel}
+            </NavLink>
+            <NavLink
+              to={ROUTES.contact}
+              onClick={() => setMobileOpen(false)}
+              className="inline-flex items-center justify-center rounded-md bg-mtm-primary px-4 py-2.5 text-sm font-semibold text-white"
+            >
+              Contact
+            </NavLink>
+          </div>
         </nav>
       )}
     </header>

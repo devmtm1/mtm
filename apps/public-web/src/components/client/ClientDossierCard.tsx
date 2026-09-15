@@ -1,6 +1,6 @@
 import { CalendarClock, CalendarDays, FileText, MapPin, Receipt } from 'lucide-react';
 import type { ClientDossier } from '../../types/clientPortal';
-import { formatDate, formatMoney } from '../../utils/format';
+import { formatDate, formatDateShort, formatMoney } from '../../utils/format';
 import { documentType, dossierStatus, echeanceStatus, paymentMode, reservationStatus } from '../../utils/labels';
 import { Badge } from '../ui/Badge';
 
@@ -9,6 +9,16 @@ import { Badge } from '../ui/Badge';
  * avancement du paiement), ce qui a été payé, la réservation en cours et
  * l'échéancier convenu et les documents à télécharger.
  */
+/** Date longue sur grand écran, courte sur mobile où chaque ligne doit tenir sans retour. */
+function DateCell({ value }: { value: string }) {
+  return (
+    <>
+      <span className="sm:hidden">{formatDateShort(value)}</span>
+      <span className="hidden sm:inline">{formatDate(value)}</span>
+    </>
+  );
+}
+
 export function ClientDossierCard({ dossier }: { dossier: ClientDossier }) {
   const status = dossierStatus(dossier.statut);
   const price = dossier.prixVente ?? 0;
@@ -20,7 +30,7 @@ export function ClientDossierCard({ dossier }: { dossier: ClientDossier }) {
 
   return (
     <article className="overflow-hidden rounded-lg border border-mtm-border bg-mtm-surface shadow-card">
-      <header className="flex flex-wrap items-start justify-between gap-3 border-b border-mtm-border px-5 py-4">
+      <header className="flex flex-col gap-2 border-b border-mtm-border px-4 py-3.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3 sm:px-5 sm:py-4">
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
             {dossier.referenceInterne ?? 'Dossier de vente'} · ouvert le {formatDate(dossier.createdAt)}
@@ -36,22 +46,22 @@ export function ClientDossierCard({ dossier }: { dossier: ClientDossier }) {
             </p>
           )}
         </div>
-        <div className="flex flex-col items-end gap-1">
-          <Badge tone={status.tone}>{status.label}</Badge>
-          <span className="max-w-[260px] text-right text-xs text-mtm-muted">{status.help}</span>
+        <div className="flex items-center gap-2 sm:flex-col sm:items-end sm:gap-1">
+          <Badge tone={status.tone} className="shrink-0">{status.label}</Badge>
+          <span className="text-xs text-mtm-muted sm:max-w-[260px] sm:text-right">{status.help}</span>
         </div>
       </header>
 
-      <div className="grid gap-5 px-5 py-4 md:grid-cols-[1.4fr_1fr]">
+      <div className="grid grid-cols-1 gap-4 px-4 py-3.5 sm:gap-5 sm:px-5 sm:py-4 md:grid-cols-[1.4fr_1fr]">
         <div>
           <div className="flex items-end justify-between gap-4">
             <div>
               <p className="text-xs text-mtm-muted">Déjà payé</p>
-              <p className="font-display text-xl font-bold text-mtm-success">{formatMoney(paid)}</p>
+              <p className="font-display text-lg font-bold text-mtm-success sm:text-xl">{formatMoney(paid)}</p>
             </div>
             <div className="text-right">
               <p className="text-xs text-mtm-muted">Prix de vente</p>
-              <p className="font-display text-xl font-bold text-mtm-text">{formatMoney(price || null)}</p>
+              <p className="font-display text-lg font-bold text-mtm-text sm:text-xl">{formatMoney(price || null)}</p>
             </div>
           </div>
           <div
@@ -80,14 +90,14 @@ export function ClientDossierCard({ dossier }: { dossier: ClientDossier }) {
                   const state = echeanceStatus(echeance.statut);
                   const due = Math.max(0, echeance.montantPrevu - echeance.montantPaye);
                   return (
-                    <li key={echeance.numero} className="flex items-center justify-between gap-3 py-1.5">
+                    <li key={echeance.numero} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 py-1.5">
                       <span className="min-w-0 text-mtm-muted">
-                        <span className="font-semibold text-mtm-text">{echeance.numero}.</span> {formatDate(echeance.dateEcheance)}
+                        <span className="font-semibold text-mtm-text">{echeance.numero}.</span> <DateCell value={echeance.dateEcheance} />
                         {echeance.statut === 'partielle' && (
                           <span className="block text-xs">reste {formatMoney(due)}</span>
                         )}
                       </span>
-                      <span className="flex shrink-0 items-center gap-2">
+                      <span className="ml-auto flex shrink-0 items-center gap-2">
                         <span className="whitespace-nowrap font-semibold text-mtm-text">{formatMoney(echeance.montantPrevu)}</span>
                         <Badge tone={state.tone} className="whitespace-nowrap">{state.label}</Badge>
                       </span>
@@ -99,7 +109,7 @@ export function ClientDossierCard({ dossier }: { dossier: ClientDossier }) {
           )}
 
           {activeReservation && (
-            <div className="mt-4 flex items-start gap-2.5 rounded-md bg-mtm-primary-subtle px-3.5 py-3 text-sm">
+            <div className="mt-4 flex items-start gap-2.5 rounded-md bg-mtm-primary-subtle px-3 py-2.5 text-sm sm:px-3.5 sm:py-3">
               <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-mtm-primary" aria-hidden="true" />
               <div>
                 <p className="font-semibold text-mtm-text">
@@ -115,7 +125,7 @@ export function ClientDossierCard({ dossier }: { dossier: ClientDossier }) {
           )}
         </div>
 
-        <div className="flex flex-col gap-4 md:border-l md:border-mtm-border md:pl-5">
+        <div className="flex flex-col gap-4 border-t border-mtm-border pt-4 md:border-l md:border-t-0 md:pl-5 md:pt-0">
           <section>
             <h4 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-mtm-muted">
               <Receipt className="h-3.5 w-3.5" aria-hidden="true" />
@@ -126,11 +136,11 @@ export function ClientDossierCard({ dossier }: { dossier: ClientDossier }) {
             ) : (
               <ul className="mt-1.5 divide-y divide-mtm-border text-sm">
                 {dossier.paiements.map((paiement, index) => (
-                  <li key={index} className="flex items-center justify-between gap-3 py-1.5">
-                    <span className="text-mtm-muted">
-                      {formatDate(paiement.datePaiement)} · {paymentMode(paiement.mode)}
+                  <li key={index} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 py-1.5">
+                    <span className="min-w-0 text-mtm-muted">
+                      <DateCell value={paiement.datePaiement} /> · {paymentMode(paiement.mode)}
                     </span>
-                    <span className="shrink-0 whitespace-nowrap font-semibold text-mtm-text">{formatMoney(paiement.montant)}</span>
+                    <span className="ml-auto shrink-0 whitespace-nowrap font-semibold text-mtm-text">{formatMoney(paiement.montant)}</span>
                   </li>
                 ))}
               </ul>

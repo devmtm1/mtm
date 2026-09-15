@@ -8,7 +8,7 @@ import { PASSWORD_HELP_TEXT, validatePasswordComplexity } from '../../utils/pass
 
 /** `onSuccess` : appelé après le changement (ex. fermer la fenêtre depuis l'espace client). */
 export function ChangePasswordForm({ onSuccess }: { onSuccess?: () => void } = {}) {
-  const { accessToken, refreshUser } = useAuth();
+  const { accessToken, refreshUser, user } = useAuth();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -49,8 +49,9 @@ export function ChangePasswordForm({ onSuccess }: { onSuccess?: () => void } = {
   return (
     <form className="flex flex-col gap-4" onSubmit={(event) => void handleSubmit(event)}>
       <p className="text-sm text-mtm-muted">
-        Pour votre sécurité, vous devez choisir un nouveau mot de passe avant d'accéder à votre
-        espace.
+        {user?.mustChangePassword
+          ? "Pour votre sécurité, vous devez choisir un nouveau mot de passe avant d'accéder à votre espace."
+          : 'Choisissez un nouveau mot de passe ; vous resterez connecté sur cet appareil.'}
       </p>
 
       <FormField label="Mot de passe actuel" htmlFor="cp-current" required>

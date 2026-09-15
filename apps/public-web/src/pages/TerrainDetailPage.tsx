@@ -44,7 +44,7 @@ export function TerrainDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+    <div className="mx-auto max-w-6xl px-4 py-8 pb-28 sm:px-6 sm:py-10 sm:pb-28 lg:pb-10">
       <Link
         to={ROUTES.catalog}
         className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-mtm-muted transition-colors hover:text-mtm-primary"
@@ -53,7 +53,7 @@ export function TerrainDetailPage() {
         Retour au catalogue
       </Link>
 
-      <div className="grid gap-10 lg:grid-cols-[1.6fr_1fr]">
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.6fr_1fr]">
         <div className="flex flex-col gap-8">
           <div>
             <span className="text-xs font-semibold uppercase tracking-wide text-mtm-muted">
@@ -204,6 +204,21 @@ export function TerrainDetailPage() {
             </li>
           </ul>
         </aside>
+      </div>
+
+      {/* Mobile : le prix et l'action principale restent sous le pouce, sans
+          avoir à défiler jusqu'au panneau latéral (rendu après la carte). */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-mtm-border bg-mtm-surface/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-4px_16px_rgba(31,41,55,0.08)] backdrop-blur lg:hidden">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-mtm-muted">Prix public</p>
+            <p className="whitespace-nowrap font-display text-base font-bold text-mtm-primary">{formatMoney(terrain.prixPublic)}</p>
+          </div>
+          <Button className="shrink-0 px-3.5" onClick={() => setActiveModal('visite')}>
+            <CalendarCheck className="h-4 w-4" aria-hidden="true" />
+            Demander une visite
+          </Button>
+        </div>
       </div>
 
       {activeModal === 'visite' && (

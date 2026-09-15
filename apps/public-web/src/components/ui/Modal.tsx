@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import type { ReactNode } from 'react';
 import { X } from 'lucide-react';
 
@@ -15,6 +16,10 @@ const FOCUSABLE =
  * Fenêtre modale accessible : le focus entre dans la fenêtre à l'ouverture,
  * y reste tant qu'elle est ouverte (Tab boucle), et revient sur l'élément
  * déclencheur à la fermeture. Échap et clic sur le voile ferment.
+ * Rendue dans <body> (portail) : un ancêtre animé par `transform` (transition
+ * de page) deviendrait sinon le référent du `position: fixed` et la fenêtre
+ * se centrerait dans la page entière, hors écran sur mobile. Sur petit écran,
+ * elle s'ancre en bas (feuille) pour rester atteignable au pouce.
  */
 export function Modal({ title, onClose, children }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -59,8 +64,8 @@ export function Modal({ title, onClose, children }: ModalProps) {
     };
   }, [onClose]);
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-8 motion-safe:animate-fade-in">
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center sm:px-4 sm:py-8 motion-safe:animate-fade-in">
       <button
         type="button"
         aria-label="Fermer la fenêtre"
@@ -73,7 +78,7 @@ export function Modal({ title, onClose, children }: ModalProps) {
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="relative flex max-h-full w-full max-w-lg flex-col overflow-y-auto rounded-lg bg-mtm-surface p-6 shadow-lg outline-none motion-safe:animate-scale-in"
+        className="relative flex max-h-[92dvh] w-full max-w-lg flex-col overflow-y-auto rounded-t-2xl bg-mtm-surface p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-lg outline-none motion-safe:animate-sheet-in sm:max-h-full sm:rounded-lg sm:p-6 sm:motion-safe:animate-scale-in"
       >
         <div className="mb-4 flex items-center justify-between">
           <h2 id={titleId} className="font-display text-lg font-bold text-mtm-text">
@@ -90,6 +95,7 @@ export function Modal({ title, onClose, children }: ModalProps) {
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

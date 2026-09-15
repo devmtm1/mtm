@@ -90,7 +90,7 @@ export function TerrainDetailSkeleton() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6" aria-busy="true">
       <span className="sr-only">Chargement du terrain...</span>
-      <div className="grid gap-10 lg:grid-cols-[1.6fr_1fr]" aria-hidden="true">
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.6fr_1fr]" aria-hidden="true">
         <div className="flex flex-col gap-8">
           <div>
             <Skeleton className="h-3 w-16" />

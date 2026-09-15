@@ -93,7 +93,7 @@ export function ShowcaseDetailPage() {
           {info.listLabel}
         </Link>
 
-        <div className="grid gap-10 lg:grid-cols-[1.6fr_1fr]">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.6fr_1fr]">
           <article className="flex flex-col gap-6">
             <div>
               <Badge tone="primary">{info.label}</Badge>
@@ -148,7 +148,7 @@ export function ShowcaseDetailPage() {
                   Voir les terrains disponibles
                 </LinkButton>
               </div>
-              <dl className="mt-6 grid gap-3 border-t border-mtm-border pt-5 text-sm">
+              <dl className="mt-6 grid grid-cols-1 gap-3 border-t border-mtm-border pt-5 text-sm">
                 <div className="flex justify-between gap-4">
                   <dt className="text-mtm-muted">Type</dt>
                   <dd className="font-semibold text-mtm-text">{info.label}</dd>

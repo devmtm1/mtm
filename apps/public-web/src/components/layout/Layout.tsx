@@ -4,6 +4,7 @@ import { Footer } from './Footer';
 import { WhatsAppButton } from './WhatsAppButton';
 import { ScrollManager } from './ScrollManager';
 import { RouteAnnouncer } from './RouteAnnouncer';
+import { PageTransition } from './PageTransition';
 
 const MAIN_ID = 'contenu-principal';
 
@@ -29,9 +30,9 @@ export function Layout() {
       {/* `tabIndex={-1}` rend le conteneur focusable par programme : c'est la
           cible du focus après chaque changement de route (voir RouteAnnouncer). */}
       <main id={MAIN_ID} tabIndex={-1} className="flex-1 outline-none">
-        <div key={pathname} className="motion-safe:animate-page-in">
+        <PageTransition key={pathname}>
           <Outlet />
-        </div>
+        </PageTransition>
       </main>
       <Footer />
       <WhatsAppButton />

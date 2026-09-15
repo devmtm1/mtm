@@ -63,8 +63,20 @@ const LAZY_ROUTES: { path: string; Page: ComponentType }[] = [
   { path: ROUTES.clientLogin, Page: lazyPage(() => import('./pages/LoginPage').then((m) => m.LoginPage)) },
 ];
 
-const ClientPortalPage = lazyPage(() =>
-  import('./pages/ClientPortalPage').then((m) => m.ClientPortalPage),
+// L'espace client est une application à part (coquille, onglets, données
+// partagées) : ses écrans sont chargés ensemble, à la première visite.
+const ClientLayout = lazyPage(() =>
+  import('./components/client/shell/ClientLayout').then((m) => m.ClientLayout),
+);
+const ClientHomePage = lazyPage(() => import('./pages/client/ClientHomePage').then((m) => m.ClientHomePage));
+const ClientDossiersPage = lazyPage(() =>
+  import('./pages/client/ClientDossiersPage').then((m) => m.ClientDossiersPage),
+);
+const ClientDemandesPage = lazyPage(() =>
+  import('./pages/client/ClientDemandesPage').then((m) => m.ClientDemandesPage),
+);
+const ClientAccountPage = lazyPage(() =>
+  import('./pages/client/ClientAccountPage').then((m) => m.ClientAccountPage),
 );
 
 function Deferred({ children }: { children: ReactNode }) {
@@ -91,18 +103,23 @@ export function App() {
               />
             ))}
 
-            <Route
-              path={ROUTES.clientPortal}
-              element={
-                <RequireClientAuth>
-                  <Deferred>
-                    <ClientPortalPage />
-                  </Deferred>
-                </RequireClientAuth>
-              }
-            />
-
             <Route path="*" element={<NotFoundPage />} />
+          </Route>
+
+          <Route
+            path={ROUTES.clientPortal}
+            element={
+              <RequireClientAuth>
+                <Deferred>
+                  <ClientLayout />
+                </Deferred>
+              </RequireClientAuth>
+            }
+          >
+            <Route index element={<Deferred><ClientHomePage /></Deferred>} />
+            <Route path="dossiers" element={<Deferred><ClientDossiersPage /></Deferred>} />
+            <Route path="demandes" element={<Deferred><ClientDemandesPage /></Deferred>} />
+            <Route path="compte" element={<Deferred><ClientAccountPage /></Deferred>} />
           </Route>
         </Routes>
       </BrowserRouter>

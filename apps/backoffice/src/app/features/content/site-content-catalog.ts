@@ -30,7 +30,7 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
     title: 'Page d’accueil',
     where: 'Bandeau d’en-tête de la page d’accueil',
     slots: [
-      { key: 'home.hero.title', label: 'Titre principal', help: 'La phrase la plus visible du site, en grand sur la photo d’accueil.', type: 'hero' },
+      { key: 'home.hero.title', label: 'Titre principal', help: 'La phrase la plus visible du site, en grand sur la photo d’accueil. Un retour à la ligne coupe le titre en deux lignes.', multiline: true, type: 'hero' },
       { key: 'home.hero.subtitle', label: 'Sous-titre', help: 'Une ou deux phrases sous le titre : ce que MTM propose.', multiline: true, type: 'hero' },
       { key: 'home.cta.title', label: 'Texte du bouton principal', help: 'Ex. « Découvrir nos terrains ».', type: 'stat' },
     ],

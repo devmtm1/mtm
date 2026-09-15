@@ -40,7 +40,7 @@ export function ContactForm({ terrainId, initialSujet, onSuccess }: ContactFormP
         void submit();
       }}
     >
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <FormField label="Nom complet" htmlFor="contact-nom" error={errors.nom} required>
           <input
             id="contact-nom"
@@ -64,7 +64,7 @@ export function ContactForm({ terrainId, initialSujet, onSuccess }: ContactFormP
         </FormField>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <FormField label="Téléphone" htmlFor="contact-telephone" error={errors.telephone}>
           <input
             id="contact-telephone"

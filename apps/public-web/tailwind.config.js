@@ -44,13 +44,20 @@ export default {
       // `motion-safe:` pour respecter la préférence « réduire les animations ».
       keyframes: {
         'fade-in': { from: { opacity: '0' }, to: { opacity: '1' } },
+        // État final « transform: none » (et non translateY(0)) : un transform
+        // conservé par fill-mode ferait de la page le référent des éléments
+        // position: fixed (barres d'action, fenêtres), décalés hors écran.
         'rise-in': {
           from: { opacity: '0', transform: 'translateY(8px)' },
-          to: { opacity: '1', transform: 'translateY(0)' },
+          to: { opacity: '1', transform: 'none' },
         },
         'scale-in': {
           from: { opacity: '0', transform: 'scale(0.96)' },
           to: { opacity: '1', transform: 'scale(1)' },
+        },
+        'sheet-in': {
+          from: { opacity: '0', transform: 'translateY(24px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
         },
         'slide-down': {
           from: { opacity: '0', transform: 'translateY(-6px)' },
@@ -61,6 +68,7 @@ export default {
         'fade-in': 'fade-in 200ms ease-out both',
         'page-in': 'rise-in 250ms ease-out both',
         'scale-in': 'scale-in 180ms ease-out both',
+        'sheet-in': 'sheet-in 220ms ease-out both',
         'slide-down': 'slide-down 160ms ease-out both',
       },
     },

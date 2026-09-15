@@ -70,7 +70,7 @@ export function TerrainCard({ terrain, compact = false }: TerrainCardProps) {
             {terrain.statutJuridique}
           </Badge>
         </div>
-        <h3 className={`truncate font-display font-bold text-mtm-text ${compact ? 'text-sm sm:text-[15px]' : 'text-[15px]'}`}>
+        <h3 className={`line-clamp-2 font-display font-bold leading-snug text-mtm-text ${compact ? 'text-sm sm:text-[15px]' : 'text-[15px]'}`}>
           {terrain.nom}
         </h3>
         {location && (

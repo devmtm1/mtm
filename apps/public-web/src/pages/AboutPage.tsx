@@ -48,7 +48,7 @@ export function AboutPage() {
       </PageIntro>
 
       <section className="mx-auto max-w-5xl px-4 py-14 sm:px-6">
-        <div className="grid gap-6 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
           {VALUES.map(({ icon: Icon, title, description }) => (
             <div key={title} className="rounded-lg border border-mtm-border bg-mtm-surface p-6 shadow-card">
               <span className="flex h-11 w-11 items-center justify-center rounded-md bg-mtm-primary-subtle text-mtm-primary">
