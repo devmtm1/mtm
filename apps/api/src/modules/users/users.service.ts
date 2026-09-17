@@ -16,7 +16,7 @@ export type UserWithRoles = User & {
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async findByEmail(email: string): Promise<UserWithRoles | null> {
     return await this.prisma.user.findUnique({

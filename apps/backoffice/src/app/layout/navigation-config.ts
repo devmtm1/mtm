@@ -130,6 +130,7 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
       },
     ],
   },
+  
   {
     title: 'Administration',
     items: [
