@@ -1,11 +1,16 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { COMMERCIAL_ROLES, hasAnyRole } from '../rbac/role-groups';
+import {
+  COMMERCIAL_ROLES,
+  COMMISSION_APPROVER_ROLES,
+  hasAnyRole,
+} from '../rbac/role-groups';
 import { CreateCommissionDto } from './dto/create-commission.dto';
 import { VentesAccessService, type MandatUser } from './ventes-access.service';
 import { VentesWorkflowService } from './ventes-workflow.service';
@@ -93,6 +98,7 @@ export class VentesCommissionsService {
         montantEstime,
         bonus: rule.bonus,
         palier: rule.palier,
+        createdById: user.id,
       },
       include: {
         commercial: { select: { id: true, firstName: true, lastName: true } },
@@ -105,8 +111,17 @@ export class VentesCommissionsService {
     return commission;
   }
 
+  /**
+   * Validation = second niveau d'encadrement (manager, direction), et jamais
+   * la personne qui a créé l'estimation : quatre yeux sur un montant dû.
+   */
   async validateCommission(id: string, commissionId: string, user: MandatUser) {
     await this.access.ensureAccessible(id, user);
+    if (!hasAnyRole(user.roles, COMMISSION_APPROVER_ROLES)) {
+      throw new ForbiddenException(
+        'La validation d’une commission est réservée au manager ou à la direction',
+      );
+    }
     const commission = await this.prisma.commissionVente.findFirst({
       where: { id: commissionId, dossierVenteId: id },
     });
@@ -115,9 +130,18 @@ export class VentesCommissionsService {
     if (commission.statut !== 'estimee') {
       throw new ConflictException('Cette commission a déjà été traitée');
     }
+    if (commission.createdById === user.id) {
+      throw new ForbiddenException(
+        'Une commission doit être validée par une autre personne que celle qui l’a créée',
+      );
+    }
     return this.prisma.commissionVente.update({
       where: { id: commissionId },
-      data: { statut: 'validee', montantValide: commission.montantEstime },
+      data: {
+        statut: 'validee',
+        montantValide: commission.montantEstime,
+        validatedById: user.id,
+      },
       include: {
         commercial: { select: { id: true, firstName: true, lastName: true } },
       },

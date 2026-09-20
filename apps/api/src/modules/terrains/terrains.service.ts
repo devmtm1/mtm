@@ -152,9 +152,63 @@ export class TerrainsService {
     };
   }
 
+  /**
+   * Catalogue de proposition : la liste des terrains qu'un commercial peut
+   * montrer à un prospect. Contrairement à la liste de gestion, elle ignore
+   * le responsable du terrain — proposer un terrain n'est pas le gérer — et
+   * n'expose que les informations dites au client (jamais le prix
+   * d'acquisition ni la marge).
+   */
+  async catalogueProposition(search?: string) {
+    const terme = search?.trim();
+    const items = await this.prisma.terrain.findMany({
+      where: {
+        statutCommercial: { not: 'Vendu' },
+        ...(terme
+          ? {
+              OR: [
+                {
+                  referenceInterne: {
+                    contains: terme,
+                    mode: 'insensitive' as const,
+                  },
+                },
+                { nom: { contains: terme, mode: 'insensitive' as const } },
+                { commune: { contains: terme, mode: 'insensitive' as const } },
+              ],
+            }
+          : {}),
+      },
+      select: {
+        id: true,
+        referenceInterne: true,
+        nom: true,
+        commune: true,
+        region: true,
+        superficie: true,
+        prixPublic: true,
+        statutCommercial: true,
+      },
+      orderBy: [{ statutCommercial: 'asc' }, { referenceInterne: 'asc' }],
+      take: 300,
+    });
+    return items.map((item) => ({
+      ...item,
+      superficie: item.superficie ? Number(item.superficie) : null,
+      prixPublic: item.prixPublic ? Number(item.prixPublic) : null,
+    }));
+  }
+
+  /**
+   * Fiche d'un terrain. La consultation n'est pas filtrée par responsable :
+   * un commercial doit pouvoir ouvrir le terrain qu'il propose à son
+   * prospect — photos et documents compris (section 15 du cahier CRM). Les
+   * données sensibles restent masquées par `toInternal`, et toute
+   * modification passe toujours par `ensureAccessible`.
+   */
   async findOne(id: string, user?: { roles: string[]; permissions: string[] }) {
-    const terrain = await this.prisma.terrain.findFirst({
-      where: { id, ...this.access.ownershipFilter(user) },
+    const terrain = await this.prisma.terrain.findUnique({
+      where: { id },
       include: terrainInclude,
     });
     if (!terrain) throw new NotFoundException('Terrain introuvable');

@@ -9,13 +9,14 @@ import {
   Post,
   Query,
   Req,
+  Res,
   UploadedFile,
   UseInterceptors,
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
 import type { AuthenticatedUser } from '../auth/auth.types';
@@ -31,6 +32,11 @@ import { ConvertContactDto } from './dto/convert-contact.dto';
 import { CrmService } from './crm.service';
 import { CrmOptionsService } from './crm-options.service';
 import { CrmActivitesService } from './crm-activites.service';
+import { CrmVisitesService } from './crm-visites.service';
+import {
+  CreateVisiteProspectDto,
+  UpdateVisiteProspectDto,
+} from './dto/visite-prospect.dto';
 import { CrmDocumentsService } from './crm-documents.service';
 import { CrmReportingService } from './crm-reporting.service';
 
@@ -41,6 +47,7 @@ export class CrmController {
     private readonly crm: CrmService,
     private readonly options: CrmOptionsService,
     private readonly activites: CrmActivitesService,
+    private readonly visites: CrmVisitesService,
     private readonly documents: CrmDocumentsService,
     private readonly reporting: CrmReportingService,
     private readonly audit: AuditService,
@@ -55,6 +62,36 @@ export class CrmController {
 
   @Get('options') @RequirePermissions('crm:consulter') getOptions() {
     return this.options.getOptions();
+  }
+
+  /**
+   * Export CSV des prospects (section 13 du cahier des charges CRM).
+   * POST et non GET : la justification voyage dans le corps, jamais dans
+   * l'URL — les journaux de proxy la garderaient.
+   */
+  @Post('export')
+  @RequirePermissions('crm:exporter')
+  async exportCsv(
+    @Body('justification') justification: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Res() res: Response,
+  ) {
+    if (!justification || justification.trim().length < 3) {
+      throw new BadRequestException(
+        'Une justification minimale de 3 caractères est obligatoire pour exporter les prospects',
+      );
+    }
+    const csv = await this.reporting.exportCsv(user, justification.trim());
+    const date = new Date().toISOString().slice(0, 10);
+    res
+      .status(200)
+      .setHeader('Content-Type', 'text/csv; charset=utf-8')
+      .setHeader(
+        'Content-Disposition',
+        `attachment; filename="prospects-${date}.csv"`,
+      )
+      // BOM UTF-8 : Excel affiche correctement les accents.
+      .send('﻿' + csv);
   }
 
   @Get('stats') @RequirePermissions('crm:consulter') getStats(
@@ -73,6 +110,12 @@ export class CrmController {
   ) {
     const n = limit ? Math.min(Math.max(Number(limit), 1), 100) : 20;
     return this.activites.getUpcomingTasks(user, n);
+  }
+
+  @Get('upcoming-visites')
+  @RequirePermissions('crm:consulter')
+  upcomingVisites(@CurrentUser() user: AuthenticatedUser) {
+    return this.visites.getUpcoming(user);
   }
 
   @Get(':id/timeline') @RequirePermissions('crm:consulter') getTimeline(
@@ -95,6 +138,10 @@ export class CrmController {
       dto.statutPipeline,
       user,
       dto.justification,
+      {
+        prochaineAction: dto.prochaineAction,
+        prochaineRelanceLe: dto.prochaineRelanceLe,
+      },
     );
     await this.audit.record({
       userId: user.id,
@@ -236,6 +283,79 @@ export class CrmController {
       entityId: id,
       oldValue: before,
       justification: 'Suppression du prospect',
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    return { success: true };
+  }
+
+  @Get(':id/visites')
+  @RequirePermissions('crm:consulter')
+  findVisites(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.visites.findAll(id, user);
+  }
+
+  @Post(':id/visites')
+  @RequirePermissions('crm:modifier')
+  async addVisite(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateVisiteProspectDto,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    const visite = await this.visites.create(id, dto, user);
+    await this.audit.record({
+      userId: user.id,
+      action: 'prospect.visite.created',
+      entityType: 'VisiteProspect',
+      entityId: visite.id,
+      newValue: { prospectId: id, ...dto },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    return visite;
+  }
+
+  @Patch(':id/visites/:visiteId')
+  @RequirePermissions('crm:modifier')
+  async updateVisite(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('visiteId', ParseUUIDPipe) visiteId: string,
+    @Body() dto: UpdateVisiteProspectDto,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    const visite = await this.visites.update(id, visiteId, dto, user);
+    await this.audit.record({
+      userId: user.id,
+      action: 'prospect.visite.updated',
+      entityType: 'VisiteProspect',
+      entityId: visiteId,
+      newValue: { prospectId: id, ...dto },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    return visite;
+  }
+
+  @Delete(':id/visites/:visiteId')
+  @RequirePermissions('crm:modifier')
+  async removeVisite(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('visiteId', ParseUUIDPipe) visiteId: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    await this.visites.remove(id, visiteId, user);
+    await this.audit.record({
+      userId: user.id,
+      action: 'prospect.visite.deleted',
+      entityType: 'VisiteProspect',
+      entityId: visiteId,
+      oldValue: { prospectId: id },
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });

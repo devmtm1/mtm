@@ -29,6 +29,36 @@
     scroll-snap-align: start;
     flex: 0 0 auto;
   }
+
+  /* Sélecteur Plan / Satellite des cartes Leaflet (rendu hors React). */
+  .mtm-layer-switch {
+    display: inline-flex;
+    padding: 2px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 1px 3px rgba(31, 41, 55, 0.25);
+  }
+  .mtm-layer-switch button {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4b5563;
+    cursor: pointer;
+    min-height: 28px;
+  }
+  .mtm-layer-switch button.is-active {
+    background: #1a4974;
+    color: #fff;
+  }
+  .mtm-layer-switch button:focus-visible {
+    outline: 2px solid #5ea8c7;
+    outline-offset: 1px;
+  }
 }
 
 @layer base {

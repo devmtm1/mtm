@@ -9,6 +9,7 @@ import { CrmOptionsService } from './crm-options.service';
 import { CrmActivitesService } from './crm-activites.service';
 import { CrmDocumentsService } from './crm-documents.service';
 import { CrmReportingService } from './crm-reporting.service';
+import { CrmVisitesService } from './crm-visites.service';
 
 /** Construit le module CRM complet sur des doublures partagées, pour les specs. */
 export function createCrmTestContext() {
@@ -30,5 +31,6 @@ export function createCrmTestContext() {
     activites: new CrmActivitesService(prisma, access, options),
     documents: new CrmDocumentsService(prisma, cloudinary, access, options),
     reporting: new CrmReportingService(prisma, access),
+    visites: new CrmVisitesService(prisma, access, options),
   };
 }

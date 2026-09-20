@@ -261,7 +261,7 @@
           <div class="detail-section__head">
             <div>
               <h2>Commissions</h2>
-              <p class="detail-section__hint">Créée et validée par un responsable → payée par la comptabilité une fois le dossier soldé.</p>
+              <p class="detail-section__hint">Estimée par le responsable → validée par le manager (jamais son auteur) → payée par la comptabilité une fois le dossier soldé.</p>
             </div>
             @if (canAdminister) {
               <button mat-stroked-button type="button" (click)="addCommission()">
@@ -284,8 +284,10 @@
                     @if (commission.montantFixe !== null) { · {{ commission.montantFixe | mtmMoney }} }
                     · estimée {{ commission.montantEstime | mtmMoney }}
                   </small>
-                  @if (commission.statut === 'estimee' && canAdminister) {
+                  @if (canValidateCommission(commission)) {
                     <button mat-stroked-button type="button" (click)="validateCommission(commission)">Valider</button>
+                  } @else if (commission.statut === 'estimee') {
+                    <small class="stack-list__who">{{ canApproveCommissions ? 'À valider par un autre manager (vous l’avez créée)' : 'En attente de validation par le manager' }}</small>
                   } @else if (commission.statut === 'validee' && canPay) {
                     <button mat-stroked-button type="button" (click)="payCommission(commission)" [disabled]="d.statut !== 'solde'" [matTooltip]="d.statut !== 'solde' ? 'Payable une fois le dossier soldé' : ''">Marquer payée</button>
                   }

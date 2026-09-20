@@ -48,7 +48,9 @@ function withRetry(base: PrismaClient) {
         let attempt = 0;
         for (;;) {
           try {
-            return await query(args);
+            // L'extension Prisma type le retour en `any` : on le rend opaque
+            // ici, le typage fort revient au niveau des appels des services.
+            return (await query(args)) as unknown;
           } catch (error) {
             if (!isTransient(error) || attempt >= RETRY_DELAYS_MS.length) {
               throw error;

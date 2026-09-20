@@ -12,7 +12,7 @@ import { UsersApiService } from '../../core/services/api/users-api.service';
 import type { UserListItem } from '../../core/models/user.model';
 import type { RoleListItem } from '../../core/models/role.model';
 import { NotificationService } from '../../shared/services/notification.service';
-import { SENSITIVE_ROLES, roleHelp, roleLabel } from '../admin/admin-labels';
+import { SENSITIVE_ROLES, roleHelp, roleLabel, PHASE2_ROLES } from '../admin/admin-labels';
 
 export interface UserFormDialogData {
   user?: UserListItem;
@@ -65,6 +65,10 @@ export class UserFormDialog {
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly roles = signal<RoleListItem[]>([]);
   protected readonly showPassword = signal(false);
+  /** Rôles dont le module n'est pas livré : proposés mais non sélectionnables. */
+  protected isPhase2(name: string): boolean {
+    return PHASE2_ROLES.has(name);
+  }
   protected readonly roleLabel = roleLabel;
   protected readonly roleHelp = roleHelp;
 

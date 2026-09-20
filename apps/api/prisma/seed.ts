@@ -37,10 +37,10 @@ const PHASE_1_RESOURCES = [
 const INITIAL_ROLES = [
   { name: 'administrateur', description: 'Accès complet au système', isSystem: true },
   { name: 'direction', description: 'Direction MTM Immobilier' },
-  { name: 'manager', description: "Manager d'équipe" },
-  { name: 'responsable_commercial', description: 'Responsable commercial' },
+  { name: 'manager', description: "Manager : second niveau d'encadrement — objectifs, validation des commissions, dossiers bloqués" },
+  { name: 'responsable_commercial', description: "Responsable commercial : chef d'équipe terrain — fiches, mandats, affectations, estimation des commissions" },
   { name: 'commercial', description: 'Commercial' },
-  { name: 'comptable', description: 'Comptabilité' },
+  { name: 'comptable', description: 'Comptabilité : contrôle des encaissements et paiement des commissions (phase 1)' },
   { name: 'responsable_gestion_locative', description: 'Responsable gestion locative' },
   { name: 'responsable_demarches', description: 'Responsable démarches administratives' },
   { name: 'responsable_construction', description: 'Responsable construction' },
@@ -99,6 +99,7 @@ async function main(): Promise<void> {
     { name: 'crm:creer', resource: 'crm', action: 'creer', description: 'Créer des prospects et activités' },
     { name: 'crm:modifier', resource: 'crm', action: 'modifier', description: 'Modifier des prospects et activités' },
     { name: 'crm:supprimer', resource: 'crm', action: 'supprimer', description: 'Supprimer des prospects et activités' },
+    { name: 'crm:exporter', resource: 'crm', action: 'exporter', description: 'Exporter la liste des prospects (export tracé)' },
   ];
   for (const permission of crmPermissions) {
     await prisma.permission.upsert({
@@ -165,7 +166,7 @@ async function main(): Promise<void> {
   }
 
   // --- Permissions CRM par rôle métier ---
-  const crmPermissionNames = ['crm:consulter', 'crm:creer', 'crm:modifier', 'crm:supprimer'];
+  const crmPermissionNames = ['crm:consulter', 'crm:creer', 'crm:modifier', 'crm:supprimer', 'crm:exporter'];
   const commercialPermissionNames = ['crm:consulter', 'crm:creer', 'crm:modifier'];
 
   // La direction a la vue complète sur l'activité commerciale (section 24
@@ -308,7 +309,9 @@ async function main(): Promise<void> {
   // Le CDC demande qu'un commercial puisse créer et faire évoluer une fiche
   // terrain ; l'encadrement valide les statuts et publie sur le site.
   const landPermissionsByRole: Record<string, string[]> = {
-    commercial: ['terrains:consulter', 'terrains:creer', 'terrains:modifier', 'mandats:consulter'],
+    // Le commercial prépare les mandats en brouillon ; l'activation est
+    // réservée à mandats:valider (voir MandatsService.assertCanSetStatus).
+    commercial: ['terrains:consulter', 'terrains:creer', 'terrains:modifier', 'mandats:consulter', 'mandats:creer', 'mandats:modifier'],
     responsable_commercial: [
       'terrains:consulter',
       'terrains:creer',
@@ -570,23 +573,82 @@ async function main(): Promise<void> {
     },
   });
 
-  // --- Pipeline CRM configurable (J1.5) ---
+  // --- Parcours commercial configurable (cahier CRM § 2) ---
   await prisma.systemSetting.upsert({
     where: { key: 'crm.pipelineStages' },
     update: {},
     create: {
       key: 'crm.pipelineStages',
       value: [
-        'nouveau_contact',
-        'qualification',
-        'proposition',
-        'visite',
+        'nouveau',
+        'contacte',
+        'qualifie',
+        'visite_programmee',
+        'visite_effectuee',
+        'en_reflexion',
+        'a_relancer',
         'negociation',
         'reservation',
         'vente',
-        'perdu',
+        'refuse',
+        'abandonne',
+        'injoignable',
       ],
-      description: 'Étapes configurables du pipeline commercial CRM',
+      description:
+        'Étapes du parcours commercial, sorties comprises (refusé, abandonné, injoignable)',
+      isSensitive: false,
+    },
+  });
+
+  // --- Sources d'acquisition des prospects (cahier CRM § 3) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'crm.sourcesAcquisition' },
+    update: {},
+    create: {
+      key: 'crm.sourcesAcquisition',
+      value: [
+        'facebook',
+        'tiktok',
+        'instagram',
+        'whatsapp',
+        'site',
+        'recommandation',
+        'autre',
+      ],
+      description: 'Canaux par lesquels un prospect arrive chez MTM',
+      isSensitive: false,
+    },
+  });
+
+  // --- Niveaux d'intérêt (cahier CRM § 3) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'crm.niveauxInteret' },
+    update: {},
+    create: {
+      key: 'crm.niveauxInteret',
+      value: ['faible', 'moyen', 'fort', 'tres_interesse'],
+      description: 'Niveau d’intérêt d’un prospect',
+      isSensitive: false,
+    },
+  });
+
+  // --- Objections rencontrées après une visite (cahier CRM § 7) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'crm.objections' },
+    update: {},
+    create: {
+      key: 'crm.objections',
+      value: [
+        'prix',
+        'emplacement',
+        'distance',
+        'environnement',
+        'documents',
+        'surface',
+        'delais',
+        'autre',
+      ],
+      description: 'Objections principales relevées après une visite',
       isSensitive: false,
     },
   });

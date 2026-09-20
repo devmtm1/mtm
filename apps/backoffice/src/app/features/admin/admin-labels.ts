@@ -14,16 +14,22 @@ export interface RoleInfo {
 export const ROLE_INFO: Record<string, RoleInfo> = {
   administrateur: { label: 'Administrateur', help: 'Accès complet : comptes, rôles, paramètres et journal. Double authentification obligatoire.' },
   direction: { label: 'Direction', help: 'Vue complète sur l’activité et les montants ; valide, publie et arbitre. Double authentification obligatoire.' },
-  manager: { label: 'Manager', help: 'Encadre l’équipe commerciale : voit tous les dossiers, valide les paiements et les statuts, fixe les objectifs.' },
-  responsable_commercial: { label: 'Responsable commercial', help: 'Suit l’équipe et ses prospects, valide les fiches terrains et les mandats.' },
-  commercial: { label: 'Commercial', help: 'Gère ses prospects, ses dossiers de vente et les fiches terrains qu’il crée.' },
-  comptable: { label: 'Comptable', help: 'Consulte les montants, enregistre et valide les paiements et les commissions. Double authentification obligatoire.' },
+  manager: { label: 'Manager', help: 'Second niveau d’encadrement : objectifs, validation des commissions estimées par le responsable, dossiers bloqués, vue de toute l’équipe.' },
+  responsable_commercial: { label: 'Responsable commercial', help: 'Chef d’équipe terrain : vérifie et publie les fiches, active les mandats, affecte les prospects, valide les paiements, estime les commissions.' },
+  commercial: { label: 'Commercial', help: 'Gère ses prospects, ses dossiers de vente, les fiches terrains et mandats qu’il prépare (en brouillon).' },
+  comptable: { label: 'Comptable', help: 'Contrôle des encaissements : valide les paiements, paie les commissions validées, exporte. Double authentification obligatoire.' },
   responsable_gestion_locative: { label: 'Responsable gestion locative', help: 'Service gestion locative (module Phase 2) ; consulte les terrains.' },
   responsable_demarches: { label: 'Responsable démarches', help: 'Service démarches administratives (module Phase 2) ; consulte les terrains.' },
   responsable_construction: { label: 'Responsable construction', help: 'Service construction (module Phase 2) ; consulte les terrains.' },
   rh: { label: 'Ressources humaines', help: 'Gestion du personnel (module Phase 2). Double authentification obligatoire.' },
   client: { label: 'Client', help: 'Compte de l’espace client du site : suit ses dossiers, paiements et documents. Pas d’accès au back-office.' },
 };
+
+/**
+ * Rôles dont le module n'existe pas encore (phase 2) : un compte créé avec
+ * l'un d'eux n'aurait qu'un écran presque vide. On ne les attribue pas.
+ */
+export const PHASE2_ROLES = new Set(['responsable_gestion_locative', 'responsable_demarches', 'responsable_construction', 'rh']);
 
 /** Rôles pour lesquels la double authentification est imposée (voir two-factor.guard). */
 export const SENSITIVE_ROLES = new Set(['administrateur', 'direction', 'comptable', 'rh']);
@@ -71,7 +77,7 @@ export const ACTION_INFO: Record<string, { label: string; help: string }> = {
   exporter: { label: 'Exporter', help: 'Télécharger des données (CSV, journaux) avec justification.' },
   payer: { label: 'Payer', help: 'Marquer une commission validée comme payée au commercial (comptabilité).' },
   publier: { label: 'Publier', help: 'Rendre visible sur le site public ou dans l’espace client.' },
-  administrer: { label: 'Administrer', help: 'Vue complète du module (tous les dossiers, tous les commerciaux) et actes de management : objectifs, création et validation des commissions.' },
+  administrer: { label: 'Administrer', help: 'Vue complète du module (tous les dossiers, tous les commerciaux) et actes de management : objectifs, estimation des commissions. Leur validation reste au manager ou à la direction.' },
 };
 
 export function permissionActionLabel(action: string): string {

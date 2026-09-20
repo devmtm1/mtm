@@ -153,3 +153,19 @@ export interface CreateTerrainPayload {
   /** Obligatoire côté API si un champ sensible (prix, marge, commission, propriétaire) est modifié. */
   justification?: string;
 }
+
+/**
+ * Terrain tel qu'on le propose à un prospect : seulement ce qu'on dit au
+ * client. Le catalogue ignore le responsable du terrain, car proposer un
+ * terrain n'est pas le gérer.
+ */
+export interface TerrainCatalogueItem {
+  id: string;
+  referenceInterne: string;
+  nom: string;
+  commune: string | null;
+  region: string | null;
+  superficie: number | null;
+  prixPublic: number | null;
+  statutCommercial: string;
+}

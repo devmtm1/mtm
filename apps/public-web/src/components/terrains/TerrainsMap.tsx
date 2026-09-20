@@ -7,6 +7,7 @@ import { formatMoney, formatSuperficie } from '../../utils/format';
 import { ROUTES } from '../../routes';
 import { markerIcon } from './leaflet-icon';
 import { observeMapResize } from './map-resize';
+import { installBaseLayers } from './map-layers';
 import { EmptyState } from '../ui/EmptyState';
 
 /**
@@ -28,10 +29,7 @@ export function TerrainsMap({ terrains }: { terrains: Terrain[] }) {
     if (!containerRef.current || located.length === 0) return;
 
     const map = L.map(containerRef.current, { scrollWheelZoom: false });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; contributeurs OpenStreetMap',
-      maxZoom: 19,
-    }).addTo(map);
+    installBaseLayers(map);
 
     const bounds: [number, number][] = [];
 

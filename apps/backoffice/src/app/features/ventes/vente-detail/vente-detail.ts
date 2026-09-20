@@ -105,6 +105,11 @@ export class VenteDetailPage implements OnInit {
   protected readonly canPay = this.session.hasPermission('ventes:payer');
   protected readonly canPublish = this.session.hasPermission('ventes:publier');
   protected readonly canAdminister = this.session.hasPermission('ventes:administrer');
+  /** Validation d'une commission : manager ou direction, jamais son propre créateur (règle API). */
+  protected readonly canApproveCommissions = ['manager', 'direction', 'administrateur'].some((role) => this.session.hasRole(role));
+  protected canValidateCommission(commission: VenteCommission): boolean {
+    return commission.statut === 'estimee' && this.canApproveCommissions && commission.createdById !== this.session.user()?.id;
+  }
   protected readonly canViewFinancials = this.session.hasPermission('ventes:consulter_financier') || this.session.hasSupervisionScope('ventes');
   protected readonly canSeeProspect = this.session.hasPermission('crm:consulter');
   protected readonly canSeeTerrain = this.session.hasPermission('terrains:consulter');
@@ -139,7 +144,7 @@ export class VenteDetailPage implements OnInit {
     const days = this.reservationDays();
     if (days !== null && days <= 7) items.push({ label: days <= 0 ? 'Réservation expirée' : `Réservation expire dans ${days} j`, hint: 'Encaisser un paiement ou prolonger, sinon le terrain sera libéré.' });
     if (dossier.terrain && !this.reservation() && dossier.statut === 'en_cours') items.push({ label: 'Réserver le terrain', hint: 'Dès que le client s’engage (acompte), pour le bloquer.' });
-    if (this.commissions().some((commission) => commission.statut === 'estimee') && this.canAdminister) items.push({ label: 'Valider la commission estimée', hint: 'Confirme le montant dû au commercial ; la comptabilité pourra ensuite la payer.' });
+    if (this.commissions().some((commission) => this.canValidateCommission(commission))) items.push({ label: 'Valider la commission estimée', hint: 'Confirme le montant dû au commercial ; la comptabilité pourra ensuite la payer.' });
     return items;
   });
 

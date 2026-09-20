@@ -17,6 +17,16 @@ export const SUPERVISION_ROLES = [
 /** Peuvent publier un contenu ou un document sur le site public sans permission dédiée. */
 export const PUBLISHER_ROLES = ['administrateur', 'direction'] as const;
 
+/**
+ * Second niveau d'encadrement : valident les commissions estimées par le
+ * responsable commercial (ou par eux-mêmes, sous réserve des quatre yeux).
+ */
+export const COMMISSION_APPROVER_ROLES = [
+  'manager',
+  'direction',
+  'administrateur',
+] as const;
+
 /** Peuvent porter un prospect, un terrain ou un dossier de vente. */
 export const COMMERCIAL_ROLES = [
   'commercial',

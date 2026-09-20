@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import type { PointInteret } from '../../types/terrain';
 import { markerIcon } from './leaflet-icon';
 import { observeMapResize } from './map-resize';
+import { installBaseLayers } from './map-layers';
 
 interface TerrainMapProps {
   latitude: number;
@@ -26,10 +27,7 @@ export function TerrainMap({ latitude, longitude, title, pointsInteret }: Terrai
     });
     mapRef.current = map;
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; contributeurs OpenStreetMap',
-      maxZoom: 19,
-    }).addTo(map);
+    installBaseLayers(map);
 
     L.marker([latitude, longitude], { icon: markerIcon }).addTo(map).bindPopup(title);
 

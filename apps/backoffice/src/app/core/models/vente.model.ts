@@ -90,6 +90,8 @@ export interface VenteCommission {
   bonus: number | null;
   montantEstime: number;
   montantValide: number | null;
+  /** Auteur de l'estimation : ne peut pas la valider lui-même (quatre yeux). */
+  createdById?: string | null;
   montantPaye: number | null;
   statut: string;
   createdAt: string;

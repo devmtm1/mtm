@@ -3,23 +3,36 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AgGridAngular } from 'ag-grid-angular';
 import type { ColDef, ICellRendererParams } from 'ag-grid-community';
-import { LucideCalendarClock, LucidePlus, LucideSearch, LucideUserPlus, LucideUserSearch, LucideX } from '@lucide/angular';
+import { LucideCalendarClock, LucideDownload, LucidePlus, LucideSearch, LucideUserPlus, LucideUserSearch, LucideX } from '@lucide/angular';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { mtmGridTheme } from '../../../core/ag-grid.config';
 import { SessionService } from '../../../core/services/session.service';
 import { CrmApiService, type UpcomingTask } from '../../../core/services/api/crm-api.service';
 import type { CommercialSummary, ProspectListItem, ProspectOptions, ProspectStats } from '../../../core/models/prospect.model';
 import { NotificationService } from '../../../shared/services/notification.service';
+import { JustificationDialog } from '../../../shared/dialogs/justification-dialog';
+import { downloadBlob } from '../../../shared/utils/download';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
-import { PIPELINE, PRIORITIES, dueLabel, isOverdue, label, pillClass, prospectName } from '../crm-status';
+import { CLOSED_STAGES, EXIT_STAGES, INTEREST_LEVELS, PIPELINE, PRIORITIES, dueLabel, isOverdue, label, pillClass, prospectName, relanceState } from '../crm-status';
 
-const EMPTY_FILTERS = { search: '', statutPipeline: '', commercialResponsableId: '' };
+const EMPTY_FILTERS = { search: '', statutPipeline: '', commercialResponsableId: '', niveauInteret: '', zoneRecherchee: '', vue: '' };
+
+/** Vues rapides de l'espace commercial (cahier CRM § 12). */
+export const QUICK_VIEWS = [
+  { value: 'a_relancer', label: 'À relancer aujourd’hui', help: 'Relance due aujourd’hui ou en retard.' },
+  { value: 'relance_en_retard', label: 'Relances en retard', help: 'La date de relance est dépassée.' },
+  { value: 'sans_action', label: 'Sans prochaine action', help: 'Prospects actifs sans suite prévue : à traiter en priorité.' },
+  { value: 'visites_a_venir', label: 'Visites à venir', help: 'Une visite est programmée.' },
+  { value: 'retours_a_saisir', label: 'Retours de visite à saisir', help: 'La visite est passée et l’avis du client manque.' },
+  { value: 'actifs', label: 'Tous les actifs', help: 'Hors ventes conclues et sorties.' },
+];
 
 /**
  * Prospects (J1.5). L'écran répond à : qui dois-je rappeler aujourd'hui,
@@ -28,6 +41,7 @@ const EMPTY_FILTERS = { search: '', statutPipeline: '', commercialResponsableId:
 @Component({
   selector: 'app-prospects',
   imports: [
+    MoneyPipe,
     ReactiveFormsModule,
     AgGridAngular,
     MatButtonModule,
@@ -36,6 +50,7 @@ const EMPTY_FILTERS = { search: '', statutPipeline: '', commercialResponsableId:
     MatSelectModule,
     MatTooltipModule,
     LucideCalendarClock,
+    LucideDownload,
     LucidePlus,
     LucideSearch,
     LucideUserPlus,
@@ -50,6 +65,7 @@ export class Prospects implements OnInit {
   private readonly router = inject(Router);
   private readonly sessionService = inject(SessionService);
   private readonly notify = inject(NotificationService);
+  private readonly dialog = inject(MatDialog);
   private readonly formBuilder = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
   private readonly money = new MoneyPipe();
@@ -60,9 +76,12 @@ export class Prospects implements OnInit {
   protected readonly total = signal(0);
   protected readonly stats = signal<ProspectStats | null>(null);
   protected readonly tasks = signal<UpcomingTask[]>([]);
-  protected readonly options = signal<ProspectOptions>({ pipelineStages: [], activiteTypes: [], activiteStats: [], priorites: [] });
+  protected readonly options = signal<Partial<ProspectOptions>>({});
+  protected readonly quickViews = QUICK_VIEWS;
+  protected readonly exitStages = EXIT_STAGES;
   protected readonly commercials = signal<CommercialSummary[]>([]);
   protected readonly canCreate = computed(() => this.sessionService.hasPermission('crm:creer'));
+  protected readonly canExport = computed(() => this.sessionService.hasPermission('crm:exporter'));
   protected readonly seesAll = computed(() => this.sessionService.hasSupervisionScope('crm'));
   protected readonly filters = this.formBuilder.nonNullable.group(EMPTY_FILTERS);
   protected readonly hasActiveFilters = signal(false);
@@ -73,27 +92,45 @@ export class Prospects implements OnInit {
   /** Répartition par étape, dans l'ordre du pipeline, pour la barre de progression. */
   protected readonly funnel = computed(() => {
     const stats = this.stats();
-    const stages = this.options().pipelineStages;
+    const stages = this.options().pipelineStages ?? [];
     if (!stats) return [];
-    const active = stages.filter((stage) => stage !== 'perdu');
+    // Les sorties (refusé, abandonné, injoignable) ne font pas partie de
+    // l'entonnoir : elles le fausseraient visuellement.
+    const active = stages.filter((stage) => !CLOSED_STAGES.includes(stage) || stage === 'vente');
     const total = active.reduce((sum, stage) => sum + (stats.pipeline[stage] ?? 0), 0);
     return active.map((stage) => ({ stage, count: stats.pipeline[stage] ?? 0, share: total ? ((stats.pipeline[stage] ?? 0) / total) * 100 : 0 }));
   });
 
   protected readonly columnDefs: ColDef<ProspectListItem>[] = [
     {
+      headerName: 'Réf.',
+      field: 'referenceInterne',
+      width: 110,
+      minWidth: 100,
+      sortable: true,
+      valueFormatter: (p) => (p.value as string) ?? '—',
+    },
+    {
       headerName: 'Prospect',
-      flex: 1.5,
-      minWidth: 170,
+      flex: 1.4,
+      minWidth: 160,
       sortable: true,
       cellClass: 'cell-strong',
       valueGetter: (p) => (p.data ? prospectName(p.data) : ''),
     },
     {
       headerName: 'Contact',
-      flex: 1.4,
-      minWidth: 170,
+      flex: 1.3,
+      minWidth: 160,
       valueGetter: (p) => [p.data?.telephone, p.data?.email].filter(Boolean).join(' · ') || '—',
+    },
+    {
+      headerName: 'Intérêt',
+      field: 'niveauInteret',
+      width: 130,
+      minWidth: 110,
+      sortable: true,
+      cellRenderer: (p: ICellRendererParams<ProspectListItem>) => this.interestPill(p.value as string | null),
     },
     {
       field: 'statutPipeline',
@@ -113,8 +150,10 @@ export class Prospects implements OnInit {
     },
     {
       headerName: 'Prochaine action',
-      flex: 1.2,
-      minWidth: 150,
+      flex: 1.4,
+      minWidth: 170,
+      sortable: true,
+      field: 'prochaineRelanceLe',
       cellRenderer: (p: ICellRendererParams<ProspectListItem>) => this.nextActionCell(p),
     },
     {
@@ -146,6 +185,28 @@ export class Prospects implements OnInit {
       .subscribe(() => this.load());
   }
 
+  /**
+   * Export CSV tracé (section 13 du cahier CRM) : la liste des prospects
+   * contient des données personnelles, donc motif obligatoire et trace dans
+   * le journal d'audit.
+   */
+  protected exportCsv(): void {
+    JustificationDialog.ask(this.dialog, {
+      title: 'Exporter les prospects',
+      description: 'L’export contient les coordonnées des prospects et leur suivi commercial. Indiquez le motif.',
+      confirmLabel: 'Exporter en CSV',
+    }).subscribe((justification) => {
+      if (!justification) return;
+      this.crmApi.exportCsv(justification).subscribe({
+        next: (blob) => {
+          downloadBlob(blob, `prospects-${new Date().toISOString().slice(0, 10)}.csv`);
+          this.notify.success('Export téléchargé');
+        },
+        error: (error: unknown) => this.notify.error(error, 'Export impossible'),
+      });
+    });
+  }
+
   protected openCreate(): void {
     void this.router.navigate(['/crm/prospects/nouveau']);
   }
@@ -156,6 +217,14 @@ export class Prospects implements OnInit {
 
   protected filterByStage(statutPipeline: string): void {
     this.filters.patchValue({ ...EMPTY_FILTERS, statutPipeline });
+  }
+
+  protected applyQuickView(vue: string): void {
+    this.filters.patchValue({ ...EMPTY_FILTERS, vue: this.filters.controls.vue.value === vue ? '' : vue });
+  }
+
+  protected interestLabel(niveau: string): string {
+    return label(INTEREST_LEVELS, niveau);
   }
 
   protected resetFilters(): void {
@@ -208,20 +277,36 @@ export class Prospects implements OnInit {
     return span;
   }
 
-  /** « Rappeler M. Diop · Demain » ou « En retard de 3 j », sinon « Rien de prévu ». */
+  private interestPill(niveau: string | null): HTMLElement | string {
+    if (!niveau) return '—';
+    const span = document.createElement('span');
+    span.className = pillClass(INTEREST_LEVELS, niveau);
+    span.textContent = label(INTEREST_LEVELS, niveau);
+    span.title = INTEREST_LEVELS[niveau]?.help ?? '';
+    return span;
+  }
+
+  /**
+   * « Demain · Rappeler M. Diop » ou « En retard de 3 j ». La prochaine
+   * action du prospect prime ; à défaut on retombe sur l'activité planifiée.
+   */
   private nextActionCell(params: ICellRendererParams<ProspectListItem>): HTMLElement | string {
-    const next = params.data?.activites?.[0];
+    const prospect = params.data;
     const wrapper = document.createElement('span');
     wrapper.className = 'next-action';
-    if (!next) {
+    const titre = prospect?.prochaineAction ?? prospect?.activites?.[0]?.titre ?? null;
+    const date = prospect?.prochaineRelanceLe ?? prospect?.activites?.[0]?.dateEcheance ?? null;
+    if (!titre && !date) {
       wrapper.classList.add('next-action--none');
       wrapper.textContent = 'Rien de prévu';
+      wrapper.title = 'Aucun prospect actif ne doit rester sans prochaine action.';
       return wrapper;
     }
-    const overdue = isOverdue(next);
+    const state = relanceState(date);
+    const overdue = state === 'en_retard' || (prospect?.activites?.[0] ? isOverdue(prospect.activites[0]) : false);
     wrapper.classList.add(overdue ? 'next-action--overdue' : 'next-action--planned');
-    wrapper.textContent = `${dueLabel(next.dateEcheance)} · ${next.titre}`;
-    wrapper.title = next.titre;
+    wrapper.textContent = [dueLabel(date), titre].filter(Boolean).join(' · ');
+    wrapper.title = titre ?? '';
     return wrapper;
   }
 

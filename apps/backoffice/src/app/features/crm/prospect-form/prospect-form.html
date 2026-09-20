@@ -10,7 +10,7 @@
       <p class="page-header__subtitle">
         Un nom et un moyen de contact suffisent pour commencer. Le reste se complète au fil des échanges.
         @if (isEdit) {
-          L’étape du pipeline se change depuis la fiche (« Changer d’étape »).
+          L’étape du parcours se change depuis la fiche (« Changer d’étape »).
         }
       </p>
     </div>
@@ -44,8 +44,11 @@
               <mat-form-field appearance="outline">
                 <mat-label>Téléphone</mat-label>
                 <input matInput type="tel" formControlName="telephone" placeholder="77 000 00 00" />
-                <mat-hint>WhatsApp accepté.</mat-hint>
+                <mat-hint>Le numéro sert aussi aux boutons Appeler et WhatsApp de la fiche.</mat-hint>
               </mat-form-field>
+              <div class="form-grid__side">
+                <mat-checkbox formControlName="whatsapp">Ce numéro est joignable sur WhatsApp</mat-checkbox>
+              </div>
               <mat-form-field appearance="outline">
                 <mat-label>E-mail</mat-label>
                 <input matInput type="email" formControlName="email" />
@@ -53,19 +56,33 @@
                 <mat-error>Adresse e-mail invalide.</mat-error>
               </mat-form-field>
               <mat-form-field appearance="outline">
+                <mat-label>Ville de résidence</mat-label>
+                <input matInput formControlName="villeResidence" placeholder="Dakar, Thiès, Paris…" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
                 <mat-label>Pays de résidence</mat-label>
                 <input matInput formControlName="paysResidence" placeholder="Sénégal, France, États-Unis…" />
                 <mat-hint>Utile pour la diaspora : décalage horaire, paiement, procuration.</mat-hint>
               </mat-form-field>
               <mat-form-field appearance="outline">
-                <mat-label>Origine du contact</mat-label>
-                <input matInput formControlName="sourceAcquisition" [matAutocomplete]="sources" placeholder="Site web, bouche-à-oreille…" />
-                <mat-autocomplete #sources="matAutocomplete">
-                  @for (source of sourceOptions; track source) {
-                    <mat-option [value]="source">{{ source }}</mat-option>
+                <mat-label>Source du prospect</mat-label>
+                <mat-select formControlName="sourceAcquisition">
+                  <mat-option value="">Non précisée</mat-option>
+                  @for (source of options().sourcesAcquisition; track source) {
+                    <mat-option [value]="source">{{ sourceLabel(source) }}</mat-option>
                   }
-                </mat-autocomplete>
-                <mat-hint>Comment il a connu MTM.</mat-hint>
+                </mat-select>
+                <mat-hint>Comment il a connu MTM : sert à mesurer ce qui rapporte.</mat-hint>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Niveau d’intérêt</mat-label>
+                <mat-select formControlName="niveauInteret">
+                  <mat-option value="">À évaluer</mat-option>
+                  @for (niveau of options().niveauxInteret; track niveau) {
+                    <mat-option [value]="niveau">{{ interestLabel(niveau) }}</mat-option>
+                  }
+                </mat-select>
+                <mat-hint>Sert à prioriser les relances.</mat-hint>
               </mat-form-field>
             </div>
             @if (form.hasError('contact') && (form.controls.email.touched || form.controls.telephone.touched)) {
@@ -75,10 +92,42 @@
 
           <section class="page-card form-block">
             <div class="form-block__head">
+              <h2>Premier contact</h2>
+              <p>Quand et comment l’échange a commencé.</p>
+            </div>
+            <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Date du premier contact</mat-label>
+                <input matInput [matDatepicker]="premierContact" formControlName="premierContactLe" />
+                <mat-datepicker-toggle matIconSuffix [for]="premierContact"></mat-datepicker-toggle>
+                <mat-datepicker #premierContact></mat-datepicker>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Moyen de contact</mat-label>
+                <mat-select formControlName="premierContactMoyen">
+                  <mat-option value="">Non précisé</mat-option>
+                  @for (moyen of options().moyensContact; track moyen) {
+                    <mat-option [value]="moyen">{{ channelLabel(moyen) }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </section>
+
+          <section class="page-card form-block">
+            <div class="form-block__head">
               <h2>Ce qu’il cherche</h2>
               <p>Sert à lui proposer les bons terrains et à mesurer l’adéquation avec le catalogue.</p>
             </div>
             <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Zone recherchée</mat-label>
+                <input matInput formControlName="zoneRecherchee" placeholder="Diamniadio, Saly, Thiès Nord…" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Surface souhaitée (m²)</mat-label>
+                <input matInput type="number" min="0" step="50" formControlName="surfaceSouhaitee" />
+              </mat-form-field>
               <mat-form-field appearance="outline">
                 <mat-label>Budget minimum (FCFA)</mat-label>
                 <input matInput type="number" min="0" step="500000" formControlName="budgetMin" />
@@ -92,13 +141,32 @@
                   <mat-hint>Le dossier de vente vous alertera si le prix dépasse ce budget.</mat-hint>
                 }
               </mat-form-field>
-              <mat-form-field appearance="outline" class="wide">
-                <mat-label>Besoins</mat-label>
-                <textarea matInput rows="3" formControlName="besoins" placeholder="Ex. Terrain 300 m² pour construire une maison familiale, zone Diamniadio, achat d’ici 6 mois"></textarea>
-                <mat-hint>Type de projet, surface, zone, délai.</mat-hint>
+              <mat-form-field appearance="outline">
+                <mat-label>Type de document attendu</mat-label>
+                <mat-select formControlName="typeDocumentSouhaite">
+                  <mat-option value="">Indifférent</mat-option>
+                  @for (type of options().typesDocumentSouhaite; track type) {
+                    <mat-option [value]="type">{{ type }}</mat-option>
+                  }
+                </mat-select>
+                <mat-hint>Beaucoup de clients exigent un titre foncier.</mat-hint>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Objectif</mat-label>
+                <mat-select formControlName="objectifAchat">
+                  <mat-option value="">Non précisé</mat-option>
+                  @for (objectif of options().objectifsAchat; track objectif) {
+                    <mat-option [value]="objectif">{{ goalLabel(objectif) }}</mat-option>
+                  }
+                </mat-select>
               </mat-form-field>
               <mat-form-field appearance="outline" class="wide">
-                <mat-label>Préférences</mat-label>
+                <mat-label>Besoin exprimé par le client</mat-label>
+                <textarea matInput rows="3" formControlName="besoins" placeholder="Ex. Terrain 300 m² pour construire une maison familiale, zone Diamniadio, achat d’ici 6 mois"></textarea>
+                <mat-hint>Ses mots à lui : utile pour la relance et pour le collègue qui reprendra le dossier.</mat-hint>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="wide">
+                <mat-label>Besoins particuliers</mat-label>
                 <textarea matInput rows="2" formControlName="preferences" placeholder="Ex. Titre foncier uniquement, proche d’une école, paiement échelonné"></textarea>
               </mat-form-field>
             </div>
@@ -106,10 +174,21 @@
 
           <section class="page-card form-block">
             <div class="form-block__head">
-              <h2>Suivi</h2>
-              <p>Qui s’en occupe et quel potentiel vous lui attribuez.</p>
+              <h2>Suite à donner</h2>
+              <p>Règle MTM : aucun prospect actif ne reste sans prochaine action ni date de relance.</p>
             </div>
             <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Prochaine action</mat-label>
+                <input matInput formControlName="prochaineAction" placeholder="Rappeler pour proposer une visite" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Date de relance</mat-label>
+                <input matInput [matDatepicker]="relance" formControlName="prochaineRelanceLe" />
+                <mat-datepicker-toggle matIconSuffix [for]="relance"></mat-datepicker-toggle>
+                <mat-datepicker #relance></mat-datepicker>
+                <mat-hint>Le prospect apparaîtra dans « À relancer » ce jour-là.</mat-hint>
+              </mat-form-field>
               @if (isSupervisor) {
                 <mat-form-field appearance="outline">
                   <mat-label>Commercial responsable</mat-label>
@@ -124,13 +203,6 @@
               } @else {
                 <p class="form-note">Ce prospect vous est affecté ; un responsable peut le réaffecter depuis la fiche.</p>
               }
-              <div class="form-grid__side score-field">
-                <label for="score">Score : <strong>{{ form.controls.score.value }}</strong> / 100</label>
-                <mat-slider min="0" max="100" step="5" discrete>
-                  <input matSliderThumb id="score" formControlName="score" />
-                </mat-slider>
-                <small>{{ scoreHint() }}</small>
-              </div>
             </div>
           </section>
         </div>
@@ -140,11 +212,12 @@
           <dl class="preview__facts">
             <div><dt>Nom</dt><dd>{{ form.controls.prenom.value }} {{ form.controls.nom.value || '—' }}</dd></div>
             <div><dt>Contact</dt><dd>{{ form.controls.telephone.value || form.controls.email.value || '—' }}</dd></div>
+            <div><dt>Zone</dt><dd>{{ form.controls.zoneRecherchee.value || '—' }}</dd></div>
             <div><dt>Budget max</dt><dd>{{ form.controls.budgetMax.value | mtmMoney }}</dd></div>
-            <div><dt>Score</dt><dd>{{ form.controls.score.value }} / 100</dd></div>
+            <div><dt>Intérêt</dt><dd>{{ form.controls.niveauInteret.value ? interestLabel(form.controls.niveauInteret.value) : '—' }}</dd></div>
           </dl>
           @if (!isEdit) {
-            <p class="preview__next">Après création : planifiez la première action (appel, visite) depuis la fiche.</p>
+            <p class="preview__next">Après création : proposez un terrain et programmez la visite depuis la fiche.</p>
           }
         </aside>
       </div>

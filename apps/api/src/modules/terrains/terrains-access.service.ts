@@ -72,7 +72,12 @@ export class TerrainsAccessService {
     if (!target || !target.isActive) {
       throw new BadRequestException('Commercial cible introuvable ou inactif');
     }
-    if (!hasAnyRole(target.roles.map((ur) => ur.role.name), COMMERCIAL_ROLES)) {
+    if (
+      !hasAnyRole(
+        target.roles.map((ur) => ur.role.name),
+        COMMERCIAL_ROLES,
+      )
+    ) {
       throw new BadRequestException(
         "L'utilisateur cible n'a pas de rôle commercial",
       );

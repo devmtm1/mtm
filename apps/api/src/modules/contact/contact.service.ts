@@ -79,7 +79,7 @@ export class ContactService {
             telephone: dto.telephone,
             sourceAcquisition: 'contact_public',
             besoins: `[${dto.sujet || 'Contact public'}] ${dto.message}`,
-            statutPipeline: 'nouveau_contact',
+            statutPipeline: 'nouveau',
           },
         });
       }
@@ -179,7 +179,7 @@ export class ContactService {
           telephone: contact.telephone,
           sourceAcquisition: 'contact_public',
           besoins: `[${contact.sujet || 'Contact public'}] ${contact.message}`,
-          statutPipeline: 'nouveau_contact',
+          statutPipeline: 'nouveau',
           commercialResponsableId: responsable,
         },
       });

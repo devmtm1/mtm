@@ -11,6 +11,11 @@
       </p>
     </div>
     <div class="page-header__actions">
+      @if (canExport()) {
+        <button mat-stroked-button type="button" (click)="exportCsv()">
+          <svg class="btn-icon" lucideDownload aria-hidden="true"></svg>Exporter
+        </button>
+      }
       @if (canCreate()) {
         <button mat-flat-button color="primary" type="button" (click)="openCreate()">
           <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau prospect
@@ -60,20 +65,56 @@
           <span>Prospects suivis</span>
         </span>
       </button>
-      <button type="button" class="kpi kpi--success" (click)="filterByStage('nouveau_contact')">
+      <button type="button" class="kpi kpi--success" (click)="filterByStage('nouveau')">
         <span class="kpi__icon"><svg lucideUserPlus aria-hidden="true"></svg></span>
         <span class="kpi__body">
           <strong>{{ s.nouveaux }}</strong>
-          <span>Nouveaux contacts</span>
-          <small>À qualifier rapidement</small>
+          <span>Nouveaux prospects</span>
+          <small>À contacter rapidement</small>
         </span>
       </button>
-      <div class="kpi" [class.kpi--warning]="s.upcomingTasksCount > 0" [class.kpi--muted]="s.upcomingTasksCount === 0">
+      <button type="button" class="kpi" [class.kpi--danger]="s.relancesEnRetard > 0" [class.kpi--warning]="s.relancesEnRetard === 0 && s.relancesDuJour > 0" [class.kpi--muted]="s.relancesDuJour === 0" (click)="applyQuickView('a_relancer')">
         <span class="kpi__icon"><svg lucideCalendarClock aria-hidden="true"></svg></span>
         <span class="kpi__body">
-          <strong>{{ s.upcomingTasksCount }}</strong>
-          <span>Actions à venir</span>
-          <small>Appels, relances, rendez-vous</small>
+          <strong>{{ s.relancesDuJour }}</strong>
+          <span>Relances du jour</span>
+          <small>
+            @if (s.relancesEnRetard > 0) {
+              dont {{ s.relancesEnRetard }} en retard
+            } @else {
+              Tout est à jour
+            }
+          </small>
+        </span>
+      </button>
+      <button type="button" class="kpi" [class.kpi--danger]="s.sansProchaineAction > 0" [class.kpi--muted]="s.sansProchaineAction === 0" (click)="applyQuickView('sans_action')">
+        <span class="kpi__icon"><svg lucideUserSearch aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ s.sansProchaineAction }}</strong>
+          <span>Sans prochaine action</span>
+          <small>Prospects actifs à reprendre</small>
+        </span>
+      </button>
+      <button type="button" class="kpi" [class.kpi--muted]="s.visitesProgrammees === 0" (click)="applyQuickView('visites_a_venir')">
+        <span class="kpi__icon"><svg lucideCalendarClock aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ s.visitesProgrammees }}</strong>
+          <span>Visites programmées</span>
+          <small>
+            @if (s.retoursASaisir > 0) {
+              {{ s.retoursASaisir }} retour(s) à saisir
+            } @else {
+              {{ s.visitesRealisees }} déjà réalisées
+            }
+          </small>
+        </span>
+      </button>
+      <div class="kpi">
+        <span class="kpi__icon"><svg lucideUserPlus aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ s.ventesConclues }}</strong>
+          <span>Ventes conclues</span>
+          <small>{{ s.tauxConversion }} % de conversion · {{ s.montantVentes | mtmMoney }}</small>
         </span>
       </div>
       <div class="kpi kpi--wide">
@@ -94,10 +135,12 @@
                 <i [class]="stagePill(item.stage)"></i>{{ stageLabel(item.stage) }} <b>{{ item.count }}</b>
               </button>
             }
-            @if (s.pipeline['perdu']) {
-              <button type="button" class="funnel__legend-item" (click)="filterByStage('perdu')">
-                <i class="status-pill status-pill--danger"></i>Perdus <b>{{ s.pipeline['perdu'] }}</b>
-              </button>
+            @for (sortie of exitStages; track sortie) {
+              @if (s.pipeline[sortie]) {
+                <button type="button" class="funnel__legend-item" (click)="filterByStage(sortie)">
+                  <i class="status-pill status-pill--danger"></i>{{ stageLabel(sortie) }} <b>{{ s.pipeline[sortie] }}</b>
+                </button>
+              }
             }
           </small>
         </span>
@@ -108,6 +151,45 @@
       }
     }
   </section>
+
+  @if (stats(); as s) {
+    @if (s.parCommercial.length) {
+      <section class="page-section" aria-labelledby="perf-title">
+        <div class="list-toolbar">
+          <div class="list-toolbar__title">
+            <h2 id="perf-title">Performance par commercial</h2>
+            <p>Prospects suivis, ventes conclues et montant réalisé.</p>
+          </div>
+        </div>
+        <div class="perf-table-wrap">
+          <table class="perf-table">
+            <thead>
+              <tr>
+                <th scope="col">Commercial</th>
+                <th scope="col">Prospects</th>
+                <th scope="col">En cours</th>
+                <th scope="col">Ventes</th>
+                <th scope="col">Conversion</th>
+                <th scope="col">Montant</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (ligne of s.parCommercial; track ligne.id) {
+                <tr>
+                  <td class="cell-strong">{{ ligne.nom }}</td>
+                  <td>{{ ligne.prospects }}</td>
+                  <td>{{ ligne.enCours }}</td>
+                  <td>{{ ligne.ventesConclues }}</td>
+                  <td>{{ ligne.tauxConversion }} %</td>
+                  <td>{{ ligne.montantVentes | mtmMoney }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+  }
 
   <section class="page-section" aria-labelledby="prospects-list-title">
     <div class="list-toolbar">
@@ -124,11 +206,26 @@
           }
         </p>
       </div>
+      <!-- Vues rapides de l'espace commercial : ce sont des filtres, pas des écrans séparés. -->
+      <div class="quick-views" role="group" aria-label="Vues rapides">
+        @for (view of quickViews; track view.value) {
+          <button
+            type="button"
+            class="quick-view"
+            [class.quick-view--active]="filters.controls.vue.value === view.value"
+            [attr.aria-pressed]="filters.controls.vue.value === view.value"
+            [matTooltip]="view.help"
+            (click)="applyQuickView(view.value)"
+          >
+            {{ view.label }}
+          </button>
+        }
+      </div>
       <form class="list-filters" [formGroup]="filters" (ngSubmit)="$event.preventDefault()">
         <mat-form-field appearance="outline" class="list-filters__search" subscriptSizing="dynamic">
           <mat-label>Rechercher</mat-label>
           <svg matPrefix class="list-filters__icon" lucideSearch aria-hidden="true"></svg>
-          <input matInput formControlName="search" placeholder="Nom, téléphone, e-mail…" autocomplete="off" />
+          <input matInput formControlName="search" placeholder="Nom, téléphone, e-mail, référence…" autocomplete="off" />
         </mat-form-field>
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Étape</mat-label>
@@ -138,6 +235,19 @@
               <mat-option [value]="stage">{{ stageLabel(stage) }}</mat-option>
             }
           </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Intérêt</mat-label>
+          <mat-select formControlName="niveauInteret">
+            <mat-option value="">Tous</mat-option>
+            @for (niveau of options().niveauxInteret ?? []; track niveau) {
+              <mat-option [value]="niveau">{{ interestLabel(niveau) }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Zone recherchée</mat-label>
+          <input matInput formControlName="zoneRecherchee" placeholder="Diamniadio, Saly…" autocomplete="off" />
         </mat-form-field>
         @if (seesAll() && commercials().length) {
           <mat-form-field appearance="outline" subscriptSizing="dynamic">

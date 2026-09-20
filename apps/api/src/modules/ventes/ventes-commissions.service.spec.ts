@@ -1,3 +1,4 @@
+import { ForbiddenException } from '@nestjs/common';
 import { createVentesTestContext } from './ventes.test-support';
 
 describe('VentesCommissionsService', () => {
@@ -116,5 +117,63 @@ describe('VentesCommissionsService', () => {
       ),
     ).rejects.toThrow('rôle commercial');
     expect(prismaMock.commissionVente.create).not.toHaveBeenCalled();
+  });
+  describe('validation d’une commission', () => {
+    const estimated = {
+      id: 'c1',
+      dossierVenteId: 'd1',
+      statut: 'estimee',
+      montantEstime: 150000,
+      createdById: 'resp1',
+    };
+
+    beforeEach(() => {
+      prismaMock.dossierVente.findFirst.mockResolvedValue({ id: 'd1' });
+      prismaMock.commissionVente.findFirst.mockResolvedValue(estimated);
+      prismaMock.commissionVente.update.mockResolvedValue({
+        ...estimated,
+        statut: 'validee',
+      });
+    });
+
+    it('est réservée au manager ou à la direction (pas au responsable commercial)', async () => {
+      await expect(
+        commissions.validateCommission('d1', 'c1', {
+          id: 'resp2',
+          roles: ['responsable_commercial'],
+          permissions: ['ventes:administrer'],
+        }),
+      ).rejects.toThrow(ForbiddenException);
+      expect(prismaMock.commissionVente.update).not.toHaveBeenCalled();
+    });
+
+    it('refuse que le créateur de l’estimation la valide lui-même (quatre yeux)', async () => {
+      await expect(
+        commissions.validateCommission('d1', 'c1', {
+          id: 'resp1',
+          roles: ['manager'],
+          permissions: ['ventes:administrer'],
+        }),
+      ).rejects.toThrow(ForbiddenException);
+      expect(prismaMock.commissionVente.update).not.toHaveBeenCalled();
+    });
+
+    it('est acceptée d’un manager autre que le créateur, en gardant sa trace', async () => {
+      await commissions.validateCommission('d1', 'c1', {
+        id: 'mgr1',
+        roles: ['manager'],
+        permissions: ['ventes:administrer'],
+      });
+
+      expect(prismaMock.commissionVente.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            statut: 'validee',
+            montantValide: 150000,
+            validatedById: 'mgr1',
+          }),
+        }),
+      );
+    });
   });
 });

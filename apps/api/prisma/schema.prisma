@@ -67,6 +67,8 @@ model User {
   objectifsCommerciaux     ObjectifCommercial[] @relation("ObjectifCommercial")
   objectifsDefinis         ObjectifCommercial[] @relation("ObjectifCreator")
   documentsVenteCrees      DocumentVente[]      @relation("DocumentVenteCreator")
+  visitesAccompagnees      VisiteProspect[]     @relation("VisiteAccompagnateur")
+  visitesCreees            VisiteProspect[]     @relation("VisiteCreatedBy")
 
   @@map("users")
 }
@@ -136,6 +138,8 @@ model Terrain {
   dossiers                DossierVente[]
   createdAt               DateTime             @default(now())
   updatedAt               DateTime             @updatedAt
+  visitesProspect         VisiteProspect[]     @relation("TerrainVisitesProspect")
+  prospectsInteresses     Prospect[]           @relation("ProspectTerrainChoisi")
 
   @@index([statutJuridique])
   @@index([niveauVerification])
@@ -448,34 +452,113 @@ model ReservationRequest {
 // ============================================================
 
 model Prospect {
-  id                      String   @id @default(uuid())
+  id                      String    @id @default(uuid())
+  /**
+   * Référence lisible attribuée à la création : P-2026-0007.
+   */
+  referenceInterne        String?   @unique
   nom                     String
   prenom                  String?
   email                   String?
   telephone               String?
+  /**
+   * Le numéro de téléphone est joignable sur WhatsApp.
+   */
+  whatsapp                Boolean   @default(false)
+  villeResidence          String?
   paysResidence           String?
   sourceAcquisition       String?
+  niveauInteret           String?
   besoins                 String?
-  budgetMin               Decimal? @db.Decimal(15, 2)
-  budgetMax               Decimal? @db.Decimal(15, 2)
+  // --- Qualification du besoin (fiche de suivi § 2) ---
+  zoneRecherchee          String?
+  surfaceSouhaitee        Int?
+  typeDocumentSouhaite    String?
+  objectifAchat           String?
+  budgetMin               Decimal?  @db.Decimal(15, 2)
+  budgetMax               Decimal?  @db.Decimal(15, 2)
   preferences             String?
+  // --- Premier contact (fiche de suivi § 2) ---
+  premierContactLe        DateTime?
+  premierContactMoyen     String?
+  // --- Suivi : prochaine action et relance (règle commerciale) ---
+  prochaineAction         String?
+  prochaineRelanceLe      DateTime?
+  // --- Négociation et sortie (fiche de suivi § 7) ---
+  terrainChoisiId         String?
+  terrainChoisi           Terrain?  @relation("ProspectTerrainChoisi", fields: [terrainChoisiId], references: [id], onDelete: SetNull)
+  offreClient             Decimal?  @db.Decimal(15, 2)
+  prixNegocie             Decimal?  @db.Decimal(15, 2)
+  commentaireNegociation  String?
+  /**
+   * Motif obligatoire quand le prospect sort du pipeline.
+   */
+  motifSortie             String?
   commercialResponsableId String?
-  commercialResponsable   User?    @relation("ProspectCommercial", fields: [commercialResponsableId], references: [id], onDelete: SetNull)
-  statutPipeline          String   @default("nouveau_contact")
-  score                   Int?     @default(0)
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+  commercialResponsable   User?     @relation("ProspectCommercial", fields: [commercialResponsableId], references: [id], onDelete: SetNull)
+  statutPipeline          String    @default("nouveau")
+  score                   Int?      @default(0)
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
 
   activites  ActiviteCrm[]
+  visites    VisiteProspect[]
   documents  DocumentCrm[]
   dossiers   DossierVente[]
-  auditLogs  AuditLog[]     @relation("ProspectAuditLog")
-  clientUser User?          @relation("ProspectClientUser")
+  auditLogs  AuditLog[]       @relation("ProspectAuditLog")
+  clientUser User?            @relation("ProspectClientUser")
 
   @@index([commercialResponsableId])
   @@index([statutPipeline])
   @@index([createdAt])
+  @@index([prochaineRelanceLe])
   @@map("prospects")
+}
+
+/**
+ * Terrain proposé à un prospect, avec son rendez-vous de visite et le retour
+ * du client (fiche de suivi § 3 à 5). Un même prospect peut en avoir
+ * plusieurs : c'est l'historique des propositions qui lui ont été faites.
+ */
+model VisiteProspect {
+  id         String   @id @default(uuid())
+  prospectId String
+  prospect   Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+  terrainId  String
+  terrain    Terrain  @relation("TerrainVisitesProspect", fields: [terrainId], references: [id], onDelete: Cascade)
+  /**
+   * proposee → programmee → effectuee | annulee
+   */
+  statut     String   @default("proposee")
+
+  // --- Rendez-vous ---
+  dateProposee      DateTime?
+  dateConfirmee     DateTime?
+  heure             String?
+  lieuRendezVous    String?
+  fraisVisite       Decimal?  @db.Decimal(15, 2)
+  fraisPayes        Boolean   @default(false)
+  accompagnateurId  String?
+  accompagnateur    User?     @relation("VisiteAccompagnateur", fields: [accompagnateurId], references: [id], onDelete: SetNull)
+  motifNonEffectuee String?
+
+  // --- Retour après la visite ---
+  dateRetour           DateTime?
+  terrainPlait         String?
+  prixAccepte          String?
+  objectionPrincipale  String?
+  commentaireClient    String?
+  souhaiteAutreTerrain Boolean   @default(false)
+
+  createdById String?
+  createdBy   User?    @relation("VisiteCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([prospectId, statut])
+  @@index([terrainId])
+  @@index([dateConfirmee])
+  @@map("visites_prospect")
 }
 
 model DossierVente {
@@ -589,6 +672,11 @@ model CommissionVente {
   montantValide  Decimal?     @db.Decimal(15, 2)
   montantPaye    Decimal?     @db.Decimal(15, 2)
   statut         String       @default("estimee")
+  /**
+   * Qui a créé l'estimation : la validation doit venir d'une autre personne.
+   */
+  createdById    String?
+  validatedById  String?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 

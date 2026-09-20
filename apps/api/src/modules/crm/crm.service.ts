@@ -7,7 +7,12 @@ import {
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { CrmAccessService, type CrmUser } from './crm-access.service';
-import { CrmOptionsService } from './crm-options.service';
+import {
+  CrmOptionsService,
+  isActiveStage,
+  PIPELINE_CLOSED_STAGES,
+  PIPELINE_EXIT_STAGES,
+} from './crm-options.service';
 import { CreateProspectDto } from './dto/create-prospect.dto';
 import { UpdateProspectDto } from './dto/update-prospect.dto';
 import { QueryProspectDto } from './dto/query-prospect.dto';
@@ -22,13 +27,37 @@ const prospectInclude = {
   documents: {
     orderBy: { createdAt: 'desc' as const },
   },
+  visites: {
+    orderBy: { createdAt: 'desc' as const },
+    include: {
+      terrain: {
+        select: {
+          id: true,
+          referenceInterne: true,
+          nom: true,
+          region: true,
+          commune: true,
+          superficie: true,
+          prixPublic: true,
+          statutJuridique: true,
+          statutCommercial: true,
+        },
+      },
+      accompagnateur: { select: { id: true, firstName: true, lastName: true } },
+    },
+  },
+  terrainChoisi: {
+    select: { id: true, referenceInterne: true, nom: true, prixPublic: true },
+  },
   dossiers: {
     include: {
       terrain: { select: { id: true, referenceInterne: true, nom: true } },
       mandat: { select: { id: true, referenceInterne: true } },
     },
   },
-  _count: { select: { activites: true, documents: true, dossiers: true } },
+  _count: {
+    select: { activites: true, documents: true, dossiers: true, visites: true },
+  },
 } as const;
 
 /**
@@ -44,7 +73,9 @@ const prospectListInclude = {
     orderBy: { dateEcheance: 'asc' as const },
     take: 1,
   },
-  _count: { select: { activites: true, documents: true, dossiers: true } },
+  _count: {
+    select: { activites: true, documents: true, dossiers: true, visites: true },
+  },
 } as const;
 
 /**
@@ -74,6 +105,12 @@ export class CrmService {
               { prenom: { contains: search, mode: 'insensitive' as const } },
               { email: { contains: search, mode: 'insensitive' as const } },
               { telephone: { contains: search, mode: 'insensitive' as const } },
+              {
+                referenceInterne: {
+                  contains: search,
+                  mode: 'insensitive' as const,
+                },
+              },
             ],
           }
         : {}),
@@ -85,6 +122,16 @@ export class CrmService {
       ...(query.sourceAcquisition
         ? { sourceAcquisition: query.sourceAcquisition }
         : {}),
+      ...(query.zoneRecherchee
+        ? {
+            zoneRecherchee: {
+              contains: query.zoneRecherchee,
+              mode: 'insensitive' as const,
+            },
+          }
+        : {}),
+      ...(query.niveauInteret ? { niveauInteret: query.niveauInteret } : {}),
+      ...this.vueFilter(query.vue),
       ...(query.dateMin || query.dateMax
         ? {
             createdAt: {
@@ -112,6 +159,58 @@ export class CrmService {
       page,
       pageSize,
     };
+  }
+
+  /**
+   * Vues rapides de l'espace commercial : ce sont des filtres, pas des
+   * écrans séparés — la liste, ses colonnes et ses exports restent uniques.
+   */
+  private vueFilter(vue?: string): Prisma.ProspectWhereInput {
+    if (!vue) return {};
+    const now = new Date();
+    const endOfDay = new Date(now);
+    endOfDay.setHours(23, 59, 59, 999);
+    const startOfDay = new Date(now);
+    startOfDay.setHours(0, 0, 0, 0);
+    const actifs: Prisma.ProspectWhereInput = {
+      statutPipeline: { notIn: [...PIPELINE_CLOSED_STAGES] },
+    };
+    switch (vue) {
+      case 'a_relancer':
+        return { ...actifs, prochaineRelanceLe: { lte: endOfDay } };
+      case 'relance_en_retard':
+        return { ...actifs, prochaineRelanceLe: { lt: startOfDay } };
+      case 'sans_action':
+        return { ...actifs, prochaineRelanceLe: null };
+      case 'visites_a_venir':
+        return {
+          ...actifs,
+          visites: {
+            some: {
+              statut: { in: ['proposee', 'programmee'] },
+              dateConfirmee: { gte: startOfDay },
+            },
+          },
+        };
+      case 'retours_a_saisir':
+        // Règle du cahier des charges : après chaque visite, un retour doit
+        // être enregistré. On liste donc les visites dont la date est passée
+        // et dont le client n'a pas encore donné son avis.
+        return {
+          ...actifs,
+          visites: {
+            some: {
+              statut: { in: ['proposee', 'programmee'] },
+              dateConfirmee: { lt: startOfDay },
+              dateRetour: null,
+            },
+          },
+        };
+      case 'actifs':
+        return actifs;
+      default:
+        return {};
+    }
   }
 
   async findOne(id: string, user: CrmUser) {
@@ -266,6 +365,7 @@ export class CrmService {
     nextStage: string,
     user: CrmUser,
     justification?: string,
+    options?: { prochaineAction?: string; prochaineRelanceLe?: string },
   ) {
     const before = await this.findOne(id, user);
     const isManager =
@@ -283,22 +383,102 @@ export class CrmService {
     }
     await this.options.assertPipelineStage(nextStage);
 
-    if (
-      nextStage === 'perdu' &&
-      (!justification || justification.trim().length < 3)
-    ) {
+    const isExit = PIPELINE_EXIT_STAGES.includes(
+      nextStage as (typeof PIPELINE_EXIT_STAGES)[number],
+    );
+    if (isExit && (!justification || justification.trim().length < 3)) {
       throw new BadRequestException(
-        'Une justification est obligatoire pour passer en statut "perdu"',
+        'Un motif est obligatoire pour sortir un prospect du parcours (refusé, abandonné ou injoignable)',
       );
     }
 
+    // Règle commerciale : aucun prospect actif ne reste sans prochaine action.
+    const suivi = await this.resolveProchaineAction(id, nextStage, options);
+
     const prospect = await this.prisma.prospect.update({
       where: { id },
-      data: { statutPipeline: nextStage },
+      data: {
+        statutPipeline: nextStage,
+        ...suivi,
+        ...(isExit ? { motifSortie: justification?.trim() } : {}),
+      },
       include: prospectInclude,
     });
 
     return { before, prospect, justification };
+  }
+
+  /**
+   * Prochaine action du prospect : fournie par l'utilisateur, sinon déduite
+   * de la première activité encore à faire. Une étape de fin de parcours
+   * efface la relance.
+   */
+  private async resolveProchaineAction(
+    prospectId: string,
+    nextStage: string,
+    options?: { prochaineAction?: string; prochaineRelanceLe?: string },
+  ): Promise<{
+    prochaineAction?: string | null;
+    prochaineRelanceLe?: Date | null;
+  }> {
+    if (!isActiveStage(nextStage)) {
+      return { prochaineAction: null, prochaineRelanceLe: null };
+    }
+    if (options?.prochaineAction && options.prochaineRelanceLe) {
+      return {
+        prochaineAction: options.prochaineAction.trim(),
+        prochaineRelanceLe: new Date(options.prochaineRelanceLe),
+      };
+    }
+    const [prospect, activite] = await Promise.all([
+      this.prisma.prospect.findUnique({
+        where: { id: prospectId },
+        select: { prochaineAction: true, prochaineRelanceLe: true },
+      }),
+      this.prisma.activiteCrm.findFirst({
+        where: {
+          prospectId,
+          statut: 'a_faire',
+          dateEcheance: { not: null },
+        },
+        orderBy: { dateEcheance: 'asc' },
+        select: { titre: true, dateEcheance: true },
+      }),
+    ]);
+    if (activite?.dateEcheance) {
+      return {
+        prochaineAction: activite.titre,
+        prochaineRelanceLe: activite.dateEcheance,
+      };
+    }
+    if (prospect?.prochaineRelanceLe) return {};
+    throw new BadRequestException(
+      'Indiquez la prochaine action et la date de relance : un prospect actif ne doit jamais rester sans suite',
+    );
+  }
+
+  /**
+   * Référence lisible du prospect (P-2026-0007), attribuée à la création.
+   * Le compteur repart à 1 chaque année ; en cas de collision (deux créations
+   * simultanées), on réessaie avec le rang suivant.
+   */
+  private async nextReference(): Promise<string> {
+    const year = new Date().getFullYear();
+    const prefix = `P-${year}-`;
+    const count = await this.prisma.prospect.count({
+      where: { referenceInterne: { startsWith: prefix } },
+    });
+    for (let rank = count + 1; rank <= count + 20; rank += 1) {
+      const candidate = `${prefix}${String(rank).padStart(4, '0')}`;
+      const exists = await this.prisma.prospect.findUnique({
+        where: { referenceInterne: candidate },
+        select: { id: true },
+      });
+      if (!exists) return candidate;
+    }
+    throw new ConflictException(
+      'Impossible d’attribuer une référence de prospect, réessayez',
+    );
   }
 
   async convertContact(
@@ -344,7 +524,7 @@ export class CrmService {
         telephone: contact.telephone,
         sourceAcquisition: 'contact_public',
         besoins: contact.message,
-        statutPipeline: 'nouveau_contact',
+        statutPipeline: 'nouveau',
         commercialResponsableId: commercialResponsableId ?? null,
       },
       include: prospectInclude,
@@ -371,6 +551,8 @@ export class CrmService {
 
   async create(dto: CreateProspectDto, user: CrmUser) {
     await this.options.assertPipelineStage(dto.statutPipeline);
+    await this.options.assertSource(dto.sourceAcquisition);
+    await this.options.assertNiveauInteret(dto.niveauInteret);
     const isManager = this.access.isManager(user);
     if (
       !isManager &&
@@ -389,9 +571,17 @@ export class CrmService {
     const commercialResponsableId = isManager
       ? dto.commercialResponsableId
       : (dto.commercialResponsableId ?? user.id);
+    const { premierContactLe, prochaineRelanceLe, ...rest } = dto;
     const prospect = await this.prisma.prospect.create({
       data: {
-        ...(dto as unknown as Prisma.ProspectUncheckedCreateInput),
+        ...(rest as unknown as Prisma.ProspectUncheckedCreateInput),
+        referenceInterne: await this.nextReference(),
+        ...(premierContactLe
+          ? { premierContactLe: new Date(premierContactLe) }
+          : {}),
+        ...(prochaineRelanceLe
+          ? { prochaineRelanceLe: new Date(prochaineRelanceLe) }
+          : {}),
         commercialResponsableId,
       },
       include: prospectInclude,
@@ -402,11 +592,56 @@ export class CrmService {
   async update(id: string, dto: UpdateProspectDto, user: CrmUser) {
     await this.access.assertOwnership(id, user);
     await this.options.assertPipelineStage(dto.statutPipeline);
+    await this.options.assertSource(dto.sourceAcquisition);
+    await this.options.assertNiveauInteret(dto.niveauInteret);
     const data: Prisma.ProspectUncheckedUpdateInput = {
       ...(dto.nom && { nom: dto.nom }),
       ...(dto.prenom !== undefined && { prenom: dto.prenom }),
       ...(dto.email !== undefined && { email: dto.email }),
       ...(dto.telephone !== undefined && { telephone: dto.telephone }),
+      ...(dto.whatsapp !== undefined && { whatsapp: dto.whatsapp }),
+      ...(dto.villeResidence !== undefined && {
+        villeResidence: dto.villeResidence,
+      }),
+      ...(dto.niveauInteret !== undefined && {
+        niveauInteret: dto.niveauInteret,
+      }),
+      ...(dto.zoneRecherchee !== undefined && {
+        zoneRecherchee: dto.zoneRecherchee,
+      }),
+      ...(dto.surfaceSouhaitee !== undefined && {
+        surfaceSouhaitee: dto.surfaceSouhaitee,
+      }),
+      ...(dto.typeDocumentSouhaite !== undefined && {
+        typeDocumentSouhaite: dto.typeDocumentSouhaite,
+      }),
+      ...(dto.objectifAchat !== undefined && {
+        objectifAchat: dto.objectifAchat,
+      }),
+      ...(dto.premierContactLe !== undefined && {
+        premierContactLe: dto.premierContactLe
+          ? new Date(dto.premierContactLe)
+          : null,
+      }),
+      ...(dto.premierContactMoyen !== undefined && {
+        premierContactMoyen: dto.premierContactMoyen,
+      }),
+      ...(dto.prochaineAction !== undefined && {
+        prochaineAction: dto.prochaineAction,
+      }),
+      ...(dto.prochaineRelanceLe !== undefined && {
+        prochaineRelanceLe: dto.prochaineRelanceLe
+          ? new Date(dto.prochaineRelanceLe)
+          : null,
+      }),
+      ...(dto.terrainChoisiId !== undefined && {
+        terrainChoisiId: dto.terrainChoisiId,
+      }),
+      ...(dto.offreClient !== undefined && { offreClient: dto.offreClient }),
+      ...(dto.prixNegocie !== undefined && { prixNegocie: dto.prixNegocie }),
+      ...(dto.commentaireNegociation !== undefined && {
+        commentaireNegociation: dto.commentaireNegociation,
+      }),
       ...(dto.paysResidence !== undefined && {
         paysResidence: dto.paysResidence,
       }),

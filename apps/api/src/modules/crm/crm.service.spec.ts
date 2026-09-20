@@ -15,7 +15,7 @@ describe('CrmService', () => {
 
   it('rejette un statut pipeline invalide', async () => {
     prismaMock.systemSetting.findUnique.mockResolvedValue({
-      value: ['nouveau_contact', 'qualification'],
+      value: ['nouveau', 'qualifie'],
     });
 
     await expect(
@@ -115,45 +115,109 @@ describe('CrmService', () => {
     );
   });
 
-  it('transitionne le pipeline avec justification pour perdu', async () => {
+  it('sort un prospect du parcours avec un motif', async () => {
     prismaMock.prospect.findUnique.mockResolvedValue({
       id: 'p1',
       commercialResponsableId: null,
-      statutPipeline: 'qualification',
+      statutPipeline: 'qualifie',
     });
     prismaMock.prospect.update.mockResolvedValue({
       id: 'p1',
-      statutPipeline: 'perdu',
+      statutPipeline: 'abandonne',
     });
-    prismaMock.systemSetting.findUnique.mockResolvedValue({ value: ['perdu'] });
+    prismaMock.systemSetting.findUnique.mockResolvedValue({
+      value: ['abandonne'],
+    });
 
     const result = await service.transitionPipeline(
       'p1',
-      'perdu',
+      'abandonne',
       { id: 'u1', roles: ['manager'] },
       'Client a abandonné',
     );
 
+    // Une sortie efface la relance et conserve le motif.
     expect(prismaMock.prospect.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'p1' },
-        data: { statutPipeline: 'perdu' },
+        data: {
+          statutPipeline: 'abandonne',
+          prochaineAction: null,
+          prochaineRelanceLe: null,
+          motifSortie: 'Client a abandonné',
+        },
       }),
     );
-    expect(result.prospect.statutPipeline).toBe('perdu');
+    expect(result.prospect.statutPipeline).toBe('abandonne');
   });
 
-  it('rejette la transition en perdu sans justification', async () => {
+  it('refuse d’avancer un prospect actif sans prochaine action', async () => {
     prismaMock.prospect.findUnique.mockResolvedValue({
       id: 'p1',
       commercialResponsableId: null,
-      statutPipeline: 'qualification',
+      statutPipeline: 'nouveau',
+      prochaineRelanceLe: null,
+    });
+    prismaMock.systemSetting.findUnique.mockResolvedValue({
+      value: ['contacte'],
+    });
+    prismaMock.activiteCrm.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.transitionPipeline('p1', 'contacte', {
+        id: 'u1',
+        roles: ['manager'],
+      }),
+    ).rejects.toThrow(BadRequestException);
+    expect(prismaMock.prospect.update).not.toHaveBeenCalled();
+  });
+
+  it('accepte la prochaine action fournie avec la transition', async () => {
+    prismaMock.prospect.findUnique.mockResolvedValue({
+      id: 'p1',
+      commercialResponsableId: null,
+      statutPipeline: 'nouveau',
+    });
+    prismaMock.systemSetting.findUnique.mockResolvedValue({
+      value: ['contacte'],
+    });
+    prismaMock.prospect.update.mockResolvedValue({
+      id: 'p1',
+      statutPipeline: 'contacte',
+    });
+
+    await service.transitionPipeline(
+      'p1',
+      'contacte',
+      { id: 'u1', roles: ['manager'] },
+      undefined,
+      {
+        prochaineAction: 'Rappeler le client',
+        prochaineRelanceLe: '2026-10-01',
+      },
+    );
+
+    expect(prismaMock.prospect.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          statutPipeline: 'contacte',
+          prochaineAction: 'Rappeler le client',
+        }),
+      }),
+    );
+  });
+
+  it('rejette une sortie du parcours sans motif', async () => {
+    prismaMock.prospect.findUnique.mockResolvedValue({
+      id: 'p1',
+      commercialResponsableId: null,
+      statutPipeline: 'qualifie',
     });
 
     await expect(
       service.transitionPipeline(
         'p1',
-        'perdu',
+        'abandonne',
         { id: 'u1', roles: ['manager'] },
         '',
       ),
@@ -162,14 +226,14 @@ describe('CrmService', () => {
 
   it('interdit à un commercial d’affecter un prospect à un autre commercial', async () => {
     prismaMock.systemSetting.findUnique.mockResolvedValue({
-      value: ['nouveau_contact'],
+      value: ['nouveau'],
     });
 
     await expect(
       service.create(
         {
           nom: 'Prospect',
-          statutPipeline: 'nouveau_contact',
+          statutPipeline: 'nouveau',
           commercialResponsableId: 'other',
         },
         { id: 'u1', roles: ['commercial'] },
@@ -182,7 +246,7 @@ describe('CrmService', () => {
     prismaMock.prospect.findUnique.mockResolvedValue({
       id: 'p1',
       commercialResponsableId: 'other',
-      statutPipeline: 'qualification',
+      statutPipeline: 'qualifie',
     });
 
     await expect(
@@ -209,7 +273,7 @@ describe('CrmService', () => {
       prenom: 'Jean',
       email: 'j@d.com',
       telephone: '77000000',
-      statutPipeline: 'nouveau_contact',
+      statutPipeline: 'nouveau',
     });
     prismaMock.contact.update.mockResolvedValue({ id: 'c1' });
     prismaMock.activiteCrm.create.mockResolvedValue({ id: 'a1' });
@@ -223,7 +287,7 @@ describe('CrmService', () => {
           prenom: 'Jean',
           email: 'j@d.com',
           sourceAcquisition: 'contact_public',
-          statutPipeline: 'nouveau_contact',
+          statutPipeline: 'nouveau',
         }),
       }),
     );

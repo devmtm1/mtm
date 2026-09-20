@@ -69,6 +69,12 @@ export class TerrainsController {
     return this.terrains.findAll(query, user);
   }
 
+  @Get('catalogue') @RequirePermissions('crm:consulter') getCatalogue(
+    @Query('search') search?: string,
+  ) {
+    return this.terrains.catalogueProposition(search);
+  }
+
   @Get('options') @RequirePermissions('terrains:consulter') getOptions() {
     return this.terrains.getOptions();
   }

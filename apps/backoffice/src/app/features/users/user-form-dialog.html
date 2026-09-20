@@ -41,7 +41,10 @@
       <mat-label>Rôle</mat-label>
       <mat-select formControlName="roleId" panelClass="role-panel">
         @for (role of roles(); track role.id) {
-          <mat-option [value]="role.id">{{ roleLabel(role.name) }}</mat-option>
+          <mat-option [value]="role.id" [disabled]="isPhase2(role.name)">
+            {{ roleLabel(role.name) }}
+            @if (isPhase2(role.name)) { <span class="role-option__note">— module à venir (phase 2)</span> }
+          </mat-option>
         }
       </mat-select>
       @if (selectedRole(); as role) {

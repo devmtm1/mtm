@@ -51,6 +51,56 @@ describe('TerrainsService', () => {
     expect(prismaMock.terrain.create).not.toHaveBeenCalled();
   });
 
+  it('propose au commercial tout le catalogue encore vendable, même les terrains dont il n’est pas responsable', async () => {
+    prismaMock.terrain.findMany.mockResolvedValue([
+      {
+        id: 't1',
+        referenceInterne: 'T-010',
+        nom: 'Parcelle Mbour',
+        commune: 'Mbour',
+        region: 'Thiès',
+        superficie: { toString: () => '300' },
+        prixPublic: { toString: () => '12000000' },
+        statutCommercial: 'Disponible',
+      },
+    ]);
+
+    const items = await service.catalogueProposition('mbour');
+
+    const where = prismaMock.terrain.findMany.mock.calls[0][0].where;
+    expect(where.statutCommercial).toEqual({ not: 'Vendu' });
+    expect(where.commercialResponsableId).toBeUndefined();
+    expect(items).toEqual([
+      expect.objectContaining({
+        id: 't1',
+        referenceInterne: 'T-010',
+        superficie: 300,
+        prixPublic: 12000000,
+      }),
+    ]);
+  });
+
+  it('laisse un commercial ouvrir la fiche d’un terrain qu’il ne gère pas, pour le proposer', async () => {
+    prismaMock.terrain.findUnique.mockResolvedValue({
+      id: 't1',
+      referenceInterne: 'T-010',
+      commercialResponsableId: 'autre-commercial',
+      prixAcquisition: 5000000,
+      marge: 1000000,
+    });
+
+    const terrain = await service.findOne('t1', internalUser);
+
+    expect(terrain.id).toBe('t1');
+    // Le portefeuille n'est plus un filtre de lecture...
+    expect(prismaMock.terrain.findUnique.mock.calls[0][0].where).toEqual({
+      id: 't1',
+    });
+    // ...mais les données sensibles restent masquées.
+    expect(terrain.prixAcquisition).toBeNull();
+    expect(terrain.marge).toBeNull();
+  });
+
   it('lève une erreur si le terrain à modifier est introuvable', async () => {
     prismaMock.terrain.findUnique.mockResolvedValue(null);
 

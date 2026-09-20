@@ -15,11 +15,11 @@
 
     <header class="detail-header">
       <div class="detail-header__main">
-        <p class="eyebrow">Prospect</p>
+        <p class="eyebrow">Prospect @if (p.referenceInterne) { · {{ p.referenceInterne }} }</p>
         <h1>{{ name() }}</h1>
         <p class="detail-header__meta">
           @if (p.telephone) {
-            <a [href]="'tel:' + p.telephone"><svg lucidePhone aria-hidden="true"></svg>{{ p.telephone }}</a>
+            <a [href]="'tel:' + p.telephone"><svg lucidePhone aria-hidden="true"></svg>{{ p.telephone }}@if (p.whatsapp) { · WhatsApp }</a>
           }
           @if (p.email) {
             <a [href]="'mailto:' + p.email"><svg lucideMail aria-hidden="true"></svg>{{ p.email }}</a>
@@ -39,8 +39,11 @@
         </p>
         <div class="status-line">
           <span [class]="stagePill(p.statutPipeline)" [matTooltip]="stageHelp(p.statutPipeline)">{{ stageLabel(p.statutPipeline) }}</span>
-          @if (p.score !== null && p.score > 0) {
-            <span class="status-pill" matTooltip="Estimation du potentiel (0 à 100)">Score {{ p.score }}</span>
+          @if (p.niveauInteret) {
+            <span [class]="interestPill(p.niveauInteret)" matTooltip="Niveau d’intérêt du client">{{ interestLabel(p.niveauInteret) }}</span>
+          }
+          @if (p.sourceAcquisition) {
+            <span class="status-pill" matTooltip="Comment ce prospect est arrivé chez MTM">{{ sourceLabel(p.sourceAcquisition) }}</span>
           }
           @if (overdueCount() > 0) {
             <span class="status-pill status-pill--danger">{{ overdueCount() }} action{{ overdueCount() > 1 ? 's' : '' }} en retard</span>
@@ -48,10 +51,15 @@
         </div>
       </div>
       <div class="detail-header__actions">
+        @if (telHref()) {
+          <a mat-stroked-button [href]="telHref()"><svg class="btn-icon" lucidePhone aria-hidden="true"></svg>Appeler</a>
+        }
+        @if (whatsappHref()) {
+          <a mat-stroked-button [href]="whatsappHref()" target="_blank" rel="noopener">WhatsApp</a>
+        }
         @if (canModify) {
-          <button mat-stroked-button type="button" (click)="planActivity()">
-            <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Planifier une action
-          </button>
+          <button mat-stroked-button type="button" (click)="planActivity('note')">Ajouter une note</button>
+          <button mat-stroked-button type="button" (click)="planRelance()">Programmer une relance</button>
           <button mat-stroked-button type="button" (click)="changeStage()">Changer d’étape</button>
           <button mat-flat-button color="primary" type="button" (click)="edit()">
             <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Modifier
@@ -207,6 +215,112 @@
         }
       </section>
 
+      <!-- Suite à donner : la règle commerciale, visible en permanence -->
+      <section class="page-card detail-section detail-section--wide">
+        <div class="detail-section__head">
+          <div>
+            <h2>Suite à donner</h2>
+            <p class="detail-section__hint">Règle MTM : aucun prospect actif ne reste sans prochaine action ni date de relance.</p>
+          </div>
+          @if (canModify && !isClosed()) {
+            <button mat-stroked-button type="button" (click)="planRelance()">Programmer une relance</button>
+          }
+        </div>
+        @if (isClosed()) {
+          <p class="detail-section__text">
+            Parcours terminé ({{ stageLabel(p.statutPipeline) }}).
+            @if (p.motifSortie) { Motif : « {{ p.motifSortie }} ». }
+          </p>
+        } @else if (p.prochaineRelanceLe || p.prochaineAction) {
+          <div class="relance-banner" [class.relance-banner--late]="relance() === 'en_retard'" [class.relance-banner--today]="relance() === 'aujourdhui'">
+            <svg lucideClock aria-hidden="true"></svg>
+            <div>
+              <strong>{{ p.prochaineAction || 'Relance à faire' }}</strong>
+              <small>{{ relanceLabel() }}@if (p.prochaineRelanceLe) { · {{ p.prochaineRelanceLe | date: 'dd/MM/yyyy' }} }</small>
+            </div>
+          </div>
+        } @else {
+          <p class="detail-section__text hint-error">Aucune prochaine action : ce prospect risque d’être oublié.</p>
+        }
+      </section>
+
+      <!-- Propositions de terrains, visites et retours -->
+      <section class="page-card detail-section detail-section--wide">
+        <div class="detail-section__head">
+          <div>
+            <h2>Terrains proposés et visites</h2>
+            <p class="detail-section__hint">Un terrain proposé, sa visite et le retour du client. L’historique évite de reproposer deux fois le même terrain.</p>
+          </div>
+          @if (canModify) {
+            <button mat-stroked-button type="button" (click)="proposeTerrain()">
+              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Proposer un terrain
+            </button>
+          }
+        </div>
+        @if (visites().length) {
+          <ul class="visite-list">
+            @for (visite of visites(); track visite.id) {
+              <li class="visite-item">
+                <div class="visite-item__head">
+                  <span [class]="visitePill(visite.statut)">{{ visiteLabel(visite.statut) }}</span>
+                  <strong>{{ visite.terrain.referenceInterne }} · {{ visite.terrain.nom }}</strong>
+                  <span class="visite-item__place">{{ visite.terrain.commune || '' }}</span>
+                  <span class="visite-item__actions">
+                    <button mat-button type="button" (click)="openTerrain(visite.terrain.id)" matTooltip="Ouvrir la fiche du terrain : photos, documents et caractéristiques">
+                      Voir le terrain
+                    </button>
+                  </span>
+                  @if (canModify) {
+                    <span class="visite-item__actions">
+                      <button mat-button type="button" (click)="editVisite(visite)">Visite et retour</button>
+                      <button mat-icon-button type="button" (click)="removeVisite(visite)" aria-label="Retirer la proposition" matTooltip="Retirer la proposition">
+                        <svg class="btn-icon" lucideTrash2 aria-hidden="true"></svg>
+                      </button>
+                    </span>
+                  }
+                </div>
+                <dl class="visite-item__facts">
+                  @if (visite.dateConfirmee) {
+                    <div><dt>Rendez-vous</dt><dd>{{ visite.dateConfirmee | date: 'dd/MM/yyyy' }}@if (visite.heure) { à {{ visite.heure }} }</dd></div>
+                  } @else if (visite.dateProposee) {
+                    <div><dt>Date proposée</dt><dd>{{ visite.dateProposee | date: 'dd/MM/yyyy' }}</dd></div>
+                  }
+                  @if (visite.lieuRendezVous) {
+                    <div><dt>Lieu</dt><dd>{{ visite.lieuRendezVous }}</dd></div>
+                  }
+                  @if (visite.fraisVisite) {
+                    <div><dt>Frais de visite</dt><dd>{{ visite.fraisVisite | mtmMoney }} · {{ visite.fraisPayes ? 'payés' : 'non payés' }}</dd></div>
+                  }
+                  @if (visite.accompagnateur) {
+                    <div><dt>Accompagnateur</dt><dd>{{ visite.accompagnateur.firstName }} {{ visite.accompagnateur.lastName }}</dd></div>
+                  }
+                  @if (visite.motifNonEffectuee) {
+                    <div><dt>Non effectuée</dt><dd>{{ cancelLabel(visite.motifNonEffectuee) }}</dd></div>
+                  }
+                  @if (visite.terrainPlait) {
+                    <div><dt>Le terrain plaît</dt><dd><span [class]="feedbackPill(visite.terrainPlait)">{{ feedbackLabel(visite.terrainPlait) }}</span></dd></div>
+                  }
+                  @if (visite.prixAccepte) {
+                    <div><dt>Prix</dt><dd>{{ priceLabel(visite.prixAccepte) }}</dd></div>
+                  }
+                  @if (visite.objectionPrincipale) {
+                    <div><dt>Objection</dt><dd>{{ objectionLabel(visite.objectionPrincipale) }}</dd></div>
+                  }
+                  @if (visite.souhaiteAutreTerrain) {
+                    <div><dt>Suite</dt><dd>Souhaite voir un autre terrain</dd></div>
+                  }
+                </dl>
+                @if (visite.commentaireClient) {
+                  <p class="visite-item__comment">« {{ visite.commentaireClient }} »</p>
+                }
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="detail-section__text">Aucun terrain proposé pour l’instant. Proposez-en un pour déclencher une visite.</p>
+        }
+      </section>
+
       <!-- Besoin -->
       <section class="page-card detail-section">
         <h2>Son projet</h2>
@@ -221,8 +335,22 @@
               }
             </dd>
           </div>
-          <div><dt>Pays de résidence</dt><dd>{{ p.paysResidence || '—' }}</dd></div>
-          <div><dt>Origine du contact</dt><dd>{{ p.sourceAcquisition ? (p.sourceAcquisition | mtmLabel) : '—' }}</dd></div>
+          <div><dt>Zone recherchée</dt><dd>{{ p.zoneRecherchee || '—' }}</dd></div>
+          <div><dt>Surface souhaitée</dt><dd>{{ p.surfaceSouhaitee ? p.surfaceSouhaitee + ' m²' : '—' }}</dd></div>
+          <div><dt>Document attendu</dt><dd>{{ p.typeDocumentSouhaite || '—' }}</dd></div>
+          <div><dt>Objectif</dt><dd>{{ p.objectifAchat ? goalLabel(p.objectifAchat) : '—' }}</dd></div>
+          <div><dt>Réside à</dt><dd>{{ residence(p) }}</dd></div>
+          <div><dt>Source</dt><dd>{{ p.sourceAcquisition ? sourceLabel(p.sourceAcquisition) : '—' }}</dd></div>
+          <div>
+            <dt>Premier contact</dt>
+            <dd>
+              @if (p.premierContactLe) {
+                {{ p.premierContactLe | date: 'dd/MM/yyyy' }}@if (p.premierContactMoyen) { · {{ channelLabel(p.premierContactMoyen) }} }
+              } @else {
+                —
+              }
+            </dd>
+          </div>
           <div class="is-wide"><dt>Besoins</dt><dd class="is-text">{{ p.besoins || '—' }}</dd></div>
           <div class="is-wide"><dt>Préférences</dt><dd class="is-text">{{ p.preferences || '—' }}</dd></div>
         </dl>

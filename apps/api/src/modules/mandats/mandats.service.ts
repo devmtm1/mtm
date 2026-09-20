@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -184,6 +185,7 @@ export class MandatsService {
     this.validateDateRange(dto.dateDebut, dto.dateFin);
 
     await this.validateStatus(dto.statut);
+    this.assertCanSetStatus(dto.statut, user);
     if (
       dto.commercialResponsableId &&
       !this.access.hasGlobalScope(user) &&
@@ -218,6 +220,7 @@ export class MandatsService {
   async update(id: string, dto: UpdateMandatDto, user: MandatUser) {
     await this.access.ensureAccessible(id, user);
     await this.validateStatus(dto.statut);
+    this.assertCanSetStatus(dto.statut, user);
     if (dto.dateDebut && dto.dateFin) {
       this.validateDateRange(dto.dateDebut, dto.dateFin);
     }
@@ -274,6 +277,23 @@ export class MandatsService {
     if (new Date(dateFin) < new Date(dateDebut)) {
       throw new BadRequestException(
         'La date de fin doit être postérieure ou égale à la date de début',
+      );
+    }
+  }
+
+  /**
+   * Un commercial prépare le mandat en brouillon ; le rendre actif (ou le
+   * clôturer) engage MTM vis-à-vis du propriétaire : c'est la validation
+   * d'un responsable (permission mandats:valider).
+   */
+  private assertCanSetStatus(
+    statut: string | undefined,
+    user: MandatUser,
+  ): void {
+    if (statut === undefined || statut === 'Brouillon') return;
+    if (!user.permissions.includes('mandats:valider')) {
+      throw new ForbiddenException(
+        'Seul un responsable peut activer ou clôturer un mandat (validation requise)',
       );
     }
   }

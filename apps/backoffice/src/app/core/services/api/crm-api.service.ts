@@ -14,6 +14,9 @@ import type {
   ProspectStats,
   CommercialSummary,
   ProspectTimeline,
+  UpcomingVisite,
+  VisiteProspectItem,
+  VisiteProspectPayload,
 } from '../../models/prospect.model';
 
 export interface UpcomingTask {
@@ -55,6 +58,11 @@ export class CrmApiService {
       .get<ProspectOptions>(`${this.baseUrl}/options`)
       .pipe(shareReplay({ bufferSize: 1, refCount: false }));
     return this.options$;
+  }
+
+  /** Export CSV tracé : la justification part dans le corps, jamais dans l'URL. */
+  exportCsv(justification: string): Observable<Blob> {
+    return this.http.post(`${this.baseUrl}/export`, { justification }, { responseType: 'blob' });
   }
 
   getStats(): Observable<ProspectStats> {
@@ -104,11 +112,40 @@ export class CrmApiService {
     return this.http.delete<{ success: boolean }>(`${this.baseUrl}/${prospectId}/activites/${activiteId}`);
   }
 
-  transitionPipeline(prospectId: string, stage: string, justification?: string) {
+  transitionPipeline(
+    prospectId: string,
+    stage: string,
+    justification?: string,
+    suivi?: { prochaineAction?: string; prochaineRelanceLe?: string },
+  ) {
     return this.http.patch(`${this.baseUrl}/${prospectId}/pipeline`, {
       statutPipeline: stage,
       ...(justification ? { justification } : {}),
+      ...(suivi?.prochaineAction ? { prochaineAction: suivi.prochaineAction } : {}),
+      ...(suivi?.prochaineRelanceLe ? { prochaineRelanceLe: suivi.prochaineRelanceLe } : {}),
     });
+  }
+
+  // --- Propositions de terrains : rendez-vous de visite et retour client ---
+
+  getVisites(prospectId: string): Observable<VisiteProspectItem[]> {
+    return this.http.get<VisiteProspectItem[]>(`${this.baseUrl}/${prospectId}/visites`);
+  }
+
+  getUpcomingVisites(): Observable<UpcomingVisite[]> {
+    return this.http.get<UpcomingVisite[]>(`${this.baseUrl}/upcoming-visites`);
+  }
+
+  addVisite(prospectId: string, payload: VisiteProspectPayload): Observable<VisiteProspectItem> {
+    return this.http.post<VisiteProspectItem>(`${this.baseUrl}/${prospectId}/visites`, payload);
+  }
+
+  updateVisite(prospectId: string, visiteId: string, payload: VisiteProspectPayload): Observable<VisiteProspectItem> {
+    return this.http.patch<VisiteProspectItem>(`${this.baseUrl}/${prospectId}/visites/${visiteId}`, payload);
+  }
+
+  removeVisite(prospectId: string, visiteId: string): Observable<{ success: boolean }> {
+    return this.http.delete<{ success: boolean }>(`${this.baseUrl}/${prospectId}/visites/${visiteId}`);
   }
 
   convertContact(contactId: string, commercialResponsableId?: string) {

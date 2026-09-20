@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../database/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { PIPELINE_CLOSED_STAGES } from '../crm/crm-options.service';
 
 @Injectable()
 export class CronService {
@@ -109,6 +110,71 @@ export class CronService {
         },
       });
     }
+  }
+
+  /**
+   * Alerte de relance (section 9 du cahier CRM) : chaque matin, les
+   * prospects actifs dont la date de relance est atteinte ou dépassée sont
+   * signalés à leur commercial. Une seule alerte par prospect et par jour,
+   * comme pour les échéances de mandat.
+   */
+  @Cron(CronExpression.EVERY_DAY_AT_7AM)
+  async handleProspectsARelancer(): Promise<void> {
+    const now = new Date();
+    const startOfDay = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
+    const endOfDay = new Date(startOfDay.getTime() + 24 * 3600 * 1000 - 1);
+
+    const prospects = await this.prisma.prospect.findMany({
+      where: {
+        statutPipeline: { notIn: [...PIPELINE_CLOSED_STAGES] },
+        prochaineRelanceLe: { lte: endOfDay },
+      },
+      select: {
+        id: true,
+        referenceInterne: true,
+        nom: true,
+        prenom: true,
+        prochaineAction: true,
+        prochaineRelanceLe: true,
+        commercialResponsableId: true,
+      },
+    });
+
+    let alertes = 0;
+    for (const prospect of prospects) {
+      const dejaSignale = await this.prisma.auditLog.findFirst({
+        where: {
+          action: 'prospect.relance_due',
+          entityType: 'Prospect',
+          entityId: prospect.id,
+          createdAt: { gte: startOfDay },
+        },
+        select: { id: true },
+      });
+      if (dejaSignale) continue;
+      alertes += 1;
+      await this.audit.record({
+        userId: prospect.commercialResponsableId,
+        action: 'prospect.relance_due',
+        entityType: 'Prospect',
+        entityId: prospect.id,
+        newValue: {
+          referenceInterne: prospect.referenceInterne,
+          prospect: [prospect.prenom, prospect.nom].filter(Boolean).join(' '),
+          prochaineAction: prospect.prochaineAction,
+          prochaineRelanceLe: prospect.prochaineRelanceLe,
+          enRetard: Boolean(
+            prospect.prochaineRelanceLe &&
+            prospect.prochaineRelanceLe < startOfDay,
+          ),
+        },
+      });
+    }
+    this.logger.log(`Alerte relances CRM : ${alertes} prospect(s) à relancer.`);
   }
 
   @Cron(CronExpression.EVERY_HOUR)

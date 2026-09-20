@@ -6,6 +6,7 @@ import { environment } from '../../../../environments/environment';
 import type {
   CreateTerrainPayload,
   ProprietaireSummary,
+  TerrainCatalogueItem,
   TerrainDetail,
   TerrainOptions,
   TerrainPage,
@@ -32,6 +33,16 @@ export class TerrainsApiService {
       if (value !== undefined && value !== '') params = params.set(key, String(value));
     });
     return this.http.get<TerrainPage>(this.baseUrl, { params });
+  }
+
+  /**
+   * Terrains proposables à un prospect (tout le catalogue encore vendable),
+   * là où findAll ne montre au commercial que les terrains dont il est
+   * responsable.
+   */
+  catalogueProposition(search?: string): Observable<TerrainCatalogueItem[]> {
+    const params = search ? new HttpParams().set('search', search) : undefined;
+    return this.http.get<TerrainCatalogueItem[]>(`${this.baseUrl}/catalogue`, { params });
   }
 
   findOne(id: string): Observable<TerrainDetail> {

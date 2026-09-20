@@ -23,7 +23,7 @@ import {
 } from '@lucide/angular';
 import { CrmApiService } from '../../../core/services/api/crm-api.service';
 import { SessionService } from '../../../core/services/session.service';
-import type { ActiviteCrmItem, CommercialSummary, ProspectDetail as ProspectDetailModel, ProspectOptions } from '../../../core/models/prospect.model';
+import type { ActiviteCrmItem, CommercialSummary, ProspectDetail as ProspectDetailModel, ProspectOptions, VisiteProspectItem } from '../../../core/models/prospect.model';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { LabelPipe } from '../../../shared/pipes/label.pipe';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
@@ -32,7 +32,34 @@ import { HistoryDialog } from '../../../shared/dialogs/history-dialog';
 import { ActiviteDialog } from '../activite-dialog/activite-dialog';
 import { ClientAccountDialog } from '../client-account-dialog/client-account-dialog';
 import { SalesDossierDialog } from '../sales-dossier-dialog/sales-dossier-dialog';
-import { ACTIVITY_STATUS, ACTIVITY_TYPES, PIPELINE, PRIORITIES, dueLabel, help, isOverdue, label, pillClass, prospectName, statusChoices } from '../crm-status';
+import { VisiteDialog } from '../visite-dialog/visite-dialog';
+import {
+  ACTIVITY_STATUS,
+  ACTIVITY_TYPES,
+  CLOSED_STAGES,
+  CONTACT_CHANNELS,
+  EXIT_STAGES,
+  INTEREST_LEVELS,
+  OBJECTIONS,
+  PIPELINE,
+  PRICE_FEEDBACK,
+  PRIORITIES,
+  PURCHASE_GOALS,
+  SOURCES,
+  VISITE_CANCEL_REASONS,
+  VISITE_FEEDBACK,
+  VISITE_STATUS,
+  dueLabel,
+  help,
+  isOverdue,
+  label,
+  pillClass,
+  prospectName,
+  relanceState,
+  statusChoices,
+  telLink,
+  whatsappLink,
+} from '../crm-status';
 
 const ACTION_LABELS: Record<string, string> = {
   'prospect.created': 'Création du prospect',
@@ -43,6 +70,9 @@ const ACTION_LABELS: Record<string, string> = {
   'prospect.activite.created': 'Action planifiée',
   'prospect.activite.updated': 'Action modifiée',
   'prospect.activite.deleted': 'Action supprimée',
+  'prospect.visite.created': 'Terrain proposé',
+  'prospect.visite.updated': 'Visite ou retour mis à jour',
+  'prospect.visite.deleted': 'Proposition supprimée',
   'prospect.document.created': 'Document ajouté',
   'prospect.document.deleted': 'Document supprimé',
   'contact.converted': 'Converti depuis une demande web',
@@ -54,7 +84,23 @@ const FIELD_LABELS: Record<string, string> = {
   email: 'E-mail',
   telephone: 'Téléphone',
   paysResidence: 'Pays de résidence',
-  sourceAcquisition: 'Origine',
+  sourceAcquisition: 'Source',
+  whatsapp: 'WhatsApp',
+  villeResidence: 'Ville',
+  niveauInteret: 'Niveau d’intérêt',
+  zoneRecherchee: 'Zone recherchée',
+  surfaceSouhaitee: 'Surface souhaitée',
+  typeDocumentSouhaite: 'Document attendu',
+  objectifAchat: 'Objectif',
+  premierContactLe: 'Premier contact',
+  premierContactMoyen: 'Moyen du premier contact',
+  prochaineAction: 'Prochaine action',
+  prochaineRelanceLe: 'Date de relance',
+  motifSortie: 'Motif de sortie',
+  terrainChoisiId: 'Terrain choisi',
+  offreClient: 'Offre du client',
+  prixNegocie: 'Prix négocié',
+  commentaireNegociation: 'Commentaire de négociation',
   besoins: 'Besoins',
   budgetMin: 'Budget min',
   budgetMax: 'Budget max',
@@ -124,9 +170,17 @@ export class ProspectDetail implements OnInit {
   protected readonly isSupervisor = this.session.hasSupervisionScope('crm');
 
   protected readonly name = computed(() => (this.prospect() ? prospectName(this.prospect()!) : ''));
-  protected readonly stages = computed(() => this.options()?.pipelineStages.filter((stage) => stage !== 'perdu') ?? []);
+  /** Fil du parcours : les sorties n'y figurent pas, elles l'interrompent. */
+  protected readonly stages = computed(() => (this.options()?.pipelineStages ?? []).filter((stage) => !EXIT_STAGES.includes(stage)));
   protected readonly stageIndex = computed(() => this.stages().indexOf(this.prospect()?.statutPipeline ?? ''));
-  protected readonly isLost = computed(() => this.prospect()?.statutPipeline === 'perdu');
+  protected readonly isLost = computed(() => EXIT_STAGES.includes(this.prospect()?.statutPipeline ?? ''));
+  protected readonly isClosed = computed(() => CLOSED_STAGES.includes(this.prospect()?.statutPipeline ?? ''));
+
+  protected readonly visites = computed(() => this.prospect()?.visites ?? []);
+  protected readonly telHref = computed(() => telLink(this.prospect()?.telephone));
+  protected readonly whatsappHref = computed(() => (this.prospect()?.whatsapp ? whatsappLink(this.prospect()?.telephone) : null));
+  /** État de la relance : sert à colorer le bandeau de suivi. */
+  protected readonly relance = computed(() => relanceState(this.prospect()?.prochaineRelanceLe));
 
   protected readonly pending = computed(() =>
     (this.prospect()?.activites ?? [])
@@ -147,9 +201,11 @@ export class ProspectDetail implements OnInit {
     const items: { label: string; hint: string }[] = [];
     if (!prospect.telephone && !prospect.email) items.push({ label: 'Renseigner un moyen de contact', hint: 'Impossible de le rappeler sans téléphone ni e-mail.' });
     if (!prospect.commercialResponsable) items.push({ label: 'Affecter un commercial', hint: 'Personne ne suit ce prospect pour l’instant.' });
-    if (this.pending().length === 0 && prospect.statutPipeline !== 'vente') items.push({ label: 'Planifier la prochaine action', hint: 'Un prospect sans action prévue est un prospect oublié.' });
+    if (!prospect.prochaineRelanceLe && !this.isClosed()) items.push({ label: 'Programmer la prochaine relance', hint: 'Règle MTM : aucun prospect actif ne reste sans prochaine action.' });
+    if (this.relance() === 'en_retard') items.push({ label: 'Relance en retard', hint: 'La date de relance est dépassée : appelez ou reprogrammez.' });
+    if (this.visites().some((visite) => visite.statut === 'effectuee' && !visite.terrainPlait)) items.push({ label: 'Saisir le retour après visite', hint: 'Après chaque visite, notez ce que le client en a pensé.' });
     if (this.overdueCount() > 0) items.push({ label: `Traiter ${this.overdueCount()} action${this.overdueCount() > 1 ? 's' : ''} en retard`, hint: 'Marquez-les réalisées ou reportez-les.' });
-    if (!prospect.budgetMax && !prospect.besoins) items.push({ label: 'Qualifier le besoin', hint: 'Budget et type de terrain recherché.' });
+    if (!prospect.budgetMax && !prospect.zoneRecherchee && !prospect.besoins) items.push({ label: 'Qualifier le besoin', hint: 'Zone, surface, budget et objectif de l’achat.' });
     return items;
   });
 
@@ -217,6 +273,65 @@ export class ProspectDetail implements OnInit {
     return pillClass(PRIORITIES, priorite);
   }
 
+  /** « Dakar, Sénégal » — ce qui est renseigné, sans virgule orpheline. */
+  protected residence(prospect: ProspectDetailModel): string {
+    return [prospect.villeResidence, prospect.paysResidence].filter(Boolean).join(', ') || '—';
+  }
+
+  protected interestLabel(niveau: string | null | undefined): string {
+    return label(INTEREST_LEVELS, niveau);
+  }
+
+  protected interestPill(niveau: string | null | undefined): string {
+    return pillClass(INTEREST_LEVELS, niveau);
+  }
+
+  protected sourceLabel(source: string | null | undefined): string {
+    return label(SOURCES, source);
+  }
+
+  protected channelLabel(moyen: string | null | undefined): string {
+    return label(CONTACT_CHANNELS, moyen);
+  }
+
+  protected goalLabel(objectif: string | null | undefined): string {
+    return label(PURCHASE_GOALS, objectif);
+  }
+
+  protected visiteLabel(statut: string): string {
+    return label(VISITE_STATUS, statut);
+  }
+
+  protected visitePill(statut: string): string {
+    return pillClass(VISITE_STATUS, statut);
+  }
+
+  protected feedbackLabel(avis: string | null): string {
+    return label(VISITE_FEEDBACK, avis);
+  }
+
+  protected feedbackPill(avis: string | null): string {
+    return pillClass(VISITE_FEEDBACK, avis);
+  }
+
+  protected priceLabel(avis: string | null): string {
+    return label(PRICE_FEEDBACK, avis);
+  }
+
+  protected objectionLabel(objection: string | null): string {
+    return label(OBJECTIONS, objection);
+  }
+
+  protected cancelLabel(motif: string | null): string {
+    return label(VISITE_CANCEL_REASONS, motif);
+  }
+
+  protected relanceLabel(): string {
+    const prospect = this.prospect();
+    if (!prospect?.prochaineRelanceLe) return 'Aucune relance programmée';
+    return dueLabel(prospect.prochaineRelanceLe);
+  }
+
   protected due(activite: ActiviteCrmItem): string {
     return dueLabel(activite.dateEcheance);
   }
@@ -233,24 +348,85 @@ export class ProspectDetail implements OnInit {
     if (!prospect || !options) return;
     StatusChoiceDialog.open(this.dialog, {
       title: 'Changer d’étape',
-      intro: 'L’étape indique où en est la relation commerciale. « Perdu » demande une justification, conservée dans l’historique.',
+      intro:
+        'L’étape indique où en est la relation commerciale. Une sortie (refusé, projet abandonné, injoignable) demande un motif, conservé dans l’historique.',
       subject: `Prospect ${this.name()}`,
       current: prospect.statutPipeline,
       choices: statusChoices(PIPELINE, options.pipelineStages),
       justification: false,
     }).subscribe((result) => {
       if (!result) return;
-      if (result.value === 'perdu') {
-        const justification = window.prompt('Pourquoi ce prospect est-il perdu ? (obligatoire, conservé dans l’historique)')?.trim();
-        if (!justification || justification.length < 3) {
-          this.notify.info('Justification obligatoire (3 caractères minimum) pour marquer un prospect perdu.');
+      if (EXIT_STAGES.includes(result.value)) {
+        const motif = window.prompt(`Motif : pourquoi ce prospect passe-t-il en « ${this.stageLabel(result.value)} » ? (obligatoire, conservé dans l’historique)`)?.trim();
+        if (!motif || motif.length < 3) {
+          this.notify.info('Motif obligatoire (3 caractères minimum) pour sortir un prospect du parcours.');
           return;
         }
-        this.run(this.api.transitionPipeline(prospect.id, result.value, justification), 'Prospect marqué perdu');
+        this.run(this.api.transitionPipeline(prospect.id, result.value, motif), `Prospect : ${this.stageLabel(result.value)}`);
         return;
       }
-      this.run(this.api.transitionPipeline(prospect.id, result.value), `Étape : ${this.stageLabel(result.value)}`);
+      // Règle MTM : un prospect qui reste actif doit avoir une suite prévue.
+      const suivi = prospect.prochaineRelanceLe || result.value === 'vente' ? undefined : this.askNextAction();
+      if (suivi === null) return;
+      this.run(this.api.transitionPipeline(prospect.id, result.value, undefined, suivi), `Étape : ${this.stageLabel(result.value)}`);
     });
+  }
+
+  /**
+   * Demande la prochaine action et sa date. Renvoie `null` si l'utilisateur
+   * renonce — la transition est alors abandonnée plutôt que refusée par l'API.
+   */
+  private askNextAction(): { prochaineAction: string; prochaineRelanceLe: string } | null {
+    const action = window.prompt('Prochaine action à mener ? (obligatoire : aucun prospect actif ne reste sans suite)')?.trim();
+    if (!action) {
+      this.notify.info('Indiquez la prochaine action pour faire avancer ce prospect.');
+      return null;
+    }
+    const jours = window.prompt('Dans combien de jours le relancer ?', '3')?.trim();
+    const delai = Number(jours);
+    if (!jours || Number.isNaN(delai) || delai < 0) {
+      this.notify.info('Indiquez un nombre de jours valide pour la relance.');
+      return null;
+    }
+    const date = new Date();
+    date.setDate(date.getDate() + delai);
+    return { prochaineAction: action, prochaineRelanceLe: date.toISOString() };
+  }
+
+  /** Reprogrammer la relance sans changer d'étape. */
+  protected planRelance(): void {
+    const prospect = this.prospect();
+    if (!prospect) return;
+    const suivi = this.askNextAction();
+    if (!suivi) return;
+    this.run(this.api.update(prospect.id, suivi), 'Relance programmée');
+  }
+
+  protected proposeTerrain(): void {
+    const prospect = this.prospect();
+    if (!prospect) return;
+    VisiteDialog.open(this.dialog, { prospectName: this.name(), commercials: this.commercials() }).subscribe((payload) => {
+      if (payload) this.run(this.api.addVisite(prospect.id, payload), 'Terrain proposé au client');
+    });
+  }
+
+  protected editVisite(visite: VisiteProspectItem): void {
+    const prospect = this.prospect();
+    if (!prospect) return;
+    VisiteDialog.open(this.dialog, { prospectName: this.name(), visite, commercials: this.commercials() }).subscribe((payload) => {
+      if (payload) this.run(this.api.updateVisite(prospect.id, visite.id, payload), 'Visite mise à jour');
+    });
+  }
+
+  /** Fiche du terrain proposé : photos, documents et caractéristiques à montrer au client. */
+  protected openTerrain(terrainId: string): void {
+    void this.router.navigate(['/terrains', terrainId]);
+  }
+
+  protected removeVisite(visite: VisiteProspectItem): void {
+    const prospect = this.prospect();
+    if (!prospect || !confirm(`Retirer la proposition « ${visite.terrain.referenceInterne} · ${visite.terrain.nom} » ?`)) return;
+    this.run(this.api.removeVisite(prospect.id, visite.id), 'Proposition retirée');
   }
 
   protected assignCommercial(): void {

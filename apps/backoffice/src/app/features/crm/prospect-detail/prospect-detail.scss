@@ -203,3 +203,104 @@
   font-size: 0.76rem;
   white-space: nowrap;
 }
+
+/* Suite à donner : la relance saute aux yeux, en retard elle alerte. */
+.relance-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--mtm-primary-subtle);
+  color: var(--mtm-text);
+}
+
+.relance-banner svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  color: var(--mtm-primary);
+}
+
+.relance-banner strong {
+  display: block;
+}
+
+.relance-banner small {
+  color: var(--mtm-text-muted);
+}
+
+.relance-banner--today {
+  background: var(--mtm-warning-subtle, #fbf1dc);
+}
+
+.relance-banner--late {
+  background: var(--mtm-danger-subtle, #f8e8e9);
+}
+
+.relance-banner--late svg {
+  color: var(--mtm-danger, #b52c36);
+}
+
+/* Terrains proposés : une ligne par proposition, visite et retour inclus. */
+.visite-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.visite-item {
+  border: 1px solid var(--mtm-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.visite-item__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.visite-item__head strong {
+  min-width: 0;
+}
+
+.visite-item__place {
+  color: var(--mtm-text-muted);
+  font-size: 0.85rem;
+}
+
+.visite-item__actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.visite-item__facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px 16px;
+  margin: 10px 0 0;
+}
+
+.visite-item__facts dt {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--mtm-text-muted);
+}
+
+.visite-item__facts dd {
+  margin: 2px 0 0;
+  font-size: 0.9rem;
+}
+
+.visite-item__comment {
+  margin: 10px 0 0;
+  font-style: italic;
+  color: var(--mtm-text-muted);
+}

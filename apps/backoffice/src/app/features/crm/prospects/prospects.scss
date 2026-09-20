@@ -85,3 +85,65 @@
     }
   }
 }
+
+/* Vues rapides de l'espace commercial (à relancer, en retard, visites…). */
+.quick-views {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.quick-view {
+  border: 1px solid var(--mtm-border);
+  background: var(--mtm-surface);
+  color: var(--mtm-text-muted);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background-color 0.15s;
+}
+
+.quick-view:hover {
+  border-color: var(--mtm-primary);
+  color: var(--mtm-primary);
+}
+
+.quick-view--active {
+  background: var(--mtm-primary);
+  border-color: var(--mtm-primary);
+  color: #fff;
+}
+
+/* Performance par commercial : un tableau simple, lisible sur mobile. */
+.perf-table-wrap {
+  overflow-x: auto;
+}
+
+.perf-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  min-width: 540px;
+}
+
+.perf-table th,
+.perf-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--mtm-border);
+  text-align: left;
+}
+
+.perf-table th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--mtm-text-muted);
+}
+
+.perf-table tbody tr:last-child td {
+  border-bottom: 0;
+}

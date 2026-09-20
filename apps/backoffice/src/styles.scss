@@ -2084,3 +2084,9 @@ ag-grid-angular {
   color: var(--mtm-text-muted);
   font-size: 0.78rem;
 }
+
+/* Note « module à venir » sur les rôles de phase 2 (panneau du select, hors composant). */
+.role-panel .role-option__note {
+  color: var(--mtm-text-muted);
+  font-size: 0.8em;
+}
