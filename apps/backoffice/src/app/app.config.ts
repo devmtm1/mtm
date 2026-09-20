@@ -4,6 +4,7 @@ import localeFr from '@angular/common/locales/fr';
 import { PreloadAllModules, provideRouter, withInMemoryScrolling, withPreloading, withViewTransitions } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { provideEchartsCore } from 'ngx-echarts';
 
 registerLocaleData(localeFr);
@@ -16,6 +17,10 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     // Dates et nombres en français dans les pipes Angular (date, number).
     { provide: LOCALE_ID, useValue: 'fr' },
+    // Calendriers Material (sélecteurs de date) : sans adaptateur de date,
+    // tout écran qui en affiche un plante au chargement.
+    provideNativeDateAdapter(),
+    { provide: MAT_DATE_LOCALE, useValue: 'fr-FR' },
     provideRouter(
       routes,
       // Les écrans sont chargés à la demande ; les précharger en tâche de
