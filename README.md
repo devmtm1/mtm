@@ -257,7 +257,8 @@ test qui existe déjà.
    `prisma migrate deploy` puis le seed s'exécutent.
 8. **Après le premier déploiement** : se connecter avec le compte
    administrateur, changer son mot de passe, activer la double
-   authentification, puis retirer `SEED_ADMIN_PASSWORD` des variables Render.
+   authentification, puis retirer `SEED_ADMIN_PASSWORD` des variables Render
+   (le seed ne l'exige que tant que le compte n'existe pas).
 9. **Nom de domaine** — une fois la production vérifiée. Mettre le domaine
    sur Cloudflare, puis `www` et `admin` sur les projets Pages, `api` sur le
    service Render. Mettre alors à jour `environment.prod.ts`, les variables

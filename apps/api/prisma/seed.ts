@@ -51,10 +51,18 @@ const INITIAL_ROLES = [
 async function main(): Promise<void> {
   console.log('Seed Phase 0 — démarrage');
 
+  // Le mot de passe initial ne sert qu'à créer le compte administrateur la
+  // première fois. Le seed tourne à chaque déploiement : une fois le compte
+  // créé (et son mot de passe changé par son titulaire), la variable peut
+  // être retirée sans bloquer les déploiements suivants.
+  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@mtm-immobilier.sn';
   const adminPassword = process.env.SEED_ADMIN_PASSWORD;
-  if (!adminPassword || adminPassword.length < 12) {
+  const adminExists = Boolean(
+    await prisma.user.findUnique({ where: { email: adminEmail }, select: { id: true } }),
+  );
+  if (!adminExists && (!adminPassword || adminPassword.length < 12)) {
     throw new Error(
-      'SEED_ADMIN_PASSWORD doit être configuré et contenir au moins 12 caractères',
+      'SEED_ADMIN_PASSWORD doit être configuré (12 caractères minimum) pour créer le compte administrateur',
     );
   }
 
@@ -432,15 +440,14 @@ async function main(): Promise<void> {
   console.log('  Permissions journal d’audit attribuées à la direction');
 
   // --- Utilisateur administrateur par défaut ---
-  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@mtm-immobilier.sn';
-  const hashedPassword = await bcrypt.hash(adminPassword, 12);
-
   const adminUser = await prisma.user.upsert({
     where: { email: adminEmail },
     update: {},
     create: {
       email: adminEmail,
-      password: hashedPassword,
+      // Présent par construction quand le compte n'existe pas encore (contrôle
+      // en début de seed) ; jamais utilisé quand il existe déjà.
+      password: await bcrypt.hash(adminPassword ?? '', 12),
       firstName: 'Admin',
       lastName: 'MTM',
       isActive: true,

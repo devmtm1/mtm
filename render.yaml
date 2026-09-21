@@ -19,6 +19,10 @@ services:
     name: mtm-api
     runtime: node
     plan: starter
+    # Frankfurt : la région la plus proche du Sénégal parmi celles de Render.
+    # La base Neon de production doit être dans la même région (eu-central-1),
+    # sinon chaque requête SQL paie la distance.
+    region: frankfurt
     branch: main
     rootDir: .
     buildCommand: npm run api:build
@@ -73,4 +77,28 @@ services:
       - key: CLOUDINARY_API_KEY
         sync: false
       - key: CLOUDINARY_API_SECRET
+        sync: false
+      # URL du back-office de production : liens dans les e-mails internes.
+      - key: BACKOFFICE_URL
+        sync: false
+      # E-mails transactionnels : indispensables en production (réinitialisation
+      # de mot de passe, invitation espace client, notifications de demandes).
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: CONTACT_NOTIFY_EMAIL
+        sync: false
+      # Compte administrateur initial : créé par le seed au premier déploiement.
+      # Le mot de passe peut être retiré ensuite (le seed ne l'exige que tant
+      # que le compte n'existe pas).
+      - key: SEED_ADMIN_EMAIL
+        sync: false
+      - key: SEED_ADMIN_PASSWORD
         sync: false
