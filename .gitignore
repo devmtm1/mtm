@@ -39,3 +39,6 @@ docker-data/
 # Backups générés localement
 backups/*.sql
 backups/*.dump
+
+# Neon CLI : identifiants du projet lié (jamais versionnés)
+.neon
