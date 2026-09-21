@@ -38,6 +38,12 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      # Avec NODE_ENV=production, npm n'installe pas les dépendances de
+      # développement — or la compilation en a besoin (TypeScript, @types,
+      # CLI Prisma, ts-node pour le seed). Cette variable force leur
+      # installation au build ; l'API tourne quand même en mode production.
+      - key: NPM_CONFIG_PRODUCTION
+        value: false
       # Nom affiché dans les journaux et les alertes, pour ne jamais confondre
       # une trace de test avec une trace de production.
       - key: APP_ENV
