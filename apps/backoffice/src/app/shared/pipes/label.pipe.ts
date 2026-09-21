@@ -81,7 +81,6 @@ export const BUSINESS_LABELS: Record<string, string> = {
   en_verification: 'En vérification',
   verifie: 'Vérifié',
   // Origine d'un prospect
-  contact_public: 'Formulaire du site',
   reservation_publique: 'Demande de réservation (site)',
   // Vitrine
   realisation: 'Réalisation',

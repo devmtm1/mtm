@@ -34,7 +34,10 @@
     "public-web:build": "npm install --workspace=apps/public-web && npm run build --workspace=apps/public-web",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
-    "docker:logs": "docker compose logs -f"
+    "docker:logs": "docker compose logs -f",
+    "backoffice:build:cloudflare": "node scripts/build-frontend.mjs backoffice",
+    "public-web:build:cloudflare": "node scripts/build-frontend.mjs public-web",
+    "backoffice:build:staging": "npm install --workspace=apps/backoffice && npm run build --workspace=apps/backoffice -- --configuration=staging"
   },
   "engines": {
     "node": ">=20.0.0",

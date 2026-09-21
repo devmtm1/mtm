@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
+import { nextProspectReference } from './prospect-reference';
 import { CrmAccessService, type CrmUser } from './crm-access.service';
 import {
   CrmOptionsService,
@@ -462,23 +463,8 @@ export class CrmService {
    * Le compteur repart à 1 chaque année ; en cas de collision (deux créations
    * simultanées), on réessaie avec le rang suivant.
    */
-  private async nextReference(): Promise<string> {
-    const year = new Date().getFullYear();
-    const prefix = `P-${year}-`;
-    const count = await this.prisma.prospect.count({
-      where: { referenceInterne: { startsWith: prefix } },
-    });
-    for (let rank = count + 1; rank <= count + 20; rank += 1) {
-      const candidate = `${prefix}${String(rank).padStart(4, '0')}`;
-      const exists = await this.prisma.prospect.findUnique({
-        where: { referenceInterne: candidate },
-        select: { id: true },
-      });
-      if (!exists) return candidate;
-    }
-    throw new ConflictException(
-      'Impossible d’attribuer une référence de prospect, réessayez',
-    );
+  private nextReference(): Promise<string> {
+    return nextProspectReference(this.prisma);
   }
 
   async convertContact(
@@ -522,7 +508,8 @@ export class CrmService {
         prenom: rest.length ? prenom : undefined,
         email: contact.email,
         telephone: contact.telephone,
-        sourceAcquisition: 'contact_public',
+        referenceInterne: await this.nextReference(),
+        sourceAcquisition: 'site',
         besoins: contact.message,
         statutPipeline: 'nouveau',
         commercialResponsableId: commercialResponsableId ?? null,

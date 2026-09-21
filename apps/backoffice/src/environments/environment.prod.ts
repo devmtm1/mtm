@@ -1,6 +1,14 @@
+/**
+ * Production (branche « main ») : API du service Render `mtm-api` et site
+ * public hébergé sur Cloudflare Pages. Ces deux adresses changent une
+ * dernière fois à la mise en service du nom de domaine (api./www.).
+ */
 export const environment = {
   production: true,
-  apiUrl: 'https://mtm-2-v2wo.onrender.com/api',
-  /** Site public : base des liens transmis aux clients (espace client). À aligner sur le domaine déployé. */
-  publicWebUrl: 'https://www.mtm-immobilier.sn',
+  environmentName: 'production',
+  // À ajuster dès que le service de production existe : Render ajoute un
+  // suffixe au nom si « mtm-api » est déjà pris sur la plateforme.
+  apiUrl: 'https://mtm-api.onrender.com/api',
+  /** Site public de production (projet Cloudflare Pages). */
+  publicWebUrl: 'https://mtm-public-web.pages.dev',
 };

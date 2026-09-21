@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InternalNotificationService } from '../../common/mail/internal-notification.service';
+import { nextProspectReference } from '../crm/prospect-reference';
 import { PrismaService } from '../../database/prisma.service';
 import {
   COMMERCIAL_ROLES,
@@ -77,7 +78,8 @@ export class ContactService {
             prenom: rest.length ? prenom : undefined,
             email: dto.email,
             telephone: dto.telephone,
-            sourceAcquisition: 'contact_public',
+            referenceInterne: await nextProspectReference(this.prisma),
+            sourceAcquisition: 'site',
             besoins: `[${dto.sujet || 'Contact public'}] ${dto.message}`,
             statutPipeline: 'nouveau',
           },
@@ -177,7 +179,8 @@ export class ContactService {
           prenom: rest.length ? prenom : undefined,
           email: contact.email,
           telephone: contact.telephone,
-          sourceAcquisition: 'contact_public',
+          referenceInterne: await nextProspectReference(this.prisma),
+          sourceAcquisition: 'site',
           besoins: `[${contact.sujet || 'Contact public'}] ${contact.message}`,
           statutPipeline: 'nouveau',
           commercialResponsableId: responsable,

@@ -39,6 +39,10 @@ describeE2e('Parcours Mandats J1.4 (e2e)', () => {
       'mandats:consulter',
       'mandats:creer',
       'mandats:modifier',
+      // Activer ou clôturer un mandat est réservé à la validation
+      // (MandatsService.assertCanSetStatus) : un simple créateur reste en
+      // brouillon.
+      'mandats:valider',
       'mandats:supprimer',
       'mandats:administrer',
       'audit:consulter',

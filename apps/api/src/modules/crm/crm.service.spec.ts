@@ -267,6 +267,9 @@ describe('CrmService', () => {
       message: 'Je cherche un terrain',
     });
     prismaMock.prospect.findFirst.mockResolvedValue(null);
+    // Numérotation de la référence : aucune référence déjà émise cette année.
+    prismaMock.prospect.count.mockResolvedValue(0);
+    prismaMock.prospect.findUnique.mockResolvedValue(null);
     prismaMock.prospect.create.mockResolvedValue({
       id: 'p1',
       nom: 'Dupont',
@@ -286,8 +289,9 @@ describe('CrmService', () => {
           nom: 'Dupont',
           prenom: 'Jean',
           email: 'j@d.com',
-          sourceAcquisition: 'contact_public',
+          sourceAcquisition: 'site',
           statutPipeline: 'nouveau',
+          referenceInterne: 'P-' + new Date().getFullYear() + '-0001',
         }),
       }),
     );

@@ -9,6 +9,7 @@ import { randomUUID } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import { UpdateVenteStatusDto } from './dto/update-vente-status.dto';
 import { InternalNotificationService } from '../../common/mail/internal-notification.service';
+import { nextProspectReference } from '../crm/prospect-reference';
 import { PrismaService } from '../../database/prisma.service';
 import { applyPaymentToEcheances } from './echeances.helper';
 import { VentesWorkflowService } from './ventes-workflow.service';
@@ -198,7 +199,8 @@ export class VentesService {
             email: request.email,
             telephone: request.telephone,
             besoins: request.message,
-            sourceAcquisition: 'reservation_public',
+            referenceInterne: await nextProspectReference(transaction),
+            sourceAcquisition: 'site',
             statutPipeline: 'reservation',
             commercialResponsableId,
           },

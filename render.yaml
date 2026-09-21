@@ -1,32 +1,61 @@
+# Production, décrite ici et créée par le Blueprint Render (branche « main »).
+#
+# L'environnement de test n'est PAS décrit dans ce fichier : ce sont les
+# services créés à la main lors des premiers essais, qu'on garde tels quels
+# en les faisant suivre la branche « develop » (Settings → Branch) :
+#
+#   API          https://mtm-2-v2wo.onrender.com      (build : npm run api:build)
+#   back-office  https://mtm-4.onrender.com           (build : npm run backoffice:build:staging)
+#   site public  https://mtm-public-web.onrender.com  (build : npm run public-web:build,
+#                                                      VITE_API_URL = API de test)
+#
+# Les sites de production, eux, sont sur Cloudflare Pages (voir README).
+#
+# Les valeurs marquées « sync: false » sont saisies dans le tableau de bord
+# Render : elles n'ont rien à faire dans le dépôt.
+
 services:
   - type: web
     name: mtm-api
     runtime: node
     plan: starter
-    buildCommand: npm run api:build
-    releaseCommand: cd apps/api && npx prisma db push --accept-data-loss
-    startCommand: node apps/api/dist/main.js
+    branch: main
     rootDir: .
+    buildCommand: npm run api:build
+    startCommand: node apps/api/dist/main.js
+    # Migrations versionnées puis seed (idempotent : rôles, permissions et
+    # paramètres manquants sont ajoutés, rien d'existant n'est écrasé).
+    # Jamais « db push --accept-data-loss » : il supprimerait sans prévenir
+    # toute colonne absente du schéma.
+    releaseCommand: cd apps/api && npx prisma migrate deploy && npx prisma db seed
+    # Render attend que l'API réponde avant de lui envoyer le trafic : pas de
+    # fenêtre d'erreur pendant un déploiement.
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
+      # Nom affiché dans les journaux et les alertes, pour ne jamais confondre
+      # une trace de test avec une trace de production.
+      - key: APP_ENV
+        value: production
+      - key: API_PORT
+        value: 3000
+      # Base PostgreSQL de production (projet Neon dédié).
       - key: DATABASE_URL
-        fromDatabase:
-          name: mtm-db
-          property: connectionString
+        sync: false
+      # Secrets propres à la production : jamais les mêmes qu'en test, sinon
+      # un jeton émis sur l'environnement de test ouvre la production.
       - key: JWT_ACCESS_SECRET
         generateValue: true
       - key: JWT_REFRESH_SECRET
         generateValue: true
-      - key: API_PORT
-        value: 3000
-      # Front et API sur des sous-domaines distincts d'onrender.com (sites
-      # différents) : sans SameSite=None le cookie de session n'est jamais envoyé.
+      # Tant que l'API et les sites sont sur des domaines différents
+      # (onrender.com / pages.dev), le cookie de session doit être SameSite=None.
+      # Dès que tout sera sous mtm-immobilier.sn, repasser à « lax ».
       - key: REFRESH_COOKIE_SAME_SITE
         value: none
-      # Origines autorisées, séparées par des virgules : URL du back-office
-      # ET du site public, sans barre oblique finale
-      # (ex. https://mtm-backoffice.onrender.com,https://mtm-public-web.onrender.com).
+      # Origines autorisées, séparées par des virgules, sans barre oblique
+      # finale : back-office ET site public de production.
       - key: CORS_ORIGIN
         sync: false
       # URL publique du site vitrine : liens d'invitation à l'espace client.
@@ -35,36 +64,13 @@ services:
       # URL publique de l'API, préfixe /api inclus : liens signés vers les documents.
       - key: API_PUBLIC_URL
         sync: false
-
-  - type: web
-    name: mtm-backoffice
-    runtime: static
-    plan: starter
-    buildCommand: npm run backoffice:build
-    staticPublishPath: apps/backoffice/dist/backoffice/browser
-    rootDir: .
-    # Application monopage : toute route inconnue est servie par index.html.
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-
-  - type: web
-    name: mtm-public-web
-    runtime: static
-    plan: starter
-    buildCommand: npm run public-web:build
-    staticPublishPath: apps/public-web/dist
-    rootDir: .
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    envVars:
-      # Lue au moment du build (Vite) : URL de l'API avec le préfixe /api.
-      - key: VITE_API_URL
-        value: https://mtm-2-v2wo.onrender.com/api
-
-databases:
-  - name: mtm-db
-    plan: starter
+      # Racine des fichiers envoyés sur Cloudinary : sépare les images de
+      # production de celles des essais, même si le compte est partagé.
+      - key: CLOUDINARY_FOLDER
+        value: mtm-prod
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false

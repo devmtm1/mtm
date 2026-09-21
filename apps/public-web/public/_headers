@@ -1,0 +1,16 @@
+# En-têtes servis par Cloudflare Pages.
+
+/*
+  # L'API répond déjà en HSTS ; ici on protège l'affichage du site.
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(self), camera=(), microphone=(), payment=()
+
+# Fichiers au nom haché par Vite : ils ne changent jamais sans changer de nom.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# La page d'entrée doit être revalidée, sinon un déploiement reste invisible.
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate

@@ -143,7 +143,7 @@ describeE2e('Parcours J1.6 Ventes (e2e)', () => {
         email: 'jean.dupont@example.com',
         telephone: '77000000',
         paysResidence: 'Sénégal',
-        sourceAcquisition: 'Site public',
+        sourceAcquisition: 'site',
         besoins: 'Terrain pour construction',
         budgetMin: 5000000,
         budgetMax: 10000000,

@@ -33,7 +33,6 @@ export const SOURCES: Record<string, StatusMeaning> = {
   site: { tone: 'primary', label: 'Site web', help: 'Formulaire du site MTM.' },
   recommandation: { tone: 'success', label: 'Recommandation', help: 'Recommandé par un client ou un partenaire.' },
   autre: { tone: 'neutral', label: 'Autre', help: 'Autre canal : à préciser dans les notes.' },
-  contact_public: { tone: 'primary', label: 'Site web', help: 'Message reçu depuis le site public.' },
 };
 
 /** Niveau d'intérêt du prospect (référentiel « crm.niveauxInteret »). */

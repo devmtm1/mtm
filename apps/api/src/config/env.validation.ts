@@ -34,6 +34,10 @@ export const envValidationSchema = Joi.object({
   CLOUDINARY_CLOUD_NAME: Joi.string().optional(),
   CLOUDINARY_API_KEY: Joi.string().optional(),
   CLOUDINARY_API_SECRET: Joi.string().optional(),
+  // Racine des fichiers envoyés : sépare production et test sur un même compte.
+  CLOUDINARY_FOLDER: Joi.string().optional(),
+  // Nom de l'environnement (production / staging), affiché dans les journaux.
+  APP_ENV: Joi.string().valid('production', 'staging', 'local').optional(),
 
   // E-mails transactionnels (SMTP générique). Optionnels en dev (journalisés),
   // indispensables en production : voir MailService.

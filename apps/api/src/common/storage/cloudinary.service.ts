@@ -30,7 +30,20 @@ export class CloudinaryService {
     { format: string; expiresAt: number }
   >();
 
+  /**
+   * Racine des fichiers envoyés (CLOUDINARY_FOLDER) : « mtm-prod » en
+   * production, « mtm-staging » en test. Elle sépare les deux
+   * environnements même lorsqu'ils partagent le même compte Cloudinary —
+   * sans elle, une photo d'essai peut se retrouver sur le site public.
+   * Les fichiers déjà envoyés ne bougent pas : la base retient leur
+   * identifiant complet, ce préfixe ne concerne que les nouveaux envois.
+   */
+  private readonly rootFolder: string;
+
   constructor(private readonly config: ConfigService) {
+    this.rootFolder = (
+      this.config.get<string>('CLOUDINARY_FOLDER') ?? ''
+    ).replace(/^\/+|\/+$/g, '');
     cloudinary.config({
       cloud_name: this.config.get<string>('CLOUDINARY_CLOUD_NAME'),
       api_key: this.config.get<string>('CLOUDINARY_API_KEY'),
@@ -56,7 +69,7 @@ export class CloudinaryService {
     const result = await new Promise<UploadApiResponse>((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         {
-          folder,
+          folder: this.rootFolder ? `${this.rootFolder}/${folder}` : folder,
           resource_type: 'auto',
           type: isPublic ? 'upload' : 'authenticated',
           use_filename: true,

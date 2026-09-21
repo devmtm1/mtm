@@ -49,14 +49,19 @@ describeE2e('Parcours CRM J1.5 (e2e)', () => {
     await data.seedSystemSetting({
       key: 'crm.pipelineStages',
       value: [
-        'nouveau_contact',
-        'qualification',
-        'proposition',
-        'visite',
+        'nouveau',
+        'contacte',
+        'qualifie',
+        'visite_programmee',
+        'visite_effectuee',
+        'en_reflexion',
+        'a_relancer',
         'negociation',
         'reservation',
         'vente',
-        'perdu',
+        'refuse',
+        'abandonne',
+        'injoignable',
       ],
     });
     await data.seedSystemSetting({
@@ -125,13 +130,13 @@ describeE2e('Parcours CRM J1.5 (e2e)', () => {
         email: 'jean.dupont@example.com',
         telephone: '77000000',
         paysResidence: 'Sénégal',
-        sourceAcquisition: 'Site public',
+        sourceAcquisition: 'site',
         besoins: 'Terrain pour construction',
         budgetMin: 5000000,
         budgetMax: 10000000,
         preferences: 'Proche de la mer',
         commercialResponsableId: null,
-        statutPipeline: 'nouveau_contact',
+        statutPipeline: 'nouveau',
         score: 50,
       });
 
@@ -139,35 +144,57 @@ describeE2e('Parcours CRM J1.5 (e2e)', () => {
     expect(response.body.nom).toBe('Dupont');
     expect(response.body.prenom).toBe('Jean');
     expect(response.body.paysResidence).toBe('Sénégal');
-    expect(response.body.statutPipeline).toBe('nouveau_contact');
+    expect(response.body.statutPipeline).toBe('nouveau');
     prospectId = response.body.id;
   });
 
-  it('étape 3 — transition pipeline vers qualification', async () => {
+  it('refuse une étape active sans prochaine action', async () => {
     const response = await request(app.getHttpServer())
       .patch(`/api/crm/prospects/${prospectId}/pipeline`)
       .set('Authorization', `Bearer ${accessToken}`)
-      .send({ statutPipeline: 'qualification' });
+      .send({ statutPipeline: 'qualifie' });
 
-    expect(response.status).toBe(200);
-    expect(response.body.statutPipeline).toBe('qualification');
+    expect(response.status).toBe(400);
   });
 
-  it('étape 4 — transition pipeline vers perdu avec justification', async () => {
+  it('étape 3 — transition pipeline vers qualifié, avec la suite à donner', async () => {
     const response = await request(app.getHttpServer())
       .patch(`/api/crm/prospects/${prospectId}/pipeline`)
       .set('Authorization', `Bearer ${accessToken}`)
-      .send({ statutPipeline: 'perdu', justification: 'Budget non confirmé' });
+      .send({
+        statutPipeline: 'qualifie',
+        prochaineAction: 'Proposer deux terrains à Mbour',
+        prochaineRelanceLe: '2030-01-15',
+      });
 
     expect(response.status).toBe(200);
-    expect(response.body.statutPipeline).toBe('perdu');
+    expect(response.body.statutPipeline).toBe('qualifie');
+    expect(response.body.prochaineAction).toBe(
+      'Proposer deux terrains à Mbour',
+    );
   });
 
-  it('rejette la transition vers perdu sans justification', async () => {
+  it('étape 4 — sortie du parcours avec motif', async () => {
     const response = await request(app.getHttpServer())
       .patch(`/api/crm/prospects/${prospectId}/pipeline`)
       .set('Authorization', `Bearer ${accessToken}`)
-      .send({ statutPipeline: 'perdu' });
+      .send({
+        statutPipeline: 'abandonne',
+        justification: 'Budget non confirmé',
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body.statutPipeline).toBe('abandonne');
+    // Le motif est conservé sur la fiche, et la relance est effacée.
+    expect(response.body.motifSortie).toBe('Budget non confirmé');
+    expect(response.body.prochaineRelanceLe).toBeNull();
+  });
+
+  it('rejette une sortie du parcours sans motif', async () => {
+    const response = await request(app.getHttpServer())
+      .patch(`/api/crm/prospects/${prospectId}/pipeline`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ statutPipeline: 'refuse' });
 
     expect(response.status).toBe(400);
   });
@@ -246,7 +273,10 @@ describeE2e('Parcours CRM J1.5 (e2e)', () => {
     expect(response.body.nom).toBe('Diallo');
     expect(response.body.prenom).toBe('Aminata');
     expect(response.body.email).toBe('aminata@example.com');
-    expect(response.body.statutPipeline).toBe('nouveau_contact');
+    expect(response.body.statutPipeline).toBe('nouveau');
+    // Un prospect né du site public reçoit la même référence lisible qu'un
+    // prospect saisi par un commercial (section 3 du cahier CRM).
+    expect(response.body.referenceInterne).toMatch(/^P-\d{4}-\d{4}$/);
   });
 
   it('liste les prospects avec pagination', async () => {
@@ -277,7 +307,7 @@ describeE2e('Parcours CRM J1.5 (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`);
 
     expect(response.status).toBe(200);
-    expect(response.body.pipelineStages).toContain('nouveau_contact');
+    expect(response.body.pipelineStages).toContain('nouveau');
     expect(response.body.activiteTypes).toContain('rendez-vous');
   });
 
