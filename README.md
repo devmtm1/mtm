@@ -190,6 +190,16 @@ personnalisés gratuits), et le dépôt contient déjà ce qu'il faut :
 (en-têtes de sécurité, cache long sur les fichiers au nom haché, page
 d'entrée toujours revalidée).
 
+Chaque site porte aussi une **politique de sécurité du contenu** (CSP) dans
+son fichier `public/_headers`, posée d'abord en mode observation
+(`Content-Security-Policy-Report-Only`) : les écarts sont signalés dans la
+console du navigateur sans rien bloquer. Une fois l'accueil, une fiche
+terrain avec sa carte et l'espace client vérifiés sans avertissement,
+renommer l'en-tête en `Content-Security-Policy` pour qu'il soit appliqué.
+Les origines autorisées y sont explicites : polices Google, images
+Cloudinary, tuiles OpenStreetMap et Esri, et les deux API. Toute nouvelle
+dépendance externe devra y être ajoutée.
+
 Réglages d'un projet Pages, à créer deux fois (*Workers & Pages → Create →
 Pages → Connect to Git*), en laissant le *Root directory* sur `/` :
 
