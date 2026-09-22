@@ -15,6 +15,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 import { Public } from '../auth/decorators/public.decorator';
+import { PublicCache } from '../../common/http/public-cache.decorator';
 import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../auth/auth.types';
@@ -33,6 +34,7 @@ export class ShowcaseItemController {
   ) {}
 
   @Public()
+  @PublicCache()
   @Get()
   findAll(@Query('category') category?: string) {
     return this.showcase.findAll(category);
@@ -45,6 +47,7 @@ export class ShowcaseItemController {
   }
 
   @Public()
+  @PublicCache()
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.showcase.findPublicById(id);

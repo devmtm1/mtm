@@ -79,12 +79,19 @@ déclencher à la main, un `git push` suffit.
 | | Test | Production |
 | --- | --- | --- |
 | Branche | `develop` | `main` |
-| API | Render `mtm-2-v2wo.onrender.com` (service existant) | Render `mtm-api` (créé par le Blueprint) |
-| Back-office | Render `mtm-4.onrender.com` | Cloudflare Pages |
-| Site public | Render `mtm-public-web.onrender.com` | Cloudflare Pages |
-| Base (Neon) | projet de test, données d'essai | projet dédié, données réelles |
+| API | `https://mtm-2-v2wo.onrender.com` (Render, Oregon) | `https://mtm-api-zm5i.onrender.com` (Render, Frankfurt) |
+| Back-office | `https://mtm-4.onrender.com` | `https://mtm-backoffice.pages.dev` (Cloudflare Pages) |
+| Site public | `https://mtm-public-web.onrender.com` | `https://mtm-public-web.pages.dev` (Cloudflare Pages) |
+| Base (Neon) | projet `mtm`, us-east-2, données d'essai | projet `mtm-production`, eu-central-1 |
 | Images (Cloudinary) | dossier `mtm-staging/` | dossier `mtm-prod/` |
+| E-mails | Brevo, port 2525 | Brevo, port 2525 |
 | Variable `APP_ENV` | `staging` | `production` |
+
+Deux réglages non évidents, appris en production : Render **filtre la sortie
+SMTP sur le port 587**, d'où le port 2525 (proposé par Brevo pour ce cas) ;
+et `NPM_CONFIG_PRODUCTION=false` est nécessaire au build, sinon npm
+n'installe pas les dépendances de développement dont la compilation a besoin
+(TypeScript, @types, CLI Prisma, ts-node pour le seed).
 
 L'environnement de test est constitué des services Render créés à la main
 lors des premiers essais ; on les garde tels quels, il suffit de leur faire

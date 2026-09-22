@@ -18,6 +18,7 @@ import { ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Public } from '../auth/decorators/public.decorator';
+import { PublicCache } from '../../common/http/public-cache.decorator';
 import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AuditService } from '../audit/audit.service';
@@ -41,6 +42,7 @@ export class TerrainsController {
   ) {}
 
   @Public()
+  @PublicCache()
   @Get('public')
   findPublic(@Query() query: QueryTerrainDto) {
     return this.publicCatalog.findPublic(query);
@@ -51,12 +53,14 @@ export class TerrainsController {
    * que « options » ne soit pas capté comme un identifiant.
    */
   @Public()
+  @PublicCache()
   @Get('public/options')
   getPublicFilterOptions() {
     return this.publicCatalog.getPublicFilterOptions();
   }
 
   @Public()
+  @PublicCache()
   @Get('public/:id')
   findPublicOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.publicCatalog.findPublicOne(id);

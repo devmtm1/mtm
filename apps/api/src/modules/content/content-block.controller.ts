@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Public } from '../auth/decorators/public.decorator';
+import { PublicCache } from '../../common/http/public-cache.decorator';
 import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../auth/auth.types';
@@ -24,6 +25,7 @@ export class ContentBlockController {
   constructor(private readonly content: ContentBlockService) {}
 
   @Public()
+  @PublicCache()
   @Get()
   findAll(@Query('type') type?: string) {
     if (type) return this.content.findByType(type);
@@ -37,6 +39,7 @@ export class ContentBlockController {
   }
 
   @Public()
+  @PublicCache()
   @Get(':key')
   findByKey(@Param('key') key: string) {
     return this.content.findByKey(key);
