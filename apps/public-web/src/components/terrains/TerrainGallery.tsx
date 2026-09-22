@@ -26,6 +26,7 @@ export function TerrainGallery({ medias, alt }: { medias: TerrainMedia[]; alt: s
             src={active.secureUrl}
             alt={active.title ?? alt}
             loading="eager"
+            sizes="(min-width: 1024px) 60vw, 100vw"
             fallbackLabel="Photo indisponible"
             className="h-full w-full object-cover"
           />
@@ -56,6 +57,7 @@ export function TerrainGallery({ medias, alt }: { medias: TerrainMedia[]; alt: s
                   alt=""
                   aria-hidden
                   compact
+                  sizes="96px"
                   fallbackLabel="Photo indisponible"
                   className="h-full w-full object-cover"
                 />

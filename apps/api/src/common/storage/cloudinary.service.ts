@@ -131,6 +131,13 @@ export class CloudinaryService {
         secure: true,
         resource_type: resourceType,
         type: 'upload',
+        // Format et compression décidés par Cloudinary selon le navigateur
+        // (WebP ou AVIF quand il sait les lire) : une photo de terrain passe
+        // de 600 à 500 Ko sans perte visible, et le site choisit ensuite la
+        // largeur qu'il lui faut. Sans objet pour une vidéo ou un document.
+        ...(resourceType === 'image'
+          ? { fetch_format: 'auto', quality: 'auto' }
+          : {}),
       });
     }
     const exp = Math.floor(Date.now() / 1000) + PRIVATE_LINK_TTL_SECONDS;

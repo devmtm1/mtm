@@ -1,5 +1,6 @@
 import { ImageOff } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { cloudinarySrcSet } from '../../utils/cloudinary';
 
 interface MediaImageProps {
   /** URL unique, ou liste de candidates essayées dans l'ordre. */
@@ -12,6 +13,13 @@ interface MediaImageProps {
   /** Masque le libellé de repli (vignettes, aperçus décoratifs). */
   compact?: boolean;
   loading?: 'lazy' | 'eager';
+  /**
+   * Place réellement occupée par l'image, en CSS (`sizes`). C'est ce qui
+   * permet au navigateur de télécharger la bonne variante : sans cette
+   * indication, il suppose la pleine largeur de l'écran et charge la plus
+   * grande. Par défaut, une carte de grille.
+   */
+  sizes?: string;
   'aria-hidden'?: boolean;
 }
 
@@ -31,6 +39,7 @@ export function MediaImage({
   fallbackLabel = 'Photo à venir',
   compact = false,
   loading = 'lazy',
+  sizes = '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw',
   'aria-hidden': ariaHidden,
 }: MediaImageProps) {
   const sources = useMemo(
@@ -45,6 +54,9 @@ export function MediaImage({
   }, [sources]);
 
   const current = sources[index];
+  // Vide hors Cloudinary (illustration locale) : le navigateur s'en tient
+  // alors à `src`.
+  const srcSet = current ? cloudinarySrcSet(current) : '';
 
   if (!current) {
     return (
@@ -66,8 +78,11 @@ export function MediaImage({
     <img
       key={current}
       src={current}
+      srcSet={srcSet || undefined}
+      sizes={srcSet ? sizes : undefined}
       alt={alt}
       loading={loading}
+      decoding="async"
       aria-hidden={ariaHidden}
       onError={() => setIndex((previous) => previous + 1)}
       className={className}
