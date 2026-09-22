@@ -283,6 +283,36 @@ test qui existe déjà.
    repasser `REFRESH_COOKIE_SAME_SITE` à `lax` puisque tout sera sous le même
    domaine.
 
+## Démarches administratives et vérification foncière (J2.2)
+
+Un client — souvent de la diaspora — confie à MTM la vérification d'un
+terrain avant d'acheter. La mission suit les cinq étapes de la section 14 du
+cahier des charges, sur un seul écran du back-office :
+
+1. **Demande** : client, terrain (du catalogue ou décrit librement), nature de
+   la vérification, objectif, pièces fournies, urgence, échéance promise.
+2. **Étude de faisabilité** : conclusion, montant convenu et frais d'étude —
+   ces derniers restent dus même quand la conclusion est défavorable.
+3. **Vérification physique** : visite datée et signée, relevé GPS, accès,
+   environnement, conformité apparente.
+4. **Vérification administrative** : administrations consultées selon la
+   localité, interlocuteur rencontré, résultat obtenu.
+5. **Rapport** : décision de MTM (favorable, défavorable, à compléter),
+   conclusion, réserves et recommandation, puis génération du PDF.
+
+Trois règles sont tenues par l'API, pas par la discipline des équipes : pas
+de rapport sans constat, pas de clôture sans décision, pas d'abandon sans
+motif. Le rapport généré est **publié d'office dans l'espace client** — c'est
+le livrable commandé ; les autres pièces restent internes tant que personne
+ne les publie.
+
+Les tarifs sont un paramètre (`demarches.tarifs`), jamais une constante du
+code : le cahier des charges l'exige explicitement. Idem pour la liste des
+administrations, qui s'étend au fil des localités.
+
+Côté périmètre : un collaborateur ne voit que les missions dont il est
+responsable ; le responsable des démarches et l'encadrement voient tout.
+
 ## Phase actuelle
 
 Voir `docs/PHASE_0.md` pour le détail du périmètre, des livrables et des

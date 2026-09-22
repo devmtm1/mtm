@@ -1,5 +1,6 @@
 import { apiClient } from './client';
 import type { ClientDemandes, ClientDossier } from '../types/clientPortal';
+import type { ClientMission } from '../types/mission';
 
 export function fetchClientPortal(token: string): Promise<ClientDossier[]> {
   return apiClient.get<ClientDossier[]>('/ventes/client/portal', undefined, { token });
@@ -27,4 +28,15 @@ export function createClientDemande(
   payload: ClientDemandePayload,
 ): Promise<{ kind: 'message' | 'reservation'; id: string }> {
   return apiClient.post('/ventes/client/portal/demandes', payload, { token });
+}
+
+/**
+ * Missions de vérification foncière du client connecté (J2.2). L'API filtre
+ * sur son compte : il ne voit que les siennes, et seulement les pièces que
+ * MTM a publiées.
+ */
+export function fetchClientMissions(token: string): Promise<ClientMission[]> {
+  return apiClient.get<ClientMission[]>('/demarches/missions/client/missions', undefined, {
+    token,
+  });
 }

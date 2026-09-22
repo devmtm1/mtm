@@ -1,9 +1,21 @@
 import { useMemo } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, FolderOpen, Home, LogOut, MessageSquare, UserRound } from 'lucide-react';
+import {
+  ArrowLeft,
+  FolderOpen,
+  Home,
+  LogOut,
+  MessageSquare,
+  ShieldCheck,
+  UserRound,
+} from 'lucide-react';
 import { useAuth } from '../../../contexts/auth-context-store';
 import { ClientDataContext } from '../../../contexts/client-data-store';
-import { useClientDemandes, useClientPortal } from '../../../hooks/useClientPortal';
+import {
+  useClientDemandes,
+  useClientMissions,
+  useClientPortal,
+} from '../../../hooks/useClientPortal';
 import { ROUTES } from '../../../routes';
 import { ScrollManager } from '../../layout/ScrollManager';
 import { RouteAnnouncer } from '../../layout/RouteAnnouncer';
@@ -13,6 +25,7 @@ const MAIN_ID = 'contenu-principal';
 const TABS = [
   { to: ROUTES.clientPortal, label: 'Accueil', icon: Home, end: true },
   { to: ROUTES.clientDossiers, label: 'Dossiers', icon: FolderOpen, end: false },
+  { to: ROUTES.clientMissions, label: 'Vérifications', icon: ShieldCheck, end: false },
   { to: ROUTES.clientDemandes, label: 'Demandes', icon: MessageSquare, end: false },
   { to: ROUTES.clientCompte, label: 'Compte', icon: UserRound, end: false },
 ];
@@ -35,6 +48,7 @@ export function ClientLayout() {
   const { pathname } = useLocation();
   const dossiers = useClientPortal(accessToken);
   const demandes = useClientDemandes(accessToken);
+  const missions = useClientMissions(accessToken);
 
   const value = useMemo(
     () => ({
@@ -44,9 +58,12 @@ export function ClientLayout() {
       demandes: demandes.data,
       demandesLoading: demandes.loading,
       demandesError: demandes.error,
+      missions: missions.data,
+      missionsLoading: missions.loading,
+      missionsError: missions.error,
       refetchDemandes: demandes.refetch,
     }),
-    [dossiers.data, dossiers.loading, dossiers.error, demandes.data, demandes.loading, demandes.error, demandes.refetch],
+    [dossiers.data, dossiers.loading, dossiers.error, demandes.data, demandes.loading, demandes.error, demandes.refetch, missions.data, missions.loading, missions.error],
   );
 
   const current = TABS.find((tab) => (tab.end ? pathname === tab.to : pathname.startsWith(tab.to))) ?? TABS[0];
@@ -154,7 +171,7 @@ export function ClientLayout() {
             className="fixed inset-x-0 bottom-0 z-40 border-t border-mtm-border bg-mtm-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
             aria-label="Espace client"
           >
-            <ul className="grid grid-cols-4">
+            <ul className="grid grid-cols-5">
               {TABS.map(({ to, label, icon: Icon, end }) => (
                 <li key={to}>
                   <NavLink

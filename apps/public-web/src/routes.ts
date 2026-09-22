@@ -18,6 +18,7 @@ export const ROUTES = {
   /** Espace client : une application à part (sans en-tête ni pied de page du site). */
   clientPortal: '/espace-client',
   clientDossiers: '/espace-client/dossiers',
+  clientMissions: '/espace-client/verifications',
   clientDemandes: '/espace-client/demandes',
   clientCompte: '/espace-client/compte',
 } as const;

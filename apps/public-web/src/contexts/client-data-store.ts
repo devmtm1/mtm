@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react';
 import type { ClientDemandes, ClientDossier } from '../types/clientPortal';
+import type { ClientMission } from '../types/mission';
 
 export interface ClientDataValue {
   dossiers: ClientDossier[] | null;
@@ -8,6 +9,9 @@ export interface ClientDataValue {
   demandes: ClientDemandes | null;
   demandesLoading: boolean;
   demandesError: string | null;
+  missions: ClientMission[] | null;
+  missionsLoading: boolean;
+  missionsError: string | null;
   /** À appeler après l'envoi d'une demande depuis l'espace client. */
   refetchDemandes: () => void;
 }

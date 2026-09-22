@@ -55,6 +55,85 @@ export const DOCUMENT_TYPES: Record<string, string> = {
   autre: 'Document',
 };
 
+/**
+ * Missions de vérification foncière (J2.2). Le client suit l'avancement
+ * dans ses mots à lui : « notre équipe est allée sur place », pas
+ * `verification_physique`.
+ */
+export const MISSION_STATUS: Record<string, StatusLabel> = {
+  demande: {
+    label: 'Demande reçue',
+    tone: 'info',
+    help: 'Votre demande est enregistrée : nous la chiffrons et vous revenons vers vous.',
+  },
+  faisabilite: {
+    label: 'Étude préalable',
+    tone: 'info',
+    help: 'Nous vérifions ce qu’il est possible de contrôler, et à quel coût.',
+  },
+  verification_physique: {
+    label: 'Visite sur place',
+    tone: 'primary',
+    help: 'Notre équipe se rend sur le terrain pour constater la situation réelle.',
+  },
+  verification_administrative: {
+    label: 'Contrôle administratif',
+    tone: 'primary',
+    help: 'Nous consultons les administrations compétentes sur ce terrain.',
+  },
+  rapport: {
+    label: 'Rapport en cours',
+    tone: 'warning',
+    help: 'Les vérifications sont faites : nous rédigeons votre rapport.',
+  },
+  cloturee: {
+    label: 'Terminée',
+    tone: 'success',
+    help: 'Votre rapport est disponible ci-dessous.',
+  },
+  abandonnee: {
+    label: 'Interrompue',
+    tone: 'neutral',
+    help: 'Cette mission a été arrêtée : le motif vous a été communiqué.',
+  },
+};
+
+/** Conclusion de MTM au terme de la mission. */
+export const MISSION_DECISIONS: Record<string, StatusLabel> = {
+  favorable: {
+    label: 'Favorable',
+    tone: 'success',
+    help: 'Au vu de nos constats, rien ne s’oppose à votre achat.',
+  },
+  defavorable: {
+    label: 'Défavorable',
+    tone: 'accent',
+    help: 'Nos constats vous déconseillent cet achat.',
+  },
+  a_completer: {
+    label: 'À compléter',
+    tone: 'warning',
+    help: 'Des pièces ou des vérifications manquent pour conclure.',
+  },
+};
+
+export const MISSION_TYPES: Record<string, string> = {
+  verification_fonciere: 'Vérification foncière',
+  verification_physique: 'Vérification physique',
+  verification_administrative: 'Vérification administrative',
+  accompagnement_achat: 'Accompagnement à l’achat',
+  autre: 'Mission particulière',
+};
+
+export const MISSION_DOCUMENT_TYPES: Record<string, string> = {
+  rapport: 'Rapport de vérification',
+  piece_fournie: 'Pièce fournie',
+  photo_visite: 'Photo de la visite',
+  constat: 'Constat',
+  piece_administrative: 'Pièce administrative',
+  autre: 'Document',
+};
+
 const FALLBACK: StatusLabel = { label: '', tone: 'neutral', help: '' };
 
 function humanize(code: string): string {
@@ -80,4 +159,20 @@ export function paymentMode(code: string): string {
 
 export function documentType(code: string): string {
   return DOCUMENT_TYPES[code] ?? humanize(code);
+}
+
+export function missionStatus(code: string): StatusLabel {
+  return MISSION_STATUS[code] ?? { ...FALLBACK, label: humanize(code) };
+}
+
+export function missionDecision(code: string): StatusLabel {
+  return MISSION_DECISIONS[code] ?? { ...FALLBACK, label: humanize(code) };
+}
+
+export function missionType(code: string): string {
+  return MISSION_TYPES[code] ?? humanize(code);
+}
+
+export function missionDocumentType(code: string): string {
+  return MISSION_DOCUMENT_TYPES[code] ?? humanize(code);
 }
