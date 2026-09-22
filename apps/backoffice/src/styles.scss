@@ -362,6 +362,39 @@ ag-grid-angular {
   box-shadow: 0 0 0 2px var(--mtm-accent);
 }
 
+/* Sélecteur Plan / Satellite des cartes Leaflet (rendu hors composant). */
+.mtm-layer-switch {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 1px 3px rgba(31, 41, 55, 0.25);
+
+  button {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--mtm-text-muted);
+    cursor: pointer;
+    min-height: 28px;
+
+    &.is-active {
+      background: var(--mtm-primary);
+      color: #ffffff;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--mtm-accent);
+      outline-offset: 1px;
+    }
+  }
+}
+
 /* Lien de retour en tête d'une fiche */
 .back-link {
   display: inline-flex;

@@ -25,6 +25,7 @@ import {
   LucideUserCheck,
 } from '@lucide/angular';
 import * as L from 'leaflet';
+import { installBaseLayers } from '../../../shared/maps/map-layers';
 import { TerrainsApiService } from '../../../core/services/api/terrains-api.service';
 import { CrmApiService } from '../../../core/services/api/crm-api.service';
 import type { CommercialSummary } from '../../../core/models/prospect.model';
@@ -337,7 +338,10 @@ export class TerrainDetail implements OnInit, OnDestroy {
     const lat = Number(terrain.latitude);
     const lng = Number(terrain.longitude);
     const map = L.map(container, { scrollWheelZoom: false }).setView([lat, lng], 15);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap', maxZoom: 19 }).addTo(map);
+    // Plan et vue satellite (section 7 du cahier des charges) : le satellite
+    // sert à vérifier l'environnement réel d'une parcelle — bâti alentour,
+    // accès, végétation — ce qu'un plan ne montre pas.
+    installBaseLayers(map);
     const icon = L.divIcon({ className: 'mtm-map-pin', html: '<span class="mtm-map-pin-dot"></span>', iconSize: [22, 22], iconAnchor: [11, 11] });
     L.marker([lat, lng], { icon }).addTo(map).bindPopup(`<strong>${terrain.nom}</strong>`);
     this.map = map;
