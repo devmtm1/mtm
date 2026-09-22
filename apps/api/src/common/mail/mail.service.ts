@@ -2,6 +2,13 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createTransport, type Transporter } from 'nodemailer';
 
+/** Délai d'établissement de la connexion SMTP et d'accueil du serveur. */
+const SMTP_TIMEOUT_MS = 10_000;
+/** Délai d'inactivité une fois la connexion établie. */
+const SMTP_SOCKET_TIMEOUT_MS = 20_000;
+/** Durée de validité du résultat de `verify()` pour le contrôle de santé. */
+const VERIFY_CACHE_MS = 60_000;
+
 export interface MailMessage {
   to: string;
   subject: string;
@@ -28,6 +35,8 @@ export interface MailMessage {
 export class MailService {
   private readonly logger = new Logger(MailService.name);
   private readonly transporter: Transporter | null;
+  /** Dernier résultat de `verify()`, avec sa date de péremption. */
+  private lastVerify: { ok: boolean; expiresAt: number } | null = null;
   private readonly from: string;
   private readonly isProduction: boolean;
 
@@ -57,6 +66,12 @@ export class MailService {
       // 465 = SMTPS implicite ; sinon STARTTLS négocié par nodemailer.
       secure: port === 465,
       auth: user && pass ? { user, pass } : undefined,
+      // Sans ces délais, une connexion sortante filtrée par l'hébergeur reste
+      // suspendue deux minutes : le contrôle de santé expirait et le client
+      // attendait autant. Mieux vaut échouer vite et le signaler.
+      connectionTimeout: SMTP_TIMEOUT_MS,
+      greetingTimeout: SMTP_TIMEOUT_MS,
+      socketTimeout: SMTP_SOCKET_TIMEOUT_MS,
     });
   }
 
@@ -104,16 +119,30 @@ export class MailService {
     }
   }
 
-  /** Vérifie la connexion SMTP (utilisé par le contrôle de santé). */
+  /**
+   * Vérifie la connexion SMTP (utilisé par le contrôle de santé). Le
+   * résultat est gardé une minute : le contrôle de santé est appelé souvent
+   * et ouvrir une connexion SMTP à chaque fois est inutile — et coûteux
+   * quand le serveur ne répond pas.
+   */
   async verify(): Promise<boolean> {
     if (!this.transporter) return false;
+    const maintenant = Date.now();
+    if (this.lastVerify && maintenant < this.lastVerify.expiresAt) {
+      return this.lastVerify.ok;
+    }
+    let ok = false;
     try {
       await this.transporter.verify();
-      return true;
+      ok = true;
     } catch (error) {
-      this.logger.error('Connexion SMTP impossible', error);
-      return false;
+      this.logger.error(
+        'Connexion SMTP impossible',
+        error instanceof Error ? error.message : String(error),
+      );
     }
+    this.lastVerify = { ok, expiresAt: maintenant + VERIFY_CACHE_MS };
+    return ok;
   }
 
   private textToHtml(text: string): string {
