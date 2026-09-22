@@ -31,6 +31,7 @@ const PHASE_1_RESOURCES = [
   'proprietaires',
   'ventes',
   'clients',
+  'demarches',
 ] as const;
 
 // Rôles initiaux recommandés par la section 24 du CDC.
@@ -202,6 +203,62 @@ async function main(): Promise<void> {
     });
   }
   console.log('  Rôle commercial : permissions CRM limitées attribuées');
+
+  // --- Permissions des démarches administratives (J2.2, section 14 CDC) ---
+  // Le responsable des démarches pilote le service ; l'encadrement supervise ;
+  // un commercial peut porter une mission pour son client de la diaspora.
+  const demarchesPermissionsByRole: Record<string, string[]> = {
+    responsable_demarches: [
+      'demarches:consulter',
+      'demarches:creer',
+      'demarches:modifier',
+      'demarches:valider',
+      'demarches:publier',
+      'demarches:exporter',
+      'terrains:consulter',
+      'crm:consulter',
+    ],
+    commercial: ['demarches:consulter', 'demarches:creer', 'demarches:modifier'],
+    responsable_commercial: [
+      'demarches:consulter',
+      'demarches:creer',
+      'demarches:modifier',
+      'demarches:valider',
+      'demarches:publier',
+    ],
+    manager: [
+      'demarches:consulter',
+      'demarches:creer',
+      'demarches:modifier',
+      'demarches:valider',
+      'demarches:publier',
+      'demarches:exporter',
+      'demarches:administrer',
+    ],
+    direction: [
+      'demarches:consulter',
+      'demarches:creer',
+      'demarches:modifier',
+      'demarches:valider',
+      'demarches:publier',
+      'demarches:exporter',
+      'demarches:supprimer',
+      'demarches:administrer',
+    ],
+    comptable: ['demarches:consulter'],
+  };
+  for (const [roleName, permissionNames] of Object.entries(demarchesPermissionsByRole)) {
+    const role = await prisma.role.findUniqueOrThrow({ where: { name: roleName } });
+    for (const permissionName of permissionNames) {
+      const permission = await prisma.permission.findUniqueOrThrow({ where: { name: permissionName } });
+      await prisma.rolePermission.upsert({
+        where: { roleId_permissionId: { roleId: role.id, permissionId: permission.id } },
+        update: {},
+        create: { roleId: role.id, permissionId: permission.id },
+      });
+    }
+  }
+  console.log('  Permissions démarches J2.2 attribuées');
 
   // --- Permissions ventes J1.6 par rôle ---
   const salesPermissionsByRole: Record<string, string[]> = {
@@ -635,6 +692,84 @@ async function main(): Promise<void> {
       key: 'crm.niveauxInteret',
       value: ['faible', 'moyen', 'fort', 'tres_interesse'],
       description: 'Niveau d’intérêt d’un prospect',
+      isSensitive: false,
+    },
+  });
+
+  // --- Démarches : étapes de la mission (section 14 CDC) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'demarches.statuts' },
+    update: {},
+    create: {
+      key: 'demarches.statuts',
+      value: [
+        'demande',
+        'faisabilite',
+        'verification_physique',
+        'verification_administrative',
+        'rapport',
+        'cloturee',
+        'abandonnee',
+      ],
+      description: 'Étapes d’une mission de vérification foncière',
+      isSensitive: false,
+    },
+  });
+
+  // --- Démarches : nature des missions demandées ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'demarches.typesVerification' },
+    update: {},
+    create: {
+      key: 'demarches.typesVerification',
+      value: [
+        'verification_fonciere',
+        'verification_physique',
+        'verification_administrative',
+        'accompagnement_achat',
+        'autre',
+      ],
+      description: 'Types de vérification proposés aux clients',
+      isSensitive: false,
+    },
+  });
+
+  // --- Démarches : administrations consultées (varie selon la localité) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'demarches.administrations' },
+    update: {},
+    create: {
+      key: 'demarches.administrations',
+      value: [
+        'mairie',
+        'service_domaines',
+        'cadastre',
+        'conservation_fonciere',
+        'prefecture',
+        'sous_prefecture',
+        'autre',
+      ],
+      description:
+        'Administrations consultées lors d’une vérification (à étendre selon les localités)',
+      isSensitive: false,
+    },
+  });
+
+  // --- Démarches : tarifs indicatifs, jamais figés dans le code ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'demarches.tarifs' },
+    update: {},
+    create: {
+      key: 'demarches.tarifs',
+      value: {
+        verification_fonciere: 150000,
+        verification_physique: 100000,
+        verification_administrative: 120000,
+        accompagnement_achat: 200000,
+        autre: 0,
+      },
+      description:
+        'Tarif indicatif par type de vérification, en FCFA (section 14 CDC : configurable)',
       isSensitive: false,
     },
   });

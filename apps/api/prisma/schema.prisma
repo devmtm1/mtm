@@ -51,24 +51,28 @@ model User {
   roles                    UserRole[]
   refreshTokens            RefreshToken[]
   passwordResetTokens      PasswordResetToken[]
-  auditLogs                AuditLog[]           @relation("AuditLogUser")
-  settingsEdits            SystemSetting[]      @relation("SystemSettingEditor")
-  contentEdits             ContentBlock[]       @relation("ContentBlockEditor")
-  showcaseItemsCrees       ShowcaseItem[]       @relation("ShowcaseItemCreator")
-  assignedTerrains         Terrain[]            @relation("TerrainCommercial")
-  mandatsResponsable       Mandat[]             @relation("MandatCommercial")
-  prospectsCommercial      Prospect[]           @relation("ProspectCommercial")
-  clientProspectId         String?              @unique
-  clientProspect           Prospect?            @relation("ProspectClientUser", fields: [clientProspectId], references: [id], onDelete: SetNull)
-  dossiersVenteResponsable DossierVente[]       @relation("DossierVenteCommercial")
-  reservationsCreees       Reservation[]        @relation("ReservationCreator")
-  paiementsEnregistres     Paiement[]           @relation("PaiementRecorder")
-  commissionsVente         CommissionVente[]    @relation("CommissionCommercial")
-  objectifsCommerciaux     ObjectifCommercial[] @relation("ObjectifCommercial")
-  objectifsDefinis         ObjectifCommercial[] @relation("ObjectifCreator")
-  documentsVenteCrees      DocumentVente[]      @relation("DocumentVenteCreator")
-  visitesAccompagnees      VisiteProspect[]     @relation("VisiteAccompagnateur")
-  visitesCreees            VisiteProspect[]     @relation("VisiteCreatedBy")
+  auditLogs                AuditLog[]            @relation("AuditLogUser")
+  settingsEdits            SystemSetting[]       @relation("SystemSettingEditor")
+  contentEdits             ContentBlock[]        @relation("ContentBlockEditor")
+  showcaseItemsCrees       ShowcaseItem[]        @relation("ShowcaseItemCreator")
+  assignedTerrains         Terrain[]             @relation("TerrainCommercial")
+  mandatsResponsable       Mandat[]              @relation("MandatCommercial")
+  prospectsCommercial      Prospect[]            @relation("ProspectCommercial")
+  clientProspectId         String?               @unique
+  clientProspect           Prospect?             @relation("ProspectClientUser", fields: [clientProspectId], references: [id], onDelete: SetNull)
+  dossiersVenteResponsable DossierVente[]        @relation("DossierVenteCommercial")
+  reservationsCreees       Reservation[]         @relation("ReservationCreator")
+  paiementsEnregistres     Paiement[]            @relation("PaiementRecorder")
+  commissionsVente         CommissionVente[]     @relation("CommissionCommercial")
+  objectifsCommerciaux     ObjectifCommercial[]  @relation("ObjectifCommercial")
+  objectifsDefinis         ObjectifCommercial[]  @relation("ObjectifCreator")
+  documentsVenteCrees      DocumentVente[]       @relation("DocumentVenteCreator")
+  visitesAccompagnees      VisiteProspect[]      @relation("VisiteAccompagnateur")
+  visitesCreees            VisiteProspect[]      @relation("VisiteCreatedBy")
+  missionsResponsable      MissionVerification[] @relation("MissionResponsable")
+  missionsCreees           MissionVerification[] @relation("MissionCreatedBy")
+  etapesMissionRealisees   EtapeMission[]        @relation("EtapeMissionRealisee")
+  documentsMissionCrees    DocumentMission[]     @relation("DocumentMissionCreator")
 
   @@map("users")
 }
@@ -95,30 +99,30 @@ model Proprietaire {
 }
 
 model Terrain {
-  id                      String               @id @default(uuid())
-  referenceInterne        String               @unique
+  id                      String                @id @default(uuid())
+  referenceInterne        String                @unique
   nom                     String
   parcelleMatricule       String?
   informationsCadastrales Json?
   proprietaireId          String?
-  proprietaire            Proprietaire?        @relation(fields: [proprietaireId], references: [id], onDelete: SetNull)
+  proprietaire            Proprietaire?         @relation(fields: [proprietaireId], references: [id], onDelete: SetNull)
   statutJuridique         String
   typeDocumentFoncier     String?
   niveauVerification      String
   region                  String?
   commune                 String?
   localisationDetail      String?
-  latitude                Decimal?             @db.Decimal(10, 7)
-  longitude               Decimal?             @db.Decimal(10, 7)
-  superficie              Decimal?             @db.Decimal(14, 2)
+  latitude                Decimal?              @db.Decimal(10, 7)
+  longitude               Decimal?              @db.Decimal(10, 7)
+  superficie              Decimal?              @db.Decimal(14, 2)
   uniteSuperficie         String?
   dimensions              Json?
-  prixAcquisition         Decimal?             @db.Decimal(15, 2)
-  prixPublic              Decimal?             @db.Decimal(15, 2)
-  marge                   Decimal?             @db.Decimal(15, 2)
-  commission              Decimal?             @db.Decimal(15, 2)
+  prixAcquisition         Decimal?              @db.Decimal(15, 2)
+  prixPublic              Decimal?              @db.Decimal(15, 2)
+  marge                   Decimal?              @db.Decimal(15, 2)
+  commission              Decimal?              @db.Decimal(15, 2)
   statutCommercial        String
-  misEnAvant              Boolean              @default(false)
+  misEnAvant              Boolean               @default(false)
   description             String? // descriptif commercial public du terrain (section 7 CDC)
   accesRoutier            String?
   eauDisponible           Boolean?
@@ -128,18 +132,19 @@ model Terrain {
   proximiteAxes           String?
   pointsInteret           Json?
   notesInternes           String?
-  contacts                Contact[]            @relation("TerrainContacts")
+  contacts                Contact[]             @relation("TerrainContacts")
   reservationRequests     ReservationRequest[]
   commercialResponsableId String?
-  commercialResponsable   User?                @relation("TerrainCommercial", fields: [commercialResponsableId], references: [id], onDelete: SetNull)
+  commercialResponsable   User?                 @relation("TerrainCommercial", fields: [commercialResponsableId], references: [id], onDelete: SetNull)
   medias                  TerrainMedia[]
   documents               TerrainDocument[]
   mandatLots              MandatLot[]
   dossiers                DossierVente[]
-  createdAt               DateTime             @default(now())
-  updatedAt               DateTime             @updatedAt
-  visitesProspect         VisiteProspect[]     @relation("TerrainVisitesProspect")
-  prospectsInteresses     Prospect[]           @relation("ProspectTerrainChoisi")
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+  visitesProspect         VisiteProspect[]      @relation("TerrainVisitesProspect")
+  missions                MissionVerification[]
+  prospectsInteresses     Prospect[]            @relation("ProspectTerrainChoisi")
 
   @@index([statutJuridique])
   @@index([niveauVerification])
@@ -503,10 +508,11 @@ model Prospect {
 
   activites  ActiviteCrm[]
   visites    VisiteProspect[]
+  missions   MissionVerification[]
   documents  DocumentCrm[]
   dossiers   DossierVente[]
-  auditLogs  AuditLog[]       @relation("ProspectAuditLog")
-  clientUser User?            @relation("ProspectClientUser")
+  auditLogs  AuditLog[]            @relation("ProspectAuditLog")
+  clientUser User?                 @relation("ProspectClientUser")
 
   @@index([commercialResponsableId])
   @@index([statutPipeline])
@@ -811,4 +817,152 @@ model ShowcaseItem {
   @@index([isActive])
   @@index([ordre])
   @@map("showcase_items")
+}
+
+/**
+ * Mission de vérification foncière (section 14 du cahier des charges).
+ * Un client — souvent de la diaspora — demande à MTM d'aller vérifier un
+ * terrain avant d'acheter. La mission avance en cinq étapes : demande,
+ * étude de faisabilité, vérification physique, vérification administrative,
+ * rapport. Le terrain peut ne pas exister au catalogue : le client décrit
+ * alors simplement où il se trouve.
+ */
+model MissionVerification {
+  id               String   @id @default(uuid())
+  /**
+   * Référence lisible attribuée à la création : V-2026-0007.
+   */
+  referenceInterne String?  @unique
+  /**
+   * Client demandeur : une fiche prospect, comme pour une vente.
+   */
+  prospectId       String
+  prospect         Prospect @relation(fields: [prospectId], references: [id], onDelete: Restrict)
+  /**
+   * Terrain du catalogue, quand la demande porte sur un bien connu.
+   */
+  terrainId        String?
+  terrain          Terrain? @relation(fields: [terrainId], references: [id], onDelete: SetNull)
+
+  // --- Étape 1 : la demande ---
+  typeVerification String
+  objectif         String?
+  localisation     String?
+  region           String?
+  commune          String?
+  latitude         Decimal?  @db.Decimal(10, 7)
+  longitude        Decimal?  @db.Decimal(10, 7)
+  piecesFournies   String?
+  urgence          String    @default("normale")
+  budgetAnnonce    Decimal?  @db.Decimal(15, 2)
+  dateDemande      DateTime  @default(now())
+  dateEcheance     DateTime?
+
+  // --- Étape 2 : étude de faisabilité et facturation ---
+  faisabiliteConclusion String?
+  faisabiliteNotes      String?
+  montantDevis          Decimal? @db.Decimal(15, 2)
+  fraisEtude            Decimal? @db.Decimal(15, 2)
+  montantPaye           Decimal? @db.Decimal(15, 2)
+  modePaiement          String?
+  referencePaiement     String?
+
+  // --- Étape 5 : conclusion ---
+  decision       String?
+  conclusion     String?
+  reserves       String?
+  recommandation String?
+  dateRapport    DateTime?
+
+  statut        String  @default("demande")
+  responsableId String?
+  responsable   User?   @relation("MissionResponsable", fields: [responsableId], references: [id], onDelete: SetNull)
+  createdById   String?
+  createdBy     User?   @relation("MissionCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  /**
+   * Visible par le client dans son espace : la mission et son rapport.
+   */
+  visibleClient Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  etapes    EtapeMission[]
+  documents DocumentMission[]
+
+  @@index([prospectId])
+  @@index([terrainId])
+  @@index([statut])
+  @@index([responsableId])
+  @@index([dateEcheance])
+  @@map("missions_verification")
+}
+
+/**
+ * Trace d'une étape réalisée sur une mission : qui, quand, ce qui a été
+ * constaté. Les vérifications administratives portent en plus le nom de
+ * l'administration consultée et la suite donnée — c'est la traçabilité
+ * exigée par le cahier des charges.
+ */
+model EtapeMission {
+  id           String              @id @default(uuid())
+  missionId    String
+  mission      MissionVerification @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  /**
+   * Étape du parcours : faisabilite, verification_physique, verification_administrative, rapport.
+   */
+  type         String
+  titre        String
+  /**
+   * Constat, observations, réponse de l'administration.
+   */
+  observations String?
+
+  // --- Vérification physique ---
+  dateVisite          DateTime?
+  latitude            Decimal?  @db.Decimal(10, 7)
+  longitude           Decimal?  @db.Decimal(10, 7)
+  accesDescription    String?
+  environnement       String?
+  conformiteApparente String?
+
+  // --- Vérification administrative ---
+  administration String?
+  interlocuteur  String?
+  resultat       String?
+
+  realiseeParId String?
+  realiseePar   User?    @relation("EtapeMissionRealisee", fields: [realiseeParId], references: [id], onDelete: SetNull)
+  realiseeLe    DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([missionId, type])
+  @@map("etapes_mission")
+}
+
+/**
+ * Pièce jointe d'une mission : photo de la visite, document fourni, rapport généré.
+ */
+model DocumentMission {
+  id           String              @id @default(uuid())
+  missionId    String
+  mission      MissionVerification @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  type         String
+  storageKey   String
+  resourceType String              @default("raw")
+  title        String?
+  isGenerated  Boolean             @default(false)
+  /**
+   * Visible par le client dans son espace (le rapport final, typiquement).
+   */
+  isPublic     Boolean             @default(false)
+  version      Int                 @default(1)
+  createdById  String?
+  createdBy    User?               @relation("DocumentMissionCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt    DateTime            @default(now())
+
+  @@index([missionId, type])
+  @@index([isPublic])
+  @@map("documents_mission")
 }
