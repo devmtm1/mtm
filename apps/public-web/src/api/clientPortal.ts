@@ -40,3 +40,26 @@ export function fetchClientMissions(token: string): Promise<ClientMission[]> {
     token,
   });
 }
+
+export interface ClientMissionPayload {
+  typeVerification: string;
+  objectif: string;
+  terrainId?: string;
+  localisation?: string;
+  commune?: string;
+  region?: string;
+  piecesFournies?: string;
+  urgence?: string;
+}
+
+/**
+ * Demande de vérification déposée par un client connecté : elle arrive chez
+ * MTM comme une mission à l'étape « demande », sans prix ni délai — c'est
+ * l'équipe qui les fixe après étude.
+ */
+export function createClientMission(
+  token: string,
+  payload: ClientMissionPayload,
+): Promise<{ id: string; referenceInterne: string | null; statut: string }> {
+  return apiClient.post('/demarches/missions/client/missions', payload, { token });
+}

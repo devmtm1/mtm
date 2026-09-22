@@ -13,6 +13,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Throttle } from '@nestjs/throttler';
 import { ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -25,6 +26,7 @@ import { DemarchesEtapesService } from './demarches-etapes.service';
 import { DemarchesDocumentsService } from './demarches-documents.service';
 import { DemarchesClientService } from './demarches-client.service';
 import {
+  CreateClientMissionDto,
   CreateMissionDto,
   QueryMissionDto,
   TransitionMissionDto,
@@ -61,6 +63,34 @@ export class DemarchesController {
   @Get('client/missions')
   getClientMissions(@CurrentUser() user: AuthenticatedUser) {
     return this.client.getMissions(user.id);
+  }
+
+  /**
+   * Demande déposée par le client depuis son espace. Même limitation que les
+   * formulaires publics : un client connecté reste un émetteur externe.
+   */
+  @Post('client/missions')
+  @Throttle({
+    default: {
+      limit: Number.parseInt(process.env.RESERVATION_RATE_LIMIT_MAX ?? '5', 10),
+      ttl:
+        Number.parseInt(process.env.RESERVATION_RATE_LIMIT_TTL ?? '60', 10) *
+        1000,
+    },
+  })
+  async createClientMission(
+    @Body() dto: CreateClientMissionDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const mission = await this.client.createMission(user.id, dto);
+    await this.audit.record({
+      userId: user.id,
+      action: 'mission.demandee_par_client',
+      entityType: 'MissionVerification',
+      entityId: mission.id,
+      newValue: { reference: mission.referenceInterne, ...dto },
+    });
+    return mission;
   }
 
   @Get('client/missions/documents/:documentId')

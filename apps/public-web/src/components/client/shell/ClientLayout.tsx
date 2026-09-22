@@ -62,8 +62,9 @@ export function ClientLayout() {
       missionsLoading: missions.loading,
       missionsError: missions.error,
       refetchDemandes: demandes.refetch,
+      refetchMissions: missions.refetch,
     }),
-    [dossiers.data, dossiers.loading, dossiers.error, demandes.data, demandes.loading, demandes.error, demandes.refetch, missions.data, missions.loading, missions.error],
+    [dossiers.data, dossiers.loading, dossiers.error, demandes.data, demandes.loading, demandes.error, demandes.refetch, missions.data, missions.loading, missions.error, missions.refetch],
   );
 
   const current = TABS.find((tab) => (tab.end ? pathname === tab.to : pathname.startsWith(tab.to))) ?? TABS[0];

@@ -116,3 +116,21 @@ export class QueryMissionDto {
   sortBy = 'createdAt';
   @IsOptional() @IsIn(['asc', 'desc']) sortOrder: 'asc' | 'desc' = 'desc';
 }
+
+/**
+ * Demande de vérification déposée par un client depuis son espace.
+ *
+ * Elle ne porte que ce que le client sait : ce qu'il veut faire vérifier et
+ * où. Le montant, l'échéance et le responsable relèvent de MTM et sont
+ * renseignés ensuite en back-office.
+ */
+export class CreateClientMissionDto {
+  @IsString() @MaxLength(80) typeVerification!: string;
+  @IsString() @MaxLength(2000) objectif!: string;
+  @IsOptional() @IsUUID() terrainId?: string;
+  @IsOptional() @IsString() @MaxLength(500) localisation?: string;
+  @IsOptional() @IsString() @MaxLength(120) commune?: string;
+  @IsOptional() @IsString() @MaxLength(120) region?: string;
+  @IsOptional() @IsString() @MaxLength(2000) piecesFournies?: string;
+  @IsOptional() @IsString() @MaxLength(40) urgence?: string;
+}

@@ -1,10 +1,13 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
+import { DemarchesOptionsService } from './demarches-options.service';
+import type { CreateClientMissionDto } from './dto/mission.dto';
 
 /**
  * Vue client des missions de vérification (section 14 : « le rapport doit
@@ -19,7 +22,71 @@ export class DemarchesClientService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cloudinary: CloudinaryService,
+    private readonly options: DemarchesOptionsService,
   ) {}
+
+  /**
+   * Demande de vérification déposée par le client depuis son espace.
+   *
+   * Elle arrive comme n'importe quelle mission, à l'étape « demande » et sans
+   * responsable : c'est l'équipe qui la prend en charge, la chiffre et
+   * l'affecte. Le client ne fixe ni le prix ni le délai.
+   */
+  async createMission(userId: string, dto: CreateClientMissionDto) {
+    const prospectId = await this.prospectDuCompte(userId);
+    await Promise.all([
+      this.options.assertTypeVerification(dto.typeVerification),
+      this.options.assertUrgence(dto.urgence),
+    ]);
+    if (dto.terrainId) {
+      const terrain = await this.prisma.terrain.findUnique({
+        where: { id: dto.terrainId },
+        select: { id: true },
+      });
+      if (!terrain) throw new BadRequestException('Terrain introuvable');
+    }
+
+    const mission = await this.prisma.missionVerification.create({
+      data: {
+        referenceInterne: await this.prochaineReference(),
+        prospectId,
+        terrainId: dto.terrainId ?? null,
+        typeVerification: dto.typeVerification,
+        objectif: dto.objectif,
+        localisation: dto.localisation,
+        commune: dto.commune,
+        region: dto.region,
+        piecesFournies: dto.piecesFournies,
+        urgence: dto.urgence ?? 'normale',
+        statut: 'demande',
+      },
+      select: { id: true, referenceInterne: true, statut: true },
+    });
+    return mission;
+  }
+
+  /**
+   * Même numérotation que les missions créées en back-office (`V-2026-0007`) :
+   * une demande du client n'est pas d'une autre nature.
+   */
+  private async prochaineReference(): Promise<string> {
+    const annee = new Date().getFullYear();
+    const prefixe = `V-${annee}-`;
+    const emises = await this.prisma.missionVerification.count({
+      where: { referenceInterne: { startsWith: prefixe } },
+    });
+    for (let rang = emises + 1; rang <= emises + 20; rang += 1) {
+      const candidate = `${prefixe}${String(rang).padStart(4, '0')}`;
+      const prise = await this.prisma.missionVerification.findUnique({
+        where: { referenceInterne: candidate },
+        select: { id: true },
+      });
+      if (!prise) return candidate;
+    }
+    throw new BadRequestException(
+      'Impossible d’enregistrer la demande, réessayez',
+    );
+  }
 
   async getMissions(userId: string) {
     const prospectId = await this.prospectDuCompte(userId);

@@ -1,7 +1,11 @@
+import { useState } from 'react';
+import { ShieldCheck } from 'lucide-react';
 import { useClientData } from '../../contexts/client-data-store';
 import { usePageMetadata } from '../../hooks/usePageMetadata';
 import { ClientPageHeader } from '../../components/client/shell/ClientUi';
 import { ClientMissionCard } from '../../components/client/ClientMissionCard';
+import { NewMissionModal } from '../../components/client/NewMissionModal';
+import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { LinkButton } from '../../components/ui/LinkButton';
 import { Skeleton } from '../../components/ui/Skeleton';
@@ -13,7 +17,8 @@ import { ROUTES } from '../../routes';
  * des charges : « le rapport doit être accessible depuis son espace »).
  */
 export function ClientMissionsPage() {
-  const { missions, missionsLoading, missionsError } = useClientData();
+  const { missions, missionsLoading, missionsError, refetchMissions } = useClientData();
+  const [demandeOuverte, setDemandeOuverte] = useState(false);
   usePageMetadata({ title: 'Mes vérifications' });
   const list = missions ?? [];
 
@@ -25,6 +30,12 @@ export function ClientMissionsPage() {
           list.length > 0
             ? `${list.length} mission${list.length > 1 ? 's' : ''} de vérification foncière.`
             : undefined
+        }
+        action={
+          <Button onClick={() => setDemandeOuverte(true)}>
+            <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+            Demander une vérification
+          </Button>
         }
       />
       {missionsLoading && (
@@ -41,9 +52,12 @@ export function ClientMissionsPage() {
           title="Aucune vérification en cours"
           description="Vous pouvez nous confier la vérification d'un terrain avant d'acheter : visite sur place, contrôle des documents auprès des administrations, puis rapport écrit."
           action={
-            <LinkButton to={ROUTES.demarches} variant="secondary">
-              En savoir plus
-            </LinkButton>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button onClick={() => setDemandeOuverte(true)}>Demander une vérification</Button>
+              <LinkButton to={ROUTES.demarches} variant="secondary">
+                En savoir plus
+              </LinkButton>
+            </div>
           }
         />
       )}
@@ -53,6 +67,12 @@ export function ClientMissionsPage() {
             <ClientMissionCard key={mission.id} mission={mission} />
           ))}
         </div>
+      )}
+      {demandeOuverte && (
+        <NewMissionModal
+          onClose={() => setDemandeOuverte(false)}
+          onCreated={refetchMissions}
+        />
       )}
     </div>
   );

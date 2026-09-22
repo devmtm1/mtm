@@ -220,6 +220,31 @@ describeE2e('Parcours Démarches J2.2 (e2e)', () => {
     expect(mission.etapes).toBeUndefined();
   });
 
+  it('le client peut demander lui-même une nouvelle vérification', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/api/demarches/missions/client/missions')
+      .set('Authorization', `Bearer ${jetonClient}`)
+      .send({
+        typeVerification: 'verification_physique',
+        objectif:
+          'Un deuxième terrain m’est proposé à Saly, je veux le faire voir.',
+        localisation: 'Saly, route de la corniche',
+        commune: 'Saly',
+        urgence: 'normale',
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body.statut).toBe('demande');
+    expect(response.body.referenceInterne).toMatch(/^V-\d{4}-\d{4}$/);
+
+    // Elle arrive côté équipe, sans responsable : à prendre en charge.
+    const liste = await request(app.getHttpServer())
+      .get('/api/demarches/missions?vue=sans_responsable')
+      .set('Authorization', `Bearer ${jetonAgent}`);
+    expect(liste.body.total).toBe(1);
+    expect(liste.body.items[0].responsable).toBeNull();
+  });
+
   it('clôture la mission, décision prise', async () => {
     const response = await request(app.getHttpServer())
       .patch(`/api/demarches/missions/${missionId}/etape`)

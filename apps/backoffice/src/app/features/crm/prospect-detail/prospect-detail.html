@@ -363,11 +363,23 @@
             <h2>Dossiers de vente</h2>
             <p class="detail-section__hint">Un dossier par terrain : réservation, paiements, documents et commissions se suivent dans Ventes.</p>
           </div>
-          @if (canCreateSale && !isLost()) {
-            <button mat-stroked-button type="button" (click)="openCreateSalesDossier()">
-              <svg class="btn-icon" lucideReceipt aria-hidden="true"></svg>Ouvrir un dossier
-            </button>
-          }
+          <span class="detail-section__actions">
+            @if (canCreateMission()) {
+              <button
+                mat-stroked-button
+                type="button"
+                matTooltip="Faire vérifier un terrain pour ce client : visite sur place, contrôle des documents, rapport"
+                (click)="demanderVerification()"
+              >
+                <svg class="btn-icon" lucideShieldCheck aria-hidden="true"></svg>Demander une vérification
+              </button>
+            }
+            @if (canCreateSale && !isLost()) {
+              <button mat-stroked-button type="button" (click)="openCreateSalesDossier()">
+                <svg class="btn-icon" lucideReceipt aria-hidden="true"></svg>Ouvrir un dossier
+              </button>
+            }
+          </span>
         </div>
         @if (p.dossiers.length) {
           <div class="table-scroll">

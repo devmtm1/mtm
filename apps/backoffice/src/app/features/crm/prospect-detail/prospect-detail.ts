@@ -17,6 +17,7 @@ import {
   LucidePhone,
   LucidePlus,
   LucideReceipt,
+  LucideShieldCheck,
   LucideTrash2,
   LucideUpload,
   LucideUser,
@@ -142,6 +143,7 @@ const FIELD_LABELS: Record<string, string> = {
     LucidePhone,
     LucidePlus,
     LucideReceipt,
+    LucideShieldCheck,
     LucideTrash2,
     LucideUpload,
     LucideUser,
@@ -166,6 +168,8 @@ export class ProspectDetail implements OnInit {
   protected readonly canDelete = this.session.hasPermission('crm:supprimer');
   protected readonly canCreateClient = this.session.hasPermission('clients:creer');
   protected readonly canCreateSale = this.session.hasPermission('ventes:creer');
+  /** Ce client peut se voir ouvrir une mission de vérification foncière (J2.2). */
+  protected readonly canCreateMission = computed(() => this.session.hasPermission('demarches:creer'));
   protected readonly canSeeSales = this.session.hasPermission('ventes:consulter');
   protected readonly isSupervisor = this.session.hasSupervisionScope('crm');
 
@@ -470,6 +474,18 @@ export class ProspectDetail implements OnInit {
     const prospect = this.prospect();
     if (!prospect || !confirm(`Supprimer l’action « ${activite.titre} » ?`)) return;
     this.run(this.api.removeActivite(prospect.id, activite.id), 'Action supprimée');
+  }
+
+  /**
+   * Ouvre le formulaire de mission avec ce client déjà sélectionné : le
+   * collaborateur n'a plus qu'à décrire ce qu'il faut vérifier.
+   */
+  protected demanderVerification(): void {
+    const prospect = this.prospect();
+    if (!prospect) return;
+    void this.router.navigate(['/demarches/missions/nouvelle'], {
+      queryParams: { prospectId: prospect.id },
+    });
   }
 
   protected openCreateSalesDossier(): void {

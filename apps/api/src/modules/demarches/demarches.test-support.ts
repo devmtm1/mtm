@@ -35,6 +35,6 @@ export function createDemarchesTestContext() {
       access,
       options,
     ),
-    client: new DemarchesClientService(prisma, cloudinary),
+    client: new DemarchesClientService(prisma, cloudinary, options),
   };
 }

@@ -14,6 +14,8 @@ export interface ClientDataValue {
   missionsError: string | null;
   /** À appeler après l'envoi d'une demande depuis l'espace client. */
   refetchDemandes: () => void;
+  /** À appeler après avoir demandé une nouvelle vérification. */
+  refetchMissions: () => void;
 }
 
 /**
