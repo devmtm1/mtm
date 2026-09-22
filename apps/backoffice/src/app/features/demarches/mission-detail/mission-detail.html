@@ -1,0 +1,410 @@
+@if (mission(); as m) {
+  <div class="mission-detail">
+    <header class="page-header">
+      <div>
+        <button mat-button type="button" class="back-link" (click)="retour()">
+          <svg class="btn-icon" lucideArrowLeft aria-hidden="true"></svg>Retour aux missions
+        </button>
+        <p class="eyebrow">{{ m.referenceInterne ?? 'Mission' }} · Vérification foncière</p>
+        <h1 class="page-header__title">
+          {{ m.prospect.prenom }} {{ m.prospect.nom }}
+        </h1>
+        <p class="page-header__subtitle">
+          {{ typeLabel(m.typeVerification) }} — {{ lieu() }}
+        </p>
+        <div class="mission-detail__tags">
+          <span [class]="etapePill(m.statut)" [matTooltip]="etapeAide(m.statut)">
+            {{ etapeLabel(m.statut) }}
+          </span>
+          <span [class]="urgencePill(m.urgence)">{{ urgenceLabel(m.urgence) }}</span>
+          @if (m.decision) {
+            <span [class]="decisionPill(m.decision)">Décision : {{ decisionLabel(m.decision) }}</span>
+          }
+          @if (enRetard()) {
+            <span class="status-pill status-pill--danger">Échéance dépassée</span>
+          }
+        </div>
+      </div>
+      @if (canModify() && !estTerminee()) {
+        <div class="page-header__actions">
+          <mat-form-field appearance="outline" class="mission-detail__etape-select">
+            <mat-label>Étape de la mission</mat-label>
+            <mat-select [value]="m.statut" (selectionChange)="changerEtape($event.value)">
+              @for (etape of options().statuts ?? []; track etape) {
+                <mat-option [value]="etape">{{ etapeLabel(etape) }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      }
+    </header>
+
+    <!-- Étape 1 : la demande -->
+    <section class="page-card detail-section">
+      <div class="detail-section__head">
+        <h2>La demande du client</h2>
+        <p class="detail-section__hint">
+          Ce que le client a demandé, et ce qu’il a fourni pour le faire.
+        </p>
+      </div>
+      <dl class="detail-facts">
+        <div><dt>Client</dt><dd>{{ m.prospect.prenom }} {{ m.prospect.nom }}</dd></div>
+        @if (m.prospect.telephone || m.prospect.email) {
+          <div>
+            <dt>Contact</dt>
+            <dd>{{ m.prospect.telephone }} {{ m.prospect.email ? '· ' + m.prospect.email : '' }}</dd>
+          </div>
+        }
+        <div><dt>Demandée le</dt><dd>{{ m.dateDemande | date: 'dd/MM/yyyy' }}</dd></div>
+        @if (m.dateEcheance) {
+          <div><dt>Échéance promise</dt><dd>{{ m.dateEcheance | date: 'dd/MM/yyyy' }}</dd></div>
+        }
+        <div><dt>Localisation</dt><dd>{{ lieu() }}</dd></div>
+        @if (coordonnees()) {
+          <div><dt>Point GPS fourni</dt><dd>{{ coordonnees() }}</dd></div>
+        }
+        @if (m.budgetAnnonce) {
+          <div><dt>Budget annoncé</dt><dd>{{ m.budgetAnnonce | mtmMoney }}</dd></div>
+        }
+        <div><dt>Responsable</dt><dd>{{ personne(m.responsable) }}</dd></div>
+      </dl>
+      @if (m.objectif) {
+        <p class="detail-section__text"><strong>Objectif :</strong> {{ m.objectif }}</p>
+      }
+      @if (m.piecesFournies) {
+        <p class="detail-section__text"><strong>Pièces fournies :</strong> {{ m.piecesFournies }}</p>
+      }
+    </section>
+
+    <!-- Étape 2 : étude de faisabilité et facturation -->
+    <section class="page-card detail-section">
+      <div class="detail-section__head">
+        <h2>Étude de faisabilité et facturation</h2>
+        <p class="detail-section__hint">
+          Ce qu’il est possible de vérifier, à quel prix, et ce qui a été réglé. Les frais d’étude
+          restent dus même lorsque la conclusion est défavorable.
+        </p>
+      </div>
+      <form [formGroup]="faisabilite" class="form-grid" (ngSubmit)="enregistrerFaisabilite()">
+        <mat-form-field appearance="outline">
+          <mat-label>Conclusion de l’étude</mat-label>
+          <mat-select formControlName="faisabiliteConclusion">
+            <mat-option value="">Non renseignée</mat-option>
+            @for (valeur of options().conclusionsFaisabilite ?? []; track valeur) {
+              <mat-option [value]="valeur">{{ decisionLabel(valeur) }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Montant convenu</mat-label>
+          <input matInput type="number" min="0" formControlName="montantDevis" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Frais d’étude</mat-label>
+          <input matInput type="number" min="0" formControlName="fraisEtude" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Montant réglé</mat-label>
+          <input matInput type="number" min="0" formControlName="montantPaye" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Mode de paiement</mat-label>
+          <mat-select formControlName="modePaiement">
+            <mat-option value="">Non renseigné</mat-option>
+            @for (mode of options().modesPaiement ?? []; track mode) {
+              <mat-option [value]="mode">{{ mode }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Référence du paiement</mat-label>
+          <input matInput formControlName="referencePaiement" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="wide">
+          <mat-label>Notes de l’étude</mat-label>
+          <textarea matInput rows="2" formControlName="faisabiliteNotes"></textarea>
+        </mat-form-field>
+
+        @if (canModify()) {
+          <div class="wide form-actions">
+            <button mat-stroked-button type="submit" [disabled]="saving()">
+              Enregistrer l’étude
+            </button>
+          </div>
+        }
+      </form>
+    </section>
+
+    <!-- Étape 3 : vérification physique -->
+    <section class="page-card detail-section">
+      <div class="detail-section__head">
+        <h2>Vérification physique</h2>
+        <p class="detail-section__hint">
+          Ce qui a été constaté sur place : état du terrain, accès, environnement, coordonnées
+          relevées. Chaque constat est daté et signé.
+        </p>
+        @if (canModify() && !estTerminee()) {
+          <button mat-stroked-button type="button" (click)="ajouterConstat('verification_physique')">
+            <svg class="btn-icon" lucideMapPinned aria-hidden="true"></svg>Ajouter un constat
+          </button>
+        }
+      </div>
+      @if (constatsPhysiques().length) {
+        <ul class="constat-list">
+          @for (constat of constatsPhysiques(); track constat.id) {
+            <li class="constat-item">
+              <div class="constat-item__head">
+                <strong>{{ constat.titre }}</strong>
+                @if (constat.conformiteApparente) {
+                  <span [class]="conformitePill(constat.conformiteApparente)">
+                    {{ conformiteLabel(constat.conformiteApparente) }}
+                  </span>
+                }
+                <span class="constat-item__meta">
+                  {{ constat.dateVisite ?? constat.realiseeLe | date: 'dd/MM/yyyy' }} ·
+                  {{ personne(constat.realiseePar) }}
+                </span>
+                @if (canModify() && !estTerminee()) {
+                  <span class="constat-item__actions">
+                    <button mat-button type="button" (click)="modifierConstat(constat)">Modifier</button>
+                    <button
+                      mat-icon-button
+                      type="button"
+                      aria-label="Supprimer le constat"
+                      (click)="supprimerConstat(constat)"
+                    >
+                      <svg class="btn-icon" lucideTrash2 aria-hidden="true"></svg>
+                    </button>
+                  </span>
+                }
+              </div>
+              <dl class="constat-item__facts">
+                @if (constat.latitude && constat.longitude) {
+                  <div><dt>GPS relevé</dt><dd>{{ constat.latitude }}, {{ constat.longitude }}</dd></div>
+                }
+                @if (constat.accesDescription) {
+                  <div><dt>Accès</dt><dd>{{ constat.accesDescription }}</dd></div>
+                }
+                @if (constat.environnement) {
+                  <div><dt>Environnement</dt><dd>{{ constat.environnement }}</dd></div>
+                }
+              </dl>
+              @if (constat.observations) {
+                <p class="constat-item__note">{{ constat.observations }}</p>
+              }
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="detail-section__text">
+          Aucun constat de terrain. C’est le cœur de la mission : sans visite, le rapport ne pourra
+          pas être généré.
+        </p>
+      }
+    </section>
+
+    <!-- Étape 4 : vérification administrative -->
+    <section class="page-card detail-section">
+      <div class="detail-section__head">
+        <h2>Vérification administrative</h2>
+        <p class="detail-section__hint">
+          Les administrations consultées selon la localité, et ce qu’elles ont répondu.
+        </p>
+        @if (canModify() && !estTerminee()) {
+          <button
+            mat-stroked-button
+            type="button"
+            (click)="ajouterConstat('verification_administrative')"
+          >
+            <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Ajouter une consultation
+          </button>
+        }
+      </div>
+      @if (constatsAdministratifs().length) {
+        <ul class="constat-list">
+          @for (constat of constatsAdministratifs(); track constat.id) {
+            <li class="constat-item">
+              <div class="constat-item__head">
+                <strong>{{ administrationLabel(constat.administration) }}</strong>
+                @if (constat.resultat) {
+                  <span [class]="resultatPill(constat.resultat)">
+                    {{ resultatLabel(constat.resultat) }}
+                  </span>
+                }
+                <span class="constat-item__meta">
+                  {{ constat.realiseeLe | date: 'dd/MM/yyyy' }} · {{ personne(constat.realiseePar) }}
+                  @if (constat.interlocuteur) {
+                    · {{ constat.interlocuteur }}
+                  }
+                </span>
+                @if (canModify() && !estTerminee()) {
+                  <span class="constat-item__actions">
+                    <button mat-button type="button" (click)="modifierConstat(constat)">Modifier</button>
+                    <button
+                      mat-icon-button
+                      type="button"
+                      aria-label="Supprimer la consultation"
+                      (click)="supprimerConstat(constat)"
+                    >
+                      <svg class="btn-icon" lucideTrash2 aria-hidden="true"></svg>
+                    </button>
+                  </span>
+                }
+              </div>
+              @if (constat.observations) {
+                <p class="constat-item__note">{{ constat.observations }}</p>
+              }
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="detail-section__text">Aucune administration consultée pour l’instant.</p>
+      }
+    </section>
+
+    <!-- Étape 5 : conclusion et rapport -->
+    <section class="page-card detail-section">
+      <div class="detail-section__head">
+        <h2>Conclusion et rapport</h2>
+        <p class="detail-section__hint">
+          La réponse que MTM donne au client. La décision est obligatoire avant de générer le
+          rapport et avant de clôturer la mission.
+        </p>
+      </div>
+      <form [formGroup]="conclusion" class="form-grid" (ngSubmit)="enregistrerConclusion()">
+        <mat-form-field appearance="outline">
+          <mat-label>Décision de MTM</mat-label>
+          <mat-select formControlName="decision">
+            <mat-option value="">Non prononcée</mat-option>
+            @for (valeur of options().decisions ?? []; track valeur) {
+              <mat-option [value]="valeur">{{ decisionLabel(valeur) }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="wide">
+          <mat-label>Conclusion</mat-label>
+          <textarea
+            matInput
+            rows="3"
+            formControlName="conclusion"
+            placeholder="Ce que MTM a établi, en quelques phrases lisibles par le client"
+          ></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="wide">
+          <mat-label>Réserves</mat-label>
+          <textarea matInput rows="2" formControlName="reserves"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="wide">
+          <mat-label>Recommandation</mat-label>
+          <textarea matInput rows="2" formControlName="recommandation"></textarea>
+        </mat-form-field>
+
+        @if (canModify()) {
+          <div class="wide form-actions">
+            <button mat-stroked-button type="submit" [disabled]="saving()">
+              Enregistrer la conclusion
+            </button>
+            @if (canReport()) {
+              <button
+                mat-flat-button
+                color="primary"
+                type="button"
+                [disabled]="saving()"
+                (click)="genererRapport()"
+              >
+                <svg class="btn-icon" lucideFileText aria-hidden="true"></svg>Générer le rapport
+              </button>
+            }
+          </div>
+        }
+      </form>
+
+      @if (rapports().length) {
+        <ul class="doc-list">
+          @for (rapport of rapports(); track rapport.id) {
+            <li class="doc-item">
+              <svg lucideFileText aria-hidden="true"></svg>
+              <span class="doc-item__title">
+                {{ rapport.title }}
+                <small>version {{ rapport.version }} · {{ rapport.createdAt | date: 'dd/MM/yyyy' }}</small>
+              </span>
+              <span class="status-pill status-pill--success">Visible par le client</span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <!-- Pièces du dossier -->
+    <section class="page-card detail-section">
+      <div class="detail-section__head">
+        <h2>Pièces du dossier</h2>
+        <p class="detail-section__hint">
+          Documents fournis par le client, photos de la visite, pièces obtenues des administrations.
+          Une pièce n’est visible par le client que si elle est publiée.
+        </p>
+        @if (canModify() && !estTerminee()) {
+          <span class="detail-section__actions">
+            <label class="upload-button">
+              <svg class="btn-icon" lucideUpload aria-hidden="true"></svg>Ajouter une photo
+              <input type="file" accept="image/*,video/*" (change)="televerser($event, 'photo_visite')" />
+            </label>
+            <label class="upload-button">
+              <svg class="btn-icon" lucideUpload aria-hidden="true"></svg>Ajouter un document
+              <input type="file" (change)="televerser($event, 'piece_administrative')" />
+            </label>
+          </span>
+        }
+      </div>
+      @if (pieces().length) {
+        <ul class="doc-list">
+          @for (piece of pieces(); track piece.id) {
+            <li class="doc-item">
+              <svg lucideFileText aria-hidden="true"></svg>
+              <span class="doc-item__title">
+                {{ piece.title ?? documentLabel(piece.type) }}
+                <small>
+                  {{ documentLabel(piece.type) }} · {{ piece.createdAt | date: 'dd/MM/yyyy' }} ·
+                  {{ personne(piece.createdBy) }}
+                </small>
+              </span>
+              @if (piece.isPublic) {
+                <span class="status-pill status-pill--success">Visible par le client</span>
+              } @else {
+                <span class="status-pill">Interne</span>
+              }
+              @if (canPublish()) {
+                <button mat-button type="button" (click)="basculerVisibilite(piece)">
+                  {{ piece.isPublic ? 'Retirer du client' : 'Publier au client' }}
+                </button>
+              }
+              @if (canModify()) {
+                <button
+                  mat-icon-button
+                  type="button"
+                  aria-label="Supprimer la pièce"
+                  (click)="supprimerDocument(piece)"
+                >
+                  <svg class="btn-icon" lucideTrash2 aria-hidden="true"></svg>
+                </button>
+              }
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="detail-section__text">Aucune pièce jointe pour l’instant.</p>
+      }
+    </section>
+  </div>
+} @else if (!loading()) {
+  <p class="detail-section__text">Mission introuvable.</p>
+}

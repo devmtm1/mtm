@@ -12,6 +12,7 @@ import {
   LucideLandPlot,
   LucideScrollText,
   LucideUserSearch,
+  LucideClipboardCheck,
   LucideReceipt,
   LucideIdCard,
   LucideTarget,
@@ -98,6 +99,12 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         route: '/ventes',
         icon: LucideReceipt,
         permission: 'ventes:consulter',
+      },
+      {
+        label: 'Vérifications',
+        route: '/demarches/missions',
+        icon: LucideClipboardCheck,
+        permission: 'demarches:consulter',
       },
       {
         label: 'Objectifs',

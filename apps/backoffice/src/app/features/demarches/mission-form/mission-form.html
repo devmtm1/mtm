@@ -1,0 +1,142 @@
+<div class="mission-form-page">
+  <header class="page-header">
+    <div>
+      <button mat-button type="button" class="back-link" (click)="retour()">
+        <svg class="btn-icon" lucideArrowLeft aria-hidden="true"></svg>Retour aux missions
+      </button>
+      <p class="eyebrow">Démarches administratives</p>
+      <h1 class="page-header__title">Nouvelle mission de vérification</h1>
+      <p class="page-header__subtitle">
+        Ce que le client demande, sur quel terrain, et dans quel délai. Les constats et le rapport
+        se remplissent ensuite, au fil de la mission.
+      </p>
+    </div>
+  </header>
+
+  <form [formGroup]="form" class="page-card form-block" (ngSubmit)="submit()">
+    <div class="form-grid">
+    <p class="form-section-title wide">Le client et sa demande</p>
+
+    <mat-form-field appearance="outline" class="wide">
+      <mat-label>Client demandeur</mat-label>
+      <mat-select formControlName="prospectId">
+        @for (client of clients(); track client.id) {
+          <mat-option [value]="client.id">{{ nomClient(client) }}</mat-option>
+        }
+      </mat-select>
+      <mat-hint>
+        La mission se rattache à une fiche client existante : créez-la d’abord dans Prospects si
+        besoin.
+      </mat-hint>
+      <mat-error>Choisissez le client qui a demandé la vérification.</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Nature de la vérification</mat-label>
+      <mat-select formControlName="typeVerification">
+        @for (type of options().typesVerification ?? []; track type) {
+          <mat-option [value]="type">{{ typeLabel(type) }}</mat-option>
+        }
+      </mat-select>
+      @if (tarifIndicatif() !== null) {
+        <mat-hint>Tarif indicatif : {{ tarifIndicatif() }} FCFA (modifiable par mission)</mat-hint>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Urgence</mat-label>
+      <mat-select formControlName="urgence">
+        @for (urgence of options().urgences ?? []; track urgence) {
+          <mat-option [value]="urgence">{{ urgenceLabel(urgence) }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="wide">
+      <mat-label>Objectif du client</mat-label>
+      <textarea
+        matInput
+        rows="2"
+        formControlName="objectif"
+        placeholder="Ex. : vérifier que le terrain proposé existe et que le titre est authentique avant d’envoyer les fonds"
+      ></textarea>
+    </mat-form-field>
+
+    <p class="form-section-title wide">Le terrain concerné</p>
+
+    <mat-form-field appearance="outline" class="wide">
+      <mat-label>Terrain du catalogue (facultatif)</mat-label>
+      <mat-select formControlName="terrainId">
+        <mat-option value="">Terrain hors catalogue</mat-option>
+        @for (terrain of terrains(); track terrain.id) {
+          <mat-option [value]="terrain.id">
+            {{ terrain.referenceInterne }} · {{ terrain.nom }}
+          </mat-option>
+        }
+      </mat-select>
+      <mat-hint>
+        Laissez vide quand le client fait vérifier un terrain qu’on lui propose ailleurs.
+      </mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="wide">
+      <mat-label>Localisation décrite par le client</mat-label>
+      <input matInput formControlName="localisation" placeholder="Quartier, repère, indication d’accès" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Commune</mat-label>
+      <input matInput formControlName="commune" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Région</mat-label>
+      <input matInput formControlName="region" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Latitude</mat-label>
+      <input matInput type="number" step="0.0000001" formControlName="latitude" />
+      <mat-hint>Si le client a envoyé un point GPS</mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Longitude</mat-label>
+      <input matInput type="number" step="0.0000001" formControlName="longitude" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="wide">
+      <mat-label>Pièces fournies</mat-label>
+      <textarea
+        matInput
+        rows="2"
+        formControlName="piecesFournies"
+        placeholder="Ex. : copie du titre foncier, photos du terrain, coordonnées du vendeur"
+      ></textarea>
+    </mat-form-field>
+
+    <p class="form-section-title wide">Engagement</p>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Échéance promise</mat-label>
+      <input matInput type="date" formControlName="dateEcheance" />
+      <mat-hint>Sert aux alertes « échéance dépassée »</mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Budget annoncé par le client</mat-label>
+      <input matInput type="number" min="0" formControlName="budgetAnnonce" />
+      <mat-hint>Facultatif : le montant convenu se fixe à l’étude de faisabilité</mat-hint>
+    </mat-form-field>
+
+    </div>
+
+    <div class="form-actions">
+      <button mat-stroked-button type="button" (click)="retour()">Annuler</button>
+      <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+        <svg class="btn-icon" lucideSave aria-hidden="true"></svg>
+        {{ saving() ? 'Enregistrement…' : 'Enregistrer la mission' }}
+      </button>
+    </div>
+  </form>
+</div>

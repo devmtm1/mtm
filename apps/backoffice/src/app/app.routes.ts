@@ -218,6 +218,28 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'demarches/missions/nouvelle',
+        canActivate: [permissionsGuard(['demarches:creer'])],
+        loadComponent: () =>
+          import('./features/demarches/mission-form/mission-form').then(
+            (m) => m.MissionForm,
+          ),
+      },
+      {
+        path: 'demarches/missions/:id',
+        canActivate: [permissionsGuard(['demarches:consulter'])],
+        loadComponent: () =>
+          import('./features/demarches/mission-detail/mission-detail').then(
+            (m) => m.MissionDetail,
+          ),
+      },
+      {
+        path: 'demarches/missions',
+        canActivate: [permissionsGuard(['demarches:consulter'])],
+        loadComponent: () =>
+          import('./features/demarches/missions/missions').then((m) => m.Missions),
+      },
+      {
         path: 'crm/prospects',
         canActivate: [permissionsGuard(['crm:consulter'])],
         loadComponent: () =>
