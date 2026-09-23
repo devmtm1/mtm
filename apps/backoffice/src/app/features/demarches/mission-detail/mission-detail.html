@@ -1,4 +1,11 @@
-@if (mission(); as m) {
+@if (loading()) {
+  <div class="mission-detail">
+    <div class="skeleton" style="height: 20px; width: 180px"></div>
+    <div class="skeleton" style="height: 36px; width: 45%"></div>
+    <div class="skeleton" style="height: 220px"></div>
+    <div class="skeleton" style="height: 220px"></div>
+  </div>
+} @else if (mission(); as m) {
   <div class="mission-detail">
     <header class="page-header">
       <div>
@@ -27,6 +34,16 @@
       </div>
       @if (canModify() && !estTerminee()) {
         <div class="page-header__actions">
+          @if (canDelete()) {
+            <button
+              mat-stroked-button
+              type="button"
+              class="mission-detail__danger"
+              (click)="supprimerMission()"
+            >
+              <svg class="btn-icon" lucideTrash2 aria-hidden="true"></svg>Supprimer
+            </button>
+          }
           <mat-form-field appearance="outline" class="mission-detail__etape-select">
             <mat-label>Responsable de la mission</mat-label>
             <mat-select
@@ -67,24 +84,85 @@
           </div>
         }
         <div><dt>Demandée le</dt><dd>{{ m.dateDemande | date: 'dd/MM/yyyy' }}</dd></div>
-        @if (m.dateEcheance) {
-          <div><dt>Échéance promise</dt><dd>{{ m.dateEcheance | date: 'dd/MM/yyyy' }}</dd></div>
-        }
-        <div><dt>Localisation</dt><dd>{{ lieu() }}</dd></div>
         @if (coordonnees()) {
           <div><dt>Point GPS fourni</dt><dd>{{ coordonnees() }}</dd></div>
         }
-        @if (m.budgetAnnonce) {
-          <div><dt>Budget annoncé</dt><dd>{{ m.budgetAnnonce | mtmMoney }}</dd></div>
-        }
         <div><dt>Responsable</dt><dd>{{ personne(m.responsable) }}</dd></div>
       </dl>
-      @if (m.objectif) {
-        <p class="detail-section__text"><strong>Objectif :</strong> {{ m.objectif }}</p>
-      }
       @if (m.piecesFournies) {
         <p class="detail-section__text"><strong>Pièces fournies :</strong> {{ m.piecesFournies }}</p>
       }
+
+      <form [formGroup]="demande" class="form-grid" (ngSubmit)="enregistrerDemande()">
+        <mat-form-field appearance="outline">
+          <mat-label>Nature de la vérification</mat-label>
+          <mat-select formControlName="typeVerification">
+            @for (type of options().typesVerification ?? []; track type) {
+              <mat-option [value]="type">{{ typeLabel(type) }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Urgence</mat-label>
+          <mat-select formControlName="urgence">
+            @for (niveau of options().urgences ?? []; track niveau) {
+              <mat-option [value]="niveau">{{ urgenceLabel(niveau) }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="wide">
+          <mat-label>Terrain du catalogue</mat-label>
+          <mat-select formControlName="terrainId">
+            <mat-option value="">Terrain hors catalogue</mat-option>
+            @for (terrain of terrains(); track terrain.id) {
+              <mat-option [value]="terrain.id">
+                {{ terrain.referenceInterne }} · {{ terrain.nom }}
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="wide">
+          <mat-label>Localisation décrite par le client</mat-label>
+          <input matInput formControlName="localisation" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Commune</mat-label>
+          <input matInput formControlName="commune" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Région</mat-label>
+          <input matInput formControlName="region" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Échéance promise</mat-label>
+          <input matInput type="date" formControlName="dateEcheance" />
+          <mat-hint>Sert à l’alerte « échéance dépassée »</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Budget annoncé</mat-label>
+          <input matInput type="number" min="0" formControlName="budgetAnnonce" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="wide">
+          <mat-label>Objectif du client</mat-label>
+          <textarea matInput rows="2" formControlName="objectif"></textarea>
+        </mat-form-field>
+
+        @if (canModify()) {
+          <div class="wide form-actions">
+            <button mat-stroked-button type="submit" [disabled]="saving()">
+              Enregistrer la demande
+            </button>
+          </div>
+        }
+      </form>
     </section>
 
     <!-- Étape 2 : étude de faisabilité et facturation -->
@@ -127,7 +205,7 @@
           <mat-select formControlName="modePaiement">
             <mat-option value="">Non renseigné</mat-option>
             @for (mode of options().modesPaiement ?? []; track mode) {
-              <mat-option [value]="mode">{{ mode }}</mat-option>
+              <mat-option [value]="mode">{{ modePaiementLabel(mode) }}</mat-option>
             }
           </mat-select>
         </mat-form-field>
@@ -421,6 +499,6 @@
       }
     </section>
   </div>
-} @else if (!loading()) {
+} @else {
   <p class="detail-section__text">Mission introuvable.</p>
 }

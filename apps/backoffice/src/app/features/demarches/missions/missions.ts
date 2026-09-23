@@ -24,6 +24,7 @@ import { mtmGridTheme } from '../../../core/ag-grid.config';
 import { SessionService } from '../../../core/services/session.service';
 import { DemarchesApiService } from '../../../core/services/api/demarches-api.service';
 import type {
+  MissionCollaborateur,
   MissionListItem,
   MissionOptions,
   MissionStats,
@@ -49,6 +50,7 @@ const FILTRES_VIDES = {
   statut: '',
   typeVerification: '',
   urgence: '',
+  responsableId: '',
   vue: '',
 };
 
@@ -119,6 +121,7 @@ export class Missions implements OnInit {
   protected readonly total = signal(0);
   protected readonly stats = signal<MissionStats | null>(null);
   protected readonly options = signal<Partial<MissionOptions>>({});
+  protected readonly collaborateurs = signal<MissionCollaborateur[]>([]);
   protected readonly vuesRapides = VUES_RAPIDES;
   protected readonly filters = this.formBuilder.nonNullable.group(FILTRES_VIDES);
   protected readonly hasActiveFilters = signal(false);
@@ -185,6 +188,15 @@ export class Missions implements OnInit {
       valueFormatter: (p) => label(TYPES_VERIFICATION, p.value as string),
     },
     {
+      headerName: 'Urgence',
+      field: 'urgence',
+      width: 120,
+      minWidth: 110,
+      sortable: true,
+      cellRenderer: (p: ICellRendererParams<MissionListItem>) =>
+        p.value === 'normale' ? '—' : this.pastille(URGENCES, p.value as string),
+    },
+    {
       headerName: 'Étape',
       field: 'statut',
       flex: 1,
@@ -222,6 +234,10 @@ export class Missions implements OnInit {
     this.api.getOptions().subscribe({
       next: (options) => this.options.set(options),
       error: () => this.options.set({}),
+    });
+    this.api.getCollaborateurs().subscribe({
+      next: (liste) => this.collaborateurs.set(liste),
+      error: () => this.collaborateurs.set([]),
     });
     this.chargerStats();
     this.load();
@@ -290,6 +306,10 @@ export class Missions implements OnInit {
 
   protected urgenceLabel(urgence: string): string {
     return label(URGENCES, urgence);
+  }
+
+  protected nomCollaborateur(personne: MissionCollaborateur): string {
+    return nomPersonne(personne);
   }
 
   private chargerStats(): void {

@@ -39,7 +39,7 @@
         }
       </mat-select>
       @if (tarifIndicatif() !== null) {
-        <mat-hint>Tarif indicatif : {{ tarifIndicatif() }} FCFA (modifiable par mission)</mat-hint>
+        <mat-hint>Tarif indicatif : {{ tarifIndicatif() | mtmMoney }} (modifiable par mission)</mat-hint>
       }
     </mat-form-field>
 

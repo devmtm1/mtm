@@ -12,6 +12,15 @@
 
   &__etape-select {
     min-width: 240px;
+
+    @media (max-width: 720px) {
+      min-width: 100%;
+    }
+  }
+
+  &__danger {
+    color: var(--mtm-accent);
+    border-color: var(--mtm-accent);
   }
 }
 

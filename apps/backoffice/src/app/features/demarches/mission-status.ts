@@ -189,6 +189,19 @@ export const TYPES_DOCUMENT: Record<string, StatusMeaning> = {
   autre: { tone: 'neutral', label: 'Autre', help: 'Autre pièce du dossier.' },
 };
 
+/** Modes de règlement d'une mission (référentiel « demarches.modesPaiement »). */
+export const MODES_PAIEMENT: Record<string, StatusMeaning> = {
+  especes: { tone: 'neutral', label: 'Espèces', help: 'Réglé en liquide.' },
+  virement: { tone: 'neutral', label: 'Virement', help: 'Virement bancaire.' },
+  mobile_money: {
+    tone: 'neutral',
+    label: 'Mobile money',
+    help: 'Wave, Orange Money ou équivalent.',
+  },
+  cheque: { tone: 'neutral', label: 'Chèque', help: 'Réglé par chèque.' },
+  autre: { tone: 'neutral', label: 'Autre', help: 'Autre moyen de paiement.' },
+};
+
 /** Étapes après lesquelles la mission ne bouge plus. */
 export const ETAPES_TERMINALES = ['cloturee', 'abandonnee'];
 

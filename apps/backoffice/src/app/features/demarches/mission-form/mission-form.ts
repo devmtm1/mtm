@@ -14,6 +14,7 @@ import type { MissionOptions } from '../../../core/models/mission.model';
 import type { ProspectListItem } from '../../../core/models/prospect.model';
 import type { TerrainCatalogueItem } from '../../../core/models/terrain.model';
 import { NotificationService } from '../../../shared/services/notification.service';
+import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { TYPES_VERIFICATION, URGENCES, label } from '../mission-status';
 
 /**
@@ -26,6 +27,7 @@ import { TYPES_VERIFICATION, URGENCES, label } from '../mission-status';
 @Component({
   selector: 'app-mission-form',
   imports: [
+    MoneyPipe,
     ReactiveFormsModule,
     MatButtonModule,
     MatCheckboxModule,

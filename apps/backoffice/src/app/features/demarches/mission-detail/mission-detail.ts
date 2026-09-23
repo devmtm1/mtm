@@ -18,6 +18,8 @@ import {
 } from '@lucide/angular';
 import type { Observable } from 'rxjs';
 import { DemarchesApiService } from '../../../core/services/api/demarches-api.service';
+import { TerrainsApiService } from '../../../core/services/api/terrains-api.service';
+import type { TerrainCatalogueItem } from '../../../core/models/terrain.model';
 import type {
   DocumentMission,
   EtapeMission,
@@ -32,6 +34,7 @@ import { JustificationDialog } from '../../../shared/dialogs/justification-dialo
 import { ConstatDialog } from './constat-dialog';
 import {
   ADMINISTRATIONS,
+  MODES_PAIEMENT,
   CONFORMITES,
   DECISIONS,
   ETAPES_TERMINALES,
@@ -82,10 +85,12 @@ export class MissionDetail implements OnInit {
   private readonly notify = inject(NotificationService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly sessionService = inject(SessionService);
+  private readonly terrainsApi = inject(TerrainsApiService);
 
   protected readonly mission = signal<MissionDetailModel | null>(null);
   protected readonly options = signal<Partial<MissionOptions>>({});
   protected readonly collaborateurs = signal<MissionCollaborateur[]>([]);
+  protected readonly terrains = signal<TerrainCatalogueItem[]>([]);
   protected readonly loading = signal(true);
   protected readonly saving = signal(false);
 
@@ -97,6 +102,9 @@ export class MissionDetail implements OnInit {
   );
   protected readonly canPublish = computed(() =>
     this.sessionService.hasPermission('demarches:publier'),
+  );
+  protected readonly canDelete = computed(() =>
+    this.sessionService.hasPermission('demarches:supprimer'),
   );
 
   /** Constats de terrain et administrations, séparés comme dans le rapport. */
@@ -119,6 +127,23 @@ export class MissionDetail implements OnInit {
   protected readonly estTerminee = computed(() =>
     ETAPES_TERMINALES.includes(this.mission()?.statut ?? ''),
   );
+
+  /**
+   * La demande du client (étape 1). Modifiable : une localisation se précise
+   * après un appel, une échéance se pose — et une mission déposée depuis
+   * l'espace client arrive sans échéance ni terrain rattaché.
+   */
+  protected readonly demande = this.formBuilder.nonNullable.group({
+    typeVerification: [''],
+    objectif: [''],
+    terrainId: [''],
+    localisation: [''],
+    commune: [''],
+    region: [''],
+    urgence: [''],
+    dateEcheance: [''],
+    budgetAnnonce: [null as number | null],
+  });
 
   /** Étude de faisabilité et facturation (étape 2). */
   protected readonly faisabilite = this.formBuilder.nonNullable.group({
@@ -143,6 +168,10 @@ export class MissionDetail implements OnInit {
     this.api.getOptions().subscribe({
       next: (options) => this.options.set(options),
       error: () => this.options.set({}),
+    });
+    this.terrainsApi.catalogueProposition().subscribe({
+      next: (items) => this.terrains.set(items),
+      error: () => this.terrains.set([]),
     });
     this.api.getCollaborateurs().subscribe({
       next: (liste) => this.collaborateurs.set(liste),
@@ -211,6 +240,10 @@ export class MissionDetail implements OnInit {
 
   protected documentLabel(type: string): string {
     return label(TYPES_DOCUMENT, type);
+  }
+
+  protected modePaiementLabel(mode: string): string {
+    return label(MODES_PAIEMENT, mode);
   }
 
   protected personne(
@@ -297,6 +330,49 @@ export class MissionDetail implements OnInit {
       this.api.removeEtape(mission.id, constat.id),
       'Constat supprimé',
     );
+  }
+
+  protected enregistrerDemande(): void {
+    const mission = this.mission();
+    if (!mission) return;
+    const valeur = this.demande.getRawValue();
+    const texte = (item: string) => (item.trim() ? item.trim() : undefined);
+    this.executer(
+      this.api.update(mission.id, {
+        typeVerification: valeur.typeVerification || undefined,
+        objectif: texte(valeur.objectif),
+        terrainId: valeur.terrainId || undefined,
+        localisation: texte(valeur.localisation),
+        commune: texte(valeur.commune),
+        region: texte(valeur.region),
+        urgence: valeur.urgence || undefined,
+        dateEcheance: valeur.dateEcheance
+          ? new Date(valeur.dateEcheance).toISOString()
+          : undefined,
+        budgetAnnonce: valeur.budgetAnnonce ?? undefined,
+      }),
+      'Demande mise à jour',
+    );
+  }
+
+  /** Supprime la mission : réservé à la direction, et tracé. */
+  protected supprimerMission(): void {
+    const mission = this.mission();
+    if (!mission) return;
+    if (
+      !confirm(
+        `Supprimer définitivement la mission ${mission.referenceInterne ?? ''} ? Constats et pièces seront perdus. Cette action est tracée.`,
+      )
+    ) {
+      return;
+    }
+    this.api.remove(mission.id).subscribe({
+      next: () => {
+        this.notify.success('Mission supprimée');
+        this.retour();
+      },
+      error: (error: unknown) => this.notify.error(error, 'Suppression impossible'),
+    });
   }
 
   protected enregistrerFaisabilite(): void {
@@ -434,6 +510,17 @@ export class MissionDetail implements OnInit {
     this.mission.set(mission);
     const nombre = (valeur: number | string | null): number | null =>
       valeur === null || valeur === undefined ? null : Number(valeur);
+    this.demande.patchValue({
+      typeVerification: mission.typeVerification,
+      objectif: mission.objectif ?? '',
+      terrainId: mission.terrain?.id ?? '',
+      localisation: mission.localisation ?? '',
+      commune: mission.commune ?? '',
+      region: mission.region ?? '',
+      urgence: mission.urgence,
+      dateEcheance: mission.dateEcheance ? mission.dateEcheance.slice(0, 10) : '',
+      budgetAnnonce: nombre(mission.budgetAnnonce),
+    });
     this.faisabilite.patchValue({
       faisabiliteConclusion: mission.faisabiliteConclusion ?? '',
       faisabiliteNotes: mission.faisabiliteNotes ?? '',

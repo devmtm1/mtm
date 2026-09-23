@@ -173,6 +173,20 @@
         </mat-select>
       </mat-form-field>
 
+      @if (collaborateurs().length) {
+        <mat-form-field appearance="outline">
+          <mat-label>Responsable</mat-label>
+          <mat-select formControlName="responsableId">
+            <mat-option value="">Tous</mat-option>
+            @for (collaborateur of collaborateurs(); track collaborateur.id) {
+              <mat-option [value]="collaborateur.id">
+                {{ nomCollaborateur(collaborateur) }}
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+
       @if (hasActiveFilters()) {
         <button mat-stroked-button type="button" (click)="resetFilters()">
           <svg class="btn-icon" lucideX aria-hidden="true"></svg>Effacer

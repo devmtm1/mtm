@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import {
@@ -160,7 +160,6 @@ export class ConstatDialog {
   readonly data = inject<ConstatDialogData>(MAT_DIALOG_DATA);
 
   protected readonly estPhysique = this.data.type === 'verification_physique';
-  protected readonly enregistrement = signal(false);
 
   protected readonly form = this.formBuilder.nonNullable.group({
     titre: [this.data.constat?.titre ?? this.titreParDefaut(), Validators.required],
