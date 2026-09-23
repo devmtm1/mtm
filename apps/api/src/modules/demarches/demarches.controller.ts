@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -9,13 +10,14 @@ import {
   Post,
   Query,
   Req,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Throttle } from '@nestjs/throttler';
 import { ApiTags } from '@nestjs/swagger';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
 import type { AuthenticatedUser } from '../auth/auth.types';
@@ -114,6 +116,41 @@ export class DemarchesController {
   @RequirePermissions('demarches:consulter')
   getOptions() {
     return this.options.getOptions();
+  }
+
+  @Get('collaborateurs')
+  @RequirePermissions('demarches:consulter')
+  getCollaborateurs() {
+    return this.missions.getCollaborateurs();
+  }
+
+  /**
+   * Export CSV des missions. POST et non GET : la justification voyage dans
+   * le corps, jamais dans l'URL.
+   */
+  @Post('export')
+  @RequirePermissions('demarches:exporter')
+  async exportCsv(
+    @Body('justification') justification: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Res() res: Response,
+  ) {
+    if (!justification || justification.trim().length < 3) {
+      throw new BadRequestException(
+        'Une justification minimale de 3 caractères est obligatoire pour exporter les missions',
+      );
+    }
+    const csv = await this.missions.exportCsv(user, justification.trim());
+    const date = new Date().toISOString().slice(0, 10);
+    res
+      .status(200)
+      .setHeader('Content-Type', 'text/csv; charset=utf-8')
+      .setHeader(
+        'Content-Disposition',
+        `attachment; filename="verifications-${date}.csv"`,
+      )
+      // BOM UTF-8 : Excel affiche correctement les accents.
+      .send('﻿' + csv);
   }
 
   @Get('stats')

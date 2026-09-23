@@ -27,7 +27,7 @@ export function createDemarchesTestContext() {
     cloudinaryMock,
     access,
     options,
-    missions: new DemarchesService(prisma, access, options),
+    missions: new DemarchesService(prisma, access, options, cloudinary),
     etapes: new DemarchesEtapesService(prisma, access, options),
     documents: new DemarchesDocumentsService(
       prisma,

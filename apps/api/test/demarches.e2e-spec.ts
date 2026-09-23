@@ -34,6 +34,7 @@ describeE2e('Parcours Démarches J2.2 (e2e)', () => {
       'demarches:modifier',
       'demarches:valider',
       'demarches:publier',
+      'demarches:exporter',
     ]);
     const agent = await data.seedUser({
       email: 'agent.demarches@mtm.test',
@@ -253,6 +254,48 @@ describeE2e('Parcours Démarches J2.2 (e2e)', () => {
 
     expect(response.status).toBe(200);
     expect(response.body.statut).toBe('cloturee');
+  });
+
+  it('rend les pièces téléchargeables par l’équipe', async () => {
+    const response = await request(app.getHttpServer())
+      .get(`/api/demarches/missions/${missionId}`)
+      .set('Authorization', `Bearer ${jetonAgent}`);
+
+    expect(response.status).toBe(200);
+    // Sans lien, un collaborateur verrait le rapport sans pouvoir le relire.
+    expect(response.body.documents[0].secureUrl).toContain('http');
+  });
+
+  it('liste les collaborateurs à qui confier une mission', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/api/demarches/missions/collaborateurs')
+      .set('Authorization', `Bearer ${jetonAgent}`);
+
+    expect(response.status).toBe(200);
+    const noms = (response.body as Array<{ lastName: string | null }>).map(
+      (personne) => personne.lastName,
+    );
+    expect(noms).toContain('Fall');
+  });
+
+  it('exporte les missions, motif obligatoire et export tracé', async () => {
+    const sansMotif = await request(app.getHttpServer())
+      .post('/api/demarches/missions/export')
+      .set('Authorization', `Bearer ${jetonAgent}`)
+      .send({ justification: '' });
+    expect(sansMotif.status).toBe(400);
+
+    const response = await request(app.getHttpServer())
+      .post('/api/demarches/missions/export')
+      .set('Authorization', `Bearer ${jetonAgent}`)
+      .send({ justification: 'Revue mensuelle du service' });
+
+    expect(response.status).toBe(200);
+    const [entete] = response.text.split('\n');
+    // BOM UTF-8 en tete : c'est lui qui fait afficher les accents dans Excel.
+    const sansBom = entete.replace(String.fromCharCode(65279), '');
+    expect(sansBom.startsWith('reference;client')).toBe(true);
+    expect(response.text).toContain('V-');
   });
 
   it('archive les actions dans le journal d’audit', async () => {

@@ -50,6 +50,16 @@ export interface DocumentMission {
   version: number;
   createdAt: string;
   createdBy: MissionPersonne | null;
+  /** Lien de téléchargement signé, valable deux heures. */
+  secureUrl: string;
+}
+
+/** Collaborateur pouvant porter une mission. */
+export interface MissionCollaborateur {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  roles: string[];
 }
 
 export interface MissionListItem {

@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -11,6 +12,7 @@ import { AgGridAngular } from 'ag-grid-angular';
 import type { ColDef, ICellRendererParams } from 'ag-grid-community';
 import {
   LucideClipboardCheck,
+  LucideDownload,
   LucideMapPinned,
   LucidePlus,
   LucideSearch,
@@ -27,6 +29,8 @@ import type {
   MissionStats,
 } from '../../../core/models/mission.model';
 import { NotificationService } from '../../../shared/services/notification.service';
+import { JustificationDialog } from '../../../shared/dialogs/justification-dialog';
+import { downloadBlob } from '../../../shared/utils/download';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import {
   DECISIONS,
@@ -90,6 +94,7 @@ export const VUES_RAPIDES = [
     MatSelectModule,
     MatTooltipModule,
     LucideClipboardCheck,
+    LucideDownload,
     LucideMapPinned,
     LucidePlus,
     LucideSearch,
@@ -105,6 +110,7 @@ export class Missions implements OnInit {
   private readonly sessionService = inject(SessionService);
   private readonly notify = inject(NotificationService);
   private readonly formBuilder = inject(FormBuilder);
+  private readonly dialog = inject(MatDialog);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly theme = mtmGridTheme;
@@ -118,6 +124,9 @@ export class Missions implements OnInit {
   protected readonly hasActiveFilters = signal(false);
   protected readonly canCreate = computed(() =>
     this.sessionService.hasPermission('demarches:creer'),
+  );
+  protected readonly canExport = computed(() =>
+    this.sessionService.hasPermission('demarches:exporter'),
   );
 
   /** Étapes actives, hors clôture et abandon : la progression du service. */
@@ -223,6 +232,29 @@ export class Missions implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => this.load());
+  }
+
+  /**
+   * Export CSV tracé : la liste contient les coordonnées de clients et le
+   * détail de leurs missions, donc motif obligatoire et trace dans le
+   * journal d'audit.
+   */
+  protected exportCsv(): void {
+    JustificationDialog.ask(this.dialog, {
+      title: 'Exporter les missions',
+      description:
+        'L’export contient les clients, les localisations et les montants des missions. Indiquez le motif.',
+      confirmLabel: 'Exporter en CSV',
+    }).subscribe((justification) => {
+      if (!justification) return;
+      this.api.exportCsv(justification).subscribe({
+        next: (blob) => {
+          downloadBlob(blob, `verifications-${new Date().toISOString().slice(0, 10)}.csv`);
+          this.notify.success('Export téléchargé');
+        },
+        error: (error: unknown) => this.notify.error(error, 'Export impossible'),
+      });
+    });
   }
 
   protected openCreate(): void {

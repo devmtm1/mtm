@@ -5,6 +5,7 @@ import { shareReplay } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import type {
   CreateMissionPayload,
+  MissionCollaborateur,
   DocumentMission,
   EtapeMission,
   EtapeMissionPayload,
@@ -42,6 +43,16 @@ export class DemarchesApiService {
       .get<MissionOptions>(`${this.baseUrl}/options`)
       .pipe(shareReplay({ bufferSize: 1, refCount: false }));
     return this.options$;
+  }
+
+  /** Collaborateurs à qui confier une mission. */
+  getCollaborateurs(): Observable<MissionCollaborateur[]> {
+    return this.http.get<MissionCollaborateur[]>(`${this.baseUrl}/collaborateurs`);
+  }
+
+  /** Export CSV tracé : la justification part dans le corps, jamais dans l'URL. */
+  exportCsv(justification: string): Observable<Blob> {
+    return this.http.post(`${this.baseUrl}/export`, { justification }, { responseType: 'blob' });
   }
 
   getStats(): Observable<MissionStats> {

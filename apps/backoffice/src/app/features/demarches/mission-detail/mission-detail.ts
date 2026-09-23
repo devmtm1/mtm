@@ -21,6 +21,7 @@ import { DemarchesApiService } from '../../../core/services/api/demarches-api.se
 import type {
   DocumentMission,
   EtapeMission,
+  MissionCollaborateur,
   MissionDetail as MissionDetailModel,
   MissionOptions,
 } from '../../../core/models/mission.model';
@@ -84,6 +85,7 @@ export class MissionDetail implements OnInit {
 
   protected readonly mission = signal<MissionDetailModel | null>(null);
   protected readonly options = signal<Partial<MissionOptions>>({});
+  protected readonly collaborateurs = signal<MissionCollaborateur[]>([]);
   protected readonly loading = signal(true);
   protected readonly saving = signal(false);
 
@@ -141,6 +143,10 @@ export class MissionDetail implements OnInit {
     this.api.getOptions().subscribe({
       next: (options) => this.options.set(options),
       error: () => this.options.set({}),
+    });
+    this.api.getCollaborateurs().subscribe({
+      next: (liste) => this.collaborateurs.set(liste),
+      error: () => this.collaborateurs.set([]),
     });
     this.charger();
   }
@@ -349,6 +355,19 @@ export class MissionDetail implements OnInit {
     this.executer(
       this.api.transition(mission.id, statut),
       `Mission passée à « ${this.etapeLabel(statut)} »`,
+    );
+  }
+
+  /**
+   * Confie la mission à un collaborateur. C'est ce qui vide la vue « sans
+   * responsable » : une mission que personne ne porte n'avance pas.
+   */
+  protected affecter(responsableId: string): void {
+    const mission = this.mission();
+    if (!mission || responsableId === (mission.responsable?.id ?? '')) return;
+    this.executer(
+      this.api.update(mission.id, { responsableId }),
+      'Mission confiée',
     );
   }
 

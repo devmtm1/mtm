@@ -9,6 +9,11 @@
       </p>
     </div>
     <div class="page-header__actions">
+      @if (canExport()) {
+        <button mat-stroked-button type="button" (click)="exportCsv()">
+          <svg class="btn-icon" lucideDownload aria-hidden="true"></svg>Exporter
+        </button>
+      }
       @if (canCreate()) {
         <button mat-flat-button color="primary" type="button" (click)="openCreate()">
           <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouvelle mission

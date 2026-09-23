@@ -6,8 +6,10 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
+import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import {
   DemarchesAccessService,
+  MISSION_ROLES,
   type DemarchesUser,
 } from './demarches-access.service';
 import {
@@ -69,7 +71,29 @@ export class DemarchesService {
     private readonly prisma: PrismaService,
     private readonly access: DemarchesAccessService,
     private readonly options: DemarchesOptionsService,
+    private readonly cloudinary: CloudinaryService,
   ) {}
+
+  /**
+   * Lien de téléchargement des pièces, comme pour les dossiers de vente :
+   * sans lui, un collaborateur voit qu'une photo existe mais ne peut ni la
+   * relire ni vérifier le rapport qu'il vient de générer.
+   */
+  private avecLiens<
+    T extends {
+      documents: Array<{ storageKey: string; resourceType: string }>;
+    },
+  >(mission: T) {
+    return {
+      ...mission,
+      documents: mission.documents.map(
+        ({ storageKey, resourceType, ...document }) => ({
+          ...document,
+          secureUrl: this.cloudinary.url(storageKey, resourceType, false),
+        }),
+      ),
+    };
+  }
 
   async findAll(query: QueryMissionDto, user: DemarchesUser) {
     const page = query.page > 0 ? query.page : 1;
@@ -147,7 +171,7 @@ export class DemarchesService {
       include: missionInclude,
     });
     if (!mission) throw new NotFoundException('Mission introuvable');
-    return mission;
+    return this.avecLiens(mission);
   }
 
   async create(dto: CreateMissionDto, user: DemarchesUser) {
@@ -167,7 +191,7 @@ export class DemarchesService {
       user,
     );
 
-    return this.prisma.missionVerification.create({
+    const mission = await this.prisma.missionVerification.create({
       data: {
         referenceInterne: await this.nextReference(),
         prospectId: dto.prospectId,
@@ -190,6 +214,7 @@ export class DemarchesService {
       },
       include: missionInclude,
     });
+    return this.avecLiens(mission);
   }
 
   async update(id: string, dto: UpdateMissionDto, user: DemarchesUser) {
@@ -207,7 +232,7 @@ export class DemarchesService {
         ? undefined
         : await this.access.resolveResponsable(dto.responsableId, user);
 
-    return this.prisma.missionVerification.update({
+    const mission = await this.prisma.missionVerification.update({
       where: { id },
       data: {
         ...(dto.terrainId !== undefined ? { terrainId: dto.terrainId } : {}),
@@ -268,6 +293,7 @@ export class DemarchesService {
       },
       include: missionInclude,
     });
+    return this.avecLiens(mission);
   }
 
   /**
@@ -305,7 +331,7 @@ export class DemarchesService {
       );
     }
 
-    return this.prisma.missionVerification.update({
+    const misAJour = await this.prisma.missionVerification.update({
       where: { id },
       data: {
         statut: dto.statut,
@@ -315,11 +341,127 @@ export class DemarchesService {
       },
       include: missionInclude,
     });
+    return this.avecLiens(misAJour);
   }
 
   async remove(id: string, user: DemarchesUser) {
     await this.access.ensureAccessible(id, user);
     await this.prisma.missionVerification.delete({ where: { id } });
+  }
+
+  /**
+   * Collaborateurs à qui confier une mission. Sans cette liste, la vue
+   * « sans responsable » montrerait du travail que personne ne peut prendre
+   * en charge depuis l'écran.
+   */
+  async getCollaborateurs() {
+    const roles = await this.prisma.role.findMany({
+      where: { name: { in: [...MISSION_ROLES] } },
+      select: { id: true },
+    });
+    const roleIds = roles.map((role) => role.id);
+    const utilisateurs = await this.prisma.user.findMany({
+      where: { isActive: true, roles: { some: { roleId: { in: roleIds } } } },
+      include: {
+        roles: {
+          where: { roleId: { in: roleIds } },
+          include: { role: { select: { name: true } } },
+        },
+      },
+      orderBy: { lastName: 'asc' },
+    });
+    return utilisateurs.map((utilisateur) => ({
+      id: utilisateur.id,
+      firstName: utilisateur.firstName,
+      lastName: utilisateur.lastName,
+      roles: utilisateur.roles.map((lien) => lien.role.name),
+    }));
+  }
+
+  /**
+   * Export CSV des missions (données de clients : permission dédiée,
+   * justification obligatoire et trace dans le journal d'audit, comme pour
+   * les prospects et les ventes). Le périmètre reste celui de l'utilisateur.
+   */
+  async exportCsv(user: DemarchesUser, justification: string): Promise<string> {
+    const missions = await this.prisma.missionVerification.findMany({
+      where: this.access.ownershipFilter(user),
+      include: {
+        prospect: { select: { nom: true, prenom: true, email: true } },
+        terrain: { select: { referenceInterne: true } },
+        responsable: { select: { firstName: true, lastName: true } },
+        _count: { select: { etapes: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const entete = [
+      'reference',
+      'client',
+      'email_client',
+      'type_verification',
+      'etape',
+      'urgence',
+      'localisation',
+      'commune',
+      'terrain',
+      'responsable',
+      'constats',
+      'montant_convenu',
+      'montant_regle',
+      'decision',
+      'demandee_le',
+      'echeance',
+      'rapport_le',
+    ];
+    const lignes = missions.map((mission) => [
+      mission.referenceInterne ?? '',
+      [mission.prospect?.prenom, mission.prospect?.nom]
+        .filter(Boolean)
+        .join(' '),
+      mission.prospect?.email ?? '',
+      mission.typeVerification,
+      mission.statut,
+      mission.urgence,
+      mission.localisation ?? '',
+      mission.commune ?? '',
+      mission.terrain?.referenceInterne ?? '',
+      [mission.responsable?.firstName, mission.responsable?.lastName]
+        .filter(Boolean)
+        .join(' '),
+      String(mission._count.etapes),
+      mission.montantDevis === null ? '' : String(mission.montantDevis),
+      mission.montantPaye === null ? '' : String(mission.montantPaye),
+      mission.decision ?? '',
+      mission.dateDemande.toISOString().slice(0, 10),
+      mission.dateEcheance
+        ? mission.dateEcheance.toISOString().slice(0, 10)
+        : '',
+      mission.dateRapport ? mission.dateRapport.toISOString().slice(0, 10) : '',
+    ]);
+
+    await this.prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        action: 'mission.exported',
+        entityType: 'MissionVerification',
+        justification,
+        newValue: { lignes: lignes.length },
+      },
+    });
+
+    return [entete, ...lignes]
+      .map((ligne) =>
+        ligne.map((cellule) => this.celluleCsv(cellule)).join(';'),
+      )
+      .join('\n');
+  }
+
+  /** Échappement CSV : séparateur point-virgule, guillemets doublés. */
+  private celluleCsv(valeur: string): string {
+    const besoinGuillemets = /[";\n\r]/.test(valeur);
+    const echappee = valeur.split('"').join('""');
+    return besoinGuillemets ? `"${echappee}"` : echappee;
   }
 
   /**

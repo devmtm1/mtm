@@ -40,11 +40,15 @@ export class DemarchesDocumentsService {
 
   async findAll(missionId: string, user: DemarchesUser) {
     await this.access.ensureAccessible(missionId, user);
-    return this.prisma.documentMission.findMany({
+    const documents = await this.prisma.documentMission.findMany({
       where: { missionId },
       include: documentInclude,
       orderBy: { createdAt: 'desc' },
     });
+    return documents.map(({ storageKey, resourceType, ...document }) => ({
+      ...document,
+      secureUrl: this.cloudinary.url(storageKey, resourceType, false),
+    }));
   }
 
   async addDocument(

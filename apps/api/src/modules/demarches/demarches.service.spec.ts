@@ -21,7 +21,10 @@ describe('DemarchesService', () => {
     prismaMock.prospect.findUnique.mockResolvedValue({ id: 'p1' });
     prismaMock.missionVerification.count.mockResolvedValue(6);
     prismaMock.missionVerification.findUnique.mockResolvedValue(null);
-    prismaMock.missionVerification.create.mockResolvedValue({ id: 'm1' });
+    prismaMock.missionVerification.create.mockResolvedValue({
+      id: 'm1',
+      documents: [],
+    });
 
     await missions.create(
       {
@@ -131,7 +134,10 @@ describe('DemarchesService', () => {
       conclusion: null,
       _count: { etapes: 1 },
     });
-    prismaMock.missionVerification.update.mockResolvedValue({ id: 'm1' });
+    prismaMock.missionVerification.update.mockResolvedValue({
+      id: 'm1',
+      documents: [],
+    });
 
     await expect(
       missions.transition('m1', { statut: 'abandonnee' }, responsable),

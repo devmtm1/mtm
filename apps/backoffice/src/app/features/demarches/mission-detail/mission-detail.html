@@ -28,6 +28,17 @@
       @if (canModify() && !estTerminee()) {
         <div class="page-header__actions">
           <mat-form-field appearance="outline" class="mission-detail__etape-select">
+            <mat-label>Responsable de la mission</mat-label>
+            <mat-select
+              [value]="m.responsable?.id ?? ''"
+              (selectionChange)="affecter($event.value)"
+            >
+              @for (collaborateur of collaborateurs(); track collaborateur.id) {
+                <mat-option [value]="collaborateur.id">{{ personne(collaborateur) }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="mission-detail__etape-select">
             <mat-label>Étape de la mission</mat-label>
             <mat-select [value]="m.statut" (selectionChange)="changerEtape($event.value)">
               @for (etape of options().statuts ?? []; track etape) {
@@ -333,10 +344,15 @@
           @for (rapport of rapports(); track rapport.id) {
             <li class="doc-item">
               <svg lucideFileText aria-hidden="true"></svg>
-              <span class="doc-item__title">
+              <a
+                class="doc-item__title"
+                [href]="rapport.secureUrl"
+                target="_blank"
+                rel="noopener"
+              >
                 {{ rapport.title }}
                 <small>version {{ rapport.version }} · {{ rapport.createdAt | date: 'dd/MM/yyyy' }}</small>
-              </span>
+              </a>
               <span class="status-pill status-pill--success">Visible par le client</span>
             </li>
           }
@@ -370,13 +386,13 @@
           @for (piece of pieces(); track piece.id) {
             <li class="doc-item">
               <svg lucideFileText aria-hidden="true"></svg>
-              <span class="doc-item__title">
+              <a class="doc-item__title" [href]="piece.secureUrl" target="_blank" rel="noopener">
                 {{ piece.title ?? documentLabel(piece.type) }}
                 <small>
                   {{ documentLabel(piece.type) }} · {{ piece.createdAt | date: 'dd/MM/yyyy' }} ·
                   {{ personne(piece.createdBy) }}
                 </small>
-              </span>
+              </a>
               @if (piece.isPublic) {
                 <span class="status-pill status-pill--success">Visible par le client</span>
               } @else {
