@@ -86,12 +86,14 @@ export class DemarchesService {
   >(mission: T) {
     return {
       ...mission,
-      documents: mission.documents.map(
-        ({ storageKey, resourceType, ...document }) => ({
-          ...document,
-          secureUrl: this.cloudinary.url(storageKey, resourceType, false),
-        }),
-      ),
+      documents: mission.documents.map(({ storageKey, ...document }) => ({
+        ...document,
+        secureUrl: this.cloudinary.url(
+          storageKey,
+          document.resourceType,
+          false,
+        ),
+      })),
     };
   }
 

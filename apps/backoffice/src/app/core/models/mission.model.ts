@@ -43,6 +43,10 @@ export interface EtapeMission {
 
 export interface DocumentMission {
   id: string;
+  /** Constat auquel la pièce se rattache, quand elle en a un. */
+  etapeId: string | null;
+  /** « image », « video » ou « raw » : ce qui distingue une photo d'un PDF. */
+  resourceType: string;
   type: string;
   title: string | null;
   isGenerated: boolean;

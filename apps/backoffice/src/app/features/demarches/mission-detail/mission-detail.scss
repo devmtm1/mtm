@@ -147,6 +147,66 @@
   }
 }
 
+/**
+ * Galerie des photos : une visite ramène une dizaine de clichés, illisibles
+ * en liste de liens. Les vignettes sont servies redimensionnées par
+ * Cloudinary, l'image d'origine restant à un clic.
+ */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    position: relative;
+  }
+
+  a {
+    display: block;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--mtm-border);
+    background: var(--mtm-surface-2, #eef2f7);
+
+    &:hover,
+    &:focus-visible {
+      border-color: var(--mtm-primary);
+    }
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+
+  &__remove {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: rgb(255 255 255 / 0.9);
+  }
+
+  &__tag {
+    position: absolute;
+    bottom: 4px;
+    left: 4px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.9);
+    color: var(--mtm-text-muted);
+    font-size: 0.7rem;
+  }
+}
+
+.upload-button--inline {
+  justify-self: start;
+}
+
 .doc-item {
   &__title {
     flex: 1;

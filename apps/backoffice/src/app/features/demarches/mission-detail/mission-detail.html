@@ -287,6 +287,64 @@
               @if (constat.observations) {
                 <p class="constat-item__note">{{ constat.observations }}</p>
               }
+
+              @if (photosDuConstat(constat.id).length) {
+                <ul class="photo-grid">
+                  @for (photo of photosDuConstat(constat.id); track photo.id) {
+                    <li>
+                      <a
+                        [href]="photo.secureUrl"
+                        target="_blank"
+                        rel="noopener"
+                        [matTooltip]="photo.title ?? 'Ouvrir la photo en grand'"
+                      >
+                        <img
+                          [src]="vignette(photo.secureUrl)"
+                          [alt]="photo.title ?? 'Photo de la visite ' + constat.titre"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </a>
+                      @if (canModify() && !estTerminee()) {
+                        <button
+                          mat-icon-button
+                          type="button"
+                          class="photo-grid__remove"
+                          aria-label="Supprimer la photo"
+                          (click)="supprimerDocument(photo)"
+                        >
+                          <svg class="btn-icon" lucideTrash2 aria-hidden="true"></svg>
+                        </button>
+                      }
+                    </li>
+                  }
+                </ul>
+              }
+
+              @if (autresPiecesDuConstat(constat.id).length) {
+                <ul class="doc-list">
+                  @for (piece of autresPiecesDuConstat(constat.id); track piece.id) {
+                    <li class="doc-item">
+                      <svg lucideFileText aria-hidden="true"></svg>
+                      <a class="doc-item__title" [href]="piece.secureUrl" target="_blank" rel="noopener">
+                        {{ piece.title ?? documentLabel(piece.type) }}
+                        <small>{{ documentLabel(piece.type) }}</small>
+                      </a>
+                    </li>
+                  }
+                </ul>
+              }
+
+              @if (canModify() && !estTerminee()) {
+                <label class="upload-button upload-button--inline">
+                  <svg class="btn-icon" lucideUpload aria-hidden="true"></svg>Ajouter une photo à ce constat
+                  <input
+                    type="file"
+                    accept="image/*,video/*"
+                    (change)="televerser($event, 'photo_visite', constat.id)"
+                  />
+                </label>
+              }
             </li>
           }
         </ul>
@@ -459,9 +517,33 @@
           </span>
         }
       </div>
-      @if (pieces().length) {
+      @if (photosLibres().length) {
+        <ul class="photo-grid">
+          @for (photo of photosLibres(); track photo.id) {
+            <li>
+              <a
+                [href]="photo.secureUrl"
+                target="_blank"
+                rel="noopener"
+                [matTooltip]="photo.title ?? 'Ouvrir la photo en grand'"
+              >
+                <img
+                  [src]="vignette(photo.secureUrl)"
+                  [alt]="photo.title ?? documentLabel(photo.type)"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </a>
+              @if (photo.isPublic) {
+                <span class="photo-grid__tag">Visible</span>
+              }
+            </li>
+          }
+        </ul>
+      }
+      @if (autresPieces().length) {
         <ul class="doc-list">
-          @for (piece of pieces(); track piece.id) {
+          @for (piece of autresPieces(); track piece.id) {
             <li class="doc-item">
               <svg lucideFileText aria-hidden="true"></svg>
               <a class="doc-item__title" [href]="piece.secureUrl" target="_blank" rel="noopener">
@@ -494,8 +576,12 @@
             </li>
           }
         </ul>
-      } @else {
-        <p class="detail-section__text">Aucune pièce jointe pour l’instant.</p>
+      }
+      @if (!pieces().length) {
+        <p class="detail-section__text">
+          Aucune pièce du dossier. Les photos prises pendant une visite se rattachent directement
+          au constat concerné, plus haut.
+        </p>
       }
     </section>
   </div>

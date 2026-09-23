@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsDateString,
+  IsUUID,
   IsNumber,
   IsOptional,
   IsString,
@@ -75,4 +76,9 @@ export class UpdateEtapeMissionDto {
 export class CreateDocumentMissionDto {
   @IsString() @MaxLength(60) type!: string;
   @IsOptional() @IsString() @MaxLength(200) title?: string;
+  /**
+   * Constat auquel rattacher la pièce : la photo est alors montrée sous la
+   * visite concernée, au lieu de se perdre dans le dossier.
+   */
+  @IsOptional() @IsUUID() etapeId?: string;
 }

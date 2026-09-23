@@ -359,7 +359,12 @@ export class DemarchesController {
       action: 'mission.document.uploaded',
       entityType: 'DocumentMission',
       entityId: document.id,
-      newValue: { missionId: id, type: dto.type, title: dto.title },
+      newValue: {
+        missionId: id,
+        etapeId: dto.etapeId ?? null,
+        type: dto.type,
+        title: dto.title,
+      },
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });

@@ -45,9 +45,9 @@ export class DemarchesDocumentsService {
       include: documentInclude,
       orderBy: { createdAt: 'desc' },
     });
-    return documents.map(({ storageKey, resourceType, ...document }) => ({
+    return documents.map(({ storageKey, ...document }) => ({
       ...document,
-      secureUrl: this.cloudinary.url(storageKey, resourceType, false),
+      secureUrl: this.cloudinary.url(storageKey, document.resourceType, false),
     }));
   }
 
@@ -60,6 +60,17 @@ export class DemarchesDocumentsService {
   ) {
     await this.access.ensureAccessible(missionId, user);
     await this.options.assertTypeDocument(dto.type);
+    if (dto.etapeId) {
+      const constat = await this.prisma.etapeMission.findFirst({
+        where: { id: dto.etapeId, missionId },
+        select: { id: true },
+      });
+      if (!constat) {
+        throw new BadRequestException(
+          'Ce constat n’appartient pas à cette mission',
+        );
+      }
+    }
     // Une photo ou une vidéo de visite est un média ; le reste, un document.
     validateUploadedAsset(
       file,
@@ -73,6 +84,7 @@ export class DemarchesDocumentsService {
     return this.prisma.documentMission.create({
       data: {
         missionId,
+        etapeId: dto.etapeId ?? null,
         type: dto.type,
         title: dto.title,
         isPublic,

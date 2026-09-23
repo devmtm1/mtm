@@ -1,5 +1,6 @@
 import { CalendarClock, FileText, MapPin, ShieldCheck } from 'lucide-react';
 import type { ClientMission } from '../../types/mission';
+import { cloudinaryWidth, isCloudinaryImage } from '../../utils/cloudinary';
 import { formatDate, formatMoney } from '../../utils/format';
 import { missionDecision, missionDocumentType, missionStatus, missionType } from '../../utils/labels';
 import { Badge } from '../ui/Badge';
@@ -29,6 +30,11 @@ export function ClientMissionCard({ mission }: { mission: ClientMission }) {
   const avancement = terminee
     ? 100
     : Math.max(0, Math.round(((etapeCourante + 1) / ETAPES.length) * 100));
+
+  // Les photos d'une visite se regardent, elles ne se téléchargent pas une
+  // à une : vignettes d'un côté, rapport et pièces de l'autre.
+  const photos = mission.documents.filter((document) => isCloudinaryImage(document.secureUrl));
+  const fichiers = mission.documents.filter((document) => !isCloudinaryImage(document.secureUrl));
 
   return (
     <article className="overflow-hidden rounded-lg border border-mtm-border bg-mtm-surface shadow-card">
@@ -124,13 +130,41 @@ export function ClientMissionCard({ mission }: { mission: ClientMission }) {
           </dl>
         )}
 
-        {mission.documents.length > 0 && (
+        {photos.length > 0 && (
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
+              Photos de la visite
+            </p>
+            <ul className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
+              {photos.map((photo) => (
+                <li key={photo.id}>
+                  <a
+                    href={photo.secureUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block overflow-hidden rounded-md border border-mtm-border transition-colors hover:border-mtm-primary"
+                  >
+                    <img
+                      src={cloudinaryWidth(photo.secureUrl, 400)}
+                      alt={photo.title ?? 'Photo prise lors de la vérification'}
+                      loading="lazy"
+                      decoding="async"
+                      className="aspect-[4/3] w-full object-cover"
+                    />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {fichiers.length > 0 && (
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
               Documents
             </p>
             <ul className="mt-2 flex flex-col gap-1.5">
-              {mission.documents.map((document) => (
+              {fichiers.map((document) => (
                 <li key={document.id}>
                   <a
                     href={document.secureUrl}

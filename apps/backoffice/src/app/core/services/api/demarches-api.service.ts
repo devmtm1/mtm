@@ -107,11 +107,18 @@ export class DemarchesApiService {
     return this.http.get<DocumentMission[]>(`${this.baseUrl}/${id}/documents`);
   }
 
-  addDocument(id: string, type: string, file: File, title?: string): Observable<DocumentMission> {
+  /** `etapeId` rattache la pièce à un constat : la photo s'affiche alors sous la visite. */
+  addDocument(
+    id: string,
+    type: string,
+    file: File,
+    options: { title?: string; etapeId?: string } = {},
+  ): Observable<DocumentMission> {
     const formulaire = new FormData();
     formulaire.append('file', file);
     formulaire.append('type', type);
-    if (title) formulaire.append('title', title);
+    if (options.title) formulaire.append('title', options.title);
+    if (options.etapeId) formulaire.append('etapeId', options.etapeId);
     return this.http.post<DocumentMission>(`${this.baseUrl}/${id}/documents`, formulaire);
   }
 

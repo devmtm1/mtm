@@ -931,6 +931,8 @@ model EtapeMission {
   interlocuteur  String?
   resultat       String?
 
+  documents DocumentMission[]
+
   realiseeParId String?
   realiseePar   User?    @relation("EtapeMissionRealisee", fields: [realiseeParId], references: [id], onDelete: SetNull)
   realiseeLe    DateTime @default(now())
@@ -948,6 +950,13 @@ model DocumentMission {
   id           String              @id @default(uuid())
   missionId    String
   mission      MissionVerification @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  /**
+   * Constat auquel la pièce se rattache : photo prise pendant cette visite,
+   * réponse écrite de cette administration. Facultatif — une pièce fournie
+   * par le client appartient à la mission, pas à un constat.
+   */
+  etapeId      String?
+  etape        EtapeMission?       @relation(fields: [etapeId], references: [id], onDelete: SetNull)
   type         String
   storageKey   String
   resourceType String              @default("raw")
@@ -963,6 +972,7 @@ model DocumentMission {
   createdAt    DateTime            @default(now())
 
   @@index([missionId, type])
+  @@index([etapeId])
   @@index([isPublic])
   @@map("documents_mission")
 }

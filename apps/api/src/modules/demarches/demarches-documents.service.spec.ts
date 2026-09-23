@@ -148,3 +148,81 @@ describe('DemarchesDocumentsService — rapport de vérification', () => {
     );
   });
 });
+
+describe('DemarchesDocumentsService — pièces rattachées à un constat', () => {
+  const responsable = {
+    id: 'u-dem',
+    roles: ['responsable_demarches'],
+    permissions: [],
+  };
+  const photo = {
+    originalname: 'terrain.jpg',
+    mimetype: 'image/jpeg',
+    size: 120_000,
+    // En-tête JPEG : la validation des pièces vérifie la signature du fichier.
+    buffer: Buffer.from([0xff, 0xd8, 0xff, 0xe0]),
+  } as Express.Multer.File;
+
+  let prismaMock: ReturnType<typeof createDemarchesTestContext>['prismaMock'];
+  let documents: ReturnType<typeof createDemarchesTestContext>['documents'];
+
+  beforeEach(() => {
+    ({ prismaMock, documents } = createDemarchesTestContext());
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+    prismaMock.missionVerification.findFirst.mockResolvedValue({ id: 'm1' });
+    prismaMock.documentMission.create.mockResolvedValue({ id: 'd1' });
+  });
+
+  it('rattache la photo au constat de visite', async () => {
+    prismaMock.etapeMission.findFirst.mockResolvedValue({ id: 'e1' });
+
+    await documents.addDocument(
+      'm1',
+      { type: 'photo_visite', etapeId: 'e1' },
+      photo,
+      responsable,
+    );
+
+    // Le constat cherché doit appartenir à la mission, pas seulement exister.
+    expect(prismaMock.etapeMission.findFirst.mock.calls[0][0].where).toEqual({
+      id: 'e1',
+      missionId: 'm1',
+    });
+    expect(
+      prismaMock.documentMission.create.mock.calls[0][0].data.etapeId,
+    ).toBe('e1');
+  });
+
+  it('refuse un constat qui appartient à une autre mission', async () => {
+    prismaMock.etapeMission.findFirst.mockResolvedValue(null);
+
+    await expect(
+      documents.addDocument(
+        'm1',
+        { type: 'photo_visite', etapeId: 'e-ailleurs' },
+        photo,
+        responsable,
+      ),
+    ).rejects.toThrow(BadRequestException);
+    expect(prismaMock.documentMission.create).not.toHaveBeenCalled();
+  });
+
+  it('accepte une pièce du dossier sans constat', async () => {
+    await documents.addDocument(
+      'm1',
+      { type: 'piece_fournie' },
+      {
+        originalname: 'titre.pdf',
+        mimetype: 'application/pdf',
+        size: 80_000,
+        buffer: Buffer.from('%PDF-1.4'),
+      } as Express.Multer.File,
+      responsable,
+    );
+
+    expect(prismaMock.etapeMission.findFirst).not.toHaveBeenCalled();
+    expect(
+      prismaMock.documentMission.create.mock.calls[0][0].data.etapeId,
+    ).toBeNull();
+  });
+});

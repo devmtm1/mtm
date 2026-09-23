@@ -32,6 +32,7 @@ import { NotificationService } from '../../../shared/services/notification.servi
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { JustificationDialog } from '../../../shared/dialogs/justification-dialog';
 import { ConstatDialog } from './constat-dialog';
+import { estImageCloudinary, vignetteCloudinary } from '../../../shared/utils/cloudinary';
 import {
   ADMINISTRATIONS,
   MODES_PAIEMENT,
@@ -122,7 +123,9 @@ export class MissionDetail implements OnInit {
     (this.mission()?.documents ?? []).filter((doc) => doc.type === 'rapport'),
   );
   protected readonly pieces = computed(() =>
-    (this.mission()?.documents ?? []).filter((doc) => doc.type !== 'rapport'),
+    (this.mission()?.documents ?? []).filter(
+      (doc) => doc.type !== 'rapport' && !doc.etapeId,
+    ),
   );
   protected readonly estTerminee = computed(() =>
     ETAPES_TERMINALES.includes(this.mission()?.statut ?? ''),
@@ -250,6 +253,38 @@ export class MissionDetail implements OnInit {
     valeur: { firstName: string | null; lastName: string | null } | null,
   ): string {
     return nomPersonne(valeur);
+  }
+
+  /** Pièces rattachées à un constat précis : photos de cette visite-là. */
+  protected piecesDuConstat(constatId: string): DocumentMission[] {
+    return (this.mission()?.documents ?? []).filter(
+      (document) => document.etapeId === constatId,
+    );
+  }
+
+  protected photosDuConstat(constatId: string): DocumentMission[] {
+    return this.piecesDuConstat(constatId).filter((document) =>
+      estImageCloudinary(document.secureUrl),
+    );
+  }
+
+  protected autresPiecesDuConstat(constatId: string): DocumentMission[] {
+    return this.piecesDuConstat(constatId).filter(
+      (document) => !estImageCloudinary(document.secureUrl),
+    );
+  }
+
+  /** Photos du dossier sans constat rattaché (pièces fournies par le client). */
+  protected readonly photosLibres = computed(() =>
+    this.pieces().filter((document) => estImageCloudinary(document.secureUrl)),
+  );
+
+  protected readonly autresPieces = computed(() =>
+    this.pieces().filter((document) => !estImageCloudinary(document.secureUrl)),
+  );
+
+  protected vignette(url: string): string {
+    return vignetteCloudinary(url, 320);
   }
 
   protected enRetard(): boolean {
@@ -456,14 +491,14 @@ export class MissionDetail implements OnInit {
     );
   }
 
-  protected televerser(evenement: Event, type: string): void {
+  protected televerser(evenement: Event, type: string, etapeId?: string): void {
     const mission = this.mission();
     const input = evenement.target as HTMLInputElement;
     const fichier = input.files?.[0];
     if (!mission || !fichier) return;
     this.executer(
-      this.api.addDocument(mission.id, type, fichier),
-      'Pièce ajoutée',
+      this.api.addDocument(mission.id, type, fichier, { etapeId }),
+      etapeId ? 'Photo ajoutée au constat' : 'Pièce ajoutée',
     );
     input.value = '';
   }
