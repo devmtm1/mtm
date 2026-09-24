@@ -143,20 +143,42 @@ export function Header() {
           className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-mtm-border bg-mtm-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] motion-safe:animate-slide-down lg:hidden"
           aria-label="Menu principal"
         >
-          <ul className="flex flex-col gap-0.5 pt-2">
+          {/* CTA bien visible dès l'ouverture du menu : Services regroupe trois
+              pages, pas de destination unique, donc un bouton qui déplie sa
+              liste plutôt qu'un lien direct. */}
+          <div className="pt-3">
+            <button
+              type="button"
+              onClick={() => setServicesOpen((open) => !open)}
+              aria-expanded={servicesOpen}
+              className={`flex w-full items-center justify-between rounded-md border px-3.5 py-2.5 text-[15px] font-semibold transition-colors ${
+                servicesActive
+                  ? 'border-mtm-primary bg-mtm-primary-subtle text-mtm-primary'
+                  : 'border-mtm-primary/40 text-mtm-primary hover:bg-mtm-primary-subtle'
+              }`}
+            >
+              Services
+              <ChevronDown
+                className={`h-4 w-4 transition-transform duration-200 ${servicesOpen ? 'rotate-180' : ''}`}
+                aria-hidden="true"
+              />
+            </button>
+            {servicesOpen && (
+              <ul className="mt-1 flex flex-col gap-0.5 pl-2 motion-safe:animate-slide-down">
+                {SERVICE_LINKS.map((link) => (
+                  <li key={link.to}>
+                    <NavLink to={link.to} className={mobileLinkClass} onClick={() => setMobileOpen(false)}>
+                      {link.label}
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <ul className="mt-1 flex flex-col gap-0.5">
             {[...PRIMARY_LINKS, { to: ROUTES.actualites, label: 'Actualités' }].map((link) => (
               <li key={link.to}>
                 <NavLink to={link.to} className={mobileLinkClass} end={link.to === ROUTES.home} onClick={() => setMobileOpen(false)}>
-                  {link.label}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-3 px-3 text-[11px] font-bold uppercase tracking-wider text-mtm-muted">Services</p>
-          <ul className="mt-1 flex flex-col gap-0.5">
-            {SERVICE_LINKS.map((link) => (
-              <li key={link.to}>
-                <NavLink to={link.to} className={mobileLinkClass} onClick={() => setMobileOpen(false)}>
                   {link.label}
                 </NavLink>
               </li>
