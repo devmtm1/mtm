@@ -50,6 +50,7 @@ export interface ClientMissionPayload {
   region?: string;
   piecesFournies?: string;
   urgence?: string;
+  budgetAnnonce?: number;
 }
 
 /**

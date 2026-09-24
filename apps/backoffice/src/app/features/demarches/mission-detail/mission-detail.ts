@@ -98,7 +98,11 @@ export class MissionDetail implements OnInit {
   protected readonly canModify = computed(() =>
     this.sessionService.hasPermission('demarches:modifier'),
   );
-  protected readonly canReport = computed(() =>
+  /**
+   * Décision, conclusion, génération du rapport et clôture : ce que l'API
+   * exige derrière `demarches:valider`, distinct de la simple saisie.
+   */
+  protected readonly canValidate = computed(() =>
     this.sessionService.hasPermission('demarches:valider'),
   );
   protected readonly canPublish = computed(() =>
@@ -107,6 +111,12 @@ export class MissionDetail implements OnInit {
   protected readonly canDelete = computed(() =>
     this.sessionService.hasPermission('demarches:supprimer'),
   );
+
+  /** Étapes proposables dans le sélecteur : la clôture exige la validation. */
+  protected readonly etapesSelectionnables = computed(() => {
+    const toutes = this.options().statuts ?? [];
+    return toutes.filter((etape) => etape !== 'cloturee' || this.canValidate());
+  });
 
   /** Constats de terrain et administrations, séparés comme dans le rapport. */
   protected readonly constatsPhysiques = computed(() =>

@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -186,7 +187,6 @@ export class DemarchesService {
     await Promise.all([
       this.options.assertTypeVerification(dto.typeVerification),
       this.options.assertUrgence(dto.urgence),
-      this.options.assertStatut(dto.statut),
     ]);
     const responsableId = await this.access.resolveResponsable(
       dto.responsableId,
@@ -210,7 +210,10 @@ export class DemarchesService {
         budgetAnnonce: dto.budgetAnnonce,
         dateDemande: dto.dateDemande ? new Date(dto.dateDemande) : new Date(),
         dateEcheance: dto.dateEcheance ? new Date(dto.dateEcheance) : null,
-        statut: dto.statut ?? 'demande',
+        // Toute mission démarre à « demande » : les étapes suivantes ne
+        // s'atteignent qu'en passant par transition(), qui vérifie qu'il y a
+        // bien un constat avant « rapport » et une décision avant « cloturee ».
+        statut: 'demande',
         responsableId,
         createdById: user.id,
       },
@@ -221,6 +224,7 @@ export class DemarchesService {
 
   async update(id: string, dto: UpdateMissionDto, user: DemarchesUser) {
     await this.access.ensureAccessible(id, user);
+    this.assertValidationRights(dto, user);
     if (dto.terrainId) await this.assertTerrain(dto.terrainId);
     await Promise.all([
       this.options.assertTypeVerification(dto.typeVerification),
@@ -306,6 +310,11 @@ export class DemarchesService {
   async transition(id: string, dto: TransitionMissionDto, user: DemarchesUser) {
     await this.access.ensureAccessible(id, user);
     await this.options.assertStatut(dto.statut);
+    if (dto.statut === 'cloturee' && !user.permissions?.includes('demarches:valider')) {
+      throw new ForbiddenException(
+        'La clôture d’une mission relève de la validation (demarches:valider)',
+      );
+    }
     const mission = await this.prisma.missionVerification.findUnique({
       where: { id },
       select: {
@@ -549,6 +558,32 @@ export class DemarchesService {
     throw new ConflictException(
       'Impossible d’attribuer une référence de mission, réessayez',
     );
+  }
+
+  /**
+   * La décision et la conclusion sont le jugement porté sur la mission — ce
+   * que `demarches:valider` distingue de la simple saisie (`demarches:modifier`).
+   * Sans ce garde-fou, un commercial pourrait se valider lui-même.
+   */
+  private assertValidationRights(
+    dto: {
+      decision?: string;
+      conclusion?: string;
+      reserves?: string;
+      recommandation?: string;
+    },
+    user: DemarchesUser,
+  ): void {
+    const toucheDecision =
+      dto.decision !== undefined ||
+      dto.conclusion !== undefined ||
+      dto.reserves !== undefined ||
+      dto.recommandation !== undefined;
+    if (toucheDecision && !user.permissions?.includes('demarches:valider')) {
+      throw new ForbiddenException(
+        'La décision et la conclusion de la mission relèvent de la validation (demarches:valider)',
+      );
+    }
   }
 
   private async assertTerrain(terrainId: string): Promise<void> {

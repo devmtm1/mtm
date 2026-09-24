@@ -231,7 +231,9 @@ describeE2e('Parcours Démarches J2.2 (e2e)', () => {
           'Un deuxième terrain m’est proposé à Saly, je veux le faire voir.',
         localisation: 'Saly, route de la corniche',
         commune: 'Saly',
+        region: 'Thiès',
         urgence: 'normale',
+        budgetAnnonce: 8000000,
       });
 
     expect(response.status).toBe(201);
@@ -244,6 +246,14 @@ describeE2e('Parcours Démarches J2.2 (e2e)', () => {
       .set('Authorization', `Bearer ${jetonAgent}`);
     expect(liste.body.total).toBe(1);
     expect(liste.body.items[0].responsable).toBeNull();
+
+    // La région et le budget annoncé par le client se retrouvent sur le
+    // dossier vu par l'équipe : ce n'était pas le cas avant ce correctif.
+    const detail = await request(app.getHttpServer())
+      .get(`/api/demarches/missions/${liste.body.items[0].id}`)
+      .set('Authorization', `Bearer ${jetonAgent}`);
+    expect(detail.body.region).toBe('Thiès');
+    expect(Number(detail.body.budgetAnnonce)).toBe(8000000);
   });
 
   it('clôture la mission, décision prise', async () => {

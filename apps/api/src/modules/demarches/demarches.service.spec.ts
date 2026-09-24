@@ -1,11 +1,15 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { createDemarchesTestContext } from './demarches.test-support';
 
 describe('DemarchesService', () => {
   const responsable = {
     id: 'u-dem',
     roles: ['responsable_demarches'],
-    permissions: [],
+    permissions: ['demarches:valider'],
   };
   const commercial = { id: 'u-com', roles: ['commercial'], permissions: [] };
 
@@ -167,5 +171,21 @@ describe('DemarchesService', () => {
     await expect(missions.findOne('m1', commercial)).rejects.toThrow(
       NotFoundException,
     );
+  });
+
+  it('refuse à un commercial sans demarches:valider de fixer la décision', async () => {
+    prismaMock.missionVerification.findFirst.mockResolvedValue({ id: 'm1' });
+
+    await expect(
+      missions.update('m1', { decision: 'favorable' }, commercial),
+    ).rejects.toThrow(ForbiddenException);
+  });
+
+  it('refuse à un commercial sans demarches:valider de clôturer une mission', async () => {
+    prismaMock.missionVerification.findFirst.mockResolvedValue({ id: 'm1' });
+
+    await expect(
+      missions.transition('m1', { statut: 'cloturee' }, commercial),
+    ).rejects.toThrow(ForbiddenException);
   });
 });

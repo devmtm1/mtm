@@ -58,6 +58,8 @@ export function NewMissionModal({
   const [terrain, setTerrain] = useState<TerrainChoice | null>(null);
   const [localisation, setLocalisation] = useState('');
   const [commune, setCommune] = useState('');
+  const [region, setRegion] = useState('');
+  const [budget, setBudget] = useState('');
   const [pieces, setPieces] = useState('');
   const [urgence, setUrgence] = useState('normale');
   const [submitting, setSubmitting] = useState(false);
@@ -79,14 +81,18 @@ export function NewMissionModal({
     setError(null);
     setSubmitting(true);
     try {
+      const budgetSaisi = budget.trim() ? Number(budget) : undefined;
       await createClientMission(accessToken, {
         typeVerification: type,
         objectif: texte,
         terrainId: terrain?.id,
         localisation: localisation.trim() || undefined,
         commune: commune.trim() || undefined,
+        region: region.trim() || undefined,
         piecesFournies: pieces.trim() || undefined,
         urgence,
+        budgetAnnonce:
+          budgetSaisi !== undefined && Number.isFinite(budgetSaisi) ? budgetSaisi : undefined,
       });
       setSubmitted(true);
       onCreated();
@@ -183,6 +189,17 @@ export function NewMissionModal({
             />
           </FormField>
 
+          <FormField label="Région" htmlFor="mission-region">
+            <input
+              id="mission-region"
+              type="text"
+              value={region}
+              onChange={(event) => setRegion(event.target.value)}
+              className={fieldInputClass}
+              placeholder="Thiès, Dakar…"
+            />
+          </FormField>
+
           <FormField label="Ce que vous voulez vérifier" htmlFor="mission-objectif" required>
             <textarea
               id="mission-objectif"
@@ -203,6 +220,19 @@ export function NewMissionModal({
               onChange={(event) => setPieces(event.target.value)}
               className={fieldInputClass}
               placeholder="Copie du titre, photos, coordonnées du vendeur…"
+            />
+          </FormField>
+
+          <FormField label="Votre budget d'achat (facultatif)" htmlFor="mission-budget">
+            <input
+              id="mission-budget"
+              type="number"
+              min={0}
+              inputMode="numeric"
+              value={budget}
+              onChange={(event) => setBudget(event.target.value)}
+              className={fieldInputClass}
+              placeholder="En FCFA"
             />
           </FormField>
 

@@ -44,7 +44,6 @@ export class CreateMissionDto {
   @IsOptional() @IsDateString() dateDemande?: string;
   @IsOptional() @IsDateString() dateEcheance?: string;
   @IsOptional() @IsUUID() responsableId?: string;
-  @IsOptional() @IsString() @MaxLength(60) statut?: string;
 }
 
 /** Mise à jour : demande, étude de faisabilité, facturation et conclusion. */
@@ -120,9 +119,9 @@ export class QueryMissionDto {
 /**
  * Demande de vérification déposée par un client depuis son espace.
  *
- * Elle ne porte que ce que le client sait : ce qu'il veut faire vérifier et
- * où. Le montant, l'échéance et le responsable relèvent de MTM et sont
- * renseignés ensuite en back-office.
+ * Elle ne porte que ce que le client sait : ce qu'il veut faire vérifier, où,
+ * et avec quel budget d'achat en tête. Le tarif de la mission, l'échéance et
+ * le responsable relèvent de MTM et sont renseignés ensuite en back-office.
  */
 export class CreateClientMissionDto {
   @IsString() @MaxLength(80) typeVerification!: string;
@@ -133,4 +132,5 @@ export class CreateClientMissionDto {
   @IsOptional() @IsString() @MaxLength(120) region?: string;
   @IsOptional() @IsString() @MaxLength(2000) piecesFournies?: string;
   @IsOptional() @IsString() @MaxLength(40) urgence?: string;
+  @IsOptional() @Type(() => Number) @IsNumber() @Min(0) budgetAnnonce?: number;
 }

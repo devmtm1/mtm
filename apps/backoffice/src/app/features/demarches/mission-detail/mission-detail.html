@@ -58,10 +58,13 @@
           <mat-form-field appearance="outline" class="mission-detail__etape-select">
             <mat-label>Étape de la mission</mat-label>
             <mat-select [value]="m.statut" (selectionChange)="changerEtape($event.value)">
-              @for (etape of options().statuts ?? []; track etape) {
+              @for (etape of etapesSelectionnables(); track etape) {
                 <mat-option [value]="etape">{{ etapeLabel(etape) }}</mat-option>
               }
             </mat-select>
+            @if (!canValidate()) {
+              <mat-hint>La clôture est réservée à la validation du dossier.</mat-hint>
+            }
           </mat-form-field>
         </div>
       }
@@ -424,56 +427,70 @@
           rapport et avant de clôturer la mission.
         </p>
       </div>
-      <form [formGroup]="conclusion" class="form-grid" (ngSubmit)="enregistrerConclusion()">
-        <mat-form-field appearance="outline">
-          <mat-label>Décision de MTM</mat-label>
-          <mat-select formControlName="decision">
-            <mat-option value="">Non prononcée</mat-option>
-            @for (valeur of options().decisions ?? []; track valeur) {
-              <mat-option [value]="valeur">{{ decisionLabel(valeur) }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+      @if (canValidate()) {
+        <form [formGroup]="conclusion" class="form-grid" (ngSubmit)="enregistrerConclusion()">
+          <mat-form-field appearance="outline">
+            <mat-label>Décision de MTM</mat-label>
+            <mat-select formControlName="decision">
+              <mat-option value="">Non prononcée</mat-option>
+              @for (valeur of options().decisions ?? []; track valeur) {
+                <mat-option [value]="valeur">{{ decisionLabel(valeur) }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
 
-        <mat-form-field appearance="outline" class="wide">
-          <mat-label>Conclusion</mat-label>
-          <textarea
-            matInput
-            rows="3"
-            formControlName="conclusion"
-            placeholder="Ce que MTM a établi, en quelques phrases lisibles par le client"
-          ></textarea>
-        </mat-form-field>
+          <mat-form-field appearance="outline" class="wide">
+            <mat-label>Conclusion</mat-label>
+            <textarea
+              matInput
+              rows="3"
+              formControlName="conclusion"
+              placeholder="Ce que MTM a établi, en quelques phrases lisibles par le client"
+            ></textarea>
+          </mat-form-field>
 
-        <mat-form-field appearance="outline" class="wide">
-          <mat-label>Réserves</mat-label>
-          <textarea matInput rows="2" formControlName="reserves"></textarea>
-        </mat-form-field>
+          <mat-form-field appearance="outline" class="wide">
+            <mat-label>Réserves</mat-label>
+            <textarea matInput rows="2" formControlName="reserves"></textarea>
+          </mat-form-field>
 
-        <mat-form-field appearance="outline" class="wide">
-          <mat-label>Recommandation</mat-label>
-          <textarea matInput rows="2" formControlName="recommandation"></textarea>
-        </mat-form-field>
+          <mat-form-field appearance="outline" class="wide">
+            <mat-label>Recommandation</mat-label>
+            <textarea matInput rows="2" formControlName="recommandation"></textarea>
+          </mat-form-field>
 
-        @if (canModify()) {
           <div class="wide form-actions">
             <button mat-stroked-button type="submit" [disabled]="saving()">
               Enregistrer la conclusion
             </button>
-            @if (canReport()) {
-              <button
-                mat-flat-button
-                color="primary"
-                type="button"
-                [disabled]="saving()"
-                (click)="genererRapport()"
-              >
-                <svg class="btn-icon" lucideFileText aria-hidden="true"></svg>Générer le rapport
-              </button>
-            }
+            <button
+              mat-flat-button
+              color="primary"
+              type="button"
+              [disabled]="saving()"
+              (click)="genererRapport()"
+            >
+              <svg class="btn-icon" lucideFileText aria-hidden="true"></svg>Générer le rapport
+            </button>
           </div>
-        }
-      </form>
+        </form>
+      } @else {
+        <dl class="detail-facts">
+          <div><dt>Décision de MTM</dt><dd>{{ m.decision ? decisionLabel(m.decision) : 'Non prononcée' }}</dd></div>
+          @if (m.conclusion) {
+            <div><dt>Conclusion</dt><dd>{{ m.conclusion }}</dd></div>
+          }
+          @if (m.reserves) {
+            <div><dt>Réserves</dt><dd>{{ m.reserves }}</dd></div>
+          }
+          @if (m.recommandation) {
+            <div><dt>Recommandation</dt><dd>{{ m.recommandation }}</dd></div>
+          }
+        </dl>
+        <p class="detail-section__hint">
+          La décision et le rapport relèvent de la validation du dossier.
+        </p>
+      }
 
       @if (rapports().length) {
         <ul class="doc-list">

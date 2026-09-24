@@ -58,6 +58,7 @@ export class DemarchesClientService {
         region: dto.region,
         piecesFournies: dto.piecesFournies,
         urgence: dto.urgence ?? 'normale',
+        budgetAnnonce: dto.budgetAnnonce,
         statut: 'demande',
       },
       select: { id: true, referenceInterne: true, statut: true },
