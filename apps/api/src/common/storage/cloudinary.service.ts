@@ -6,7 +6,7 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import { v2 as cloudinary, type UploadApiResponse } from 'cloudinary';
 
 export interface UploadedAsset {
@@ -61,6 +61,8 @@ export class CloudinaryService {
       throw new ServiceUnavailableException('Le fichier reçu est invalide');
     }
     if (!this.isConfigured()) {
+      if (this.isTestEnvironment())
+        return this.storeForTests(file, folder, isPublic);
       throw new ServiceUnavailableException(
         'Le stockage Cloudinary n’est pas configuré',
       );
@@ -184,6 +186,45 @@ export class CloudinaryService {
       this.config.get('CLOUDINARY_API_KEY') &&
       this.config.get('CLOUDINARY_API_SECRET'),
     );
+  }
+
+  private isTestEnvironment(): boolean {
+    return (
+      (this.config.get<string>('NODE_ENV') ?? process.env.NODE_ENV) === 'test'
+    );
+  }
+
+  /**
+   * Repli des tests automatisés, sans appel réseau : l'intégration continue
+   * n'a pas de compte Cloudinary, et sans ce repli tous les parcours qui
+   * produisent un document — quittance de loyer, relevé de gestion, rapport de
+   * vérification — échouaient en 503, ce qui masquait le reste du scénario.
+   *
+   * N'intervient que si le stockage n'est pas configuré **et** que
+   * l'environnement est « test » : en production, Cloudinary est configuré et
+   * un envoi continue de refuser plutôt que de laisser croire qu'un document
+   * est archivé.
+   */
+  private storeForTests(
+    file: Express.Multer.File,
+    folder: string,
+    isPublic: boolean,
+  ): UploadedAsset {
+    const resourceType = file.mimetype?.startsWith('image/')
+      ? 'image'
+      : file.mimetype?.startsWith('video/')
+        ? 'video'
+        : 'raw';
+    const dossier = this.rootFolder ? `${this.rootFolder}/${folder}` : folder;
+    const publicId = `${dossier}/test-${randomUUID()}`;
+    this.logger.debug(
+      `Stockage de test : ${publicId} (${file.size} octets, non envoyé)`,
+    );
+    return {
+      publicId,
+      resourceType,
+      secureUrl: this.url(publicId, resourceType, isPublic),
+    };
   }
 
   private apiPublicUrl(): string {
