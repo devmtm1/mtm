@@ -42,3 +42,7 @@ backups/*.dump
 
 # Neon CLI : identifiants du projet lié (jamais versionnés)
 .neon
+
+# Exports Trello du backlog : contiennent les adresses e-mail des cartes
+# (qui permettent d'écrire dans le tableau), donc jamais versionnés.
+*mtm-immobilier-backlog-planning*.json
