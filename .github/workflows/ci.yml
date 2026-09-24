@@ -2,7 +2,11 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    # Les branches de jalon sont vérifiées dès le push : un jalon ne peut pas
+    # être présenté en validation sans son passage e2e sur PostgreSQL réel
+    # (exigence de recette de la section 30), sans attendre l'ouverture de la
+    # pull request.
+    branches: [main, develop, 'feature/**']
   pull_request:
     branches: [main, develop]
 
