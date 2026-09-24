@@ -93,7 +93,7 @@ export function Modal({ title, onClose, children }: ModalProps) {
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="relative flex max-h-[92dvh] w-full max-w-lg flex-col overflow-y-auto rounded-t-2xl bg-mtm-surface p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-lg outline-none motion-safe:animate-sheet-in sm:max-h-full sm:rounded-lg sm:p-6 sm:motion-safe:animate-scale-in"
+        className="relative flex max-h-[92dvh] w-full max-w-lg flex-col overflow-y-auto overflow-x-hidden rounded-t-2xl bg-mtm-surface p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-lg outline-none motion-safe:animate-sheet-in sm:max-h-full sm:rounded-lg sm:p-6 sm:motion-safe:animate-scale-in"
       >
         <div className="mb-4 flex items-center justify-between">
           <h2 id={titleId} className="font-display text-lg font-bold text-mtm-text">
