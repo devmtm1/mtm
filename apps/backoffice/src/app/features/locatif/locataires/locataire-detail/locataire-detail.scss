@@ -1,0 +1,12 @@
+.detail-header__meta a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--mtm-text-dark);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--mtm-primary);
+    text-decoration: underline;
+  }
+}

@@ -1,0 +1,73 @@
+<div class="bien-form-page">
+  <header class="page-header">
+    <div>
+      <button mat-button type="button" class="back-link" (click)="retour()">
+        <svg class="btn-icon" lucideArrowLeft aria-hidden="true"></svg>Retour aux biens
+      </button>
+      <p class="eyebrow">Gestion locative</p>
+      <h1 class="page-header__title">Nouveau bien locatif</h1>
+      <p class="page-header__subtitle">
+        Le bien tel que confié par le propriétaire. Le bail (locataire, loyer, dates) se crée ensuite
+        depuis la fiche du bien.
+      </p>
+    </div>
+  </header>
+
+  <form [formGroup]="form" class="page-card form-block" (ngSubmit)="submit()">
+    <div class="form-grid">
+      <mat-form-field appearance="outline" class="wide">
+        <mat-label>Propriétaire</mat-label>
+        <mat-select formControlName="proprietaireId">
+          @for (proprietaire of proprietaires(); track proprietaire.id) {
+            <mat-option [value]="proprietaire.id">{{ nomProprietaire(proprietaire) }}</mat-option>
+          }
+        </mat-select>
+        <mat-hint>Créez d’abord la fiche dans Propriétaires si elle n’existe pas.</mat-hint>
+        <mat-error>Choisissez le propriétaire du bien.</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Type de bien</mat-label>
+        <mat-select formControlName="type">
+          @for (type of options().typesBien ?? []; track type) {
+            <mat-option [value]="type">{{ typeLabel(type) }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Superficie (m²)</mat-label>
+        <input matInput type="number" min="0" formControlName="superficie" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="wide">
+        <mat-label>Adresse</mat-label>
+        <input matInput formControlName="adresse" placeholder="Numéro, rue, quartier" />
+        <mat-error>L’adresse est nécessaire pour localiser le bien.</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Commune</mat-label>
+        <input matInput formControlName="commune" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Région</mat-label>
+        <input matInput formControlName="region" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="wide">
+        <mat-label>Notes</mat-label>
+        <textarea matInput rows="2" formControlName="notes"></textarea>
+      </mat-form-field>
+    </div>
+
+    <div class="form-actions">
+      <button mat-stroked-button type="button" (click)="retour()">Annuler</button>
+      <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+        <svg class="btn-icon" lucideSave aria-hidden="true"></svg>
+        {{ saving() ? 'Enregistrement…' : 'Enregistrer le bien' }}
+      </button>
+    </div>
+  </form>
+</div>

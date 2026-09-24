@@ -128,6 +128,22 @@
         </span>
       </div>
     }
+    @if (canViewLocatif) {
+      <button type="button" class="kpi" [class.kpi--warning]="(locatifStats()?.echeancesEnRetard ?? 0) > 0" [class.kpi--success]="(locatifStats()?.echeancesEnRetard ?? 0) === 0" (click)="goTo('/locatif/biens')">
+        <span class="kpi__icon"><svg lucideBuilding2 aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          @if (locatifStats(); as s) {
+            <strong>{{ s.loues }}<small class="kpi__of">/ {{ s.total }}</small></strong>
+            <span>Biens loués</span>
+            <!-- « enRetard » comptait des biens : on affiche bien des échéances. -->
+            <small>{{ s.echeancesEnRetard > 0 ? s.echeancesEnRetard + ' échéance' + (s.echeancesEnRetard > 1 ? 's' : '') + ' en retard sur ' + s.biensEnRetard + ' bien' + (s.biensEnRetard > 1 ? 's' : '') : 'Aucun loyer en retard' }}</small>
+          } @else {
+            <strong>…</strong>
+            <span>Gestion locative</span>
+          }
+        </span>
+      </button>
+    }
   </section>
 
   <!-- Graphiques -->

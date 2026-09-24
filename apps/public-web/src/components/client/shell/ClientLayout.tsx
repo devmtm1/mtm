@@ -2,8 +2,10 @@ import { useMemo } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
+  Building2,
   FolderOpen,
   Home,
+  KeyRound,
   LogOut,
   MessageSquare,
   ShieldCheck,
@@ -15,6 +17,12 @@ import {
   useClientDemandes,
   useClientMissions,
   useClientPortal,
+  useLocataireBaux,
+  useLocataireIncidents,
+  useLocatairePaiements,
+  useProprietaireBiens,
+  useProprietaireDocuments,
+  useProprietaireSynthese,
 } from '../../../hooks/useClientPortal';
 import { ROUTES } from '../../../routes';
 import { ScrollManager } from '../../layout/ScrollManager';
@@ -22,7 +30,14 @@ import { RouteAnnouncer } from '../../layout/RouteAnnouncer';
 
 const MAIN_ID = 'contenu-principal';
 
-const TABS = [
+interface ClientTab {
+  to: string;
+  label: string;
+  icon: typeof Home;
+  end: boolean;
+}
+
+const BASE_TABS: ClientTab[] = [
   { to: ROUTES.clientPortal, label: 'Accueil', icon: Home, end: true },
   { to: ROUTES.clientDossiers, label: 'Dossiers', icon: FolderOpen, end: false },
   { to: ROUTES.clientMissions, label: 'Vérifications', icon: ShieldCheck, end: false },
@@ -49,6 +64,37 @@ export function ClientLayout() {
   const dossiers = useClientPortal(accessToken);
   const demandes = useClientDemandes(accessToken);
   const missions = useClientMissions(accessToken);
+  const proprietaireBiens = useProprietaireBiens(accessToken);
+  const proprietaireSynthese = useProprietaireSynthese(accessToken);
+  const proprietaireDocuments = useProprietaireDocuments(accessToken);
+  const locataireBaux = useLocataireBaux(accessToken);
+  const locatairePaiements = useLocatairePaiements(accessToken);
+  const locataireIncidents = useLocataireIncidents(accessToken);
+
+  // Un compte non rattaché reçoit `data: null` (voir clientPortal.ts) : ces
+  // onglets n'existent que pour un vrai propriétaire ou locataire.
+  const estProprietaire = proprietaireBiens.data !== null;
+  const estLocataire = locataireBaux.data !== null;
+  const TABS = useMemo(() => {
+    const tabs = [...BASE_TABS];
+    if (estLocataire) {
+      tabs.splice(2, 0, {
+        to: ROUTES.clientLocataire,
+        label: 'Ma location',
+        icon: KeyRound,
+        end: false,
+      });
+    }
+    if (estProprietaire) {
+      tabs.splice(2, 0, {
+        to: ROUTES.clientProprietaire,
+        label: 'Mon bien',
+        icon: Building2,
+        end: false,
+      });
+    }
+    return tabs;
+  }, [estProprietaire, estLocataire]);
 
   const value = useMemo(
     () => ({
@@ -61,10 +107,30 @@ export function ClientLayout() {
       missions: missions.data,
       missionsLoading: missions.loading,
       missionsError: missions.error,
+      proprietaireBiens: proprietaireBiens.data,
+      proprietaireSynthese: proprietaireSynthese.data,
+      proprietaireDocuments: proprietaireDocuments.data,
+      proprietaireLoading:
+        proprietaireBiens.loading || proprietaireSynthese.loading || proprietaireDocuments.loading,
+      locataireBaux: locataireBaux.data,
+      locatairePaiements: locatairePaiements.data,
+      locataireIncidents: locataireIncidents.data,
+      locataireLoading: locataireBaux.loading || locatairePaiements.loading || locataireIncidents.loading,
       refetchDemandes: demandes.refetch,
       refetchMissions: missions.refetch,
+      refetchLocataireIncidents: locataireIncidents.refetch,
     }),
-    [dossiers.data, dossiers.loading, dossiers.error, demandes.data, demandes.loading, demandes.error, demandes.refetch, missions.data, missions.loading, missions.error, missions.refetch],
+    [
+      dossiers.data, dossiers.loading, dossiers.error,
+      demandes.data, demandes.loading, demandes.error, demandes.refetch,
+      missions.data, missions.loading, missions.error, missions.refetch,
+      proprietaireBiens.data, proprietaireBiens.loading,
+      proprietaireSynthese.data, proprietaireSynthese.loading,
+      proprietaireDocuments.data, proprietaireDocuments.loading,
+      locataireBaux.data, locataireBaux.loading,
+      locatairePaiements.data, locatairePaiements.loading,
+      locataireIncidents.data, locataireIncidents.loading, locataireIncidents.refetch,
+    ],
   );
 
   const current = TABS.find((tab) => (tab.end ? pathname === tab.to : pathname.startsWith(tab.to))) ?? TABS[0];
@@ -172,7 +238,7 @@ export function ClientLayout() {
             className="fixed inset-x-0 bottom-0 z-40 border-t border-mtm-border bg-mtm-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
             aria-label="Espace client"
           >
-            <ul className="grid grid-cols-5">
+            <ul className="grid" style={{ gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))` }}>
               {TABS.map(({ to, label, icon: Icon, end }) => (
                 <li key={to}>
                   <NavLink

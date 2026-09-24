@@ -1,0 +1,26 @@
+.relances-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.relances-page__filtre {
+  min-width: 180px;
+}
+
+.empty-state {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--mtm-text-muted);
+
+  h3 {
+    margin: 0 0 6px;
+    font-size: 1rem;
+    color: var(--mtm-text);
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.85rem;
+  }
+}

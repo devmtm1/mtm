@@ -1,0 +1,188 @@
+<div class="biens-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Gestion locative</p>
+      <h1 class="page-header__title">Biens locatifs</h1>
+      <p class="page-header__subtitle">
+        Les biens confiés par les propriétaires, leur bail en cours et l’état des loyers.
+      </p>
+    </div>
+    <div class="page-header__actions">
+      @if (canCreate()) {
+        <button mat-flat-button color="primary" type="button" (click)="openCreate()">
+          <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau bien
+        </button>
+      }
+    </div>
+  </header>
+
+  <section class="kpi-row" aria-label="Synthèse du portefeuille">
+    @if (stats(); as s) {
+      <button type="button" class="kpi" (click)="resetFilters()">
+        <span class="kpi__icon"><svg lucideBuilding2 aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ s.total }}</strong>
+          <span>Biens suivis</span>
+          <small>{{ s.loues }} loués</small>
+        </span>
+      </button>
+      <button
+        type="button"
+        class="kpi"
+        [class.kpi--muted]="s.disponibles === 0"
+        (click)="appliquerVue('disponible')"
+      >
+        <span class="kpi__icon"><svg lucideBuilding2 aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ s.disponibles }}</strong>
+          <span>Disponibles</span>
+          <small>Prêts à être loués</small>
+        </span>
+      </button>
+      <button
+        type="button"
+        class="kpi"
+        [class.kpi--danger]="s.biensEnRetard > 0"
+        [class.kpi--muted]="s.biensEnRetard === 0"
+        (click)="appliquerVue('loyers_en_retard')"
+      >
+        <span class="kpi__icon"><svg lucideTriangleAlert aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ s.biensEnRetard }}</strong>
+          <span>Biens en retard de loyer</span>
+          <small>
+            {{ s.echeancesEnRetard }} échéance{{ s.echeancesEnRetard > 1 ? 's' : '' }} en retard ·
+            {{ s.impayesTotal | mtmMoney }} à recouvrer
+          </small>
+        </span>
+      </button>
+      <button
+        type="button"
+        class="kpi"
+        [class.kpi--danger]="s.impayesProlonges > 0"
+        [class.kpi--muted]="s.impayesProlonges === 0"
+        (click)="appliquerVue('impayes_prolonges')"
+      >
+        <span class="kpi__icon"><svg lucideTriangleAlert aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ s.impayesProlonges }}</strong>
+          <span>Impayés prolongés</span>
+          <small>Au-delà du seuil paramétré</small>
+        </span>
+      </button>
+      <div class="kpi">
+        <span class="kpi__icon"><svg lucideBuilding2 aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ s.loyersEncaissesMois | mtmMoney }}</strong>
+          <span>Encaissé ce mois</span>
+          <small>
+            @if (s.encaissementsEnAttente > 0) {
+              {{ s.encaissementsEnAttente | mtmMoney }} en attente de validation
+            } @else {
+              Versements validés
+            }
+          </small>
+        </span>
+      </div>
+    }
+  </section>
+
+  <section class="page-section" aria-labelledby="biens-list-title">
+    <div class="list-toolbar">
+      <div class="list-toolbar__title">
+        <h2 id="biens-list-title">Liste des biens</h2>
+        <p>
+          @if (loading()) {
+            Chargement…
+          } @else {
+            {{ total() }} bien{{ total() > 1 ? 's' : '' }}
+            @if (hasActiveFilters()) {
+              correspondant aux filtres
+            }
+          }
+        </p>
+      </div>
+    </div>
+
+    <div class="quick-views" role="group" aria-label="Vues rapides">
+      @for (vue of vuesRapides; track vue.value) {
+        <button
+          type="button"
+          class="quick-view"
+          [class.is-active]="filters.controls.vue.value === vue.value"
+          [matTooltip]="vue.help"
+          (click)="appliquerVue(vue.value)"
+        >
+          {{ vue.label }}
+        </button>
+      }
+    </div>
+
+    <form [formGroup]="filters" class="list-filters">
+      <mat-form-field appearance="outline" class="list-filters__search">
+        <mat-label>Rechercher</mat-label>
+        <svg matPrefix lucideSearch aria-hidden="true"></svg>
+        <input matInput formControlName="search" placeholder="Référence, adresse, commune" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Statut</mat-label>
+        <mat-select formControlName="statut">
+          <mat-option value="">Tous</mat-option>
+          @for (statut of options().statutsBien ?? []; track statut) {
+            <mat-option [value]="statut">{{ statutLabel(statut) }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Type</mat-label>
+        <mat-select formControlName="type">
+          <mat-option value="">Tous</mat-option>
+          @for (type of options().typesBien ?? []; track type) {
+            <mat-option [value]="type">{{ typeLabel(type) }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      @if (hasActiveFilters()) {
+        <button mat-stroked-button type="button" (click)="resetFilters()">
+          <svg class="btn-icon" lucideX aria-hidden="true"></svg>Effacer
+        </button>
+      }
+    </form>
+
+    @if (!loading() && rowData().length === 0) {
+      <div class="empty-state">
+        <svg lucideBuilding2 aria-hidden="true"></svg>
+        @if (hasActiveFilters()) {
+          <h3>Aucun bien ne correspond à ces filtres</h3>
+          <p>Modifiez la recherche ou effacez les filtres.</p>
+          <button mat-stroked-button type="button" (click)="resetFilters()">Effacer les filtres</button>
+        } @else {
+          <h3>Aucun bien locatif pour le moment</h3>
+          <p>Ajoutez le premier bien confié par un propriétaire.</p>
+          @if (canCreate()) {
+            <button mat-flat-button color="primary" type="button" (click)="openCreate()">
+              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Créer le premier bien
+            </button>
+          }
+        }
+      </div>
+    } @else {
+      <ag-grid-angular
+        class="list-grid"
+        [theme]="theme"
+        [rowData]="rowData()"
+        [columnDefs]="columnDefs"
+        [loading]="loading()"
+        domLayout="autoHeight"
+        [pagination]="true"
+        [paginationPageSize]="20"
+        [rowHeight]="52"
+        [suppressCellFocus]="true"
+        (rowClicked)="$event.data && openDetail($event.data.id)"
+      />
+    }
+  </section>
+</div>

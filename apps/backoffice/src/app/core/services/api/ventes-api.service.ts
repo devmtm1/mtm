@@ -11,8 +11,8 @@ import type {
   VenteDocumentSearchItem,
   VenteEcheance,
   VenteOptions,
-  ClientAccountCreated,
 } from '../../models/vente.model';
+import type { ClientAccountCreated } from '../../models/client-account.model';
 
 @Injectable({ providedIn: 'root' })
 export class VentesApiService {

@@ -23,6 +23,7 @@ import {
   LucideUser,
 } from '@lucide/angular';
 import { CrmApiService } from '../../../core/services/api/crm-api.service';
+import { VentesApiService } from '../../../core/services/api/ventes-api.service';
 import { SessionService } from '../../../core/services/session.service';
 import type { ActiviteCrmItem, CommercialSummary, ProspectDetail as ProspectDetailModel, ProspectOptions, VisiteProspectItem } from '../../../core/models/prospect.model';
 import { NotificationService } from '../../../shared/services/notification.service';
@@ -31,7 +32,7 @@ import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { StatusChoiceDialog } from '../../../shared/dialogs/status-choice-dialog';
 import { HistoryDialog } from '../../../shared/dialogs/history-dialog';
 import { ActiviteDialog } from '../activite-dialog/activite-dialog';
-import { ClientAccountDialog } from '../client-account-dialog/client-account-dialog';
+import { ClientAccountDialog } from '../../../shared/dialogs/client-account-dialog';
 import { SalesDossierDialog } from '../sales-dossier-dialog/sales-dossier-dialog';
 import { VisiteDialog } from '../visite-dialog/visite-dialog';
 import {
@@ -155,6 +156,7 @@ export class ProspectDetail implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly api = inject(CrmApiService);
+  private readonly ventesApi = inject(VentesApiService);
   private readonly session = inject(SessionService);
   private readonly notify = inject(NotificationService);
   private readonly dialog = inject(MatDialog);
@@ -506,7 +508,12 @@ export class ProspectDetail implements OnInit {
   protected openCreateClientAccount(): void {
     const prospect = this.prospect();
     if (!prospect?.email || !this.canCreateClient) return;
-    this.dialog.open(ClientAccountDialog, { width: '520px', maxWidth: 'calc(100vw - 32px)', data: { prospectId: prospect.id, email: prospect.email, name: this.name() } });
+    ClientAccountDialog.open(this.dialog, {
+      email: prospect.email,
+      name: this.name(),
+      scopeDescription: 'suivre ses dossiers, paiements et documents',
+      create: (password) => this.ventesApi.createClientAccount(prospect.id, password),
+    });
   }
 
   protected uploadDocument(event: Event): void {

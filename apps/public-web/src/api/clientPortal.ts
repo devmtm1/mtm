@@ -1,6 +1,14 @@
-import { apiClient } from './client';
+import { apiClient, ApiError } from './client';
 import type { ClientDemandes, ClientDossier } from '../types/clientPortal';
 import type { ClientMission } from '../types/mission';
+import type {
+  ClientBailLocataire,
+  ClientBienLocatif,
+  ClientDocumentLocatif,
+  ClientIncidentLocatif,
+  ClientPaiementLoyer,
+  ClientSyntheseProprietaire,
+} from '../types/locatif';
 
 export function fetchClientPortal(token: string): Promise<ClientDossier[]> {
   return apiClient.get<ClientDossier[]>('/ventes/client/portal', undefined, { token });
@@ -63,4 +71,82 @@ export function createClientMission(
   payload: ClientMissionPayload,
 ): Promise<{ id: string; referenceInterne: string | null; statut: string }> {
   return apiClient.post('/demarches/missions/client/missions', payload, { token });
+}
+
+/**
+ * Un compte non rattaché à un propriétaire ou un locataire (la grande
+ * majorité des clients, simples acheteurs) reçoit un 403 sur ces routes :
+ * ce n'est pas une erreur à afficher, juste « cet espace ne concerne pas ce
+ * compte ». On le transforme en `null` pour que l'onglet reste masqué sans
+ * bandeau d'erreur.
+ */
+async function ouNonApplicable<T>(promesse: Promise<T>): Promise<T | null> {
+  try {
+    return await promesse;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 403) return null;
+    throw error;
+  }
+}
+
+/** Espace propriétaire (J2.1, section 15) : biens confiés et loyers encaissés. */
+export function fetchProprietaireBiens(token: string): Promise<ClientBienLocatif[] | null> {
+  return ouNonApplicable(
+    apiClient.get<ClientBienLocatif[]>('/locatif/proprietaire/biens', undefined, { token }),
+  );
+}
+
+/** Loyers appelés, encaissés et solde du portefeuille (section 15). */
+export function fetchProprietaireSynthese(
+  token: string,
+): Promise<ClientSyntheseProprietaire | null> {
+  return ouNonApplicable(
+    apiClient.get<ClientSyntheseProprietaire>('/locatif/proprietaire/synthese', undefined, {
+      token,
+    }),
+  );
+}
+
+export function fetchProprietaireDocuments(
+  token: string,
+): Promise<ClientDocumentLocatif[] | null> {
+  return ouNonApplicable(
+    apiClient.get<ClientDocumentLocatif[]>('/locatif/proprietaire/documents', undefined, {
+      token,
+    }),
+  );
+}
+
+/** Espace locataire (J2.1, section 15) : bail, quittances, paiements, incidents. */
+export function fetchLocataireBaux(token: string): Promise<ClientBailLocataire[] | null> {
+  return ouNonApplicable(
+    apiClient.get<ClientBailLocataire[]>('/locatif/locataire/baux', undefined, { token }),
+  );
+}
+
+export function fetchLocatairePaiements(token: string): Promise<ClientPaiementLoyer[] | null> {
+  return ouNonApplicable(
+    apiClient.get<ClientPaiementLoyer[]>('/locatif/locataire/paiements', undefined, { token }),
+  );
+}
+
+export function fetchLocataireIncidents(token: string): Promise<ClientIncidentLocatif[] | null> {
+  return ouNonApplicable(
+    apiClient.get<ClientIncidentLocatif[]>('/locatif/locataire/incidents', undefined, { token }),
+  );
+}
+
+export interface ClientIncidentPayload {
+  /** incident | demande (sections 4 et 15). */
+  nature?: string;
+  type: string;
+  description: string;
+}
+
+export function createLocataireIncident(
+  token: string,
+  bailId: string,
+  payload: ClientIncidentPayload,
+): Promise<{ id: string }> {
+  return apiClient.post(`/locatif/locataire/baux/${bailId}/incidents`, payload, { token });
 }

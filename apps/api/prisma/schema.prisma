@@ -74,6 +74,21 @@ model User {
   etapesMissionRealisees   EtapeMission[]        @relation("EtapeMissionRealisee")
   documentsMissionCrees    DocumentMission[]     @relation("DocumentMissionCreator")
 
+  // --- Gestion locative (J2.1) : espaces propriétaire et locataire ---
+  clientProprietaireId      String?            @unique
+  clientProprietaire        Proprietaire?      @relation("ProprietaireClientUser", fields: [clientProprietaireId], references: [id], onDelete: SetNull)
+  clientLocataireId         String?            @unique
+  clientLocataire           Locataire?         @relation("LocataireClientUser", fields: [clientLocataireId], references: [id], onDelete: SetNull)
+  biensLocatifsResponsable  BienLocatif[]      @relation("BienLocatifResponsable")
+  biensLocatifsCrees        BienLocatif[]      @relation("BienLocatifCreatedBy")
+  bauxLocatifsCrees         BailLocatif[]      @relation("BailLocatifCreatedBy")
+  paiementsLoyerEnregistres PaiementLoyer[]    @relation("PaiementLoyerRecorder")
+  paiementsLoyerValides     PaiementLoyer[]    @relation("PaiementLoyerValidator")
+  incidentsLocatifsSignales IncidentLocatif[]  @relation("IncidentLocatifReporter")
+  documentsLocatifCrees     DocumentLocatif[]  @relation("DocumentLocatifCreator")
+  mouvementsCautionSaisis   MouvementCaution[] @relation("MouvementCautionRecorder")
+  relancesLoyerEnvoyees     RelanceLoyer[]     @relation("RelanceLoyerSender")
+
   @@map("users")
 }
 
@@ -91,8 +106,10 @@ model Proprietaire {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  terrains Terrain[]
-  mandats  Mandat[]
+  terrains      Terrain[]
+  mandats       Mandat[]
+  biensLocatifs BienLocatif[]
+  clientUser    User?         @relation("ProprietaireClientUser")
 
   @@index([lastName, firstName])
   @@map("proprietaires")
@@ -975,4 +992,343 @@ model DocumentMission {
   @@index([etapeId])
   @@index([isPublic])
   @@map("documents_mission")
+}
+
+// ============================================================
+// Gestion locative — Phase 2 / J2.1 (section 15 du cahier des charges)
+// ============================================================
+
+model Locataire {
+  id        String   @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String?
+  phone     String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  baux       BailLocatif[]
+  clientUser User?         @relation("LocataireClientUser")
+
+  @@index([lastName, firstName])
+  @@map("locataires")
+}
+
+/**
+ * Bien mis en location : l'actif qui reste le même d'un locataire à l'autre.
+ * Le bail (ci-dessous) porte tout ce qui change avec le temps — loyer,
+ * locataire, dates — pour garder l'historique complet à chaque changement.
+ */
+model BienLocatif {
+  id               String       @id @default(uuid())
+  referenceInterne String       @unique
+  proprietaireId   String
+  proprietaire     Proprietaire @relation(fields: [proprietaireId], references: [id], onDelete: Restrict)
+  responsableId    String?
+  responsable      User?        @relation("BienLocatifResponsable", fields: [responsableId], references: [id], onDelete: SetNull)
+
+  type       String
+  adresse    String
+  commune    String?
+  region     String?
+  superficie Decimal? @db.Decimal(10, 2)
+  /**
+   * disponible | loue | en_travaux | indisponible — dérivé de l'existence
+   * d'un bail actif, mais gardé en champ propre pour rester modifiable
+   * manuellement (ex. mise hors marché pour travaux).
+   */
+  statut     String   @default("disponible")
+  notes      String?
+
+  createdById String?
+  createdBy   User?    @relation("BienLocatifCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  baux BailLocatif[]
+
+  @@index([proprietaireId])
+  @@index([responsableId])
+  @@index([statut])
+  @@map("biens_locatifs")
+}
+
+/**
+ * Bail en cours ou passé sur un bien. Un « changement de locataire »
+ * (section 15) clôture ce bail et en ouvre un nouveau sur le même bien :
+ * l'historique locatif complet reste consultable, jamais écrasé.
+ */
+model BailLocatif {
+  id               String      @id @default(uuid())
+  referenceInterne String      @unique
+  bienLocatifId    String
+  bienLocatif      BienLocatif @relation(fields: [bienLocatifId], references: [id], onDelete: Restrict)
+  locataireId      String
+  locataire        Locataire   @relation(fields: [locataireId], references: [id], onDelete: Restrict)
+
+  loyerMensuel Decimal   @db.Decimal(15, 2)
+  charges      Decimal?  @db.Decimal(15, 2)
+  /**
+   * Jour du mois où le loyer est dû ; sert à générer les échéances.
+   */
+  jourEcheance Int       @default(5)
+  dateDebut    DateTime
+  dateFin      DateTime?
+
+  // --- Caution (section 15) ---
+  cautionMontant           Decimal?  @db.Decimal(15, 2)
+  cautionDate              DateTime?
+  cautionStatut            String    @default("non_versee")
+  cautionRetenue           Decimal?  @db.Decimal(15, 2)
+  cautionJustification     String?
+  cautionRembourseeLe      DateTime?
+  cautionRembourseeMontant Decimal?  @db.Decimal(15, 2)
+
+  // --- Sortie et cas particuliers (section 15) ---
+  /**
+   * /**
+   * Cycle de vie du bail : actif | preavis | termine | resilie_sans_preavis.
+   */
+  statut                String    @default("actif")
+  /**
+   * Situation de paiement, recalculée à partir des échéances : a_jour |
+   * retard | impaye_prolonge. Séparée du cycle de vie pour que l'« impayé
+   * prolongé » de la section 15 soit un statut à part entière (et non une
+   * note libre) sans empêcher le bail de rester actif. Le seuil de bascule
+   * est paramétrable (`locatif.impayeProlongeJours`).
+   */
+  situationPaiement     String    @default("a_jour")
+  preavisDonneLe        DateTime?
+  preavisDepartPrevu    DateTime?
+  etatLieuxEntree       String?
+  etatLieuxSortie       String?
+  dateSortieReelle      DateTime?
+  regularisationMontant Decimal?  @db.Decimal(15, 2)
+  regularisationNotes   String?
+  motifCloture          String?
+
+  createdById String?
+  createdBy   User?    @relation("BailLocatifCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  echeances         EcheanceLoyer[]
+  paiements         PaiementLoyer[]
+  incidents         IncidentLocatif[]
+  documents         DocumentLocatif[]
+  mouvementsCaution MouvementCaution[]
+  relances          RelanceLoyer[]
+
+  @@index([bienLocatifId])
+  @@index([locataireId])
+  @@index([statut])
+  @@index([situationPaiement])
+  @@map("baux_locatifs")
+}
+
+/**
+ * Un mois de loyer dû. Le statut est recalculé à chaque paiement imputé
+ * (section 15 : « le solde doit être recalculé automatiquement »), jamais
+ * saisi à la main.
+ */
+model EcheanceLoyer {
+  id            String      @id @default(uuid())
+  bailLocatifId String
+  bailLocatif   BailLocatif @relation(fields: [bailLocatifId], references: [id], onDelete: Cascade)
+  /**
+   * Premier jour du mois concerné (ex. 2026-10-01 pour octobre 2026).
+   */
+  periode       DateTime
+  dateEcheance  DateTime
+  montantPrevu  Decimal     @db.Decimal(15, 2)
+  montantPaye   Decimal     @default(0) @db.Decimal(15, 2)
+  /**
+   * a_venir | partielle | en_retard | impayee | payee | annulee.
+   * `annulee` : échéance postérieure à la sortie du locataire, neutralisée à
+   * la clôture — ce qui y avait été versé d'avance est repris dans le calcul
+   * de régularisation au lieu d'être effacé.
+   */
+  statut        String      @default("a_venir")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  paiements PaiementLoyer[]
+  relances  RelanceLoyer[]
+
+  @@unique([bailLocatifId, periode])
+  @@index([bailLocatifId, statut])
+  @@index([dateEcheance])
+  @@map("echeances_loyer")
+}
+
+model PaiementLoyer {
+  id            String         @id @default(uuid())
+  bailLocatifId String
+  bailLocatif   BailLocatif    @relation(fields: [bailLocatifId], references: [id], onDelete: Cascade)
+  /**
+   * Échéance imputée. Vide pour une régularisation de sortie : ce paiement
+   * n'est pas un loyer mensuel mais un ajustement ponctuel du bail.
+   */
+  echeanceId    String?
+  echeance      EcheanceLoyer? @relation(fields: [echeanceId], references: [id], onDelete: SetNull)
+
+  /**
+   * avance | normal | partiel | regularisation
+   */
+  type         String
+  montant      Decimal  @db.Decimal(15, 2)
+  datePaiement DateTime @default(now())
+  modePaiement String
+  reference    String?
+  notes        String?
+  /**
+   * en_attente | valide | rejete. Comme pour les ventes (section 24 :
+   * permission « valider » distincte de « modifier »), un versement saisi
+   * n'est imputé sur les échéances qu'une fois validé : c'est le contrôle
+   * des encaissements du comptable.
+   */
+  statut       String   @default("en_attente")
+
+  recordedById  String?
+  recordedBy    User?     @relation("PaiementLoyerRecorder", fields: [recordedById], references: [id], onDelete: SetNull)
+  validatedById String?
+  validatedBy   User?     @relation("PaiementLoyerValidator", fields: [validatedById], references: [id], onDelete: SetNull)
+  validatedAt   DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([bailLocatifId, statut])
+  @@index([echeanceId])
+  @@index([datePaiement])
+  @@map("paiements_loyer")
+}
+
+/**
+ * Historique de caution (section 15 : « montant initial, date, statut,
+ * retenues éventuelles, justification, remboursement et historique »).
+ * Chaque mouvement est conservé ; les champs `caution*` du bail restent la
+ * photo courante, recalculée à partir de ces lignes.
+ */
+model MouvementCaution {
+  id            String      @id @default(uuid())
+  bailLocatifId String
+  bailLocatif   BailLocatif @relation(fields: [bailLocatifId], references: [id], onDelete: Cascade)
+
+  /**
+   * versement | retenue | remboursement | ajustement
+   */
+  type          String
+  montant       Decimal  @db.Decimal(15, 2)
+  date          DateTime @default(now())
+  justification String?
+
+  recordedById String?
+  recordedBy   User?    @relation("MouvementCautionRecorder", fields: [recordedById], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+
+  @@index([bailLocatifId, date])
+  @@map("mouvements_caution")
+}
+
+/**
+ * Relance de loyer (section 15 : « modèles configurables et calendrier de
+ * relance, délais paramétrables par MTM »). Le calendrier est décrit par le
+ * paramètre `locatif.relanceModeles` ; cette table en conserve la trace, une
+ * ligne par échéance et par modèle — jamais deux fois la même relance.
+ * L'envoi multicanal (SMS/WhatsApp) relève de J2.4 ; l'e-mail est déjà
+ * expédiable depuis le back-office.
+ */
+model RelanceLoyer {
+  id            String         @id @default(uuid())
+  bailLocatifId String
+  bailLocatif   BailLocatif    @relation(fields: [bailLocatifId], references: [id], onDelete: Cascade)
+  echeanceId    String?
+  echeance      EcheanceLoyer? @relation(fields: [echeanceId], references: [id], onDelete: Cascade)
+
+  modeleCode   String
+  joursRetard  Int
+  canal        String  @default("email")
+  destinataire String?
+  objet        String
+  message      String
+  /**
+   * a_envoyer | envoyee | annulee
+   */
+  statut       String  @default("a_envoyer")
+
+  envoyeeLe   DateTime?
+  envoyeeById String?
+  envoyeeBy   User?     @relation("RelanceLoyerSender", fields: [envoyeeById], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+
+  @@unique([echeanceId, modeleCode])
+  @@index([bailLocatifId, statut])
+  @@index([statut, createdAt])
+  @@map("relances_loyer")
+}
+
+/**
+ * Incident ou demande sur un bail (sections 4 et 15 : l'espace locataire
+ * couvre « incidents **et demandes** »). Les deux suivent le même cycle
+ * signalé → en cours → résolu et ne diffèrent que par leur nature et leur
+ * référentiel de types.
+ */
+model IncidentLocatif {
+  id            String      @id @default(uuid())
+  bailLocatifId String
+  bailLocatif   BailLocatif @relation(fields: [bailLocatifId], references: [id], onDelete: Cascade)
+
+  /**
+   * incident | demande
+   */
+  nature          String  @default("incident")
+  type            String
+  description     String
+  /**
+   * signale | en_cours | resolu
+   */
+  statut          String  @default("signale")
+  resolutionNotes String?
+
+  reportedById String?
+  reportedBy   User?   @relation("IncidentLocatifReporter", fields: [reportedById], references: [id], onDelete: SetNull)
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  resolvedAt DateTime?
+
+  @@index([bailLocatifId, statut])
+  @@index([nature, statut])
+  @@map("incidents_locatifs")
+}
+
+/**
+ * Pièce d'un bail : contrat, quittance, état des lieux, relevé de gestion
+ * (GED + espaces locataire et propriétaire).
+ * Deux visibilités distinctes plutôt qu'un seul drapeau « public » : une
+ * quittance se publie au locataire, un relevé de gestion au propriétaire, et
+ * publier l'un ne doit jamais exposer l'autre.
+ */
+model DocumentLocatif {
+  id            String      @id @default(uuid())
+  bailLocatifId String
+  bailLocatif   BailLocatif @relation(fields: [bailLocatifId], references: [id], onDelete: Cascade)
+
+  type                String
+  storageKey          String
+  resourceType        String  @default("raw")
+  title               String?
+  isGenerated         Boolean @default(false)
+  visibleLocataire    Boolean @default(false)
+  visibleProprietaire Boolean @default(false)
+  version             Int     @default(1)
+
+  createdById String?
+  createdBy   User?    @relation("DocumentLocatifCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+
+  @@index([bailLocatifId, type])
+  @@index([visibleLocataire])
+  @@index([visibleProprietaire])
+  @@map("documents_locatif")
 }

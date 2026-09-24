@@ -3,7 +3,7 @@
 <mat-dialog-content class="account-dialog">
   @if (!created()) {
     <p class="account-dialog__intro">
-      L’espace client permet à <strong>{{ data.name }}</strong> de suivre ses dossiers, paiements et documents sur le
+      L’espace client permet à <strong>{{ data.name }}</strong> de {{ data.scopeDescription }} sur le
       site public. Un e-mail d’invitation part à <strong>{{ data.email }}</strong> : il y choisit son mot de passe.
     </p>
     <mat-form-field appearance="outline" class="account-dialog__field">

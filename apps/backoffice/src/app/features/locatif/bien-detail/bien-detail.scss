@@ -1,0 +1,154 @@
+.bien-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  &__etape-select {
+    min-width: 240px;
+
+    @media (max-width: 720px) {
+      min-width: 100%;
+    }
+  }
+
+  &__danger {
+    color: var(--mtm-accent);
+    border-color: var(--mtm-accent);
+  }
+}
+
+.detail-section__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px 16px;
+
+  > div,
+  > h2 {
+    flex: 1 1 260px;
+  }
+}
+
+.detail-section__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.detail-section__text {
+  margin: 0;
+  color: var(--mtm-text-muted);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.detail-subtitle {
+  margin: 16px 0 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--mtm-text-dark);
+}
+
+.detail-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px 20px;
+  margin: 0;
+
+  dt {
+    color: var(--mtm-text-muted);
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  dd {
+    margin: 2px 0 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--mtm-text-dark);
+  }
+}
+
+.constat-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.constat-item {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--mtm-border);
+  border-radius: 10px;
+  background: var(--mtm-surface);
+
+  &__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+
+    strong {
+      font-size: 0.95rem;
+    }
+  }
+
+  &__meta {
+    color: var(--mtm-text-muted);
+    font-size: 0.78rem;
+  }
+
+  &__actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  &__note {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--mtm-surface-2, #eef2f7);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    white-space: pre-line;
+  }
+}
+
+.doc-item {
+  &__title {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    color: var(--mtm-text-dark);
+    font-weight: 500;
+
+    small {
+      color: var(--mtm-text-muted);
+      font-size: 0.76rem;
+      font-weight: 400;
+    }
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}

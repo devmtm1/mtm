@@ -1,19 +1,27 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogModule, MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { VentesApiService } from '../../../core/services/api/ventes-api.service';
-import { passwordPolicyValidator, PASSWORD_POLICY_HINT } from '../../../core/validators/password-policy.validator';
-import { environment } from '../../../../environments/environment';
+import type { Observable } from 'rxjs';
+import { passwordPolicyValidator, PASSWORD_POLICY_HINT } from '../../core/validators/password-policy.validator';
+import type { ClientAccountCreated } from '../../core/models/client-account.model';
+import { environment } from '../../../environments/environment';
 
 export interface ClientAccountDialogData {
-  prospectId: string;
   email: string;
   name: string;
+  /** Description de ce que le client verra dans son espace (dossiers, bien, location…). */
+  scopeDescription: string;
+  /** Appel API réel : diffère selon qu'il s'agit d'un prospect, d'un propriétaire ou d'un locataire. */
+  create: (password: string) => Observable<ClientAccountCreated>;
 }
 
+/**
+ * Ouverture d'un accès espace client, quel que soit le type de personne
+ * (prospect, propriétaire, locataire) : même geste, seul l'appel API change.
+ */
 @Component({
   selector: 'app-client-account-dialog',
   standalone: true,
@@ -37,12 +45,11 @@ export interface ClientAccountDialogData {
 })
 export class ClientAccountDialog {
   private readonly dialogRef = inject(MatDialogRef<ClientAccountDialog>);
-  private readonly api = inject(VentesApiService);
   private readonly formBuilder = inject(FormBuilder);
   readonly data = inject<ClientAccountDialogData>(MAT_DIALOG_DATA);
 
   protected readonly form = this.formBuilder.nonNullable.group({
-    password: [this.generatePassword(), [Validators.required, passwordPolicyValidator()]],
+    password: [this.generatePassword(), [passwordPolicyValidator()]],
   });
   protected readonly passwordHint = PASSWORD_POLICY_HINT;
   // Signaux : l'application est sans zone.js, un champ modifié dans un
@@ -64,7 +71,7 @@ export class ClientAccountDialog {
     this.creating.set(true);
     this.error.set(null);
     const password = this.form.controls.password.value;
-    this.api.createClientAccount(this.data.prospectId, password).subscribe({
+    this.data.create(password).subscribe({
       next: (result) => {
         this.createdPassword.set(password);
         this.invitationSent.set(result.invitationSent);
@@ -103,5 +110,11 @@ export class ClientAccountDialog {
     const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
     const randomPart = Array.from({ length: 10 }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join('');
     return `Mtm!${randomPart}9`;
+  }
+
+  static open(dialog: MatDialog, data: ClientAccountDialogData): Observable<boolean | undefined> {
+    return dialog
+      .open(ClientAccountDialog, { width: '520px', maxWidth: 'calc(100vw - 32px)', data })
+      .afterClosed();
   }
 }

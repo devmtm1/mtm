@@ -7,6 +7,7 @@ import { NgxEchartsDirective } from 'ngx-echarts';
 import {
   LucideArrowRight,
   LucideBanknote,
+  LucideBuilding2,
   LucideCircleCheck,
   LucideLandPlot,
   LucideReceipt,
@@ -23,10 +24,12 @@ import { MandatsApiService } from '../../core/services/api/mandats-api.service';
 import { TerrainsApiService } from '../../core/services/api/terrains-api.service';
 import { CrmApiService } from '../../core/services/api/crm-api.service';
 import { ObjectifsApiService } from '../../core/services/api/objectifs-api.service';
+import { LocatifApiService } from '../../core/services/api/locatif-api.service';
 import type { VenteDashboardStats } from '../../core/models/vente.model';
 import type { MandatStats } from '../../core/models/mandat.model';
 import type { TerrainStats } from '../../core/models/terrain.model';
 import type { ProspectStats } from '../../core/models/prospect.model';
+import type { LocatifStats } from '../../core/models/locatif.model';
 import { currentPeriode, type ObjectifProgress } from '../../core/models/objectif.model';
 import { MoneyPipe } from '../../shared/pipes/money.pipe';
 import { donutChart, monthlyBarChart } from '../../shared/charts/mtm-charts';
@@ -57,6 +60,7 @@ const MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet'
     NgxEchartsDirective,
     LucideArrowRight,
     LucideBanknote,
+    LucideBuilding2,
     LucideCircleCheck,
     LucideLandPlot,
     LucideReceipt,
@@ -76,24 +80,27 @@ export class Dashboard implements OnInit {
   private readonly terrainsApi = inject(TerrainsApiService);
   private readonly crmApi = inject(CrmApiService);
   private readonly objectifsApi = inject(ObjectifsApiService);
+  private readonly locatifApi = inject(LocatifApiService);
 
   protected readonly user = this.session.user;
   protected readonly canViewVentes = this.session.hasPermission('ventes:consulter');
   protected readonly canViewMandats = this.session.hasPermission('mandats:consulter');
   protected readonly canViewTerrains = this.session.hasPermission('terrains:consulter');
   protected readonly canViewCrm = this.session.hasPermission('crm:consulter');
+  protected readonly canViewLocatif = this.session.hasPermission('locatif:consulter');
   protected readonly canViewFinancials = this.session.hasPermission('ventes:consulter_financier') || this.session.hasSupervisionScope('ventes');
   protected readonly isCommercial = this.session.hasRole('commercial') || this.session.hasRole('responsable_commercial') || this.session.hasRole('manager');
 
   protected readonly today = new Date();
   protected readonly monthLabel = `${MONTHS[this.today.getMonth()]} ${this.today.getFullYear()}`;
-  protected readonly hasAnyModule = this.canViewVentes || this.canViewMandats || this.canViewTerrains || this.canViewCrm;
+  protected readonly hasAnyModule = this.canViewVentes || this.canViewMandats || this.canViewTerrains || this.canViewCrm || this.canViewLocatif;
 
   protected readonly feedItems = signal<FeedItem[] | null>(null);
   protected readonly ventesStats = signal<VenteDashboardStats | null>(null);
   protected readonly mandatStats = signal<MandatStats | null>(null);
   protected readonly terrainStats = signal<TerrainStats | null>(null);
   protected readonly crmStats = signal<ProspectStats | null>(null);
+  protected readonly locatifStats = signal<LocatifStats | null>(null);
   protected readonly myPerformance = signal<CommercialPerformance | null>(null);
   protected readonly myObjectif = signal<ObjectifProgress | null>(null);
   protected readonly loadingVentes = signal(this.canViewVentes);
@@ -153,6 +160,7 @@ export class Dashboard implements OnInit {
     if (this.canViewMandats) this.mandatsApi.getStats().subscribe({ next: (stats) => this.mandatStats.set(stats), error: () => this.mandatStats.set(null) });
     if (this.canViewTerrains) this.terrainsApi.getStats().subscribe({ next: (stats) => this.terrainStats.set(stats), error: () => this.terrainStats.set(null) });
     if (this.canViewCrm) this.crmApi.getStats().subscribe({ next: (stats) => this.crmStats.set(stats), error: () => this.crmStats.set(null) });
+    if (this.canViewLocatif) this.locatifApi.getStats().subscribe({ next: (stats) => this.locatifStats.set(stats), error: () => this.locatifStats.set(null) });
   }
 
   protected open(item: FeedItem): void {

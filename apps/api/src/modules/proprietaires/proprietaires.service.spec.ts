@@ -1,141 +1,111 @@
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
+import { ClientAccountsService } from '../client-accounts/client-accounts.service';
 import { ProprietairesService } from './proprietaires.service';
-import { PrismaService } from '../../database/prisma.service';
 
-describe('ProprietairesService', () => {
+describe('ProprietairesService.createClientAccount', () => {
+  const prismaMock = {
+    proprietaire: { findUnique: jest.fn() },
+    role: { findUnique: jest.fn() },
+    user: { findUnique: jest.fn(), create: jest.fn() },
+  };
+  const configMock = { get: jest.fn() };
+  const mailMock = { send: jest.fn().mockResolvedValue(true) };
   let service: ProprietairesService;
-  let prismaMock: {
-    proprietaire: {
-      findMany: jest.Mock;
-      findUnique: jest.Mock;
-      findFirst: jest.Mock;
-      create: jest.Mock;
-      update: jest.Mock;
-      delete: jest.Mock;
-    };
+
+  const proprietaire = {
+    id: 'prop-1',
+    email: 'prop@example.com',
+    firstName: 'Moussa',
+    lastName: 'Sy',
+    clientUser: null,
   };
 
   beforeEach(() => {
-    prismaMock = {
-      proprietaire: {
-        findMany: jest.fn(),
-        findUnique: jest.fn(),
-        findFirst: jest.fn(),
-        create: jest.fn(),
-        update: jest.fn(),
-        delete: jest.fn(),
-      },
-    };
-    service = new ProprietairesService(prismaMock as unknown as PrismaService);
+    jest.clearAllMocks();
+    mailMock.send.mockResolvedValue(true);
+    // L'ouverture de compte est mutualisée : on monte le service partagé sur
+    // les mêmes doublures, le comportement attendu ne change pas.
+    service = new ProprietairesService(
+      prismaMock as never,
+      new ClientAccountsService(
+        prismaMock as never,
+        configMock as never,
+        mailMock as never,
+      ),
+    );
   });
 
-  describe('findAll', () => {
-    it('retourne les propriétaires triés par nom de famille', async () => {
-      prismaMock.proprietaire.findMany.mockResolvedValue([
-        { id: 'p1', firstName: 'Aminata', lastName: 'Ndiaye' },
-      ]);
-
-      const result = await service.findAll();
-
-      expect(result).toHaveLength(1);
-      expect(prismaMock.proprietaire.findMany).toHaveBeenCalledWith({
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          phone: true,
-          _count: { select: { terrains: true, mandats: true } },
-        },
-        orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
-      });
+  it('ouvre un compte client et envoie l’invitation par e-mail', async () => {
+    configMock.get.mockReturnValue('https://mtm-immobilier.sn');
+    prismaMock.proprietaire.findUnique.mockResolvedValue(proprietaire);
+    prismaMock.role.findUnique.mockResolvedValue({ id: 'role-client' });
+    prismaMock.user.findUnique.mockResolvedValue(null);
+    prismaMock.user.create.mockResolvedValue({
+      id: 'user-1',
+      email: proprietaire.email,
+      firstName: proprietaire.firstName,
+      lastName: proprietaire.lastName,
     });
+
+    const result = await service.createClientAccount(
+      'prop-1',
+      'MotDePasse123!',
+    );
+
+    expect(prismaMock.user.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ clientProprietaireId: 'prop-1' }),
+      }),
+    );
+    expect(mailMock.send).toHaveBeenCalled();
+    expect(result.invitationSent).toBe(true);
+    expect(result.resetToken).toBeUndefined();
   });
 
-  describe('findById', () => {
-    it('lève NotFoundException si le propriétaire n’existe pas', async () => {
-      prismaMock.proprietaire.findUnique.mockResolvedValue(null);
+  it('refuse si le propriétaire est introuvable', async () => {
+    prismaMock.proprietaire.findUnique.mockResolvedValue(null);
 
-      await expect(service.findById('inconnu')).rejects.toThrow(
-        NotFoundException,
-      );
-    });
-
-    it('retourne le propriétaire complet si trouvé', async () => {
-      prismaMock.proprietaire.findUnique.mockResolvedValue({
-        id: 'p1',
-        firstName: 'Aminata',
-        lastName: 'Ndiaye',
-      });
-
-      const result = await service.findById('p1');
-
-      expect(result.id).toBe('p1');
-    });
+    await expect(
+      service.createClientAccount('inconnu', 'MotDePasse123!'),
+    ).rejects.toThrow(NotFoundException);
   });
 
-  describe('create', () => {
-    it('rejette si un propriétaire avec le même email existe', async () => {
-      prismaMock.proprietaire.findFirst.mockResolvedValue({ id: 'existing' });
-
-      await expect(
-        service.create({
-          firstName: 'A',
-          lastName: 'B',
-          email: 'dup@test.com',
-        }),
-      ).rejects.toThrow(ConflictException);
-      expect(prismaMock.proprietaire.create).not.toHaveBeenCalled();
+  it('refuse si un compte existe déjà pour ce propriétaire', async () => {
+    prismaMock.proprietaire.findUnique.mockResolvedValue({
+      ...proprietaire,
+      clientUser: { id: 'user-existant' },
     });
 
-    it('crée le propriétaire si l’email est libre', async () => {
-      prismaMock.proprietaire.findFirst.mockResolvedValue(null);
-      prismaMock.proprietaire.create.mockResolvedValue({
-        id: 'p1',
-        firstName: 'Aminata',
-        lastName: 'Ndiaye',
-        email: 'a@test.com',
-      });
-
-      const result = await service.create({
-        firstName: 'Aminata',
-        lastName: 'Ndiaye',
-        email: 'a@test.com',
-      });
-
-      expect(result.id).toBe('p1');
-      expect(prismaMock.proprietaire.create).toHaveBeenCalled();
-    });
+    await expect(
+      service.createClientAccount('prop-1', 'MotDePasse123!'),
+    ).rejects.toThrow(ConflictException);
+    expect(prismaMock.user.create).not.toHaveBeenCalled();
   });
 
-  describe('update', () => {
-    it('lève NotFoundException si le propriétaire n’existe pas', async () => {
-      prismaMock.proprietaire.findUnique.mockResolvedValue(null);
-
-      await expect(
-        service.update('missing', { firstName: 'X' }),
-      ).rejects.toThrow(NotFoundException);
+  it('refuse si le propriétaire n’a pas d’adresse e-mail', async () => {
+    prismaMock.proprietaire.findUnique.mockResolvedValue({
+      ...proprietaire,
+      email: null,
     });
+
+    await expect(
+      service.createClientAccount('prop-1', 'MotDePasse123!'),
+    ).rejects.toThrow(BadRequestException);
+    expect(prismaMock.user.create).not.toHaveBeenCalled();
   });
 
-  describe('remove', () => {
-    it('lève NotFoundException si le propriétaire n’existe pas', async () => {
-      prismaMock.proprietaire.findUnique.mockResolvedValue(null);
+  it('refuse si l’adresse e-mail est déjà utilisée par un autre compte', async () => {
+    prismaMock.proprietaire.findUnique.mockResolvedValue(proprietaire);
+    prismaMock.role.findUnique.mockResolvedValue({ id: 'role-client' });
+    prismaMock.user.findUnique.mockResolvedValue({ id: 'un-autre-compte' });
 
-      await expect(service.remove('missing')).rejects.toThrow(
-        NotFoundException,
-      );
-    });
-
-    it('supprime le propriétaire si trouvé', async () => {
-      prismaMock.proprietaire.findUnique.mockResolvedValue({ id: 'p1' });
-      prismaMock.proprietaire.delete.mockResolvedValue({});
-
-      await service.remove('p1');
-
-      expect(prismaMock.proprietaire.delete).toHaveBeenCalledWith({
-        where: { id: 'p1' },
-      });
-    });
+    await expect(
+      service.createClientAccount('prop-1', 'MotDePasse123!'),
+    ).rejects.toThrow(ConflictException);
+    expect(prismaMock.user.create).not.toHaveBeenCalled();
   });
 });

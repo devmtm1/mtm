@@ -32,18 +32,41 @@ const PHASE_1_RESOURCES = [
   'ventes',
   'clients',
   'demarches',
+  'locatif',
 ] as const;
 
 // Rôles initiaux recommandés par la section 24 du CDC.
 const INITIAL_ROLES = [
-  { name: 'administrateur', description: 'Accès complet au système', isSystem: true },
+  {
+    name: 'administrateur',
+    description: 'Accès complet au système',
+    isSystem: true,
+  },
   { name: 'direction', description: 'Direction MTM Immobilier' },
-  { name: 'manager', description: "Manager : second niveau d'encadrement — objectifs, validation des commissions, dossiers bloqués" },
-  { name: 'responsable_commercial', description: "Responsable commercial : chef d'équipe terrain — fiches, mandats, affectations, estimation des commissions" },
+  {
+    name: 'manager',
+    description:
+      "Manager : second niveau d'encadrement — objectifs, validation des commissions, dossiers bloqués",
+  },
+  {
+    name: 'responsable_commercial',
+    description:
+      "Responsable commercial : chef d'équipe terrain — fiches, mandats, affectations, estimation des commissions",
+  },
   { name: 'commercial', description: 'Commercial' },
-  { name: 'comptable', description: 'Comptabilité : contrôle des encaissements et paiement des commissions (phase 1)' },
-  { name: 'responsable_gestion_locative', description: 'Responsable gestion locative' },
-  { name: 'responsable_demarches', description: 'Responsable démarches administratives' },
+  {
+    name: 'comptable',
+    description:
+      'Comptabilité : contrôle des encaissements et paiement des commissions (phase 1)',
+  },
+  {
+    name: 'responsable_gestion_locative',
+    description: 'Responsable gestion locative',
+  },
+  {
+    name: 'responsable_demarches',
+    description: 'Responsable démarches administratives',
+  },
   { name: 'responsable_construction', description: 'Responsable construction' },
   { name: 'rh', description: 'Ressources humaines' },
   { name: 'client', description: 'Client MTM Immobilier' },
@@ -59,7 +82,10 @@ async function main(): Promise<void> {
   const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@mtm-immobilier.sn';
   const adminPassword = process.env.SEED_ADMIN_PASSWORD;
   const adminExists = Boolean(
-    await prisma.user.findUnique({ where: { email: adminEmail }, select: { id: true } }),
+    await prisma.user.findUnique({
+      where: { email: adminEmail },
+      select: { id: true },
+    }),
   );
   if (!adminExists && (!adminPassword || adminPassword.length < 12)) {
     throw new Error(
@@ -73,13 +99,15 @@ async function main(): Promise<void> {
       name: 'terrains:consulter_financier',
       resource: 'terrains',
       action: 'consulter_financier',
-      description: "Consulter les prix d'acquisition, marges et commissions des terrains",
+      description:
+        "Consulter les prix d'acquisition, marges et commissions des terrains",
     },
     {
       name: 'ventes:consulter_financier',
       resource: 'ventes',
       action: 'consulter_financier',
-      description: 'Consulter les montants, commissions et soldes des dossiers de vente',
+      description:
+        'Consulter les montants, commissions et soldes des dossiers de vente',
     },
   ];
   for (const resource of PHASE_1_RESOURCES) {
@@ -104,11 +132,36 @@ async function main(): Promise<void> {
 
   // --- Permissions CRM (J1.5) ---
   const crmPermissions = [
-    { name: 'crm:consulter', resource: 'crm', action: 'consulter', description: 'Consulter les prospects et le pipeline' },
-    { name: 'crm:creer', resource: 'crm', action: 'creer', description: 'Créer des prospects et activités' },
-    { name: 'crm:modifier', resource: 'crm', action: 'modifier', description: 'Modifier des prospects et activités' },
-    { name: 'crm:supprimer', resource: 'crm', action: 'supprimer', description: 'Supprimer des prospects et activités' },
-    { name: 'crm:exporter', resource: 'crm', action: 'exporter', description: 'Exporter la liste des prospects (export tracé)' },
+    {
+      name: 'crm:consulter',
+      resource: 'crm',
+      action: 'consulter',
+      description: 'Consulter les prospects et le pipeline',
+    },
+    {
+      name: 'crm:creer',
+      resource: 'crm',
+      action: 'creer',
+      description: 'Créer des prospects et activités',
+    },
+    {
+      name: 'crm:modifier',
+      resource: 'crm',
+      action: 'modifier',
+      description: 'Modifier des prospects et activités',
+    },
+    {
+      name: 'crm:supprimer',
+      resource: 'crm',
+      action: 'supprimer',
+      description: 'Supprimer des prospects et activités',
+    },
+    {
+      name: 'crm:exporter',
+      resource: 'crm',
+      action: 'exporter',
+      description: 'Exporter la liste des prospects (export tracé)',
+    },
   ];
   for (const permission of crmPermissions) {
     await prisma.permission.upsert({
@@ -152,10 +205,22 @@ async function main(): Promise<void> {
   const ventesFinancialPermission = await prisma.permission.findUniqueOrThrow({
     where: { name: 'ventes:consulter_financier' },
   });
-  for (const roleName of ['direction', 'comptable', 'manager', 'responsable_commercial']) {
-    const role = await prisma.role.findUniqueOrThrow({ where: { name: roleName } });
+  for (const roleName of [
+    'direction',
+    'comptable',
+    'manager',
+    'responsable_commercial',
+  ]) {
+    const role = await prisma.role.findUniqueOrThrow({
+      where: { name: roleName },
+    });
     await prisma.rolePermission.upsert({
-      where: { roleId_permissionId: { roleId: role.id, permissionId: ventesFinancialPermission.id } },
+      where: {
+        roleId_permissionId: {
+          roleId: role.id,
+          permissionId: ventesFinancialPermission.id,
+        },
+      },
       update: {},
       create: { roleId: role.id, permissionId: ventesFinancialPermission.id },
     });
@@ -166,26 +231,49 @@ async function main(): Promise<void> {
     where: { name: 'terrains:consulter_financier' },
   });
   for (const roleName of ['direction', 'comptable', 'manager']) {
-    const role = await prisma.role.findUniqueOrThrow({ where: { name: roleName } });
+    const role = await prisma.role.findUniqueOrThrow({
+      where: { name: roleName },
+    });
     await prisma.rolePermission.upsert({
-      where: { roleId_permissionId: { roleId: role.id, permissionId: financialPermission.id } },
+      where: {
+        roleId_permissionId: {
+          roleId: role.id,
+          permissionId: financialPermission.id,
+        },
+      },
       update: {},
       create: { roleId: role.id, permissionId: financialPermission.id },
     });
   }
 
   // --- Permissions CRM par rôle métier ---
-  const crmPermissionNames = ['crm:consulter', 'crm:creer', 'crm:modifier', 'crm:supprimer', 'crm:exporter'];
-  const commercialPermissionNames = ['crm:consulter', 'crm:creer', 'crm:modifier'];
+  const crmPermissionNames = [
+    'crm:consulter',
+    'crm:creer',
+    'crm:modifier',
+    'crm:supprimer',
+    'crm:exporter',
+  ];
+  const commercialPermissionNames = [
+    'crm:consulter',
+    'crm:creer',
+    'crm:modifier',
+  ];
 
   // La direction a la vue complète sur l'activité commerciale (section 24
   // CDC) : elle consulte et arbitre les prospects comme un manager.
   for (const roleName of ['manager', 'responsable_commercial', 'direction']) {
-    const role = await prisma.role.findUniqueOrThrow({ where: { name: roleName } });
+    const role = await prisma.role.findUniqueOrThrow({
+      where: { name: roleName },
+    });
     for (const permissionName of crmPermissionNames) {
-      const permission = await prisma.permission.findUniqueOrThrow({ where: { name: permissionName } });
+      const permission = await prisma.permission.findUniqueOrThrow({
+        where: { name: permissionName },
+      });
       await prisma.rolePermission.upsert({
-        where: { roleId_permissionId: { roleId: role.id, permissionId: permission.id } },
+        where: {
+          roleId_permissionId: { roleId: role.id, permissionId: permission.id },
+        },
         update: {},
         create: { roleId: role.id, permissionId: permission.id },
       });
@@ -193,11 +281,20 @@ async function main(): Promise<void> {
     console.log(`  Rôle ${roleName} : permissions CRM attribuées`);
   }
 
-  const commercialRole = await prisma.role.findUniqueOrThrow({ where: { name: 'commercial' } });
+  const commercialRole = await prisma.role.findUniqueOrThrow({
+    where: { name: 'commercial' },
+  });
   for (const permissionName of commercialPermissionNames) {
-    const permission = await prisma.permission.findUniqueOrThrow({ where: { name: permissionName } });
+    const permission = await prisma.permission.findUniqueOrThrow({
+      where: { name: permissionName },
+    });
     await prisma.rolePermission.upsert({
-      where: { roleId_permissionId: { roleId: commercialRole.id, permissionId: permission.id } },
+      where: {
+        roleId_permissionId: {
+          roleId: commercialRole.id,
+          permissionId: permission.id,
+        },
+      },
       update: {},
       create: { roleId: commercialRole.id, permissionId: permission.id },
     });
@@ -218,7 +315,11 @@ async function main(): Promise<void> {
       'terrains:consulter',
       'crm:consulter',
     ],
-    commercial: ['demarches:consulter', 'demarches:creer', 'demarches:modifier'],
+    commercial: [
+      'demarches:consulter',
+      'demarches:creer',
+      'demarches:modifier',
+    ],
     responsable_commercial: [
       'demarches:consulter',
       'demarches:creer',
@@ -247,18 +348,92 @@ async function main(): Promise<void> {
     ],
     comptable: ['demarches:consulter'],
   };
-  for (const [roleName, permissionNames] of Object.entries(demarchesPermissionsByRole)) {
-    const role = await prisma.role.findUniqueOrThrow({ where: { name: roleName } });
+  for (const [roleName, permissionNames] of Object.entries(
+    demarchesPermissionsByRole,
+  )) {
+    const role = await prisma.role.findUniqueOrThrow({
+      where: { name: roleName },
+    });
     for (const permissionName of permissionNames) {
-      const permission = await prisma.permission.findUniqueOrThrow({ where: { name: permissionName } });
+      const permission = await prisma.permission.findUniqueOrThrow({
+        where: { name: permissionName },
+      });
       await prisma.rolePermission.upsert({
-        where: { roleId_permissionId: { roleId: role.id, permissionId: permission.id } },
+        where: {
+          roleId_permissionId: { roleId: role.id, permissionId: permission.id },
+        },
         update: {},
         create: { roleId: role.id, permissionId: permission.id },
       });
     }
   }
   console.log('  Permissions démarches J2.2 attribuées');
+
+  // --- Permissions gestion locative (J2.1, section 15 CDC) par rôle ---
+  // Le responsable gestion locative pilote le service ; l'encadrement supervise.
+  const locatifPermissionsByRole: Record<string, string[]> = {
+    responsable_gestion_locative: [
+      'locatif:consulter',
+      'locatif:creer',
+      'locatif:modifier',
+      'locatif:valider',
+      'locatif:publier',
+      'locatif:exporter',
+      // Restitution de caution : sortie de trésorerie réservée par la section 24.
+      'locatif:payer',
+      'proprietaires:consulter',
+      'clients:creer',
+    ],
+    manager: [
+      'locatif:consulter',
+      'locatif:creer',
+      'locatif:modifier',
+      'locatif:valider',
+      'locatif:publier',
+      'locatif:exporter',
+      'locatif:payer',
+      'locatif:administrer',
+    ],
+    direction: [
+      'locatif:consulter',
+      'locatif:creer',
+      'locatif:modifier',
+      'locatif:valider',
+      'locatif:publier',
+      'locatif:exporter',
+      'locatif:payer',
+      'locatif:supprimer',
+      'locatif:administrer',
+    ],
+    // Le comptable contrôle les encaissements et les décaissements (section 24) :
+    // il valide ou rejette les versements sans porter de bien lui-même.
+    comptable: [
+      'locatif:consulter',
+      'locatif:valider',
+      'locatif:payer',
+      'locatif:exporter',
+    ],
+  };
+  for (const [roleName, permissionNames] of Object.entries(
+    locatifPermissionsByRole,
+  )) {
+    const role = await prisma.role.findUniqueOrThrow({
+      where: { name: roleName },
+    });
+    for (const permissionName of permissionNames) {
+      const permission = await prisma.permission.findUniqueOrThrow({
+        where: { name: permissionName },
+      });
+      await prisma.rolePermission.upsert({
+        where: {
+          roleId_permissionId: { roleId: role.id, permissionId: permission.id },
+        },
+        update: {},
+        create: { roleId: role.id, permissionId: permission.id },
+      });
+    }
+  }
+  console.log('  Permissions gestion locative J2.1 attribuées');
 
   // --- Permissions ventes J1.6 par rôle ---
   const salesPermissionsByRole: Record<string, string[]> = {
@@ -311,14 +486,20 @@ async function main(): Promise<void> {
       'clients:creer',
     ],
   };
-  for (const [roleName, permissionNames] of Object.entries(salesPermissionsByRole)) {
-    const role = await prisma.role.findUniqueOrThrow({ where: { name: roleName } });
+  for (const [roleName, permissionNames] of Object.entries(
+    salesPermissionsByRole,
+  )) {
+    const role = await prisma.role.findUniqueOrThrow({
+      where: { name: roleName },
+    });
     for (const permissionName of permissionNames) {
       const permission = await prisma.permission.findUniqueOrThrow({
         where: { name: permissionName },
       });
       await prisma.rolePermission.upsert({
-        where: { roleId_permissionId: { roleId: role.id, permissionId: permission.id } },
+        where: {
+          roleId_permissionId: { roleId: role.id, permissionId: permission.id },
+        },
         update: {},
         create: { roleId: role.id, permissionId: permission.id },
       });
@@ -326,11 +507,20 @@ async function main(): Promise<void> {
   }
   console.log('  Permissions ventes J1.6 attribuées');
 
-  const clientRole = await prisma.role.findUniqueOrThrow({ where: { name: 'client' } });
+  const clientRole = await prisma.role.findUniqueOrThrow({
+    where: { name: 'client' },
+  });
   for (const permissionName of ['clients:consulter']) {
-    const permission = await prisma.permission.findUniqueOrThrow({ where: { name: permissionName } });
+    const permission = await prisma.permission.findUniqueOrThrow({
+      where: { name: permissionName },
+    });
     await prisma.rolePermission.upsert({
-      where: { roleId_permissionId: { roleId: clientRole.id, permissionId: permission.id } },
+      where: {
+        roleId_permissionId: {
+          roleId: clientRole.id,
+          permissionId: permission.id,
+        },
+      },
       update: {},
       create: { roleId: clientRole.id, permissionId: permission.id },
     });
@@ -357,13 +547,17 @@ async function main(): Promise<void> {
   for (const [roleName, permissionNames] of Object.entries(
     proprietorPermissionsByRole,
   )) {
-    const role = await prisma.role.findUniqueOrThrow({ where: { name: roleName } });
+    const role = await prisma.role.findUniqueOrThrow({
+      where: { name: roleName },
+    });
     for (const permissionName of permissionNames) {
       const permission = await prisma.permission.findUniqueOrThrow({
         where: { name: permissionName },
       });
       await prisma.rolePermission.upsert({
-        where: { roleId_permissionId: { roleId: role.id, permissionId: permission.id } },
+        where: {
+          roleId_permissionId: { roleId: role.id, permissionId: permission.id },
+        },
         update: {},
         create: { roleId: role.id, permissionId: permission.id },
       });
@@ -376,7 +570,14 @@ async function main(): Promise<void> {
   const landPermissionsByRole: Record<string, string[]> = {
     // Le commercial prépare les mandats en brouillon ; l'activation est
     // réservée à mandats:valider (voir MandatsService.assertCanSetStatus).
-    commercial: ['terrains:consulter', 'terrains:creer', 'terrains:modifier', 'mandats:consulter', 'mandats:creer', 'mandats:modifier'],
+    commercial: [
+      'terrains:consulter',
+      'terrains:creer',
+      'terrains:modifier',
+      'mandats:consulter',
+      'mandats:creer',
+      'mandats:modifier',
+    ],
     responsable_commercial: [
       'terrains:consulter',
       'terrains:creer',
@@ -425,14 +626,20 @@ async function main(): Promise<void> {
     responsable_demarches: ['terrains:consulter'],
     responsable_construction: ['terrains:consulter'],
   };
-  for (const [roleName, permissionNames] of Object.entries(landPermissionsByRole)) {
-    const role = await prisma.role.findUniqueOrThrow({ where: { name: roleName } });
+  for (const [roleName, permissionNames] of Object.entries(
+    landPermissionsByRole,
+  )) {
+    const role = await prisma.role.findUniqueOrThrow({
+      where: { name: roleName },
+    });
     for (const permissionName of permissionNames) {
       const permission = await prisma.permission.findUniqueOrThrow({
         where: { name: permissionName },
       });
       await prisma.rolePermission.upsert({
-        where: { roleId_permissionId: { roleId: role.id, permissionId: permission.id } },
+        where: {
+          roleId_permissionId: { roleId: role.id, permissionId: permission.id },
+        },
         update: {},
         create: { roleId: role.id, permissionId: permission.id },
       });
@@ -446,7 +653,11 @@ async function main(): Promise<void> {
   // sont gérés par l'encadrement, la direction publie.
   const contentPermissionsByRole: Record<string, string[]> = {
     commercial: ['contact:consulter', 'contact:modifier'],
-    responsable_commercial: ['contact:consulter', 'contact:modifier', 'content:consulter'],
+    responsable_commercial: [
+      'contact:consulter',
+      'contact:modifier',
+      'content:consulter',
+    ],
     manager: [
       'contact:consulter',
       'contact:modifier',
@@ -469,14 +680,20 @@ async function main(): Promise<void> {
       'content:administrer',
     ],
   };
-  for (const [roleName, permissionNames] of Object.entries(contentPermissionsByRole)) {
-    const role = await prisma.role.findUniqueOrThrow({ where: { name: roleName } });
+  for (const [roleName, permissionNames] of Object.entries(
+    contentPermissionsByRole,
+  )) {
+    const role = await prisma.role.findUniqueOrThrow({
+      where: { name: roleName },
+    });
     for (const permissionName of permissionNames) {
       const permission = await prisma.permission.findUniqueOrThrow({
         where: { name: permissionName },
       });
       await prisma.rolePermission.upsert({
-        where: { roleId_permissionId: { roleId: role.id, permissionId: permission.id } },
+        where: {
+          roleId_permissionId: { roleId: role.id, permissionId: permission.id },
+        },
         update: {},
         create: { roleId: role.id, permissionId: permission.id },
       });
@@ -485,11 +702,20 @@ async function main(): Promise<void> {
   console.log('  Permissions contenu / demandes web attribuées');
 
   // --- Journal d'audit : la direction le consulte et l'exporte (tracé) ---
-  const directionRole = await prisma.role.findUniqueOrThrow({ where: { name: 'direction' } });
+  const directionRole = await prisma.role.findUniqueOrThrow({
+    where: { name: 'direction' },
+  });
   for (const permissionName of ['audit:consulter', 'audit:exporter']) {
-    const permission = await prisma.permission.findUniqueOrThrow({ where: { name: permissionName } });
+    const permission = await prisma.permission.findUniqueOrThrow({
+      where: { name: permissionName },
+    });
     await prisma.rolePermission.upsert({
-      where: { roleId_permissionId: { roleId: directionRole.id, permissionId: permission.id } },
+      where: {
+        roleId_permissionId: {
+          roleId: directionRole.id,
+          permissionId: permission.id,
+        },
+      },
       update: {},
       create: { roleId: directionRole.id, permissionId: permission.id },
     });
@@ -541,8 +767,15 @@ async function main(): Promise<void> {
     update: {},
     create: {
       key: 'terrains.statutJuridique',
-      value: ['Titre foncier', 'Bail', 'Délibération', 'Morcellement', 'Régularisation en cours'],
-      description: 'Liste des statuts juridiques configurables pour les terrains',
+      value: [
+        'Titre foncier',
+        'Bail',
+        'Délibération',
+        'Morcellement',
+        'Régularisation en cours',
+      ],
+      description:
+        'Liste des statuts juridiques configurables pour les terrains',
       isSensitive: false,
     },
   });
@@ -554,7 +787,8 @@ async function main(): Promise<void> {
     create: {
       key: 'terrains.niveauVerification',
       value: ['Non vérifié', 'En cours', 'Vérifié', 'À compléter'],
-      description: 'Liste des niveaux de vérification configurables pour les terrains',
+      description:
+        'Liste des niveaux de vérification configurables pour les terrains',
       isSensitive: false,
     },
   });
@@ -566,7 +800,8 @@ async function main(): Promise<void> {
     create: {
       key: 'terrains.statutCommercial',
       value: ['Brouillon', 'Disponible', 'Réservé', 'Vendu', 'Suspendu'],
-      description: 'Liste des statuts commerciaux configurables pour les terrains',
+      description:
+        'Liste des statuts commerciaux configurables pour les terrains',
       isSensitive: false,
     },
   });
@@ -802,7 +1037,7 @@ async function main(): Promise<void> {
     create: {
       key: 'crm.activiteTypes',
       value: ['appel', 'rendez-vous', 'tache', 'relance', 'email', 'note'],
-      description: 'Types d\'activités CRM disponibles',
+      description: "Types d'activités CRM disponibles",
       isSensitive: false,
     },
   });
@@ -927,7 +1162,8 @@ async function main(): Promise<void> {
     create: {
       key: 'ventes.echeancesDefaut',
       value: 3,
-      description: 'Nombre d\'échéances par défaut lors de la création d\'un dossier de vente',
+      description:
+        "Nombre d'échéances par défaut lors de la création d'un dossier de vente",
       isSensitive: false,
     },
   });
@@ -940,7 +1176,7 @@ async function main(): Promise<void> {
       key: 'reservations.dureeBlocageJours',
       value: 15,
       description:
-        'Durée de blocage par défaut d\'un terrain réservé (jours), quand elle n\'est pas précisée à la réservation',
+        "Durée de blocage par défaut d'un terrain réservé (jours), quand elle n'est pas précisée à la réservation",
       isSensitive: false,
     },
   });
@@ -969,7 +1205,8 @@ async function main(): Promise<void> {
           taux: 2,
           palier: 10000000,
           bonus: 200000,
-          description: 'Commission avec palier : 2 % + 200 000 FCFA bonus au-delà de 10 M FCFA',
+          description:
+            'Commission avec palier : 2 % + 200 000 FCFA bonus au-delà de 10 M FCFA',
         },
       ],
       description: 'Règles de commission configurables par l’administrateur',
@@ -977,40 +1214,391 @@ async function main(): Promise<void> {
     },
   });
 
+  // --- Référentiels et délais de la gestion locative (J2.1, sections 15 et 25) ---
+  // Semés pour que MTM les retrouve dans l'écran Paramétrage et les modifie
+  // sans code : sans ces lignes, les listes n'existent que dans le code.
+  const locatifSettings: {
+    key: string;
+    value: unknown;
+    description: string;
+  }[] = [
+    {
+      key: 'locatif.typesBien',
+      value: ['villa', 'appartement', 'studio', 'bureau', 'commerce', 'autre'],
+      description: 'Types de biens mis en location',
+    },
+    {
+      key: 'locatif.statutsBien',
+      value: ['disponible', 'loue', 'en_travaux', 'indisponible'],
+      description: 'Statuts commerciaux d’un bien locatif',
+    },
+    {
+      key: 'locatif.statutsBail',
+      value: ['actif', 'preavis', 'termine', 'resilie_sans_preavis'],
+      description: 'Cycle de vie d’un bail (section 15)',
+    },
+    {
+      key: 'locatif.situationsPaiement',
+      value: ['a_jour', 'retard', 'impaye_prolonge'],
+      description:
+        'Situation de paiement d’un bail, recalculée automatiquement (cas « impayé prolongé »)',
+    },
+    {
+      key: 'locatif.statutsCaution',
+      value: [
+        'non_versee',
+        'partiellement_versee',
+        'versee',
+        'partiellement_retenue',
+        'retenue_totale',
+        'remboursee',
+      ],
+      description: 'Statuts de caution, déduits de l’historique des mouvements',
+    },
+    {
+      key: 'locatif.typesPaiement',
+      value: ['avance', 'normal', 'partiel', 'regularisation'],
+      description: 'Natures de versement de loyer (section 15)',
+    },
+    {
+      key: 'locatif.statutsPaiement',
+      value: ['en_attente', 'valide', 'rejete'],
+      description:
+        'Contrôle des encaissements : un versement n’est imputé qu’une fois validé (section 24)',
+    },
+    {
+      key: 'locatif.modesPaiement',
+      value: ['especes', 'virement', 'mobile_money', 'cheque', 'autre'],
+      description: 'Modes de règlement acceptés pour les loyers',
+    },
+    {
+      key: 'locatif.statutsEcheance',
+      value: [
+        'a_venir',
+        'partielle',
+        'en_retard',
+        'impayee',
+        'payee',
+        'annulee',
+      ],
+      description: 'Statuts d’échéance de loyer, recalculés automatiquement',
+    },
+    {
+      key: 'locatif.typesMouvementCaution',
+      value: ['versement', 'retenue', 'remboursement', 'ajustement'],
+      description: 'Mouvements composant l’historique de caution (section 15)',
+    },
+    {
+      key: 'locatif.typesIncident',
+      value: ['plomberie', 'electricite', 'serrurerie', 'autre'],
+      description: 'Types d’incident signalables sur un bien loué',
+    },
+    {
+      key: 'locatif.typesDemande',
+      value: [
+        'renouvellement_bail',
+        'attestation',
+        'travaux',
+        'depart',
+        'autre',
+      ],
+      description: 'Types de demande du locataire (sections 4 et 15)',
+    },
+    {
+      key: 'locatif.statutsIncident',
+      value: ['signale', 'en_cours', 'resolu'],
+      description: 'Statuts de suivi d’un incident ou d’une demande',
+    },
+    {
+      key: 'locatif.typesDocument',
+      value: [
+        'contrat',
+        'quittance',
+        'etat_lieux_entree',
+        'etat_lieux_sortie',
+        'releve_gestion',
+        'rapport',
+        'autre',
+      ],
+      description: 'Types de pièces classées sur un bail',
+    },
+    {
+      key: 'locatif.relanceSeuilJours',
+      value: 5,
+      description:
+        'Jours de retard avant la première relance de loyer (délai paramétrable, section 15)',
+    },
+    {
+      key: 'locatif.impayeProlongeJours',
+      value: 60,
+      description:
+        'Jours d’impayé au-delà desquels un bail passe en « impayé prolongé » (section 15)',
+    },
+    {
+      key: 'locatif.horizonEcheancesMois',
+      value: 3,
+      description:
+        'Mois d’échéances maintenus d’avance sur un bail en cours par la tâche quotidienne',
+    },
+    {
+      key: 'locatif.relanceModeles',
+      value: [
+        {
+          code: 'rappel_amiable',
+          libelle: 'Rappel amiable',
+          joursRetard: 5,
+          canal: 'email',
+          objet: 'Rappel : loyer de {{periode}} — {{reference}}',
+          message:
+            'Bonjour {{locataire}},\n\nLe loyer de {{periode}} pour {{bien}} reste dû à hauteur de {{montantDu}}.\n\nSi le règlement a déjà été effectué, merci de nous transmettre la référence du versement.\n\nCordialement,\nMTM Immobilier — Gestion locative',
+        },
+        {
+          code: 'relance_ferme',
+          libelle: 'Relance ferme',
+          joursRetard: 15,
+          canal: 'email',
+          objet:
+            'Relance : loyer de {{periode}} impayé depuis {{joursRetard}} jours',
+          message:
+            'Bonjour {{locataire}},\n\nMalgré notre premier rappel, le loyer de {{periode}} pour {{bien}} reste impayé ({{montantDu}}), soit {{joursRetard}} jours de retard.\n\nNous vous invitons à régulariser sans délai ou à nous contacter pour convenir d’un échéancier.\n\nCordialement,\nMTM Immobilier — Gestion locative',
+        },
+        {
+          code: 'mise_en_demeure',
+          libelle: 'Mise en demeure',
+          joursRetard: 30,
+          canal: 'email',
+          objet: 'Mise en demeure — loyer de {{periode}} ({{reference}})',
+          message:
+            'Bonjour {{locataire}},\n\nLe loyer de {{periode}} pour {{bien}} demeure impayé à hauteur de {{montantDu}}, {{joursRetard}} jours après son échéance.\n\nSans règlement de votre part, MTM Immobilier engagera la procédure prévue au bail.\n\nCordialement,\nMTM Immobilier — Gestion locative',
+        },
+      ],
+      description:
+        'Calendrier et modèles de relance de loyer : un palier par niveau, jetons {{locataire}}, {{bien}}, {{periode}}, {{montantDu}}, {{joursRetard}}, {{reference}}',
+    },
+  ];
+  for (const setting of locatifSettings) {
+    await prisma.systemSetting.upsert({
+      where: { key: setting.key },
+      update: {},
+      create: {
+        key: setting.key,
+        value: setting.value as never,
+        description: setting.description,
+        isSensitive: false,
+      },
+    });
+  }
+  console.log('  Référentiels gestion locative J2.1 semés');
+
   // --- Contenus marketing (J1.2) ---
   const contentBlocks = [
-    { key: 'home.hero.title', title: 'Hero principal', content: 'Votre projet.\nNotre engagement.', type: 'hero', ordre: 0 },
-    { key: 'home.hero.subtitle', title: 'Sous-titre hero', content: 'Terrains vérifiés, accompagnement transparent et solutions concrètes pour investir, construire et transmettre au Sénégal.', type: 'hero', ordre: 1 },
-    { key: 'home.cta.title', title: 'CTA principal', content: 'Découvrir nos terrains', type: 'stat', ordre: 2 },
-    { key: 'about.title', title: 'Titre À propos', content: 'Une présence locale,\nune vision ouverte.', type: 'text', ordre: 10 },
-    { key: 'about.text', title: 'Texte À propos', content: 'MTM Immobilier accompagne les particuliers, les investisseurs et la diaspora dans leurs projets immobiliers au Sénégal avec une approche fondée sur la proximité et la transparence.', type: 'text', ordre: 11 },
-    { key: 'testimonial.1', title: 'Aminata D. · Dakar', content: 'Terrain idéal pour mon projet de construction. L’équipe MTM a été à l’écoute tout au long du processus.', type: 'testimonial', ordre: 20 },
-    { key: 'testimonial.2', title: 'Mamadou S. · Saly', content: 'Grâce à MTM Immobilier, j’ai pu acquérir mon terrain à Saly en toute confiance.', type: 'testimonial', ordre: 21 },
-    { key: 'testimonial.3', title: 'Fatou N. · Thiès', content: 'Professionnels et réactifs. Je recommande vivement MTM pour toute démarche foncière.', type: 'testimonial', ordre: 22 },
-    { key: 'news.1.title', title: 'Actualité 1', content: 'Étapes essentielles avant d\'acheter un terrain', type: 'text', ordre: 30 },
-    { key: 'news.1.tag', title: 'Tag actualité 1', content: 'Investissement', type: 'stat', ordre: 31 },
-    { key: 'news.1.excerpt', title: 'Extrait actualité 1', content: 'Les points à vérifier pour avancer avec clarté.', type: 'text', ordre: 32 },
-    { key: 'news.2.title', title: 'Actualité 2', content: 'Investir depuis la diaspora, simplement', type: 'text', ordre: 33 },
-    { key: 'news.2.tag', title: 'Tag actualité 2', content: 'Conseil', type: 'stat', ordre: 34 },
-    { key: 'news.2.excerpt', title: 'Extrait actualité 2', content: 'Les bons réflexes pour piloter un projet à distance.', type: 'text', ordre: 35 },
-    { key: 'news.3.title', title: 'Actualité 3', content: 'Comprendre les statuts fonciers', type: 'text', ordre: 36 },
-    { key: 'news.3.tag', title: 'Tag actualité 3', content: 'Territoire', type: 'stat', ordre: 37 },
-    { key: 'news.3.excerpt', title: 'Extrait actualité 3', content: 'Un éclairage pour mieux lire les documents d\'un bien.', type: 'text', ordre: 38 },
+    {
+      key: 'home.hero.title',
+      title: 'Hero principal',
+      content: 'Votre projet.\nNotre engagement.',
+      type: 'hero',
+      ordre: 0,
+    },
+    {
+      key: 'home.hero.subtitle',
+      title: 'Sous-titre hero',
+      content:
+        'Terrains vérifiés, accompagnement transparent et solutions concrètes pour investir, construire et transmettre au Sénégal.',
+      type: 'hero',
+      ordre: 1,
+    },
+    {
+      key: 'home.cta.title',
+      title: 'CTA principal',
+      content: 'Découvrir nos terrains',
+      type: 'stat',
+      ordre: 2,
+    },
+    {
+      key: 'about.title',
+      title: 'Titre À propos',
+      content: 'Une présence locale,\nune vision ouverte.',
+      type: 'text',
+      ordre: 10,
+    },
+    {
+      key: 'about.text',
+      title: 'Texte À propos',
+      content:
+        'MTM Immobilier accompagne les particuliers, les investisseurs et la diaspora dans leurs projets immobiliers au Sénégal avec une approche fondée sur la proximité et la transparence.',
+      type: 'text',
+      ordre: 11,
+    },
+    {
+      key: 'testimonial.1',
+      title: 'Aminata D. · Dakar',
+      content:
+        'Terrain idéal pour mon projet de construction. L’équipe MTM a été à l’écoute tout au long du processus.',
+      type: 'testimonial',
+      ordre: 20,
+    },
+    {
+      key: 'testimonial.2',
+      title: 'Mamadou S. · Saly',
+      content:
+        'Grâce à MTM Immobilier, j’ai pu acquérir mon terrain à Saly en toute confiance.',
+      type: 'testimonial',
+      ordre: 21,
+    },
+    {
+      key: 'testimonial.3',
+      title: 'Fatou N. · Thiès',
+      content:
+        'Professionnels et réactifs. Je recommande vivement MTM pour toute démarche foncière.',
+      type: 'testimonial',
+      ordre: 22,
+    },
+    {
+      key: 'news.1.title',
+      title: 'Actualité 1',
+      content: "Étapes essentielles avant d'acheter un terrain",
+      type: 'text',
+      ordre: 30,
+    },
+    {
+      key: 'news.1.tag',
+      title: 'Tag actualité 1',
+      content: 'Investissement',
+      type: 'stat',
+      ordre: 31,
+    },
+    {
+      key: 'news.1.excerpt',
+      title: 'Extrait actualité 1',
+      content: 'Les points à vérifier pour avancer avec clarté.',
+      type: 'text',
+      ordre: 32,
+    },
+    {
+      key: 'news.2.title',
+      title: 'Actualité 2',
+      content: 'Investir depuis la diaspora, simplement',
+      type: 'text',
+      ordre: 33,
+    },
+    {
+      key: 'news.2.tag',
+      title: 'Tag actualité 2',
+      content: 'Conseil',
+      type: 'stat',
+      ordre: 34,
+    },
+    {
+      key: 'news.2.excerpt',
+      title: 'Extrait actualité 2',
+      content: 'Les bons réflexes pour piloter un projet à distance.',
+      type: 'text',
+      ordre: 35,
+    },
+    {
+      key: 'news.3.title',
+      title: 'Actualité 3',
+      content: 'Comprendre les statuts fonciers',
+      type: 'text',
+      ordre: 36,
+    },
+    {
+      key: 'news.3.tag',
+      title: 'Tag actualité 3',
+      content: 'Territoire',
+      type: 'stat',
+      ordre: 37,
+    },
+    {
+      key: 'news.3.excerpt',
+      title: 'Extrait actualité 3',
+      content: "Un éclairage pour mieux lire les documents d'un bien.",
+      type: 'text',
+      ordre: 38,
+    },
     // --- Coordonnées de l'entreprise (affichées dans le pied de page, la page
     // Contact et le bouton WhatsApp du site public) : administrables sans
     // intervention développeur, conformément à la section 5 du CDC.
-    { key: 'contact.adresse', title: 'Adresse', content: 'Dakar, Sénégal', type: 'text', ordre: 40 },
-    { key: 'contact.telephone', title: 'Téléphone', content: '+221 77 000 00 00', type: 'text', ordre: 41 },
-    { key: 'contact.email', title: 'E-mail', content: 'contact@mtm-immobilier.sn', type: 'text', ordre: 42 },
-    { key: 'contact.whatsapp', title: 'Numéro WhatsApp (format international, sans +)', content: '221770000000', type: 'text', ordre: 43 },
+    {
+      key: 'contact.adresse',
+      title: 'Adresse',
+      content: 'Dakar, Sénégal',
+      type: 'text',
+      ordre: 40,
+    },
+    {
+      key: 'contact.telephone',
+      title: 'Téléphone',
+      content: '+221 77 000 00 00',
+      type: 'text',
+      ordre: 41,
+    },
+    {
+      key: 'contact.email',
+      title: 'E-mail',
+      content: 'contact@mtm-immobilier.sn',
+      type: 'text',
+      ordre: 42,
+    },
+    {
+      key: 'contact.whatsapp',
+      title: 'Numéro WhatsApp (format international, sans +)',
+      content: '221770000000',
+      type: 'text',
+      ordre: 43,
+    },
     // --- Pages de services (Phase 2 côté métier, présentation éditable dès maintenant).
     // Une ligne par point/étape, séparées par un retour à la ligne.
-    { key: 'gestion-locative.intro', title: 'Gestion locative — introduction', content: 'Confiez-nous la gestion de vos biens : nous nous occupons des locataires, des loyers et du suivi administratif, pour une tranquillité d’esprit totale.', type: 'text', ordre: 50 },
-    { key: 'gestion-locative.points', title: 'Gestion locative — prestations (une par ligne)', content: 'Recherche et sélection de locataires\nEncaissement des loyers et suivi des impayés\nÉtats des lieux d’entrée et de sortie\nGestion des cautions et des incidents\nRapports réguliers transmis au propriétaire', type: 'text', ordre: 51 },
-    { key: 'construction.intro', title: 'Construction — introduction', content: 'Du devis à la livraison, MTM Immobilier accompagne vos projets de construction avec un suivi rigoureux et transparent.', type: 'text', ordre: 52 },
-    { key: 'construction.etapes', title: 'Construction — étapes (une par ligne, format « Titre | Description »)', content: 'Étude et devis | Analyse de votre terrain et de votre programme, chiffrage détaillé.\nPlanification | Planning de chantier avec jalons et points de contrôle réguliers.\nSuivi de chantier | Journal de chantier, photos et rapports partagés avec vous.\nLivraison | Réception des travaux et remise des documents du projet.', type: 'text', ordre: 53 },
-    { key: 'demarches.intro', title: 'Démarches — introduction', content: 'Vous envisagez d’acheter un terrain, notamment depuis l’étranger ? Notre équipe se déplace pour vérifier le bien avant votre engagement. Tarif communiqué sur devis selon la nature du dossier.', type: 'text', ordre: 54 },
-    { key: 'demarches.etapes', title: 'Démarches — étapes (une par ligne, format « Titre | Description »)', content: 'Demande | Vous nous transmettez le terrain concerné et vos pièces disponibles.\nÉtude de faisabilité | Une étude préalable peut être réalisée avant engagement complet.\nVérification physique | Visite sur site : constat, photos, accès, environnement.\nVérification administrative | Consultation des administrations compétentes (mairie, service des Domaines...).\nRapport | Conclusion structurée et recommandation : favorable, défavorable ou à compléter.', type: 'text', ordre: 55 },
+    {
+      key: 'gestion-locative.intro',
+      title: 'Gestion locative — introduction',
+      content:
+        'Confiez-nous la gestion de vos biens : nous nous occupons des locataires, des loyers et du suivi administratif, pour une tranquillité d’esprit totale.',
+      type: 'text',
+      ordre: 50,
+    },
+    {
+      key: 'gestion-locative.points',
+      title: 'Gestion locative — prestations (une par ligne)',
+      content:
+        'Recherche et sélection de locataires\nEncaissement des loyers et suivi des impayés\nÉtats des lieux d’entrée et de sortie\nGestion des cautions et des incidents\nRapports réguliers transmis au propriétaire',
+      type: 'text',
+      ordre: 51,
+    },
+    {
+      key: 'construction.intro',
+      title: 'Construction — introduction',
+      content:
+        'Du devis à la livraison, MTM Immobilier accompagne vos projets de construction avec un suivi rigoureux et transparent.',
+      type: 'text',
+      ordre: 52,
+    },
+    {
+      key: 'construction.etapes',
+      title:
+        'Construction — étapes (une par ligne, format « Titre | Description »)',
+      content:
+        'Étude et devis | Analyse de votre terrain et de votre programme, chiffrage détaillé.\nPlanification | Planning de chantier avec jalons et points de contrôle réguliers.\nSuivi de chantier | Journal de chantier, photos et rapports partagés avec vous.\nLivraison | Réception des travaux et remise des documents du projet.',
+      type: 'text',
+      ordre: 53,
+    },
+    {
+      key: 'demarches.intro',
+      title: 'Démarches — introduction',
+      content:
+        'Vous envisagez d’acheter un terrain, notamment depuis l’étranger ? Notre équipe se déplace pour vérifier le bien avant votre engagement. Tarif communiqué sur devis selon la nature du dossier.',
+      type: 'text',
+      ordre: 54,
+    },
+    {
+      key: 'demarches.etapes',
+      title:
+        'Démarches — étapes (une par ligne, format « Titre | Description »)',
+      content:
+        'Demande | Vous nous transmettez le terrain concerné et vos pièces disponibles.\nÉtude de faisabilité | Une étude préalable peut être réalisée avant engagement complet.\nVérification physique | Visite sur site : constat, photos, accès, environnement.\nVérification administrative | Consultation des administrations compétentes (mairie, service des Domaines...).\nRapport | Conclusion structurée et recommandation : favorable, défavorable ou à compléter.',
+      type: 'text',
+      ordre: 55,
+    },
   ];
 
   for (const block of contentBlocks) {

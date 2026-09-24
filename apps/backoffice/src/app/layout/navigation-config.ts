@@ -16,6 +16,7 @@ import {
   LucideReceipt,
   LucideIdCard,
   LucideTarget,
+  LucideBuilding2,
 } from '@lucide/angular';
 
 /**
@@ -105,6 +106,17 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         route: '/demarches/missions',
         icon: LucideClipboardCheck,
         permission: 'demarches:consulter',
+      },
+      {
+        label: 'Gestion locative',
+        route: '/locatif/biens',
+        icon: LucideBuilding2,
+        permission: 'locatif:consulter',
+        children: [
+          { label: 'Biens', route: '/locatif/biens', permission: 'locatif:consulter' },
+          { label: 'Locataires', route: '/locatif/locataires', permission: 'locatif:consulter' },
+          { label: 'Relances', route: '/locatif/relances', permission: 'locatif:consulter' },
+        ],
       },
       {
         label: 'Objectifs',

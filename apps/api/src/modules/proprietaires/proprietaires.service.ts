@@ -1,15 +1,20 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { ClientAccountsService } from '../client-accounts/client-accounts.service';
 import { CreateProprietaireDto } from './dto/create-proprietaire.dto';
 import { UpdateProprietaireDto } from './dto/update-proprietaire.dto';
 
 @Injectable()
 export class ProprietairesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly comptesClient: ClientAccountsService,
+  ) {}
 
   async findAll() {
     return this.prisma.proprietaire.findMany({
@@ -77,5 +82,42 @@ export class ProprietairesService {
       select: { id: true },
     });
     if (!owner) throw new NotFoundException('Propriétaire introuvable');
+  }
+
+  /**
+   * Ouverture de l'espace propriétaire (« Mon bien »). Procédure mutualisée
+   * avec le compte locataire : seuls le contrôle du dossier et le texte
+   * d'invitation sont propres au propriétaire.
+   */
+  async createClientAccount(id: string, password: string) {
+    const proprietaire = await this.prisma.proprietaire.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        clientUser: { select: { id: true } },
+      },
+    });
+    if (!proprietaire) throw new NotFoundException('Propriétaire introuvable');
+    if (!proprietaire.email) {
+      throw new BadRequestException(
+        'Le propriétaire doit avoir une adresse e-mail',
+      );
+    }
+    if (proprietaire.clientUser) {
+      throw new ConflictException('Un compte client existe déjà');
+    }
+
+    return this.comptesClient.ouvrir({
+      email: proprietaire.email,
+      firstName: proprietaire.firstName,
+      lastName: proprietaire.lastName,
+      password,
+      rattachement: { clientProprietaireId: proprietaire.id },
+      introduction:
+        'Votre espace propriétaire est ouvert. Vous y retrouverez vos biens confiés, les loyers appelés et encaissés, le solde et vos relevés de gestion.',
+    });
   }
 }

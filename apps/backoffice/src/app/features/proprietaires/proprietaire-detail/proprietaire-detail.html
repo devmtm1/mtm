@@ -41,6 +41,11 @@
             <svg class="btn-icon" lucideLandPlot aria-hidden="true"></svg>Nouveau terrain
           </button>
         }
+        @if (canCreateClient && p.email) {
+          <button mat-stroked-button type="button" (click)="openCreateClientAccount()" matTooltip="Ouvrir l’espace client « Mon bien »">
+            <svg class="btn-icon" lucideKeyRound aria-hidden="true"></svg>Accès espace client
+          </button>
+        }
         @if (canModify) {
           <button mat-flat-button color="primary" type="button" (click)="edit()">
             <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Modifier

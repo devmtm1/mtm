@@ -8,6 +8,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   LucideArrowLeft,
   LucideChevronDown,
+  LucideKeyRound,
   LucideLandPlot,
   LucideMail,
   LucidePencil,
@@ -20,6 +21,7 @@ import { TerrainsApiService } from '../../../core/services/api/terrains-api.serv
 import { MandatsApiService } from '../../../core/services/api/mandats-api.service';
 import { SessionService } from '../../../core/services/session.service';
 import { ProprietaireDialog } from '../../terrains/proprietaire-dialog';
+import { ClientAccountDialog } from '../../../shared/dialogs/client-account-dialog';
 import type { ProprietaireSummary, TerrainListItem } from '../../../core/models/terrain.model';
 import type { MandatListItem } from '../../../core/models/mandat.model';
 import { NotificationService } from '../../../shared/services/notification.service';
@@ -42,6 +44,7 @@ import { MANDAT_STATUS, echeanceInfo, pillClass as mandatPill, statusHelp as man
     MatTooltipModule,
     LucideArrowLeft,
     LucideChevronDown,
+    LucideKeyRound,
     LucideLandPlot,
     LucideMail,
     LucidePencil,
@@ -72,6 +75,7 @@ export class ProprietaireDetail implements OnInit {
   protected readonly canCreateTerrain = this.session.hasPermission('terrains:creer');
   protected readonly canSeeMandats = this.session.hasPermission('mandats:consulter');
   protected readonly canCreateMandat = this.session.hasPermission('mandats:creer');
+  protected readonly canCreateClient = this.session.hasPermission('clients:creer');
 
   protected readonly activeMandats = computed(() => (this.mandats() ?? []).filter((mandat) => mandat.statut === 'Actif').length);
   protected readonly terrainsDisponibles = computed(() => (this.terrains() ?? []).filter((terrain) => terrain.statutCommercial === 'Disponible').length);
@@ -160,6 +164,17 @@ export class ProprietaireDetail implements OnInit {
           error: (error: unknown) => this.notify.error(error, 'Impossible de mettre à jour le propriétaire'),
         });
       });
+  }
+
+  protected openCreateClientAccount(): void {
+    const current = this.proprietaire();
+    if (!current?.email || !this.canCreateClient) return;
+    ClientAccountDialog.open(this.dialog, {
+      email: current.email,
+      name: `${current.firstName} ${current.lastName}`,
+      scopeDescription: 'suivre son bien, le locataire en place et les loyers encaissés',
+      create: (password) => this.api.createClientAccount(current.id, password),
+    });
   }
 
   protected remove(): void {

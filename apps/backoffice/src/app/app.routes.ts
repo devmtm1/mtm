@@ -240,6 +240,46 @@ export const routes: Routes = [
           import('./features/demarches/missions/missions').then((m) => m.Missions),
       },
       {
+        path: 'locatif/biens/nouveau',
+        canActivate: [permissionsGuard(['locatif:creer'])],
+        loadComponent: () =>
+          import('./features/locatif/bien-form/bien-form').then((m) => m.BienForm),
+      },
+      {
+        path: 'locatif/biens/:id',
+        canActivate: [permissionsGuard(['locatif:consulter'])],
+        loadComponent: () =>
+          import('./features/locatif/bien-detail/bien-detail').then(
+            (m) => m.BienDetailPage,
+          ),
+      },
+      {
+        path: 'locatif/biens',
+        canActivate: [permissionsGuard(['locatif:consulter'])],
+        loadComponent: () =>
+          import('./features/locatif/biens/biens').then((m) => m.Biens),
+      },
+      {
+        path: 'locatif/relances',
+        canActivate: [permissionsGuard(['locatif:consulter'])],
+        loadComponent: () =>
+          import('./features/locatif/relances/relances').then((m) => m.Relances),
+      },
+      {
+        path: 'locatif/locataires/:id',
+        canActivate: [permissionsGuard(['locatif:consulter'])],
+        loadComponent: () =>
+          import('./features/locatif/locataires/locataire-detail/locataire-detail').then(
+            (m) => m.LocataireDetail,
+          ),
+      },
+      {
+        path: 'locatif/locataires',
+        canActivate: [permissionsGuard(['locatif:consulter'])],
+        loadComponent: () =>
+          import('./features/locatif/locataires/locataires').then((m) => m.Locataires),
+      },
+      {
         path: 'crm/prospects',
         canActivate: [permissionsGuard(['crm:consulter'])],
         loadComponent: () =>

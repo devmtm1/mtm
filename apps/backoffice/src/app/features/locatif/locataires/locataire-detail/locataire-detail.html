@@ -1,0 +1,117 @@
+@if (loading()) {
+  <section class="detail-page" aria-busy="true">
+    <div class="skeleton" style="height: 20px; width: 160px"></div>
+    <div class="skeleton" style="height: 36px; width: 40%"></div>
+    <div class="content-grid">
+      <div class="skeleton" style="height: 220px"></div>
+      <div class="skeleton" style="height: 220px"></div>
+    </div>
+  </section>
+} @else if (locataire(); as l) {
+  <section class="detail-page">
+    <a class="back-link" href="/locatif/locataires" (click)="$event.preventDefault(); goBack()">
+      <svg lucideArrowLeft aria-hidden="true"></svg>Retour à la liste des locataires
+    </a>
+
+    <header class="detail-header">
+      <div class="detail-header__main">
+        <p class="eyebrow">Locataire</p>
+        <h1>{{ l.firstName }} {{ l.lastName }}</h1>
+        <p class="detail-header__meta">
+          @if (l.phone) {
+            <a [href]="'tel:' + l.phone"><svg lucidePhone aria-hidden="true"></svg>{{ l.phone }}</a>
+          }
+          @if (l.email) {
+            <a [href]="'mailto:' + l.email"><svg lucideMail aria-hidden="true"></svg>{{ l.email }}</a>
+          }
+          @if (!l.phone && !l.email) {
+            <span>Aucun moyen de contact renseigné</span>
+          }
+        </p>
+      </div>
+      <div class="detail-header__actions">
+        @if (canCreateClient && l.email) {
+          <button mat-stroked-button type="button" (click)="openCreateClientAccount()" matTooltip="Ouvrir l’espace client « Ma location »">
+            <svg class="btn-icon" lucideKeyRound aria-hidden="true"></svg>Accès espace client
+          </button>
+        }
+        @if (canModify) {
+          <button mat-flat-button color="primary" type="button" (click)="edit()">
+            <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Modifier
+          </button>
+        }
+      </div>
+    </header>
+
+    <section class="kpi-row" aria-label="Synthèse">
+      <div class="kpi" [class.kpi--success]="bauxActifs() > 0" [class.kpi--muted]="bauxActifs() === 0">
+        <span class="kpi__icon"><svg lucideKeyRound aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ bauxActifs() }}<small class="kpi__of">/ {{ baux()?.length ?? 0 }}</small></strong>
+          <span>Baux en cours</span>
+          <small>Sur l’ensemble de son historique</small>
+        </span>
+      </div>
+    </section>
+
+    <section class="content-grid">
+      <section class="page-card detail-section detail-section--wide">
+        <div class="detail-section__head">
+          <div>
+            <h2>Historique des baux</h2>
+            <p class="detail-section__hint">Tous les biens loués par ce locataire, du plus récent au plus ancien.</p>
+          </div>
+        </div>
+        @if (baux() === null) {
+          <div class="skeleton" style="height: 48px"></div>
+        } @else if (baux()!.length) {
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Référence</th>
+                  <th>Bien</th>
+                  <th>Période</th>
+                  <th class="is-right">Loyer</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (bail of baux(); track bail.id) {
+                  <tr class="is-clickable" (click)="openBien(bail)">
+                    <td><strong>{{ bail.referenceInterne || '—' }}</strong></td>
+                    <td>{{ bail.bienLocatif.adresse }}{{ bail.bienLocatif.commune ? ', ' + bail.bienLocatif.commune : '' }}</td>
+                    <td>
+                      {{ bail.dateDebut | date: 'dd/MM/yyyy' }}
+                      →
+                      {{ (bail.dateSortieReelle || bail.dateFin) ? ((bail.dateSortieReelle || bail.dateFin) | date: 'dd/MM/yyyy') : 'en cours' }}
+                    </td>
+                    <td class="is-right">{{ bail.loyerMensuel | mtmMoney }}</td>
+                    <td><span [class]="bailPill(bail.statut)" [matTooltip]="bailHelp(bail.statut)">{{ bailLabel(bail.statut) }}</span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="detail-note">Aucun bail pour ce locataire. Rattachez-le à un bien depuis la fiche du bien.</div>
+        }
+      </section>
+
+      <section class="page-card detail-section">
+        <h2>Coordonnées</h2>
+        <dl class="info-list">
+          <div><dt>Prénom</dt><dd>{{ l.firstName }}</dd></div>
+          <div><dt>Nom</dt><dd>{{ l.lastName }}</dd></div>
+          <div><dt>Téléphone</dt><dd>{{ l.phone || '—' }}</dd></div>
+          <div><dt>E-mail</dt><dd>{{ l.email || '—' }}</dd></div>
+        </dl>
+      </section>
+
+      <section class="page-card detail-section">
+        <h2>Notes internes</h2>
+        <p class="detail-section__text">{{ l.notes || 'Aucune note. Utilisez « Modifier » pour en ajouter une.' }}</p>
+      </section>
+    </section>
+  </section>
+}

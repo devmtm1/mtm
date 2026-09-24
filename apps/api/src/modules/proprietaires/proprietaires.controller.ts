@@ -17,6 +17,7 @@ import type { AuthenticatedUser } from '../auth/auth.types';
 import { AuditService } from '../audit/audit.service';
 import { CreateProprietaireDto } from './dto/create-proprietaire.dto';
 import { UpdateProprietaireDto } from './dto/update-proprietaire.dto';
+import { CreateClientAccountDto } from '../client-accounts/dto/create-client-account.dto';
 import { ProprietairesService } from './proprietaires.service';
 
 @ApiTags('proprietaires')
@@ -98,6 +99,30 @@ export class ProprietairesController {
       userAgent: req.headers['user-agent'],
     });
     return proprietaire;
+  }
+
+  @Post(':id/compte-client')
+  @RequirePermissions('clients:creer')
+  async createClientAccount(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateClientAccountDto,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    const account = await this.proprietaires.createClientAccount(
+      id,
+      dto.password,
+    );
+    await this.audit.record({
+      userId: user.id,
+      action: 'proprietaire.client_account_created',
+      entityType: 'Proprietaire',
+      entityId: id,
+      newValue: { email: account.email },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    return account;
   }
 
   @Delete(':id')

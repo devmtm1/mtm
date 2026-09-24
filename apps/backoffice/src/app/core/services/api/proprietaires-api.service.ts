@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import type { ProprietaireSummary } from '../../models/terrain.model';
+import type { ClientAccountCreated } from '../../models/client-account.model';
 
 export interface ProprietaireDetail extends ProprietaireSummary {
   notes: string | null;
@@ -34,5 +35,14 @@ export class ProprietairesApiService {
 
   remove(id: string): Observable<{ success: boolean }> {
     return this.http.delete<{ success: boolean }>(`${this.baseUrl}/${id}`);
+  }
+
+  /**
+   * Ouvre l'espace client (« Mon bien »). L'API envoie l'invitation par
+   * e-mail ; si l'envoi échoue, elle renvoie le jeton pour une transmission
+   * par un autre canal.
+   */
+  createClientAccount(id: string, password: string): Observable<ClientAccountCreated> {
+    return this.http.post<ClientAccountCreated>(`${this.baseUrl}/${id}/compte-client`, { password });
   }
 }

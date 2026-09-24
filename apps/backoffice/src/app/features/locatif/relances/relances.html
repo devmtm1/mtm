@@ -1,0 +1,127 @@
+<div class="relances-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Gestion locative</p>
+      <h1 class="page-header__title">Relances de loyer</h1>
+      <p class="page-header__subtitle">
+        Les relances dues d’après le calendrier paramétré : chaque palier est proposé une seule
+        fois par échéance, dès que le retard atteint son délai.
+      </p>
+    </div>
+    <div class="page-header__actions">
+      <mat-form-field appearance="outline" class="relances-page__filtre">
+        <mat-label>Statut</mat-label>
+        <mat-select [formControl]="filtres.controls.statut">
+          <mat-option value="a_envoyer">À envoyer</mat-option>
+          <mat-option value="envoyee">Envoyées</mat-option>
+          <mat-option value="annulee">Abandonnées</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </header>
+
+  <section class="kpi-row" aria-label="Synthèse des relances">
+    <div class="kpi" [class.kpi--danger]="relances().length > 0">
+      <span class="kpi__icon"><svg lucideBellRing aria-hidden="true"></svg></span>
+      <span class="kpi__body">
+        <strong>{{ relances().length }}</strong>
+        <span>Relances dans cette vue</span>
+        <small>{{ montantConcerne() | mtmMoney }} concernés</small>
+      </span>
+    </div>
+    @if (options().relanceModeles?.length) {
+      <div class="kpi">
+        <span class="kpi__icon"><svg lucideTriangleAlert aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ options().relanceModeles?.length }}</strong>
+          <span>Paliers configurés</span>
+          <small>
+            @for (modele of options().relanceModeles ?? []; track modele.code) {
+              {{ modele.joursRetard }} j{{ $last ? '' : ' · ' }}
+            }
+          </small>
+        </span>
+      </div>
+    }
+  </section>
+
+  <section class="page-section" aria-labelledby="relances-list-title">
+    <div class="list-toolbar">
+      <div class="list-toolbar__title">
+        <h2 id="relances-list-title">File de relances</h2>
+        <p>
+          @if (loading()) {
+            Chargement…
+          } @else {
+            {{ relances().length }} relance{{ relances().length > 1 ? 's' : '' }}
+          }
+        </p>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="skeleton" style="height: 180px"></div>
+    } @else if (relances().length === 0) {
+      <div class="empty-state">
+        <h3>Aucune relance dans cette vue</h3>
+        <p>
+          Les relances apparaissent dès qu’une échéance dépasse le premier délai paramétré.
+        </p>
+      </div>
+    } @else {
+      <ul class="constat-list">
+        @for (relance of relances(); track relance.id) {
+          <li class="constat-item">
+            <div class="constat-item__head">
+              <strong>{{ locataireNom(relance) }}</strong>
+              <span [class]="statutPill(relance.statut)">{{ statutLabel(relance.statut) }}</span>
+              @if (relance.bailLocatif) {
+                <span [class]="situationPill(relance.bailLocatif.situationPaiement)">
+                  {{ situationLabel(relance.bailLocatif.situationPaiement) }}
+                </span>
+              }
+              <span class="constat-item__meta">
+                {{ modeleLabel(relance.modeleCode) }} · {{ relance.joursRetard }} jours de retard ·
+                {{ montantDu(relance) | mtmMoney }} dus
+                @if (relance.echeance) {
+                  · {{ relance.echeance.periode | date: 'MMMM yyyy' }}
+                }
+              </span>
+              <span class="constat-item__actions">
+                <button mat-button type="button" (click)="ouvrirBien(relance)">Ouvrir le bien</button>
+                @if (canModify() && relance.statut === 'a_envoyer') {
+                  <button
+                    mat-button
+                    type="button"
+                    [disabled]="saving() || !relance.destinataire"
+                    [matTooltip]="
+                      relance.destinataire
+                        ? 'Envoyer le modèle par e-mail'
+                        : 'Ce locataire n’a pas d’adresse e-mail'
+                    "
+                    (click)="envoyer(relance)"
+                  >
+                    <svg class="btn-icon" lucideMail aria-hidden="true"></svg>Envoyer
+                  </button>
+                  <button mat-button type="button" [disabled]="saving()" (click)="tracerEnvoiManuel(relance)">
+                    Autre canal
+                  </button>
+                  <button mat-button type="button" [disabled]="saving()" (click)="abandonner(relance)">
+                    Abandonner
+                  </button>
+                }
+              </span>
+            </div>
+            <p class="constat-item__note">
+              {{ relance.bailLocatif?.bienLocatif?.adresse }} · {{ relance.objet }}
+              @if (relance.envoyeeLe) {
+                · envoyée le {{ relance.envoyeeLe | date: 'dd/MM/yyyy' }} par
+                {{ relance.envoyeeBy?.firstName }} {{ relance.envoyeeBy?.lastName }}
+              }
+            </p>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+</div>

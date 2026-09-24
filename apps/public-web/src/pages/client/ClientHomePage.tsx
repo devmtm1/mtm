@@ -1,4 +1,4 @@
-import { CalendarClock, FolderOpen, Mail, MapPin, MessageCircle, Phone, Wallet } from 'lucide-react';
+import { Building2, CalendarClock, FolderOpen, KeyRound, Mail, MapPin, MessageCircle, Phone, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/auth-context-store';
 import { useClientData } from '../../contexts/client-data-store';
@@ -14,6 +14,17 @@ import { formatDate, formatMoney } from '../../utils/format';
 import { dossierStatus } from '../../utils/labels';
 import { ROUTES } from '../../routes';
 import type { ClientDossier } from '../../types/clientPortal';
+import type { ClientBailLocataire } from '../../types/locatif';
+
+/** Prochaine échéance de loyer non soldée du bail locataire actif. */
+function nextEcheanceLocataire(bail: ClientBailLocataire | null) {
+  if (!bail) return undefined;
+  return bail.echeances
+    .filter((echeance) => echeance.statut !== 'payee')
+    .map((echeance) => ({ echeance, reste: Math.max(0, echeance.montantPrevu - echeance.montantPaye) }))
+    .filter((item) => item.reste > 0)
+    .sort((a, b) => new Date(a.echeance.dateEcheance).getTime() - new Date(b.echeance.dateEcheance).getTime())[0];
+}
 
 /** Prochaine échéance non soldée, tous dossiers confondus. */
 function nextEcheance(dossiers: ClientDossier[]) {
@@ -36,7 +47,18 @@ function nextEcheance(dossiers: ClientDossier[]) {
 export function ClientHomePage() {
   const { user } = useAuth();
   const contact = useSiteContact();
-  const { dossiers, dossiersLoading, dossiersError, demandes, demandesLoading, demandesError } = useClientData();
+  const {
+    dossiers,
+    dossiersLoading,
+    dossiersError,
+    demandes,
+    demandesLoading,
+    demandesError,
+    proprietaireBiens,
+    proprietaireLoading,
+    locataireBaux,
+    locataireLoading,
+  } = useClientData();
   usePageMetadata({ title: 'Mon espace client' });
 
   const list = dossiers ?? [];
@@ -46,6 +68,14 @@ export function ClientHomePage() {
     .filter((dossier) => dossier.statut !== 'annule')
     .reduce((sum, dossier) => sum + Math.max(0, (dossier.prixVente ?? 0) - dossier.montantPaye), 0);
   const upcoming = nextEcheance(list);
+
+  const biens = proprietaireBiens;
+  const biensAvecBail = (biens ?? []).filter((bien) => bien.bail);
+  const loyersEncaissesTotal = biensAvecBail.reduce((sum, bien) => sum + (bien.bail?.loyersEncaisses ?? 0), 0);
+
+  const baux = locataireBaux;
+  const bailActifLocataire = baux?.find((b) => b.statut === 'actif' || b.statut === 'preavis') ?? baux?.[0] ?? null;
+  const prochaineEcheanceLocataire = nextEcheanceLocataire(bailActifLocataire);
 
   return (
     <div className="flex flex-col gap-4 sm:gap-6">
@@ -140,6 +170,46 @@ export function ClientHomePage() {
         </ClientCard>
 
         <div className="flex flex-col gap-4 sm:gap-6">
+          {proprietaireLoading && <Skeleton className="h-20 rounded-lg" />}
+          {!proprietaireLoading && biens !== null && (
+            <ClientCard title="Mon bien" to={ROUTES.clientProprietaire}>
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-mtm-primary-subtle text-mtm-primary">
+                  <Building2 className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate font-semibold text-mtm-text">
+                    {biens.length > 0 ? `${biens.length} bien${biens.length > 1 ? 's' : ''} confié${biens.length > 1 ? 's' : ''}` : 'Aucun bien pour le moment'}
+                  </p>
+                  <p className="text-sm text-mtm-muted">
+                    {biensAvecBail.length > 0 ? `${formatMoney(loyersEncaissesTotal)} de loyers encaissés au total` : 'Aucun bail en cours'}
+                  </p>
+                </div>
+              </div>
+            </ClientCard>
+          )}
+
+          {locataireLoading && <Skeleton className="h-20 rounded-lg" />}
+          {!locataireLoading && baux !== null && (
+            <ClientCard title="Ma location" to={ROUTES.clientLocataire}>
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-mtm-primary-subtle text-mtm-primary">
+                  <KeyRound className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  {prochaineEcheanceLocataire ? (
+                    <>
+                      <p className="truncate font-semibold text-mtm-text">{formatMoney(prochaineEcheanceLocataire.reste)} à régler</p>
+                      <p className="text-sm text-mtm-muted">Avant le {formatDate(prochaineEcheanceLocataire.echeance.dateEcheance)}</p>
+                    </>
+                  ) : (
+                    <p className="truncate font-semibold text-mtm-text">Rien à régler pour le moment</p>
+                  )}
+                </div>
+              </div>
+            </ClientCard>
+          )}
+
           <ClientCard title="Dernières demandes" to={ROUTES.clientDemandes}>
             <ClientDemandesList data={demandes} loading={demandesLoading} error={demandesError} limit={2} />
           </ClientCard>

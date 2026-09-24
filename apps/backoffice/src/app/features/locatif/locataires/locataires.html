@@ -1,0 +1,104 @@
+<div class="locataires-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Gestion locative</p>
+      <h1 class="page-header__title">Locataires</h1>
+      <p class="page-header__subtitle">
+        Les personnes qui louent un bien géré par MTM. Depuis une fiche, retrouvez l'historique
+        complet de ses baux.
+      </p>
+    </div>
+    <div class="page-header__actions">
+      @if (canCreate()) {
+        <button mat-flat-button color="primary" type="button" (click)="openCreate()">
+          <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau locataire
+        </button>
+      }
+    </div>
+  </header>
+
+  <section class="kpi-row" aria-label="Synthèse">
+    @if (loading()) {
+      @for (i of [1, 2]; track i) {
+        <div class="kpi skeleton" aria-hidden="true"></div>
+      }
+    } @else {
+      <div class="kpi kpi--primary">
+        <span class="kpi__icon"><svg lucideKeyRound aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ stats().total }}</strong>
+          <span>Locataires{{ hasActiveFilters() ? ' (résultat de la recherche)' : '' }}</span>
+        </span>
+      </div>
+      <div class="kpi" [class.kpi--warning]="stats().sansBail > 0" [class.kpi--muted]="stats().sansBail === 0">
+        <span class="kpi__icon"><svg lucideUserX aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ stats().sansBail }}</strong>
+          <span>Sans bail</span>
+          <small>Enregistrés mais jamais rattachés à un bien</small>
+        </span>
+      </div>
+    }
+  </section>
+
+  <section class="page-section" aria-labelledby="locataires-list-title">
+    <div class="list-toolbar">
+      <div class="list-toolbar__title">
+        <h2 id="locataires-list-title">Liste des locataires</h2>
+        <p>
+          @if (loading()) {
+            Chargement…
+          } @else {
+            {{ locataires().length }} locataire{{ locataires().length > 1 ? 's' : '' }}
+            @if (hasActiveFilters()) {
+              correspondant à la recherche
+            }
+          }
+        </p>
+      </div>
+      <form class="list-filters" (submit)="$event.preventDefault()">
+        <mat-form-field appearance="outline" class="list-filters__search" subscriptSizing="dynamic">
+          <mat-label>Rechercher</mat-label>
+          <svg matPrefix class="list-filters__icon" lucideSearch aria-hidden="true"></svg>
+          <input matInput [formControl]="search" placeholder="Nom, téléphone, e-mail…" autocomplete="off" />
+        </mat-form-field>
+        @if (hasActiveFilters()) {
+          <button mat-button type="button" class="list-filters__reset" (click)="resetFilters()">Effacer</button>
+        }
+      </form>
+    </div>
+
+    @if (!loading() && locataires().length === 0) {
+      <div class="empty-state">
+        <svg lucideKeyRound aria-hidden="true"></svg>
+        @if (hasActiveFilters()) {
+          <h3>Aucun locataire ne correspond</h3>
+          <p>Modifiez la recherche ou effacez-la.</p>
+          <button mat-stroked-button type="button" (click)="resetFilters()">Effacer la recherche</button>
+        } @else {
+          <h3>Aucun locataire pour le moment</h3>
+          <p>Enregistrez d’abord la fiche (prénom, nom, téléphone) ; vous lui rattacherez ensuite un bail.</p>
+          @if (canCreate()) {
+            <button mat-flat-button color="primary" type="button" (click)="openCreate()">
+              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Créer le premier locataire
+            </button>
+          }
+        }
+      </div>
+    } @else {
+      <ag-grid-angular
+        class="list-grid"
+        [theme]="theme"
+        [rowData]="locataires()"
+        [columnDefs]="columnDefs"
+        [loading]="loading()"
+        domLayout="autoHeight"
+        [pagination]="true"
+        [paginationPageSize]="20"
+        [rowHeight]="52"
+        [suppressCellFocus]="true"
+        (rowClicked)="$event.data && openDetail($event.data.id)"
+      />
+    }
+  </section>
+</div>

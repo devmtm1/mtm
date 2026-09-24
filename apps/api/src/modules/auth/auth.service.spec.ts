@@ -60,6 +60,8 @@ describe('AuthService', () => {
     twoFactorRecoveryCodes: null,
     lastLoginAt: null,
     clientProspectId: null,
+    clientProprietaireId: null,
+    clientLocataireId: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     roles: [],

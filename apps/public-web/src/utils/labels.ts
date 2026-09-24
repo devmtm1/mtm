@@ -134,6 +134,113 @@ export const MISSION_DOCUMENT_TYPES: Record<string, string> = {
   autre: 'Document',
 };
 
+/**
+ * Gestion locative (J2.1). Le locataire lit « Payée » ou « En retard »,
+ * jamais `payee` ou `en_retard`. Nom distinct d'`ECHEANCE_STATUS` (ventes) :
+ * les deux référentiels ne partagent pas les mêmes codes.
+ */
+export const LOYER_ECHEANCE_STATUS: Record<string, StatusLabel> = {
+  a_venir: { label: 'À venir', tone: 'neutral', help: 'Échéance future, pas encore due.' },
+  partielle: { label: 'Partielle', tone: 'info', help: 'Un règlement partiel a été reçu.' },
+  en_retard: { label: 'En retard', tone: 'accent', help: 'Échéance dépassée : merci de régulariser.' },
+  impayee: { label: 'Impayée', tone: 'accent', help: 'Échéance dépassée, rien n’a encore été réglé.' },
+  payee: { label: 'Payée', tone: 'success', help: 'Échéance intégralement réglée.' },
+};
+
+/** Situation de paiement du bail : ce que le locataire doit lire en premier. */
+export const SITUATION_PAIEMENT: Record<string, StatusLabel> = {
+  a_jour: { label: 'À jour', tone: 'success', help: 'Aucun loyer en retard.' },
+  retard: { label: 'Retard', tone: 'accent', help: 'Une échéance est dépassée.' },
+  impaye_prolonge: {
+    label: 'Impayé prolongé',
+    tone: 'accent',
+    help: 'Plusieurs semaines de retard : contactez-nous pour régulariser.',
+  },
+};
+
+/** Statut d'un règlement reçu : acquis seulement après contrôle interne. */
+export const PAIEMENT_STATUS: Record<string, StatusLabel> = {
+  en_attente: {
+    label: 'En cours de validation',
+    tone: 'info',
+    help: 'Votre règlement est enregistré et en cours de contrôle.',
+  },
+  valide: { label: 'Validé', tone: 'success', help: 'Règlement contrôlé et imputé.' },
+  rejete: { label: 'Rejeté', tone: 'accent', help: 'Ce règlement n’a pas pu être retenu.' },
+};
+
+/** Caution : statut déduit des mouvements (section 15). */
+export const CAUTION_STATUS: Record<string, StatusLabel> = {
+  non_versee: { label: 'Non versée', tone: 'neutral', help: 'Caution pas encore encaissée.' },
+  partiellement_versee: {
+    label: 'Partiellement versée',
+    tone: 'warning',
+    help: 'Une partie de la caution reste à verser.',
+  },
+  versee: { label: 'Versée', tone: 'success', help: 'Caution encaissée et conservée en dépôt.' },
+  partiellement_retenue: {
+    label: 'Partiellement retenue',
+    tone: 'warning',
+    help: 'Une partie a été retenue, le reste vous a été restitué.',
+  },
+  retenue_totale: { label: 'Retenue', tone: 'accent', help: 'Caution intégralement retenue.' },
+  remboursee: { label: 'Remboursée', tone: 'success', help: 'Caution restituée.' },
+};
+
+export const MOUVEMENT_CAUTION_TYPES: Record<string, string> = {
+  versement: 'Versement',
+  retenue: 'Retenue',
+  remboursement: 'Remboursement',
+  ajustement: 'Ajustement',
+};
+
+/** Demandes du locataire (sections 4 et 15). */
+export const DEMANDE_TYPES: Record<string, string> = {
+  renouvellement_bail: 'Renouvellement du bail',
+  attestation: 'Attestation',
+  travaux: 'Travaux',
+  depart: 'Départ',
+  autre: 'Autre',
+};
+
+export const BAIL_STATUS: Record<string, StatusLabel> = {
+  actif: { label: 'En cours', tone: 'success', help: 'Votre bail est actif.' },
+  preavis: { label: 'Préavis en cours', tone: 'warning', help: 'Votre départ est enregistré.' },
+  termine: { label: 'Terminé', tone: 'neutral', help: 'Ce bail est clôturé.' },
+  resilie_sans_preavis: { label: 'Résilié', tone: 'accent', help: 'Ce bail a été résilié.' },
+};
+
+export const INCIDENT_STATUS: Record<string, StatusLabel> = {
+  signale: { label: 'Signalé', tone: 'warning', help: 'En attente de prise en charge.' },
+  en_cours: { label: 'En cours', tone: 'info', help: 'Intervention en cours.' },
+  resolu: { label: 'Résolu', tone: 'success', help: 'Incident réglé.' },
+};
+
+export const INCIDENT_TYPES: Record<string, string> = {
+  plomberie: 'Plomberie',
+  electricite: 'Électricité',
+  serrurerie: 'Serrurerie',
+  autre: 'Autre',
+};
+
+export const LOCATIF_DOCUMENT_TYPES: Record<string, string> = {
+  contrat: 'Contrat de bail',
+  quittance: 'Quittance de loyer',
+  etat_lieux_entree: 'État des lieux d’entrée',
+  etat_lieux_sortie: 'État des lieux de sortie',
+  releve_gestion: 'Relevé de gestion',
+  rapport: 'Rapport',
+  autre: 'Document',
+};
+
+/** Statut commercial d'un bien, côté propriétaire. */
+export const BIEN_LOCATIF_STATUS: Record<string, StatusLabel> = {
+  disponible: { label: 'Disponible', tone: 'info', help: 'Aucun locataire en place.' },
+  loue: { label: 'Loué', tone: 'success', help: 'Un bail est en cours.' },
+  en_travaux: { label: 'En travaux', tone: 'warning', help: 'Hors location le temps des travaux.' },
+  indisponible: { label: 'Indisponible', tone: 'neutral', help: 'Retiré de la location.' },
+};
+
 const FALLBACK: StatusLabel = { label: '', tone: 'neutral', help: '' };
 
 function humanize(code: string): string {
@@ -175,4 +282,53 @@ export function missionType(code: string): string {
 
 export function missionDocumentType(code: string): string {
   return MISSION_DOCUMENT_TYPES[code] ?? humanize(code);
+}
+
+export function loyerEcheanceStatus(code: string): StatusLabel {
+  return LOYER_ECHEANCE_STATUS[code] ?? { ...FALLBACK, label: humanize(code) };
+}
+
+export function bailStatus(code: string): StatusLabel {
+  return BAIL_STATUS[code] ?? { ...FALLBACK, label: humanize(code) };
+}
+
+export function incidentStatus(code: string): StatusLabel {
+  return INCIDENT_STATUS[code] ?? { ...FALLBACK, label: humanize(code) };
+}
+
+export function incidentType(code: string): string {
+  return INCIDENT_TYPES[code] ?? humanize(code);
+}
+
+export function locatifDocumentType(code: string): string {
+  return LOCATIF_DOCUMENT_TYPES[code] ?? humanize(code);
+}
+
+export function situationPaiement(code: string): StatusLabel {
+  return SITUATION_PAIEMENT[code] ?? { ...FALLBACK, label: humanize(code) };
+}
+
+export function paiementStatus(code: string): StatusLabel {
+  return PAIEMENT_STATUS[code] ?? { ...FALLBACK, label: humanize(code) };
+}
+
+export function cautionStatus(code: string): StatusLabel {
+  return CAUTION_STATUS[code] ?? { ...FALLBACK, label: humanize(code) };
+}
+
+export function mouvementCautionType(code: string): string {
+  return MOUVEMENT_CAUTION_TYPES[code] ?? humanize(code);
+}
+
+export function demandeType(code: string): string {
+  return DEMANDE_TYPES[code] ?? humanize(code);
+}
+
+export function bienLocatifStatus(code: string): StatusLabel {
+  return BIEN_LOCATIF_STATUS[code] ?? { ...FALLBACK, label: humanize(code) };
+}
+
+/** Un signalement n'a pas le même référentiel de types selon sa nature. */
+export function signalementType(nature: string, code: string): string {
+  return nature === 'demande' ? demandeType(code) : incidentType(code);
 }
