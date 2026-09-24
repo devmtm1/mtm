@@ -54,8 +54,11 @@ export interface ContentEditorData {
         <p class="content-dialog__intro">Affiché sur la page d’accueil, dans la section « Ce que disent nos clients ».</p>
         <mat-form-field appearance="outline" class="w-full">
           <mat-label>Auteur</mat-label>
-          <input matInput [formControl]="form.controls.title" placeholder="Ex. Aminata N., Dakar" />
-          <mat-hint>Prénom et ville suffisent ; pas de nom complet sans accord.</mat-hint>
+          <input matInput [formControl]="form.controls.title" placeholder="Ex. Aminata N. | France" />
+          <mat-hint>
+            Prénom et initiale suffisent ; pas de nom complet sans accord. Ajoutez « | Pays » pour
+            afficher le drapeau du pays de résidence (ex. « Awa D. | France »).
+          </mat-hint>
         </mat-form-field>
         <mat-form-field appearance="outline" class="w-full">
           <mat-label>Témoignage</mat-label>
