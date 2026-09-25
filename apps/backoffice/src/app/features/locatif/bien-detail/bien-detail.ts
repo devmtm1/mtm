@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -13,13 +14,12 @@ import {
   LucideBanknote,
   LucideBellRing,
   LucideCheck,
+  LucideChevronDown,
   LucideFileText,
-  LucidePiggyBank,
   LucidePlus,
   LucideReceipt,
-  LucideTrash2,
+  LucideTriangleAlert,
   LucideUpload,
-  LucideUserRoundX,
   LucideX,
 } from '@lucide/angular';
 import type { Observable } from 'rxjs';
@@ -89,19 +89,19 @@ import { SortieDialog } from './sortie-dialog';
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
+    MatMenuModule,
     MatSelectModule,
     MatTooltipModule,
     LucideArrowLeft,
     LucideBanknote,
     LucideBellRing,
     LucideCheck,
+    LucideChevronDown,
     LucideFileText,
-    LucidePiggyBank,
     LucidePlus,
     LucideReceipt,
-    LucideTrash2,
+    LucideTriangleAlert,
     LucideUpload,
-    LucideUserRoundX,
     LucideX,
   ],
   templateUrl: './bien-detail.html',
@@ -188,6 +188,11 @@ export class BienDetailPage implements OnInit {
 
   protected typeLabel(v: string): string {
     return simpleLabel(TYPES_BIEN, v);
+  }
+  /** « · Dakar, Dakar » ou rien : évite un séparateur orphelin dans l'en-tête. */
+  protected localisation(bien: BienDetail): string {
+    const lieu = [bien.commune, bien.region].filter((part) => !!part).join(', ');
+    return lieu ? ` · ${lieu}` : '';
   }
   protected bienStatutLabel(v: string): string {
     return label(BIEN_STATUTS, v);

@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { AlertTriangle, FileText, KeyRound, PiggyBank } from 'lucide-react';
+import { AlertTriangle, FileText, MessageSquarePlus } from 'lucide-react';
 import { useClientData } from '../../contexts/client-data-store';
 import { usePageMetadata } from '../../hooks/usePageMetadata';
-import { ClientPageHeader } from '../../components/client/shell/ClientUi';
+import { ClientCard, ClientPageHeader } from '../../components/client/shell/ClientUi';
 import { NewIncidentModal } from '../../components/client/NewIncidentModal';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
@@ -21,10 +21,23 @@ import {
   situationPaiement,
 } from '../../utils/labels';
 
+/** Libellé et valeur, alignés en colonne : la brique de lecture de la page. */
+function Fait({ label, value, hint }: { label: string; value: string; hint?: string }) {
+  return (
+    <div>
+      <dt className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">{label}</dt>
+      <dd className="mt-0.5 font-semibold text-mtm-text">
+        {value}
+        {hint && <span className="ml-1 text-xs font-normal text-mtm-muted">{hint}</span>}
+      </dd>
+    </div>
+  );
+}
+
 /**
- * Espace locataire (sections 4 et 15 du cahier des charges) : le bail, son
- * solde, les échéances, la caution et son historique, les quittances publiées,
- * les paiements, puis les incidents et demandes adressés à MTM.
+ * Espace locataire (sections 4 et 15 du cahier des charges) : le bail et son
+ * solde, la caution, les échéances, les quittances, les règlements, et les
+ * échanges avec MTM — incidents comme demandes.
  */
 export function ClientLocatairePage() {
   const {
@@ -39,9 +52,7 @@ export function ClientLocatairePage() {
   const baux = locataireBaux ?? [];
   const bailActif = baux.find((b) => b.statut === 'actif' || b.statut === 'preavis') ?? baux[0] ?? null;
   const paiements = locatairePaiements ?? [];
-  const signalements = locataireIncidents ?? [];
-  const incidents = signalements.filter((item) => item.nature !== 'demande');
-  const demandes = signalements.filter((item) => item.nature === 'demande');
+  const echanges = locataireIncidents ?? [];
 
   if (locataireLoading) {
     return (
@@ -66,9 +77,10 @@ export function ClientLocatairePage() {
   const statut = bailStatus(bailActif.statut);
   const situation = situationPaiement(bailActif.situationPaiement);
   const caution = cautionStatus(bailActif.caution.statut);
+  const { solde } = bailActif;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       <ClientPageHeader
         title="Ma location"
         description={[bailActif.bien.adresse, bailActif.bien.commune].filter(Boolean).join(', ')}
@@ -82,128 +94,99 @@ export function ClientLocatairePage() {
               variant="secondary"
               onClick={() => setSignalement({ bailId: bailActif.id, nature: 'demande' })}
             >
-              <FileText className="h-4 w-4" aria-hidden="true" />
+              <MessageSquarePlus className="h-4 w-4" aria-hidden="true" />
               Faire une demande
             </Button>
           </div>
         }
       />
 
-      <article className="overflow-hidden rounded-lg border border-mtm-border bg-mtm-surface shadow-card">
-        <header className="flex flex-col gap-2 border-b border-mtm-border px-4 py-3.5 sm:flex-row sm:items-start sm:justify-between sm:px-5 sm:py-4">
-          <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
-              {bailActif.referenceInterne}
-            </p>
-            <h3 className="mt-0.5 flex items-center gap-2 font-display text-lg font-bold text-mtm-text">
-              <KeyRound className="h-5 w-5 text-mtm-primary" aria-hidden="true" />
-              {bailActif.bien.adresse}
-            </h3>
-          </div>
-          <div className="flex flex-none flex-wrap gap-2">
+      {/* Mon bail : le statut, ce qui est dû, ce qui est réglé, la caution. */}
+      <ClientCard title="Mon bail">
+        <div className="flex flex-col gap-3.5">
+          <div className="flex flex-wrap items-center gap-2">
             <Badge tone={statut.tone}>{statut.label}</Badge>
             <Badge tone={situation.tone}>{situation.label}</Badge>
+            <span className="text-xs text-mtm-muted">{bailActif.referenceInterne}</span>
           </div>
-        </header>
-        <div className="flex flex-col gap-3 px-4 py-4 sm:px-5">
           <p className="text-sm text-mtm-muted">{situation.help || statut.help}</p>
+
+          <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+            <Fait
+              label="Loyer mensuel"
+              value={formatMoney(bailActif.loyerMensuel)}
+              hint={bailActif.charges ? `+ ${formatMoney(bailActif.charges)} charges` : undefined}
+            />
+            <Fait label="Loyers appelés" value={formatMoney(solde.loyersDus)} />
+            <Fait label="Loyers réglés" value={formatMoney(solde.loyersRegles)} />
+            <Fait
+              label={solde.resteADevoir > 0 ? 'Reste à régler' : 'Solde'}
+              value={formatMoney(solde.resteADevoir)}
+              hint={
+                solde.enAttenteDeValidation > 0
+                  ? `dont ${formatMoney(solde.enAttenteDeValidation)} en cours de validation`
+                  : undefined
+              }
+            />
+          </dl>
+
           {bailActif.preavisDepartPrevu && (
             <p className="text-sm text-mtm-text">
-              Départ prévu le {formatDate(bailActif.preavisDepartPrevu)}
+              Départ prévu le {formatDate(bailActif.preavisDepartPrevu)}.
             </p>
           )}
-          <dl className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
-            <div className="rounded-md bg-mtm-bg px-3 py-2">
-              <dt className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">Loyer mensuel</dt>
-              <dd className="mt-0.5 font-semibold text-mtm-text">{formatMoney(bailActif.loyerMensuel)}</dd>
-            </div>
-            {bailActif.charges !== null && (
-              <div className="rounded-md bg-mtm-bg px-3 py-2">
-                <dt className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">Charges</dt>
-                <dd className="mt-0.5 font-semibold text-mtm-text">{formatMoney(bailActif.charges)}</dd>
-              </div>
-            )}
-            <div className="rounded-md bg-mtm-bg px-3 py-2">
-              <dt className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">Loyers appelés</dt>
-              <dd className="mt-0.5 font-semibold text-mtm-text">
-                {formatMoney(bailActif.solde.loyersDus)}
-              </dd>
-            </div>
-            <div className="rounded-md bg-mtm-bg px-3 py-2">
-              <dt className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">Loyers réglés</dt>
-              <dd className="mt-0.5 font-semibold text-mtm-text">
-                {formatMoney(bailActif.solde.loyersRegles)}
-              </dd>
-            </div>
-            <div className="rounded-md bg-mtm-bg px-3 py-2 sm:col-span-2">
-              <dt className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
-                {bailActif.solde.resteADevoir > 0 ? 'Reste à régler' : 'Solde'}
-              </dt>
-              <dd className="mt-0.5 font-semibold text-mtm-text">
-                {formatMoney(bailActif.solde.resteADevoir)}
-                {bailActif.solde.enAttenteDeValidation > 0 && (
-                  <span className="ml-2 text-xs font-normal text-mtm-muted">
-                    dont {formatMoney(bailActif.solde.enAttenteDeValidation)} en cours de validation
-                  </span>
-                )}
-              </dd>
-            </div>
-          </dl>
-        </div>
-      </article>
 
-      {/* Caution : exigée dans l'espace locataire par la section 4. */}
-      <div>
-        <h2 className="mb-2 flex items-center gap-2 font-display text-base font-bold text-mtm-text">
-          <PiggyBank className="h-4 w-4 text-mtm-primary" aria-hidden="true" />
-          Ma caution
-        </h2>
-        <div className="rounded-lg border border-mtm-border bg-mtm-surface px-4 py-3.5 shadow-card">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm text-mtm-text">
-              <span className="font-semibold">{formatMoney(bailActif.caution.detenu)}</span> conservés
-              en dépôt
-              {bailActif.caution.montantPrevu > 0 && (
-                <span className="text-mtm-muted">
-                  {' '}
-                  · prévue au bail {formatMoney(bailActif.caution.montantPrevu)}
+          {/* Caution : un état en une ligne, le détail au clic. */}
+          <div className="border-t border-mtm-border pt-3">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <p className="text-sm text-mtm-text">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
+                  Caution
                 </span>
-              )}
-            </p>
-            <Badge tone={caution.tone}>{caution.label}</Badge>
+                <span className="ml-2 font-semibold">{formatMoney(bailActif.caution.detenu)}</span>
+                <span className="text-mtm-muted"> conservés en dépôt</span>
+              </p>
+              <Badge tone={caution.tone}>{caution.label}</Badge>
+            </div>
+            {bailActif.caution.mouvements.length > 0 && (
+              <details className="mt-2 text-sm">
+                <summary className="cursor-pointer font-medium text-mtm-primary hover:underline">
+                  Détail des mouvements ({bailActif.caution.mouvements.length})
+                </summary>
+                <ul className="mt-2 flex flex-col gap-1.5 border-l-2 border-mtm-border pl-3">
+                  {bailActif.caution.mouvements.map((mouvement) => (
+                    <li key={mouvement.id} className="flex flex-wrap items-baseline gap-x-2">
+                      <span className="font-medium text-mtm-text">
+                        {mouvementCautionType(mouvement.type)}
+                      </span>
+                      <span className="text-mtm-text">{formatMoney(mouvement.montant)}</span>
+                      <span className="text-xs text-mtm-muted">{formatDate(mouvement.date)}</span>
+                      {mouvement.justification && (
+                        <span className="w-full text-xs text-mtm-muted">{mouvement.justification}</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
           </div>
-          <p className="mt-1 text-xs text-mtm-muted">{caution.help}</p>
-          {bailActif.caution.mouvements.length > 0 && (
-            <ul className="mt-3 flex flex-col gap-1.5 border-t border-mtm-border pt-3">
-              {bailActif.caution.mouvements.map((mouvement) => (
-                <li key={mouvement.id} className="flex flex-wrap items-baseline gap-x-2 text-sm">
-                  <span className="font-semibold text-mtm-text">
-                    {mouvementCautionType(mouvement.type)}
-                  </span>
-                  <span className="text-mtm-text">{formatMoney(mouvement.montant)}</span>
-                  <span className="text-mtm-muted">{formatDate(mouvement.date)}</span>
-                  {mouvement.justification && (
-                    <span className="w-full text-xs text-mtm-muted">{mouvement.justification}</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
-      </div>
+      </ClientCard>
 
-      <div>
-        <h2 className="mb-2 font-display text-base font-bold text-mtm-text">Échéances</h2>
-        <ul className="flex flex-col gap-1.5">
+      <ClientCard title="Mes échéances">
+        <ul className="-my-1 divide-y divide-mtm-border">
           {bailActif.echeances.map((echeance) => {
             const echeanceStatut = loyerEcheanceStatus(echeance.statut);
             return (
               <li
                 key={echeance.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-mtm-border bg-mtm-surface px-3 py-2.5 text-sm"
+                className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm"
               >
-                <span className="font-semibold text-mtm-text">
-                  {new Date(echeance.periode).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                <span className="font-medium text-mtm-text">
+                  {new Date(echeance.periode).toLocaleDateString('fr-FR', {
+                    month: 'long',
+                    year: 'numeric',
+                  })}
                 </span>
                 <span className="text-mtm-muted">
                   {formatMoney(echeance.montantPaye)} / {formatMoney(echeance.montantPrevu)}
@@ -213,42 +196,40 @@ export function ClientLocatairePage() {
             );
           })}
         </ul>
-      </div>
+      </ClientCard>
 
       {bailActif.documents.length > 0 && (
-        <div>
-          <h2 className="mb-2 font-display text-base font-bold text-mtm-text">Quittances et documents</h2>
-          <ul className="flex flex-col gap-1.5">
+        <ClientCard title="Mes quittances et documents">
+          <ul className="-my-1 divide-y divide-mtm-border">
             {bailActif.documents.map((document) => (
               <li key={document.id}>
                 <a
                   href={document.secureUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 rounded-md border border-mtm-border bg-mtm-surface px-3 py-2.5 text-sm font-medium text-mtm-text transition hover:border-mtm-primary"
+                  className="flex items-center gap-2 py-2.5 text-sm font-medium text-mtm-text hover:text-mtm-primary"
                 >
-                  <FileText className="h-4 w-4 flex-none text-mtm-primary" aria-hidden="true" />
+                  <FileText className="h-4 w-4 flex-none text-mtm-muted" aria-hidden="true" />
                   <span className="truncate">{document.title ?? locatifDocumentType(document.type)}</span>
-                  <span className="ml-auto flex-none text-xs text-mtm-muted">
+                  <span className="ml-auto flex-none text-xs font-normal text-mtm-muted">
                     {formatDate(document.createdAt)}
                   </span>
                 </a>
               </li>
             ))}
           </ul>
-        </div>
+        </ClientCard>
       )}
 
       {paiements.length > 0 && (
-        <div>
-          <h2 className="mb-2 font-display text-base font-bold text-mtm-text">Historique des paiements</h2>
-          <ul className="flex flex-col gap-1.5">
+        <ClientCard title="Mes règlements">
+          <ul className="-my-1 divide-y divide-mtm-border">
             {paiements.map((paiement) => {
               const statutPaiement = paiementStatus(paiement.statut);
               return (
                 <li
                   key={paiement.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-mtm-border bg-mtm-surface px-3 py-2.5 text-sm"
+                  className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm"
                 >
                   <span className="text-mtm-muted">{formatDate(paiement.datePaiement)}</span>
                   <span className="font-semibold text-mtm-text">{formatMoney(paiement.montant)}</span>
@@ -257,66 +238,44 @@ export function ClientLocatairePage() {
               );
             })}
           </ul>
-        </div>
+        </ClientCard>
       )}
 
-      <div>
-        <h2 className="mb-2 font-display text-base font-bold text-mtm-text">Mes incidents signalés</h2>
-        {incidents.length === 0 ? (
-          <p className="text-sm text-mtm-muted">Aucun incident signalé.</p>
-        ) : (
-          <ul className="flex flex-col gap-1.5">
-            {incidents.map((incident) => {
-              const incidentStatut = incidentStatus(incident.statut);
-              return (
-                <li key={incident.id} className="rounded-md border border-mtm-border bg-mtm-surface px-3 py-2.5 text-sm">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="font-semibold text-mtm-text">
-                      {signalementType(incident.nature, incident.type)}
-                    </span>
-                    <Badge tone={incidentStatut.tone}>{incidentStatut.label}</Badge>
-                  </div>
-                  <p className="mt-1 text-mtm-muted">{incident.description}</p>
-                  {incident.resolutionNotes && (
-                    <p className="mt-1 text-xs text-mtm-muted">Réponse MTM : {incident.resolutionNotes}</p>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
-
-      {/* Demandes : le second canal exigé par les sections 4 et 15. */}
-      <div>
-        <h2 className="mb-2 font-display text-base font-bold text-mtm-text">Mes demandes</h2>
-        {demandes.length === 0 ? (
+      {/* Incidents et demandes : un seul fil, chacun étiqueté. */}
+      <ClientCard title="Mes échanges avec MTM">
+        {echanges.length === 0 ? (
           <p className="text-sm text-mtm-muted">
-            Aucune demande en cours. Utilisez « Faire une demande » pour une attestation, un
-            renouvellement de bail ou des travaux.
+            Rien en cours. Signalez un incident ou déposez une demande — attestation,
+            renouvellement de bail, travaux — et nous vous répondons ici.
           </p>
         ) : (
-          <ul className="flex flex-col gap-1.5">
-            {demandes.map((demande) => {
-              const demandeStatut = incidentStatus(demande.statut);
+          <ul className="-my-1 divide-y divide-mtm-border">
+            {echanges.map((echange) => {
+              const echangeStatut = incidentStatus(echange.statut);
               return (
-                <li key={demande.id} className="rounded-md border border-mtm-border bg-mtm-surface px-3 py-2.5 text-sm">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="font-semibold text-mtm-text">
-                      {signalementType(demande.nature, demande.type)}
+                <li key={echange.id} className="py-2.5 text-sm">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
+                      {echange.nature === 'demande' ? 'Demande' : 'Incident'}
                     </span>
-                    <Badge tone={demandeStatut.tone}>{demandeStatut.label}</Badge>
+                    <span className="font-medium text-mtm-text">
+                      {signalementType(echange.nature, echange.type)}
+                    </span>
+                    <span className="text-xs text-mtm-muted">{formatDate(echange.createdAt)}</span>
+                    <Badge tone={echangeStatut.tone}>{echangeStatut.label}</Badge>
                   </div>
-                  <p className="mt-1 text-mtm-muted">{demande.description}</p>
-                  {demande.resolutionNotes && (
-                    <p className="mt-1 text-xs text-mtm-muted">Réponse MTM : {demande.resolutionNotes}</p>
+                  <p className="mt-1 text-mtm-muted">{echange.description}</p>
+                  {echange.resolutionNotes && (
+                    <p className="mt-1 text-xs text-mtm-muted">
+                      Réponse MTM : {echange.resolutionNotes}
+                    </p>
                   )}
                 </li>
               );
             })}
           </ul>
         )}
-      </div>
+      </ClientCard>
 
       {signalement && (
         <NewIncidentModal

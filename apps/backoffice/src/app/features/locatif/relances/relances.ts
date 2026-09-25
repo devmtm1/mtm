@@ -5,9 +5,10 @@ import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { LucideBellRing, LucideMail, LucideTriangleAlert } from '@lucide/angular';
+import { LucideChevronDown, LucideMail } from '@lucide/angular';
 import type { Observable } from 'rxjs';
 import { LocatifApiService } from '../../../core/services/api/locatif-api.service';
 import type { LocatifOptions, RelanceLoyer } from '../../../core/models/locatif.model';
@@ -38,11 +39,11 @@ import {
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
+    MatMenuModule,
     MatSelectModule,
     MatTooltipModule,
-    LucideBellRing,
+    LucideChevronDown,
     LucideMail,
-    LucideTriangleAlert,
   ],
   templateUrl: './relances.html',
   styleUrl: './relances.scss',
@@ -64,6 +65,13 @@ export class Relances implements OnInit {
 
   protected readonly filtres = this.formBuilder.nonNullable.group({
     statut: ['a_envoyer'],
+  });
+
+  /** « 5, 15 puis 30 jours » : le calendrier en une phrase, dans le sous-titre. */
+  protected readonly paliers = computed(() => {
+    const modeles = this.options().relanceModeles ?? [];
+    if (modeles.length === 0) return '';
+    return modeles.map((modele) => `${modele.joursRetard} j`).join(', ');
   });
 
   /** Total encore dû sur les échéances relancées : l'enjeu de la file. */

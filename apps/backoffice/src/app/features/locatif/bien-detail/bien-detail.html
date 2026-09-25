@@ -1,23 +1,23 @@
 @if (loading()) {
-  <div class="bien-detail">
+  <div class="detail-page">
     <div class="skeleton" style="height: 20px; width: 180px"></div>
     <div class="skeleton" style="height: 36px; width: 45%"></div>
     <div class="skeleton" style="height: 220px"></div>
   </div>
 } @else if (bien(); as b) {
-  <div class="bien-detail">
-    <header class="page-header">
+  <div class="detail-page bien-detail">
+    <header class="detail-header">
       <div>
         <button mat-button type="button" class="back-link" (click)="retour()">
           <svg class="btn-icon" lucideArrowLeft aria-hidden="true"></svg>Retour aux biens
         </button>
         <p class="eyebrow">{{ b.referenceInterne }} · Gestion locative</p>
-        <h1 class="page-header__title">{{ b.adresse }}</h1>
-        <p class="page-header__subtitle">
-          {{ typeLabel(b.type) }} — {{ [b.commune, b.region].join(', ') }} · Propriétaire
-          {{ b.proprietaire.firstName }} {{ b.proprietaire.lastName }}
+        <h1>{{ b.adresse }}</h1>
+        <p class="detail-header__location">
+          {{ typeLabel(b.type) }}{{ localisation(b) }} · {{ b.proprietaire.firstName }}
+          {{ b.proprietaire.lastName }}
         </p>
-        <div class="bien-detail__tags">
+        <div class="status-line">
           <span [class]="bienStatutPill(b.statut)">{{ bienStatutLabel(b.statut) }}</span>
           @if (bailActuel(); as bail) {
             <span
@@ -29,442 +29,724 @@
           }
         </div>
       </div>
+
       @if (canModify()) {
-        <div class="page-header__actions">
-          @if (canPublish() && bailActuel()) {
-            <button mat-stroked-button type="button" (click)="genererReleve()">
-              <svg class="btn-icon" lucideFileText aria-hidden="true"></svg>Relevé de gestion
+        <div class="detail-header__actions">
+          @if (bailActuel(); as bail) {
+            <button mat-flat-button color="primary" type="button" (click)="enregistrerPaiement()">
+              <svg class="btn-icon" lucideBanknote aria-hidden="true"></svg>Enregistrer un versement
+            </button>
+          } @else {
+            <button mat-flat-button color="primary" type="button" (click)="creerBail()">
+              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Créer un bail
             </button>
           }
-          @if (canDelete()) {
-            <button mat-stroked-button type="button" class="bien-detail__danger" (click)="supprimerBien()">
-              <svg class="btn-icon" lucideTrash2 aria-hidden="true"></svg>Supprimer
-            </button>
+          <button
+            mat-icon-button
+            type="button"
+            [matMenuTriggerFor]="autresActions"
+            aria-label="Plus d’actions"
+          >
+            <svg class="btn-icon" lucideChevronDown aria-hidden="true"></svg>
+          </button>
+          <mat-menu #autresActions="matMenu" xPosition="before">
+            @if (bailActuel(); as bail) {
+              <button mat-menu-item type="button" (click)="enregistrerMouvementCaution()">
+                <span class="menu-line">
+                  <strong>Mouvement de caution</strong>
+                  <small>Versement, retenue justifiée, restitution</small>
+                </span>
+              </button>
+              <button mat-menu-item type="button" (click)="creerSignalement()">
+                <span class="menu-line">
+                  <strong>Incident ou demande</strong>
+                  <small>Constat de visite, demande reçue du locataire</small>
+                </span>
+              </button>
+              @if (bail.statut === 'actif') {
+                <button mat-menu-item type="button" (click)="donnerPreavis()">
+                  <span class="menu-line">
+                    <strong>Préavis de départ</strong>
+                    <small>Le locataire annonce son départ</small>
+                  </span>
+                </button>
+              }
+              <button mat-menu-item type="button" (click)="cloturerBail()">
+                <span class="menu-line">
+                  <strong>Clôturer (sortie)</strong>
+                  <small>État des lieux, régularisation calculée, caution</small>
+                </span>
+              </button>
+              <button mat-menu-item type="button" (click)="changerLocataire()">
+                <span class="menu-line">
+                  <strong>Changer de locataire</strong>
+                  <small>Clôt ce bail et ouvre le suivant</small>
+                </span>
+              </button>
+              @if (bail.statut === 'actif') {
+                <button mat-menu-item type="button" (click)="resilierSansPreavis()">
+                  <span class="menu-line">
+                    <strong>Résilier sans préavis</strong>
+                    <small>Départ constaté, motif obligatoire</small>
+                  </span>
+                </button>
+              }
+              @if (canPublish()) {
+                <button mat-menu-item type="button" (click)="genererReleve()">
+                  <span class="menu-line">
+                    <strong>Relevé de gestion</strong>
+                    <small>Publié dans l’espace du propriétaire</small>
+                  </span>
+                </button>
+              }
+            }
+            @if (canDelete()) {
+              <button mat-menu-item type="button" (click)="supprimerBien()">
+                <span class="menu-line">
+                  <strong>Supprimer le bien</strong>
+                  <small>Impossible dès qu’un bail existe</small>
+                </span>
+              </button>
+            }
+          </mat-menu>
+        </div>
+      }
+    </header>
+
+    @if (!bailActuel() && b.statut === 'loue') {
+      <aside class="alert-banner" aria-label="Incohérence à corriger">
+        <div class="alert-banner__head">
+          <svg lucideTriangleAlert aria-hidden="true"></svg>
+          <strong>Ce bien est marqué « loué » sans bail actif.</strong>
+          <span>Créez le bail du nouveau locataire, ou repassez-le disponible ci-dessous.</span>
+        </div>
+      </aside>
+    }
+
+    <!-- Les quatre chiffres qui décident de la suite -->
+    @if (bailActuel(); as bail) {
+      <section class="page-card bien-detail__figures" aria-label="Situation financière">
+        <div>
+          <span>Loyer mensuel</span>
+          <strong>{{ bail.loyerMensuel | mtmMoney }}</strong>
+          @if (bail.charges) {
+            <small>+ {{ bail.charges | mtmMoney }} de charges</small>
           }
-          <mat-form-field appearance="outline" class="bien-detail__etape-select">
+        </div>
+        @if (solde(); as s) {
+          <div>
+            <span>Encaissé</span>
+            <strong>{{ s.loyersEncaisses | mtmMoney }}</strong>
+            <small>sur {{ s.loyersDus | mtmMoney }} appelés</small>
+          </div>
+          <div [class.is-due]="s.solde > 0">
+            <span>Reste dû</span>
+            <strong>{{ s.solde | mtmMoney }}</strong>
+            @if (s.encaissementsEnAttente > 0) {
+              <small>{{ s.encaissementsEnAttente | mtmMoney }} à valider</small>
+            } @else if (s.echeancesImpayees > 0) {
+              <small>{{ s.echeancesImpayees }} échéance(s) non soldée(s)</small>
+            } @else {
+              <small>Aucun retard</small>
+            }
+          </div>
+        }
+        @if (caution(); as c) {
+          <div>
+            <span>Caution détenue</span>
+            <strong>{{ c.etat.disponible | mtmMoney }}</strong>
+            <small>{{ cautionLabel(c.etat.statut) }}</small>
+          </div>
+        }
+      </section>
+    }
+
+    <div class="content-grid">
+      <!-- Bail en cours -->
+      <section class="page-card detail-section">
+        <div class="detail-section__head">
+          <div>
+            <h2>Bail en cours</h2>
+            <p class="detail-section__hint">
+              Le bail porte le locataire, le loyer et les dates ; le bien lui survit.
+            </p>
+          </div>
+          @if (bailActuel(); as bail) {
+            <span [class]="bailStatutPill(bail.statut)">{{ bailStatutLabel(bail.statut) }}</span>
+          }
+        </div>
+
+        @if (bailActuel(); as bail) {
+          <dl class="info-list">
+            <div>
+              <dt>Locataire</dt>
+              <dd>
+                {{ bail.locataire.firstName }} {{ bail.locataire.lastName }}
+                @if (bail.locataire.phone) {
+                  <small>{{ bail.locataire.phone }}</small>
+                }
+              </dd>
+            </div>
+            <div>
+              <dt>Référence</dt>
+              <dd>{{ bail.referenceInterne }}</dd>
+            </div>
+            <div>
+              <dt>Début</dt>
+              <dd>{{ bail.dateDebut | date: 'dd/MM/yyyy' }}</dd>
+            </div>
+            <div>
+              <dt>{{ bail.preavisDepartPrevu ? 'Départ prévu' : 'Fin prévue' }}</dt>
+              <dd>
+                {{ (bail.preavisDepartPrevu ?? bail.dateFin) | date: 'dd/MM/yyyy' }}
+                @if (!bail.preavisDepartPrevu && !bail.dateFin) {
+                  Durée indéterminée
+                }
+              </dd>
+            </div>
+          </dl>
+        } @else {
+          <p class="detail-note">
+            Aucun bail actif sur ce bien.
+            @if (canModify()) {
+              <button mat-button type="button" (click)="creerBail()">Créer le bail</button>
+            }
+          </p>
+        }
+      </section>
+
+      <!-- Caution -->
+      @if (bailActuel()) {
+        <section class="page-card detail-section">
+          <div class="detail-section__head">
+            <div>
+              <h2>Caution</h2>
+              <p class="detail-section__hint">
+                Le statut se déduit des mouvements : rien ne sort qui n’ait été encaissé.
+              </p>
+            </div>
+            @if (caution(); as c) {
+              <span [class]="cautionPill(c.etat.statut)">{{ cautionLabel(c.etat.statut) }}</span>
+            }
+          </div>
+
+          @if (caution(); as c) {
+            <dl class="info-list">
+              <div>
+                <dt>Prévue au bail</dt>
+                <dd>{{ c.etat.montantInitial | mtmMoney }}</dd>
+              </div>
+              <div>
+                <dt>Versée</dt>
+                <dd>{{ c.etat.verse | mtmMoney }}</dd>
+              </div>
+              <div>
+                <dt>Retenue</dt>
+                <dd>{{ c.etat.retenu | mtmMoney }}</dd>
+              </div>
+              <div>
+                <dt>Remboursée</dt>
+                <dd>{{ c.etat.rembourse | mtmMoney }}</dd>
+              </div>
+            </dl>
+
+            @if (c.mouvements.length) {
+              <div class="table-scroll">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Nature</th>
+                      <th class="is-right">Montant</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (mouvement of c.mouvements; track mouvement.id) {
+                      <tr>
+                        <td>
+                          {{ mouvementLabel(mouvement.type) }}
+                          @if (mouvement.justification) {
+                            <small class="cell-muted">{{ mouvement.justification }}</small>
+                          }
+                        </td>
+                        <td class="is-right">{{ mouvement.montant | mtmMoney }}</td>
+                        <td>{{ mouvement.date | date: 'dd/MM/yyyy' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <p class="detail-note">
+                Aucun mouvement enregistré.
+                @if (canModify()) {
+                  <button mat-button type="button" (click)="enregistrerMouvementCaution()">
+                    Enregistrer le versement
+                  </button>
+                }
+              </p>
+            }
+          }
+        </section>
+      }
+
+      <!-- Échéances -->
+      @if (bailActuel(); as bail) {
+        <section class="page-card detail-section">
+          <div class="detail-section__head">
+            <div>
+              <h2>Échéances</h2>
+              <p class="detail-section__hint">
+                Générées d’avance et prolongées chaque nuit ; les statuts se recalculent seuls.
+              </p>
+            </div>
+          </div>
+          @if (bail.echeances.length) {
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Période</th>
+                    <th>Échéance</th>
+                    <th class="is-right">Dû</th>
+                    <th class="is-right">Réglé</th>
+                    <th>Statut</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (echeance of bail.echeances; track echeance.id) {
+                    <tr>
+                      <td>{{ echeance.periode | date: 'MMMM yyyy' }}</td>
+                      <td>{{ echeance.dateEcheance | date: 'dd/MM' }}</td>
+                      <td class="is-right">{{ echeance.montantPrevu | mtmMoney }}</td>
+                      <td class="is-right">{{ echeance.montantPaye | mtmMoney }}</td>
+                      <td>
+                        <span [class]="echeancePill(echeance.statut)">
+                          {{ echeanceLabel(echeance.statut) }}
+                        </span>
+                      </td>
+                      <td class="is-right">
+                        @if (canModify() && echeance.statut !== 'payee' && echeance.statut !== 'annulee') {
+                          <button
+                            mat-button
+                            type="button"
+                            (click)="enregistrerPaiement(echeance)"
+                          >
+                            Encaisser
+                          </button>
+                        } @else if (canValidate() && echeance.statut === 'payee') {
+                          <button
+                            mat-button
+                            type="button"
+                            matTooltip="Quittance remise au locataire"
+                            (click)="genererQuittance(echeance)"
+                          >
+                            <svg class="btn-icon" lucideReceipt aria-hidden="true"></svg>Quittance
+                          </button>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <p class="detail-note">Aucune échéance sur ce bail.</p>
+          }
+        </section>
+      }
+
+      <!-- Relances -->
+      @if (relances().length) {
+        <section class="page-card detail-section">
+          <div class="detail-section__head">
+            <div>
+              <h2>Relances</h2>
+              <p class="detail-section__hint">
+                Proposées par le calendrier paramétré, une seule fois par échéance et par palier.
+              </p>
+            </div>
+            @if (relancesAEnvoyer().length) {
+              <span class="status-pill status-pill--warning">
+                {{ relancesAEnvoyer().length }} à envoyer
+              </span>
+            }
+          </div>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Palier</th>
+                  <th>Retard</th>
+                  <th>Statut</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (relance of relances(); track relance.id) {
+                  <tr>
+                    <td>
+                      {{ relanceModeleLabel(relance.modeleCode) }}
+                      @if (relance.echeance) {
+                        <small class="cell-muted">{{ relance.echeance.periode | date: 'MMMM yyyy' }}</small>
+                      }
+                    </td>
+                    <td>{{ relance.joursRetard }} j</td>
+                    <td>
+                      <span [class]="relanceStatutPill(relance.statut)">
+                        {{ relanceStatutLabel(relance.statut) }}
+                      </span>
+                    </td>
+                    <td class="is-right">
+                      @if (canModify() && relance.statut === 'a_envoyer') {
+                        <button mat-button type="button" (click)="envoyerRelance(relance)">
+                          <svg class="btn-icon" lucideBellRing aria-hidden="true"></svg>Envoyer
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+
+      <!-- Versements -->
+      @if (bailActuel()) {
+        <section class="page-card detail-section">
+          <div class="detail-section__head">
+            <div>
+              <h2>Versements</h2>
+              <p class="detail-section__hint">
+                Un versement n’entre dans le solde qu’une fois validé.
+              </p>
+            </div>
+            @if (paiementsAValider().length) {
+              <span class="status-pill status-pill--warning">
+                {{ paiementsAValider().length }} à valider
+              </span>
+            }
+          </div>
+          @if (paiements().length) {
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Nature</th>
+                    <th class="is-right">Montant</th>
+                    <th>Statut</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (paiement of paiements(); track paiement.id) {
+                    <tr>
+                      <td>{{ paiement.datePaiement | date: 'dd/MM/yyyy' }}</td>
+                      <td>
+                        {{ paiementTypeLabel(paiement.type) }}
+                        <small class="cell-muted">
+                          {{ modeLabel(paiement.modePaiement) }}
+                          @if (paiement.reference) {
+                            · {{ paiement.reference }}
+                          }
+                        </small>
+                      </td>
+                      <td class="is-right">
+                        <strong>{{ paiement.montant | mtmMoney }}</strong>
+                      </td>
+                      <td>
+                        <span [class]="paiementStatutPill(paiement.statut)">
+                          {{ paiementStatutLabel(paiement.statut) }}
+                        </span>
+                      </td>
+                      <td class="is-right">
+                        @if (canValidate() && paiement.statut === 'en_attente') {
+                          <button mat-button type="button" (click)="validerPaiement(paiement)">
+                            <svg class="btn-icon" lucideCheck aria-hidden="true"></svg>Valider
+                          </button>
+                          <button
+                            mat-icon-button
+                            type="button"
+                            class="bien-detail__danger"
+                            aria-label="Rejeter"
+                            matTooltip="Rejeter"
+                            (click)="rejeterPaiement(paiement)"
+                          >
+                            <svg class="btn-icon" lucideX aria-hidden="true"></svg>
+                          </button>
+                        } @else if (canValidate() && paiement.statut === 'valide') {
+                          <button
+                            mat-icon-button
+                            type="button"
+                            aria-label="Annuler ce versement"
+                            matTooltip="Annuler ce versement"
+                            (click)="rejeterPaiement(paiement)"
+                          >
+                            <svg class="btn-icon" lucideX aria-hidden="true"></svg>
+                          </button>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <p class="detail-note">
+              Aucun versement enregistré.
+              @if (canModify()) {
+                <button mat-button type="button" (click)="enregistrerPaiement()">
+                  Enregistrer le premier
+                </button>
+              }
+            </p>
+          }
+        </section>
+      }
+
+      <!-- Pièces -->
+      @if (bailActuel()) {
+        <section class="page-card detail-section">
+          <div class="detail-section__head">
+            <div>
+              <h2>Pièces du bail</h2>
+              <p class="detail-section__hint">
+                Locataire et propriétaire ne voient que ce qui leur est destiné.
+              </p>
+            </div>
+            @if (canModify()) {
+              <label class="upload-button">
+                <svg class="btn-icon" lucideUpload aria-hidden="true"></svg>Ajouter
+                <input type="file" (change)="televerser($event, 'contrat')" />
+              </label>
+            }
+          </div>
+          @if (documents().length) {
+            <ul class="doc-list">
+              @for (piece of documents(); track piece.id) {
+                <li class="doc-item">
+                  <svg lucideFileText aria-hidden="true"></svg>
+                  <a class="doc-item__title" [href]="piece.secureUrl" target="_blank" rel="noopener">
+                    {{ piece.title ?? documentLabel(piece.type) }}
+                    <small>{{ documentLabel(piece.type) }} · {{ piece.createdAt | date: 'dd/MM/yyyy' }}</small>
+                  </a>
+                  <span class="doc-item__visibility">
+                    @if (piece.visibleLocataire) {
+                      <span class="status-pill status-pill--success">Locataire</span>
+                    }
+                    @if (piece.visibleProprietaire) {
+                      <span class="status-pill status-pill--info">Propriétaire</span>
+                    }
+                    @if (!piece.visibleLocataire && !piece.visibleProprietaire) {
+                      <span class="status-pill">Interne</span>
+                    }
+                  </span>
+                  @if (canPublish() || canModify()) {
+                    <button
+                      mat-icon-button
+                      type="button"
+                      [matMenuTriggerFor]="pieceMenu"
+                      aria-label="Actions sur la pièce"
+                    >
+                      <svg class="btn-icon" lucideChevronDown aria-hidden="true"></svg>
+                    </button>
+                    <mat-menu #pieceMenu="matMenu" xPosition="before">
+                      @if (canPublish()) {
+                        <button mat-menu-item type="button" (click)="basculerVisibiliteLocataire(piece)">
+                          {{ piece.visibleLocataire ? 'Retirer au locataire' : 'Publier au locataire' }}
+                        </button>
+                        <button mat-menu-item type="button" (click)="basculerVisibiliteProprietaire(piece)">
+                          {{ piece.visibleProprietaire ? 'Retirer au propriétaire' : 'Publier au propriétaire' }}
+                        </button>
+                      }
+                      @if (canModify()) {
+                        <button mat-menu-item type="button" (click)="supprimerDocument(piece)">
+                          Supprimer la pièce
+                        </button>
+                      }
+                    </mat-menu>
+                  }
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="detail-note">Aucune pièce pour l’instant.</p>
+          }
+        </section>
+      }
+
+      <!-- Incidents et demandes -->
+      @if (bailActuel(); as bail) {
+        <section class="page-card detail-section detail-section--wide">
+          <div class="detail-section__head">
+            <div>
+              <h2>Incidents et demandes</h2>
+              <p class="detail-section__hint">
+                Signalés par le locataire depuis son espace, ou constatés par MTM.
+              </p>
+            </div>
+            @if (canModify()) {
+              <button mat-stroked-button type="button" (click)="creerSignalement()">
+                <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau
+              </button>
+            }
+          </div>
+          @if (bail.incidents.length) {
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Nature</th>
+                    <th>Objet</th>
+                    <th>Signalé</th>
+                    <th>Par</th>
+                    <th>Statut</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (signalement of bail.incidents; track signalement.id) {
+                    <tr>
+                      <td>{{ natureLabel(signalement.nature) }}</td>
+                      <td>
+                        {{ signalementTypeLabel(signalement) }}
+                        <small class="cell-muted">{{ signalement.description }}</small>
+                      </td>
+                      <td>{{ signalement.createdAt | date: 'dd/MM/yyyy' }}</td>
+                      <td>
+                        {{ signalement.reportedBy ? personne(signalement.reportedBy) : 'Le locataire' }}
+                      </td>
+                      <td>
+                        <span [class]="incidentStatutPill(signalement.statut)">
+                          {{ incidentStatutLabel(signalement.statut) }}
+                        </span>
+                      </td>
+                      <td class="is-right">
+                        @if (canModify() && signalement.statut !== 'resolu') {
+                          <button mat-button type="button" (click)="resoudreIncident(signalement.id)">
+                            {{ signalement.nature === 'demande' ? 'Marquer traitée' : 'Marquer résolu' }}
+                          </button>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <p class="detail-note">Aucun incident ni demande sur ce bail.</p>
+          }
+        </section>
+      }
+
+      <!-- Historique des baux -->
+      @if (bauxTermines().length) {
+        <section class="page-card detail-section detail-section--wide">
+          <div class="detail-section__head">
+            <div>
+              <h2>Historique des baux</h2>
+              <p class="detail-section__hint">
+                Chaque changement de locataire clôt un bail et en ouvre un autre : rien n’est réécrit.
+              </p>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Locataire</th>
+                  <th>Période</th>
+                  <th class="is-right">Loyer</th>
+                  <th class="is-right">Régularisation</th>
+                  <th>Sortie</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (bail of bauxTermines(); track bail.id) {
+                  <tr>
+                    <td>{{ bail.locataire.firstName }} {{ bail.locataire.lastName }}</td>
+                    <td>
+                      {{ bail.dateDebut | date: 'dd/MM/yyyy' }} →
+                      {{ bail.dateSortieReelle | date: 'dd/MM/yyyy' }}
+                    </td>
+                    <td class="is-right">{{ bail.loyerMensuel | mtmMoney }}</td>
+                    <td class="is-right">
+                      {{ bail.regularisationMontant ? (bail.regularisationMontant | mtmMoney) : '—' }}
+                    </td>
+                    <td>
+                      <span [class]="bailStatutPill(bail.statut)">{{ bailStatutLabel(bail.statut) }}</span>
+                      @if (bail.motifCloture) {
+                        <small class="cell-muted">{{ bail.motifCloture }}</small>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+
+      <!-- Fiche du bien : rarement modifiée, donc en fin de page -->
+      <section class="page-card detail-section detail-section--wide">
+        <div class="detail-section__head">
+          <div>
+            <h2>Informations du bien</h2>
+            <p class="detail-section__hint">
+              Ce qui appartient au bien lui-même, indépendamment du locataire en place.
+            </p>
+          </div>
+        </div>
+        <form [formGroup]="form" class="form-grid" (ngSubmit)="enregistrerBien()">
+          <mat-form-field appearance="outline">
+            <mat-label>Type</mat-label>
+            <mat-select formControlName="type">
+              @for (type of options().typesBien ?? []; track type) {
+                <mat-option [value]="type">{{ typeLabel(type) }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Superficie (m²)</mat-label>
+            <input matInput type="number" min="0" formControlName="superficie" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
             <mat-label>Responsable</mat-label>
-            <mat-select [formControl]="form.controls.responsableId" (selectionChange)="enregistrerBien()">
+            <mat-select formControlName="responsableId">
               <mat-option value="">Aucun</mat-option>
               @for (c of collaborateurs(); track c.id) {
                 <mat-option [value]="c.id">{{ personne(c) }}</mat-option>
               }
             </mat-select>
           </mat-form-field>
-        </div>
-      }
-    </header>
-
-    <!-- Informations du bien -->
-    <section class="page-card detail-section">
-      <div class="detail-section__head">
-        <h2>Informations du bien</h2>
-      </div>
-      <form [formGroup]="form" class="form-grid" (ngSubmit)="enregistrerBien()">
-        <mat-form-field appearance="outline">
-          <mat-label>Type</mat-label>
-          <mat-select formControlName="type">
-            @for (type of options().typesBien ?? []; track type) {
-              <mat-option [value]="type">{{ typeLabel(type) }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Superficie (m²)</mat-label>
-          <input matInput type="number" min="0" formControlName="superficie" />
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="wide">
-          <mat-label>Adresse</mat-label>
-          <input matInput formControlName="adresse" />
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Commune</mat-label>
-          <input matInput formControlName="commune" />
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Région</mat-label>
-          <input matInput formControlName="region" />
-        </mat-form-field>
-        <mat-form-field appearance="outline" class="wide">
-          <mat-label>Notes</mat-label>
-          <textarea matInput rows="2" formControlName="notes"></textarea>
-        </mat-form-field>
-        @if (canModify()) {
-          <div class="wide form-actions">
-            <button mat-stroked-button type="submit" [disabled]="saving()">Enregistrer</button>
-          </div>
-        }
-      </form>
-    </section>
-
-    <!-- Bail en cours -->
-    <section class="page-card detail-section">
-      <div class="detail-section__head">
-        <h2>Bail en cours</h2>
-        @if (!bailActuel() && canModify()) {
-          <button mat-stroked-button type="button" (click)="creerBail()">
-            <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Créer un bail
-          </button>
-        }
-      </div>
-
-      @if (bailActuel(); as bail) {
-        <dl class="detail-facts">
-          <div><dt>Locataire</dt><dd>{{ bail.locataire.firstName }} {{ bail.locataire.lastName }} {{ bail.locataire.phone ? '· ' + bail.locataire.phone : '' }}</dd></div>
-          <div><dt>Référence</dt><dd>{{ bail.referenceInterne }}</dd></div>
-          <div><dt>Loyer mensuel</dt><dd>{{ bail.loyerMensuel | mtmMoney }}</dd></div>
-          @if (bail.charges) {
-            <div><dt>Charges</dt><dd>{{ bail.charges | mtmMoney }}</dd></div>
-          }
-          <div><dt>Début du bail</dt><dd>{{ bail.dateDebut | date: 'dd/MM/yyyy' }}</dd></div>
-          @if (bail.dateFin) {
-            <div><dt>Fin prévue</dt><dd>{{ bail.dateFin | date: 'dd/MM/yyyy' }}</dd></div>
-          }
-          @if (bail.preavisDepartPrevu) {
-            <div><dt>Départ prévu</dt><dd>{{ bail.preavisDepartPrevu | date: 'dd/MM/yyyy' }}</dd></div>
-          }
-          @if (solde(); as s) {
-            <div><dt>Loyers appelés</dt><dd>{{ s.loyersDus | mtmMoney }}</dd></div>
-            <div><dt>Loyers encaissés</dt><dd>{{ s.loyersEncaisses | mtmMoney }}</dd></div>
-            <div>
-              <dt>Reste dû</dt>
-              <dd [class.bien-detail__du]="s.solde > 0">{{ s.solde | mtmMoney }}</dd>
+          <mat-form-field appearance="outline" class="wide">
+            <mat-label>Adresse</mat-label>
+            <input matInput formControlName="adresse" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Commune</mat-label>
+            <input matInput formControlName="commune" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Région</mat-label>
+            <input matInput formControlName="region" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="wide">
+            <mat-label>Notes internes</mat-label>
+            <textarea matInput rows="2" formControlName="notes"></textarea>
+          </mat-form-field>
+          @if (canModify()) {
+            <div class="wide form-actions">
+              <button mat-stroked-button type="submit" [disabled]="saving()">Enregistrer</button>
             </div>
-            @if (s.encaissementsEnAttente > 0) {
-              <div>
-                <dt>Versements à valider</dt>
-                <dd>{{ s.encaissementsEnAttente | mtmMoney }}</dd>
-              </div>
-            }
           }
-        </dl>
-        <div class="bien-detail__tags">
-          <span [class]="bailStatutPill(bail.statut)">{{ bailStatutLabel(bail.statut) }}</span>
-        </div>
-
-        @if (canModify()) {
-          <div class="detail-section__actions">
-            @if (bail.statut === 'actif') {
-              <button mat-stroked-button type="button" (click)="donnerPreavis()">Préavis de départ</button>
-              <button mat-stroked-button type="button" class="bien-detail__danger" (click)="resilierSansPreavis()">
-                <svg class="btn-icon" lucideUserRoundX aria-hidden="true"></svg>Résilier sans préavis
-              </button>
-            }
-            @if (bail.statut === 'actif' || bail.statut === 'preavis') {
-              <button mat-flat-button color="primary" type="button" (click)="cloturerBail()">Clôturer (sortie)</button>
-              <button mat-stroked-button type="button" (click)="changerLocataire()">Changer de locataire</button>
-              <button mat-stroked-button type="button" (click)="enregistrerPaiement()">
-                <svg class="btn-icon" lucideBanknote aria-hidden="true"></svg>Enregistrer un versement
-              </button>
-              <button mat-stroked-button type="button" (click)="enregistrerMouvementCaution()">
-                <svg class="btn-icon" lucidePiggyBank aria-hidden="true"></svg>Mouvement de caution
-              </button>
-              <button mat-stroked-button type="button" (click)="creerSignalement()">
-                <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Incident / demande
-              </button>
-            }
-          </div>
-        }
-
-        <!-- Échéances -->
-        <h3 class="detail-subtitle">Échéances</h3>
-        <ul class="constat-list">
-          @for (echeance of bail.echeances; track echeance.id) {
-            <li class="constat-item">
-              <div class="constat-item__head">
-                <strong>{{ echeance.periode | date: 'MMMM yyyy' }}</strong>
-                <span [class]="echeancePill(echeance.statut)" [matTooltip]="relance(echeance.statut) ? 'À relancer' : ''">
-                  {{ echeanceLabel(echeance.statut) }}
-                </span>
-                <span class="constat-item__meta">
-                  {{ echeance.montantPaye | mtmMoney }} / {{ echeance.montantPrevu | mtmMoney }} · échéance le
-                  {{ echeance.dateEcheance | date: 'dd/MM' }}
-                </span>
-                @if (canModify() && echeance.statut !== 'payee' && echeance.statut !== 'annulee') {
-                  <span class="constat-item__actions">
-                    <button mat-button type="button" (click)="enregistrerPaiement(echeance)">Encaisser</button>
-                  </span>
-                }
-                @if (canValidate() && echeance.statut === 'payee') {
-                  <span class="constat-item__actions">
-                    <button mat-button type="button" (click)="genererQuittance(echeance)">
-                      <svg class="btn-icon" lucideReceipt aria-hidden="true"></svg>Quittance
-                    </button>
-                  </span>
-                }
-              </div>
-            </li>
-          } @empty {
-            <p class="detail-section__text">Aucune échéance.</p>
-          }
-        </ul>
-
-        <!-- Versements : historique et contrôle (section 24) -->
-        <h3 class="detail-subtitle">
-          Versements
-          @if (paiementsAValider().length) {
-            <span class="status-pill status-pill--warning">
-              {{ paiementsAValider().length }} à valider
-            </span>
-          }
-        </h3>
-        <ul class="constat-list">
-          @for (paiement of paiements(); track paiement.id) {
-            <li class="constat-item">
-              <div class="constat-item__head">
-                <strong>{{ paiement.montant | mtmMoney }}</strong>
-                <span [class]="paiementStatutPill(paiement.statut)">
-                  {{ paiementStatutLabel(paiement.statut) }}
-                </span>
-                <span class="constat-item__meta">
-                  {{ paiementTypeLabel(paiement.type) }} · {{ modeLabel(paiement.modePaiement) }} ·
-                  {{ paiement.datePaiement | date: 'dd/MM/yyyy' }}
-                  {{ paiement.reference ? '· réf. ' + paiement.reference : '' }}
-                  @if (paiement.echeance) {
-                    · {{ paiement.echeance.periode | date: 'MMMM yyyy' }}
-                  }
-                </span>
-                @if (canValidate() && paiement.statut === 'en_attente') {
-                  <span class="constat-item__actions">
-                    <button mat-button type="button" (click)="validerPaiement(paiement)">
-                      <svg class="btn-icon" lucideCheck aria-hidden="true"></svg>Valider
-                    </button>
-                    <button mat-button type="button" class="bien-detail__danger" (click)="rejeterPaiement(paiement)">
-                      <svg class="btn-icon" lucideX aria-hidden="true"></svg>Rejeter
-                    </button>
-                  </span>
-                }
-                @if (canValidate() && paiement.statut === 'valide') {
-                  <span class="constat-item__actions">
-                    <button mat-button type="button" class="bien-detail__danger" (click)="rejeterPaiement(paiement)">
-                      Annuler
-                    </button>
-                  </span>
-                }
-              </div>
-              <p class="constat-item__note">
-                Saisi par {{ personne(paiement.recordedBy) }}
-                @if (paiement.validatedBy) {
-                  · contrôlé par {{ personne(paiement.validatedBy) }}
-                  le {{ paiement.validatedAt | date: 'dd/MM/yyyy' }}
-                }
-              </p>
-            </li>
-          } @empty {
-            <p class="detail-section__text">Aucun versement enregistré.</p>
-          }
-        </ul>
-
-        <!-- Caution : état et historique (section 15) -->
-        <h3 class="detail-subtitle">Caution</h3>
-        @if (caution(); as c) {
-          <dl class="detail-facts">
-            <div><dt>Prévue au bail</dt><dd>{{ c.etat.montantInitial | mtmMoney }}</dd></div>
-            <div><dt>Versée</dt><dd>{{ c.etat.verse | mtmMoney }}</dd></div>
-            <div><dt>Retenue</dt><dd>{{ c.etat.retenu | mtmMoney }}</dd></div>
-            <div><dt>Remboursée</dt><dd>{{ c.etat.rembourse | mtmMoney }}</dd></div>
-            <div><dt>Détenue</dt><dd>{{ c.etat.disponible | mtmMoney }}</dd></div>
-            <div>
-              <dt>Statut</dt>
-              <dd><span [class]="cautionPill(c.etat.statut)">{{ cautionLabel(c.etat.statut) }}</span></dd>
-            </div>
-          </dl>
-          @if (c.mouvements.length) {
-            <ul class="constat-list">
-              @for (mouvement of c.mouvements; track mouvement.id) {
-                <li class="constat-item">
-                  <div class="constat-item__head">
-                    <strong>{{ mouvementLabel(mouvement.type) }}</strong>
-                    <span class="constat-item__meta">
-                      {{ mouvement.montant | mtmMoney }} · {{ mouvement.date | date: 'dd/MM/yyyy' }} ·
-                      {{ personne(mouvement.recordedBy ?? null) }}
-                    </span>
-                  </div>
-                  @if (mouvement.justification) {
-                    <p class="constat-item__note">{{ mouvement.justification }}</p>
-                  }
-                </li>
-              }
-            </ul>
-          } @else {
-            <p class="detail-section__text">Aucun mouvement de caution enregistré.</p>
-          }
-        }
-
-        <!-- Relances de loyer (section 15) -->
-        @if (relances().length) {
-          <h3 class="detail-subtitle">
-            Relances
-            @if (relancesAEnvoyer().length) {
-              <span class="status-pill status-pill--warning">
-                {{ relancesAEnvoyer().length }} à envoyer
-              </span>
-            }
-          </h3>
-          <ul class="constat-list">
-            @for (relance of relances(); track relance.id) {
-              <li class="constat-item">
-                <div class="constat-item__head">
-                  <strong>{{ relanceModeleLabel(relance.modeleCode) }}</strong>
-                  <span [class]="relanceStatutPill(relance.statut)">
-                    {{ relanceStatutLabel(relance.statut) }}
-                  </span>
-                  <span class="constat-item__meta">
-                    {{ relance.joursRetard }} jours de retard
-                    @if (relance.echeance) {
-                      · {{ relance.echeance.periode | date: 'MMMM yyyy' }}
-                    }
-                    @if (relance.envoyeeLe) {
-                      · envoyée le {{ relance.envoyeeLe | date: 'dd/MM/yyyy' }}
-                    }
-                  </span>
-                  @if (canModify() && relance.statut === 'a_envoyer') {
-                    <span class="constat-item__actions">
-                      <button mat-button type="button" (click)="envoyerRelance(relance)">
-                        <svg class="btn-icon" lucideBellRing aria-hidden="true"></svg>Envoyer
-                      </button>
-                      <button mat-button type="button" (click)="annulerRelance(relance)">Abandonner</button>
-                    </span>
-                  }
-                </div>
-                <p class="constat-item__note">{{ relance.objet }}</p>
-              </li>
-            }
-          </ul>
-        }
-
-        <!-- Incidents -->
-        @if (incidents().length) {
-          <h3 class="detail-subtitle">Incidents</h3>
-          <ul class="constat-list">
-            @for (incident of incidents(); track incident.id) {
-              <li class="constat-item">
-                <div class="constat-item__head">
-                  <strong>{{ signalementTypeLabel(incident) }}</strong>
-                  <span [class]="incidentStatutPill(incident.statut)">{{ incidentStatutLabel(incident.statut) }}</span>
-                  <span class="constat-item__meta">
-                    {{ incident.createdAt | date: 'dd/MM/yyyy' }} ·
-                    {{ incident.reportedBy ? personne(incident.reportedBy) : 'Signalé par le locataire' }}
-                  </span>
-                  @if (canModify() && incident.statut !== 'resolu') {
-                    <span class="constat-item__actions">
-                      <button mat-button type="button" (click)="resoudreIncident(incident.id)">Marquer résolu</button>
-                    </span>
-                  }
-                </div>
-                <p class="constat-item__note">{{ incident.description }}</p>
-              </li>
-            }
-          </ul>
-        }
-
-        <!-- Demandes du locataire (sections 4 et 15) -->
-        @if (demandes().length) {
-          <h3 class="detail-subtitle">Demandes du locataire</h3>
-          <ul class="constat-list">
-            @for (demande of demandes(); track demande.id) {
-              <li class="constat-item">
-                <div class="constat-item__head">
-                  <strong>{{ signalementTypeLabel(demande) }}</strong>
-                  <span [class]="incidentStatutPill(demande.statut)">{{ incidentStatutLabel(demande.statut) }}</span>
-                  <span class="constat-item__meta">{{ demande.createdAt | date: 'dd/MM/yyyy' }}</span>
-                  @if (canModify() && demande.statut !== 'resolu') {
-                    <span class="constat-item__actions">
-                      <button mat-button type="button" (click)="resoudreIncident(demande.id)">Marquer traitée</button>
-                    </span>
-                  }
-                </div>
-                <p class="constat-item__note">{{ demande.description }}</p>
-              </li>
-            }
-          </ul>
-        }
-
-        <!-- Documents -->
-        <h3 class="detail-subtitle">Pièces du bail</h3>
-        @if (canModify()) {
-          <label class="upload-button">
-            <svg class="btn-icon" lucideUpload aria-hidden="true"></svg>Ajouter un document
-            <input type="file" (change)="televerser($event, 'contrat')" />
-          </label>
-        }
-        @if (documents().length) {
-          <ul class="doc-list">
-            @for (piece of documents(); track piece.id) {
-              <li class="doc-item">
-                <svg lucideFileText aria-hidden="true"></svg>
-                <a class="doc-item__title" [href]="piece.secureUrl" target="_blank" rel="noopener">
-                  {{ piece.title ?? documentLabel(piece.type) }}
-                  <small>{{ documentLabel(piece.type) }} · {{ piece.createdAt | date: 'dd/MM/yyyy' }}</small>
-                </a>
-                @if (piece.visibleLocataire) {
-                  <span class="status-pill status-pill--success">Locataire</span>
-                }
-                @if (piece.visibleProprietaire) {
-                  <span class="status-pill status-pill--info">Propriétaire</span>
-                }
-                @if (!piece.visibleLocataire && !piece.visibleProprietaire) {
-                  <span class="status-pill">Interne</span>
-                }
-                @if (canPublish()) {
-                  <button mat-button type="button" (click)="basculerVisibiliteLocataire(piece)">
-                    {{ piece.visibleLocataire ? 'Retirer au locataire' : 'Publier au locataire' }}
-                  </button>
-                  <button mat-button type="button" (click)="basculerVisibiliteProprietaire(piece)">
-                    {{ piece.visibleProprietaire ? 'Retirer au propriétaire' : 'Publier au propriétaire' }}
-                  </button>
-                }
-                @if (canModify()) {
-                  <button mat-icon-button type="button" aria-label="Supprimer" (click)="supprimerDocument(piece)">
-                    <svg class="btn-icon" lucideTrash2 aria-hidden="true"></svg>
-                  </button>
-                }
-              </li>
-            }
-          </ul>
-        } @else {
-          <p class="detail-section__text">Aucune pièce pour l’instant.</p>
-        }
-      } @else {
-        <p class="detail-section__text">
-          Aucun bail actif sur ce bien.
-          @if (b.statut === 'loue') {
-            Le bien est encore marqué « loué » : créez le bail du nouveau locataire ou repassez-le
-            disponible depuis ses informations.
-          } @else {
-            Créez-en un dès qu’un locataire est trouvé.
-          }
-        </p>
-      }
-    </section>
-
-    <!-- Historique -->
-    @if (bauxTermines().length) {
-      <section class="page-card detail-section">
-        <div class="detail-section__head">
-          <h2>Historique des baux</h2>
-        </div>
-        <ul class="constat-list">
-          @for (bail of bauxTermines(); track bail.id) {
-            <li class="constat-item">
-              <div class="constat-item__head">
-                <strong>{{ bail.locataire.firstName }} {{ bail.locataire.lastName }}</strong>
-                <span [class]="bailStatutPill(bail.statut)">{{ bailStatutLabel(bail.statut) }}</span>
-                <span class="constat-item__meta">
-                  {{ bail.dateDebut | date: 'dd/MM/yyyy' }} → {{ bail.dateSortieReelle | date: 'dd/MM/yyyy' }}
-                  @if (bail.regularisationMontant) {
-                    · régularisation {{ bail.regularisationMontant | mtmMoney }}
-                  }
-                </span>
-              </div>
-              @if (bail.motifCloture) {
-                <p class="constat-item__note">{{ bail.motifCloture }}</p>
-              }
-            </li>
-          }
-        </ul>
+        </form>
       </section>
-    }
+    </div>
   </div>
 } @else {
-  <p class="detail-section__text">Bien introuvable.</p>
+  <p class="detail-note">Bien introuvable.</p>
 }

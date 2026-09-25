@@ -51,23 +51,11 @@
           <strong>{{ s.biensEnRetard }}</strong>
           <span>Biens en retard de loyer</span>
           <small>
-            {{ s.echeancesEnRetard }} échéance{{ s.echeancesEnRetard > 1 ? 's' : '' }} en retard ·
+            @if (s.impayesProlonges > 0) {
+              dont {{ s.impayesProlonges }} en impayé prolongé ·
+            }
             {{ s.impayesTotal | mtmMoney }} à recouvrer
           </small>
-        </span>
-      </button>
-      <button
-        type="button"
-        class="kpi"
-        [class.kpi--danger]="s.impayesProlonges > 0"
-        [class.kpi--muted]="s.impayesProlonges === 0"
-        (click)="appliquerVue('impayes_prolonges')"
-      >
-        <span class="kpi__icon"><svg lucideTriangleAlert aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          <strong>{{ s.impayesProlonges }}</strong>
-          <span>Impayés prolongés</span>
-          <small>Au-delà du seuil paramétré</small>
         </span>
       </button>
       <div class="kpi">
