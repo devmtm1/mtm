@@ -55,12 +55,16 @@
   }
 }
 
-/* Deux tiers pour agir, un tiers pour consulter. */
+/* Deux tiers pour agir, un tiers pour consulter.
+   `min-width: 0` à chaque étage : sans lui, la largeur minimale d'un contenu
+   insécable — une référence de quittance, par exemple — repousse la grille
+   au-delà de la page au lieu d'être tronquée ou renvoyée à la ligne. */
 .bien-detail__layout {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   align-items: start;
   gap: 18px;
+  min-width: 0;
 
   @media (max-width: 1180px) {
     grid-template-columns: minmax(0, 1fr);
@@ -73,6 +77,32 @@
   align-content: start;
   gap: 18px;
   min-width: 0;
+
+  > * {
+    min-width: 0;
+  }
+}
+
+/* Dans une colonne étroite, une pièce se lit sur deux lignes : son nom, puis
+   son type et sa date. Sur une seule ligne, une référence longue débordait. */
+.bien-detail__aside {
+  .doc-item {
+    flex-wrap: wrap;
+  }
+
+  .doc-item__title {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    white-space: normal;
+    overflow-wrap: anywhere;
+
+    small {
+      color: var(--mtm-text-muted);
+      font-size: 0.74rem;
+      font-weight: 400;
+    }
+  }
 }
 
 /* Dans une colonne étroite, les faits se lisent l'un sous l'autre. */
