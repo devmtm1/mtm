@@ -8,7 +8,10 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 12px;
+  /* Même retrait que le contenu de la barre de titre : sans lui, les pastilles
+     partent du bord de la carte et se décalent du titre et des filtres. */
+  padding: 14px 20px 0;
+  margin-bottom: 14px;
 }
 
 .quick-view {

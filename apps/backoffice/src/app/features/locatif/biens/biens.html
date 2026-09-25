@@ -101,6 +101,51 @@
           }
         </p>
       </div>
+
+      <!-- Recherche et filtres sur la ligne du titre, alignés à droite, comme
+           les listes de terrains, de mandats, de ventes et de locataires. -->
+      <form
+        class="list-filters"
+        [formGroup]="filters"
+        (ngSubmit)="$event.preventDefault()"
+      >
+        <mat-form-field appearance="outline" class="list-filters__search" subscriptSizing="dynamic">
+          <mat-label>Rechercher</mat-label>
+          <svg matPrefix class="list-filters__icon" lucideSearch aria-hidden="true"></svg>
+          <input
+            matInput
+            formControlName="search"
+            placeholder="Référence, adresse, commune…"
+            autocomplete="off"
+          />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Statut</mat-label>
+          <mat-select formControlName="statut">
+            <mat-option value="">Tous</mat-option>
+            @for (statut of options().statutsBien ?? []; track statut) {
+              <mat-option [value]="statut">{{ statutLabel(statut) }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Type</mat-label>
+          <mat-select formControlName="type">
+            <mat-option value="">Tous</mat-option>
+            @for (type of options().typesBien ?? []; track type) {
+              <mat-option [value]="type">{{ typeLabel(type) }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        @if (hasActiveFilters()) {
+          <button mat-button type="button" class="list-filters__reset" (click)="resetFilters()">
+            <svg class="btn-icon" lucideX aria-hidden="true"></svg>Effacer
+          </button>
+        }
+      </form>
     </div>
 
     <div class="quick-views" role="group" aria-label="Vues rapides">
@@ -116,40 +161,6 @@
         </button>
       }
     </div>
-
-    <form [formGroup]="filters" class="list-filters">
-      <mat-form-field appearance="outline" class="list-filters__search">
-        <mat-label>Rechercher</mat-label>
-        <svg matPrefix lucideSearch aria-hidden="true"></svg>
-        <input matInput formControlName="search" placeholder="Référence, adresse, commune" />
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Statut</mat-label>
-        <mat-select formControlName="statut">
-          <mat-option value="">Tous</mat-option>
-          @for (statut of options().statutsBien ?? []; track statut) {
-            <mat-option [value]="statut">{{ statutLabel(statut) }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Type</mat-label>
-        <mat-select formControlName="type">
-          <mat-option value="">Tous</mat-option>
-          @for (type of options().typesBien ?? []; track type) {
-            <mat-option [value]="type">{{ typeLabel(type) }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-
-      @if (hasActiveFilters()) {
-        <button mat-stroked-button type="button" (click)="resetFilters()">
-          <svg class="btn-icon" lucideX aria-hidden="true"></svg>Effacer
-        </button>
-      }
-    </form>
 
     @if (!loading() && rowData().length === 0) {
       <div class="empty-state">
