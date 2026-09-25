@@ -1,8 +1,14 @@
 /**
- * Fiche d'un bien locatif. La page s'appuie sur le vocabulaire commun
- * (`detail-page`, `detail-header`, `content-grid`, `page-card detail-section`,
- * `info-list`, `data-table`) : seuls la bande de chiffres et deux ajustements
- * de tableau sont propres à ce module.
+ * Fiche d'un bien locatif.
+ *
+ * Hiérarchie plutôt que découpage : une colonne principale large pour l'argent
+ * — échéances, versements, relances — qui est le travail quotidien, et une
+ * colonne latérale étroite pour ce qu'on consulte sans agir (bail, caution,
+ * pièces). Ce qu'on ouvre rarement, l'historique et la fiche descriptive,
+ * reste replié en bas de page.
+ *
+ * Le reste du vocabulaire est commun à l'application : `detail-page`,
+ * `detail-header`, `page-card detail-section`, `info-list`, `data-table`.
  */
 .bien-detail {
   &__danger {
@@ -10,7 +16,7 @@
   }
 }
 
-/* Les quatre chiffres qui commandent la suite, lisibles sans clic. */
+/* Les quatre chiffres qui commandent la suite, lisibles sans défiler. */
 .bien-detail__figures {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
@@ -49,28 +55,101 @@
   }
 }
 
-/* Précision sous la valeur principale d'une cellule (mode de règlement,
-   justification d'une retenue, période d'une relance). */
-.data-table small.cell-muted {
-  display: block;
-  margin-top: 2px;
-  max-width: 34ch;
-  overflow: hidden;
-  font-size: 0.76rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+/* Deux tiers pour agir, un tiers pour consulter. */
+.bien-detail__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 18px;
+
+  @media (max-width: 1180px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
-/* Les boutons d'action d'une ligne restent discrets et alignés à droite. */
-.data-table .is-right .mat-mdc-button-base {
-  --mat-text-button-horizontal-padding: 8px;
+.bien-detail__main,
+.bien-detail__aside {
+  display: grid;
+  align-content: start;
+  gap: 18px;
   min-width: 0;
 }
 
-.doc-item__visibility {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 4px;
+/* Dans une colonne étroite, les faits se lisent l'un sous l'autre. */
+.bien-detail__faits {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+
+.bien-detail__mouvements {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.84rem;
+
+  li {
+    display: grid;
+    gap: 1px;
+    padding-left: 10px;
+    border-left: 2px solid var(--mtm-border);
+  }
+
+  small {
+    font-size: 0.76rem;
+  }
+}
+
+/* Sections repliées : l'en-tête reste cliquable, sans ressembler à un bouton. */
+.bien-detail__repli {
+  summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 10px;
+    cursor: pointer;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    strong {
+      font-family: var(--mtm-font-display);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    small {
+      color: var(--mtm-text-muted);
+      font-size: 0.8rem;
+    }
+
+    /* Chevron dessiné en CSS : pas d'icône à charger pour un simple repli. */
+    &::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      margin-left: auto;
+      border-right: 2px solid var(--mtm-text-muted);
+      border-bottom: 2px solid var(--mtm-text-muted);
+      transform: rotate(45deg) translate(-2px, -2px);
+      transition: transform 0.15s ease;
+    }
+
+    &:hover strong {
+      color: var(--mtm-primary);
+    }
+  }
+
+  &[open] summary {
+    margin-bottom: 14px;
+
+    &::after {
+      transform: rotate(225deg) translate(-2px, -2px);
+    }
+  }
 }
 
 .form-actions {

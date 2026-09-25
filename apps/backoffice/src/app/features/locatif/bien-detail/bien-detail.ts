@@ -145,6 +145,55 @@ export class BienDetailPage implements OnInit {
     this.paiements().filter((paiement) => paiement.statut === 'en_attente'),
   );
 
+  // --- Ce qu'on montre d'emblée, et ce qu'on déplie ---------------------
+  // Un bail de deux ans compte vingt-quatre échéances et autant de
+  // versements : tout afficher noie ce qui appelle une action.
+
+  protected readonly echeancesToutes = signal(false);
+  protected readonly paiementsTous = signal(false);
+  protected readonly piecesToutes = signal(false);
+  protected readonly cautionDepliee = signal(false);
+
+  /** Par défaut : ce qui reste dû, plus les trois derniers mois pour le contexte. */
+  protected readonly echeancesAffichees = computed(() => {
+    const echeances = this.bailActuel()?.echeances ?? [];
+    if (this.echeancesToutes()) return echeances;
+    const seuil = new Date();
+    seuil.setMonth(seuil.getMonth() - 3);
+    return echeances.filter(
+      (echeance) =>
+        (echeance.statut !== 'payee' && echeance.statut !== 'annulee') ||
+        new Date(echeance.periode) >= seuil,
+    );
+  });
+
+  protected readonly echeancesMasquees = computed(
+    () => (this.bailActuel()?.echeances.length ?? 0) - this.echeancesAffichees().length,
+  );
+
+  /** Les versements à valider restent visibles quoi qu'il arrive. */
+  protected readonly paiementsAffiches = computed(() => {
+    const paiements = this.paiements();
+    if (this.paiementsTous()) return paiements;
+    const enAttente = paiements.filter((paiement) => paiement.statut === 'en_attente');
+    const autres = paiements
+      .filter((paiement) => paiement.statut !== 'en_attente')
+      .slice(0, Math.max(0, 5 - enAttente.length));
+    return [...enAttente, ...autres];
+  });
+
+  protected readonly paiementsMasques = computed(
+    () => this.paiements().length - this.paiementsAffiches().length,
+  );
+
+  protected readonly piecesAffichees = computed(() =>
+    this.piecesToutes() ? this.documents() : this.documents().slice(0, 3),
+  );
+
+  protected readonly piecesMasquees = computed(
+    () => this.documents().length - this.piecesAffichees().length,
+  );
+
   protected readonly relancesAEnvoyer = computed(() =>
     this.relances().filter((relance) => relance.statut === 'a_envoyer'),
   );
