@@ -61,7 +61,7 @@ import {
   TYPES_PAIEMENT,
   estARelancer,
   label,
-  nomPersonne,
+  nomPropre,
   pillClass,
   simpleLabel,
   typeSignalementLabel,
@@ -267,7 +267,7 @@ export class BienDetailPage implements OnInit {
     return simpleLabel(TYPES_DOCUMENT, v);
   }
   protected personne(v: { firstName: string | null; lastName: string | null } | null): string {
-    return nomPersonne(v);
+    return nomPropre(v);
   }
   protected relance(v: string): boolean {
     return estARelancer(v);

@@ -190,6 +190,25 @@ export function nomPersonne(
   return [personne.firstName, personne.lastName].filter(Boolean).join(' ') || '—';
 }
 
+/**
+ * Nom d'une personne présenté en capitales initiales : « modou faye » saisi à
+ * la volée s'affiche « Modou Faye ». La donnée n'est pas modifiée, seule sa
+ * lecture l'est — un portail remis au client ne peut pas afficher des noms en
+ * minuscules. Les particules restent telles quelles (« el hadji », « van »),
+ * chaque mot recevant la même règle.
+ */
+export function nomPropre(
+  personne: { firstName: string | null; lastName: string | null } | null | undefined,
+): string {
+  if (!personne) return '—';
+  const nom = [personne.firstName, personne.lastName].filter(Boolean).join(' ').trim();
+  if (!nom) return '—';
+  return nom.replace(
+    /(^|[\s'’-])([\p{Ll}])/gu,
+    (_, separateur: string, lettre: string) => separateur + lettre.toLocaleUpperCase('fr-FR'),
+  );
+}
+
 /** Une échéance en retard ou impayée : ce qui justifie une relance. */
 export function estARelancer(statut: string): boolean {
   return statut === 'en_retard' || statut === 'impayee';

@@ -22,21 +22,8 @@
         <span class="kpi__icon"><svg lucideBuilding2 aria-hidden="true"></svg></span>
         <span class="kpi__body">
           <strong>{{ s.total }}</strong>
-          <span>Biens suivis</span>
-          <small>{{ s.loues }} loués</small>
-        </span>
-      </button>
-      <button
-        type="button"
-        class="kpi"
-        [class.kpi--muted]="s.disponibles === 0"
-        (click)="appliquerVue('disponible')"
-      >
-        <span class="kpi__icon"><svg lucideBuilding2 aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          <strong>{{ s.disponibles }}</strong>
-          <span>Disponibles</span>
-          <small>Prêts à être loués</small>
+          <span>Biens en gestion</span>
+          <small>{{ s.loues }} loué{{ s.loues > 1 ? 's' : '' }} · {{ s.disponibles }} disponible{{ s.disponibles > 1 ? 's' : '' }}</small>
         </span>
       </button>
       <button
@@ -51,10 +38,34 @@
           <strong>{{ s.biensEnRetard }}</strong>
           <span>Biens en retard de loyer</span>
           <small>
-            @if (s.impayesProlonges > 0) {
-              dont {{ s.impayesProlonges }} en impayé prolongé ·
+            @if (s.biensEnRetard > 0) {
+              @if (s.impayesProlonges > 0) {
+                dont {{ s.impayesProlonges }} en impayé prolongé ·
+              }
+              {{ s.impayesTotal | mtmMoney }} à recouvrer
+            } @else {
+              Tous les loyers sont à jour
             }
-            {{ s.impayesTotal | mtmMoney }} à recouvrer
+          </small>
+        </span>
+      </button>
+      <button
+        type="button"
+        class="kpi"
+        [class.kpi--danger]="relancesAEnvoyer() > 0"
+        [class.kpi--muted]="relancesAEnvoyer() === 0"
+        (click)="ouvrirRelances()"
+      >
+        <span class="kpi__icon"><svg lucideBellRing aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ relancesAEnvoyer() }}</strong>
+          <span>Relances à envoyer</span>
+          <small>
+            @if (relancesAEnvoyer() > 0) {
+              Proposées par le calendrier
+            } @else {
+              Rien à relancer
+            }
           </small>
         </span>
       </button>

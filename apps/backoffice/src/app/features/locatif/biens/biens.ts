@@ -9,6 +9,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { AgGridAngular } from 'ag-grid-angular';
 import type { ColDef, ICellRendererParams } from 'ag-grid-community';
 import {
+  LucideBellRing,
   LucideBuilding2,
   LucidePlus,
   LucideSearch,
@@ -22,7 +23,16 @@ import { LocatifApiService } from '../../../core/services/api/locatif-api.servic
 import type { BienListItem, LocatifOptions, LocatifStats } from '../../../core/models/locatif.model';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
-import { BIEN_STATUTS, TYPES_BIEN, label, pillClass, simpleLabel } from '../locatif-status';
+import {
+  BIEN_STATUTS,
+  SITUATIONS_PAIEMENT,
+  TYPES_BIEN,
+  label,
+  nomPropre,
+  pillClass,
+  simpleLabel,
+  type StatusMeaning,
+} from '../locatif-status';
 
 const FILTRES_VIDES = { search: '', statut: '', type: '', responsableId: '', vue: '' };
 
@@ -49,6 +59,7 @@ export const VUES_RAPIDES = [
     MatInputModule,
     MatSelectModule,
     MatTooltipModule,
+    LucideBellRing,
     LucideBuilding2,
     LucidePlus,
     LucideSearch,
@@ -74,6 +85,8 @@ export class Biens implements OnInit {
   protected readonly vuesRapides = VUES_RAPIDES;
   protected readonly filters = this.formBuilder.nonNullable.group(FILTRES_VIDES);
   protected readonly hasActiveFilters = signal(false);
+  /** Ce qu'il reste à envoyer dans la file de relances, dans mon périmètre. */
+  protected readonly relancesAEnvoyer = signal(0);
 
   protected readonly canCreate = computed(() => this.sessionService.hasPermission('locatif:creer'));
   protected readonly canExport = computed(() => this.sessionService.hasPermission('locatif:exporter'));
@@ -87,54 +100,69 @@ export class Biens implements OnInit {
       sortable: true,
     },
     {
-      headerName: 'Adresse',
-      flex: 1.4,
-      minWidth: 180,
-      cellClass: 'cell-strong',
+      // Adresse et commune dans la même colonne : la commune répétait déjà
+      // l'adresse sur la ligne d'à côté, pour deux colonnes au lieu d'une.
+      headerName: 'Bien',
+      flex: 1.6,
+      minWidth: 210,
       valueGetter: (p) => p.data?.adresse ?? '—',
-    },
-    {
-      headerName: 'Commune',
-      flex: 1,
-      minWidth: 120,
-      valueGetter: (p) => [p.data?.commune, p.data?.region].filter(Boolean).join(', ') || '—',
+      cellRenderer: (p: ICellRendererParams<BienListItem>) =>
+        this.cellulePrincipale(
+          p.data?.adresse ?? '—',
+          [p.data?.commune, p.data?.region].filter(Boolean).join(', '),
+        ),
     },
     {
       headerName: 'Type',
       field: 'type',
-      flex: 0.8,
-      minWidth: 110,
+      flex: 0.7,
+      minWidth: 100,
       valueFormatter: (p) => simpleLabel(TYPES_BIEN, p.value as string),
     },
     {
       headerName: 'Propriétaire',
       flex: 1,
       minWidth: 140,
-      valueGetter: (p) =>
-        [p.data?.proprietaire?.firstName, p.data?.proprietaire?.lastName].filter(Boolean).join(' '),
+      valueGetter: (p) => nomPropre(p.data?.proprietaire),
     },
     {
-      headerName: 'Statut',
-      field: 'statut',
-      flex: 0.9,
-      minWidth: 130,
-      cellRenderer: (p: ICellRendererParams<BienListItem>) => this.pastille(p.value as string),
-    },
-    {
-      headerName: 'Locataire actuel',
-      flex: 1,
-      minWidth: 140,
+      headerName: 'Locataire',
+      flex: 1.1,
+      minWidth: 150,
       valueGetter: (p) => {
         const bail = p.data?.baux?.[0];
-        return bail ? [bail.locataire.firstName, bail.locataire.lastName].filter(Boolean).join(' ') : '—';
+        return bail ? nomPropre(bail.locataire) : '—';
+      },
+      cellRenderer: (p: ICellRendererParams<BienListItem>) => {
+        const bail = p.data?.baux?.[0];
+        if (!bail) return this.cellulePrincipale('—', 'Aucun bail en cours');
+        return this.cellulePrincipale(nomPropre(bail.locataire), bail.referenceInterne ?? '');
       },
     },
     {
       headerName: 'Loyer',
       flex: 0.8,
-      minWidth: 110,
+      minWidth: 120,
+      type: 'rightAligned',
       valueGetter: (p) => p.data?.baux?.[0]?.loyerMensuel ?? null,
       valueFormatter: (p) => (p.value ? `${Number(p.value).toLocaleString('fr-FR')} FCFA` : '—'),
+    },
+    {
+      headerName: 'Statut',
+      field: 'statut',
+      flex: 0.8,
+      minWidth: 120,
+      cellRenderer: (p: ICellRendererParams<BienListItem>) =>
+        this.pastille(BIEN_STATUTS, p.value as string),
+    },
+    {
+      // La question quotidienne d'un gestionnaire : qui doit de l'argent.
+      headerName: 'Paiement',
+      flex: 0.9,
+      minWidth: 130,
+      valueGetter: (p) => p.data?.baux?.[0]?.situationPaiement ?? null,
+      cellRenderer: (p: ICellRendererParams<BienListItem>) =>
+        this.pastille(SITUATIONS_PAIEMENT, p.value as string),
     },
   ];
 
@@ -144,6 +172,10 @@ export class Biens implements OnInit {
       error: () => this.options.set({}),
     });
     this.chargerStats();
+    this.api.countRelances().subscribe({
+      next: ({ aEnvoyer }) => this.relancesAEnvoyer.set(aEnvoyer),
+      error: () => this.relancesAEnvoyer.set(0),
+    });
     this.load();
     this.filters.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)))
@@ -152,6 +184,10 @@ export class Biens implements OnInit {
 
   protected openCreate(): void {
     void this.router.navigate(['/locatif/biens/nouveau']);
+  }
+
+  protected ouvrirRelances(): void {
+    void this.router.navigate(['/locatif/relances']);
   }
 
   protected openDetail(id: string): void {
@@ -198,12 +234,32 @@ export class Biens implements OnInit {
     });
   }
 
-  private pastille(valeur: string | null): HTMLElement | string {
+  private pastille(
+    referentiel: Record<string, StatusMeaning>,
+    valeur: string | null,
+  ): HTMLElement | string {
     if (!valeur) return '—';
     const span = document.createElement('span');
-    span.className = pillClass(BIEN_STATUTS, valeur);
-    span.textContent = label(BIEN_STATUTS, valeur);
-    span.title = BIEN_STATUTS[valeur]?.help ?? '';
+    span.className = pillClass(referentiel, valeur);
+    span.textContent = label(referentiel, valeur);
+    span.title = referentiel[valeur]?.help ?? '';
     return span;
+  }
+
+  /** Valeur principale et sa précision en dessous, dans une seule cellule. */
+  private cellulePrincipale(principal: string, secondaire: string): HTMLElement {
+    const bloc = document.createElement('div');
+    bloc.className = 'cell-stack';
+    const titre = document.createElement('span');
+    titre.className = 'cell-strong';
+    titre.textContent = principal;
+    bloc.appendChild(titre);
+    if (secondaire) {
+      const detail = document.createElement('small');
+      detail.className = 'cell-muted';
+      detail.textContent = secondaire;
+      bloc.appendChild(detail);
+    }
+    return bloc;
   }
 }

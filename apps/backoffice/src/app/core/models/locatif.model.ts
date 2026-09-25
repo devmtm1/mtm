@@ -24,6 +24,8 @@ export interface BailResume {
   id: string;
   referenceInterne: string | null;
   statut: string;
+  /** a_jour | retard | impaye_prolonge : la colonne « Paiement » de la liste. */
+  situationPaiement: string;
   dateDebut: string;
   loyerMensuel: number | string;
   locataire: BailLocataireResume;

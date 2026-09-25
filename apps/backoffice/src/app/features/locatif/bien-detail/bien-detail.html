@@ -14,8 +14,7 @@
         <p class="eyebrow">{{ b.referenceInterne }} · Gestion locative</p>
         <h1>{{ b.adresse }}</h1>
         <p class="detail-header__location">
-          {{ typeLabel(b.type) }}{{ localisation(b) }} · {{ b.proprietaire.firstName }}
-          {{ b.proprietaire.lastName }}
+          {{ typeLabel(b.type) }}{{ localisation(b) }} · {{ personne(b.proprietaire) }}
         </p>
         <div class="status-line">
           <span [class]="bienStatutPill(b.statut)">{{ bienStatutLabel(b.statut) }}</span>
@@ -181,7 +180,7 @@
             <div>
               <dt>Locataire</dt>
               <dd>
-                {{ bail.locataire.firstName }} {{ bail.locataire.lastName }}
+                {{ personne(bail.locataire) }}
                 @if (bail.locataire.phone) {
                   <small>{{ bail.locataire.phone }}</small>
                 }
@@ -667,7 +666,7 @@
               <tbody>
                 @for (bail of bauxTermines(); track bail.id) {
                   <tr>
-                    <td>{{ bail.locataire.firstName }} {{ bail.locataire.lastName }}</td>
+                    <td>{{ personne(bail.locataire) }}</td>
                     <td>
                       {{ bail.dateDebut | date: 'dd/MM/yyyy' }} →
                       {{ bail.dateSortieReelle | date: 'dd/MM/yyyy' }}

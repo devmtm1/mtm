@@ -6,6 +6,7 @@ import {
   estARelancer,
   label,
   nomPersonne,
+  nomPropre,
   pillClass,
   simpleLabel,
   TYPES_BIEN,
@@ -45,5 +46,14 @@ describe('libellés de la gestion locative', () => {
   it('affiche un tiret quand le bien n’a pas de responsable', () => {
     expect(nomPersonne(null)).toBe('—');
     expect(nomPersonne({ firstName: 'Fatou', lastName: 'Sarr' })).toBe('Fatou Sarr');
+  });
+
+  it('présente un nom saisi en minuscules avec ses capitales', () => {
+    // Les fiches sont souvent saisies au fil de l'eau : un portail remis au
+    // client ne peut pas afficher « modou faye ».
+    expect(nomPropre({ firstName: 'modou', lastName: 'faye' })).toBe('Modou Faye');
+    expect(nomPropre({ firstName: 'el hadji', lastName: "n'diaye" })).toBe("El Hadji N'Diaye");
+    expect(nomPropre({ firstName: 'Fatou', lastName: 'SARR' })).toBe('Fatou SARR');
+    expect(nomPropre(null)).toBe('—');
   });
 });

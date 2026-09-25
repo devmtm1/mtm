@@ -21,7 +21,7 @@ import {
   SITUATIONS_PAIEMENT,
   STATUTS_RELANCE,
   label,
-  nomPersonne,
+  nomPropre,
   pillClass,
   simpleLabel,
 } from '../locatif-status';
@@ -108,7 +108,7 @@ export class Relances implements OnInit {
     return pillClass(SITUATIONS_PAIEMENT, situation);
   }
   protected locataireNom(relance: RelanceLoyer): string {
-    return nomPersonne(relance.bailLocatif?.locataire ?? null);
+    return nomPropre(relance.bailLocatif?.locataire ?? null);
   }
 
   protected montantDu(relance: RelanceLoyer): number {
