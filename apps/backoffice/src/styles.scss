@@ -1434,9 +1434,9 @@ ag-grid-angular {
 }
 
 /* Deux informations dans une cellule de grille : la valeur, puis sa précision
-   (référence sous le nom du client, commune sous l'adresse). Globale, car les
-   cellules construites par un `cellRenderer` échappent à l'encapsulation de la
-   feuille du composant. */
+   (commune sous l'adresse, référence sous le nom du client, bail sous le
+   locataire). Globale, car les cellules construites par un `cellRenderer`
+   échappent à l'encapsulation de la feuille du composant. */
 .cell-stack {
   display: flex;
   flex-direction: column;

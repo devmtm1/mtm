@@ -38,16 +38,3 @@
   }
 }
 
-/* Deux informations dans une cellule de grille : la valeur, puis sa précision
-   (commune sous l'adresse, référence du bail sous le locataire). */
-.cell-stack {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  line-height: 1.25;
-
-  small {
-    color: var(--mtm-text-muted);
-    font-size: 0.74rem;
-  }
-}
