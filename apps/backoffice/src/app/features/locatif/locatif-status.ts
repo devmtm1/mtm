@@ -201,7 +201,15 @@ export function nomPropre(
   personne: { firstName: string | null; lastName: string | null } | null | undefined,
 ): string {
   if (!personne) return '—';
-  const nom = [personne.firstName, personne.lastName].filter(Boolean).join(' ').trim();
+  return capitaliserNom([personne.firstName, personne.lastName].filter(Boolean).join(' '));
+}
+
+/**
+ * Même règle, sur un texte déjà composé — utile quand une liste présente le
+ * nom avant le prénom pour le tri.
+ */
+export function capitaliserNom(texte: string | null | undefined): string {
+  const nom = (texte ?? '').trim();
   if (!nom) return '—';
   return nom.replace(
     /(^|[\s'’-])([\p{Ll}])/gu,

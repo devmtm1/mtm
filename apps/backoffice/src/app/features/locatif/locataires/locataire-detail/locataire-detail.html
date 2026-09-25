@@ -16,7 +16,7 @@
     <header class="detail-header">
       <div class="detail-header__main">
         <p class="eyebrow">Locataire</p>
-        <h1>{{ l.firstName }} {{ l.lastName }}</h1>
+        <h1>{{ nom(l) }}</h1>
         <p class="detail-header__meta">
           @if (l.phone) {
             <a [href]="'tel:' + l.phone"><svg lucidePhone aria-hidden="true"></svg>{{ l.phone }}</a>
@@ -27,6 +27,18 @@
           @if (!l.phone && !l.email) {
             <span>Aucun moyen de contact renseigné</span>
           }
+        </p>
+        <p class="detail-header__meta">
+          <span>
+            @if (bauxActifs() > 0) {
+              {{ bauxActifs() }} bail(s) en cours
+            } @else {
+              Aucun bail en cours
+            }
+            @if ((baux()?.length ?? 0) > bauxActifs()) {
+              · {{ baux()?.length }} au total
+            }
+          </span>
         </p>
       </div>
       <div class="detail-header__actions">
@@ -42,17 +54,6 @@
         }
       </div>
     </header>
-
-    <section class="kpi-row" aria-label="Synthèse">
-      <div class="kpi" [class.kpi--success]="bauxActifs() > 0" [class.kpi--muted]="bauxActifs() === 0">
-        <span class="kpi__icon"><svg lucideKeyRound aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          <strong>{{ bauxActifs() }}<small class="kpi__of">/ {{ baux()?.length ?? 0 }}</small></strong>
-          <span>Baux en cours</span>
-          <small>Sur l’ensemble de son historique</small>
-        </span>
-      </div>
-    </section>
 
     <section class="content-grid">
       <section class="page-card detail-section detail-section--wide">
@@ -98,17 +99,7 @@
         }
       </section>
 
-      <section class="page-card detail-section">
-        <h2>Coordonnées</h2>
-        <dl class="info-list">
-          <div><dt>Prénom</dt><dd>{{ l.firstName }}</dd></div>
-          <div><dt>Nom</dt><dd>{{ l.lastName }}</dd></div>
-          <div><dt>Téléphone</dt><dd>{{ l.phone || '—' }}</dd></div>
-          <div><dt>E-mail</dt><dd>{{ l.email || '—' }}</dd></div>
-        </dl>
-      </section>
-
-      <section class="page-card detail-section">
+      <section class="page-card detail-section detail-section--wide">
         <h2>Notes internes</h2>
         <p class="detail-section__text">{{ l.notes || 'Aucune note. Utilisez « Modifier » pour en ajouter une.' }}</p>
       </section>

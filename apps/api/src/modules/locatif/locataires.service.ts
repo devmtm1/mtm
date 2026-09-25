@@ -37,6 +37,29 @@ export class LocatairesService {
         email: true,
         phone: true,
         _count: { select: { baux: true } },
+        /**
+         * Le bien occupé et l'état de ses loyers : sans eux, la liste oblige à
+         * ouvrir chaque fiche pour savoir qui habite où et qui doit de l'argent.
+         */
+        baux: {
+          where: { statut: { in: ['actif', 'preavis'] } },
+          take: 1,
+          orderBy: { dateDebut: 'desc' },
+          select: {
+            id: true,
+            referenceInterne: true,
+            statut: true,
+            situationPaiement: true,
+            bienLocatif: {
+              select: {
+                id: true,
+                referenceInterne: true,
+                adresse: true,
+                commune: true,
+              },
+            },
+          },
+        },
       },
       orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
       take: 50,

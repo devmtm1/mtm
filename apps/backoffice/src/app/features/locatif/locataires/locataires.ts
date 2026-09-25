@@ -15,6 +15,7 @@ import { LocatifApiService } from '../../../core/services/api/locatif-api.servic
 import { SessionService } from '../../../core/services/session.service';
 import type { Locataire } from '../../../core/models/locatif.model';
 import { NotificationService } from '../../../shared/services/notification.service';
+import { SITUATIONS_PAIEMENT, capitaliserNom, label, pillClass } from '../locatif-status';
 import { LocataireDialog } from './locataire-dialog';
 
 /**
@@ -65,18 +66,60 @@ export class Locataires implements OnInit {
   protected readonly columnDefs: ColDef<Locataire>[] = [
     {
       headerName: 'Locataire',
-      flex: 1.6,
-      minWidth: 180,
+      flex: 1.4,
+      minWidth: 190,
       sortable: true,
-      cellClass: 'cell-strong',
+      // Nom avant prénom pour que le tri suive l'ordre d'un répertoire.
       valueGetter: (p) => (p.data ? `${p.data.lastName} ${p.data.firstName}` : ''),
+      cellRenderer: (p: ICellRendererParams<Locataire>) =>
+        this.cellulePrincipale(
+          capitaliserNom(p.value as string),
+          p.data?.phone ?? 'Téléphone non renseigné',
+        ),
     },
-    { field: 'phone', headerName: 'Téléphone', flex: 1, minWidth: 130, valueFormatter: (p) => (p.value as string) || '—' },
-    { field: 'email', headerName: 'E-mail', flex: 1.4, minWidth: 180, valueFormatter: (p) => (p.value as string) || '—' },
+    {
+      field: 'email',
+      headerName: 'E-mail',
+      flex: 1.2,
+      minWidth: 170,
+      valueFormatter: (p) => (p.value as string) || '—',
+      cellClass: (p) => (p.value ? '' : 'cell-muted'),
+    },
+    {
+      // Sans cette colonne, il fallait ouvrir chaque fiche pour savoir qui
+      // habite où.
+      headerName: 'Bien occupé',
+      flex: 1.5,
+      minWidth: 190,
+      valueGetter: (p) => p.data?.baux?.[0]?.bienLocatif?.adresse ?? '',
+      cellRenderer: (p: ICellRendererParams<Locataire>) => {
+        const bail = p.data?.baux?.[0];
+        if (!bail) return this.cellulePrincipale('—', 'Aucun bail en cours');
+        return this.cellulePrincipale(
+          bail.bienLocatif.adresse,
+          [bail.bienLocatif.commune, bail.referenceInterne].filter(Boolean).join(' · '),
+        );
+      },
+    },
+    {
+      headerName: 'Paiement',
+      flex: 0.8,
+      minWidth: 120,
+      valueGetter: (p) => p.data?.baux?.[0]?.situationPaiement ?? null,
+      cellRenderer: (p: ICellRendererParams<Locataire>) => {
+        const valeur = p.value as string | null;
+        if (!valeur) return '—';
+        const span = document.createElement('span');
+        span.className = pillClass(SITUATIONS_PAIEMENT, valeur);
+        span.textContent = label(SITUATIONS_PAIEMENT, valeur);
+        span.title = SITUATIONS_PAIEMENT[valeur]?.help ?? '';
+        return span;
+      },
+    },
     {
       headerName: 'Baux',
-      flex: 0.6,
-      minWidth: 90,
+      flex: 0.5,
+      minWidth: 80,
       type: 'rightAligned',
       sortable: true,
       valueGetter: (p) => p.data?._count?.baux ?? 0,
@@ -106,6 +149,23 @@ export class Locataires implements OnInit {
       },
     },
   ];
+
+  /** Valeur principale et sa précision en dessous, dans une seule cellule. */
+  private cellulePrincipale(principal: string, secondaire: string): HTMLElement {
+    const bloc = document.createElement('div');
+    bloc.className = 'cell-stack';
+    const titre = document.createElement('span');
+    titre.className = 'cell-strong';
+    titre.textContent = principal;
+    bloc.appendChild(titre);
+    if (secondaire) {
+      const detail = document.createElement('small');
+      detail.className = 'cell-muted';
+      detail.textContent = secondaire;
+      bloc.appendChild(detail);
+    }
+    return bloc;
+  }
 
   ngOnInit(): void {
     this.load();

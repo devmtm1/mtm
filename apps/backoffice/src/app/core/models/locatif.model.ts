@@ -188,6 +188,19 @@ export interface Locataire {
   createdAt?: string;
   updatedAt?: string;
   _count?: { baux: number };
+  /** Bail en cours, s'il y en a un : le bien occupé et l'état de ses loyers. */
+  baux?: {
+    id: string;
+    referenceInterne: string | null;
+    statut: string;
+    situationPaiement: string;
+    bienLocatif: {
+      id: string;
+      referenceInterne: string;
+      adresse: string;
+      commune: string | null;
+    };
+  }[];
 }
 
 /** Bail vu depuis la fiche locataire : le bien loué, tous baux confondus. */
