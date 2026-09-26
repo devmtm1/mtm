@@ -3,6 +3,7 @@ import * as bcrypt from 'bcrypt';
 import request from 'supertest';
 import { createE2eApp, type E2eContext } from './helpers/e2e-app';
 import { describeE2e } from './helpers/e2e-database';
+import { libelleJalonType } from '../src/modules/construction/construction-options.service';
 
 /**
  * Parcours J2.3 — construction et suivi de chantier (section 16 du cahier
@@ -176,7 +177,8 @@ describeE2e('Parcours Construction J2.3 (e2e)', () => {
     expect(jalons.status).toBe(200);
 
     const fondations = jalons.body.find(
-      (jalon: { libelle: string }) => jalon.libelle === 'fondations',
+      (jalon: { libelle: string }) =>
+        jalon.libelle === libelleJalonType('fondations'),
     );
     expect(fondations).toBeDefined();
     jalonFondationsId = fondations.id;
@@ -229,7 +231,8 @@ describeE2e('Parcours Construction J2.3 (e2e)', () => {
       .get(`/api/construction/chantiers/${chantierId}/jalons`)
       .set('Authorization', `Bearer ${jetonConducteur}`);
     const elevation = jalons.body.find(
-      (jalon: { libelle: string }) => jalon.libelle === 'elevation',
+      (jalon: { libelle: string }) =>
+        jalon.libelle === libelleJalonType('elevation'),
     );
 
     const response = await request(app.getHttpServer())

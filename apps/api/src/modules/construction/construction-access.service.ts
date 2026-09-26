@@ -25,18 +25,25 @@ export const CHANTIER_ROLES = [
 ] as const;
 
 /**
- * Règles de périmètre des chantiers, alignées sur celles des démarches : un
- * conducteur de travaux ne voit que les chantiers dont il est responsable,
- * l'encadrement et le responsable construction voient tout.
+ * Règles de périmètre des chantiers : un conducteur de travaux ne voit que
+ * les chantiers dont il est responsable ; l'encadrement, le responsable
+ * construction et la comptabilité voient tout.
  */
 @Injectable()
 export class ConstructionAccessService {
   constructor(private readonly prisma: PrismaService) {}
 
-  /** Vue « tous chantiers » : encadrement et responsable construction. */
+  /**
+   * Vue « tous chantiers » : encadrement, responsable construction — et
+   * comptabilité, comme en gestion locative. Sans elle, le comptable ne
+   * verrait que les chantiers dont il est responsable, c’est-à-dire aucun,
+   * et ne pourrait donc valider aucune dépense : la permission
+   * construction:payer serait vide de tout effet.
+   */
   isManager(user: ConstructionUser): boolean {
     return hasSupervisionScope(user, 'construction', [
       'responsable_construction',
+      'comptable',
     ]);
   }
 
