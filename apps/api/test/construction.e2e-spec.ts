@@ -65,6 +65,10 @@ describeE2e('Parcours Construction J2.3 (e2e)', () => {
       password: await bcrypt.hash(MOT_DE_PASSE, 4),
       firstName: 'Aïssatou',
       lastName: 'Ba',
+      // « comptable » fait partie des rôles sensibles : sans double
+      // authentification, le compte se voit refuser chaque requête. Un
+      // comptable réel en a donc une, et le test doit le refléter.
+      twoFactorEnabled: true,
     });
     await data.linkUserRole(comptable.id, roleComptable.id);
 
@@ -408,6 +412,37 @@ describeE2e('Parcours Construction J2.3 (e2e)', () => {
     expect(chantier.body.synthese.budget.montantEnAttente).toBe(0);
     // Devis 45 M moins 900 k dépensés.
     expect(chantier.body.synthese.budget.margeEstimee).toBe(44_100_000);
+  });
+
+  it('refuse tout à un compte comptable sans double authentification', async () => {
+    // Le rôle « comptable » est sensible (voir SensitiveTwoFactorGuard) :
+    // sans second facteur, le compte ne peut rien faire, pas même ce que
+    // ses permissions autorisent. La règle vaut pour tout le back-office,
+    // mais c'est ici qu'elle mord — le contrôle des dépenses est réservé à
+    // ce rôle.
+    const role = await data.seedRoleWithPermissions('comptable', [
+      'construction:consulter',
+      'construction:payer',
+    ]);
+    const sansSecondFacteur = await data.seedUser({
+      email: 'comptable.sans2fa@mtm.test',
+      password: await bcrypt.hash(MOT_DE_PASSE, 4),
+      firstName: 'Modou',
+      lastName: 'Gueye',
+    });
+    await data.linkUserRole(sansSecondFacteur.id, role.id);
+    const connexion = await request(app.getHttpServer())
+      .post('/api/auth/login')
+      .send({ email: 'comptable.sans2fa@mtm.test', password: MOT_DE_PASSE });
+
+    const response = await request(app.getHttpServer())
+      .post(
+        `/api/construction/chantiers/${chantierId}/depenses/${depenseId}/valider`,
+      )
+      .set('Authorization', `Bearer ${connexion.body.accessToken}`);
+
+    expect(response.status).toBe(403);
+    expect(response.body.code).toBe('TWO_FACTOR_REQUIRED');
   });
 
   it('exige un motif pour rejeter une dépense', async () => {
