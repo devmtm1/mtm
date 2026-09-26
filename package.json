@@ -19,7 +19,7 @@
     "start": "npm run api:start --workspace=apps/api & npm run start --workspace=apps/backoffice",
     "dev": "npm run api:dev --workspace=apps/api & npm run start --workspace=apps/backoffice",
     "test": "npm run test --workspace=apps/api -- --runInBand && npm run test --workspace=apps/backoffice -- --watch=false",
-    "lint": "npm run api:lint --workspace=apps/api && npm run backoffice:lint --workspace=apps/backoffice",
+    "lint": "npm run api:lint && npm run backoffice:lint",
     "api:dev": "npm run start:dev --workspace=apps/api",
     "db:seed": "npm run prisma:seed --workspace=apps/api",
     "api:build": "npm install --workspace=apps/api && npm run build --workspace=apps/api",
