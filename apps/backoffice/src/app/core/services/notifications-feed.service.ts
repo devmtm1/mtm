@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { ConstructionApiService } from './api/construction-api.service';
 import { ContactApiService } from './api/contact-api.service';
 import { CrmApiService } from './api/crm-api.service';
 import { MandatsApiService } from './api/mandats-api.service';
@@ -21,12 +22,20 @@ export interface FeedItem {
 const MANDAT_ALERT_DAYS = 30;
 const MAX_ITEMS_PER_SOURCE = 5;
 
+/** Ce qui dérape sur un chantier, dit en trois mots (section 16). */
+function alerteTitre(situation: string): string {
+  if (situation === 'retard_et_depassement') return 'en retard et hors budget';
+  if (situation === 'depassement_budget') return 'budget dépassé';
+  return 'en retard';
+}
+
 /**
  * Fil des points d'attention affiché derrière la cloche de l'en-tête. Il
  * n'existe pas encore de service de notifications côté API (prévu J2.4) :
  * le fil agrège les signaux métier déjà disponibles — mandats qui expirent,
- * tâches CRM en retard, demandes web non lues, demandes de réservation à
- * traiter — chacun limité aux permissions de l'utilisateur.
+ * tâches CRM en retard, chantiers en retard ou hors budget, demandes web
+ * non lues, demandes de réservation à traiter — chacun limité aux
+ * permissions de l'utilisateur.
  */
 @Injectable({ providedIn: 'root' })
 export class NotificationsFeedService {
@@ -35,6 +44,7 @@ export class NotificationsFeedService {
   private readonly crmApi = inject(CrmApiService);
   private readonly contactApi = inject(ContactApiService);
   private readonly ventesApi = inject(VentesApiService);
+  private readonly constructionApi = inject(ConstructionApiService);
 
   load(): Observable<FeedItem[]> {
     const sources: Observable<FeedItem[]>[] = [];
@@ -112,6 +122,28 @@ export class NotificationsFeedService {
                 detail: request.terrain ? `${request.terrain.referenceInterne} · ${request.terrain.nom}` : 'Terrain non précisé',
                 route: ['/ventes'],
               })),
+          ),
+          catchError(() => of([])),
+        ),
+      );
+    }
+
+    if (this.session.hasPermission('construction:consulter')) {
+      sources.push(
+        this.constructionApi.findAll({ vue: 'en_alerte', pageSize: MAX_ITEMS_PER_SOURCE }).pipe(
+          map((page) =>
+            page.items.map((chantier) => ({
+              id: `chantier-${chantier.id}`,
+              // Déraper à la fois sur les délais et sur l'argent est le
+              // seul cas franchement rouge (section 16).
+              severity:
+                chantier.situationAlerte === 'retard_et_depassement'
+                  ? ('danger' as const)
+                  : ('warning' as const),
+              title: `${chantier.intitule} — ${alerteTitre(chantier.situationAlerte)}`,
+              detail: `${chantier.referenceInterne} · ${chantier.avancement} % d’avancement`,
+              route: ['/construction/chantiers', chantier.id],
+            })),
           ),
           catchError(() => of([])),
         ),

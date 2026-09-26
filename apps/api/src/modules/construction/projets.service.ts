@@ -150,6 +150,10 @@ export class ProjetsConstructionService {
     switch (vue) {
       case 'en_cours':
         return actifs;
+      // Tout ce qui dérape, quelle qu'en soit la nature : c'est ce que le
+      // fil d'alertes du tableau de bord demande en un seul appel.
+      case 'en_alerte':
+        return { ...actifs, situationAlerte: { not: 'aucune' } };
       case 'en_retard':
         return {
           ...actifs,

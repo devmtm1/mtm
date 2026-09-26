@@ -9,6 +9,7 @@ import {
   LucideBanknote,
   LucideBuilding2,
   LucideCircleCheck,
+  LucideHardHat,
   LucideLandPlot,
   LucideReceipt,
   LucideScrollText,
@@ -25,11 +26,13 @@ import { TerrainsApiService } from '../../core/services/api/terrains-api.service
 import { CrmApiService } from '../../core/services/api/crm-api.service';
 import { ObjectifsApiService } from '../../core/services/api/objectifs-api.service';
 import { LocatifApiService } from '../../core/services/api/locatif-api.service';
+import { ConstructionApiService } from '../../core/services/api/construction-api.service';
 import type { VenteDashboardStats } from '../../core/models/vente.model';
 import type { MandatStats } from '../../core/models/mandat.model';
 import type { TerrainStats } from '../../core/models/terrain.model';
 import type { ProspectStats } from '../../core/models/prospect.model';
 import type { LocatifStats } from '../../core/models/locatif.model';
+import type { ChantierStats } from '../../core/models/chantier.model';
 import { currentPeriode, type ObjectifProgress } from '../../core/models/objectif.model';
 import { MoneyPipe } from '../../shared/pipes/money.pipe';
 import { donutChart, monthlyBarChart } from '../../shared/charts/mtm-charts';
@@ -62,6 +65,7 @@ const MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet'
     LucideBanknote,
     LucideBuilding2,
     LucideCircleCheck,
+    LucideHardHat,
     LucideLandPlot,
     LucideReceipt,
     LucideScrollText,
@@ -81,6 +85,7 @@ export class Dashboard implements OnInit {
   private readonly crmApi = inject(CrmApiService);
   private readonly objectifsApi = inject(ObjectifsApiService);
   private readonly locatifApi = inject(LocatifApiService);
+  private readonly constructionApi = inject(ConstructionApiService);
 
   protected readonly user = this.session.user;
   protected readonly canViewVentes = this.session.hasPermission('ventes:consulter');
@@ -88,12 +93,13 @@ export class Dashboard implements OnInit {
   protected readonly canViewTerrains = this.session.hasPermission('terrains:consulter');
   protected readonly canViewCrm = this.session.hasPermission('crm:consulter');
   protected readonly canViewLocatif = this.session.hasPermission('locatif:consulter');
+  protected readonly canViewConstruction = this.session.hasPermission('construction:consulter');
   protected readonly canViewFinancials = this.session.hasPermission('ventes:consulter_financier') || this.session.hasSupervisionScope('ventes');
   protected readonly isCommercial = this.session.hasRole('commercial') || this.session.hasRole('responsable_commercial') || this.session.hasRole('manager');
 
   protected readonly today = new Date();
   protected readonly monthLabel = `${MONTHS[this.today.getMonth()]} ${this.today.getFullYear()}`;
-  protected readonly hasAnyModule = this.canViewVentes || this.canViewMandats || this.canViewTerrains || this.canViewCrm || this.canViewLocatif;
+  protected readonly hasAnyModule = this.canViewVentes || this.canViewMandats || this.canViewTerrains || this.canViewCrm || this.canViewLocatif || this.canViewConstruction;
 
   protected readonly feedItems = signal<FeedItem[] | null>(null);
   protected readonly ventesStats = signal<VenteDashboardStats | null>(null);
@@ -101,9 +107,21 @@ export class Dashboard implements OnInit {
   protected readonly terrainStats = signal<TerrainStats | null>(null);
   protected readonly crmStats = signal<ProspectStats | null>(null);
   protected readonly locatifStats = signal<LocatifStats | null>(null);
+  protected readonly chantierStats = signal<ChantierStats | null>(null);
   protected readonly myPerformance = signal<CommercialPerformance | null>(null);
   protected readonly myObjectif = signal<ObjectifProgress | null>(null);
   protected readonly loadingVentes = signal(this.canViewVentes);
+
+  /**
+   * Chantiers qui dérapent, toutes natures d'alerte confondues : c'est ce
+   * chiffre qui appelle une action, pas le nombre de chantiers ouverts.
+   */
+  protected readonly chantiersEnAlerte = computed(() => {
+    const parAlerte = this.chantierStats()?.parAlerte ?? {};
+    return Object.entries(parAlerte)
+      .filter(([code]) => code !== 'aucune')
+      .reduce((somme, nombre) => somme + nombre[1], 0);
+  });
 
   protected readonly urgent = computed(() => (this.feedItems() ?? []).filter((item) => item.severity === 'danger'));
   protected readonly others = computed(() => (this.feedItems() ?? []).filter((item) => item.severity !== 'danger'));
@@ -161,6 +179,7 @@ export class Dashboard implements OnInit {
     if (this.canViewTerrains) this.terrainsApi.getStats().subscribe({ next: (stats) => this.terrainStats.set(stats), error: () => this.terrainStats.set(null) });
     if (this.canViewCrm) this.crmApi.getStats().subscribe({ next: (stats) => this.crmStats.set(stats), error: () => this.crmStats.set(null) });
     if (this.canViewLocatif) this.locatifApi.getStats().subscribe({ next: (stats) => this.locatifStats.set(stats), error: () => this.locatifStats.set(null) });
+    if (this.canViewConstruction) this.constructionApi.getStats().subscribe({ next: (stats) => this.chantierStats.set(stats), error: () => this.chantierStats.set(null) });
   }
 
   protected open(item: FeedItem): void {

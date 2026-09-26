@@ -144,6 +144,23 @@
         </span>
       </button>
     }
+    @if (canViewConstruction) {
+      <button type="button" class="kpi" [class.kpi--warning]="chantiersEnAlerte() > 0" [class.kpi--success]="chantiersEnAlerte() === 0" (click)="goTo('/construction/chantiers')">
+        <span class="kpi__icon"><svg lucideHardHat aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          @if (chantierStats(); as s) {
+            <strong>{{ s.chantiersActifs }}</strong>
+            <span>Chantiers actifs</span>
+            <!-- Ce qui dérape passe avant l'avancement moyen : c'est le seul
+                 des deux chiffres qui appelle une action. -->
+            <small>{{ chantiersEnAlerte() > 0 ? chantiersEnAlerte() + ' chantier' + (chantiersEnAlerte() > 1 ? 's' : '') + ' en retard ou hors budget' : s.avancementMoyen + ' % d’avancement moyen' }}</small>
+          } @else {
+            <strong>…</strong>
+            <span>Chantiers</span>
+          }
+        </span>
+      </button>
+    }
   </section>
 
   <!-- Graphiques -->
