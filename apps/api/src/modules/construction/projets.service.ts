@@ -15,6 +15,7 @@ import {
 import {
   CONSTRUCTION_DEFAULTS,
   ConstructionOptionsService,
+  libelleJalonType,
 } from './construction-options.service';
 import {
   STATUTS_CHANTIER_TERMINES,
@@ -309,9 +310,11 @@ export class ProjetsConstructionService {
         ...(dto.avecJalonsType
           ? {
               jalons: {
+                // Le référentiel porte des codes ; le planning doit lire
+                // un libellé français, pas « second_oeuvre ».
                 create: (await this.options.getOptions()).jalonsType.map(
-                  (libelle, index) => ({
-                    libelle,
+                  (code, index) => ({
+                    libelle: libelleJalonType(code),
                     ordre: index,
                   }),
                 ),

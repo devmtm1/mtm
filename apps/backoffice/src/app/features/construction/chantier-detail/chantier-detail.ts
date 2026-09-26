@@ -260,6 +260,75 @@ export class ChantierDetailPage implements OnInit {
     return [...enAttente, ...reste];
   });
 
+  /**
+   * Budget poste par poste : le prévu vient des lignes, le dépensé des
+   * dépenses validées. Calculé ici plutôt que rappelé à l’API — la fiche
+   * porte déjà les deux listes, et c’est la comparaison qui dit quel poste
+   * dérape, pas le total.
+   */
+  protected readonly budgetParPoste = computed(() => {
+    const chantier = this.chantier();
+    if (!chantier) return [];
+
+    const postes = new Map<string, { prevu: number; depense: number }>();
+    const entree = (poste: string) => {
+      const existante = postes.get(poste) ?? { prevu: 0, depense: 0 };
+      postes.set(poste, existante);
+      return existante;
+    };
+    for (const ligne of chantier.lignesBudget) {
+      entree(ligne.poste).prevu += montant(ligne.montantPrevu);
+    }
+    for (const depense of chantier.depenses) {
+      if (depense.statut === 'valide') {
+        entree(depense.poste).depense += montant(depense.montant);
+      }
+    }
+
+    return [...postes.entries()]
+      .map(([poste, valeurs]) => ({
+        poste,
+        ...valeurs,
+        ecart: valeurs.prevu - valeurs.depense,
+        depassement: valeurs.prevu > 0 && valeurs.depense > valeurs.prevu,
+      }))
+      .sort((a, b) => b.prevu - a.prevu || b.depense - a.depense);
+  });
+
+  /** Totaux de la colonne budget, pour clore le tableau. */
+  protected readonly totalBudgetPoste = computed(() =>
+    this.budgetParPoste().reduce(
+      (total, poste) => ({
+        prevu: total.prevu + poste.prevu,
+        depense: total.depense + poste.depense,
+      }),
+      { prevu: 0, depense: 0 },
+    ),
+  );
+
+  /**
+   * Chantier encore « en préparation » alors que des étapes sont déjà
+   * terminées : personne n'a pensé à le démarrer. On le signale plutôt que
+   * d’afficher deux informations qui se contredisent.
+   */
+  protected readonly demarrageOublie = computed(() => {
+    const chantier = this.chantier();
+    if (!chantier || chantier.statut !== 'prepare') return false;
+    return (this.synthese()?.avancement.jalonsTermines ?? 0) > 0;
+  });
+
+  /**
+   * Vrai quand les ampleurs diffèrent : l'avancement n'est alors pas le
+   * simple rapport des étapes terminées, et « 4 sur 10 » affiché à côté de
+   * « 50 % » ressemble à une erreur tant que rien ne l’explique.
+   */
+  protected readonly avancementPondere = computed(() => {
+    const poids = (this.chantier()?.jalons ?? [])
+      .filter((jalon) => jalon.statut !== 'annule')
+      .map((jalon) => jalon.poids);
+    return new Set(poids).size > 1;
+  });
+
   protected readonly piecesAffichees = computed(() => {
     const documents = this.chantier()?.documents ?? [];
     return this.piecesToutes() ? documents : documents.slice(0, PIECES_VISIBLES);
@@ -605,6 +674,32 @@ export class ChantierDetailPage implements OnInit {
 
   // --- Libellés et mises en forme utilisés par le gabarit ---
 
+  /**
+   * Une étape ne se solde que si celles qui la précèdent le sont : sans ce
+   * garde-fou, on peut réceptionner un chantier avant d’avoir coulé la
+   * dalle. Les étapes annulées ne bloquent pas.
+   */
+  protected peutTerminer(jalon: JalonChantier): boolean {
+    if (jalon.statut === 'termine' || jalon.statut === 'annule') return false;
+    const jalons = this.chantier()?.jalons ?? [];
+    const rang = jalons.findIndex((item) => item.id === jalon.id);
+    return jalons
+      .slice(0, rang)
+      .every((item) => item.statut === 'termine' || item.statut === 'annule');
+  }
+
+  /** Ce qui bloque le bouton « Terminer », dit à qui survole. */
+  protected pourquoiPasTerminer(jalon: JalonChantier): string {
+    const jalons = this.chantier()?.jalons ?? [];
+    const rang = jalons.findIndex((item) => item.id === jalon.id);
+    const precedente = jalons
+      .slice(0, rang)
+      .find((item) => item.statut !== 'termine' && item.statut !== 'annule');
+    return precedente
+      ? `À terminer après « ${precedente.libelle} »`
+      : '';
+  }
+
   protected statutLabel(code: string): string {
     return label(STATUTS_CHANTIER, code);
   }
@@ -733,15 +828,36 @@ export class ChantierDetailPage implements OnInit {
   protected quantiteLigne(ligne: LigneBudget): string {
     const quantite = montant(ligne.quantite);
     if (!quantite) return '';
-    return `${quantite.toLocaleString('fr-FR')} ${ligne.unite ?? ''}`.trim();
+    return `${quantite.toLocaleString('fr-FR')} ${this.unite(ligne.unite, quantite)}`.trim();
   }
 
-  /** Bornes du planning : la première date connue, la dernière. */
+  /**
+   * « 50 tonnes », pas « 50 tonne ». Les unités symboliques (m², kg, u)
+   * restent invariables ; seules celles qui sont des mots prennent la
+   * marque du pluriel.
+   */
+  private unite(code: string | null, quantite: number): string {
+    if (!code) return '';
+    const motsVariables = ['tonne', 'sac', 'camion'];
+    if (quantite > 1 && motsVariables.includes(code)) return `${code}s`;
+    return code;
+  }
+
+  /**
+   * Bornes du planning : la première date connue, la dernière.
+   *
+   * Il faut au moins deux étapes datées et une quinzaine de jours
+   * d’amplitude pour qu’une frise veuille dire quelque chose. En dessous,
+   * toutes les barres se tassent au même endroit et l’échelle affiche un
+   * seul mois : mieux vaut ne rien dessiner.
+   */
   private bornesPlanning(
     jalons: JalonChantier[],
   ): { debut: number; fin: number } | null {
     const dates: number[] = [];
+    let jalonsDates = 0;
     for (const jalon of jalons) {
+      const avantCompte = dates.length;
       for (const valeur of [
         jalon.dateDebutPrevue,
         jalon.dateFinPrevue,
@@ -751,12 +867,14 @@ export class ChantierDetailPage implements OnInit {
         const instant = this.date(valeur);
         if (instant !== null) dates.push(instant);
       }
+      if (dates.length > avantCompte) jalonsDates += 1;
     }
-    if (dates.length < 2) return null;
+    if (jalonsDates < 2 || dates.length < 2) return null;
     const debut = Math.min(...dates);
     const fin = Math.max(...dates);
-    // Un planning d'un seul jour ferait une division par zéro.
-    return fin > debut ? { debut, fin } : null;
+    // Moins de quinze jours d’amplitude : la frise n’apprendrait rien, et
+    // un planning d'un seul jour ferait une division par zéro.
+    return fin - debut >= 15 * 86_400_000 ? { debut, fin } : null;
   }
 
   private date(valeur: string | null): number | null {

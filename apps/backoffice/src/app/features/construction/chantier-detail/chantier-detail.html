@@ -44,6 +44,16 @@
                 ({{ etape.avancement }} %)
               }
             </span>
+          } @else if (c.statut === 'prepare' && demarrageOublie()) {
+            <span>
+              Des étapes sont déjà terminées, mais le chantier est encore en
+              préparation.
+              @if (canModify()) {
+                <button type="button" class="lien-action" (click)="changerStatut()">
+                  Démarrer les travaux
+                </button>
+              }
+            </span>
           } @else if (c.statut === 'prepare') {
             <span>Les travaux n’ont pas encore démarré.</span>
           } @else {
@@ -161,8 +171,13 @@
           <strong>{{ s.avancement.pourcentage }} %</strong>
           <small>
             @if (s.avancement.jalonsTotal) {
-              {{ s.avancement.jalonsTermines }} étape(s) terminée(s) sur
-              {{ s.avancement.jalonsTotal }}
+              {{ s.avancement.jalonsTermines }} sur
+              {{ s.avancement.jalonsTotal }} étapes terminées
+              @if (avancementPondere()) {
+                <!-- Sans cette mention, « 4 sur 10 » à côté de « 50 % »
+                     passe pour une erreur de calcul. -->
+                , pondérées par leur ampleur
+              }
             } @else {
               Aucune étape au planning
             }
@@ -207,134 +222,6 @@
     <div class="chantier-detail__layout">
       <!-- Colonne principale : ce qui se pilote au quotidien -->
       <div class="chantier-detail__main">
-        <!-- Planning : la « vue de type Gantt » de la section 16 -->
-        <section class="page-card detail-section">
-          <div class="detail-section__head">
-            <div>
-              <h2>Planning des travaux</h2>
-              <p class="detail-section__hint">
-                Chaque barre est une étape des travaux, placée sur sa période ; le
-                trait vertical marque aujourd’hui. Les étapes les plus lourdes
-                comptent davantage dans l’avancement du chantier.
-              </p>
-            </div>
-            @if (canModify()) {
-              <button mat-stroked-button type="button" (click)="ajouterJalon()">
-                <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Étape
-              </button>
-            }
-          </div>
-
-          @if (c.jalons.length) {
-            <div class="gantt">
-              <!-- Sans échelle, les barres flottent : on voit qu’une étape
-                   est plus longue qu’une autre, jamais quand elle tombe. -->
-              @if (reperesGantt().length) {
-                <div class="gantt__row gantt__row--echelle" aria-hidden="true">
-                  <span class="gantt__label"></span>
-                  <div class="gantt__track gantt__track--echelle">
-                    @for (repere of reperesGantt(); track repere.offset) {
-                      <span class="gantt__mois" [style.left.%]="repere.offset">
-                        {{ repere.label }}
-                      </span>
-                    }
-                  </div>
-                  <span class="gantt__state"></span>
-                </div>
-              }
-              @if (positionAujourdhui(); as aujourdhui) {
-                <div class="gantt__today" [style.left.%]="aujourdhui" aria-hidden="true">
-                  <span>aujourd’hui</span>
-                </div>
-              }
-              @for (ligne of gantt(); track ligne.jalon.id) {
-                <div class="gantt__row">
-                  <button
-                    type="button"
-                    class="gantt__label"
-                    [disabled]="!canModify()"
-                    (click)="modifierJalon(ligne.jalon)"
-                  >
-                    <span class="gantt__name">{{ ligne.jalon.libelle }}</span>
-                    <small
-                      [class.chantier-detail__danger]="
-                        ligne.jalon.statut !== 'termine' &&
-                        ligne.jalon.statut !== 'annule' &&
-                        estDepassee(ligne.jalon.dateFinPrevue)
-                      "
-                    >
-                      @if (ligne.jalon.statut === 'termine') {
-                        terminée le
-                        {{ dateCourte(ligne.jalon.dateFinReelle ?? ligne.jalon.dateFinPrevue) }}
-                      } @else if (ligne.jalon.dateFinPrevue) {
-                        attendue {{ delai(ligne.jalon.dateFinPrevue) }}
-                      } @else {
-                        date à renseigner
-                      }
-                    </small>
-                  </button>
-
-                  <div class="gantt__track">
-                    @if (ligne.place) {
-                      <span
-                        class="gantt__bar"
-                        [class.gantt__bar--termine]="ligne.jalon.statut === 'termine'"
-                        [class.gantt__bar--bloque]="ligne.jalon.statut === 'bloque'"
-                        [class.gantt__bar--annule]="ligne.jalon.statut === 'annule'"
-                        [style.left.%]="ligne.offset"
-                        [style.width.%]="ligne.largeur"
-                        [matTooltip]="jalonLabel(ligne.jalon.statut)"
-                      >
-                        <i [style.width.%]="ligne.jalon.statut === 'termine' ? 100 : ligne.jalon.avancement"></i>
-                      </span>
-                    } @else {
-                      <span class="gantt__undated">Sans date</span>
-                    }
-                  </div>
-
-                  <div class="gantt__state">
-                    <span [class]="jalonPill(ligne.jalon.statut)">
-                      {{ jalonLabel(ligne.jalon.statut) }}
-                    </span>
-                    @if (canModify() && ligne.jalon.statut !== 'termine' && ligne.jalon.statut !== 'annule') {
-                      <button
-                        mat-button
-                        type="button"
-                        class="gantt__done"
-                        (click)="terminerJalon(ligne.jalon)"
-                      >
-                        Terminer
-                      </button>
-                    }
-                  </div>
-                </div>
-              }
-            </div>
-
-            <p class="gantt__legende">
-              <span class="gantt__puce gantt__puce--en-cours"></span> en cours
-              <span class="gantt__puce gantt__puce--termine"></span> terminée
-              <span class="gantt__puce gantt__puce--bloque"></span> bloquée
-              <span class="gantt__puce gantt__puce--annule"></span> annulée
-              <span class="gantt__legende-note">
-                La partie pleine de chaque barre montre l’avancement de l’étape.
-              </span>
-            </p>
-
-            @if (!positionAujourdhui() && c.jalons.length) {
-              <p class="detail-section__hint">
-                Renseignez les dates de début et de fin des étapes : sans elles, le
-                planning ne peut pas se dessiner et aucun retard ne sera détecté.
-              </p>
-            }
-          } @else {
-            <p class="detail-note">
-              Aucune étape au planning. Sans étapes, l’avancement doit être saisi à la main et aucun
-              retard ne peut être détecté.
-            </p>
-          }
-        </section>
-
         <!-- Journal de chantier -->
         <section class="page-card detail-section">
           <div class="detail-section__head">
@@ -461,6 +348,141 @@
           }
         </section>
 
+        <!-- Planning : la « vue de type Gantt » de la section 16. Après le
+             journal : on le consulte une fois par semaine, alors qu'on écrit
+             au journal tous les jours. -->
+        <section class="page-card detail-section">
+          <div class="detail-section__head">
+            <div>
+              <h2>Planning des travaux</h2>
+              <p class="detail-section__hint">
+                Chaque barre est une étape des travaux, placée sur sa période ; le
+                trait vertical marque aujourd’hui. Les étapes les plus lourdes
+                comptent davantage dans l’avancement du chantier.
+              </p>
+            </div>
+            @if (canModify()) {
+              <button mat-stroked-button type="button" (click)="ajouterJalon()">
+                <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Étape
+              </button>
+            }
+          </div>
+
+          @if (c.jalons.length) {
+            <div class="gantt">
+              <!-- Sans échelle, les barres flottent : on voit qu’une étape
+                   est plus longue qu’une autre, jamais quand elle tombe. -->
+              @if (reperesGantt().length) {
+                <div class="gantt__row gantt__row--echelle" aria-hidden="true">
+                  <span class="gantt__label"></span>
+                  <div class="gantt__track gantt__track--echelle">
+                    @for (repere of reperesGantt(); track repere.offset) {
+                      <span class="gantt__mois" [style.left.%]="repere.offset">
+                        {{ repere.label }}
+                      </span>
+                    }
+                  </div>
+                  <span class="gantt__state"></span>
+                </div>
+              }
+              @if (positionAujourdhui(); as aujourdhui) {
+                <div class="gantt__today" [style.left.%]="aujourdhui" aria-hidden="true">
+                  <span>aujourd’hui</span>
+                </div>
+              }
+              @for (ligne of gantt(); track ligne.jalon.id) {
+                <div class="gantt__row">
+                  <button
+                    type="button"
+                    class="gantt__label"
+                    [disabled]="!canModify()"
+                    (click)="modifierJalon(ligne.jalon)"
+                  >
+                    <span class="gantt__name">{{ ligne.jalon.libelle }}</span>
+                    <small
+                      [class.chantier-detail__danger]="
+                        ligne.jalon.statut !== 'termine' &&
+                        ligne.jalon.statut !== 'annule' &&
+                        estDepassee(ligne.jalon.dateFinPrevue)
+                      "
+                    >
+                      @if (ligne.jalon.statut === 'termine') {
+                        terminée le
+                        {{ dateCourte(ligne.jalon.dateFinReelle ?? ligne.jalon.dateFinPrevue) }}
+                      } @else if (ligne.jalon.dateFinPrevue) {
+                        attendue {{ delai(ligne.jalon.dateFinPrevue) }}
+                      } @else {
+                        date à renseigner
+                      }
+                    </small>
+                  </button>
+
+                  <div class="gantt__track" [class.gantt__track--vide]="!ligne.place">
+                    @if (ligne.place) {
+                      <span
+                        class="gantt__bar"
+                        [class.gantt__bar--termine]="ligne.jalon.statut === 'termine'"
+                        [class.gantt__bar--bloque]="ligne.jalon.statut === 'bloque'"
+                        [class.gantt__bar--annule]="ligne.jalon.statut === 'annule'"
+                        [style.left.%]="ligne.offset"
+                        [style.width.%]="ligne.largeur"
+                        [matTooltip]="jalonLabel(ligne.jalon.statut)"
+                      >
+                        <i [style.width.%]="ligne.jalon.statut === 'termine' ? 100 : ligne.jalon.avancement"></i>
+                      </span>
+                    } @else {
+                      <!-- Pas de barre : une piste pleine largeur se lirait
+                           comme une étape à 0 %, alors qu'elle n'est pas
+                           planifiée du tout. -->
+                      <span class="gantt__undated">à planifier</span>
+                    }
+                  </div>
+
+                  <div class="gantt__state">
+                    <span [class]="jalonPill(ligne.jalon.statut)">
+                      {{ jalonLabel(ligne.jalon.statut) }}
+                    </span>
+                    @if (canModify() && ligne.jalon.statut !== 'termine' && ligne.jalon.statut !== 'annule') {
+                      <button
+                        mat-button
+                        type="button"
+                        class="gantt__done"
+                        [disabled]="!peutTerminer(ligne.jalon)"
+                        [matTooltip]="pourquoiPasTerminer(ligne.jalon)"
+                        (click)="terminerJalon(ligne.jalon)"
+                      >
+                        Terminer
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+
+            <p class="gantt__legende">
+              <span class="gantt__puce gantt__puce--en-cours"></span> en cours
+              <span class="gantt__puce gantt__puce--termine"></span> terminée
+              <span class="gantt__puce gantt__puce--bloque"></span> bloquée
+              <span class="gantt__puce gantt__puce--annule"></span> annulée
+              <span class="gantt__legende-note">
+                La partie pleine de chaque barre montre l’avancement de l’étape.
+              </span>
+            </p>
+
+            @if (!positionAujourdhui() && c.jalons.length) {
+              <p class="detail-section__hint">
+                Renseignez les dates de début et de fin des étapes : sans elles, le
+                planning ne peut pas se dessiner et aucun retard ne sera détecté.
+              </p>
+            }
+          } @else {
+            <p class="detail-note">
+              Aucune étape au planning. Sans étapes, l’avancement doit être saisi à la main et aucun
+              retard ne peut être détecté.
+            </p>
+          }
+        </section>
+
         <!-- Dépenses -->
         <section class="page-card detail-section">
           <div class="detail-section__head">
@@ -558,35 +580,75 @@
             }
           </div>
 
-          @if (c.lignesBudget.length) {
-            <ul class="budget-list">
-              @for (ligne of c.lignesBudget; track ligne.id) {
-                <li>
-                  <button
-                    type="button"
-                    class="budget-list__row"
-                    [disabled]="!canModify()"
-                    (click)="modifierLigneBudget(ligne)"
-                  >
-                    <span class="budget-list__label">
-                      <strong>{{ ligne.libelle }}</strong>
-                      <small>
-                        {{ posteLabel(ligne.poste) }}
-                        @if (quantiteLigne(ligne); as quantite) {
-                          · {{ quantite }}
-                        }
-                      </small>
-                    </span>
-                    <span class="budget-list__amount">
-                      {{ nombre(ligne.montantPrevu) | mtmMoney }}
-                    </span>
-                  </button>
-                </li>
-              }
-            </ul>
+          @if (budgetParPoste().length) {
+            <table class="data-table budget-table">
+              <thead>
+                <tr>
+                  <th>Poste</th>
+                  <th class="num">Prévu</th>
+                  <th class="num">Dépensé</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (poste of budgetParPoste(); track poste.poste) {
+                  <tr [class.budget-table__over]="poste.depassement">
+                    <td>{{ posteLabel(poste.poste) }}</td>
+                    <td class="num">{{ poste.prevu | mtmMoney }}</td>
+                    <td class="num">
+                      {{ poste.depense | mtmMoney }}
+                      @if (poste.depassement) {
+                        <small>+{{ -poste.ecart | mtmMoney }}</small>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td>Total</td>
+                  <td class="num">{{ totalBudgetPoste().prevu | mtmMoney }}</td>
+                  <td class="num">{{ totalBudgetPoste().depense | mtmMoney }}</td>
+                </tr>
+              </tfoot>
+            </table>
+
+            @if (c.lignesBudget.length) {
+              <details class="chantier-detail__repli chantier-detail__repli--inline">
+                <summary>
+                  <strong>Le détail des postes</strong>
+                  <small>{{ c.lignesBudget.length }} ligne(s) chiffrée(s)</small>
+                </summary>
+                <ul class="budget-list">
+                  @for (ligne of c.lignesBudget; track ligne.id) {
+                    <li>
+                      <button
+                        type="button"
+                        class="budget-list__row"
+                        [disabled]="!canModify()"
+                        (click)="modifierLigneBudget(ligne)"
+                      >
+                        <span class="budget-list__label">
+                          <strong>{{ ligne.libelle }}</strong>
+                          <small>
+                            {{ posteLabel(ligne.poste) }}
+                            @if (quantiteLigne(ligne); as quantite) {
+                              · {{ quantite }}
+                            }
+                          </small>
+                        </span>
+                        <span class="budget-list__amount">
+                          {{ nombre(ligne.montantPrevu) | mtmMoney }}
+                        </span>
+                      </button>
+                    </li>
+                  }
+                </ul>
+              </details>
+            }
           } @else {
             <p class="detail-section__hint">
-              Aucun poste chiffré. Sans budget prévisionnel, aucun dépassement ne peut être détecté.
+              Aucun poste chiffré. Sans budget prévisionnel, aucun dépassement ne peut
+              être détecté sur ce chantier.
             </p>
           }
         </section>
@@ -675,7 +737,7 @@
                       type="button"
                       (click)="basculerVisibilite(piece.id, !piece.visibleClient)"
                     >
-                      {{ piece.visibleClient ? 'Retirer' : 'Publier' }}
+                      {{ piece.visibleClient ? 'Ne plus montrer' : 'Montrer au client' }}
                     </button>
                   } @else if (piece.visibleClient) {
                     <span class="status-pill status-pill--info">Publiée</span>

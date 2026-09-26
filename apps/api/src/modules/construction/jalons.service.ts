@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -44,6 +45,22 @@ export class JalonsChantierService {
   async create(projetId: string, dto: CreateJalonDto, user: ConstructionUser) {
     await this.access.ensureAccessible(projetId, user);
     this.assertPeriode(dto.dateDebutPrevue, dto.dateFinPrevue);
+
+    // Deux « Fondations » sur le même planning ne veulent rien dire : on ne
+    // sait plus laquelle est en retard, ni laquelle une journée de journal
+    // vise.
+    const homonyme = await this.prisma.jalonChantier.findFirst({
+      where: {
+        projetId,
+        libelle: { equals: dto.libelle.trim(), mode: 'insensitive' },
+      },
+      select: { id: true },
+    });
+    if (homonyme) {
+      throw new ConflictException(
+        `Une étape « ${dto.libelle.trim()} » existe déjà sur ce chantier`,
+      );
+    }
 
     // Un jalon sans rang explicite se pose à la fin du planning plutôt qu'en
     // tête, où il bousculerait l'ordre déjà établi.

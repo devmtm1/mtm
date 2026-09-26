@@ -97,6 +97,36 @@ export const CONSTRUCTION_DEFAULTS = {
   ],
 } as const;
 
+/**
+ * Libellé français des étapes types. Le référentiel ne porte que des
+ * codes — c'est ce qui permet à MTM d'en ajouter depuis les Paramètres
+ * — mais une étape posée sur un planning doit se lire « Second œuvre »,
+ * pas « second_oeuvre ».
+ */
+export const JALONS_TYPE_LIBELLES: Record<string, string> = {
+  etudes_et_permis: 'Études et permis',
+  terrassement: 'Terrassement',
+  fondations: 'Fondations',
+  elevation: 'Élévation',
+  dalle: 'Dalle',
+  toiture: 'Toiture',
+  second_oeuvre: 'Second œuvre',
+  finitions: 'Finitions',
+  reception: 'Réception',
+};
+
+/**
+ * Un code ajouté dans les Paramètres reste lisible sans redéploiement :
+ * « mur_de_cloture » devient « Mur de cloture ». Les accents manquent,
+ * mais c'est préférable à un code brut sur l'écran.
+ */
+export function libelleJalonType(code: string): string {
+  const connu = JALONS_TYPE_LIBELLES[code];
+  if (connu) return connu;
+  const texte = code.replace(/_/g, ' ').trim();
+  return texte.charAt(0).toUpperCase() + texte.slice(1);
+}
+
 /** Paramètres numériques du module, tous surchargeables. */
 export const CONSTRUCTION_REGLAGES_DEFAUT = {
   /** Au-delà de ce pourcentage du budget consommé, le chantier alerte. */

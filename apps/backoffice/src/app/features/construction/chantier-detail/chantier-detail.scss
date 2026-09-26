@@ -23,6 +23,23 @@
   color: var(--mtm-text-muted);
 }
 
+/* Une action proposée au fil du texte : un lien, pas un bouton — elle
+   suggère, elle n'interrompt pas. */
+.lien-action {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--mtm-primary);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--mtm-primary-dark, var(--mtm-primary));
+  }
+}
+
 .chantier-detail {
   /* Couleur seule : la classe sert aussi bien sur un mot au fil du texte
      que sur une ligne entière. Seul le `small` d’un tableau a besoin de
@@ -306,11 +323,19 @@
   }
 }
 
+/* Une étape non planifiée n'a pas de barre : la piste s'efface pour ne
+   pas se lire comme une étape à 0 %. */
+.gantt__track--vide {
+  background: none;
+  border: 1px dashed var(--mtm-border);
+}
+
 .gantt__undated {
   display: inline-block;
   padding: 2px 8px;
   color: var(--mtm-text-muted);
-  font-size: 0.74rem;
+  font-size: 0.72rem;
+  font-style: italic;
 }
 
 .gantt__state {
@@ -485,6 +510,35 @@
   font-weight: 600;
 }
 
+/* Comparer prévu et dépensé dans une colonne étroite : les montants sont
+   alignés à droite et tabulaires pour se lire en diagonale. */
+.budget-table {
+  font-size: 0.84rem;
+
+  .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  tfoot td {
+    border-top: 1px solid var(--mtm-border);
+    font-weight: 700;
+  }
+
+  /* Un poste dépassé se signale par la couleur et par son écart, pas par
+     un pictogramme de plus. */
+  &__over td {
+    color: var(--mtm-accent);
+  }
+
+  &__over small {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+}
+
 /* --- Prestataires et pièces --- */
 
 .intervenant {
@@ -573,6 +627,18 @@
 
 /* Le programme, consulté une fois à l'ouverture du dossier : replié. */
 .chantier-detail__repli {
+  /* Replié à l’intérieur d’une carte, et non comme carte : pas de fond,
+     juste un filet de séparation. */
+  &--inline {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--mtm-border);
+
+    summary strong {
+      font-size: 0.86rem;
+    }
+  }
+
   summary {
     display: flex;
     flex-wrap: wrap;
