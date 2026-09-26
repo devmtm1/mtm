@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { ConstructionApiService } from './api/construction-api.service';
+import { LocatifApiService } from './api/locatif-api.service';
 import { ContactApiService } from './api/contact-api.service';
 import { CrmApiService } from './api/crm-api.service';
 import { MandatsApiService } from './api/mandats-api.service';
@@ -21,6 +22,13 @@ export interface FeedItem {
 
 const MANDAT_ALERT_DAYS = 30;
 const MAX_ITEMS_PER_SOURCE = 5;
+/**
+ * Au-delà de ce retard, un loyer impayé cesse d'être un oubli : c'est le
+ * seuil de l'« impayé prolongé » de la section 15, et le fil le passe en
+ * rouge. Le module locatif le rend paramétrable ; ici il ne sert qu'à
+ * colorer une ligne, un défaut suffit.
+ */
+const IMPAYE_PROLONGE_JOURS = 30;
 
 /** Ce qui dérape sur un chantier, dit en trois mots (section 16). */
 function alerteTitre(situation: string): string {
@@ -33,9 +41,9 @@ function alerteTitre(situation: string): string {
  * Fil des points d'attention affiché derrière la cloche de l'en-tête. Il
  * n'existe pas encore de service de notifications côté API (prévu J2.4) :
  * le fil agrège les signaux métier déjà disponibles — mandats qui expirent,
- * tâches CRM en retard, chantiers en retard ou hors budget, demandes web
- * non lues, demandes de réservation à traiter — chacun limité aux
- * permissions de l'utilisateur.
+ * tâches CRM en retard, loyers impayés à relancer, chantiers en retard ou
+ * hors budget, demandes web non lues, demandes de réservation à traiter —
+ * chacun limité aux permissions de l'utilisateur.
  */
 @Injectable({ providedIn: 'root' })
 export class NotificationsFeedService {
@@ -45,6 +53,7 @@ export class NotificationsFeedService {
   private readonly contactApi = inject(ContactApiService);
   private readonly ventesApi = inject(VentesApiService);
   private readonly constructionApi = inject(ConstructionApiService);
+  private readonly locatifApi = inject(LocatifApiService);
 
   load(): Observable<FeedItem[]> {
     const sources: Observable<FeedItem[]>[] = [];
@@ -56,7 +65,10 @@ export class NotificationsFeedService {
         this.mandatsApi.getExpirants(MANDAT_ALERT_DAYS).pipe(
           map((items) =>
             items.slice(0, MAX_ITEMS_PER_SOURCE).map((mandat) => {
-              const days = Math.max(0, Math.ceil((new Date(mandat.dateFin).getTime() - Date.now()) / 86_400_000));
+              const days = Math.max(
+                0,
+                Math.ceil((new Date(mandat.dateFin).getTime() - Date.now()) / 86_400_000),
+              );
               return {
                 id: `mandat-${mandat.id}`,
                 severity: days <= 7 ? ('danger' as const) : ('warning' as const),
@@ -80,7 +92,10 @@ export class NotificationsFeedService {
               .slice(0, MAX_ITEMS_PER_SOURCE)
               .map((task) => ({
                 id: `task-${task.id}`,
-                severity: new Date(task.dateEcheance as string) < new Date(today.getTime() - 86_400_000) ? ('danger' as const) : ('warning' as const),
+                severity:
+                  new Date(task.dateEcheance as string) < new Date(today.getTime() - 86_400_000)
+                    ? ('danger' as const)
+                    : ('warning' as const),
                 title: task.titre,
                 detail: `${task.prospect.nom} ${task.prospect.prenom ?? ''}`.trim(),
                 route: ['/crm/prospects', task.prospect.id],
@@ -119,9 +134,34 @@ export class NotificationsFeedService {
                 id: `reservation-${request.id}`,
                 severity: 'info' as const,
                 title: `Demande de réservation de ${request.nom}`,
-                detail: request.terrain ? `${request.terrain.referenceInterne} · ${request.terrain.nom}` : 'Terrain non précisé',
+                detail: request.terrain
+                  ? `${request.terrain.referenceInterne} · ${request.terrain.nom}`
+                  : 'Terrain non précisé',
                 route: ['/ventes'],
               })),
+          ),
+          catchError(() => of([])),
+        ),
+      );
+    }
+
+    if (this.session.hasPermission('locatif:consulter')) {
+      sources.push(
+        this.locatifApi.findRelances('a_envoyer').pipe(
+          map((relances) =>
+            relances.slice(0, MAX_ITEMS_PER_SOURCE).map((relance) => ({
+              id: `relance-${relance.id}`,
+              severity:
+                relance.joursRetard >= IMPAYE_PROLONGE_JOURS
+                  ? ('danger' as const)
+                  : ('warning' as const),
+              title: `Relance à envoyer — ${relance.joursRetard} jour${relance.joursRetard > 1 ? 's' : ''} de retard`,
+              detail: relance.bailLocatif
+                ? `${relance.bailLocatif.locataire.lastName ?? ''} ${relance.bailLocatif.locataire.firstName ?? ''}`.trim() +
+                  ` · ${relance.bailLocatif.bienLocatif.adresse}`
+                : relance.objet,
+              route: ['/locatif/relances'],
+            })),
           ),
           catchError(() => of([])),
         ),
