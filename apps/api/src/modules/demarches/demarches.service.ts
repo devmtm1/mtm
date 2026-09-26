@@ -310,7 +310,10 @@ export class DemarchesService {
   async transition(id: string, dto: TransitionMissionDto, user: DemarchesUser) {
     await this.access.ensureAccessible(id, user);
     await this.options.assertStatut(dto.statut);
-    if (dto.statut === 'cloturee' && !user.permissions?.includes('demarches:valider')) {
+    if (
+      dto.statut === 'cloturee' &&
+      !user.permissions?.includes('demarches:valider')
+    ) {
       throw new ForbiddenException(
         'La clôture d’une mission relève de la validation (demarches:valider)',
       );
