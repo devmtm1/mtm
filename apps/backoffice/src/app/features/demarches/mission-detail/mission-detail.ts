@@ -6,10 +6,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   LucideArrowLeft,
+  LucideChevronDown,
   LucideFileText,
   LucideMapPinned,
   LucidePlus,
@@ -52,10 +54,23 @@ import {
 } from '../mission-status';
 
 /**
- * Fiche d'une mission de vérification : les cinq étapes du cahier des
- * charges sur un seul écran, dans l'ordre où elles se déroulent — la demande,
- * l'étude de faisabilité, les constats de terrain, les administrations
- * consultées, puis la conclusion et le rapport.
+/**
+ * Le parcours d'une vérification, dans l'ordre de la section 14 du cahier des
+ * charges. Il sert à la fois de fil de lecture et de règle d'avancement.
+ */
+const PARCOURS = [
+  'demande',
+  'faisabilite',
+  'verification_physique',
+  'verification_administrative',
+  'rapport',
+];
+
+/**
+ * Fiche d'une mission de vérification : les cinq étapes du cahier des charges
+ * lues comme un parcours — l'étape en cours ouverte, celles qui sont franchies
+ * repliées en une ligne, les suivantes annoncées. Le client, le terrain et le
+ * suivi restent visibles en permanence dans la colonne latérale.
  */
 @Component({
   selector: 'app-mission-detail',
@@ -66,9 +81,11 @@ import {
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
+    MatMenuModule,
     MatSelectModule,
     MatTooltipModule,
     LucideArrowLeft,
+    LucideChevronDown,
     LucideFileText,
     LucideMapPinned,
     LucidePlus,
@@ -111,6 +128,56 @@ export class MissionDetail implements OnInit {
   protected readonly canDelete = computed(() =>
     this.sessionService.hasPermission('demarches:supprimer'),
   );
+
+  /**
+   * Le parcours d'une vérification, dans l'ordre de la section 14 du cahier
+   * des charges. La fiche se lit comme ce parcours : l'étape en cours est
+   * ouverte, celles qui sont franchies se replient en une ligne, les
+   * suivantes restent annoncées mais fermées.
+   */
+  protected readonly parcours = PARCOURS;
+
+  /**
+   * Étape dépliée. `null` : celle en cours, ce qui est le cas au chargement.
+   * Une chaîne vide referme tout, y compris l'étape en cours.
+   */
+  protected readonly etapeOuverte = signal<string | null>(null);
+
+  /** Rang atteint dans le parcours ; une mission close les a toutes franchies. */
+  private readonly rangAtteint = computed(() => {
+    const statut = this.mission()?.statut ?? 'demande';
+    if (ETAPES_TERMINALES.includes(statut)) return PARCOURS.length;
+    const rang = PARCOURS.indexOf(statut);
+    return rang < 0 ? 0 : rang;
+  });
+
+  protected etatEtape(code: string): 'fait' | 'en_cours' | 'a_venir' {
+    const rang = PARCOURS.indexOf(code);
+    const atteint = this.rangAtteint();
+    if (rang < atteint) return 'fait';
+    return rang === atteint ? 'en_cours' : 'a_venir';
+  }
+
+  protected estOuverte(code: string): boolean {
+    const ouverte = this.etapeOuverte();
+    return ouverte === null ? this.etatEtape(code) === 'en_cours' : ouverte === code;
+  }
+
+  protected etatLabel(etat: 'fait' | 'en_cours' | 'a_venir'): string {
+    if (etat === 'fait') return 'Fait';
+    return etat === 'en_cours' ? 'En cours' : 'À venir';
+  }
+
+  protected basculerEtape(code: string): void {
+    this.etapeOuverte.set(this.estOuverte(code) ? '' : code);
+  }
+
+  /** L'étape qui suit, quand elle est autorisée : le geste principal de la fiche. */
+  protected readonly etapeSuivante = computed(() => {
+    if (this.estTerminee()) return null;
+    const suivante = PARCOURS[this.rangAtteint() + 1] ?? 'cloturee';
+    return this.etapesSelectionnables().includes(suivante) ? suivante : null;
+  });
 
   /** Étapes proposables dans le sélecteur : la clôture exige la validation. */
   protected readonly etapesSelectionnables = computed(() => {

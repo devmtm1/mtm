@@ -1,26 +1,151 @@
 .mission-detail {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-
-  &__tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 10px;
+  &__danger {
+    color: var(--mtm-accent);
   }
 
-  &__etape-select {
-    min-width: 240px;
+  /* Le parcours à gauche, le contexte à droite : le client, le terrain et
+     l'échéance restent lisibles quelle que soit l'étape ouverte. */
+  &__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 18px;
+    min-width: 0;
 
-    @media (max-width: 720px) {
-      min-width: 100%;
+    @media (max-width: 1180px) {
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 
-  &__danger {
+  &__parcours,
+  &__aside {
+    display: grid;
+    align-content: start;
+    gap: 14px;
+    min-width: 0;
+
+    > * {
+      min-width: 0;
+    }
+  }
+
+  /* Dans une colonne étroite, les faits se lisent l'un sous l'autre. */
+  &__faits {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  &__retard {
     color: var(--mtm-accent);
-    border-color: var(--mtm-accent);
+    font-weight: 600;
+  }
+}
+
+/**
+ * Une étape du parcours. Son en-tête est toujours cliquable : l'étape en cours
+ * s'ouvre d'elle-même, les autres à la demande. L'état se lit à trois endroits
+ * — la pastille de rang, le libellé de droite et l'opacité — pour ne pas
+ * dépendre de la seule couleur.
+ */
+.etape {
+  padding: 0;
+  overflow: hidden;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 14px 18px;
+    border: 0;
+    background: none;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--mtm-bg-hover);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--mtm-primary);
+      outline-offset: -2px;
+    }
+  }
+
+  &__rang {
+    display: grid;
+    flex: 0 0 26px;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border: 1px solid var(--mtm-border);
+    border-radius: 999px;
+    color: var(--mtm-text-muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  &__titre {
+    display: grid;
+    gap: 1px;
+    min-width: 0;
+    flex: 1;
+
+    strong {
+      font-family: var(--mtm-font-display);
+      font-size: 0.98rem;
+      font-weight: 700;
+    }
+
+    small {
+      color: var(--mtm-text-muted);
+      font-size: 0.8rem;
+    }
+  }
+
+  &__etat {
+    flex: 0 0 auto;
+    color: var(--mtm-text-muted);
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  &__corps {
+    display: grid;
+    gap: 12px;
+    padding: 4px 18px 18px;
+    border-top: 1px solid var(--mtm-border);
+  }
+
+  /* Franchie : on la reconnaît d'un coup d'œil sans qu'elle attire l'attention. */
+  &--fait &__rang {
+    border-color: var(--mtm-success);
+    background: var(--mtm-success-bg);
+    color: var(--mtm-success);
+  }
+
+  /* En cours : c'est là que le travail se passe. */
+  &--en_cours {
+    border-color: var(--mtm-primary);
+    box-shadow: var(--mtm-shadow-soft);
+  }
+
+  &--en_cours &__rang {
+    border-color: var(--mtm-primary);
+    background: var(--mtm-primary);
+    color: #fff;
+  }
+
+  &--en_cours &__etat {
+    color: var(--mtm-primary);
+  }
+
+  /* À venir : annoncée, mais elle n'appelle pas encore d'action. */
+  &--a_venir &__titre strong {
+    color: var(--mtm-text-muted);
   }
 }
 
