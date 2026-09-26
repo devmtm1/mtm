@@ -33,6 +33,7 @@ const PHASE_1_RESOURCES = [
   'clients',
   'demarches',
   'locatif',
+  'construction',
 ] as const;
 
 // Rôles initiaux recommandés par la section 24 du CDC.
@@ -434,6 +435,74 @@ async function main(): Promise<void> {
     }
   }
   console.log('  Permissions gestion locative J2.1 attribuées');
+
+  // --- Permissions construction (J2.3, section 16 CDC) par rôle ---
+  // Le responsable construction conduit les chantiers ; l'encadrement
+  // supervise ; la comptabilité contrôle les dépenses sans en engager.
+  const constructionPermissionsByRole: Record<string, string[]> = {
+    responsable_construction: [
+      'construction:consulter',
+      'construction:creer',
+      'construction:modifier',
+      'construction:valider',
+      'construction:publier',
+      'construction:exporter',
+      // Engagement de dépenses de chantier : sortie de trésorerie
+      // réservée par la section 24.
+      'construction:payer',
+      'clients:creer',
+    ],
+    manager: [
+      'construction:consulter',
+      'construction:creer',
+      'construction:modifier',
+      'construction:valider',
+      'construction:publier',
+      'construction:exporter',
+      'construction:payer',
+      'construction:administrer',
+    ],
+    direction: [
+      'construction:consulter',
+      'construction:creer',
+      'construction:modifier',
+      'construction:valider',
+      'construction:publier',
+      'construction:exporter',
+      'construction:payer',
+      'construction:supprimer',
+      'construction:administrer',
+    ],
+    // Le comptable valide ou rejette les dépenses engagées sur le
+    // terrain, sans conduire de chantier lui-même : c'est la séparation
+    // entre celui qui dépense et celui qui contrôle.
+    comptable: [
+      'construction:consulter',
+      'construction:valider',
+      'construction:payer',
+      'construction:exporter',
+    ],
+  };
+  for (const [roleName, permissionNames] of Object.entries(
+    constructionPermissionsByRole,
+  )) {
+    const role = await prisma.role.findUniqueOrThrow({
+      where: { name: roleName },
+    });
+    for (const permissionName of permissionNames) {
+      const permission = await prisma.permission.findUniqueOrThrow({
+        where: { name: permissionName },
+      });
+      await prisma.rolePermission.upsert({
+        where: {
+          roleId_permissionId: { roleId: role.id, permissionId: permission.id },
+        },
+        update: {},
+        create: { roleId: role.id, permissionId: permission.id },
+      });
+    }
+  }
+  console.log('  Permissions construction J2.3 attribuées');
 
   // --- Permissions ventes J1.6 par rôle ---
   const salesPermissionsByRole: Record<string, string[]> = {
@@ -1389,6 +1458,164 @@ async function main(): Promise<void> {
     });
   }
   console.log('  Référentiels gestion locative J2.1 semés');
+
+  // --- Référentiels construction et chantier (J2.3, section 16 CDC) ---
+  // La section 25 impose que MTM fasse évoluer ses listes sans
+  // développement : rien de métier n’est figé dans le code.
+  const constructionSettings: {
+    key: string;
+    value: unknown;
+    description: string;
+  }[] = [
+    {
+      key: 'construction.statuts',
+      value: [
+        'prepare',
+        'en_cours',
+        'suspendu',
+        'receptionne',
+        'cloture',
+        'abandonne',
+      ],
+      description: 'Cycle de vie d’un chantier (section 16)',
+    },
+    {
+      key: 'construction.typesProjet',
+      value: [
+        'villa',
+        'immeuble',
+        'local_commercial',
+        'cloture',
+        'renovation',
+        'viabilisation',
+        'autre',
+      ],
+      description: 'Nature de l’ouvrage construit',
+    },
+    {
+      key: 'construction.statutsJalon',
+      value: ['a_venir', 'en_cours', 'termine', 'bloque', 'annule'],
+      description: 'États d’un jalon du planning',
+    },
+    {
+      key: 'construction.jalonsType',
+      value: [
+        'etudes_et_permis',
+        'terrassement',
+        'fondations',
+        'elevation',
+        'dalle',
+        'toiture',
+        'second_oeuvre',
+        'finitions',
+        'reception',
+      ],
+      description:
+        'Déroulé type proposé à la création d’un chantier, adaptable projet par projet',
+    },
+    {
+      key: 'construction.metiers',
+      value: [
+        'maconnerie',
+        'terrassement',
+        'ferraillage',
+        'charpente',
+        'electricite',
+        'plomberie',
+        'menuiserie',
+        'peinture',
+        'carrelage',
+        'etudes',
+        'controle',
+        'autre',
+      ],
+      description: 'Corps de métier des prestataires de chantier',
+    },
+    {
+      key: 'construction.statutsIntervenant',
+      value: ['pressenti', 'engage', 'en_cours', 'termine', 'resilie'],
+      description: 'Situation contractuelle d’un prestataire',
+    },
+    {
+      key: 'construction.postesBudget',
+      value: [
+        'materiaux',
+        'main_oeuvre',
+        'equipement',
+        'etudes',
+        'administratif',
+        'divers',
+      ],
+      description: 'Postes du budget prévisionnel d’un chantier',
+    },
+    {
+      key: 'construction.unites',
+      value: ['u', 'm', 'm2', 'm3', 'kg', 'tonne', 'sac', 'camion', 'forfait'],
+      description: 'Unités de quantité des postes de matériaux',
+    },
+    {
+      key: 'construction.statutsDepense',
+      value: ['en_attente', 'valide', 'rejete'],
+      description:
+        'Contrôle comptable d’une dépense : elle ne pèse sur le budget qu’une fois validée',
+    },
+    {
+      key: 'construction.modesPaiement',
+      value: ['especes', 'virement', 'mobile_money', 'cheque', 'autre'],
+      description: 'Modes de règlement des dépenses de chantier',
+    },
+    {
+      key: 'construction.meteos',
+      value: ['ensoleille', 'nuageux', 'pluie', 'vent', 'intemperies'],
+      description: 'Conditions du jour notées au journal de chantier',
+    },
+    {
+      key: 'construction.typesDocument',
+      value: [
+        'plan',
+        'permis_construire',
+        'devis',
+        'contrat',
+        'facture',
+        'photo_chantier',
+        'proces_verbal',
+        'rapport_avancement',
+        'autre',
+      ],
+      description: 'Types de pièces attachées à un chantier',
+    },
+    {
+      key: 'construction.seuilAlerteBudget',
+      value: 100,
+      description:
+        'Pourcentage du budget consommé au-delà duquel le chantier alerte (section 16)',
+    },
+    {
+      key: 'construction.horizonEcheanceJours',
+      value: 14,
+      description:
+        'Fenêtre, en jours, des échéances de jalon signalées comme proches',
+    },
+    {
+      key: 'construction.retardCritiqueJours',
+      value: 30,
+      description:
+        'Retard, en jours, au-delà duquel un chantier est signalé comme durablement en retard',
+    },
+  ];
+  for (const setting of constructionSettings) {
+    await prisma.systemSetting.upsert({
+      where: { key: setting.key },
+      update: {},
+      create: {
+        key: setting.key,
+        value: setting.value as never,
+        description: setting.description,
+        isSensitive: false,
+      },
+    });
+  }
+  console.log('  Référentiels construction J2.3 semés');
 
   // --- Contenus marketing (J1.2) ---
   const contentBlocks = [
