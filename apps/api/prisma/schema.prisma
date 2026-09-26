@@ -89,6 +89,14 @@ model User {
   mouvementsCautionSaisis   MouvementCaution[] @relation("MouvementCautionRecorder")
   relancesLoyerEnvoyees     RelanceLoyer[]     @relation("RelanceLoyerSender")
 
+  // --- Construction et suivi de chantier (J2.3) ---
+  projetsConstructionResponsable ProjetConstruction[]    @relation("ProjetConstructionResponsable")
+  projetsConstructionCrees       ProjetConstruction[]    @relation("ProjetConstructionCreatedBy")
+  entreesJournalRedigees         EntreeJournalChantier[] @relation("EntreeJournalRedacteur")
+  depensesChantierSaisies        DepenseChantier[]       @relation("DepenseChantierCreateur")
+  depensesChantierValidees       DepenseChantier[]       @relation("DepenseChantierValidateur")
+  documentsChantierCrees         DocumentChantier[]      @relation("DocumentChantierCreateur")
+
   @@map("users")
 }
 
@@ -161,6 +169,7 @@ model Terrain {
   updatedAt               DateTime              @updatedAt
   visitesProspect         VisiteProspect[]      @relation("TerrainVisitesProspect")
   missions                MissionVerification[]
+  chantiers               ProjetConstruction[]
   prospectsInteresses     Prospect[]            @relation("ProspectTerrainChoisi")
 
   @@index([statutJuridique])
@@ -526,6 +535,7 @@ model Prospect {
   activites  ActiviteCrm[]
   visites    VisiteProspect[]
   missions   MissionVerification[]
+  chantiers  ProjetConstruction[]
   documents  DocumentCrm[]
   dossiers   DossierVente[]
   auditLogs  AuditLog[]            @relation("ProspectAuditLog")
@@ -1088,6 +1098,7 @@ model BailLocatif {
   // --- Sortie et cas particuliers (section 15) ---
   /**
    * /**
+   * /**
    * Cycle de vie du bail : actif | preavis | termine | resilie_sans_preavis.
    */
   statut                String    @default("actif")
@@ -1331,4 +1342,385 @@ model DocumentLocatif {
   @@index([visibleLocataire])
   @@index([visibleProprietaire])
   @@map("documents_locatif")
+}
+
+// ============================================================
+// Construction et suivi de chantier — Phase 2 / J2.3
+// (section 16 du cahier des charges)
+// ============================================================
+
+/**
+ * Projet de construction suivi de bout en bout : le client, le terrain, le
+ * programme à bâtir, ce qui a été devisé, ce qui est budgété, et les dates
+ * qui engagent MTM vis-à-vis du client.
+ * Le montant du devis est ce qui a été signé ; le budget est ce que MTM
+ * prévoit de dépenser pour l'honorer. Les deux sont distincts : c'est leur
+ * écart qui fait la marge, et le dépassement du second qui déclenche une
+ * alerte (section 16).
+ */
+model ProjetConstruction {
+  id               String   @id @default(uuid())
+  /**
+   * Référence lisible attribuée à la création : C-2026-0004.
+   */
+  referenceInterne String   @unique
+  /**
+   * Client donneur d'ordre : une fiche prospect, comme pour une vente ou
+   * une mission de vérification.
+   */
+  clientId         String
+  client           Prospect @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  /**
+   * Terrain du catalogue quand le chantier suit une vente MTM. Facultatif :
+   * un client peut faire construire sur un terrain qu'il possédait déjà.
+   */
+  terrainId        String?
+  terrain          Terrain? @relation(fields: [terrainId], references: [id], onDelete: SetNull)
+
+  // --- Programme ---
+  intitule      String
+  /**
+   * Nature de l'ouvrage : villa, immeuble, local commercial, clôture…
+   */
+  typeProjet    String
+  /**
+   * Description du programme : nombre de niveaux, de pièces, prestations.
+   */
+  programme     String?
+  adresse       String?
+  commune       String?
+  region        String?
+  latitude      Decimal? @db.Decimal(10, 7)
+  longitude     Decimal? @db.Decimal(10, 7)
+  surfaceBatie  Decimal? @db.Decimal(10, 2)
+  nombreNiveaux Int?
+
+  // --- Devis et budget ---
+  montantDevis   Decimal? @db.Decimal(15, 2)
+  budgetPrevu    Decimal? @db.Decimal(15, 2)
+  /**
+   * Recalculés à chaque mouvement de budget ou de dépense : les écrans de
+   * liste et les alertes en ont besoin sans recharger tout le chantier.
+   */
+  montantEngage  Decimal  @default(0) @db.Decimal(15, 2)
+  montantDepense Decimal  @default(0) @db.Decimal(15, 2)
+
+  // --- Planning ---
+  dateDebutPrevue DateTime?
+  dateFinPrevue   DateTime?
+  dateDebutReelle DateTime?
+  dateFinReelle   DateTime?
+  /**
+   * Avancement global en pourcentage, moyenne des jalons pondérée par leur
+   * poids. Recalculé à chaque mouvement de jalon.
+   */
+  avancement      Int       @default(0)
+
+  /**
+   * prepare | en_cours | suspendu | receptionne | cloture | abandonne
+   */
+  statut          String @default("prepare")
+  /**
+   * Synthèse des alertes du chantier, recalculée par le service et le
+   * planificateur : aucune | retard | depassement_budget | retard_et_depassement.
+   * Stockée pour pouvoir trier et filtrer la liste sans tout recalculer.
+   */
+  situationAlerte String @default("aucune")
+
+  responsableId String?
+  responsable   User?   @relation("ProjetConstructionResponsable", fields: [responsableId], references: [id], onDelete: SetNull)
+  createdById   String?
+  createdBy     User?   @relation("ProjetConstructionCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  /**
+   * Le client suit son chantier depuis son espace (section 16).
+   */
+  visibleClient Boolean @default(true)
+  notes         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jalons       JalonChantier[]
+  journal      EntreeJournalChantier[]
+  intervenants IntervenantChantier[]
+  lignesBudget LigneBudgetChantier[]
+  depenses     DepenseChantier[]
+  documents    DocumentChantier[]
+
+  @@index([clientId])
+  @@index([terrainId])
+  @@index([statut])
+  @@index([responsableId])
+  @@index([situationAlerte])
+  @@index([dateFinPrevue])
+  @@map("projets_construction")
+}
+
+/**
+ * Jalon du planning : gros œuvre, dalle, élévation, toiture, finitions.
+ * Les dates prévues et réelles cohabitent — c'est leur écart qui alimente la
+ * vue Gantt et les alertes de retard. Le poids permet qu'un jalon de trois
+ * mois ne pèse pas autant qu'une réception de deux jours dans l'avancement
+ * global.
+ */
+model JalonChantier {
+  id       String             @id @default(uuid())
+  projetId String
+  projet   ProjetConstruction @relation(fields: [projetId], references: [id], onDelete: Cascade)
+
+  libelle     String
+  description String?
+  /**
+   * Ordre d'affichage dans le planning, indépendant des dates : deux jalons
+   * peuvent se chevaucher.
+   */
+  ordre       Int     @default(0)
+  /**
+   * Importance relative dans l'avancement global (1 par défaut).
+   */
+  poids       Int     @default(1)
+
+  dateDebutPrevue DateTime?
+  dateFinPrevue   DateTime?
+  dateDebutReelle DateTime?
+  dateFinReelle   DateTime?
+
+  /**
+   * a_venir | en_cours | termine | bloque | annule
+   */
+  statut     String @default("a_venir")
+  avancement Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  journal EntreeJournalChantier[]
+
+  @@index([projetId, ordre])
+  @@index([projetId, statut])
+  @@index([dateFinPrevue])
+  @@map("jalons_chantier")
+}
+
+/**
+ * Entrée du journal de chantier : ce qui s'est passé un jour donné.
+ * Le cahier des charges énumère précisément ce qu'une entrée porte — date,
+ * intervenants, avancement, observations, problèmes, décisions et prochaines
+ * actions. Chaque champ correspond à un de ces points, plutôt qu'un bloc de
+ * texte libre où l'information se perdrait.
+ */
+model EntreeJournalChantier {
+  id       String             @id @default(uuid())
+  projetId String
+  projet   ProjetConstruction @relation(fields: [projetId], references: [id], onDelete: Cascade)
+  /**
+   * Jalon auquel la journée se rattache, quand elle en concerne un.
+   */
+  jalonId  String?
+  jalon    JalonChantier?     @relation(fields: [jalonId], references: [id], onDelete: SetNull)
+
+  date            DateTime @db.Date
+  /**
+   * Qui était sur le chantier ce jour-là : texte libre, parce qu'un manœuvre
+   * de passage n'a pas de fiche prestataire.
+   */
+  intervenants    String?
+  /**
+   * Effectif présent, utile pour recouper une facture de main-d'œuvre.
+   */
+  effectif        Int?
+  meteo           String?
+  /**
+   * Avancement constaté ce jour-là, en pourcentage du chantier.
+   */
+  avancement      Int?
+  observations    String?
+  /**
+   * Problème rencontré et décision prise pour y répondre : les deux vont
+   * ensemble dans la pratique, mais restent séparés pour qu'un chantier
+   * puisse lister ses seuls incidents.
+   */
+  probleme        String?
+  decisions       String?
+  prochaineAction String?
+  /**
+   * Une entrée signalant un problème non résolu reste ouverte : elle
+   * remonte dans les alertes tant que personne ne l'a soldée.
+   */
+  resolu          Boolean  @default(true)
+
+  /**
+   * Visible par le client dans son espace. Faux par défaut : le journal est
+   * un outil interne, MTM choisit ce qu'elle publie.
+   */
+  visibleClient Boolean @default(false)
+
+  redigeParId String?
+  redigePar   User?    @relation("EntreeJournalRedacteur", fields: [redigeParId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  documents DocumentChantier[]
+
+  @@index([projetId, date])
+  @@index([projetId, resolu])
+  @@index([jalonId])
+  @@map("journal_chantier")
+}
+
+/**
+ * Prestataire intervenant sur le chantier : maçon, électricien, bureau de
+ * contrôle. Le montant contractuel alimente l'engagement du budget.
+ */
+model IntervenantChantier {
+  id       String             @id @default(uuid())
+  projetId String
+  projet   ProjetConstruction @relation(fields: [projetId], references: [id], onDelete: Cascade)
+
+  nom            String
+  /**
+   * Corps de métier : maconnerie, electricite, plomberie, menuiserie…
+   */
+  metier         String
+  telephone      String?
+  email          String?
+  /**
+   * Référence du contrat ou du bon de commande signé.
+   */
+  reference      String?
+  montantContrat Decimal?  @db.Decimal(15, 2)
+  dateDebut      DateTime?
+  dateFin        DateTime?
+  /**
+   * pressenti | engage | en_cours | termine | resilie
+   */
+  statut         String    @default("engage")
+  notes          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  depenses DepenseChantier[]
+
+  @@index([projetId, statut])
+  @@map("intervenants_chantier")
+}
+
+/**
+ * Ligne du budget prévisionnel : un poste de dépense chiffré avant les
+ * travaux. Les matériaux (section 16) en sont le cas le plus courant, d'où
+ * la quantité et le prix unitaire, facultatifs pour les postes forfaitaires
+ * comme la main-d'œuvre.
+ */
+model LigneBudgetChantier {
+  id       String             @id @default(uuid())
+  projetId String
+  projet   ProjetConstruction @relation(fields: [projetId], references: [id], onDelete: Cascade)
+
+  /**
+   * materiaux | main_oeuvre | equipement | etudes | administratif | divers
+   */
+  poste        String
+  libelle      String
+  quantite     Decimal? @db.Decimal(12, 2)
+  unite        String?
+  prixUnitaire Decimal? @db.Decimal(15, 2)
+  /**
+   * Montant prévu pour ce poste. Calculé depuis quantité × prix unitaire
+   * quand les deux sont fournis, saisi directement sinon.
+   */
+  montantPrevu Decimal  @db.Decimal(15, 2)
+  notes        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  depenses DepenseChantier[]
+
+  @@index([projetId, poste])
+  @@map("lignes_budget_chantier")
+}
+
+/**
+ * Dépense réellement engagée sur le chantier : achat de matériaux, acompte
+ * versé à un prestataire, frais administratif.
+ * Rattachée quand c'est possible à sa ligne de budget, pour que l'écart
+ * entre le prévu et le réel se lise poste par poste et pas seulement en
+ * total.
+ */
+model DepenseChantier {
+  id       String             @id @default(uuid())
+  projetId String
+  projet   ProjetConstruction @relation(fields: [projetId], references: [id], onDelete: Cascade)
+
+  ligneBudgetId String?
+  ligneBudget   LigneBudgetChantier? @relation(fields: [ligneBudgetId], references: [id], onDelete: SetNull)
+  intervenantId String?
+  intervenant   IntervenantChantier? @relation(fields: [intervenantId], references: [id], onDelete: SetNull)
+
+  libelle       String
+  poste         String
+  montant       Decimal   @db.Decimal(15, 2)
+  date          DateTime  @default(now())
+  modePaiement  String?
+  reference     String?
+  /**
+   * Une dépense saisie par le chantier attend la validation comptable avant
+   * de peser sur le budget consommé : même principe que les paiements de
+   * loyer en J2.1.
+   * en_attente | valide | rejete
+   */
+  statut        String    @default("en_attente")
+  motifRejet    String?
+  validatedById String?
+  validatedBy   User?     @relation("DepenseChantierValidateur", fields: [validatedById], references: [id], onDelete: SetNull)
+  validatedAt   DateTime?
+
+  createdById String?
+  createdBy   User?    @relation("DepenseChantierCreateur", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([projetId, date])
+  @@index([projetId, statut])
+  @@index([ligneBudgetId])
+  @@index([intervenantId])
+  @@map("depenses_chantier")
+}
+
+/**
+ * Pièce du chantier : plan, permis de construire, photo de journée, facture,
+ * rapport d'avancement généré.
+ */
+model DocumentChantier {
+  id              String                 @id @default(uuid())
+  projetId        String
+  projet          ProjetConstruction     @relation(fields: [projetId], references: [id], onDelete: Cascade)
+  /**
+   * Journée à laquelle la pièce se rattache : les photos et vidéos du
+   * journal (section 16). Facultatif — un plan appartient au projet.
+   */
+  entreeJournalId String?
+  entreeJournal   EntreeJournalChantier? @relation(fields: [entreeJournalId], references: [id], onDelete: SetNull)
+
+  type          String
+  storageKey    String
+  resourceType  String  @default("raw")
+  title         String?
+  isGenerated   Boolean @default(false)
+  /**
+   * « Rapports autorisés » de la section 16 : MTM décide pièce par pièce de
+   * ce que le client voit.
+   */
+  visibleClient Boolean @default(false)
+  version       Int     @default(1)
+
+  createdById String?
+  createdBy   User?    @relation("DocumentChantierCreateur", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+
+  @@index([projetId, type])
+  @@index([entreeJournalId])
+  @@index([visibleClient])
+  @@map("documents_chantier")
 }
