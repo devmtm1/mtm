@@ -1450,6 +1450,63 @@ ag-grid-angular {
   }
 }
 
+/* Retard et échéance proche dans une cellule de grille. Globales pour la
+   même raison que `.cell-stack` : le `cellRenderer` d'ag-grid construit
+   son DOM hors de l'encapsulation du composant. */
+.cell-late {
+  color: var(--mtm-error);
+  font-weight: 600;
+}
+
+.cell-soon {
+  color: var(--mtm-warning);
+}
+
+/* Barre d'avancement d'un chantier : la valeur se lit d'un coup d'œil, et
+   sa couleur porte l'alerte pour que l'œil n'ait pas à parcourir la ligne
+   jusqu’au statut. */
+.cell-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 100%;
+
+  &__bar {
+    flex: 1;
+    min-width: 40px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--mtm-border);
+    overflow: hidden;
+
+    i {
+      display: block;
+      height: 100%;
+      border-radius: 999px;
+      background: var(--mtm-primary);
+    }
+  }
+
+  &__value {
+    min-width: 40px;
+    font-size: 0.82rem;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  &.progress--warning &__bar i {
+    background: var(--mtm-warning);
+  }
+
+  &.progress--danger &__bar i {
+    background: var(--mtm-error);
+  }
+
+  &.progress--done &__bar i {
+    background: var(--mtm-success);
+  }
+}
+
 /* Colonne « prochaine action » d'une liste */
 .next-action {
   display: inline-block;

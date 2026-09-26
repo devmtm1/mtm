@@ -1,0 +1,158 @@
+<div class="chantier-form-page">
+  <header class="page-header">
+    <div>
+      <button mat-button type="button" class="back-link" (click)="retour()">
+        <svg class="btn-icon" lucideArrowLeft aria-hidden="true"></svg>Retour aux chantiers
+      </button>
+      <p class="eyebrow">Construction</p>
+      <h1 class="page-header__title">Nouveau chantier</h1>
+      <p class="page-header__subtitle">
+        Le projet tel qu’il est engagé avec le client. Le planning, le journal, les prestataires et
+        le budget se remplissent ensuite depuis la fiche du chantier.
+      </p>
+    </div>
+  </header>
+
+  <form [formGroup]="form" class="page-card form-block" (ngSubmit)="submit()">
+    <div class="form-block__head">
+      <h2>Le projet</h2>
+      <p>Le client, ce qui sera construit, et sur quel terrain.</p>
+    </div>
+    <div class="form-grid">
+      <mat-form-field appearance="outline" class="wide">
+        <mat-label>Client</mat-label>
+        <mat-select formControlName="clientId">
+          @for (client of clients(); track client.id) {
+            <mat-option [value]="client.id">{{ nomClient(client) }}</mat-option>
+          }
+        </mat-select>
+        <mat-hint>Créez d’abord la fiche dans Prospects si elle n’existe pas.</mat-hint>
+        <mat-error>Choisissez le client donneur d’ordre.</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="wide">
+        <mat-label>Intitulé du chantier</mat-label>
+        <input matInput formControlName="intitule" placeholder="Villa R+1 à Ngaparou" />
+        <mat-error>Donnez un intitulé d’au moins deux caractères.</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Nature de l’ouvrage</mat-label>
+        <mat-select formControlName="typeProjet">
+          @for (type of options().typesProjet ?? []; track type) {
+            <mat-option [value]="type">{{ typeLabel(type) }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Terrain</mat-label>
+        <mat-select formControlName="terrainId">
+          <mat-option value="">Terrain du client (hors catalogue)</mat-option>
+          @for (terrain of terrains(); track terrain.id) {
+            <mat-option [value]="terrain.id">{{ nomTerrain(terrain) }}</mat-option>
+          }
+        </mat-select>
+        <mat-hint>Facultatif : le client peut construire sur un terrain qu’il possédait déjà.</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="wide">
+        <mat-label>Programme</mat-label>
+        <textarea
+          matInput
+          rows="3"
+          formControlName="programme"
+          placeholder="Nombre de pièces, prestations attendues, contraintes particulières…"
+        ></textarea>
+      </mat-form-field>
+    </div>
+
+    <div class="form-block__head">
+      <h2>Où</h2>
+      <p>Localisation et gabarit de l’ouvrage.</p>
+    </div>
+    <div class="form-grid">
+      <mat-form-field appearance="outline" class="wide">
+        <mat-label>Adresse</mat-label>
+        <input matInput formControlName="adresse" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Commune</mat-label>
+        <input matInput formControlName="commune" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Région</mat-label>
+        <input matInput formControlName="region" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Surface bâtie (m²)</mat-label>
+        <input matInput type="number" min="0" formControlName="surfaceBatie" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Niveaux</mat-label>
+        <input matInput type="number" min="0" formControlName="nombreNiveaux" />
+      </mat-form-field>
+    </div>
+
+    <div class="form-block__head">
+      <h2>Devis et budget</h2>
+      <p>Le devis engage le client ; le budget sert de base aux alertes.</p>
+    </div>
+    <div class="form-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Montant du devis (FCFA)</mat-label>
+        <input matInput type="number" min="0" formControlName="montantDevis" />
+        <mat-hint>Ce que le client a signé.</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Budget prévu (FCFA)</mat-label>
+        <input matInput type="number" min="0" formControlName="budgetPrevu" />
+        <mat-hint>Ce que MTM prévoit de dépenser. Sert de base aux alertes.</mat-hint>
+      </mat-form-field>
+    </div>
+
+    <div class="form-block__head">
+      <h2>Planning</h2>
+      <p>Les dates prévues, et le déroulé des travaux.</p>
+    </div>
+    <div class="form-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Début prévu</mat-label>
+        <input matInput type="date" formControlName="dateDebutPrevue" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Fin prévue</mat-label>
+        <input matInput type="date" formControlName="dateFinPrevue" />
+        <mat-hint>C’est cette date qui déclenche l’alerte de retard.</mat-hint>
+      </mat-form-field>
+
+      <div class="form-check wide">
+        <mat-checkbox formControlName="avecJalonsType">
+          Poser le déroulé type des travaux
+        </mat-checkbox>
+        @if (apercuJalons(); as apercu) {
+          <p class="form-check__help">{{ apercu }} — dates et poids à ajuster ensuite.</p>
+        }
+      </div>
+
+      <mat-form-field appearance="outline" class="wide">
+        <mat-label>Notes internes</mat-label>
+        <textarea matInput rows="2" formControlName="notes"></textarea>
+      </mat-form-field>
+    </div>
+
+    <div class="form-actions">
+      <button mat-stroked-button type="button" (click)="retour()">Annuler</button>
+      <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+        <svg class="btn-icon" lucideSave aria-hidden="true"></svg>
+        {{ saving() ? 'Enregistrement…' : 'Créer le chantier' }}
+      </button>
+    </div>
+  </form>
+</div>

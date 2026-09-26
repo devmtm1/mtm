@@ -1,0 +1,186 @@
+<div class="chantiers-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Construction</p>
+      <h1 class="page-header__title">Chantiers</h1>
+      <p class="page-header__subtitle">
+        Les projets de construction suivis par MTM, de la préparation à la réception : planning,
+        journal de chantier, prestataires et budget.
+      </p>
+    </div>
+    <div class="page-header__actions">
+      @if (canCreate()) {
+        <button mat-flat-button color="primary" type="button" (click)="openCreate()">
+          <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau chantier
+        </button>
+      }
+    </div>
+  </header>
+
+  <section class="kpi-row" aria-label="Synthèse des chantiers">
+    @if (stats(); as s) {
+      <button type="button" class="kpi" (click)="resetFilters()">
+        <span class="kpi__icon"><svg lucideHardHat aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ s.chantiersActifs }}</strong>
+          <span>Chantiers actifs</span>
+          <small>{{ s.avancementMoyen }} % d’avancement moyen</small>
+        </span>
+      </button>
+
+      <button
+        type="button"
+        class="kpi"
+        [class.kpi--danger]="enRetard() > 0"
+        [class.kpi--muted]="enRetard() === 0"
+        (click)="appliquerVue('en_retard')"
+      >
+        <span class="kpi__icon"><svg lucideTriangleAlert aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ enRetard() }}</strong>
+          <span>En retard</span>
+          <small>
+            @if (s.problemesOuverts > 0) {
+              {{ s.problemesOuverts }} problème(s) ouvert(s) au journal
+            } @else {
+              Aucun problème ouvert au journal
+            }
+          </small>
+        </span>
+      </button>
+
+      <button
+        type="button"
+        class="kpi"
+        [class.kpi--danger]="budgetDepasse() > 0"
+        [class.kpi--muted]="budgetDepasse() === 0"
+        (click)="appliquerVue('budget_depasse')"
+      >
+        <span class="kpi__icon"><svg lucideWallet aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ budgetDepasse() }}</strong>
+          <span>Budget dépassé</span>
+          <small>{{ consommation() }} % du budget consommé au global</small>
+        </span>
+      </button>
+
+      <div class="kpi">
+        <span class="kpi__icon"><svg lucideWallet aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ s.montantDepense | mtmMoney }}</strong>
+          <span>Dépensé</span>
+          <small>sur {{ s.montantDevis | mtmMoney }} devisés</small>
+        </span>
+      </div>
+    }
+  </section>
+
+  <section class="page-section" aria-labelledby="chantiers-list-title">
+    <div class="list-toolbar">
+      <div class="list-toolbar__title">
+        <h2 id="chantiers-list-title">Liste des chantiers</h2>
+        <p>
+          @if (loading()) {
+            Chargement…
+          } @else {
+            {{ total() }} chantier{{ total() > 1 ? 's' : '' }}
+            @if (hasActiveFilters()) {
+              correspondant aux filtres
+            }
+          }
+        </p>
+      </div>
+
+      <form class="list-filters" [formGroup]="filters" (ngSubmit)="$event.preventDefault()">
+        <mat-form-field appearance="outline" class="list-filters__search" subscriptSizing="dynamic">
+          <mat-label>Rechercher</mat-label>
+          <svg matPrefix class="list-filters__icon" lucideSearch aria-hidden="true"></svg>
+          <input
+            matInput
+            formControlName="search"
+            placeholder="Référence, intitulé, client, commune…"
+            autocomplete="off"
+          />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Statut</mat-label>
+          <mat-select formControlName="statut">
+            <mat-option value="">Tous</mat-option>
+            @for (statut of options().statuts ?? []; track statut) {
+              <mat-option [value]="statut">{{ statutLabel(statut) }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Nature</mat-label>
+          <mat-select formControlName="typeProjet">
+            <mat-option value="">Toutes</mat-option>
+            @for (type of options().typesProjet ?? []; track type) {
+              <mat-option [value]="type">{{ typeLabel(type) }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        @if (hasActiveFilters()) {
+          <button mat-button type="button" class="list-filters__reset" (click)="resetFilters()">
+            <svg class="btn-icon" lucideX aria-hidden="true"></svg>Effacer
+          </button>
+        }
+      </form>
+    </div>
+
+    <div class="quick-views" role="group" aria-label="Vues rapides">
+      @for (vue of vuesRapides; track vue.value) {
+        <button
+          type="button"
+          class="quick-view"
+          [class.is-active]="filters.controls.vue.value === vue.value"
+          [matTooltip]="vue.help"
+          (click)="appliquerVue(vue.value)"
+        >
+          {{ vue.label }}
+        </button>
+      }
+    </div>
+
+    @if (!loading() && rowData().length === 0) {
+      <div class="empty-state">
+        <svg lucideHardHat aria-hidden="true"></svg>
+        @if (hasActiveFilters()) {
+          <h3>Aucun chantier ne correspond à ces filtres</h3>
+          <p>Modifiez la recherche ou effacez les filtres.</p>
+          <button mat-stroked-button type="button" (click)="resetFilters()">
+            Effacer les filtres
+          </button>
+        } @else {
+          <h3>Aucun chantier pour le moment</h3>
+          <p>
+            Un projet de construction suit généralement une vente de terrain. Créez-le ici : le
+            déroulé type des travaux peut être posé d’emblée, il reste adaptable ensuite.
+          </p>
+          @if (canCreate()) {
+            <button mat-flat-button color="primary" type="button" (click)="openCreate()">
+              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Créer le premier chantier
+            </button>
+          }
+        }
+      </div>
+    } @else {
+      <ag-grid-angular
+        class="list-grid"
+        [theme]="theme"
+        [rowData]="rowData()"
+        [columnDefs]="columnDefs"
+        [loading]="loading()"
+        domLayout="autoHeight"
+        [pagination]="true"
+        [paginationPageSize]="20"
+        [rowHeight]="56"
+        [suppressCellFocus]="true"
+        (rowClicked)="$event.data && openDetail($event.data.id)"
+      />
+    }
+  </section>
+</div>

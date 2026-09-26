@@ -7,6 +7,7 @@ import {
   LucideSettings,
   LucideFileClock,
   LucideFileText,
+  LucideHardHat,
   LucideInbox,
   LucideImages,
   LucideLandPlot,
@@ -117,6 +118,12 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
           { label: 'Locataires', route: '/locatif/locataires', permission: 'locatif:consulter' },
           { label: 'Relances', route: '/locatif/relances', permission: 'locatif:consulter' },
         ],
+      },
+      {
+        label: 'Chantiers',
+        route: '/construction/chantiers',
+        icon: LucideHardHat,
+        permission: 'construction:consulter',
       },
       {
         label: 'Objectifs',

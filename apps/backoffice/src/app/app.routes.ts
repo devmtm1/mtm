@@ -280,6 +280,30 @@ export const routes: Routes = [
           import('./features/locatif/locataires/locataires').then((m) => m.Locataires),
       },
       {
+        path: 'construction/chantiers/nouveau',
+        canActivate: [permissionsGuard(['construction:creer'])],
+        loadComponent: () =>
+          import('./features/construction/chantier-form/chantier-form').then(
+            (m) => m.ChantierForm,
+          ),
+      },
+      {
+        path: 'construction/chantiers/:id',
+        canActivate: [permissionsGuard(['construction:consulter'])],
+        loadComponent: () =>
+          import('./features/construction/chantier-detail/chantier-detail').then(
+            (m) => m.ChantierDetailPage,
+          ),
+      },
+      {
+        path: 'construction/chantiers',
+        canActivate: [permissionsGuard(['construction:consulter'])],
+        loadComponent: () =>
+          import('./features/construction/chantiers/chantiers').then(
+            (m) => m.Chantiers,
+          ),
+      },
+      {
         path: 'crm/prospects',
         canActivate: [permissionsGuard(['crm:consulter'])],
         loadComponent: () =>

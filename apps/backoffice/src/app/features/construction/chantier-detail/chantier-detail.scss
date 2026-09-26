@@ -1,0 +1,515 @@
+/**
+ * Fiche d'un chantier.
+ *
+ * Même hiérarchie que la fiche d'un bien locatif : une colonne principale
+ * large pour ce qui se pilote — planning, journal, dépenses — et une colonne
+ * latérale étroite pour ce qu'on consulte sans agir. Le programme reste replié
+ * en bas de page.
+ *
+ * Le reste du vocabulaire est commun à l'application : `detail-page`,
+ * `detail-header`, `page-card detail-section`, `info-list`, `data-table`.
+ */
+.chantier-detail {
+  &__danger {
+    display: block;
+    color: var(--mtm-accent);
+  }
+}
+
+/* Les quatre chiffres qui commandent la suite, lisibles sans défiler. */
+.chantier-detail__figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 16px 28px;
+
+  > div {
+    display: grid;
+    gap: 2px;
+    align-content: start;
+    min-width: 0;
+  }
+
+  span {
+    color: var(--mtm-text-muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  strong {
+    font-family: var(--mtm-font-display);
+    font-size: 1.28rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  small {
+    color: var(--mtm-text-muted);
+    font-size: 0.76rem;
+  }
+
+  /* Un budget dépassé se signale par la couleur, pas par un encadré de plus. */
+  .is-over strong {
+    color: var(--mtm-accent);
+  }
+}
+
+/* Deux tiers pour piloter, un tiers pour consulter.
+   `min-width: 0` à chaque étage : sans lui, la largeur minimale d'un contenu
+   insécable — une référence de facture, par exemple — repousse la grille
+   au-delà de la page. */
+.chantier-detail__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+  min-width: 0;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.chantier-detail__main,
+.chantier-detail__aside {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* --- Planning : la vue de type Gantt de la section 16 --- */
+
+.gantt {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* Le trait d'aujourd'hui traverse toutes les lignes : c'est lui qui rend un
+   retard visible sans lire une seule date. */
+.gantt__today {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  /* Décalé de la largeur du libellé, pour tomber sur la piste et non dessus. */
+  margin-left: 220px;
+  width: 0;
+  border-left: 2px dashed var(--mtm-accent);
+  opacity: 0.55;
+  pointer-events: none;
+
+  @media (max-width: 760px) {
+    display: none;
+  }
+}
+
+.gantt__row {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 150px;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+
+  @media (max-width: 760px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--mtm-border);
+  }
+}
+
+.gantt__label {
+  display: grid;
+  gap: 1px;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  min-width: 0;
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &:not(:disabled):hover .gantt__name {
+    color: var(--mtm-primary);
+  }
+
+  small {
+    color: var(--mtm-text-muted);
+    font-size: 0.74rem;
+  }
+}
+
+.gantt__name {
+  overflow: hidden;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gantt__track {
+  position: relative;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--mtm-bg-hover);
+  min-width: 0;
+}
+
+/* La barre porte la période prévue ; son remplissage, l'avancement réel. */
+.gantt__bar {
+  position: absolute;
+  top: 3px;
+  height: 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--mtm-primary) 22%, transparent);
+  overflow: hidden;
+
+  i {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--mtm-primary);
+  }
+
+  &--termine i {
+    background: var(--mtm-success);
+  }
+
+  &--bloque {
+    background: color-mix(in srgb, var(--mtm-accent) 22%, transparent);
+
+    i {
+      background: var(--mtm-accent);
+    }
+  }
+
+  &--annule {
+    opacity: 0.4;
+
+    i {
+      background: var(--mtm-text-muted);
+    }
+  }
+}
+
+.gantt__undated {
+  display: inline-block;
+  padding: 2px 8px;
+  color: var(--mtm-text-muted);
+  font-size: 0.74rem;
+}
+
+.gantt__state {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+
+  @media (max-width: 760px) {
+    justify-content: flex-start;
+  }
+}
+
+.gantt__done {
+  font-size: 0.78rem;
+}
+
+/* --- Journal de chantier --- */
+
+.journal {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.journal__entry {
+  padding-left: 12px;
+  border-left: 3px solid var(--mtm-border);
+
+  /* Une journée dont le problème n'est pas soldé se repère à sa barre. */
+  &--ouvert {
+    border-left-color: var(--mtm-accent);
+  }
+}
+
+.journal__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+
+  strong {
+    font-size: 0.92rem;
+  }
+}
+
+.journal__jalon {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--mtm-bg-hover);
+  color: var(--mtm-text-muted);
+  font-size: 0.74rem;
+}
+
+.journal__avancement {
+  color: var(--mtm-primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* Les actions restent discrètes : on lit le journal plus qu'on ne le corrige. */
+.journal__actions {
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity 0.15s;
+
+  button {
+    min-width: 0;
+    padding: 0 8px;
+    font-size: 0.76rem;
+  }
+
+  .journal__entry:hover &,
+  .journal__entry:focus-within & {
+    opacity: 1;
+  }
+}
+
+.journal__meta {
+  margin: 0 0 4px;
+  color: var(--mtm-text-muted);
+  font-size: 0.8rem;
+}
+
+.journal__texte {
+  margin: 0 0 4px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.journal__probleme {
+  margin: 0 0 4px;
+  color: var(--mtm-accent);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.journal__suite {
+  margin: 0;
+  color: var(--mtm-text-muted);
+  font-size: 0.82rem;
+  font-style: italic;
+}
+
+.journal__pieces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 6px 0 0;
+  font-size: 0.8rem;
+}
+
+/* --- Budget par poste --- */
+
+.budget-list {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.budget-list__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 7px 0;
+  border: 0;
+  border-bottom: 1px solid var(--mtm-border);
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &:not(:disabled):hover strong {
+    color: var(--mtm-primary);
+  }
+}
+
+.budget-list__label {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+
+  strong {
+    overflow: hidden;
+    font-size: 0.88rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  small {
+    color: var(--mtm-text-muted);
+    font-size: 0.74rem;
+  }
+}
+
+.budget-list__amount {
+  flex-shrink: 0;
+  font-size: 0.86rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/* --- Prestataires et pièces --- */
+
+.intervenant {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &:not(:disabled):hover strong {
+    color: var(--mtm-primary);
+  }
+
+  &__main {
+    display: grid;
+    gap: 1px;
+    min-width: 0;
+
+    strong {
+      overflow: hidden;
+      font-size: 0.88rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    small {
+      color: var(--mtm-text-muted);
+      font-size: 0.74rem;
+    }
+  }
+
+  &__side {
+    display: grid;
+    gap: 2px;
+    justify-items: end;
+    flex-shrink: 0;
+
+    small {
+      color: var(--mtm-text-muted);
+      font-size: 0.74rem;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+}
+
+.piece {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  &__link {
+    display: grid;
+    gap: 1px;
+    min-width: 0;
+    text-decoration: none;
+    color: inherit;
+
+    strong {
+      /* Un titre de rapport est long : il passe à la ligne plutôt que
+         d'élargir la colonne latérale au-delà de la page. */
+      overflow-wrap: anywhere;
+      font-size: 0.86rem;
+    }
+
+    small {
+      color: var(--mtm-text-muted);
+      font-size: 0.74rem;
+    }
+
+    &:hover strong {
+      color: var(--mtm-primary);
+    }
+  }
+}
+
+/* Le programme, consulté une fois à l'ouverture du dossier : replié. */
+.chantier-detail__repli {
+  summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 10px;
+    cursor: pointer;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    strong {
+      font-family: var(--mtm-font-display);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    small {
+      color: var(--mtm-text-muted);
+      font-size: 0.8rem;
+    }
+
+    &::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      margin-left: auto;
+      border-right: 2px solid var(--mtm-text-muted);
+      border-bottom: 2px solid var(--mtm-text-muted);
+      transform: rotate(45deg) translate(-2px, -2px);
+      transition: transform 0.15s ease;
+    }
+
+    &:hover strong {
+      color: var(--mtm-primary);
+    }
+  }
+
+  &[open] summary {
+    margin-bottom: 14px;
+
+    &::after {
+      transform: rotate(225deg) translate(-2px, -2px);
+    }
+  }
+}

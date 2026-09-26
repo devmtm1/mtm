@@ -1,0 +1,676 @@
+@if (loading()) {
+  <div class="detail-page">
+    <div class="skeleton" style="height: 20px; width: 180px"></div>
+    <div class="skeleton" style="height: 36px; width: 45%"></div>
+    <div class="skeleton" style="height: 220px"></div>
+  </div>
+} @else if (chantier(); as c) {
+  <div class="detail-page chantier-detail">
+    <header class="detail-header">
+      <div>
+        <button mat-button type="button" class="back-link" (click)="retour()">
+          <svg class="btn-icon" lucideArrowLeft aria-hidden="true"></svg>Retour aux chantiers
+        </button>
+        <p class="eyebrow">{{ c.referenceInterne }} · Construction</p>
+        <h1>{{ c.intitule }}</h1>
+        <p class="detail-header__location">
+          {{ typeLabel(c.typeProjet) }}{{ localisation(c) }} ·
+          {{ c.client.prenom }} {{ c.client.nom }}
+        </p>
+        <div class="status-line">
+          <span [class]="statutPill(c.statut)">{{ statutLabel(c.statut) }}</span>
+          @if (c.situationAlerte !== 'aucune') {
+            <span
+              [class]="alertePill(c.situationAlerte)"
+              [matTooltip]="alerteHelp(c.situationAlerte)"
+            >
+              {{ alerteLabel(c.situationAlerte) }}
+            </span>
+          }
+          @if (c.responsable) {
+            <span class="detail-header__owner">Conduit par {{ personne(c.responsable) }}</span>
+          }
+        </div>
+      </div>
+
+      @if (canModify()) {
+        <div class="detail-header__actions">
+          <button mat-flat-button color="primary" type="button" (click)="saisirJournee()">
+            <svg class="btn-icon" lucideNotebookPen aria-hidden="true"></svg>Saisir la journée
+          </button>
+          <button
+            mat-icon-button
+            type="button"
+            [matMenuTriggerFor]="autresActions"
+            aria-label="Plus d’actions"
+          >
+            <svg class="btn-icon" lucideChevronDown aria-hidden="true"></svg>
+          </button>
+          <mat-menu #autresActions="matMenu" xPosition="before">
+            <button mat-menu-item type="button" (click)="ajouterJalon()">
+              <span class="menu-line">
+                <strong>Ajouter une étape</strong>
+                <small>Une ligne de plus au planning</small>
+              </span>
+            </button>
+            <button mat-menu-item type="button" (click)="saisirDepense()">
+              <span class="menu-line">
+                <strong>Saisir une dépense</strong>
+                <small>Matériaux, acompte, frais — en attente de contrôle</small>
+              </span>
+            </button>
+            <button mat-menu-item type="button" (click)="ajouterPrestataire()">
+              <span class="menu-line">
+                <strong>Ajouter un prestataire</strong>
+                <small>Maçon, électricien, bureau de contrôle…</small>
+              </span>
+            </button>
+            <button mat-menu-item type="button" (click)="ajouterLigneBudget()">
+              <span class="menu-line">
+                <strong>Ajouter un poste de budget</strong>
+                <small>Chiffrer un poste avant de le dépenser</small>
+              </span>
+            </button>
+            <button mat-menu-item type="button" (click)="genererRapport()">
+              <span class="menu-line">
+                <strong>Générer le rapport d’avancement</strong>
+                <small>Publié d’office dans l’espace client</small>
+              </span>
+            </button>
+            <button mat-menu-item type="button" (click)="changerStatut()">
+              <span class="menu-line">
+                <strong>Faire avancer le chantier</strong>
+                <small>Démarrage, suspension, réception, clôture</small>
+              </span>
+            </button>
+          </mat-menu>
+        </div>
+      }
+    </header>
+
+    <!-- Ce qui appelle une action, avant tout le reste -->
+    @if (synthese(); as s) {
+      @if (s.alertes.situation !== 'aucune' || problemesOuverts() > 0 || depensesAValider().length) {
+        <aside class="alert-banner" aria-label="Points d’attention">
+          <ul>
+            @if (s.alertes.joursRetardProjet > 0) {
+              <li>
+                Fin prévue dépassée de <strong>{{ s.alertes.joursRetardProjet }} jour(s)</strong>.
+              </li>
+            }
+            @if (s.alertes.jalonsEnRetard > 0) {
+              <li>
+                <strong>{{ s.alertes.jalonsEnRetard }} étape(s)</strong> ont passé leur échéance sans
+                être terminées.
+              </li>
+            }
+            @if (s.alertes.depassementBudget) {
+              <li>
+                Budget consommé à <strong>{{ s.budget.tauxConsommation }} %</strong> : au-delà du
+                seuil paramétré.
+              </li>
+            }
+            @if (problemesOuverts() > 0) {
+              <li>
+                <strong>{{ problemesOuverts() }} problème(s)</strong> non résolus au journal.
+              </li>
+            }
+            @if (depensesAValider().length) {
+              <li>
+                <strong>{{ depensesAValider().length }} dépense(s)</strong> attendent le contrôle
+                comptable.
+              </li>
+            }
+          </ul>
+        </aside>
+      }
+    }
+
+    <!-- Les quatre chiffres qu'on doit avoir sans défiler -->
+    @if (synthese(); as s) {
+      <section class="page-card chantier-detail__figures" aria-label="Situation du chantier">
+        <div>
+          <span>Avancement</span>
+          <strong>{{ s.avancement.pourcentage }} %</strong>
+          <small>
+            @if (s.avancement.jalonsTotal) {
+              {{ s.avancement.jalonsTermines }} / {{ s.avancement.jalonsTotal }} étapes terminées
+            } @else {
+              Aucune étape au planning
+            }
+          </small>
+        </div>
+        <div>
+          <span>Devis signé</span>
+          <strong>{{ s.budget.montantDevis | mtmMoney }}</strong>
+          <small>engagé : {{ s.budget.montantEngage | mtmMoney }}</small>
+        </div>
+        <div [class.is-over]="s.budget.depassement">
+          <span>Dépensé</span>
+          <strong>{{ s.budget.montantDepense | mtmMoney }}</strong>
+          <small>
+            @if (s.budget.budgetPrevu) {
+              {{ s.budget.tauxConsommation }} % du budget de
+              {{ s.budget.budgetPrevu | mtmMoney }}
+            } @else {
+              Aucun budget de référence
+            }
+          </small>
+        </div>
+        <div>
+          <span>Marge estimée</span>
+          <strong>{{ s.budget.margeEstimee | mtmMoney }}</strong>
+          <small>
+            @if (s.budget.montantEnAttente > 0) {
+              {{ s.budget.montantEnAttente | mtmMoney }} en attente de contrôle
+            } @else {
+              Devis moins dépenses validées
+            }
+          </small>
+        </div>
+      </section>
+    }
+
+    <div class="chantier-detail__layout">
+      <!-- Colonne principale : ce qui se pilote au quotidien -->
+      <div class="chantier-detail__main">
+        <!-- Planning : la « vue de type Gantt » de la section 16 -->
+        <section class="page-card detail-section">
+          <div class="detail-section__head">
+            <div>
+              <h2>Planning</h2>
+              <p class="detail-section__hint">
+                Les barres montrent la période de chaque étape ; le trait vertical, aujourd’hui.
+                L’avancement du chantier s’en déduit, pondéré par le poids des étapes.
+              </p>
+            </div>
+            @if (canModify()) {
+              <button mat-stroked-button type="button" (click)="ajouterJalon()">
+                <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Étape
+              </button>
+            }
+          </div>
+
+          @if (c.jalons.length) {
+            <div class="gantt">
+              @if (positionAujourdhui(); as aujourdhui) {
+                <div class="gantt__today" [style.left.%]="aujourdhui" aria-hidden="true"></div>
+              }
+              @for (ligne of gantt(); track ligne.jalon.id) {
+                <div class="gantt__row">
+                  <button
+                    type="button"
+                    class="gantt__label"
+                    [disabled]="!canModify()"
+                    (click)="modifierJalon(ligne.jalon)"
+                  >
+                    <span class="gantt__name">{{ ligne.jalon.libelle }}</span>
+                    <small>
+                      {{ dateCourte(ligne.jalon.dateFinReelle ?? ligne.jalon.dateFinPrevue) }}
+                      @if (ligne.jalon.poids > 1) {
+                        · poids {{ ligne.jalon.poids }}
+                      }
+                    </small>
+                  </button>
+
+                  <div class="gantt__track">
+                    @if (ligne.place) {
+                      <span
+                        class="gantt__bar"
+                        [class.gantt__bar--termine]="ligne.jalon.statut === 'termine'"
+                        [class.gantt__bar--bloque]="ligne.jalon.statut === 'bloque'"
+                        [class.gantt__bar--annule]="ligne.jalon.statut === 'annule'"
+                        [style.left.%]="ligne.offset"
+                        [style.width.%]="ligne.largeur"
+                        [matTooltip]="jalonLabel(ligne.jalon.statut)"
+                      >
+                        <i [style.width.%]="ligne.jalon.statut === 'termine' ? 100 : ligne.jalon.avancement"></i>
+                      </span>
+                    } @else {
+                      <span class="gantt__undated">Sans date</span>
+                    }
+                  </div>
+
+                  <div class="gantt__state">
+                    <span [class]="jalonPill(ligne.jalon.statut)">
+                      {{ jalonLabel(ligne.jalon.statut) }}
+                    </span>
+                    @if (canModify() && ligne.jalon.statut !== 'termine' && ligne.jalon.statut !== 'annule') {
+                      <button
+                        mat-button
+                        type="button"
+                        class="gantt__done"
+                        (click)="terminerJalon(ligne.jalon)"
+                      >
+                        Terminer
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+            @if (!positionAujourdhui() && c.jalons.length) {
+              <p class="detail-section__hint">
+                Renseignez les dates des étapes pour voir le planning se dessiner.
+              </p>
+            }
+          } @else {
+            <p class="detail-note">
+              Aucune étape au planning. Sans étapes, l’avancement doit être saisi à la main et aucun
+              retard ne peut être détecté.
+            </p>
+          }
+        </section>
+
+        <!-- Journal de chantier -->
+        <section class="page-card detail-section">
+          <div class="detail-section__head">
+            <div>
+              <h2>Journal de chantier</h2>
+              <p class="detail-section__hint">
+                Ce qui s’est passé sur place, jour par jour. Une journée qui signale un problème
+                reste ouverte jusqu’à ce qu’on la solde.
+              </p>
+            </div>
+            <div class="detail-section__tools">
+              @if (problemesOuverts() > 0) {
+                <button
+                  mat-button
+                  type="button"
+                  [class.is-active]="problemesSeuls()"
+                  (click)="basculerProblemes()"
+                >
+                  {{ problemesSeuls() ? 'Tout le journal' : problemesOuverts() + ' problème(s)' }}
+                </button>
+              }
+              @if (canModify()) {
+                <button mat-stroked-button type="button" (click)="saisirJournee()">
+                  <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Journée
+                </button>
+              }
+            </div>
+          </div>
+
+          @if (journalAffiche().length) {
+            <ol class="journal">
+              @for (entree of journalAffiche(); track entree.id) {
+                <li class="journal__entry" [class.journal__entry--ouvert]="!entree.resolu">
+                  <div class="journal__head">
+                    <strong>{{ dateJour(entree.date) }}</strong>
+                    @if (entree.jalon) {
+                      <span class="journal__jalon">{{ entree.jalon.libelle }}</span>
+                    }
+                    @if (entree.avancement !== null) {
+                      <span class="journal__avancement">{{ entree.avancement }} %</span>
+                    }
+                    @if (entree.visibleClient) {
+                      <span class="status-pill status-pill--info">Publiée</span>
+                    }
+                    @if (canModify()) {
+                      <span class="journal__actions">
+                        <button mat-button type="button" (click)="saisirJournee(entree)">
+                          Modifier
+                        </button>
+                        <button mat-button type="button" (click)="supprimerJournee(entree)">
+                          Supprimer
+                        </button>
+                      </span>
+                    }
+                  </div>
+
+                  <p class="journal__meta">
+                    @if (entree.intervenants) {
+                      {{ entree.intervenants }}
+                    }
+                    @if (entree.effectif) {
+                      · {{ entree.effectif }} personne(s)
+                    }
+                    @if (entree.meteo) {
+                      · {{ meteoLabel(entree.meteo) }}
+                    }
+                    @if (entree.redigePar) {
+                      · noté par {{ personne(entree.redigePar) }}
+                    }
+                  </p>
+
+                  @if (entree.observations) {
+                    <p class="journal__texte">{{ entree.observations }}</p>
+                  }
+                  @if (entree.probleme) {
+                    <p class="journal__probleme">
+                      <strong>Problème :</strong> {{ entree.probleme }}
+                    </p>
+                  }
+                  @if (entree.decisions) {
+                    <p class="journal__texte">
+                      <strong>Décision :</strong> {{ entree.decisions }}
+                    </p>
+                  }
+                  @if (entree.prochaineAction) {
+                    <p class="journal__suite">Prochaine action : {{ entree.prochaineAction }}</p>
+                  }
+                  @if (entree.documents.length) {
+                    <p class="journal__pieces">
+                      @for (piece of entree.documents; track piece.id) {
+                        <a [href]="piece.secureUrl" target="_blank" rel="noopener">
+                          {{ piece.title || documentLabel(piece.type) }}
+                        </a>
+                      }
+                    </p>
+                  }
+                </li>
+              }
+            </ol>
+
+            @if (journalMasque() > 0 || journalComplet()) {
+              <button
+                mat-button
+                type="button"
+                class="detail-section__more"
+                (click)="journalComplet.set(!journalComplet())"
+              >
+                {{
+                  journalComplet()
+                    ? 'Réduire le journal'
+                    : 'Voir ' + journalMasque() + ' journée(s) de plus'
+                }}
+              </button>
+            }
+          } @else {
+            <p class="detail-note">
+              @if (problemesSeuls()) {
+                Aucun problème ouvert : tout ce qui a été signalé a été soldé.
+              } @else {
+                Le journal est vide. C’est la première chose à tenir : l’avancement, les alertes et
+                le rapport client s’appuient dessus.
+              }
+            </p>
+          }
+        </section>
+
+        <!-- Dépenses -->
+        <section class="page-card detail-section">
+          <div class="detail-section__head">
+            <div>
+              <h2>Dépenses</h2>
+              <p class="detail-section__hint">
+                Saisies sur le chantier, validées par la comptabilité : une dépense ne pèse sur le
+                budget qu’une fois contrôlée.
+              </p>
+            </div>
+            @if (canModify()) {
+              <button mat-stroked-button type="button" (click)="saisirDepense()">
+                <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Dépense
+              </button>
+            }
+          </div>
+
+          @if (depensesAffichees().length) {
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Dépense</th>
+                  <th>Poste</th>
+                  <th class="num">Montant</th>
+                  <th>État</th>
+                  @if (canPay()) {
+                    <th></th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (depense of depensesAffichees(); track depense.id) {
+                  <tr>
+                    <td>
+                      <span class="cell-strong">{{ depense.libelle }}</span>
+                      <small class="cell-muted">
+                        {{ dateCourte(depense.date) }}
+                        @if (depense.intervenant) {
+                          · {{ depense.intervenant.nom }}
+                        }
+                        @if (depense.reference) {
+                          · {{ depense.reference }}
+                        }
+                      </small>
+                      @if (depense.motifRejet) {
+                        <small class="chantier-detail__danger">
+                          Rejetée : {{ depense.motifRejet }}
+                        </small>
+                      }
+                    </td>
+                    <td>{{ posteLabel(depense.poste) }}</td>
+                    <td class="num">{{ nombre(depense.montant) | mtmMoney }}</td>
+                    <td>
+                      <span [class]="depensePill(depense.statut)">
+                        {{ depenseLabel(depense.statut) }}
+                      </span>
+                    </td>
+                    @if (canPay()) {
+                      <td class="actions">
+                        @if (depense.statut === 'en_attente') {
+                          <button mat-button type="button" (click)="validerDepense(depense)">
+                            Valider
+                          </button>
+                          <button mat-button type="button" (click)="rejeterDepense(depense)">
+                            Rejeter
+                          </button>
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          } @else {
+            <p class="detail-note">Aucune dépense enregistrée sur ce chantier.</p>
+          }
+        </section>
+      </div>
+
+      <!-- Colonne latérale : ce qu'on consulte sans agir -->
+      <aside class="chantier-detail__aside">
+        <!-- Budget par poste -->
+        <section class="page-card detail-section">
+          <div class="detail-section__head">
+            <div>
+              <h2>Budget par poste</h2>
+              <p class="detail-section__hint">
+                Comparer prévu et dépensé poste par poste : c’est ce qui dit lequel dérape.
+              </p>
+            </div>
+            @if (canModify()) {
+              <button mat-stroked-button type="button" (click)="ajouterLigneBudget()">
+                <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Poste
+              </button>
+            }
+          </div>
+
+          @if (c.lignesBudget.length) {
+            <ul class="budget-list">
+              @for (ligne of c.lignesBudget; track ligne.id) {
+                <li>
+                  <button
+                    type="button"
+                    class="budget-list__row"
+                    [disabled]="!canModify()"
+                    (click)="modifierLigneBudget(ligne)"
+                  >
+                    <span class="budget-list__label">
+                      <strong>{{ ligne.libelle }}</strong>
+                      <small>
+                        {{ posteLabel(ligne.poste) }}
+                        @if (quantiteLigne(ligne); as quantite) {
+                          · {{ quantite }}
+                        }
+                      </small>
+                    </span>
+                    <span class="budget-list__amount">
+                      {{ nombre(ligne.montantPrevu) | mtmMoney }}
+                    </span>
+                  </button>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="detail-section__hint">
+              Aucun poste chiffré. Sans budget prévisionnel, aucun dépassement ne peut être détecté.
+            </p>
+          }
+        </section>
+
+        <!-- Prestataires -->
+        <section class="page-card detail-section">
+          <div class="detail-section__head">
+            <div>
+              <h2>Prestataires</h2>
+            </div>
+            @if (canModify()) {
+              <button mat-stroked-button type="button" (click)="ajouterPrestataire()">
+                <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Ajouter
+              </button>
+            }
+          </div>
+
+          @if (c.intervenants.length) {
+            <ul class="info-list">
+              @for (intervenant of c.intervenants; track intervenant.id) {
+                <li>
+                  <button
+                    type="button"
+                    class="intervenant"
+                    [disabled]="!canModify()"
+                    (click)="modifierPrestataire(intervenant)"
+                  >
+                    <span class="intervenant__main">
+                      <strong>{{ intervenant.nom }}</strong>
+                      <small>
+                        {{ metierLabel(intervenant.metier) }}
+                        @if (intervenant.telephone) {
+                          · {{ intervenant.telephone }}
+                        }
+                      </small>
+                    </span>
+                    <span class="intervenant__side">
+                      <span [class]="prestatairePill(intervenant.statut)">
+                        {{ prestataireLabel(intervenant.statut) }}
+                      </span>
+                      @if (nombre(intervenant.montantContrat); as contrat) {
+                        <small>{{ contrat | mtmMoney }}</small>
+                      }
+                    </span>
+                  </button>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="detail-section__hint">Aucun prestataire engagé pour l’instant.</p>
+          }
+        </section>
+
+        <!-- Pièces -->
+        <section class="page-card detail-section">
+          <div class="detail-section__head">
+            <div>
+              <h2>Pièces</h2>
+              <p class="detail-section__hint">
+                Seules les pièces publiées apparaissent dans l’espace client.
+              </p>
+            </div>
+            @if (canModify()) {
+              <button mat-stroked-button type="button" (click)="genererRapport()">
+                <svg class="btn-icon" lucideFileText aria-hidden="true"></svg>Rapport
+              </button>
+            }
+          </div>
+
+          @if (piecesAffichees().length) {
+            <ul class="info-list">
+              @for (piece of piecesAffichees(); track piece.id) {
+                <li class="piece">
+                  <a class="piece__link" [href]="piece.secureUrl" target="_blank" rel="noopener">
+                    <strong>{{ piece.title || documentLabel(piece.type) }}</strong>
+                    <small>
+                      {{ documentLabel(piece.type) }} · {{ dateCourte(piece.createdAt) }}
+                      @if (piece.version > 1) {
+                        · version {{ piece.version }}
+                      }
+                    </small>
+                  </a>
+                  @if (canPublish()) {
+                    <button
+                      mat-button
+                      type="button"
+                      (click)="basculerVisibilite(piece.id, !piece.visibleClient)"
+                    >
+                      {{ piece.visibleClient ? 'Retirer' : 'Publier' }}
+                    </button>
+                  } @else if (piece.visibleClient) {
+                    <span class="status-pill status-pill--info">Publiée</span>
+                  }
+                </li>
+              }
+            </ul>
+
+            @if (piecesMasquees() > 0 || piecesToutes()) {
+              <button
+                mat-button
+                type="button"
+                class="detail-section__more"
+                (click)="piecesToutes.set(!piecesToutes())"
+              >
+                {{
+                  piecesToutes() ? 'Réduire' : 'Voir ' + piecesMasquees() + ' pièce(s) de plus'
+                }}
+              </button>
+            }
+          } @else {
+            <p class="detail-section__hint">Aucune pièce pour l’instant.</p>
+          }
+        </section>
+      </aside>
+    </div>
+
+    <!-- Consulté rarement : replié -->
+    <details class="page-card chantier-detail__repli">
+      <summary>
+        <strong>Le projet en détail</strong>
+        <small>Programme, gabarit, dates et notes internes</small>
+      </summary>
+      <ul class="info-list">
+        <li><span>Client</span><strong>{{ c.client.prenom }} {{ c.client.nom }}</strong></li>
+        <li>
+          <span>Terrain</span>
+          <strong>{{ c.terrain?.nom ?? 'Terrain du client (hors catalogue)' }}</strong>
+        </li>
+        <li><span>Nature</span><strong>{{ typeLabel(c.typeProjet) }}</strong></li>
+        @if (c.surfaceBatie) {
+          <li><span>Surface bâtie</span><strong>{{ nombre(c.surfaceBatie) }} m²</strong></li>
+        }
+        @if (c.nombreNiveaux) {
+          <li><span>Niveaux</span><strong>{{ c.nombreNiveaux }}</strong></li>
+        }
+        <li>
+          <span>Début</span>
+          <strong>{{ dateCourte(c.dateDebutReelle ?? c.dateDebutPrevue) }}</strong>
+        </li>
+        <li>
+          <span>Fin prévue</span>
+          <strong>{{ dateCourte(c.dateFinReelle ?? c.dateFinPrevue) }}</strong>
+        </li>
+        <li>
+          <span>Espace client</span>
+          <strong>{{ c.visibleClient ? 'Visible' : 'Masqué' }}</strong>
+        </li>
+        <li><span>Créé le</span><strong>{{ dateCourte(c.createdAt) }}</strong></li>
+      </ul>
+      @if (c.programme) {
+        <p class="detail-note">{{ c.programme }}</p>
+      }
+      @if (c.notes) {
+        <p class="detail-note"><strong>Notes internes :</strong> {{ c.notes }}</p>
+      }
+    </details>
+  </div>
+} @else {
+  <p class="detail-note">Chantier introuvable.</p>
+}
