@@ -31,6 +31,33 @@
             <span class="detail-header__owner">Conduit par {{ personne(c.responsable) }}</span>
           }
         </div>
+
+        <!-- Ce que le conducteur de travaux cherche en premier : sur quoi
+             les équipes travaillent, et ce qui tombe bientôt. -->
+        <p class="chantier-detail__situation">
+          @if (etapeEnCours(); as etape) {
+            <span>
+              En ce moment : <strong>{{ etape.libelle }}</strong>
+              @if (etape.statut === 'bloque') {
+                <em class="chantier-detail__danger">— étape bloquée</em>
+              } @else {
+                ({{ etape.avancement }} %)
+              }
+            </span>
+          } @else if (c.statut === 'prepare') {
+            <span>Les travaux n’ont pas encore démarré.</span>
+          } @else {
+            <span>Aucune étape en cours.</span>
+          }
+          @if (prochaineEcheance(); as suivante) {
+            <span
+              class="chantier-detail__echeance"
+              [class.chantier-detail__danger]="estDepassee(suivante.dateFinPrevue)"
+            >
+              · {{ suivante.libelle }} attendu {{ delai(suivante.dateFinPrevue) }}
+            </span>
+          }
+        </p>
       </div>
 
       @if (canModify()) {
@@ -134,37 +161,43 @@
           <strong>{{ s.avancement.pourcentage }} %</strong>
           <small>
             @if (s.avancement.jalonsTotal) {
-              {{ s.avancement.jalonsTermines }} / {{ s.avancement.jalonsTotal }} étapes terminées
+              {{ s.avancement.jalonsTermines }} étape(s) terminée(s) sur
+              {{ s.avancement.jalonsTotal }}
             } @else {
               Aucune étape au planning
             }
           </small>
         </div>
+        <!-- Quatre notions d'argent se confondent vite. Chacune est donc
+             nommée par ce qu'elle est pour l'entreprise, pas par son terme
+             comptable : ce que le client paie, ce qu'on a sorti, ce qui
+             reste, ce qu'il restera. -->
         <div>
-          <span>Devis signé</span>
+          <span>Le client paie</span>
           <strong>{{ s.budget.montantDevis | mtmMoney }}</strong>
-          <small>engagé : {{ s.budget.montantEngage | mtmMoney }}</small>
+          <small>montant du devis signé</small>
         </div>
         <div [class.is-over]="s.budget.depassement">
-          <span>Dépensé</span>
+          <span>Déjà dépensé</span>
           <strong>{{ s.budget.montantDepense | mtmMoney }}</strong>
           <small>
             @if (s.budget.budgetPrevu) {
-              {{ s.budget.tauxConsommation }} % du budget de
-              {{ s.budget.budgetPrevu | mtmMoney }}
+              {{ s.budget.tauxConsommation }} % du budget travaux
+              ({{ s.budget.budgetPrevu | mtmMoney }})
             } @else {
-              Aucun budget de référence
+              aucun budget travaux défini
             }
           </small>
         </div>
         <div>
-          <span>Marge estimée</span>
+          <span>Marge</span>
           <strong>{{ s.budget.margeEstimee | mtmMoney }}</strong>
           <small>
             @if (s.budget.montantEnAttente > 0) {
-              {{ s.budget.montantEnAttente | mtmMoney }} en attente de contrôle
+              {{ s.budget.montantEnAttente | mtmMoney }} de dépenses non encore
+              contrôlées
             } @else {
-              Devis moins dépenses validées
+              ce qui reste à l’entreprise si rien d’autre n’est dépensé
             }
           </small>
         </div>
@@ -178,10 +211,11 @@
         <section class="page-card detail-section">
           <div class="detail-section__head">
             <div>
-              <h2>Planning</h2>
+              <h2>Planning des travaux</h2>
               <p class="detail-section__hint">
-                Les barres montrent la période de chaque étape ; le trait vertical, aujourd’hui.
-                L’avancement du chantier s’en déduit, pondéré par le poids des étapes.
+                Chaque barre est une étape des travaux, placée sur sa période ; le
+                trait vertical marque aujourd’hui. Les étapes les plus lourdes
+                comptent davantage dans l’avancement du chantier.
               </p>
             </div>
             @if (canModify()) {
@@ -193,8 +227,25 @@
 
           @if (c.jalons.length) {
             <div class="gantt">
+              <!-- Sans échelle, les barres flottent : on voit qu’une étape
+                   est plus longue qu’une autre, jamais quand elle tombe. -->
+              @if (reperesGantt().length) {
+                <div class="gantt__row gantt__row--echelle" aria-hidden="true">
+                  <span class="gantt__label"></span>
+                  <div class="gantt__track gantt__track--echelle">
+                    @for (repere of reperesGantt(); track repere.offset) {
+                      <span class="gantt__mois" [style.left.%]="repere.offset">
+                        {{ repere.label }}
+                      </span>
+                    }
+                  </div>
+                  <span class="gantt__state"></span>
+                </div>
+              }
               @if (positionAujourdhui(); as aujourdhui) {
-                <div class="gantt__today" [style.left.%]="aujourdhui" aria-hidden="true"></div>
+                <div class="gantt__today" [style.left.%]="aujourdhui" aria-hidden="true">
+                  <span>aujourd’hui</span>
+                </div>
               }
               @for (ligne of gantt(); track ligne.jalon.id) {
                 <div class="gantt__row">
@@ -205,10 +256,20 @@
                     (click)="modifierJalon(ligne.jalon)"
                   >
                     <span class="gantt__name">{{ ligne.jalon.libelle }}</span>
-                    <small>
-                      {{ dateCourte(ligne.jalon.dateFinReelle ?? ligne.jalon.dateFinPrevue) }}
-                      @if (ligne.jalon.poids > 1) {
-                        · poids {{ ligne.jalon.poids }}
+                    <small
+                      [class.chantier-detail__danger]="
+                        ligne.jalon.statut !== 'termine' &&
+                        ligne.jalon.statut !== 'annule' &&
+                        estDepassee(ligne.jalon.dateFinPrevue)
+                      "
+                    >
+                      @if (ligne.jalon.statut === 'termine') {
+                        terminée le
+                        {{ dateCourte(ligne.jalon.dateFinReelle ?? ligne.jalon.dateFinPrevue) }}
+                      } @else if (ligne.jalon.dateFinPrevue) {
+                        attendue {{ delai(ligne.jalon.dateFinPrevue) }}
+                      } @else {
+                        date à renseigner
                       }
                     </small>
                   </button>
@@ -249,9 +310,21 @@
                 </div>
               }
             </div>
+
+            <p class="gantt__legende">
+              <span class="gantt__puce gantt__puce--en-cours"></span> en cours
+              <span class="gantt__puce gantt__puce--termine"></span> terminée
+              <span class="gantt__puce gantt__puce--bloque"></span> bloquée
+              <span class="gantt__puce gantt__puce--annule"></span> annulée
+              <span class="gantt__legende-note">
+                La partie pleine de chaque barre montre l’avancement de l’étape.
+              </span>
+            </p>
+
             @if (!positionAujourdhui() && c.jalons.length) {
               <p class="detail-section__hint">
-                Renseignez les dates des étapes pour voir le planning se dessiner.
+                Renseignez les dates de début et de fin des étapes : sans elles, le
+                planning ne peut pas se dessiner et aucun retard ne sera détecté.
               </p>
             }
           } @else {

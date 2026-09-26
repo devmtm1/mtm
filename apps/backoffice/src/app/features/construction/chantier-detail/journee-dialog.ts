@@ -48,15 +48,18 @@ export interface JourneeDialogData {
   template: `
     <h2 mat-dialog-title>{{ data.entree ? 'Corriger la journée' : 'Journée de chantier' }}</h2>
     <mat-dialog-content [formGroup]="form" class="journee-dialog">
+      <!-- Ce qu'on note tous les jours tient en quatre champs. Le reste —
+           météo, effectif, problème, décision — ne concerne qu'une journée
+           sur cinq : le demander d'emblée décourage la saisie. -->
       <div class="journee-dialog__row">
         <mat-form-field appearance="outline">
-          <mat-label>Date</mat-label>
+          <mat-label>Quel jour</mat-label>
           <input matInput type="date" formControlName="date" />
           <mat-error>Indiquez la journée concernée.</mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>Étape du planning</mat-label>
+          <mat-label>Sur quelle étape</mat-label>
           <mat-select formControlName="jalonId">
             <mat-option value="">Aucune en particulier</mat-option>
             @for (jalon of data.jalons; track jalon.id) {
@@ -66,65 +69,79 @@ export interface JourneeDialogData {
         </mat-form-field>
       </div>
 
-      <div class="journee-dialog__row journee-dialog__row--three">
-        <mat-form-field appearance="outline">
-          <mat-label>Effectif</mat-label>
-          <input matInput type="number" min="0" formControlName="effectif" />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Météo</mat-label>
-          <mat-select formControlName="meteo">
-            <mat-option value="">—</mat-option>
-            @for (meteo of data.meteos; track meteo) {
-              <mat-option [value]="meteo">{{ meteoLabel(meteo) }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Avancement (%)</mat-label>
-          <input matInput type="number" min="0" max="100" formControlName="avancement" />
-          <mat-hint>Remonte à l’étape choisie.</mat-hint>
-        </mat-form-field>
-      </div>
-
       <mat-form-field appearance="outline">
         <mat-label>Qui était sur place</mat-label>
-        <input matInput formControlName="intervenants" placeholder="Équipe maçonnerie, électricien…" />
+        <input
+          matInput
+          formControlName="intervenants"
+          placeholder="Équipe maçonnerie, électricien…"
+        />
       </mat-form-field>
 
       <mat-form-field appearance="outline">
-        <mat-label>Observations</mat-label>
-        <textarea matInput rows="2" formControlName="observations"></textarea>
+        <mat-label>Ce qui a été fait</mat-label>
+        <textarea
+          matInput
+          rows="3"
+          formControlName="observations"
+          placeholder="Élévation des murs du rez-de-chaussée terminée."
+        ></textarea>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
-        <mat-label>Problème rencontré</mat-label>
-        <textarea matInput rows="2" formControlName="probleme"></textarea>
-        <mat-hint>Laissé vide, la journée est close d’office.</mat-hint>
+        <mat-label>Où en est cette étape (%)</mat-label>
+        <input matInput type="number" min="0" max="100" formControlName="avancement" />
+        <mat-hint>{{ aideAvancement() }}</mat-hint>
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Décisions prises</mat-label>
-        <textarea matInput rows="2" formControlName="decisions"></textarea>
-      </mat-form-field>
+      <details class="journee-dialog__plus" [open]="aDesDetails()">
+        <summary>Un problème, une décision, ou d’autres précisions ?</summary>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Prochaine action</mat-label>
-        <input matInput formControlName="prochaineAction" />
-      </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Problème rencontré</mat-label>
+          <textarea matInput rows="2" formControlName="probleme"></textarea>
+          <mat-hint>
+            Tant qu’il n’est pas coché comme réglé, il reste signalé sur le chantier.
+          </mat-hint>
+        </mat-form-field>
 
-      <div class="journee-dialog__checks">
         @if (form.controls.probleme.value) {
-          <mat-checkbox formControlName="resolu">
-            Problème déjà réglé — sinon la journée reste ouverte dans les alertes
+          <mat-checkbox formControlName="resolu" class="journee-dialog__check">
+            Ce problème est déjà réglé
           </mat-checkbox>
         }
-        <mat-checkbox formControlName="visibleClient">
-          Publier cette journée dans l’espace client
-        </mat-checkbox>
-      </div>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Décision prise</mat-label>
+          <textarea matInput rows="2" formControlName="decisions"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Prochaine action</mat-label>
+          <input matInput formControlName="prochaineAction" />
+        </mat-form-field>
+
+        <div class="journee-dialog__row">
+          <mat-form-field appearance="outline">
+            <mat-label>Nombre de personnes</mat-label>
+            <input matInput type="number" min="0" formControlName="effectif" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Météo</mat-label>
+            <mat-select formControlName="meteo">
+              <mat-option value="">—</mat-option>
+              @for (meteo of data.meteos; track meteo) {
+                <mat-option [value]="meteo">{{ meteoLabel(meteo) }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </details>
+
+      <mat-checkbox formControlName="visibleClient" class="journee-dialog__check">
+        Montrer cette journée au client dans son espace
+      </mat-checkbox>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-stroked-button type="button" mat-dialog-close>Annuler</button>
@@ -153,10 +170,28 @@ export interface JourneeDialogData {
     .journee-dialog__row--three {
       grid-template-columns: repeat(3, 1fr);
     }
-    .journee-dialog__checks {
+    .journee-dialog__check {
+      display: block;
+      padding: 2px 0 10px;
+    }
+    /* Ce qui ne concerne qu'une journée sur cinq reste replié. */
+    .journee-dialog__plus {
       display: grid;
-      gap: 6px;
-      padding: 4px 0 8px;
+      gap: 4px;
+      margin: 2px 0 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--mtm-border);
+      border-radius: 8px;
+    }
+    .journee-dialog__plus summary {
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--mtm-text-muted);
+    }
+    .journee-dialog__plus[open] summary {
+      margin-bottom: 10px;
+      color: var(--mtm-text-dark);
     }
     @media (max-width: 620px) {
       .journee-dialog { min-width: 0; }
@@ -189,6 +224,29 @@ export class JourneeDialog {
     resolu: [this.data.entree?.resolu ?? false],
     visibleClient: [this.data.entree?.visibleClient ?? false],
   });
+
+  /** Dit à quoi sert le pourcentage, plutôt que de le laisser deviner. */
+  protected aideAvancement(): string {
+    const id = this.form.controls.jalonId.value;
+    const jalon = this.data.jalons.find((item) => item.id === id);
+    if (!jalon) {
+      return 'Choisissez une étape pour que ce pourcentage la fasse avancer.';
+    }
+    return `Met à jour l’étape « ${jalon.libelle} », aujourd’hui à ${jalon.avancement} %.`;
+  }
+
+  /** Ouvre le repli d'emblée quand la journée qu'on corrige en contient. */
+  protected aDesDetails(): boolean {
+    const entree = this.data.entree;
+    if (!entree) return false;
+    return Boolean(
+      entree.probleme ||
+        entree.decisions ||
+        entree.prochaineAction ||
+        entree.effectif ||
+        entree.meteo,
+    );
+  }
 
   protected meteoLabel(code: string): string {
     return label(METEOS, code);

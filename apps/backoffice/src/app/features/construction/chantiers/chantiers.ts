@@ -181,7 +181,7 @@ export class Chantiers implements OnInit {
         this.celluleAvancement(p),
     },
     {
-      headerName: 'Fin prévue',
+      headerName: 'Livraison prévue',
       field: 'dateFinPrevue',
       flex: 1,
       minWidth: 140,
@@ -190,7 +190,9 @@ export class Chantiers implements OnInit {
         this.celluleEcheance(p),
     },
     {
-      headerName: 'Budget',
+      // « Budget » seul est ambigu : on montre la dépense rapportée au
+      // budget travaux, c'est cette proportion qui alerte.
+      headerName: 'Dépensé / budget',
       flex: 1.1,
       minWidth: 160,
       sortable: true,

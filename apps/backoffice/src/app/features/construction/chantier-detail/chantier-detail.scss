@@ -9,10 +9,30 @@
  * Le reste du vocabulaire est commun à l'application : `detail-page`,
  * `detail-header`, `page-card detail-section`, `info-list`, `data-table`.
  */
+/* Ce que le conducteur de travaux lit en premier, juste sous le titre. */
+.chantier-detail__situation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 6px;
+  margin: 8px 0 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.chantier-detail__echeance {
+  color: var(--mtm-text-muted);
+}
+
 .chantier-detail {
+  /* Couleur seule : la classe sert aussi bien sur un mot au fil du texte
+     que sur une ligne entière. Seul le `small` d’un tableau a besoin de
+     passer à la ligne. */
   &__danger {
-    display: block;
     color: var(--mtm-accent);
+  }
+
+  small.chantier-detail__danger {
+    display: block;
   }
 }
 
@@ -92,7 +112,8 @@
    retard visible sans lire une seule date. */
 .gantt__today {
   position: absolute;
-  top: 0;
+  /* Sous l’échelle, pas par-dessus : le trait marque les barres. */
+  top: 22px;
   bottom: 0;
   /* Décalé de la largeur du libellé, pour tomber sur la piste et non dessus. */
   margin-left: 220px;
@@ -101,9 +122,95 @@
   opacity: 0.55;
   pointer-events: none;
 
+  /* Sans étiquette, un trait pointillé rouge n’est qu’un trait. */
+  span {
+    position: absolute;
+    top: -18px;
+    left: 3px;
+    color: var(--mtm-accent);
+    font-size: 0.68rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
   @media (max-width: 760px) {
     display: none;
   }
+}
+
+/* Échelle de temps : les mois au-dessus des barres. */
+.gantt__row--echelle {
+  align-items: end;
+  height: 22px;
+  margin-bottom: 2px;
+}
+
+.gantt__track--echelle {
+  height: 18px;
+  border-radius: 0;
+  border-bottom: 1px solid var(--mtm-border);
+  background: none;
+}
+
+.gantt__mois {
+  position: absolute;
+  bottom: 2px;
+  color: var(--mtm-text-muted);
+  font-size: 0.68rem;
+  line-height: 1;
+  white-space: nowrap;
+  transform: translateX(-50%);
+
+  /* Un petit trait relie l’étiquette à la frise. */
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 50%;
+    width: 1px;
+    height: 3px;
+    background: var(--mtm-border);
+  }
+}
+
+/* Légende : quatre couleurs ne se devinent pas. */
+.gantt__legende {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 12px 0 0;
+  color: var(--mtm-text-muted);
+  font-size: 0.76rem;
+}
+
+.gantt__puce {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--mtm-primary);
+
+  &:not(:first-child) {
+    margin-left: 8px;
+  }
+
+  &--termine {
+    background: var(--mtm-success);
+  }
+
+  &--bloque {
+    background: var(--mtm-accent);
+  }
+
+  &--annule {
+    background: var(--mtm-text-muted);
+    opacity: 0.4;
+  }
+}
+
+.gantt__legende-note {
+  flex-basis: 100%;
+  margin-top: 2px;
 }
 
 .gantt__row {

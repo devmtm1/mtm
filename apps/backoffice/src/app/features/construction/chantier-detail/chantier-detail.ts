@@ -153,6 +153,67 @@ export class ChantierDetailPage implements OnInit {
     });
   });
 
+  /**
+   * Repères de mois sur la frise. Sans eux, les barres flottent sans
+   * échelle : on voit qu'une étape est plus longue qu'une autre, pas
+   * quand elle tombe.
+   */
+  protected readonly reperesGantt = computed(() => {
+    const bornes = this.bornesPlanning(this.chantier()?.jalons ?? []);
+    if (!bornes) return [];
+    const duree = bornes.fin - bornes.debut;
+    const reperes: { label: string; offset: number }[] = [];
+    const curseur = new Date(bornes.debut);
+    curseur.setDate(1);
+    curseur.setHours(0, 0, 0, 0);
+    curseur.setMonth(curseur.getMonth() + 1);
+    // Au-delà de deux ans de chantier, un repère par mois devient
+    // illisible : on passe au trimestre.
+    const pas = duree > 730 * 86_400_000 ? 3 : 1;
+    while (curseur.getTime() < bornes.fin && reperes.length < 40) {
+      reperes.push({
+        label: curseur.toLocaleDateString('fr-FR', {
+          month: 'short',
+          ...(curseur.getMonth() === 0 ? { year: '2-digit' as const } : {}),
+        }),
+        offset: ((curseur.getTime() - bornes.debut) / duree) * 100,
+      });
+      curseur.setMonth(curseur.getMonth() + pas);
+    }
+    return reperes;
+  });
+
+  /**
+   * L'étape sur laquelle les équipes travaillent en ce moment. C'est la
+   * première chose qu'un conducteur de travaux cherche en ouvrant la
+   * fiche — avant tout chiffre.
+   */
+  protected readonly etapeEnCours = computed(() => {
+    const jalons = this.chantier()?.jalons ?? [];
+    return (
+      jalons.find((jalon) => jalon.statut === 'bloque') ??
+      jalons.find((jalon) => jalon.statut === 'en_cours') ??
+      null
+    );
+  });
+
+  /** Étape non terminée dont l'échéance tombe le plus tôt. */
+  protected readonly prochaineEcheance = computed(() => {
+    const jalons = (this.chantier()?.jalons ?? []).filter(
+      (jalon) =>
+        jalon.statut !== 'termine' &&
+        jalon.statut !== 'annule' &&
+        jalon.dateFinPrevue,
+    );
+    if (!jalons.length) return null;
+    return jalons.reduce((plusTot, jalon) =>
+      new Date(jalon.dateFinPrevue as string) <
+      new Date(plusTot.dateFinPrevue as string)
+        ? jalon
+        : plusTot,
+    );
+  });
+
   /** Position d'aujourd'hui sur la frise, pour situer le chantier d'un coup d'œil. */
   protected readonly positionAujourdhui = computed(() => {
     const bornes = this.bornesPlanning(this.chantier()?.jalons ?? []);
@@ -624,6 +685,30 @@ export class ChantierDetailPage implements OnInit {
       .filter(Boolean)
       .join(', ');
     return lieu ? ` · ${lieu}` : '';
+  }
+
+  /**
+   * Un délai se comprend mieux qu'une date : « dans 12 jours » plutôt que
+   * « 15 novembre », qu'il faut comparer mentalement à aujourd'hui.
+   */
+  protected delai(valeur: string | null): string {
+    if (!valeur) return '';
+    const jours = Math.round(
+      (new Date(valeur).setHours(0, 0, 0, 0) -
+        new Date().setHours(0, 0, 0, 0)) /
+        86_400_000,
+    );
+    if (jours === 0) return "aujourd'hui";
+    if (jours === 1) return 'demain';
+    if (jours === -1) return 'hier';
+    if (jours > 0) return `dans ${jours} jours`;
+    return `en retard de ${-jours} jours`;
+  }
+
+  /** Vrai quand l'échéance est passée : le gabarit la met en alerte. */
+  protected estDepassee(valeur: string | null): boolean {
+    if (!valeur) return false;
+    return new Date(valeur).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0);
   }
 
   protected dateCourte(valeur: string | null): string {

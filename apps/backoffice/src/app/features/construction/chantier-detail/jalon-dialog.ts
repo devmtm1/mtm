@@ -17,6 +17,26 @@ import type {
 } from '../../../core/models/chantier.model';
 import { STATUTS_JALON, label } from '../chantier-status';
 
+/**
+ * Ampleur d'une étape, traduite en poids pour le calcul d'avancement.
+ * Trois niveaux suffisent : personne ne sait quoi mettre dans un champ
+ * numérique de 1 à 100, et la précision n’apporte rien à une moyenne.
+ */
+export const AMPLEURS = [
+  { valeur: 1, label: 'Petite étape (quelques jours)' },
+  { valeur: 3, label: 'Étape normale (quelques semaines)' },
+  { valeur: 6, label: 'Grosse étape (plusieurs mois)' },
+] as const;
+
+/** Ramène un poids existant au niveau le plus proche. */
+function ampleurLaPlusProche(poids: number): number {
+  return AMPLEURS.reduce((proche, niveau) =>
+    Math.abs(niveau.valeur - poids) < Math.abs(proche.valeur - poids)
+      ? niveau
+      : proche,
+  ).valeur;
+}
+
 export interface JalonDialogData {
   statuts: string[];
   /** Renseigné en modification : le jalon à ajuster. */
@@ -24,11 +44,13 @@ export interface JalonDialogData {
 }
 
 /**
- * Jalon du planning (section 16 : « planning avec jalons »).
+ * Étape du planning des travaux (les « jalons » de la section 16).
  *
- * Le poids mérite son champ : sans lui, un mur de clôture de deux jours
- * pèserait autant qu'un gros œuvre de trois mois dans l'avancement du
- * chantier.
+ * L'ampleur mérite son champ : sans elle, un mur de clôture de deux
+ * jours pèserait autant qu'un gros œuvre de trois mois dans
+ * l'avancement du chantier. Elle est demandée en trois niveaux plutôt
+ * qu'en nombre, parce que personne ne sait quoi mettre dans un champ
+ * de 1 à 100.
  */
 @Component({
   selector: 'app-jalon-dialog',
@@ -94,13 +116,18 @@ export interface JalonDialogData {
         </div>
       }
 
-      <div class="jalon-dialog__row">
-        <mat-form-field appearance="outline">
-          <mat-label>Poids</mat-label>
-          <input matInput type="number" min="1" max="100" formControlName="poids" />
-          <mat-hint>Importance dans l’avancement global (1 par défaut).</mat-hint>
-        </mat-form-field>
-      </div>
+      <mat-form-field appearance="outline">
+        <mat-label>Ampleur de l’étape</mat-label>
+        <mat-select formControlName="poids">
+          @for (niveau of AMPLEURS; track niveau.valeur) {
+            <mat-option [value]="niveau.valeur">{{ niveau.label }}</mat-option>
+          }
+        </mat-select>
+        <mat-hint>
+          Une grosse étape compte davantage dans l’avancement du chantier qu’une
+          petite : un gros œuvre de trois mois ne vaut pas une réception d’un jour.
+        </mat-hint>
+      </mat-form-field>
 
       <mat-form-field appearance="outline">
         <mat-label>Description</mat-label>
@@ -149,7 +176,7 @@ export class JalonDialog {
       [Validators.required, Validators.minLength(2)],
     ],
     description: [this.data.jalon?.description ?? ''],
-    poids: [this.data.jalon?.poids ?? 1],
+    poids: [ampleurLaPlusProche(this.data.jalon?.poids ?? 1)],
     dateDebutPrevue: [this.data.jalon?.dateDebutPrevue?.slice(0, 10) ?? ''],
     dateFinPrevue: [this.data.jalon?.dateFinPrevue?.slice(0, 10) ?? ''],
     dateDebutReelle: [this.data.jalon?.dateDebutReelle?.slice(0, 10) ?? ''],
@@ -157,6 +184,8 @@ export class JalonDialog {
     statut: [this.data.jalon?.statut ?? 'a_venir'],
     avancement: [this.data.jalon?.avancement ?? 0],
   });
+
+  protected readonly AMPLEURS = AMPLEURS;
 
   protected statutLabel(code: string): string {
     return label(STATUTS_JALON, code);
