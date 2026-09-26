@@ -13,7 +13,6 @@ import type { ColDef, ICellRendererParams } from 'ag-grid-community';
 import {
   LucideClipboardCheck,
   LucideDownload,
-  LucideMapPinned,
   LucidePlus,
   LucideSearch,
   LucideTriangleAlert,
@@ -97,7 +96,6 @@ export const VUES_RAPIDES = [
     MatTooltipModule,
     LucideClipboardCheck,
     LucideDownload,
-    LucideMapPinned,
     LucidePlus,
     LucideSearch,
     LucideTriangleAlert,
