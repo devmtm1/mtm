@@ -29,21 +29,7 @@
         <span class="kpi__body">
           <strong>{{ s.total }}</strong>
           <span>Missions suivies</span>
-          <small>{{ s.enCours }} en cours</small>
-        </span>
-      </button>
-      <button
-        type="button"
-        class="kpi"
-        [class.kpi--warning]="s.aPlanifier > 0"
-        [class.kpi--muted]="s.aPlanifier === 0"
-        (click)="filtrerParEtape('demande')"
-      >
-        <span class="kpi__icon"><svg lucideMapPinned aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          <strong>{{ s.aPlanifier }}</strong>
-          <span>Demandes à traiter</span>
-          <small>Aucune vérification encore lancée</small>
+          <small>{{ s.enCours }} en cours · {{ s.cloturees }} clôturée(s)</small>
         </span>
       </button>
       <button
@@ -66,14 +52,6 @@
           </small>
         </span>
       </button>
-      <div class="kpi">
-        <span class="kpi__icon"><svg lucideClipboardCheck aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          <strong>{{ s.cloturees }}</strong>
-          <span>Missions clôturées</span>
-          <small>{{ s.tauxAboutissement }} % menées à terme</small>
-        </span>
-      </div>
       <div class="kpi">
         <span class="kpi__icon"><svg lucideClipboardCheck aria-hidden="true"></svg></span>
         <span class="kpi__body">
@@ -120,6 +98,68 @@
           }
         </p>
       </div>
+      <form class="list-filters" [formGroup]="filters" (ngSubmit)="$event.preventDefault()">
+        <mat-form-field appearance="outline" class="list-filters__search" subscriptSizing="dynamic">
+          <mat-label>Rechercher</mat-label>
+          <svg matPrefix class="list-filters__icon" lucideSearch aria-hidden="true"></svg>
+          <input
+            matInput
+            formControlName="search"
+            placeholder="Référence, client, commune…"
+            autocomplete="off"
+          />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Étape</mat-label>
+          <mat-select formControlName="statut">
+            <mat-option value="">Toutes</mat-option>
+            @for (etape of options().statuts ?? []; track etape) {
+              <mat-option [value]="etape">{{ etapeLabel(etape) }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Nature</mat-label>
+          <mat-select formControlName="typeVerification">
+            <mat-option value="">Toutes</mat-option>
+            @for (type of options().typesVerification ?? []; track type) {
+              <mat-option [value]="type">{{ typeLabel(type) }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Urgence</mat-label>
+          <mat-select formControlName="urgence">
+            <mat-option value="">Toutes</mat-option>
+            @for (urgence of options().urgences ?? []; track urgence) {
+              <mat-option [value]="urgence">{{ urgenceLabel(urgence) }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        @if (collaborateurs().length) {
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Responsable</mat-label>
+            <mat-select formControlName="responsableId">
+              <mat-option value="">Tous</mat-option>
+              @for (collaborateur of collaborateurs(); track collaborateur.id) {
+                <mat-option [value]="collaborateur.id">
+                  {{ nomCollaborateur(collaborateur) }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+
+        @if (hasActiveFilters()) {
+          <button mat-button type="button" class="list-filters__reset" (click)="resetFilters()">
+            <svg class="btn-icon" lucideX aria-hidden="true"></svg>Effacer
+          </button>
+        }
+      </form>
     </div>
 
     <div class="quick-views" role="group" aria-label="Vues rapides">
@@ -135,64 +175,6 @@
         </button>
       }
     </div>
-
-    <form [formGroup]="filters" class="list-filters">
-      <mat-form-field appearance="outline" class="list-filters__search">
-        <mat-label>Rechercher</mat-label>
-        <svg matPrefix lucideSearch aria-hidden="true"></svg>
-        <input matInput formControlName="search" placeholder="Référence, client, commune" />
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Étape</mat-label>
-        <mat-select formControlName="statut">
-          <mat-option value="">Toutes</mat-option>
-          @for (etape of options().statuts ?? []; track etape) {
-            <mat-option [value]="etape">{{ etapeLabel(etape) }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Nature</mat-label>
-        <mat-select formControlName="typeVerification">
-          <mat-option value="">Toutes</mat-option>
-          @for (type of options().typesVerification ?? []; track type) {
-            <mat-option [value]="type">{{ typeLabel(type) }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Urgence</mat-label>
-        <mat-select formControlName="urgence">
-          <mat-option value="">Toutes</mat-option>
-          @for (urgence of options().urgences ?? []; track urgence) {
-            <mat-option [value]="urgence">{{ urgenceLabel(urgence) }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-
-      @if (collaborateurs().length) {
-        <mat-form-field appearance="outline">
-          <mat-label>Responsable</mat-label>
-          <mat-select formControlName="responsableId">
-            <mat-option value="">Tous</mat-option>
-            @for (collaborateur of collaborateurs(); track collaborateur.id) {
-              <mat-option [value]="collaborateur.id">
-                {{ nomCollaborateur(collaborateur) }}
-              </mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-      }
-
-      @if (hasActiveFilters()) {
-        <button mat-stroked-button type="button" (click)="resetFilters()">
-          <svg class="btn-icon" lucideX aria-hidden="true"></svg>Effacer
-        </button>
-      }
-    </form>
 
     @if (!loading() && rowData().length === 0) {
       <div class="empty-state">

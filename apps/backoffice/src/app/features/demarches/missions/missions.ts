@@ -151,56 +151,42 @@ export class Missions implements OnInit {
 
   protected readonly columnDefs: ColDef<MissionListItem>[] = [
     {
-      headerName: 'Réf.',
-      field: 'referenceInterne',
-      width: 110,
-      minWidth: 100,
-      sortable: true,
-      valueFormatter: (p) => (p.value as string) ?? '—',
-    },
-    {
+      // Référence sous le nom du client : à 110 px, elle était tronquée
+      // (« V-2026-00… ») donc illisible, alors qu'elle sert à retrouver le
+      // dossier.
       headerName: 'Client',
-      flex: 1.2,
-      minWidth: 150,
-      cellClass: 'cell-strong',
+      flex: 1.4,
+      minWidth: 190,
+      sortable: true,
       valueGetter: (p) =>
-        [p.data?.prospect?.prenom, p.data?.prospect?.nom]
-          .filter(Boolean)
-          .join(' ') || '—',
+        [p.data?.prospect?.prenom, p.data?.prospect?.nom].filter(Boolean).join(' ') || '—',
+      cellRenderer: (p: ICellRendererParams<MissionListItem>) =>
+        this.cellulePrincipale(
+          (p.value as string) ?? '—',
+          p.data?.referenceInterne ?? '',
+        ),
     },
     {
-      headerName: 'Terrain / localisation',
-      flex: 1.5,
-      minWidth: 180,
       // Le terrain du catalogue quand il existe ; sinon la localisation
-      // libre décrite par le client.
+      // libre décrite par le client. La nature de la vérification passe en
+      // seconde ligne : elle ne justifiait plus une colonne à elle seule.
+      headerName: 'Terrain / localisation',
+      flex: 1.6,
+      minWidth: 200,
       valueGetter: (p) =>
         p.data?.terrain?.nom ??
-        ([p.data?.localisation, p.data?.commune].filter(Boolean).join(', ') ||
-          '—'),
-    },
-    {
-      headerName: 'Nature',
-      field: 'typeVerification',
-      flex: 1,
-      minWidth: 150,
-      sortable: true,
-      valueFormatter: (p) => label(TYPES_VERIFICATION, p.value as string),
-    },
-    {
-      headerName: 'Urgence',
-      field: 'urgence',
-      width: 120,
-      minWidth: 110,
-      sortable: true,
+        ([p.data?.localisation, p.data?.commune].filter(Boolean).join(', ') || '—'),
       cellRenderer: (p: ICellRendererParams<MissionListItem>) =>
-        p.value === 'normale' ? '—' : this.pastille(URGENCES, p.value as string),
+        this.cellulePrincipale(
+          (p.value as string) ?? '—',
+          label(TYPES_VERIFICATION, p.data?.typeVerification ?? ''),
+        ),
     },
     {
       headerName: 'Étape',
       field: 'statut',
-      flex: 1,
-      minWidth: 150,
+      flex: 1.1,
+      minWidth: 170,
       sortable: true,
       cellRenderer: (p: ICellRendererParams<MissionListItem>) =>
         this.pastille(MISSION_ETAPES, p.value as string),
@@ -209,10 +195,20 @@ export class Missions implements OnInit {
       headerName: 'Échéance',
       field: 'dateEcheance',
       flex: 1,
-      minWidth: 140,
+      minWidth: 150,
+      sortable: true,
+      cellRenderer: (p: ICellRendererParams<MissionListItem>) => this.celluleEcheance(p),
+    },
+    {
+      // Urgence et décision ne concernent qu'une minorité de lignes : une
+      // cellule vide se lit mieux qu'une colonne de tirets.
+      headerName: 'Urgence',
+      field: 'urgence',
+      width: 110,
+      minWidth: 100,
       sortable: true,
       cellRenderer: (p: ICellRendererParams<MissionListItem>) =>
-        this.celluleEcheance(p),
+        p.value === 'normale' || !p.value ? '' : this.pastille(URGENCES, p.value as string),
     },
     {
       headerName: 'Décision',
@@ -220,15 +216,33 @@ export class Missions implements OnInit {
       width: 130,
       minWidth: 120,
       cellRenderer: (p: ICellRendererParams<MissionListItem>) =>
-        p.value ? this.pastille(DECISIONS, p.value as string) : '—',
+        p.value ? this.pastille(DECISIONS, p.value as string) : '',
     },
     {
       headerName: 'Responsable',
       flex: 1,
-      minWidth: 140,
+      minWidth: 150,
       valueGetter: (p) => nomPersonne(p.data?.responsable ?? null),
+      cellClass: (p) => (p.value === '—' ? 'cell-muted' : ''),
     },
   ];
+
+  /** Valeur principale et sa précision en dessous, dans une seule cellule. */
+  private cellulePrincipale(principal: string, secondaire: string): HTMLElement {
+    const bloc = document.createElement('div');
+    bloc.className = 'cell-stack';
+    const titre = document.createElement('span');
+    titre.className = 'cell-strong';
+    titre.textContent = principal;
+    bloc.appendChild(titre);
+    if (secondaire) {
+      const detail = document.createElement('small');
+      detail.className = 'cell-muted';
+      detail.textContent = secondaire;
+      bloc.appendChild(detail);
+    }
+    return bloc;
+  }
 
   ngOnInit(): void {
     this.api.getOptions().subscribe({

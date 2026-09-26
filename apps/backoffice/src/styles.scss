@@ -1433,6 +1433,23 @@ ag-grid-angular {
   color: var(--mtm-text-muted);
 }
 
+/* Deux informations dans une cellule de grille : la valeur, puis sa précision
+   (référence sous le nom du client, commune sous l'adresse). Globale, car les
+   cellules construites par un `cellRenderer` échappent à l'encapsulation de la
+   feuille du composant. */
+.cell-stack {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  line-height: 1.3;
+
+  small {
+    color: var(--mtm-text-muted);
+    font-size: 0.74rem;
+  }
+}
+
 /* Colonne « prochaine action » d'une liste */
 .next-action {
   display: inline-block;
