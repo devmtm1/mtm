@@ -87,6 +87,9 @@ const ClientProprietairePage = lazyPage(() =>
 const ClientLocatairePage = lazyPage(() =>
   import('./pages/client/ClientLocatairePage').then((m) => m.ClientLocatairePage),
 );
+const ClientChantiersPage = lazyPage(() =>
+  import('./pages/client/ClientChantiersPage').then((m) => m.ClientChantiersPage),
+);
 
 function Deferred({ children }: { children: ReactNode }) {
   return <Suspense fallback={<PageFallback />}>{children}</Suspense>;
@@ -132,6 +135,7 @@ export function App() {
             <Route path="compte" element={<Deferred><ClientAccountPage /></Deferred>} />
             <Route path="mon-bien" element={<Deferred><ClientProprietairePage /></Deferred>} />
             <Route path="ma-location" element={<Deferred><ClientLocatairePage /></Deferred>} />
+            <Route path="mon-chantier" element={<Deferred><ClientChantiersPage /></Deferred>} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -24,4 +24,5 @@ export const ROUTES = {
   /** Gestion locative (J2.1) : visibles seulement pour un compte propriétaire ou locataire. */
   clientProprietaire: '/espace-client/mon-bien',
   clientLocataire: '/espace-client/ma-location',
+  clientChantiers: '/espace-client/mon-chantier',
 } as const;

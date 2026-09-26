@@ -9,6 +9,10 @@ import type {
   ClientPaiementLoyer,
   ClientSyntheseProprietaire,
 } from '../types/locatif';
+import type {
+  ClientChantier,
+  ClientChantierDetail,
+} from '../types/chantier';
 
 export function fetchClientPortal(token: string): Promise<ClientDossier[]> {
   return apiClient.get<ClientDossier[]>('/ventes/client/portal', undefined, { token });
@@ -149,4 +153,30 @@ export function createLocataireIncident(
   payload: ClientIncidentPayload,
 ): Promise<{ id: string }> {
   return apiClient.post(`/locatif/locataire/baux/${bailId}/incidents`, payload, { token });
+}
+
+/**
+ * Chantiers du client (J2.3, section 16 : « espace client permettant de
+ * consulter l'avancement et les rapports autorisés »).
+ *
+ * Comme pour la gestion locative, un compte sans chantier rattaché reçoit
+ * `null` plutôt qu'une erreur : l'onglet reste masqué.
+ */
+export function fetchClientChantiers(token: string): Promise<ClientChantier[] | null> {
+  return ouNonApplicable(
+    apiClient.get<ClientChantier[]>('/construction/chantiers/client/chantiers', undefined, {
+      token,
+    }),
+  );
+}
+
+export function fetchClientChantier(
+  token: string,
+  id: string,
+): Promise<ClientChantierDetail> {
+  return apiClient.get<ClientChantierDetail>(
+    `/construction/chantiers/client/chantiers/${id}`,
+    undefined,
+    { token },
+  );
 }

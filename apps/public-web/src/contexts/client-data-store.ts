@@ -9,6 +9,7 @@ import type {
   ClientPaiementLoyer,
   ClientSyntheseProprietaire,
 } from '../types/locatif';
+import type { ClientChantier } from '../types/chantier';
 
 export interface ClientDataValue {
   dossiers: ClientDossier[] | null;
@@ -34,6 +35,12 @@ export interface ClientDataValue {
   locatairePaiements: ClientPaiementLoyer[] | null;
   locataireIncidents: ClientIncidentLocatif[] | null;
   locataireLoading: boolean;
+  /**
+   * Chantiers (J2.3) : `null` tant que le chargement n'a pas confirmé que
+   * ce compte en suit un. L'onglet reste masqué jusque-là.
+   */
+  chantiers: ClientChantier[] | null;
+  chantiersLoading: boolean;
   /** À appeler après l'envoi d'une demande depuis l'espace client. */
   refetchDemandes: () => void;
   /** À appeler après avoir demandé une nouvelle vérification. */

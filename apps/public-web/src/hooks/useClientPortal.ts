@@ -1,5 +1,6 @@
 import {
   fetchClientDemandes,
+  fetchClientChantiers,
   fetchClientMissions,
   fetchClientPortal,
   fetchLocataireBaux,
@@ -74,5 +75,16 @@ export function useLocataireIncidents(token: string | null) {
   return useAsyncData(() => {
     if (!token) return Promise.reject(new Error('Session absente'));
     return fetchLocataireIncidents(token);
+  }, [token]);
+}
+
+/**
+ * Chantiers du client (J2.3). `data` reste `null` si aucun chantier ne lui
+ * est rattaché : l'onglet ne s'affiche alors pas.
+ */
+export function useClientChantiers(token: string | null) {
+  return useAsyncData(() => {
+    if (!token) return Promise.reject(new Error('Session absente'));
+    return fetchClientChantiers(token);
   }, [token]);
 }

@@ -8,12 +8,14 @@ import {
   KeyRound,
   LogOut,
   MessageSquare,
+  HardHat,
   ShieldCheck,
   UserRound,
 } from 'lucide-react';
 import { useAuth } from '../../../contexts/auth-context-store';
 import { ClientDataContext } from '../../../contexts/client-data-store';
 import {
+  useClientChantiers,
   useClientDemandes,
   useClientMissions,
   useClientPortal,
@@ -64,6 +66,7 @@ export function ClientLayout() {
   const dossiers = useClientPortal(accessToken);
   const demandes = useClientDemandes(accessToken);
   const missions = useClientMissions(accessToken);
+  const chantiers = useClientChantiers(accessToken);
   const proprietaireBiens = useProprietaireBiens(accessToken);
   const proprietaireSynthese = useProprietaireSynthese(accessToken);
   const proprietaireDocuments = useProprietaireDocuments(accessToken);
@@ -75,6 +78,7 @@ export function ClientLayout() {
   // onglets n'existent que pour un vrai propriétaire ou locataire.
   const estProprietaire = proprietaireBiens.data !== null;
   const estLocataire = locataireBaux.data !== null;
+  const suitUnChantier = (chantiers.data?.length ?? 0) > 0;
   const TABS = useMemo(() => {
     const tabs = [...BASE_TABS];
     if (estLocataire) {
@@ -93,8 +97,16 @@ export function ClientLayout() {
         end: false,
       });
     }
+    if (suitUnChantier) {
+      tabs.splice(2, 0, {
+        to: ROUTES.clientChantiers,
+        label: 'Mon chantier',
+        icon: HardHat,
+        end: false,
+      });
+    }
     return tabs;
-  }, [estProprietaire, estLocataire]);
+  }, [estProprietaire, estLocataire, suitUnChantier]);
 
   const value = useMemo(
     () => ({
@@ -107,6 +119,8 @@ export function ClientLayout() {
       missions: missions.data,
       missionsLoading: missions.loading,
       missionsError: missions.error,
+      chantiers: chantiers.data,
+      chantiersLoading: chantiers.loading,
       proprietaireBiens: proprietaireBiens.data,
       proprietaireSynthese: proprietaireSynthese.data,
       proprietaireDocuments: proprietaireDocuments.data,
@@ -124,6 +138,7 @@ export function ClientLayout() {
       dossiers.data, dossiers.loading, dossiers.error,
       demandes.data, demandes.loading, demandes.error, demandes.refetch,
       missions.data, missions.loading, missions.error, missions.refetch,
+      chantiers.data, chantiers.loading,
       proprietaireBiens.data, proprietaireBiens.loading,
       proprietaireSynthese.data, proprietaireSynthese.loading,
       proprietaireDocuments.data, proprietaireDocuments.loading,

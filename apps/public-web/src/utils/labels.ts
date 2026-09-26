@@ -332,3 +332,87 @@ export function bienLocatifStatus(code: string): StatusLabel {
 export function signalementType(nature: string, code: string): string {
   return nature === 'demande' ? demandeType(code) : incidentType(code);
 }
+
+/**
+ * Suivi de chantier (J2.3, section 16). Le client lit « Gros œuvre en
+ * cours », jamais `en_cours` : mêmes libellés que le back-office, mais
+ * formulés de son point de vue — il suit son chantier, il ne le pilote pas.
+ */
+export const CHANTIER_STATUS: Record<string, StatusLabel> = {
+  prepare: {
+    label: 'En préparation',
+    tone: 'info',
+    help: 'Devis, budget et planning se mettent en place : les travaux n’ont pas encore démarré.',
+  },
+  en_cours: {
+    label: 'Travaux en cours',
+    tone: 'primary',
+    help: 'Le chantier avance ; les journées publiées vous en rendent compte.',
+  },
+  suspendu: {
+    label: 'Suspendu',
+    tone: 'warning',
+    help: 'Les travaux sont à l’arrêt. Votre conseiller vous en explique la raison.',
+  },
+  receptionne: {
+    label: 'Réceptionné',
+    tone: 'success',
+    help: 'Les travaux sont achevés et la réception a été prononcée.',
+  },
+  cloture: {
+    label: 'Clôturé',
+    tone: 'success',
+    help: 'Le dossier est soldé.',
+  },
+  abandonne: {
+    label: 'Abandonné',
+    tone: 'neutral',
+    help: 'Le projet a été interrompu avant son terme.',
+  },
+};
+
+export const CHANTIER_JALON_STATUS: Record<string, StatusLabel> = {
+  a_venir: { label: 'À venir', tone: 'neutral', help: 'Cette étape n’a pas encore commencé.' },
+  en_cours: { label: 'En cours', tone: 'primary', help: 'Étape en travaux.' },
+  termine: { label: 'Terminée', tone: 'success', help: 'Étape achevée.' },
+  bloque: { label: 'Bloquée', tone: 'warning', help: 'Étape empêchée : une décision est attendue.' },
+  annule: { label: 'Annulée', tone: 'neutral', help: 'Étape retirée du programme.' },
+};
+
+export const CHANTIER_TYPES: Record<string, string> = {
+  villa: 'Villa',
+  immeuble: 'Immeuble',
+  local_commercial: 'Local commercial',
+  cloture: 'Clôture',
+  renovation: 'Rénovation',
+  viabilisation: 'Viabilisation',
+  autre: 'Autre',
+};
+
+export const CHANTIER_DOCUMENT_TYPES: Record<string, string> = {
+  plan: 'Plan',
+  permis_construire: 'Permis de construire',
+  devis: 'Devis',
+  contrat: 'Contrat',
+  facture: 'Facture',
+  photo_chantier: 'Photo de chantier',
+  proces_verbal: 'Procès-verbal',
+  rapport_avancement: 'Rapport d’avancement',
+  autre: 'Autre',
+};
+
+export function chantierStatus(code: string): StatusLabel {
+  return CHANTIER_STATUS[code] ?? { ...FALLBACK, label: humanize(code) };
+}
+
+export function chantierJalonStatus(code: string): StatusLabel {
+  return CHANTIER_JALON_STATUS[code] ?? { ...FALLBACK, label: humanize(code) };
+}
+
+export function chantierType(code: string): string {
+  return CHANTIER_TYPES[code] ?? humanize(code);
+}
+
+export function chantierDocumentType(code: string): string {
+  return CHANTIER_DOCUMENT_TYPES[code] ?? humanize(code);
+}
