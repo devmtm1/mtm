@@ -4,19 +4,62 @@
   gap: 20px;
 }
 
-/* Tuile large : répartition du pipeline */
-.kpi--wide {
-  grid-column: span 2;
-  cursor: default;
-
-  @media (max-width: 720px) {
-    grid-column: 1 / -1;
-  }
+/* Le pipeline a sa propre section : un graphique n'est pas un indicateur, il
+   a besoin de la largeur et d'un titre pour se lire. */
+.pipeline {
+  display: grid;
+  gap: 10px;
+  padding: 16px 20px 18px;
 }
 
-.kpi__body--funnel {
-  width: 100%;
-  gap: 6px;
+/* Rapport de pilotage, consulté de loin en loin : replié par défaut. */
+.prospects-page__repli {
+  summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 10px;
+    cursor: pointer;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    strong {
+      font-family: var(--mtm-font-display);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    small {
+      color: var(--mtm-text-muted);
+      font-size: 0.8rem;
+    }
+
+    &::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      margin-left: auto;
+      border-right: 2px solid var(--mtm-text-muted);
+      border-bottom: 2px solid var(--mtm-text-muted);
+      transform: rotate(45deg) translate(-2px, -2px);
+      transition: transform 0.15s ease;
+    }
+
+    &:hover strong {
+      color: var(--mtm-primary);
+    }
+  }
+
+  &[open] summary {
+    margin-bottom: 14px;
+
+    &::after {
+      transform: rotate(225deg) translate(-2px, -2px);
+    }
+  }
 }
 
 .funnel {

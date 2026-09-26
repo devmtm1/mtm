@@ -109,42 +109,6 @@
           </small>
         </span>
       </button>
-      <div class="kpi">
-        <span class="kpi__icon"><svg lucideUserPlus aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          <strong>{{ s.ventesConclues }}</strong>
-          <span>Ventes conclues</span>
-          <small>{{ s.tauxConversion }} % de conversion · {{ s.montantVentes | mtmMoney }}</small>
-        </span>
-      </div>
-      <div class="kpi kpi--wide">
-        <span class="kpi__body kpi__body--funnel">
-          <span>Pipeline commercial</span>
-          <span class="funnel" role="img" aria-label="Répartition des prospects par étape">
-            @for (item of funnel(); track item.stage) {
-              @if (item.count > 0) {
-                <button type="button" class="funnel__segment" [class]="'funnel__segment ' + stagePill(item.stage)" [style.flex-grow]="item.share" [matTooltip]="stageLabel(item.stage) + ' : ' + item.count" (click)="filterByStage(item.stage)">
-                  {{ item.count }}
-                </button>
-              }
-            }
-          </span>
-          <small class="funnel__legend">
-            @for (item of funnel(); track item.stage) {
-              <button type="button" class="funnel__legend-item" (click)="filterByStage(item.stage)">
-                <i [class]="stagePill(item.stage)"></i>{{ stageLabel(item.stage) }} <b>{{ item.count }}</b>
-              </button>
-            }
-            @for (sortie of exitStages; track sortie) {
-              @if (s.pipeline[sortie]) {
-                <button type="button" class="funnel__legend-item" (click)="filterByStage(sortie)">
-                  <i class="status-pill status-pill--danger"></i>{{ stageLabel(sortie) }} <b>{{ s.pipeline[sortie] }}</b>
-                </button>
-              }
-            }
-          </small>
-        </span>
-      </div>
     } @else {
       @for (i of [1, 2, 3, 4]; track i) {
         <div class="kpi skeleton" aria-hidden="true"></div>
@@ -152,15 +116,53 @@
     }
   </section>
 
+
+  @if (stats(); as s) {
+    <section class="page-section" aria-labelledby="pipeline-title">
+      <div class="list-toolbar">
+        <div class="list-toolbar__title">
+          <h2 id="pipeline-title">Pipeline commercial</h2>
+          <p>Répartition des prospects par étape. Cliquez pour filtrer la liste.</p>
+        </div>
+      </div>
+      <div class="pipeline">
+        <span class="funnel" role="img" aria-label="Répartition des prospects par étape">
+          @for (item of funnel(); track item.stage) {
+            @if (item.count > 0) {
+              <button type="button" class="funnel__segment" [class]="'funnel__segment ' + stagePill(item.stage)" [style.flex-grow]="item.share" [matTooltip]="stageLabel(item.stage) + ' : ' + item.count" (click)="filterByStage(item.stage)">
+                {{ item.count }}
+              </button>
+            }
+          }
+        </span>
+        <small class="funnel__legend">
+          @for (item of funnel(); track item.stage) {
+            <button type="button" class="funnel__legend-item" (click)="filterByStage(item.stage)">
+              <i [class]="stagePill(item.stage)"></i>{{ stageLabel(item.stage) }} <b>{{ item.count }}</b>
+            </button>
+          }
+          @for (sortie of exitStages; track sortie) {
+            @if (s.pipeline[sortie]) {
+              <button type="button" class="funnel__legend-item" (click)="filterByStage(sortie)">
+                <i class="status-pill status-pill--danger"></i>{{ stageLabel(sortie) }} <b>{{ s.pipeline[sortie] }}</b>
+              </button>
+            }
+          }
+        </small>
+      </div>
+    </section>
+  }
+
   @if (stats(); as s) {
     @if (s.parCommercial.length) {
-      <section class="page-section" aria-labelledby="perf-title">
-        <div class="list-toolbar">
-          <div class="list-toolbar__title">
-            <h2 id="perf-title">Performance par commercial</h2>
-            <p>Prospects suivis, ventes conclues et montant réalisé.</p>
-          </div>
-        </div>
+      <details class="page-card prospects-page__repli">
+        <summary>
+          <strong>Performance par commercial</strong>
+          <small>
+            {{ s.ventesConclues }} vente(s) conclue(s) · {{ s.tauxConversion }} % de conversion ·
+            {{ s.montantVentes | mtmMoney }}
+          </small>
+        </summary>
         <div class="perf-table-wrap">
           <table class="perf-table">
             <thead>
@@ -187,7 +189,7 @@
             </tbody>
           </table>
         </div>
-      </section>
+      </details>
     }
   }
 

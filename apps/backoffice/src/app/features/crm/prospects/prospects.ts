@@ -101,28 +101,50 @@ export class Prospects implements OnInit {
     return active.map((stage) => ({ stage, count: stats.pipeline[stage] ?? 0, share: total ? ((stats.pipeline[stage] ?? 0) / total) * 100 : 0 }));
   });
 
+  /** Valeur principale et sa précision en dessous, dans une seule cellule. */
+  private cellulePrincipale(principal: string, secondaire: string): HTMLElement {
+    const bloc = document.createElement('div');
+    bloc.className = 'cell-stack';
+    const titre = document.createElement('span');
+    titre.className = 'cell-strong';
+    titre.textContent = principal;
+    bloc.appendChild(titre);
+    if (secondaire) {
+      const detail = document.createElement('small');
+      detail.className = 'cell-muted';
+      detail.textContent = secondaire;
+      bloc.appendChild(detail);
+    }
+    return bloc;
+  }
+
   protected readonly columnDefs: ColDef<ProspectListItem>[] = [
     {
-      headerName: 'Réf.',
-      field: 'referenceInterne',
-      width: 110,
-      minWidth: 100,
-      sortable: true,
-      valueFormatter: (p) => (p.value as string) ?? '—',
-    },
-    {
+      // La référence se lit sous le nom : deux colonnes pour identifier une
+      // même personne, c'était une de trop.
       headerName: 'Prospect',
-      flex: 1.4,
-      minWidth: 160,
+      flex: 1.5,
+      minWidth: 180,
       sortable: true,
-      cellClass: 'cell-strong',
       valueGetter: (p) => (p.data ? prospectName(p.data) : ''),
+      cellRenderer: (p: ICellRendererParams<ProspectListItem>) =>
+        this.cellulePrincipale(
+          (p.value as string) || '—',
+          p.data?.referenceInterne ?? '',
+        ),
     },
     {
+      // Téléphone au-dessus, e-mail en dessous : sur une seule ligne, les deux
+      // étaient tronqués ensemble.
       headerName: 'Contact',
       flex: 1.3,
-      minWidth: 160,
-      valueGetter: (p) => [p.data?.telephone, p.data?.email].filter(Boolean).join(' · ') || '—',
+      minWidth: 170,
+      valueGetter: (p) => p.data?.telephone ?? p.data?.email ?? '—',
+      cellRenderer: (p: ICellRendererParams<ProspectListItem>) =>
+        this.cellulePrincipale(
+          p.data?.telephone ?? p.data?.email ?? '—',
+          p.data?.telephone ? (p.data?.email ?? '') : '',
+        ),
     },
     {
       headerName: 'Intérêt',
@@ -160,7 +182,11 @@ export class Prospects implements OnInit {
       headerName: 'Commercial',
       flex: 1,
       minWidth: 130,
-      valueGetter: (p) => (p.data?.commercialResponsable ? `${p.data.commercialResponsable.firstName} ${p.data.commercialResponsable.lastName}` : 'Non assigné'),
+      valueGetter: (p) =>
+        p.data?.commercialResponsable
+          ? `${p.data.commercialResponsable.firstName} ${p.data.commercialResponsable.lastName}`
+          : 'Non assigné',
+      cellClass: (p) => (p.data?.commercialResponsable ? '' : 'cell-muted'),
     },
     {
       headerName: '',
