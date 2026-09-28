@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
+import { MAX_ASSET_SIZE } from '../../common/storage/asset-validation';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
 import type { AuthenticatedUser } from '../auth/auth.types';
@@ -365,7 +366,9 @@ export class BauxController {
 
   @Post(':id/documents')
   @RequirePermissions('locatif:modifier')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_ASSET_SIZE } }),
+  )
   async addDocument(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateDocumentLocatifDto,

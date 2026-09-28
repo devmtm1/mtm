@@ -15,6 +15,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
+import { MAX_ASSET_SIZE } from '../../common/storage/asset-validation';
 import type { Request } from 'express';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Public } from '../auth/decorators/public.decorator';
@@ -238,7 +239,9 @@ export class TerrainsController {
 
   @Post(':id/media')
   @RequirePermissions('terrains:modifier')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_ASSET_SIZE } }),
+  )
   async addMedia(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateTerrainAssetDto,
@@ -260,7 +263,9 @@ export class TerrainsController {
 
   @Post(':id/documents')
   @RequirePermissions('terrains:modifier')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_ASSET_SIZE } }),
+  )
   async addDocument(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateTerrainAssetDto,

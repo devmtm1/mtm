@@ -17,6 +17,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
+import { MAX_ASSET_SIZE } from '../../common/storage/asset-validation';
 import type { Response } from 'express';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../auth/auth.types';
@@ -440,7 +441,9 @@ export class VentesController {
 
   @Post(':id/documents')
   @RequirePermissions('ventes:modifier')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_ASSET_SIZE } }),
+  )
   async addDocument(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateDocumentVenteDto,

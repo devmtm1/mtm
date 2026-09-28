@@ -2,7 +2,12 @@ import { BadRequestException } from '@nestjs/common';
 
 export type AssetKind = 'media' | 'document';
 
-const MAX_ASSET_SIZE = 10 * 1024 * 1024;
+/**
+ * Limite partagée entre Multer (avant mise en mémoire complète) et la
+ * validation métier. Elle évite qu'un fichier très volumineux soit accepté
+ * en mémoire avant d'être rejeté par validateUploadedAsset().
+ */
+export const MAX_ASSET_SIZE = 10 * 1024 * 1024;
 
 const MIME_TYPES: Record<AssetKind, ReadonlySet<string>> = {
   media: new Set([

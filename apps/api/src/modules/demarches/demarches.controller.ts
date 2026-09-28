@@ -17,6 +17,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Throttle } from '@nestjs/throttler';
 import { ApiTags } from '@nestjs/swagger';
+import { MAX_ASSET_SIZE } from '../../common/storage/asset-validation';
 import type { Request, Response } from 'express';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
@@ -345,7 +346,9 @@ export class DemarchesController {
 
   @Post(':id/documents')
   @RequirePermissions('demarches:modifier')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_ASSET_SIZE } }),
+  )
   async addDocument(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateDocumentMissionDto,
