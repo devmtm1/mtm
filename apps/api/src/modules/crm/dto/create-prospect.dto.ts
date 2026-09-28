@@ -131,7 +131,9 @@ export class CreateProspectDto {
   @IsInt()
   @Min(0)
   budgetIdeal?: number;
-  @ApiPropertyOptional({ description: 'Le type de document est-il une condition ferme ?' })
+  @ApiPropertyOptional({
+    description: 'Le type de document est-il une condition ferme ?',
+  })
   @IsOptional()
   @IsBoolean()
   documentNonNegociable?: boolean;

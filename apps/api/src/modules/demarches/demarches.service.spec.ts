@@ -217,7 +217,11 @@ describe('DemarchesService', () => {
     });
 
     await expect(
-      missions.transition('m1', { statut: 'verification_physique' }, responsable),
+      missions.transition(
+        'm1',
+        { statut: 'verification_physique' },
+        responsable,
+      ),
     ).rejects.toThrow(/n’appartient pas au parcours/);
   });
 
@@ -237,9 +241,9 @@ describe('DemarchesService', () => {
 
     await missions.transition('m1', { statut: 'depot' }, responsable);
 
-    expect(prismaMock.missionVerification.update.mock.calls[0][0].data.statut).toBe(
-      'depot',
-    );
+    expect(
+      prismaMock.missionVerification.update.mock.calls[0][0].data.statut,
+    ).toBe('depot');
   });
 
   it('clôture un dépôt sur sa conclusion, sans exiger de décision de conformité', async () => {

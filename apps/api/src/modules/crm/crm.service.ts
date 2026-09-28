@@ -769,20 +769,12 @@ export class CrmService {
     budgetMax?: number | null;
   }): void {
     const { surfaceMin, surfaceMax, budgetIdeal, budgetMax } = criteres;
-    if (
-      surfaceMin != null &&
-      surfaceMax != null &&
-      surfaceMin > surfaceMax
-    ) {
+    if (surfaceMin != null && surfaceMax != null && surfaceMin > surfaceMax) {
       throw new BadRequestException(
         'La surface minimum ne peut pas dépasser la surface maximum',
       );
     }
-    if (
-      budgetIdeal != null &&
-      budgetMax != null &&
-      budgetIdeal > budgetMax
-    ) {
+    if (budgetIdeal != null && budgetMax != null && budgetIdeal > budgetMax) {
       throw new BadRequestException(
         'Le budget idéal ne peut pas dépasser le budget maximum',
       );

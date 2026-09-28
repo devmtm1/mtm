@@ -400,10 +400,7 @@ export class DemarchesOptionsService {
    */
   async parcoursDuType(type: string | null | undefined): Promise<string[]> {
     const famille = await this.familleDuType(type);
-    return [
-      ...PARCOURS_PAR_FAMILLE[famille],
-      ...MISSION_STATUTS_TERMINES,
-    ];
+    return [...PARCOURS_PAR_FAMILLE[famille], ...MISSION_STATUTS_TERMINES];
   }
 
   private liste(cle: string, defaut: readonly string[]): Promise<string[]> {
