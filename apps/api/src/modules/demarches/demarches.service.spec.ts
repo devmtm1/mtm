@@ -6,6 +6,20 @@ import {
 import { createDemarchesTestContext } from './demarches.test-support';
 
 describe('DemarchesService', () => {
+  it('refuse de publier une mission sans la permission dédiée', async () => {
+    const { prismaMock, missions } = createDemarchesTestContext();
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+    prismaMock.missionVerification.findFirst.mockResolvedValue({ id: 'm1' });
+
+    await expect(
+      missions.update(
+        'm1',
+        { visibleClient: true },
+        { id: 'u-com', roles: ['commercial'], permissions: [] },
+      ),
+    ).rejects.toThrow(ForbiddenException);
+  });
+
   const responsable = {
     id: 'u-dem',
     roles: ['responsable_demarches'],

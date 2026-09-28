@@ -225,6 +225,14 @@ export class DemarchesService {
   async update(id: string, dto: UpdateMissionDto, user: DemarchesUser) {
     await this.access.ensureAccessible(id, user);
     this.assertValidationRights(dto, user);
+    if (
+      dto.visibleClient !== undefined &&
+      !user.permissions?.includes('demarches:publier')
+    ) {
+      throw new ForbiddenException(
+        "La publication d'une mission dans l'espace client requiert la permission demarches:publier",
+      );
+    }
     if (dto.terrainId) await this.assertTerrain(dto.terrainId);
     await Promise.all([
       this.options.assertTypeVerification(dto.typeVerification),

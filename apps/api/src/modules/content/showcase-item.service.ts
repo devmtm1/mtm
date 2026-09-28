@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import { validateUploadedAsset } from '../../common/storage/asset-validation';
+import { hasAnyRole, PUBLISHER_ROLES } from '../rbac/role-groups';
 import { CreateShowcaseItemDto } from './dto/create-showcase-item.dto';
 import { UpdateShowcaseItemDto } from './dto/update-showcase-item.dto';
 
@@ -55,7 +56,16 @@ export class ShowcaseItemService {
     }));
   }
 
-  async create(dto: CreateShowcaseItemDto, user: { id: string }) {
+  async create(
+    dto: CreateShowcaseItemDto,
+    user: { id: string; roles: string[]; permissions: string[] },
+  ) {
+    // Créer un contenu et le rendre public sont deux autorisations distinctes.
+    // Un rédacteur peut préparer un élément, mais seul un publieur peut le
+    // rendre visible immédiatement sur le site public.
+    const canPublish =
+      hasAnyRole(user.roles, PUBLISHER_ROLES) ||
+      user.permissions.includes('content:publier');
     return this.prisma.showcaseItem.create({
       data: {
         category: dto.category,
@@ -64,7 +74,7 @@ export class ShowcaseItemService {
         location: dto.location,
         date: dto.date ? new Date(dto.date) : undefined,
         ordre: dto.ordre ?? 0,
-        isActive: dto.isActive ?? true,
+        isActive: Boolean(dto.isActive && canPublish),
         createdById: user.id,
       },
     });
