@@ -70,10 +70,23 @@ export class MissionForm implements OnInit {
     dateEcheance: [''],
   });
 
-  /** Tarif indicatif du type choisi, proposé comme repère au collaborateur. */
+  /**
+   * Tarif indicatif du type choisi, proposé comme repère au collaborateur.
+   * Un tarif à zéro veut dire « sur devis » — c'est le cas des démarches et
+   * des plans, dont le coût dépend des droits réclamés par l'administration
+   * et du prestataire retenu. On ne l'affiche pas comme un prix : « 0 FCFA »
+   * ferait croire à une prestation gratuite.
+   */
   protected readonly tarifIndicatif = computed(() => {
     const tarifs = this.options().tarifs ?? {};
-    return tarifs[this.form.controls.typeVerification.value] ?? null;
+    const tarif = tarifs[this.form.controls.typeVerification.value] ?? null;
+    return tarif ? tarif : null;
+  });
+
+  /** Vrai quand le type est connu du barème mais sans montant fixé. */
+  protected readonly tarifSurDevis = computed(() => {
+    const tarifs = this.options().tarifs ?? {};
+    return tarifs[this.form.controls.typeVerification.value] === 0;
   });
 
   ngOnInit(): void {

@@ -40,6 +40,8 @@
       </mat-select>
       @if (tarifIndicatif() !== null) {
         <mat-hint>Tarif indicatif : {{ tarifIndicatif() | mtmMoney }} (modifiable par mission)</mat-hint>
+      } @else if (tarifSurDevis()) {
+        <mat-hint>Sur devis : le montant se fixe dossier par dossier.</mat-hint>
       }
     </mat-form-field>
 
