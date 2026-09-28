@@ -55,8 +55,57 @@ export const CONTACT_CHANNELS: Record<string, StatusMeaning> = {
 /** Objectif de l'achat. */
 export const PURCHASE_GOALS: Record<string, StatusMeaning> = {
   habitation: { tone: 'primary', label: 'Habitation', help: 'Pour y construire sa maison.' },
+  commerce: { tone: 'primary', label: 'Commerce', help: 'Boutique, entrepôt ou local professionnel.' },
   investissement: { tone: 'info', label: 'Investissement', help: 'Placement ou revente.' },
+  agricole: { tone: 'success', label: 'Agricole', help: 'Culture, élevage ou exploitation.' },
   autre: { tone: 'neutral', label: 'Autre', help: 'Autre usage : à préciser.' },
+};
+
+// --- Mandat de recherche de terrain (formulaire « NS- ») ---
+// Le client décrit ce qu'il cherche et MTM prospecte pour lui.
+
+/** Où en est la recherche menée pour le compte du client. */
+export const RECHERCHE_STATUS: Record<string, StatusMeaning> = {
+  nouvelle: { tone: 'info', label: 'Nouvelle', help: 'Demande enregistrée, la recherche n’a pas commencé.' },
+  en_recherche: { tone: 'primary', label: 'En recherche', help: 'Nous prospectons activement pour ce client.' },
+  trouve: { tone: 'success', label: 'Terrain trouvé', help: 'Un terrain correspondant a été proposé au client.' },
+  abandonnee: { tone: 'neutral', label: 'Abandonnée', help: 'La recherche est arrêtée.' },
+};
+
+/** Délai dans lequel le client veut aboutir. */
+export const RECHERCHE_DELAIS: Record<string, StatusMeaning> = {
+  urgent: { tone: 'danger', label: 'Urgent', help: 'Le client veut aboutir au plus vite.' },
+  un_mois: { tone: 'warning', label: 'Sous un mois', help: 'Échéance rapprochée.' },
+  un_a_trois_mois: { tone: 'info', label: 'Un à trois mois', help: 'Délai confortable.' },
+  sans_delai: { tone: 'neutral', label: 'Pas de délai précis', help: 'Le client n’est pas pressé.' },
+};
+
+/** Le client est-il disponible pour visiter ? */
+export const RECHERCHE_DISPONIBILITES: Record<string, StatusMeaning> = {
+  oui: { tone: 'success', label: 'Disponible', help: 'Une visite peut être programmée.' },
+  non: { tone: 'danger', label: 'Indisponible', help: 'Pas de visite possible pour l’instant.' },
+  a_confirmer: { tone: 'warning', label: 'À confirmer', help: 'Le client doit nous dire quand.' },
+};
+
+/** Comment le client compte financer son acquisition. */
+export const RECHERCHE_FINANCEMENTS: Record<string, StatusMeaning> = {
+  comptant: { tone: 'success', label: 'Comptant', help: 'Paiement immédiat, sans financement.' },
+  credit: { tone: 'info', label: 'Crédit', help: 'Le client passe par un financement bancaire.' },
+  a_preciser: { tone: 'neutral', label: 'À préciser', help: 'Le montage n’est pas encore arrêté.' },
+};
+
+/** Exigences à trois positions : borné, route principale, vendeur direct. */
+export const RECHERCHE_EXIGENCES: Record<string, StatusMeaning> = {
+  oui: { tone: 'primary', label: 'Oui', help: 'C’est une condition posée par le client.' },
+  non: { tone: 'neutral', label: 'Non', help: 'Le client ne le souhaite pas.' },
+  indifferent: { tone: 'neutral', label: 'Indifférent', help: 'Ce critère n’entre pas en compte.' },
+};
+
+/** Importance accordée à l'accès et à la voirie. */
+export const RECHERCHE_ACCES: Record<string, StatusMeaning> = {
+  prioritaire: { tone: 'primary', label: 'Prioritaire', help: 'Un terrain mal desservi est écarté.' },
+  souhaite: { tone: 'info', label: 'Souhaité', help: 'Un plus, sans être éliminatoire.' },
+  indifferent: { tone: 'neutral', label: 'Indifférent', help: 'Ce critère n’entre pas en compte.' },
 };
 
 /** Statut d'une proposition de terrain (§ 3 de la fiche de suivi). */

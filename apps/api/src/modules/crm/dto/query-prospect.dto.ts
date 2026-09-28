@@ -18,6 +18,8 @@ export class QueryProspectDto {
   @IsOptional() @IsString() sourceAcquisition?: string;
   @IsOptional() @IsString() zoneRecherchee?: string;
   @IsOptional() @IsString() niveauInteret?: string;
+  /** Recherches de terrain en cours : la vue de travail du conseiller. */
+  @IsOptional() @IsString() rechercheStatut?: string;
   /** Vues rapides du commercial : à relancer aujourd'hui, en retard, visites à venir… */
   @IsOptional()
   @IsIn([

@@ -192,6 +192,15 @@
   gap: 4px;
 }
 
+/* Référence du mandat de recherche, posée à côté du titre de section. */
+.detail-section__ref {
+  margin-left: 8px;
+  color: var(--mtm-text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
 .detail-section__actions {
   display: flex;
   flex-wrap: wrap;

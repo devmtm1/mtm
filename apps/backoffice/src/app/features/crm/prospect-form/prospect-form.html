@@ -172,6 +172,165 @@
             </div>
           </section>
 
+          <!--
+            Mandat de recherche de terrain : l'inverse du catalogue — le client
+            décrit ce qu'il cherche et MTM prospecte pour lui. Les critères ne
+            s'affichent qu'une fois le mandat ouvert, pour ne pas alourdir la
+            saisie d'un prospect ordinaire.
+          -->
+          <section class="page-card form-block">
+            <div class="form-block__head">
+              <h2>Recherche de terrain</h2>
+              <p>
+                À cocher quand le client nous confie une recherche. Une référence NS- lui est
+                attribuée à l’enregistrement.
+              </p>
+            </div>
+            <div class="form-grid">
+              <mat-checkbox class="wide" formControlName="rechercheActive">
+                Ce client nous confie la recherche d’un terrain
+              </mat-checkbox>
+
+              @if (form.controls.rechercheActive.value) {
+                <mat-form-field appearance="outline">
+                  <mat-label>Où en est la recherche</mat-label>
+                  <mat-select formControlName="rechercheStatut">
+                    <mat-option value="">Nouvelle</mat-option>
+                    @for (statut of options().statutsRecherche; track statut) {
+                      <mat-option [value]="statut">{{ rechercheStatusLabel(statut) }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Profession</mat-label>
+                  <input matInput formControlName="profession" />
+                  <mat-hint>Facultatif : aide à juger la solvabilité.</mat-hint>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="wide">
+                  <mat-label>Quartier, zone ou repère</mat-label>
+                  <input
+                    matInput
+                    formControlName="quartierRecherche"
+                    placeholder="Ex. derrière le lycée, route de Ngaparou"
+                  />
+                  <mat-hint>Complète la zone recherchée saisie plus haut.</mat-hint>
+                </mat-form-field>
+
+                <mat-form-field
+                  appearance="outline"
+                  [class.mat-form-field-invalid]="form.hasError('surface')"
+                >
+                  <mat-label>Surface minimum (m²)</mat-label>
+                  <input matInput type="number" min="0" step="50" formControlName="surfaceMin" />
+                  @if (form.hasError('surface')) {
+                    <mat-hint class="hint-error">Doit être inférieure au maximum.</mat-hint>
+                  }
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Surface maximum (m²)</mat-label>
+                  <input matInput type="number" min="0" step="50" formControlName="surfaceMax" />
+                </mat-form-field>
+
+                <mat-form-field
+                  appearance="outline"
+                  [class.mat-form-field-invalid]="form.hasError('budgetIdeal')"
+                >
+                  <mat-label>Budget idéal (FCFA)</mat-label>
+                  <input matInput type="number" min="0" step="500000" formControlName="budgetIdeal" />
+                  @if (form.hasError('budgetIdeal')) {
+                    <mat-hint class="hint-error">Ne peut pas dépasser le budget maximum.</mat-hint>
+                  } @else {
+                    <mat-hint>Ce que le client vise, en deçà de son plafond.</mat-hint>
+                  }
+                </mat-form-field>
+                <mat-checkbox formControlName="documentNonNegociable">
+                  Le type de document est une condition ferme
+                </mat-checkbox>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Terrain déjà borné</mat-label>
+                  <mat-select formControlName="terrainBorne">
+                    <mat-option value="">Non précisé</mat-option>
+                    @for (choix of options().exigencesTernaires; track choix) {
+                      <mat-option [value]="choix">{{ exigenceLabel(choix) }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Accès et voirie</mat-label>
+                  <mat-select formControlName="accesVoirie">
+                    <mat-option value="">Non précisé</mat-option>
+                    @for (choix of options().prioritesAcces; track choix) {
+                      <mat-option [value]="choix">{{ accesLabel(choix) }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Proximité d’une route principale</mat-label>
+                  <mat-select formControlName="proximiteRoutePrincipale">
+                    <mat-option value="">Non précisé</mat-option>
+                    @for (choix of options().exigencesTernaires; track choix) {
+                      <mat-option [value]="choix">{{ exigenceLabel(choix) }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Vendeur direct souhaité</mat-label>
+                  <mat-select formControlName="preferenceVendeurDirect">
+                    <mat-option value="">Non précisé</mat-option>
+                    @for (choix of options().exigencesTernaires; track choix) {
+                      <mat-option [value]="choix">{{ exigenceLabel(choix) }}</mat-option>
+                    }
+                  </mat-select>
+                  <mat-hint>« Non » ou « indifférent » veut dire qu’un intermédiaire est accepté.</mat-hint>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Délai souhaité</mat-label>
+                  <mat-select formControlName="delaiSouhaite">
+                    <mat-option value="">Non précisé</mat-option>
+                    @for (delai of options().delaisRecherche; track delai) {
+                      <mat-option [value]="delai">{{ delaiLabel(delai) }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Disponible pour une visite</mat-label>
+                  <mat-select formControlName="disponibiliteVisite">
+                    <mat-option value="">Non précisé</mat-option>
+                    @for (choix of options().disponibilitesVisite; track choix) {
+                      <mat-option [value]="choix">{{ disponibiliteLabel(choix) }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Financement</mat-label>
+                  <mat-select formControlName="financement">
+                    <mat-option value="">Non précisé</mat-option>
+                    @for (choix of options().financements; track choix) {
+                      <mat-option [value]="choix">{{ financementLabel(choix) }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="wide">
+                  <mat-label>Constructibilité et usage prévu</mat-label>
+                  <textarea
+                    matInput
+                    rows="2"
+                    formControlName="constructibiliteUsage"
+                    placeholder="Ex. zone constructible R+2, pas de servitude acceptée"
+                  ></textarea>
+                </mat-form-field>
+
+                <mat-checkbox class="wide" formControlName="accepteOpportunitesSimilaires">
+                  Le client accepte de recevoir d’autres opportunités similaires
+                </mat-checkbox>
+              }
+            </div>
+          </section>
+
           <section class="page-card form-block">
             <div class="form-block__head">
               <h2>Suite à donner</h2>

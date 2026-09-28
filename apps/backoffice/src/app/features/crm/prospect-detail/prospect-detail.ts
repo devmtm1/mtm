@@ -47,6 +47,12 @@ import {
   PRICE_FEEDBACK,
   PRIORITIES,
   PURCHASE_GOALS,
+  RECHERCHE_ACCES,
+  RECHERCHE_DELAIS,
+  RECHERCHE_DISPONIBILITES,
+  RECHERCHE_EXIGENCES,
+  RECHERCHE_FINANCEMENTS,
+  RECHERCHE_STATUS,
   SOURCES,
   VISITE_CANCEL_REASONS,
   VISITE_FEEDBACK,
@@ -302,6 +308,36 @@ export class ProspectDetail implements OnInit {
 
   protected goalLabel(objectif: string | null | undefined): string {
     return label(PURCHASE_GOALS, objectif);
+  }
+
+  // --- Mandat de recherche de terrain ---
+
+  protected rechercheStatusLabel(statut: string | null | undefined): string {
+    return label(RECHERCHE_STATUS, statut);
+  }
+
+  protected rechercheStatusPill(statut: string | null | undefined): string {
+    return pillClass(RECHERCHE_STATUS, statut);
+  }
+
+  protected delaiLabel(delai: string | null | undefined): string {
+    return label(RECHERCHE_DELAIS, delai);
+  }
+
+  protected disponibiliteLabel(choix: string | null | undefined): string {
+    return label(RECHERCHE_DISPONIBILITES, choix);
+  }
+
+  protected financementLabel(choix: string | null | undefined): string {
+    return label(RECHERCHE_FINANCEMENTS, choix);
+  }
+
+  protected exigenceLabel(choix: string | null | undefined): string {
+    return label(RECHERCHE_EXIGENCES, choix);
+  }
+
+  protected accesLabel(choix: string | null | undefined): string {
+    return label(RECHERCHE_ACCES, choix);
   }
 
   protected visiteLabel(statut: string): string {

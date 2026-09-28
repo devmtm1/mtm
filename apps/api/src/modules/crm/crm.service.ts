@@ -7,6 +7,7 @@ import {
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { nextProspectReference } from './prospect-reference';
+import { nextRechercheReference } from './recherche-reference';
 import { CrmAccessService, type CrmUser } from './crm-access.service';
 import {
   CrmOptionsService,
@@ -112,6 +113,14 @@ export class CrmService {
                   mode: 'insensitive' as const,
                 },
               },
+              // Le client rappelle en citant la référence de sa recherche,
+              // pas celle de sa fiche.
+              {
+                rechercheReference: {
+                  contains: search,
+                  mode: 'insensitive' as const,
+                },
+              },
             ],
           }
         : {}),
@@ -120,6 +129,12 @@ export class CrmService {
         ? { commercialResponsableId: query.commercialResponsableId }
         : {}),
       ...(query.statutPipeline ? { statutPipeline: query.statutPipeline } : {}),
+      // Filtrer sur le statut de recherche implique un mandat ouvert : sans
+      // cela, la liste remonterait des fiches dont la recherche a été fermée
+      // puis vidée de son statut.
+      ...(query.rechercheStatut
+        ? { rechercheActive: true, rechercheStatut: query.rechercheStatut }
+        : {}),
       ...(query.sourceAcquisition
         ? { sourceAcquisition: query.sourceAcquisition }
         : {}),
@@ -558,11 +573,21 @@ export class CrmService {
     const commercialResponsableId = isManager
       ? dto.commercialResponsableId
       : (dto.commercialResponsableId ?? user.id);
+    this.options.assertRecherche(dto);
+    this.assertCoherenceRecherche(dto);
     const { premierContactLe, prochaineRelanceLe, ...rest } = dto;
     const prospect = await this.prisma.prospect.create({
       data: {
         ...(rest as unknown as Prisma.ProspectUncheckedCreateInput),
         referenceInterne: await this.nextReference(),
+        // Un mandat de recherche reçoit sa référence NS- dès son ouverture :
+        // c'est le numéro que le client cite quand il rappelle.
+        ...(dto.rechercheActive
+          ? {
+              rechercheReference: await nextRechercheReference(this.prisma),
+              rechercheStatut: dto.rechercheStatut ?? 'nouvelle',
+            }
+          : {}),
         ...(premierContactLe
           ? { premierContactLe: new Date(premierContactLe) }
           : {}),
@@ -581,6 +606,8 @@ export class CrmService {
     await this.options.assertPipelineStage(dto.statutPipeline);
     await this.options.assertSource(dto.sourceAcquisition);
     await this.options.assertNiveauInteret(dto.niveauInteret);
+    this.options.assertRecherche(dto);
+    await this.assertCoherenceRechercheSurFiche(id, dto);
     const data: Prisma.ProspectUncheckedUpdateInput = {
       ...(dto.nom && { nom: dto.nom }),
       ...(dto.prenom !== undefined && { prenom: dto.prenom }),
@@ -639,6 +666,43 @@ export class CrmService {
       ...(dto.budgetMin !== undefined && { budgetMin: dto.budgetMin }),
       ...(dto.budgetMax !== undefined && { budgetMax: dto.budgetMax }),
       ...(dto.preferences !== undefined && { preferences: dto.preferences }),
+      // --- Mandat de recherche de terrain ---
+      ...(dto.rechercheStatut !== undefined && {
+        rechercheStatut: dto.rechercheStatut,
+      }),
+      ...(dto.profession !== undefined && { profession: dto.profession }),
+      ...(dto.quartierRecherche !== undefined && {
+        quartierRecherche: dto.quartierRecherche,
+      }),
+      ...(dto.surfaceMin !== undefined && { surfaceMin: dto.surfaceMin }),
+      ...(dto.surfaceMax !== undefined && { surfaceMax: dto.surfaceMax }),
+      ...(dto.budgetIdeal !== undefined && { budgetIdeal: dto.budgetIdeal }),
+      ...(dto.documentNonNegociable !== undefined && {
+        documentNonNegociable: dto.documentNonNegociable,
+      }),
+      ...(dto.terrainBorne !== undefined && {
+        terrainBorne: dto.terrainBorne,
+      }),
+      ...(dto.accesVoirie !== undefined && { accesVoirie: dto.accesVoirie }),
+      ...(dto.proximiteRoutePrincipale !== undefined && {
+        proximiteRoutePrincipale: dto.proximiteRoutePrincipale,
+      }),
+      ...(dto.constructibiliteUsage !== undefined && {
+        constructibiliteUsage: dto.constructibiliteUsage,
+      }),
+      ...(dto.delaiSouhaite !== undefined && {
+        delaiSouhaite: dto.delaiSouhaite,
+      }),
+      ...(dto.disponibiliteVisite !== undefined && {
+        disponibiliteVisite: dto.disponibiliteVisite,
+      }),
+      ...(dto.financement !== undefined && { financement: dto.financement }),
+      ...(dto.preferenceVendeurDirect !== undefined && {
+        preferenceVendeurDirect: dto.preferenceVendeurDirect,
+      }),
+      ...(dto.accepteOpportunitesSimilaires !== undefined && {
+        accepteOpportunitesSimilaires: dto.accepteOpportunitesSimilaires,
+      }),
       ...(dto.commercialResponsableId !== undefined && {
         commercialResponsableId: dto.commercialResponsableId,
       }),
@@ -647,6 +711,23 @@ export class CrmService {
       }),
       ...(dto.score !== undefined && { score: dto.score }),
     };
+    // Ouvrir un mandat de recherche attribue sa référence NS-, une seule fois :
+    // on ne renumérote pas une recherche qu'on rouvre après une pause.
+    if (dto.rechercheActive !== undefined) {
+      data.rechercheActive = dto.rechercheActive;
+      if (dto.rechercheActive) {
+        const fiche = await this.prisma.prospect.findUnique({
+          where: { id },
+          select: { rechercheReference: true, rechercheStatut: true },
+        });
+        if (!fiche?.rechercheReference) {
+          data.rechercheReference = await nextRechercheReference(this.prisma);
+        }
+        if (!fiche?.rechercheStatut && dto.rechercheStatut === undefined) {
+          data.rechercheStatut = 'nouvelle';
+        }
+      }
+    }
     if (dto.commercialResponsableId !== undefined) {
       if (!this.access.isManager(user)) {
         const current = await this.prisma.prospect.findUnique({
@@ -673,5 +754,72 @@ export class CrmService {
   async remove(id: string, user: CrmUser): Promise<void> {
     await this.access.assertOwnership(id, user);
     await this.prisma.prospect.delete({ where: { id } });
+  }
+
+  /**
+   * Cohérence des fourchettes d'un mandat de recherche. Une surface minimum
+   * au-dessus du maximum, ou un budget idéal au-dessus du plafond, ne
+   * décrivent aucun terrain : autant le dire à la saisie plutôt que de
+   * laisser le conseiller chercher l'introuvable.
+   */
+  private assertCoherenceRecherche(criteres: {
+    surfaceMin?: number | null;
+    surfaceMax?: number | null;
+    budgetIdeal?: number | null;
+    budgetMax?: number | null;
+  }): void {
+    const { surfaceMin, surfaceMax, budgetIdeal, budgetMax } = criteres;
+    if (
+      surfaceMin != null &&
+      surfaceMax != null &&
+      surfaceMin > surfaceMax
+    ) {
+      throw new BadRequestException(
+        'La surface minimum ne peut pas dépasser la surface maximum',
+      );
+    }
+    if (
+      budgetIdeal != null &&
+      budgetMax != null &&
+      budgetIdeal > budgetMax
+    ) {
+      throw new BadRequestException(
+        'Le budget idéal ne peut pas dépasser le budget maximum',
+      );
+    }
+  }
+
+  /**
+   * Même contrôle, mais sur la fiche telle qu'elle sera après la mise à jour :
+   * un écran qui ne renseigne que la surface minimum doit être confronté à la
+   * surface maximum déjà enregistrée.
+   */
+  private async assertCoherenceRechercheSurFiche(
+    id: string,
+    dto: UpdateProspectDto,
+  ): Promise<void> {
+    const touche =
+      dto.surfaceMin !== undefined ||
+      dto.surfaceMax !== undefined ||
+      dto.budgetIdeal !== undefined ||
+      dto.budgetMax !== undefined;
+    if (!touche) return;
+    const fiche = await this.prisma.prospect.findUnique({
+      where: { id },
+      select: {
+        surfaceMin: true,
+        surfaceMax: true,
+        budgetIdeal: true,
+        budgetMax: true,
+      },
+    });
+    const nombre = (valeur: unknown): number | null =>
+      valeur == null ? null : Number(valeur);
+    this.assertCoherenceRecherche({
+      surfaceMin: dto.surfaceMin ?? nombre(fiche?.surfaceMin),
+      surfaceMax: dto.surfaceMax ?? nombre(fiche?.surfaceMax),
+      budgetIdeal: dto.budgetIdeal ?? nombre(fiche?.budgetIdeal),
+      budgetMax: dto.budgetMax ?? nombre(fiche?.budgetMax),
+    });
   }
 }

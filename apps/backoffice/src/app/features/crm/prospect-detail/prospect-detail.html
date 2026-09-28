@@ -356,6 +356,102 @@
         </dl>
       </section>
 
+      <!--
+        Mandat de recherche : n'apparaît que si le client nous en a confié un.
+        Une fiche prospect ordinaire n'a pas à porter une section vide.
+      -->
+      @if (p.rechercheActive) {
+        <section class="page-card detail-section">
+          <h2>
+            Recherche de terrain
+            @if (p.rechercheReference) {
+              <span class="detail-section__ref">{{ p.rechercheReference }}</span>
+            }
+          </h2>
+          <dl class="info-list">
+            <div>
+              <dt>Où en est la recherche</dt>
+              <dd>
+                @if (p.rechercheStatut) {
+                  <span [class]="rechercheStatusPill(p.rechercheStatut)">
+                    {{ rechercheStatusLabel(p.rechercheStatut) }}
+                  </span>
+                } @else {
+                  —
+                }
+              </dd>
+            </div>
+            <div>
+              <dt>Surface acceptable</dt>
+              <dd>
+                @if (p.surfaceMin || p.surfaceMax) {
+                  {{ p.surfaceMin ? p.surfaceMin + ' m²' : '…' }} →
+                  {{ p.surfaceMax ? p.surfaceMax + ' m²' : '…' }}
+                } @else {
+                  —
+                }
+              </dd>
+            </div>
+            <div>
+              <dt>Budget idéal</dt>
+              <dd>{{ p.budgetIdeal ? (p.budgetIdeal | mtmMoney) : '—' }}</dd>
+            </div>
+            <div><dt>Quartier ou repère</dt><dd>{{ p.quartierRecherche || '—' }}</dd></div>
+            <div>
+              <dt>Document non négociable</dt>
+              <dd>{{ p.documentNonNegociable ? 'Oui' : 'Non' }}</dd>
+            </div>
+            <div>
+              <dt>Terrain borné</dt>
+              <dd>{{ p.terrainBorne ? exigenceLabel(p.terrainBorne) : '—' }}</dd>
+            </div>
+            <div>
+              <dt>Accès et voirie</dt>
+              <dd>{{ p.accesVoirie ? accesLabel(p.accesVoirie) : '—' }}</dd>
+            </div>
+            <div>
+              <dt>Proximité d’une route</dt>
+              <dd>
+                {{ p.proximiteRoutePrincipale ? exigenceLabel(p.proximiteRoutePrincipale) : '—' }}
+              </dd>
+            </div>
+            <div>
+              <dt>Vendeur direct</dt>
+              <dd>
+                {{ p.preferenceVendeurDirect ? exigenceLabel(p.preferenceVendeurDirect) : '—' }}
+              </dd>
+            </div>
+            <div>
+              <dt>Délai souhaité</dt>
+              <dd>{{ p.delaiSouhaite ? delaiLabel(p.delaiSouhaite) : '—' }}</dd>
+            </div>
+            <div>
+              <dt>Disponible pour visiter</dt>
+              <dd>{{ p.disponibiliteVisite ? disponibiliteLabel(p.disponibiliteVisite) : '—' }}</dd>
+            </div>
+            <div>
+              <dt>Financement</dt>
+              <dd>{{ p.financement ? financementLabel(p.financement) : '—' }}</dd>
+            </div>
+            <div><dt>Profession</dt><dd>{{ p.profession || '—' }}</dd></div>
+            <div>
+              <dt>Autres opportunités</dt>
+              <dd>
+                {{
+                  p.accepteOpportunitesSimilaires
+                    ? 'Le client accepte d’en recevoir'
+                    : 'Ne pas lui en envoyer'
+                }}
+              </dd>
+            </div>
+            <div class="is-wide">
+              <dt>Constructibilité et usage</dt>
+              <dd class="is-text">{{ p.constructibiliteUsage || '—' }}</dd>
+            </div>
+          </dl>
+        </section>
+      }
+
       <!-- Dossiers de vente -->
       <section class="page-card detail-section detail-section--wide">
         <div class="detail-section__head">

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { SettingsService } from '../settings/settings.service';
 
 /**
@@ -49,7 +49,26 @@ export const CRM_DEFAULTS = {
     'autre',
   ],
   moyensContact: ['appel', 'whatsapp', 'message', 'visite_agence', 'autre'],
-  objectifsAchat: ['habitation', 'investissement', 'autre'],
+  // Le formulaire de recherche de terrain propose aussi commerce et agricole :
+  // ce sont des usages courants au Sénégal, et ils changent la sélection des
+  // parcelles proposées.
+  objectifsAchat: [
+    'habitation',
+    'commerce',
+    'investissement',
+    'agricole',
+    'autre',
+  ],
+  // --- Mandat de recherche de terrain (formulaire « NS- ») ---
+  /** Où en est la recherche menée pour le compte du client. */
+  statutsRecherche: ['nouvelle', 'en_recherche', 'trouve', 'abandonnee'],
+  delaisRecherche: ['urgent', 'un_mois', 'un_a_trois_mois', 'sans_delai'],
+  disponibilitesVisite: ['oui', 'non', 'a_confirmer'],
+  financements: ['comptant', 'credit', 'a_preciser'],
+  /** Exigences à trois positions : borné, proximité d'une route, vendeur direct. */
+  exigencesTernaires: ['oui', 'non', 'indifferent'],
+  /** Importance accordée à l'accès et à la voirie. */
+  prioritesAcces: ['prioritaire', 'souhaite', 'indifferent'],
   /** Mêmes libellés que le statut juridique d'un terrain, pour rapprocher les deux. */
   typesDocumentSouhaite: ['Titre foncier', 'Bail', 'Autre'],
   statutsVisite: ['proposee', 'programmee', 'effectuee', 'annulee'],
@@ -156,7 +175,76 @@ export class CrmOptionsService {
       motifsNonVisite: [...CRM_DEFAULTS.motifsNonVisite],
       appreciationsTerrain: [...CRM_DEFAULTS.appreciationsTerrain],
       prixAccepte: [...CRM_DEFAULTS.prixAccepte],
+      // Mandat de recherche de terrain.
+      statutsRecherche: [...CRM_DEFAULTS.statutsRecherche],
+      delaisRecherche: [...CRM_DEFAULTS.delaisRecherche],
+      disponibilitesVisite: [...CRM_DEFAULTS.disponibilitesVisite],
+      financements: [...CRM_DEFAULTS.financements],
+      exigencesTernaires: [...CRM_DEFAULTS.exigencesTernaires],
+      prioritesAcces: [...CRM_DEFAULTS.prioritesAcces],
     };
+  }
+
+  /**
+   * Contrôle des choix du mandat de recherche. Ces listes structurent les
+   * écrans et ne sont pas paramétrables : une quatrième position à
+   * « terrain borné ? » n'aurait pas de sens.
+   */
+  assertRecherche(dto: {
+    rechercheStatut?: string;
+    delaiSouhaite?: string;
+    disponibiliteVisite?: string;
+    financement?: string;
+    terrainBorne?: string;
+    proximiteRoutePrincipale?: string;
+    preferenceVendeurDirect?: string;
+    accesVoirie?: string;
+  }): void {
+    const verifie = (
+      valeur: string | undefined,
+      permises: readonly string[],
+      message: string,
+    ) => {
+      if (valeur !== undefined && !permises.includes(valeur)) {
+        throw new BadRequestException(message);
+      }
+    };
+    verifie(
+      dto.rechercheStatut,
+      CRM_DEFAULTS.statutsRecherche,
+      'Statut de recherche invalide',
+    );
+    verifie(
+      dto.delaiSouhaite,
+      CRM_DEFAULTS.delaisRecherche,
+      'Délai de recherche invalide',
+    );
+    verifie(
+      dto.disponibiliteVisite,
+      CRM_DEFAULTS.disponibilitesVisite,
+      'Disponibilité pour une visite invalide',
+    );
+    verifie(
+      dto.financement,
+      CRM_DEFAULTS.financements,
+      'Mode de financement invalide',
+    );
+    verifie(
+      dto.accesVoirie,
+      CRM_DEFAULTS.prioritesAcces,
+      'Exigence d’accès invalide',
+    );
+    for (const [valeur, champ] of [
+      [dto.terrainBorne, 'Terrain borné'],
+      [dto.proximiteRoutePrincipale, 'Proximité d’une route principale'],
+      [dto.preferenceVendeurDirect, 'Préférence vendeur direct'],
+    ] as const) {
+      verifie(
+        valeur,
+        CRM_DEFAULTS.exigencesTernaires,
+        `${champ} : répondez oui, non ou indifférent`,
+      );
+    }
   }
 
   assertPipelineStage(statut?: string): Promise<void> {

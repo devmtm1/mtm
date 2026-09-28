@@ -101,6 +101,25 @@ export interface ProspectListItem {
 }
 
 export interface ProspectDetail extends ProspectListItem {
+  // --- Mandat de recherche de terrain (formulaire « NS- ») ---
+  rechercheActive: boolean;
+  rechercheReference: string | null;
+  rechercheStatut: string | null;
+  profession: string | null;
+  quartierRecherche: string | null;
+  surfaceMin: number | null;
+  surfaceMax: number | null;
+  budgetIdeal: number | null;
+  documentNonNegociable: boolean | null;
+  terrainBorne: string | null;
+  accesVoirie: string | null;
+  proximiteRoutePrincipale: string | null;
+  constructibiliteUsage: string | null;
+  delaiSouhaite: string | null;
+  disponibiliteVisite: string | null;
+  financement: string | null;
+  preferenceVendeurDirect: string | null;
+  accepteOpportunitesSimilaires: boolean | null;
   villeResidence: string | null;
   paysResidence: string | null;
   besoins: string | null;
@@ -173,6 +192,15 @@ export interface ProspectOptions {
   motifsNonVisite: string[];
   appreciationsTerrain: string[];
   prixAccepte: string[];
+  // --- Mandat de recherche de terrain ---
+  statutsRecherche: string[];
+  delaisRecherche: string[];
+  disponibilitesVisite: string[];
+  financements: string[];
+  /** oui | non | indifferent : borné, proximité d'une route, vendeur direct. */
+  exigencesTernaires: string[];
+  /** prioritaire | souhaite | indifferent. */
+  prioritesAcces: string[];
 }
 
 export interface ProspectStats {
@@ -261,6 +289,24 @@ export interface CreateProspectPayload {
   budgetMin?: number;
   budgetMax?: number;
   preferences?: string;
+  // --- Mandat de recherche de terrain ---
+  rechercheActive?: boolean;
+  rechercheStatut?: string;
+  profession?: string;
+  quartierRecherche?: string;
+  surfaceMin?: number;
+  surfaceMax?: number;
+  budgetIdeal?: number;
+  documentNonNegociable?: boolean;
+  terrainBorne?: string;
+  accesVoirie?: string;
+  proximiteRoutePrincipale?: string;
+  constructibiliteUsage?: string;
+  delaiSouhaite?: string;
+  disponibiliteVisite?: string;
+  financement?: string;
+  preferenceVendeurDirect?: string;
+  accepteOpportunitesSimilaires?: boolean;
   premierContactLe?: string;
   premierContactMoyen?: string;
   prochaineAction?: string;

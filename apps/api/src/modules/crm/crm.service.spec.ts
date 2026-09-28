@@ -399,4 +399,103 @@ describe('CrmService', () => {
       }),
     );
   });
+
+  // --- Mandat de recherche de terrain (formulaire « NS- ») ---
+
+  it('attribue une référence NS- à l’ouverture d’un mandat de recherche', async () => {
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+    prismaMock.prospect.count.mockResolvedValue(3);
+    prismaMock.prospect.findUnique.mockResolvedValue(null);
+    prismaMock.prospect.create.mockResolvedValue({ id: 'p1' });
+
+    await service.create(
+      {
+        nom: 'Sow',
+        prenom: 'Awa',
+        rechercheActive: true,
+        zoneRecherchee: 'Mbour',
+        surfaceMin: 200,
+        surfaceMax: 500,
+      },
+      { id: 'u1', roles: ['commercial'] },
+    );
+
+    const data = prismaMock.prospect.create.mock.calls[0][0].data;
+    expect(data.rechercheReference).toBe(`NS-${new Date().getFullYear()}-0004`);
+    // Une recherche qui vient d'être ouverte n'a pas encore commencé.
+    expect(data.rechercheStatut).toBe('nouvelle');
+  });
+
+  it('n’attribue pas de référence NS- à un prospect sans mandat', async () => {
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+    prismaMock.prospect.count.mockResolvedValue(0);
+    prismaMock.prospect.findUnique.mockResolvedValue(null);
+    prismaMock.prospect.create.mockResolvedValue({ id: 'p1' });
+
+    await service.create(
+      { nom: 'Diallo' },
+      { id: 'u1', roles: ['commercial'] },
+    );
+
+    const data = prismaMock.prospect.create.mock.calls[0][0].data;
+    expect(data.rechercheReference).toBeUndefined();
+  });
+
+  it('refuse une fourchette de surface inversée', async () => {
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+
+    await expect(
+      service.create(
+        { nom: 'Ndiaye', surfaceMin: 800, surfaceMax: 300 },
+        { id: 'u1', roles: ['commercial'] },
+      ),
+    ).rejects.toThrow(/surface minimum/);
+    expect(prismaMock.prospect.create).not.toHaveBeenCalled();
+  });
+
+  it('refuse un budget idéal au-dessus du plafond', async () => {
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+
+    await expect(
+      service.create(
+        { nom: 'Ndiaye', budgetIdeal: 20_000_000, budgetMax: 15_000_000 },
+        { id: 'u1', roles: ['commercial'] },
+      ),
+    ).rejects.toThrow(/budget idéal/);
+  });
+
+  it('confronte une surface modifiée à celle déjà enregistrée', async () => {
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+    prismaMock.prospect.findUnique
+      // Premier appel : le contrôle d'appartenance de la fiche au commercial.
+      .mockResolvedValueOnce({ id: 'p1', commercialResponsableId: 'u1' })
+      // La fiche porte déjà un maximum de 400 m² : passer le minimum à 900
+      // décrirait un terrain introuvable, même si la requête ne contient
+      // qu'un seul des deux champs.
+      .mockResolvedValueOnce({
+        surfaceMin: 200,
+        surfaceMax: 400,
+        budgetIdeal: null,
+        budgetMax: null,
+      });
+
+    await expect(
+      service.update(
+        'p1',
+        { surfaceMin: 900 },
+        { id: 'u1', roles: ['commercial'] },
+      ),
+    ).rejects.toThrow(/surface minimum/);
+  });
+
+  it('refuse une exigence hors des trois positions prévues', async () => {
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+
+    await expect(
+      service.create(
+        { nom: 'Fall', terrainBorne: 'peut_etre' },
+        { id: 'u1', roles: ['commercial'] },
+      ),
+    ).rejects.toThrow(/oui, non ou indifférent/);
+  });
 });
