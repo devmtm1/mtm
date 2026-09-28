@@ -1,6 +1,9 @@
-import { BadgeCheck, Clock, Coins, MessageCircle } from 'lucide-react';
+import { useState } from 'react';
+import { BadgeCheck, Clock, Coins } from 'lucide-react';
 import { PageIntro } from '../components/layout/PageIntro';
 import { ContactForm } from '../components/contact/ContactForm';
+import { ContactModal } from '../components/contact/ContactModal';
+import { DemandeWhatsAppCta } from '../components/contact/DemandeWhatsAppCta';
 import { useEditableContent, type EditableStep } from '../hooks/useEditableContent';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 import { useSiteContact } from '../hooks/useSiteContact';
@@ -80,11 +83,28 @@ const FALLBACK_PRESTATIONS_TECHNIQUES: EditableStep[] = [
   },
 ];
 
-const WHATSAPP_MESSAGE = 'Bonjour, je souhaite demander une vérification foncière.';
+// La page couvre désormais sept prestations : un message pré-rempli qui ne
+// parle que de vérification ferait mal partir la conversation pour celui
+// qui vient déposer une mutation.
+const WHATSAPP_MESSAGE =
+  'Bonjour, je souhaite faire une demande auprès de MTM.';
 
 export function DemarchesPage() {
   const { text, lines, steps } = useEditableContent();
   const { whatsappDemarches } = useSiteContact();
+  const [demandeOuverte, setDemandeOuverte] = useState(false);
+
+  const prestations = steps('demarches.prestations', FALLBACK_PRESTATIONS);
+  const prestationsTechniques = steps(
+    'demarches.prestations-techniques',
+    FALLBACK_PRESTATIONS_TECHNIQUES,
+  );
+  // Le visiteur choisit son sujet parmi les prestations réellement annoncées :
+  // la liste suit le catalogue édité en back-office au lieu d'une énumération
+  // figée qui finirait par mentir sur ce que MTM propose.
+  const sujets = [...prestations, ...prestationsTechniques].map(
+    (presta) => presta.title,
+  );
   usePageMetadata({
     title: 'Démarches administratives et vérification foncière',
     description:
@@ -98,12 +118,18 @@ export function DemarchesPage() {
         title="Démarches administratives"
         description={text('demarches.intro', FALLBACK_INTRO)}
       >
-        <a
-          href="#demande-verification"
+        {/* La page annonce sept prestations et décrit un parcours : le
+            formulaire est à trois écrans d'ici. Celui qui clique a déjà
+            décidé, on lui ouvre la fenêtre plutôt que de le faire défiler.
+            La section de bas de page reste en place pour celui qui lit tout
+            et arrive convaincu. */}
+        <button
+          type="button"
+          onClick={() => setDemandeOuverte(true)}
           className="mt-6 inline-flex items-center justify-center rounded-md bg-mtm-primary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-mtm-primary-dark"
         >
-          Demander une vérification
-        </a>
+          Faire une demande
+        </button>
       </PageIntro>
 
       <section className="border-b border-mtm-border bg-mtm-bg">
@@ -127,7 +153,7 @@ export function DemarchesPage() {
           des administrations.
         </p>
         <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-          {steps('demarches.prestations', FALLBACK_PRESTATIONS).map((presta) => (
+          {prestations.map((presta) => (
             <li
               key={presta.title}
               className="rounded-lg border border-mtm-border bg-mtm-surface p-4 shadow-card"
@@ -144,7 +170,7 @@ export function DemarchesPage() {
           Services techniques
         </h2>
         <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-          {steps('demarches.prestations-techniques', FALLBACK_PRESTATIONS_TECHNIQUES).map(
+          {prestationsTechniques.map(
             (presta) => (
               <li
                 key={presta.title}
@@ -185,39 +211,40 @@ export function DemarchesPage() {
         </ol>
       </section>
 
+      {/* L'ancre garde son nom d'origine bien que la section couvre désormais
+          toutes les prestations : des liens « #demande-verification » ont pu
+          être partagés, les renommer les casserait pour rien. */}
       <section id="demande-verification" className="scroll-mt-20 bg-mtm-surface py-14">
         <div className="mx-auto max-w-xl px-4 sm:px-6">
           <h2 className="text-center font-display text-xl font-bold text-mtm-text">
-            Demander une vérification
+            Faire une demande
           </h2>
           <p className="mt-2 text-center text-sm text-mtm-muted">
-            Décrivez-nous le terrain concerné, nous revenons vers vous rapidement.
+            Dites-nous ce dont vous avez besoin, nous revenons vers vous rapidement.
           </p>
 
-          {/* WhatsApp mis en avant à côté du formulaire, canal privilégié de la
-              clientèle expatriée (section 4 du cahier des charges) — en plus
-              de la bulle flottante présente sur tout le site. Les démarches
-              administratives sont suivies directement par la direction : ce
-              bouton pointe sur son numéro, distinct du numéro général. */}
-          <a
-            href={`https://wa.me/${whatsappDemarches}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-6 flex items-center justify-center gap-2 rounded-md border border-mtm-success bg-mtm-success/5 px-4 py-3 text-sm font-semibold text-mtm-success transition-colors hover:bg-mtm-success/10"
-          >
-            <MessageCircle className="h-4 w-4" aria-hidden="true" />
-            Discuter directement sur WhatsApp
-          </a>
-
-          <div className="my-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-wider text-mtm-muted">
-            <span className="h-px flex-1 bg-mtm-border" aria-hidden="true" />
-            ou remplissez le formulaire
-            <span className="h-px flex-1 bg-mtm-border" aria-hidden="true" />
+          {/* Les démarches administratives sont suivies directement par la
+              direction : ce bouton pointe sur son numéro, distinct du numéro
+              général, en plus de la bulle flottante présente sur tout le site. */}
+          <div className="mt-6">
+            <DemandeWhatsAppCta numero={whatsappDemarches} message={WHATSAPP_MESSAGE} />
           </div>
 
-          <ContactForm initialSujet="Demande de vérification foncière" />
+          <ContactForm initialSujet={sujets[0]} sujetOptions={sujets} />
         </div>
       </section>
+
+      {demandeOuverte && (
+        <ContactModal
+          title="Faire une demande"
+          initialSujet={sujets[0]}
+          sujetOptions={sujets}
+          intro={
+            <DemandeWhatsAppCta numero={whatsappDemarches} message={WHATSAPP_MESSAGE} />
+          }
+          onClose={() => setDemandeOuverte(false)}
+        />
+      )}
     </div>
   );
 }

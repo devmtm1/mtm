@@ -7,12 +7,25 @@ import { FormField, fieldInputClass } from '../ui/FormField';
 interface ContactFormProps {
   terrainId?: string;
   initialSujet?: string;
+  /**
+   * Sujets proposés au lieu d'un champ libre. La page « Démarches » y passe
+   * les prestations qu'elle annonce : le visiteur dit ce qu'il veut dès la
+   * première ligne, et le conseiller sait à quoi il a affaire sans avoir à
+   * décoder le message.
+   */
+  sujetOptions?: string[];
   /** Nature de la demande (client connecté) : « visite » depuis une fiche terrain. */
   demandeType?: 'information' | 'visite';
   onSuccess?: () => void;
 }
 
-export function ContactForm({ terrainId, initialSujet, demandeType, onSuccess }: ContactFormProps) {
+export function ContactForm({
+  terrainId,
+  initialSujet,
+  sujetOptions,
+  demandeType,
+  onSuccess,
+}: ContactFormProps) {
   const { values, setValue, errors, submitting, submitted, submitError, submit, client } = useContactForm({
     terrainId,
     initialSujet,
@@ -87,13 +100,34 @@ export function ContactForm({ terrainId, initialSujet, demandeType, onSuccess }:
         )}
 
         <FormField label="Sujet" htmlFor="contact-sujet">
-          <input
-            id="contact-sujet"
-            type="text"
-            className={fieldInputClass}
-            value={values.sujet}
-            onChange={(event) => setValue('sujet', event.target.value)}
-          />
+          {sujetOptions?.length ? (
+            <select
+              id="contact-sujet"
+              className={fieldInputClass}
+              value={values.sujet}
+              onChange={(event) => setValue('sujet', event.target.value)}
+            >
+              {/* Le sujet initial peut ne pas figurer dans la liste (demande
+                  venue d'une fiche terrain) : on l'ajoute plutôt que de le
+                  perdre silencieusement au premier rendu. */}
+              {values.sujet && !sujetOptions.includes(values.sujet) && (
+                <option value={values.sujet}>{values.sujet}</option>
+              )}
+              {sujetOptions.map((sujet) => (
+                <option key={sujet} value={sujet}>
+                  {sujet}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              id="contact-sujet"
+              type="text"
+              className={fieldInputClass}
+              value={values.sujet}
+              onChange={(event) => setValue('sujet', event.target.value)}
+            />
+          )}
         </FormField>
       </div>
 
