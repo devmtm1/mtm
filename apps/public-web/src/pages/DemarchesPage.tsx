@@ -39,7 +39,7 @@ const WHATSAPP_MESSAGE = 'Bonjour, je souhaite demander une vérification fonci�
 
 export function DemarchesPage() {
   const { text, lines, steps } = useEditableContent();
-  const { whatsapp } = useSiteContact();
+  const { whatsappDemarches } = useSiteContact();
   usePageMetadata({
     title: 'Démarches administratives et vérification foncière',
     description:
@@ -105,9 +105,11 @@ export function DemarchesPage() {
 
           {/* WhatsApp mis en avant à côté du formulaire, canal privilégié de la
               clientèle expatriée (section 4 du cahier des charges) — en plus
-              de la bulle flottante présente sur tout le site. */}
+              de la bulle flottante présente sur tout le site. Les démarches
+              administratives sont suivies directement par la direction : ce
+              bouton pointe sur son numéro, distinct du numéro général. */}
           <a
-            href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`}
+            href={`https://wa.me/${whatsappDemarches}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-6 flex items-center justify-center gap-2 rounded-md border border-mtm-success bg-mtm-success/5 px-4 py-3 text-sm font-semibold text-mtm-success transition-colors hover:bg-mtm-success/10"

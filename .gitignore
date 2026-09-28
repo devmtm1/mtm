@@ -12,6 +12,10 @@ build/
 .env
 .env.local
 .env.*.local
+# Sauvegardes de .env laissées par les scripts de test (contiennent les vrais
+# identifiants de base) : jamais versionnées.
+.env.bak*
+.env.*.bak
 !.env.example
 
 # Logs

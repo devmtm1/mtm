@@ -1756,7 +1756,7 @@ async function main(): Promise<void> {
     {
       key: 'contact.telephone',
       title: 'Téléphone',
-      content: '+221 77 000 00 00',
+      content: '+221 78 366 26 51',
       type: 'text',
       ordre: 41,
     },
@@ -1770,9 +1770,19 @@ async function main(): Promise<void> {
     {
       key: 'contact.whatsapp',
       title: 'Numéro WhatsApp (format international, sans +)',
-      content: '221770000000',
+      content: '221783662651',
       type: 'text',
       ordre: 43,
+    },
+    // Les démarches administratives sont suivies directement par la direction,
+    // qui reçoit donc ces demandes sur son propre numéro. Le site public
+    // retombe sur `contact.whatsapp` si ce bloc est vidé.
+    {
+      key: 'contact.whatsapp.demarches',
+      title: 'Numéro WhatsApp — démarches administratives (format international, sans +)',
+      content: '221771551810',
+      type: 'text',
+      ordre: 44,
     },
     // --- Pages de services (Phase 2 côté métier, présentation éditable dès maintenant).
     // Une ligne par point/étape, séparées par un retour à la ligne.

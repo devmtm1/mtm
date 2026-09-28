@@ -11,13 +11,20 @@ export interface SiteContact {
   email: string;
   /** Numéro WhatsApp au format international sans « + » (ex. 221770000000). */
   whatsapp: string;
+  /**
+   * Numéro WhatsApp dédié aux démarches administratives, que la direction
+   * suit elle-même. À défaut de bloc dédié, on retombe sur le numéro général
+   * pour qu'aucun bouton ne reste sans destinataire.
+   */
+  whatsappDemarches: string;
 }
 
 const FALLBACK: SiteContact = {
   adresse: 'Dakar, Sénégal',
-  telephone: '+221 77 000 00 00',
+  telephone: '+221 78 366 26 51',
   email: 'contact@mtm-immobilier.sn',
-  whatsapp: '221770000000',
+  whatsapp: '221783662651',
+  whatsappDemarches: '221771551810',
 };
 
 export function useSiteContact(): SiteContact {
@@ -26,11 +33,14 @@ export function useSiteContact(): SiteContact {
   const get = (key: string, fallback: string): string =>
     data?.find((block) => block.key === key)?.content?.trim() || fallback;
 
+  const whatsapp = get('contact.whatsapp', FALLBACK.whatsapp);
+
   return {
     adresse: get('contact.adresse', FALLBACK.adresse),
     telephone: get('contact.telephone', FALLBACK.telephone),
     email: get('contact.email', FALLBACK.email),
-    whatsapp: get('contact.whatsapp', FALLBACK.whatsapp),
+    whatsapp,
+    whatsappDemarches: get('contact.whatsapp.demarches', whatsapp),
   };
 }
 

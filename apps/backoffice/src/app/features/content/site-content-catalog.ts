@@ -47,12 +47,13 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
   {
     id: 'contact',
     title: 'Coordonnées',
-    where: 'Pied de page, page Contact et bouton WhatsApp',
+    where: 'Pied de page, page Contact, bouton WhatsApp et page Démarches',
     slots: [
       { key: 'contact.adresse', label: 'Adresse', help: 'Adresse de l’agence, telle qu’affichée aux visiteurs.' },
-      { key: 'contact.telephone', label: 'Téléphone', help: 'Numéro affiché (ex. +221 78 522 65 65).' },
+      { key: 'contact.telephone', label: 'Téléphone', help: 'Numéro affiché (ex. +221 78 366 26 51).' },
       { key: 'contact.email', label: 'E-mail', help: 'Adresse de contact publique.' },
-      { key: 'contact.whatsapp', label: 'Numéro WhatsApp', help: 'Numéro du bouton WhatsApp flottant, au format international sans espaces (ex. 221785226565).' },
+      { key: 'contact.whatsapp', label: 'Numéro WhatsApp', help: 'Numéro du bouton WhatsApp flottant, au format international sans espaces (ex. 221783662651).' },
+      { key: 'contact.whatsapp.demarches', label: 'Numéro WhatsApp — démarches administratives', help: 'Numéro joint depuis la page « Démarches administratives », suivi par la direction. Même format, sans espaces. Laisser vide pour réutiliser le numéro WhatsApp général.' },
     ],
   },
   {
