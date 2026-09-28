@@ -187,503 +187,649 @@
           }
         </section>
 
-        <!-- Étape 2 : étude de faisabilité et facturation -->
-        <section [class]="'page-card etape etape--' + etatEtape('faisabilite')">
-          <button
-            type="button"
-            class="etape__head"
-            [attr.aria-expanded]="estOuverte('faisabilite')"
-            (click)="basculerEtape('faisabilite')"
-          >
-            <span class="etape__rang">
-              @if (etatEtape('faisabilite') === 'fait') {
-                ✓
-              } @else {
-                2
-              }
-            </span>
-            <span class="etape__titre">
-              <strong>Étude de faisabilité et facturation</strong>
-              <small>
-                @if (m.montantDevis) {
-                  Devis {{ m.montantDevis | mtmMoney }}
-                  @if (m.montantPaye) {
-                    · réglé {{ m.montantPaye | mtmMoney }}
-                  } @else {
-                    · rien de réglé
-                  }
+        @if (estVerification()) {
+          <!-- Étape 2 : étude de faisabilité et facturation -->
+          <section [class]="'page-card etape etape--' + etatEtape('faisabilite')">
+            <button
+              type="button"
+              class="etape__head"
+              [attr.aria-expanded]="estOuverte('faisabilite')"
+              (click)="basculerEtape('faisabilite')"
+            >
+              <span class="etape__rang">
+                @if (etatEtape('faisabilite') === 'fait') {
+                  ✓
                 } @else {
-                  Montant non encore convenu
+                  2
                 }
-              </small>
-            </span>
-            <span class="etape__etat">{{ etatLabel(etatEtape('faisabilite')) }}</span>
-          </button>
-
-          @if (estOuverte('faisabilite')) {
-            <div class="etape__corps">
-              <p class="detail-section__hint">
-                Ce qu’il est possible de vérifier, à quel prix, et ce qui a été réglé. Les frais
-                d’étude restent dus même lorsque la conclusion est défavorable.
-              </p>
-              <form [formGroup]="faisabilite" class="form-grid" (ngSubmit)="enregistrerFaisabilite()">
-                <mat-form-field appearance="outline">
-                  <mat-label>Conclusion de l’étude</mat-label>
-                  <mat-select formControlName="faisabiliteConclusion">
-                    <mat-option value="">Non renseignée</mat-option>
-                    @for (valeur of options().conclusionsFaisabilite ?? []; track valeur) {
-                      <mat-option [value]="valeur">{{ decisionLabel(valeur) }}</mat-option>
+              </span>
+              <span class="etape__titre">
+                <strong>Étude de faisabilité et facturation</strong>
+                <small>
+                  @if (m.montantDevis) {
+                    Devis {{ m.montantDevis | mtmMoney }}
+                    @if (m.montantPaye) {
+                      · réglé {{ m.montantPaye | mtmMoney }}
+                    } @else {
+                      · rien de réglé
                     }
-                  </mat-select>
-                </mat-form-field>
-
-                <mat-form-field appearance="outline">
-                  <mat-label>Montant convenu</mat-label>
-                  <input matInput type="number" min="0" formControlName="montantDevis" />
-                </mat-form-field>
-
-                <mat-form-field appearance="outline">
-                  <mat-label>Frais d’étude</mat-label>
-                  <input matInput type="number" min="0" formControlName="fraisEtude" />
-                </mat-form-field>
-
-                <mat-form-field appearance="outline">
-                  <mat-label>Montant réglé</mat-label>
-                  <input matInput type="number" min="0" formControlName="montantPaye" />
-                </mat-form-field>
-
-                <mat-form-field appearance="outline">
-                  <mat-label>Mode de paiement</mat-label>
-                  <mat-select formControlName="modePaiement">
-                    <mat-option value="">Non renseigné</mat-option>
-                    @for (mode of options().modesPaiement ?? []; track mode) {
-                      <mat-option [value]="mode">{{ modePaiementLabel(mode) }}</mat-option>
-                    }
-                  </mat-select>
-                </mat-form-field>
-
-                <mat-form-field appearance="outline">
-                  <mat-label>Référence du paiement</mat-label>
-                  <input matInput formControlName="referencePaiement" />
-                </mat-form-field>
-
-                <mat-form-field appearance="outline" class="wide">
-                  <mat-label>Notes de l’étude</mat-label>
-                  <textarea matInput rows="2" formControlName="faisabiliteNotes"></textarea>
-                </mat-form-field>
-
-                @if (canModify()) {
-                  <div class="wide form-actions">
-                    <button mat-stroked-button type="submit" [disabled]="saving()">
-                      Enregistrer l’étude
-                    </button>
-                  </div>
-                }
-              </form>
-            </div>
-          }
-        </section>
-
-        <!-- Étape 3 : vérification physique -->
-        <section [class]="'page-card etape etape--' + etatEtape('verification_physique')">
-          <button
-            type="button"
-            class="etape__head"
-            [attr.aria-expanded]="estOuverte('verification_physique')"
-            (click)="basculerEtape('verification_physique')"
-          >
-            <span class="etape__rang">
-              @if (etatEtape('verification_physique') === 'fait') {
-                ✓
-              } @else {
-                3
-              }
-            </span>
-            <span class="etape__titre">
-              <strong>Vérification physique</strong>
-              <small>
-                @if (constatsPhysiques().length) {
-                  {{ constatsPhysiques().length }} constat(s) sur place
-                } @else {
-                  Aucune visite enregistrée
-                }
-              </small>
-            </span>
-            <span class="etape__etat">{{ etatLabel(etatEtape('verification_physique')) }}</span>
-          </button>
-
-          @if (estOuverte('verification_physique')) {
-            <div class="etape__corps">
-              <div class="detail-section__head">
-                <p class="detail-section__hint">
-                  Ce qui a été constaté sur place : état du terrain, accès, environnement,
-                  coordonnées relevées. Chaque constat est daté et signé.
-                </p>
-                @if (canModify() && !estTerminee()) {
-                  <button
-                    mat-stroked-button
-                    type="button"
-                    (click)="ajouterConstat('verification_physique')"
-                  >
-                    <svg class="btn-icon" lucideMapPinned aria-hidden="true"></svg>Ajouter un constat
-                  </button>
-                }
-              </div>
-
-              @if (constatsPhysiques().length) {
-                <ul class="constat-list">
-                  @for (constat of constatsPhysiques(); track constat.id) {
-                    <li class="constat-item">
-                      <div class="constat-item__head">
-                        <strong>{{ constat.titre }}</strong>
-                        @if (constat.conformiteApparente) {
-                          <span [class]="conformitePill(constat.conformiteApparente)">
-                            {{ conformiteLabel(constat.conformiteApparente) }}
-                          </span>
-                        }
-                        <span class="constat-item__meta">
-                          {{ constat.dateVisite ?? constat.realiseeLe | date: 'dd/MM/yyyy' }} ·
-                          {{ personne(constat.realiseePar) }}
-                        </span>
-                        @if (canModify() && !estTerminee()) {
-                          <span class="constat-item__actions">
-                            <button mat-button type="button" (click)="modifierConstat(constat)">
-                              Modifier
-                            </button>
-                            <button
-                              mat-icon-button
-                              type="button"
-                              aria-label="Supprimer le constat"
-                              (click)="supprimerConstat(constat)"
-                            >
-                              <svg class="btn-icon" lucideTrash2 aria-hidden="true"></svg>
-                            </button>
-                          </span>
-                        }
-                      </div>
-                      <dl class="constat-item__facts">
-                        @if (constat.latitude && constat.longitude) {
-                          <div>
-                            <dt>GPS relevé</dt>
-                            <dd>{{ constat.latitude }}, {{ constat.longitude }}</dd>
-                          </div>
-                        }
-                        @if (constat.accesDescription) {
-                          <div><dt>Accès</dt><dd>{{ constat.accesDescription }}</dd></div>
-                        }
-                        @if (constat.environnement) {
-                          <div><dt>Environnement</dt><dd>{{ constat.environnement }}</dd></div>
-                        }
-                      </dl>
-                      @if (constat.observations) {
-                        <p class="constat-item__note">{{ constat.observations }}</p>
-                      }
-
-                      @if (photosDuConstat(constat.id).length) {
-                        <ul class="photo-grid">
-                          @for (photo of photosDuConstat(constat.id); track photo.id) {
-                            <li>
-                              <a
-                                [href]="photo.secureUrl"
-                                target="_blank"
-                                rel="noopener"
-                                [matTooltip]="photo.title ?? 'Ouvrir la photo en grand'"
-                              >
-                                <img
-                                  [src]="vignette(photo.secureUrl)"
-                                  [alt]="photo.title ?? 'Photo de la visite ' + constat.titre"
-                                  loading="lazy"
-                                  decoding="async"
-                                />
-                              </a>
-                              @if (canModify() && !estTerminee()) {
-                                <button
-                                  mat-icon-button
-                                  type="button"
-                                  class="photo-grid__remove"
-                                  aria-label="Supprimer la photo"
-                                  (click)="supprimerDocument(photo)"
-                                >
-                                  <svg class="btn-icon" lucideTrash2 aria-hidden="true"></svg>
-                                </button>
-                              }
-                            </li>
-                          }
-                        </ul>
-                      }
-
-                      @if (autresPiecesDuConstat(constat.id).length) {
-                        <ul class="doc-list">
-                          @for (piece of autresPiecesDuConstat(constat.id); track piece.id) {
-                            <li class="doc-item">
-                              <svg lucideFileText aria-hidden="true"></svg>
-                              <a
-                                class="doc-item__title"
-                                [href]="piece.secureUrl"
-                                target="_blank"
-                                rel="noopener"
-                              >
-                                {{ piece.title ?? documentLabel(piece.type) }}
-                                <small>{{ documentLabel(piece.type) }}</small>
-                              </a>
-                            </li>
-                          }
-                        </ul>
-                      }
-
-                      @if (canModify() && !estTerminee()) {
-                        <label class="upload-button upload-button--inline">
-                          <svg class="btn-icon" lucideUpload aria-hidden="true"></svg>Ajouter une
-                          photo à ce constat
-                          <input
-                            type="file"
-                            accept="image/*,video/*"
-                            (change)="televerser($event, 'photo_visite', constat.id)"
-                          />
-                        </label>
-                      }
-                    </li>
-                  }
-                </ul>
-              } @else {
-                <p class="detail-note">
-                  Aucun constat de terrain. C’est le cœur de la mission : sans visite, le rapport ne
-                  pourra pas être généré.
-                </p>
-              }
-            </div>
-          }
-        </section>
-
-        <!-- Étape 4 : vérification administrative -->
-        <section [class]="'page-card etape etape--' + etatEtape('verification_administrative')">
-          <button
-            type="button"
-            class="etape__head"
-            [attr.aria-expanded]="estOuverte('verification_administrative')"
-            (click)="basculerEtape('verification_administrative')"
-          >
-            <span class="etape__rang">
-              @if (etatEtape('verification_administrative') === 'fait') {
-                ✓
-              } @else {
-                4
-              }
-            </span>
-            <span class="etape__titre">
-              <strong>Vérification administrative</strong>
-              <small>
-                @if (constatsAdministratifs().length) {
-                  {{ constatsAdministratifs().length }} administration(s) consultée(s)
-                } @else {
-                  Aucune administration consultée
-                }
-              </small>
-            </span>
-            <span class="etape__etat">
-              {{ etatLabel(etatEtape('verification_administrative')) }}
-            </span>
-          </button>
-
-          @if (estOuverte('verification_administrative')) {
-            <div class="etape__corps">
-              <div class="detail-section__head">
-                <p class="detail-section__hint">
-                  Les administrations consultées selon la localité, et ce qu’elles ont répondu.
-                </p>
-                @if (canModify() && !estTerminee()) {
-                  <button
-                    mat-stroked-button
-                    type="button"
-                    (click)="ajouterConstat('verification_administrative')"
-                  >
-                    <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Ajouter une
-                    consultation
-                  </button>
-                }
-              </div>
-
-              @if (constatsAdministratifs().length) {
-                <ul class="constat-list">
-                  @for (constat of constatsAdministratifs(); track constat.id) {
-                    <li class="constat-item">
-                      <div class="constat-item__head">
-                        <strong>{{ administrationLabel(constat.administration) }}</strong>
-                        @if (constat.resultat) {
-                          <span [class]="resultatPill(constat.resultat)">
-                            {{ resultatLabel(constat.resultat) }}
-                          </span>
-                        }
-                        <span class="constat-item__meta">
-                          {{ constat.realiseeLe | date: 'dd/MM/yyyy' }} ·
-                          {{ personne(constat.realiseePar) }}
-                          @if (constat.interlocuteur) {
-                            · {{ constat.interlocuteur }}
-                          }
-                        </span>
-                        @if (canModify() && !estTerminee()) {
-                          <span class="constat-item__actions">
-                            <button mat-button type="button" (click)="modifierConstat(constat)">
-                              Modifier
-                            </button>
-                            <button
-                              mat-icon-button
-                              type="button"
-                              aria-label="Supprimer la consultation"
-                              (click)="supprimerConstat(constat)"
-                            >
-                              <svg class="btn-icon" lucideTrash2 aria-hidden="true"></svg>
-                            </button>
-                          </span>
-                        }
-                      </div>
-                      @if (constat.observations) {
-                        <p class="constat-item__note">{{ constat.observations }}</p>
-                      }
-                    </li>
-                  }
-                </ul>
-              } @else {
-                <p class="detail-note">Aucune administration consultée pour l’instant.</p>
-              }
-            </div>
-          }
-        </section>
-
-        <!-- Étape 5 : conclusion et rapport -->
-        <section [class]="'page-card etape etape--' + etatEtape('rapport')">
-          <button
-            type="button"
-            class="etape__head"
-            [attr.aria-expanded]="estOuverte('rapport')"
-            (click)="basculerEtape('rapport')"
-          >
-            <span class="etape__rang">
-              @if (etatEtape('rapport') === 'fait') {
-                ✓
-              } @else {
-                5
-              }
-            </span>
-            <span class="etape__titre">
-              <strong>Conclusion et rapport</strong>
-              <small>
-                @if (m.decision) {
-                  Décision : {{ decisionLabel(m.decision) }}
-                  @if (rapports().length) {
-                    · rapport remis
                   } @else {
-                    · rapport non généré
+                    Montant non encore convenu
                   }
-                } @else {
-                  Décision non prononcée
-                }
-              </small>
-            </span>
-            <span class="etape__etat">{{ etatLabel(etatEtape('rapport')) }}</span>
-          </button>
+                </small>
+              </span>
+              <span class="etape__etat">{{ etatLabel(etatEtape('faisabilite')) }}</span>
+            </button>
 
-          @if (estOuverte('rapport')) {
-            <div class="etape__corps">
-              <p class="detail-section__hint">
-                La réponse que MTM donne au client. La décision est obligatoire avant de générer le
-                rapport et avant de clôturer la mission.
-              </p>
-
-              @if (canValidate()) {
-                <form [formGroup]="conclusion" class="form-grid" (ngSubmit)="enregistrerConclusion()">
+            @if (estOuverte('faisabilite')) {
+              <div class="etape__corps">
+                <p class="detail-section__hint">
+                  Ce qu’il est possible de vérifier, à quel prix, et ce qui a été réglé. Les frais
+                  d’étude restent dus même lorsque la conclusion est défavorable.
+                </p>
+                <form [formGroup]="faisabilite" class="form-grid" (ngSubmit)="enregistrerFaisabilite()">
                   <mat-form-field appearance="outline">
-                    <mat-label>Décision de MTM</mat-label>
-                    <mat-select formControlName="decision">
-                      <mat-option value="">Non prononcée</mat-option>
-                      @for (valeur of options().decisions ?? []; track valeur) {
+                    <mat-label>Conclusion de l’étude</mat-label>
+                    <mat-select formControlName="faisabiliteConclusion">
+                      <mat-option value="">Non renseignée</mat-option>
+                      @for (valeur of options().conclusionsFaisabilite ?? []; track valeur) {
                         <mat-option [value]="valeur">{{ decisionLabel(valeur) }}</mat-option>
                       }
                     </mat-select>
                   </mat-form-field>
 
+                  <mat-form-field appearance="outline">
+                    <mat-label>Montant convenu</mat-label>
+                    <input matInput type="number" min="0" formControlName="montantDevis" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Frais d’étude</mat-label>
+                    <input matInput type="number" min="0" formControlName="fraisEtude" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Montant réglé</mat-label>
+                    <input matInput type="number" min="0" formControlName="montantPaye" />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Mode de paiement</mat-label>
+                    <mat-select formControlName="modePaiement">
+                      <mat-option value="">Non renseigné</mat-option>
+                      @for (mode of options().modesPaiement ?? []; track mode) {
+                        <mat-option [value]="mode">{{ modePaiementLabel(mode) }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Référence du paiement</mat-label>
+                    <input matInput formControlName="referencePaiement" />
+                  </mat-form-field>
+
                   <mat-form-field appearance="outline" class="wide">
-                    <mat-label>Conclusion</mat-label>
+                    <mat-label>Notes de l’étude</mat-label>
+                    <textarea matInput rows="2" formControlName="faisabiliteNotes"></textarea>
+                  </mat-form-field>
+
+                  @if (canModify()) {
+                    <div class="wide form-actions">
+                      <button mat-stroked-button type="submit" [disabled]="saving()">
+                        Enregistrer l’étude
+                      </button>
+                    </div>
+                  }
+                </form>
+              </div>
+            }
+          </section>
+
+          <!-- Étape 3 : vérification physique -->
+          <section [class]="'page-card etape etape--' + etatEtape('verification_physique')">
+            <button
+              type="button"
+              class="etape__head"
+              [attr.aria-expanded]="estOuverte('verification_physique')"
+              (click)="basculerEtape('verification_physique')"
+            >
+              <span class="etape__rang">
+                @if (etatEtape('verification_physique') === 'fait') {
+                  ✓
+                } @else {
+                  3
+                }
+              </span>
+              <span class="etape__titre">
+                <strong>Vérification physique</strong>
+                <small>
+                  @if (constatsPhysiques().length) {
+                    {{ constatsPhysiques().length }} constat(s) sur place
+                  } @else {
+                    Aucune visite enregistrée
+                  }
+                </small>
+              </span>
+              <span class="etape__etat">{{ etatLabel(etatEtape('verification_physique')) }}</span>
+            </button>
+
+            @if (estOuverte('verification_physique')) {
+              <div class="etape__corps">
+                <div class="detail-section__head">
+                  <p class="detail-section__hint">
+                    Ce qui a été constaté sur place : état du terrain, accès, environnement,
+                    coordonnées relevées. Chaque constat est daté et signé.
+                  </p>
+                  @if (canModify() && !estTerminee()) {
+                    <button
+                      mat-stroked-button
+                      type="button"
+                      (click)="ajouterConstat('verification_physique')"
+                    >
+                      <svg class="btn-icon" lucideMapPinned aria-hidden="true"></svg>Ajouter un constat
+                    </button>
+                  }
+                </div>
+
+                @if (constatsPhysiques().length) {
+                  <ul class="constat-list">
+                    @for (constat of constatsPhysiques(); track constat.id) {
+                      <li class="constat-item">
+                        <div class="constat-item__head">
+                          <strong>{{ constat.titre }}</strong>
+                          @if (constat.conformiteApparente) {
+                            <span [class]="conformitePill(constat.conformiteApparente)">
+                              {{ conformiteLabel(constat.conformiteApparente) }}
+                            </span>
+                          }
+                          <span class="constat-item__meta">
+                            {{ constat.dateVisite ?? constat.realiseeLe | date: 'dd/MM/yyyy' }} ·
+                            {{ personne(constat.realiseePar) }}
+                          </span>
+                          @if (canModify() && !estTerminee()) {
+                            <span class="constat-item__actions">
+                              <button mat-button type="button" (click)="modifierConstat(constat)">
+                                Modifier
+                              </button>
+                              <button
+                                mat-icon-button
+                                type="button"
+                                aria-label="Supprimer le constat"
+                                (click)="supprimerConstat(constat)"
+                              >
+                                <svg class="btn-icon" lucideTrash2 aria-hidden="true"></svg>
+                              </button>
+                            </span>
+                          }
+                        </div>
+                        <dl class="constat-item__facts">
+                          @if (constat.latitude && constat.longitude) {
+                            <div>
+                              <dt>GPS relevé</dt>
+                              <dd>{{ constat.latitude }}, {{ constat.longitude }}</dd>
+                            </div>
+                          }
+                          @if (constat.accesDescription) {
+                            <div><dt>Accès</dt><dd>{{ constat.accesDescription }}</dd></div>
+                          }
+                          @if (constat.environnement) {
+                            <div><dt>Environnement</dt><dd>{{ constat.environnement }}</dd></div>
+                          }
+                        </dl>
+                        @if (constat.observations) {
+                          <p class="constat-item__note">{{ constat.observations }}</p>
+                        }
+
+                        @if (photosDuConstat(constat.id).length) {
+                          <ul class="photo-grid">
+                            @for (photo of photosDuConstat(constat.id); track photo.id) {
+                              <li>
+                                <a
+                                  [href]="photo.secureUrl"
+                                  target="_blank"
+                                  rel="noopener"
+                                  [matTooltip]="photo.title ?? 'Ouvrir la photo en grand'"
+                                >
+                                  <img
+                                    [src]="vignette(photo.secureUrl)"
+                                    [alt]="photo.title ?? 'Photo de la visite ' + constat.titre"
+                                    loading="lazy"
+                                    decoding="async"
+                                  />
+                                </a>
+                                @if (canModify() && !estTerminee()) {
+                                  <button
+                                    mat-icon-button
+                                    type="button"
+                                    class="photo-grid__remove"
+                                    aria-label="Supprimer la photo"
+                                    (click)="supprimerDocument(photo)"
+                                  >
+                                    <svg class="btn-icon" lucideTrash2 aria-hidden="true"></svg>
+                                  </button>
+                                }
+                              </li>
+                            }
+                          </ul>
+                        }
+
+                        @if (autresPiecesDuConstat(constat.id).length) {
+                          <ul class="doc-list">
+                            @for (piece of autresPiecesDuConstat(constat.id); track piece.id) {
+                              <li class="doc-item">
+                                <svg lucideFileText aria-hidden="true"></svg>
+                                <a
+                                  class="doc-item__title"
+                                  [href]="piece.secureUrl"
+                                  target="_blank"
+                                  rel="noopener"
+                                >
+                                  {{ piece.title ?? documentLabel(piece.type) }}
+                                  <small>{{ documentLabel(piece.type) }}</small>
+                                </a>
+                              </li>
+                            }
+                          </ul>
+                        }
+
+                        @if (canModify() && !estTerminee()) {
+                          <label class="upload-button upload-button--inline">
+                            <svg class="btn-icon" lucideUpload aria-hidden="true"></svg>Ajouter une
+                            photo à ce constat
+                            <input
+                              type="file"
+                              accept="image/*,video/*"
+                              (change)="televerser($event, 'photo_visite', constat.id)"
+                            />
+                          </label>
+                        }
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="detail-note">
+                    Aucun constat de terrain. C’est le cœur de la mission : sans visite, le rapport ne
+                    pourra pas être généré.
+                  </p>
+                }
+              </div>
+            }
+          </section>
+
+          <!-- Étape 4 : vérification administrative -->
+          <section [class]="'page-card etape etape--' + etatEtape('verification_administrative')">
+            <button
+              type="button"
+              class="etape__head"
+              [attr.aria-expanded]="estOuverte('verification_administrative')"
+              (click)="basculerEtape('verification_administrative')"
+            >
+              <span class="etape__rang">
+                @if (etatEtape('verification_administrative') === 'fait') {
+                  ✓
+                } @else {
+                  4
+                }
+              </span>
+              <span class="etape__titre">
+                <strong>Vérification administrative</strong>
+                <small>
+                  @if (constatsAdministratifs().length) {
+                    {{ constatsAdministratifs().length }} administration(s) consultée(s)
+                  } @else {
+                    Aucune administration consultée
+                  }
+                </small>
+              </span>
+              <span class="etape__etat">
+                {{ etatLabel(etatEtape('verification_administrative')) }}
+              </span>
+            </button>
+
+            @if (estOuverte('verification_administrative')) {
+              <div class="etape__corps">
+                <div class="detail-section__head">
+                  <p class="detail-section__hint">
+                    Les administrations consultées selon la localité, et ce qu’elles ont répondu.
+                  </p>
+                  @if (canModify() && !estTerminee()) {
+                    <button
+                      mat-stroked-button
+                      type="button"
+                      (click)="ajouterConstat('verification_administrative')"
+                    >
+                      <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Ajouter une
+                      consultation
+                    </button>
+                  }
+                </div>
+
+                @if (constatsAdministratifs().length) {
+                  <ul class="constat-list">
+                    @for (constat of constatsAdministratifs(); track constat.id) {
+                      <li class="constat-item">
+                        <div class="constat-item__head">
+                          <strong>{{ administrationLabel(constat.administration) }}</strong>
+                          @if (constat.resultat) {
+                            <span [class]="resultatPill(constat.resultat)">
+                              {{ resultatLabel(constat.resultat) }}
+                            </span>
+                          }
+                          <span class="constat-item__meta">
+                            {{ constat.realiseeLe | date: 'dd/MM/yyyy' }} ·
+                            {{ personne(constat.realiseePar) }}
+                            @if (constat.interlocuteur) {
+                              · {{ constat.interlocuteur }}
+                            }
+                          </span>
+                          @if (canModify() && !estTerminee()) {
+                            <span class="constat-item__actions">
+                              <button mat-button type="button" (click)="modifierConstat(constat)">
+                                Modifier
+                              </button>
+                              <button
+                                mat-icon-button
+                                type="button"
+                                aria-label="Supprimer la consultation"
+                                (click)="supprimerConstat(constat)"
+                              >
+                                <svg class="btn-icon" lucideTrash2 aria-hidden="true"></svg>
+                              </button>
+                            </span>
+                          }
+                        </div>
+                        @if (constat.observations) {
+                          <p class="constat-item__note">{{ constat.observations }}</p>
+                        }
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="detail-note">Aucune administration consultée pour l’instant.</p>
+                }
+              </div>
+            }
+          </section>
+
+          <!-- Étape 5 : conclusion et rapport -->
+          <section [class]="'page-card etape etape--' + etatEtape('rapport')">
+            <button
+              type="button"
+              class="etape__head"
+              [attr.aria-expanded]="estOuverte('rapport')"
+              (click)="basculerEtape('rapport')"
+            >
+              <span class="etape__rang">
+                @if (etatEtape('rapport') === 'fait') {
+                  ✓
+                } @else {
+                  5
+                }
+              </span>
+              <span class="etape__titre">
+                <strong>Conclusion et rapport</strong>
+                <small>
+                  @if (m.decision) {
+                    Décision : {{ decisionLabel(m.decision) }}
+                    @if (rapports().length) {
+                      · rapport remis
+                    } @else {
+                      · rapport non généré
+                    }
+                  } @else {
+                    Décision non prononcée
+                  }
+                </small>
+              </span>
+              <span class="etape__etat">{{ etatLabel(etatEtape('rapport')) }}</span>
+            </button>
+
+            @if (estOuverte('rapport')) {
+              <div class="etape__corps">
+                <p class="detail-section__hint">
+                  La réponse que MTM donne au client. La décision est obligatoire avant de générer le
+                  rapport et avant de clôturer la mission.
+                </p>
+
+                @if (canValidate()) {
+                  <form [formGroup]="conclusion" class="form-grid" (ngSubmit)="enregistrerConclusion()">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Décision de MTM</mat-label>
+                      <mat-select formControlName="decision">
+                        <mat-option value="">Non prononcée</mat-option>
+                        @for (valeur of options().decisions ?? []; track valeur) {
+                          <mat-option [value]="valeur">{{ decisionLabel(valeur) }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="wide">
+                      <mat-label>Conclusion</mat-label>
+                      <textarea
+                        matInput
+                        rows="3"
+                        formControlName="conclusion"
+                        placeholder="Ce que MTM a établi, en quelques phrases lisibles par le client"
+                      ></textarea>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="wide">
+                      <mat-label>Réserves</mat-label>
+                      <textarea matInput rows="2" formControlName="reserves"></textarea>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="wide">
+                      <mat-label>Recommandation</mat-label>
+                      <textarea matInput rows="2" formControlName="recommandation"></textarea>
+                    </mat-form-field>
+
+                    <div class="wide form-actions">
+                      <button mat-stroked-button type="submit" [disabled]="saving()">
+                        Enregistrer la conclusion
+                      </button>
+                      <button
+                        mat-flat-button
+                        color="primary"
+                        type="button"
+                        [disabled]="saving()"
+                        (click)="genererRapport()"
+                      >
+                        <svg class="btn-icon" lucideFileText aria-hidden="true"></svg>Générer le
+                        rapport
+                      </button>
+                    </div>
+                  </form>
+                } @else {
+                  <dl class="info-list">
+                    <div>
+                      <dt>Décision de MTM</dt>
+                      <dd>{{ m.decision ? decisionLabel(m.decision) : 'Non prononcée' }}</dd>
+                    </div>
+                    @if (m.conclusion) {
+                      <div><dt>Conclusion</dt><dd>{{ m.conclusion }}</dd></div>
+                    }
+                    @if (m.reserves) {
+                      <div><dt>Réserves</dt><dd>{{ m.reserves }}</dd></div>
+                    }
+                    @if (m.recommandation) {
+                      <div><dt>Recommandation</dt><dd>{{ m.recommandation }}</dd></div>
+                    }
+                  </dl>
+                  <p class="detail-section__hint">
+                    La décision et le rapport relèvent de la validation du dossier.
+                  </p>
+                }
+
+                @if (rapports().length) {
+                  <ul class="doc-list">
+                    @for (rapport of rapports(); track rapport.id) {
+                      <li class="doc-item">
+                        <svg lucideFileText aria-hidden="true"></svg>
+                        <a
+                          class="doc-item__title"
+                          [href]="rapport.secureUrl"
+                          target="_blank"
+                          rel="noopener"
+                        >
+                          {{ rapport.title }}
+                          <small>
+                            version {{ rapport.version }} ·
+                            {{ rapport.createdAt | date: 'dd/MM/yyyy' }}
+                          </small>
+                        </a>
+                        <span class="status-pill status-pill--success">Visible par le client</span>
+                      </li>
+                    }
+                  </ul>
+                }
+              </div>
+            }
+          </section>
+        }
+
+        @if (!estVerification()) {
+          <!--
+            Parcours sans écran dédié (démarche administrative, prestation
+            technique) : chaque étape se raconte par ses constats, comme la
+            vérification administrative. Le rendu est piloté par le parcours
+            renvoyé par l'API, pour qu'un type ajouté en Paramètres s'affiche
+            sans retoucher ce fichier.
+          -->
+          @for (etape of etapesGeneriques(); track etape; let i = $index) {
+            <section [class]="'page-card etape etape--' + etatEtape(etape)">
+              <button
+                type="button"
+                class="etape__head"
+                [attr.aria-expanded]="estOuverte(etape)"
+                (click)="basculerEtape(etape)"
+              >
+                <span class="etape__rang">
+                  @if (etatEtape(etape) === 'fait') {
+                    ✓
+                  } @else {
+                    {{ i + 2 }}
+                  }
+                </span>
+                <span class="etape__titre">
+                  <strong>{{ etapeLabel(etape) }}</strong>
+                  <small>
+                    @if (constatsDeLEtape(etape).length) {
+                      {{ constatsDeLEtape(etape).length }}
+                      constat{{ constatsDeLEtape(etape).length > 1 ? 's' : '' }} enregistré{{
+                        constatsDeLEtape(etape).length > 1 ? 's' : ''
+                      }}
+                    } @else {
+                      {{ etapeAide(etape) }}
+                    }
+                  </small>
+                </span>
+                <span class="etape__etat">{{ etatLabel(etatEtape(etape)) }}</span>
+                <svg lucideChevronDown class="etape__chevron" aria-hidden="true"></svg>
+              </button>
+
+              @if (estOuverte(etape)) {
+                <div class="etape__corps">
+                  <div class="detail-section__head">
+                    <h2>{{ etapeLabel(etape) }}</h2>
+                    @if (canModify() && !estTerminee()) {
+                      <button mat-stroked-button type="button" (click)="ajouterConstat(etape)">
+                        Ajouter un constat
+                      </button>
+                    }
+                  </div>
+                  <p class="detail-section__hint">{{ etapeAide(etape) }}</p>
+
+                  @if (constatsDeLEtape(etape).length) {
+                    <ul class="constat-list">
+                      @for (constat of constatsDeLEtape(etape); track constat.id) {
+                        <li class="constat-item">
+                          <div class="constat-item__head">
+                            <strong>{{ constat.titre }}</strong>
+                            @if (constat.resultat) {
+                              <span [class]="resultatPill(constat.resultat)">
+                                {{ resultatLabel(constat.resultat) }}
+                              </span>
+                            }
+                            <span class="constat-item__meta">
+                              {{ constat.realiseeLe | date: 'dd/MM/yyyy' }} ·
+                              {{ personne(constat.realiseePar) }}
+                              @if (constat.administration) {
+                                · {{ administrationLabel(constat.administration) }}
+                              }
+                              @if (constat.interlocuteur) {
+                                · {{ constat.interlocuteur }}
+                              }
+                            </span>
+                            @if (canModify() && !estTerminee()) {
+                              <span class="constat-item__actions">
+                                <button mat-button type="button" (click)="modifierConstat(constat)">
+                                  Modifier
+                                </button>
+                                <button
+                                  mat-icon-button
+                                  type="button"
+                                  aria-label="Supprimer le constat"
+                                  (click)="supprimerConstat(constat)"
+                                >
+                                  <svg class="btn-icon" lucideTrash2 aria-hidden="true"></svg>
+                                </button>
+                              </span>
+                            }
+                          </div>
+                          @if (constat.observations) {
+                            <p class="constat-item__note">{{ constat.observations }}</p>
+                          }
+                        </li>
+                      }
+                    </ul>
+                  } @else {
+                    <p class="detail-section__hint">
+                      Aucun constat enregistré à cette étape.
+                    </p>
+                  }
+                </div>
+              }
+            </section>
+          }
+
+          <!--
+            Clôture : un dépôt ou un plan n'a pas de verdict de conformité à
+            rendre. Ce qu'on lui demande, c'est de dire ce que le client a
+            obtenu — l'API refuse la clôture sans cette conclusion.
+          -->
+          <section [class]="'page-card etape etape--' + (estTerminee() ? 'fait' : 'a_venir')">
+            <div class="etape__corps">
+              <div class="detail-section__head">
+                <h2>Conclusion du dossier</h2>
+              </div>
+              @if (canValidate() && !estTerminee()) {
+                <form [formGroup]="conclusion" class="form-grid" (ngSubmit)="enregistrerConclusion()">
+                  <mat-form-field appearance="outline" class="wide">
+                    <mat-label>Ce qui a été obtenu ou livré au client</mat-label>
                     <textarea
                       matInput
                       rows="3"
                       formControlName="conclusion"
-                      placeholder="Ce que MTM a établi, en quelques phrases lisibles par le client"
+                      placeholder="Ex. : acte de mutation retiré aux Domaines et remis au client le 12/03."
                     ></textarea>
                   </mat-form-field>
-
-                  <mat-form-field appearance="outline" class="wide">
-                    <mat-label>Réserves</mat-label>
-                    <textarea matInput rows="2" formControlName="reserves"></textarea>
-                  </mat-form-field>
-
-                  <mat-form-field appearance="outline" class="wide">
-                    <mat-label>Recommandation</mat-label>
-                    <textarea matInput rows="2" formControlName="recommandation"></textarea>
-                  </mat-form-field>
-
                   <div class="wide form-actions">
                     <button mat-stroked-button type="submit" [disabled]="saving()">
                       Enregistrer la conclusion
-                    </button>
-                    <button
-                      mat-flat-button
-                      color="primary"
-                      type="button"
-                      [disabled]="saving()"
-                      (click)="genererRapport()"
-                    >
-                      <svg class="btn-icon" lucideFileText aria-hidden="true"></svg>Générer le
-                      rapport
                     </button>
                   </div>
                 </form>
               } @else {
                 <dl class="info-list">
                   <div>
-                    <dt>Décision de MTM</dt>
-                    <dd>{{ m.decision ? decisionLabel(m.decision) : 'Non prononcée' }}</dd>
+                    <dt>Conclusion</dt>
+                    <dd>{{ m.conclusion || 'Non renseignée' }}</dd>
                   </div>
-                  @if (m.conclusion) {
-                    <div><dt>Conclusion</dt><dd>{{ m.conclusion }}</dd></div>
-                  }
-                  @if (m.reserves) {
-                    <div><dt>Réserves</dt><dd>{{ m.reserves }}</dd></div>
-                  }
-                  @if (m.recommandation) {
-                    <div><dt>Recommandation</dt><dd>{{ m.recommandation }}</dd></div>
-                  }
                 </dl>
-                <p class="detail-section__hint">
-                  La décision et le rapport relèvent de la validation du dossier.
-                </p>
-              }
-
-              @if (rapports().length) {
-                <ul class="doc-list">
-                  @for (rapport of rapports(); track rapport.id) {
-                    <li class="doc-item">
-                      <svg lucideFileText aria-hidden="true"></svg>
-                      <a
-                        class="doc-item__title"
-                        [href]="rapport.secureUrl"
-                        target="_blank"
-                        rel="noopener"
-                      >
-                        {{ rapport.title }}
-                        <small>
-                          version {{ rapport.version }} ·
-                          {{ rapport.createdAt | date: 'dd/MM/yyyy' }}
-                        </small>
-                      </a>
-                      <span class="status-pill status-pill--success">Visible par le client</span>
-                    </li>
-                  }
-                </ul>
               }
             </div>
-          }
-        </section>
+          </section>
+        }
       </div>
 
       <!-- Le contexte, visible quelle que soit l'étape ouverte -->

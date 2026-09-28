@@ -10,17 +10,30 @@ import {
 } from './mission-status';
 
 describe('libellés des missions de vérification', () => {
-  it('couvre les cinq étapes du cahier des charges et les deux fins', () => {
+  it('couvre les étapes des trois parcours et les deux fins communes', () => {
     const attendues = [
+      // Vérification : les cinq étapes de la section 14 du cahier des charges.
       'demande',
       'faisabilite',
       'verification_physique',
       'verification_administrative',
       'rapport',
+      // Démarche déposée pour le compte du client.
+      'constitution_dossier',
+      'depot',
+      'suivi_administration',
+      'retrait',
+      // Prestation technique (plans).
+      'devis',
+      'production',
+      'livraison',
+      // Fins de parcours, communes aux trois.
       'cloturee',
       'abandonnee',
     ];
 
+    // Chaque étape servie par l'API doit avoir son libellé : sans cela, un
+    // dépôt de bail afficherait « suivi_administration » au collaborateur.
     expect(Object.keys(MISSION_ETAPES)).toEqual(attendues);
     expect(ETAPES_TERMINALES).toEqual(['cloturee', 'abandonnee']);
   });

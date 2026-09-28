@@ -311,9 +311,10 @@ export class DemarchesService {
   }
 
   /**
-   * Changement d'étape. Deux règles tenues par le métier : on ne rédige pas
-   * un rapport sans avoir rien vérifié, et on ne clôture pas sans décision —
-   * un dossier clos sans conclusion n'a aucune valeur pour le client.
+   * Changement d'étape. Les règles tenues par le métier : on reste dans le
+   * parcours de sa famille de prestation, on ne rédige pas un rapport sans
+   * avoir rien vérifié, et on ne clôture pas sans conclure — un dossier clos
+   * sans conclusion n'a aucune valeur pour le client.
    */
   async transition(id: string, dto: TransitionMissionDto, user: DemarchesUser) {
     await this.access.ensureAccessible(id, user);
@@ -330,6 +331,7 @@ export class DemarchesService {
       where: { id },
       select: {
         statut: true,
+        typeVerification: true,
         decision: true,
         conclusion: true,
         _count: { select: { etapes: true } },
@@ -337,15 +339,40 @@ export class DemarchesService {
     });
     if (!mission) throw new NotFoundException('Mission introuvable');
 
+    // Un dépôt de mutation n'a pas d'étape « vérification physique », et une
+    // vérification foncière n'a pas d'étape « dépôt ». On tolère l'étape
+    // courante même hors parcours : un dossier saisi avant l'ouverture du
+    // module aux autres prestations doit pouvoir continuer à avancer.
+    const parcours = await this.options.parcoursDuType(
+      mission.typeVerification,
+    );
+    if (!parcours.includes(dto.statut) && dto.statut !== mission.statut) {
+      throw new BadRequestException(
+        `L’étape « ${dto.statut} » n’appartient pas au parcours de ce type de prestation`,
+      );
+    }
+
+    const famille = await this.options.familleDuType(mission.typeVerification);
+
     if (dto.statut === 'rapport' && mission._count.etapes === 0) {
       throw new BadRequestException(
         'Aucune vérification enregistrée : renseignez au moins une visite ou une administration consultée avant le rapport',
       );
     }
-    if (dto.statut === 'cloturee' && !mission.decision) {
-      throw new BadRequestException(
-        'Indiquez la décision de MTM (favorable, défavorable ou à compléter) avant de clôturer la mission',
-      );
+    if (dto.statut === 'cloturee') {
+      // Une vérification se conclut par une décision motivée. Un dépôt ou un
+      // plan n'a pas de verdict de conformité à rendre : ce qu'on lui demande,
+      // c'est de dire ce qui a été obtenu ou livré.
+      if (famille === 'verification' && !mission.decision) {
+        throw new BadRequestException(
+          'Indiquez la décision de MTM (favorable, défavorable ou à compléter) avant de clôturer la mission',
+        );
+      }
+      if (famille !== 'verification' && !mission.conclusion?.trim()) {
+        throw new BadRequestException(
+          'Indiquez ce qui a été obtenu ou livré au client avant de clôturer le dossier',
+        );
+      }
     }
     if (dto.statut === 'abandonnee' && !dto.justification?.trim()) {
       throw new BadRequestException(

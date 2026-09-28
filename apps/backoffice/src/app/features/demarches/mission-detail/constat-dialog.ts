@@ -96,14 +96,16 @@ export interface ConstatDialogData {
             />
           </mat-form-field>
         } @else {
-          <mat-form-field appearance="outline">
-            <mat-label>Administration consultée</mat-label>
-            <mat-select formControlName="administration">
-              @for (valeur of data.administrations; track valeur) {
-                <mat-option [value]="valeur">{{ administrationLabel(valeur) }}</mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
+          @if (!estTechnique) {
+            <mat-form-field appearance="outline">
+              <mat-label>Administration consultée</mat-label>
+              <mat-select formControlName="administration">
+                @for (valeur of data.administrations; track valeur) {
+                  <mat-option [value]="valeur">{{ administrationLabel(valeur) }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          }
 
           <mat-form-field appearance="outline">
             <mat-label>Résultat</mat-label>
@@ -117,7 +119,7 @@ export interface ConstatDialogData {
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="constat__wide">
-            <mat-label>Interlocuteur rencontré</mat-label>
+            <mat-label>{{ estTechnique ? 'Prestataire' : 'Interlocuteur rencontré' }}</mat-label>
             <input matInput formControlName="interlocuteur" placeholder="Nom et fonction" />
           </mat-form-field>
         }
@@ -161,6 +163,16 @@ export class ConstatDialog {
 
   protected readonly estPhysique = this.data.type === 'verification_physique';
 
+  /**
+   * Un plan d'architecte ou de géomètre ne se consulte pas auprès d'une
+   * administration : le constat porte alors sur le prestataire et ce qu'il a
+   * produit. Sans cette distinction, le formulaire imposerait une mairie à
+   * une étape de production de plan.
+   */
+  protected readonly estTechnique = ['devis', 'production', 'livraison'].includes(
+    this.data.type,
+  );
+
   protected readonly form = this.formBuilder.nonNullable.group({
     titre: [this.data.constat?.titre ?? this.titreParDefaut(), Validators.required],
     observations: [this.data.constat?.observations ?? ''],
@@ -170,7 +182,10 @@ export class ConstatDialog {
     accesDescription: [this.data.constat?.accesDescription ?? ''],
     environnement: [this.data.constat?.environnement ?? ''],
     conformiteApparente: [this.data.constat?.conformiteApparente ?? ''],
-    administration: [this.data.constat?.administration ?? this.data.administrations[0] ?? ''],
+    administration: [
+      this.data.constat?.administration ??
+        (this.estTechnique ? '' : (this.data.administrations[0] ?? '')),
+    ],
     interlocuteur: [this.data.constat?.interlocuteur ?? ''],
     resultat: [this.data.constat?.resultat ?? ''],
     realiseeLe: [this.jour(this.data.constat?.realiseeLe) || this.aujourdhui()],
@@ -178,24 +193,34 @@ export class ConstatDialog {
 
   protected get titreDialogue(): string {
     const action = this.data.constat ? 'Modifier le constat' : 'Nouveau constat';
-    return this.estPhysique ? `${action} — visite du terrain` : `${action} — administration`;
+    if (this.estPhysique) return `${action} — visite du terrain`;
+    return this.estTechnique
+      ? `${action} — prestataire`
+      : `${action} — administration`;
   }
 
   protected get introDialogue(): string {
-    return this.estPhysique
-      ? 'Ce qui a été vu sur place : état du terrain, accès, environnement, coordonnées relevées.'
+    if (this.estPhysique) {
+      return 'Ce qui a été vu sur place : état du terrain, accès, environnement, coordonnées relevées.';
+    }
+    return this.estTechnique
+      ? 'Le prestataire sollicité et où en est le plan commandé.'
       : 'L’administration consultée, l’interlocuteur rencontré et la réponse obtenue.';
   }
 
   protected get placeholderTitre(): string {
-    return this.estPhysique
-      ? 'Ex. : visite du terrain et relevé GPS'
+    if (this.estPhysique) return 'Ex. : visite du terrain et relevé GPS';
+    return this.estTechnique
+      ? 'Ex. : remise du devis par le géomètre'
       : 'Ex. : consultation du service des Domaines de Mbour';
   }
 
   protected get placeholderObservations(): string {
-    return this.estPhysique
-      ? 'Ex. : parcelle libre de toute occupation, bornes visibles aux quatre angles.'
+    if (this.estPhysique) {
+      return 'Ex. : parcelle libre de toute occupation, bornes visibles aux quatre angles.';
+    }
+    return this.estTechnique
+      ? 'Ex. : plan de masse reçu, reste l’implantation à valider avec le client.'
       : 'Ex. : titre confirmé au nom du vendeur, aucune opposition enregistrée.';
   }
 
@@ -254,9 +279,20 @@ export class ConstatDialog {
   }
 
   private titreParDefaut(): string {
-    return this.data.type === 'verification_physique'
-      ? 'Visite du terrain'
-      : 'Consultation d’une administration';
+    const titres: Record<string, string> = {
+      verification_physique: 'Visite du terrain',
+      verification_administrative: 'Consultation d’une administration',
+      faisabilite: 'Étude préalable',
+      rapport: 'Rédaction du rapport',
+      constitution_dossier: 'Constitution du dossier',
+      depot: 'Dépôt du dossier',
+      suivi_administration: 'Passage de suivi',
+      retrait: 'Retrait du document',
+      devis: 'Devis du prestataire',
+      production: 'Point d’avancement du plan',
+      livraison: 'Remise du plan au client',
+    };
+    return titres[this.data.type] ?? 'Constat';
   }
 
   private jour(valeur?: string | null): string {

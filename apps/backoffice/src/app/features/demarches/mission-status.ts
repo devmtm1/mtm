@@ -36,6 +36,43 @@ export const MISSION_ETAPES: Record<string, StatusMeaning> = {
     label: 'Rapport',
     help: 'Conclusion à rédiger et rapport à remettre au client.',
   },
+  // --- Parcours d'une démarche déposée pour le compte du client ---
+  constitution_dossier: {
+    tone: 'info',
+    label: 'Constitution du dossier',
+    help: 'Rassembler les pièces exigées par l’administration avant le dépôt.',
+  },
+  depot: {
+    tone: 'primary',
+    label: 'Dépôt',
+    help: 'Dossier déposé auprès de la mairie ou du service compétent.',
+  },
+  suivi_administration: {
+    tone: 'primary',
+    label: 'Suivi administration',
+    help: 'Relances et passages jusqu’à la décision de l’administration.',
+  },
+  retrait: {
+    tone: 'warning',
+    label: 'Retrait',
+    help: 'Document obtenu, à retirer puis à remettre au client.',
+  },
+  // --- Parcours d'une prestation technique (plans) ---
+  devis: {
+    tone: 'info',
+    label: 'Devis',
+    help: 'Chiffrage du prestataire à valider avec le client.',
+  },
+  production: {
+    tone: 'primary',
+    label: 'Production',
+    help: 'Plan en cours de réalisation par l’architecte ou le géomètre.',
+  },
+  livraison: {
+    tone: 'warning',
+    label: 'Livraison',
+    help: 'Plan terminé, à remettre au client.',
+  },
   cloturee: {
     tone: 'success',
     label: 'Clôturée',
@@ -71,6 +108,43 @@ export const TYPES_VERIFICATION: Record<string, StatusMeaning> = {
     help: 'Vérification puis accompagnement du client jusqu’à l’acquisition.',
   },
   autre: { tone: 'neutral', label: 'Autre', help: 'Mission particulière, à décrire dans l’objectif.' },
+  // --- Démarches déposées pour le compte du client ---
+  depot_mutation: {
+    tone: 'primary',
+    label: 'Dépôt de mutation',
+    help: 'Transfert de propriété déposé au service des Impôts et Domaines.',
+  },
+  depot_bail: {
+    tone: 'primary',
+    label: 'Dépôt de bail',
+    help: 'Demande de bail déposée auprès du service compétent.',
+  },
+  depot_autorisation_construire: {
+    tone: 'primary',
+    label: 'Dépôt d’autorisation de construire',
+    help: 'Demande d’autorisation déposée auprès de la mairie.',
+  },
+  retrait_document: {
+    tone: 'info',
+    label: 'Retrait de document',
+    help: 'Retrait d’un document en mairie ou aux Impôts et Domaines.',
+  },
+  autre_demarche: {
+    tone: 'neutral',
+    label: 'Autre démarche',
+    help: 'Démarche administrative ou foncière à décrire dans l’objectif.',
+  },
+  // --- Prestations techniques ---
+  plan_architectural: {
+    tone: 'success',
+    label: 'Plan architectural',
+    help: 'Conception d’un plan par un architecte.',
+  },
+  plan_geometre: {
+    tone: 'success',
+    label: 'Plan de géomètre',
+    help: 'Levé ou bornage réalisé par un géomètre.',
+  },
 };
 
 /** Urgence demandée par le client (référentiel « demarches.urgences »). */

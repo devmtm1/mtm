@@ -202,4 +202,90 @@ describe('DemarchesService', () => {
       missions.transition('m1', { statut: 'cloturee' }, commercial),
     ).rejects.toThrow(ForbiddenException);
   });
+
+  // --- Familles de prestation : un dépôt ne suit pas le parcours d'une
+  // vérification, et réciproquement.
+
+  it('refuse à un dépôt de bail une étape du parcours de vérification', async () => {
+    prismaMock.missionVerification.findFirst.mockResolvedValue({ id: 'm1' });
+    prismaMock.missionVerification.findUnique.mockResolvedValue({
+      statut: 'demande',
+      typeVerification: 'depot_bail',
+      decision: null,
+      conclusion: null,
+      _count: { etapes: 0 },
+    });
+
+    await expect(
+      missions.transition('m1', { statut: 'verification_physique' }, responsable),
+    ).rejects.toThrow(/n’appartient pas au parcours/);
+  });
+
+  it('laisse un dépôt de bail avancer sur son propre parcours', async () => {
+    prismaMock.missionVerification.findFirst.mockResolvedValue({ id: 'm1' });
+    prismaMock.missionVerification.findUnique.mockResolvedValue({
+      statut: 'constitution_dossier',
+      typeVerification: 'depot_bail',
+      decision: null,
+      conclusion: null,
+      _count: { etapes: 0 },
+    });
+    prismaMock.missionVerification.update.mockResolvedValue({
+      id: 'm1',
+      documents: [],
+    });
+
+    await missions.transition('m1', { statut: 'depot' }, responsable);
+
+    expect(prismaMock.missionVerification.update.mock.calls[0][0].data.statut).toBe(
+      'depot',
+    );
+  });
+
+  it('clôture un dépôt sur sa conclusion, sans exiger de décision de conformité', async () => {
+    prismaMock.missionVerification.findFirst.mockResolvedValue({ id: 'm1' });
+    prismaMock.missionVerification.findUnique.mockResolvedValue({
+      statut: 'retrait',
+      typeVerification: 'depot_mutation',
+      decision: null,
+      conclusion: null,
+      _count: { etapes: 2 },
+    });
+
+    // Sans conclusion, on ne sait pas ce que le client a obtenu.
+    await expect(
+      missions.transition('m1', { statut: 'cloturee' }, responsable),
+    ).rejects.toThrow(/obtenu ou livré/);
+
+    prismaMock.missionVerification.findUnique.mockResolvedValue({
+      statut: 'retrait',
+      typeVerification: 'depot_mutation',
+      decision: null,
+      conclusion: 'Acte de mutation retiré et remis au client le 12/03',
+      _count: { etapes: 2 },
+    });
+    prismaMock.missionVerification.update.mockResolvedValue({
+      id: 'm1',
+      documents: [],
+    });
+
+    await missions.transition('m1', { statut: 'cloturee' }, responsable);
+
+    expect(prismaMock.missionVerification.update).toHaveBeenCalled();
+  });
+
+  it('refuse un plan de géomètre clôturé sans rien avoir livré', async () => {
+    prismaMock.missionVerification.findFirst.mockResolvedValue({ id: 'm1' });
+    prismaMock.missionVerification.findUnique.mockResolvedValue({
+      statut: 'production',
+      typeVerification: 'plan_geometre',
+      decision: null,
+      conclusion: '   ',
+      _count: { etapes: 1 },
+    });
+
+    await expect(
+      missions.transition('m1', { statut: 'cloturee' }, responsable),
+    ).rejects.toThrow(/obtenu ou livré/);
+  });
 });

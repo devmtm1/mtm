@@ -139,6 +139,14 @@ export interface MissionOptions {
   modesPaiement: string[];
   /** Tarif indicatif par type de vérification, en FCFA. */
   tarifs: Record<string, number>;
+  /**
+   * Famille de parcours de chaque type de prestation : « verification »,
+   * « demarche » ou « technique ». Une vérification foncière et un dépôt de
+   * bail ne franchissent pas les mêmes étapes.
+   */
+  famillesParType: Record<string, string>;
+  /** Étapes praticables par famille, fins de parcours comprises. */
+  parcoursParFamille: Record<string, string[]>;
 }
 
 export interface MissionStats {

@@ -55,10 +55,12 @@ import {
 
 /**
 /**
- * Le parcours d'une vérification, dans l'ordre de la section 14 du cahier des
- * charges. Il sert à la fois de fil de lecture et de règle d'avancement.
+ * Parcours d'une vérification, dans l'ordre de la section 14 du cahier des
+ * charges. Il ne sert plus que de repli : le parcours réel dépend de la
+ * famille de la prestation et vient des options de l'API, car un dépôt de
+ * bail ne franchit pas les étapes d'une vérification foncière.
  */
-const PARCOURS = [
+const PARCOURS_VERIFICATION = [
   'demande',
   'faisabilite',
   'verification_physique',
@@ -135,7 +137,32 @@ export class MissionDetail implements OnInit {
    * ouverte, celles qui sont franchies se replient en une ligne, les
    * suivantes restent annoncées mais fermées.
    */
-  protected readonly parcours = PARCOURS;
+  /**
+   * Famille de la prestation ouverte. Sans options chargées, on suppose une
+   * vérification : c'est le parcours historique du module.
+   */
+  protected readonly famille = computed(() => {
+    const type = this.mission()?.typeVerification;
+    const table = this.options().famillesParType ?? {};
+    return (type && table[type]) || 'verification';
+  });
+
+  /** Vrai pour le parcours historique, qui a ses écrans dédiés. */
+  protected readonly estVerification = computed(
+    () => this.famille() === 'verification',
+  );
+
+  /** Étapes du parcours, fins de parcours exclues : c'est le fil de lecture. */
+  protected readonly parcours = computed(() => {
+    const table = this.options().parcoursParFamille ?? {};
+    const etapes = table[this.famille()] ?? PARCOURS_VERIFICATION;
+    return etapes.filter((etape) => !ETAPES_TERMINALES.includes(etape));
+  });
+
+  /** Étapes à dérouler sous la demande, pour les parcours sans écran dédié. */
+  protected readonly etapesGeneriques = computed(() =>
+    this.parcours().filter((etape) => etape !== 'demande'),
+  );
 
   /**
    * Étape dépliée. `null` : celle en cours, ce qui est le cas au chargement.
@@ -146,13 +173,14 @@ export class MissionDetail implements OnInit {
   /** Rang atteint dans le parcours ; une mission close les a toutes franchies. */
   private readonly rangAtteint = computed(() => {
     const statut = this.mission()?.statut ?? 'demande';
-    if (ETAPES_TERMINALES.includes(statut)) return PARCOURS.length;
-    const rang = PARCOURS.indexOf(statut);
+    const parcours = this.parcours();
+    if (ETAPES_TERMINALES.includes(statut)) return parcours.length;
+    const rang = parcours.indexOf(statut);
     return rang < 0 ? 0 : rang;
   });
 
   protected etatEtape(code: string): 'fait' | 'en_cours' | 'a_venir' {
-    const rang = PARCOURS.indexOf(code);
+    const rang = this.parcours().indexOf(code);
     const atteint = this.rangAtteint();
     if (rang < atteint) return 'fait';
     return rang === atteint ? 'en_cours' : 'a_venir';
@@ -175,15 +203,31 @@ export class MissionDetail implements OnInit {
   /** L'étape qui suit, quand elle est autorisée : le geste principal de la fiche. */
   protected readonly etapeSuivante = computed(() => {
     if (this.estTerminee()) return null;
-    const suivante = PARCOURS[this.rangAtteint() + 1] ?? 'cloturee';
+    const suivante = this.parcours()[this.rangAtteint() + 1] ?? 'cloturee';
     return this.etapesSelectionnables().includes(suivante) ? suivante : null;
   });
 
-  /** Étapes proposables dans le sélecteur : la clôture exige la validation. */
+  /**
+   * Étapes proposables dans le sélecteur : celles du parcours de la
+   * prestation, et non plus tout le référentiel — proposer « vérification
+   * physique » sur un dépôt de bail ne mènerait qu'à un refus de l'API. La
+   * clôture exige en plus la validation.
+   */
   protected readonly etapesSelectionnables = computed(() => {
-    const toutes = this.options().statuts ?? [];
+    const table = this.options().parcoursParFamille ?? {};
+    const toutes = table[this.famille()] ?? [
+      ...PARCOURS_VERIFICATION,
+      ...ETAPES_TERMINALES,
+    ];
     return toutes.filter((etape) => etape !== 'cloturee' || this.canValidate());
   });
+
+  /** Constats rattachés à une étape donnée, pour les parcours génériques. */
+  protected constatsDeLEtape(code: string) {
+    return (this.mission()?.etapes ?? []).filter(
+      (etape) => etape.type === code,
+    );
+  }
 
   /** Constats de terrain et administrations, séparés comme dans le rapport. */
   protected readonly constatsPhysiques = computed(() =>

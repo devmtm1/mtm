@@ -14,12 +14,28 @@ import {
   UpdateEtapeMissionDto,
 } from './dto/etape-mission.dto';
 
-/** Étapes du parcours qui peuvent recevoir un constat. */
+/**
+ * Étapes du parcours qui peuvent recevoir un constat. Les trois familles de
+ * prestation y figurent : un dépôt se raconte par ses passages en
+ * administration comme une vérification se raconte par ses visites.
+ * `assertType()` vérifie ensuite que le constat appartient bien au parcours
+ * de la mission concernée.
+ */
 const TYPES_ETAPE = [
+  // Vérification
   'faisabilite',
   'verification_physique',
   'verification_administrative',
   'rapport',
+  // Démarche administrative
+  'constitution_dossier',
+  'depot',
+  'suivi_administration',
+  'retrait',
+  // Prestation technique
+  'devis',
+  'production',
+  'livraison',
 ] as const;
 
 const etapeInclude = {
@@ -57,6 +73,7 @@ export class DemarchesEtapesService {
   ) {
     await this.access.ensureAccessible(missionId, user);
     this.assertType(dto.type);
+    await this.assertTypeDansParcours(missionId, dto.type);
     await this.assertReferentiels(dto);
 
     const etape = await this.prisma.etapeMission.create({
@@ -121,6 +138,31 @@ export class DemarchesEtapesService {
     }
   }
 
+  /**
+   * Un constat « visite sur site » n'a aucun sens sur un dépôt de bail, et un
+   * constat « dépôt » n'en a aucun sur une vérification foncière. Sans ce
+   * contrôle, l'avancement automatique placerait la mission sur une étape
+   * étrangère à son parcours, dont elle ne pourrait plus sortir.
+   */
+  private async assertTypeDansParcours(
+    missionId: string,
+    type: string,
+  ): Promise<void> {
+    const mission = await this.prisma.missionVerification.findUnique({
+      where: { id: missionId },
+      select: { typeVerification: true },
+    });
+    if (!mission) throw new NotFoundException('Mission introuvable');
+    const parcours = await this.options.parcoursDuType(
+      mission.typeVerification,
+    );
+    if (!parcours.includes(type)) {
+      throw new BadRequestException(
+        `Le constat « ${type} » n’appartient pas au parcours de ce type de prestation`,
+      );
+    }
+  }
+
   private async assertReferentiels(
     dto: CreateEtapeMissionDto | UpdateEtapeMissionDto,
   ): Promise<void> {
@@ -165,18 +207,14 @@ export class DemarchesEtapesService {
     missionId: string,
     typeEtape: string,
   ): Promise<void> {
-    const ordre = [
-      'demande',
-      'faisabilite',
-      'verification_physique',
-      'verification_administrative',
-      'rapport',
-    ];
     const mission = await this.prisma.missionVerification.findUnique({
       where: { id: missionId },
-      select: { statut: true },
+      select: { statut: true, typeVerification: true },
     });
     if (!mission) return;
+    // L'ordre dépend de la famille : « dépôt » avance un dossier administratif
+    // là où « vérification physique » avance une vérification.
+    const ordre = await this.options.parcoursDuType(mission.typeVerification);
     const rangActuel = ordre.indexOf(mission.statut);
     const rangCible = ordre.indexOf(typeEtape);
     if (rangActuel === -1 || rangCible <= rangActuel) return;

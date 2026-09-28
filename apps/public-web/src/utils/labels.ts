@@ -56,9 +56,10 @@ export const DOCUMENT_TYPES: Record<string, string> = {
 };
 
 /**
- * Missions de vérification foncière (J2.2). Le client suit l'avancement
- * dans ses mots à lui : « notre équipe est allée sur place », pas
- * `verification_physique`.
+ * Prestations foncières suivies pour le client (J2.2) : vérifications,
+ * démarches déposées en son nom et plans commandés. Le client suit
+ * l'avancement dans ses mots à lui : « notre équipe est allée sur place »,
+ * pas `verification_physique`.
  */
 export const MISSION_STATUS: Record<string, StatusLabel> = {
   demande: {
@@ -85,6 +86,44 @@ export const MISSION_STATUS: Record<string, StatusLabel> = {
     label: 'Rapport en cours',
     tone: 'warning',
     help: 'Les vérifications sont faites : nous rédigeons votre rapport.',
+  },
+  // Démarches déposées pour le compte du client : il suit son dossier là où
+  // il se trouve réellement, à la mairie ou aux Domaines.
+  constitution_dossier: {
+    label: 'Dossier en préparation',
+    tone: 'info',
+    help: 'Nous rassemblons les pièces exigées avant de déposer votre dossier.',
+  },
+  depot: {
+    label: 'Dossier déposé',
+    tone: 'primary',
+    help: 'Votre dossier est déposé auprès de l’administration compétente.',
+  },
+  suivi_administration: {
+    label: 'Suivi en cours',
+    tone: 'primary',
+    help: 'Nous relançons l’administration jusqu’à l’obtention du document.',
+  },
+  retrait: {
+    label: 'Document obtenu',
+    tone: 'warning',
+    help: 'Le document est prêt : nous organisons sa remise.',
+  },
+  // Prestations techniques : plans d'architecte ou de géomètre.
+  devis: {
+    label: 'Devis en cours',
+    tone: 'info',
+    help: 'Nous chiffrons la prestation avec le professionnel retenu.',
+  },
+  production: {
+    label: 'Plan en cours',
+    tone: 'primary',
+    help: 'Le professionnel réalise votre plan.',
+  },
+  livraison: {
+    label: 'Plan prêt',
+    tone: 'warning',
+    help: 'Votre plan est terminé : nous organisons sa remise.',
   },
   cloturee: {
     label: 'Terminée',
@@ -123,6 +162,13 @@ export const MISSION_TYPES: Record<string, string> = {
   verification_administrative: 'Vérification administrative',
   accompagnement_achat: 'Accompagnement à l’achat',
   autre: 'Mission particulière',
+  depot_mutation: 'Dépôt de mutation',
+  depot_bail: 'Dépôt de bail',
+  depot_autorisation_construire: 'Dépôt d’autorisation de construire',
+  retrait_document: 'Retrait de document',
+  autre_demarche: 'Démarche administrative',
+  plan_architectural: 'Plan architectural',
+  plan_geometre: 'Plan de géomètre',
 };
 
 export const MISSION_DOCUMENT_TYPES: Record<string, string> = {
