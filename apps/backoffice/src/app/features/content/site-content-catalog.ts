@@ -80,7 +80,9 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
     where: 'Page « Démarches administratives »',
     slots: [
       { key: 'demarches.intro', label: 'Texte d’introduction', help: 'Présentation du service de vérification foncière.', multiline: true },
-      { key: 'demarches.etapes', label: 'Étapes de la vérification', help: 'Une étape par ligne, au format « Titre | Description ».', multiline: true, format: 'steps' },
+      { key: 'demarches.prestations', label: 'Prestations administratives', help: 'Une prestation par ligne, au format « Titre | Description ». C’est la liste des services annoncés aux visiteurs.', multiline: true, format: 'steps' },
+      { key: 'demarches.prestations-techniques', label: 'Services techniques', help: 'Plans d’architecte, de géomètre… Même format « Titre | Description », une par ligne.', multiline: true, format: 'steps' },
+      { key: 'demarches.etapes', label: 'Étapes de la vérification', help: 'Une étape par ligne, au format « Titre | Description ». Ne décrit que la vérification avant achat.', multiline: true, format: 'steps' },
     ],
   },
 ];

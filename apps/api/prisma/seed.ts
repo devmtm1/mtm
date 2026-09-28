@@ -1827,6 +1827,27 @@ async function main(): Promise<void> {
       type: 'text',
       ordre: 54,
     },
+    // La liste des prestations annoncées au public. Elle vit ici plutôt que
+    // dans le code du site : le catalogue commercial bouge plus vite que les
+    // déploiements.
+    {
+      key: 'demarches.prestations',
+      title:
+        'Démarches — prestations (une par ligne, format « Titre | Description »)',
+      content:
+        'Vérification avant achat | Contrôle du terrain et de sa situation administrative avant votre engagement.\nDépôt de mutation | Transfert de propriété déposé au service des Impôts et Domaines.\nDépôt de bail | Constitution du dossier et dépôt auprès du service compétent.\nDépôt d’autorisation de construire | Demande déposée auprès de la mairie, suivie jusqu’à la décision.\nRetrait de documents | Retrait de vos pièces auprès des mairies ou des services des Impôts et Domaines.\nAutres démarches foncières | Décrivez votre besoin : nous vous disons si nous pouvons le traiter.',
+      type: 'text',
+      ordre: 53,
+    },
+    {
+      key: 'demarches.prestations-techniques',
+      title:
+        'Démarches — services techniques (une par ligne, format « Titre | Description »)',
+      content:
+        'Plans architecturaux | Conception de vos plans par un architecte.\nPlans de géomètre | Levé, bornage et plan établis par un géomètre.',
+      type: 'text',
+      ordre: 54,
+    },
     {
       key: 'demarches.etapes',
       title:

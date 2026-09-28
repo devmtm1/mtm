@@ -35,6 +35,51 @@ const FALLBACK_REASSURANCE = [
 
 const REASSURANCE_ICONS = [Clock, BadgeCheck, Coins];
 
+/**
+ * Prestations annoncées par la direction. Elles vivent dans des blocs de
+ * contenu : la liste des services évolue au rythme du commerce, pas au rythme
+ * des déploiements. Format « titre | description », une par ligne.
+ */
+const FALLBACK_PRESTATIONS: EditableStep[] = [
+  {
+    title: 'Vérification avant achat',
+    description:
+      'Contrôle du terrain et de sa situation administrative avant votre engagement.',
+  },
+  {
+    title: 'Dépôt de mutation',
+    description: 'Transfert de propriété déposé au service des Impôts et Domaines.',
+  },
+  {
+    title: 'Dépôt de bail',
+    description: 'Constitution du dossier et dépôt auprès du service compétent.',
+  },
+  {
+    title: 'Dépôt d’autorisation de construire',
+    description: 'Demande déposée auprès de la mairie, suivie jusqu’à la décision.',
+  },
+  {
+    title: 'Retrait de documents',
+    description:
+      'Retrait de vos pièces auprès des mairies ou des services des Impôts et Domaines.',
+  },
+  {
+    title: 'Autres démarches foncières',
+    description: 'Décrivez votre besoin : nous vous disons si nous pouvons le traiter.',
+  },
+];
+
+const FALLBACK_PRESTATIONS_TECHNIQUES: EditableStep[] = [
+  {
+    title: 'Plans architecturaux',
+    description: 'Conception de vos plans par un architecte.',
+  },
+  {
+    title: 'Plans de géomètre',
+    description: 'Levé, bornage et plan établis par un géomètre.',
+  },
+];
+
 const WHATSAPP_MESSAGE = 'Bonjour, je souhaite demander une vérification foncière.';
 
 export function DemarchesPage() {
@@ -75,7 +120,53 @@ export function DemarchesPage() {
         </ul>
       </section>
 
+      <section className="mx-auto max-w-4xl px-4 pt-14 sm:px-6">
+        <h2 className="font-display text-xl font-bold text-mtm-text">Nos prestations</h2>
+        <p className="mt-2 text-sm text-mtm-muted">
+          Au Sénégal ou depuis l’étranger, nous prenons en charge vos démarches auprès
+          des administrations.
+        </p>
+        <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+          {steps('demarches.prestations', FALLBACK_PRESTATIONS).map((presta) => (
+            <li
+              key={presta.title}
+              className="rounded-lg border border-mtm-border bg-mtm-surface p-4 shadow-card"
+            >
+              <h3 className="font-display text-sm font-bold text-mtm-text">{presta.title}</h3>
+              {presta.description && (
+                <p className="mt-1 text-sm text-mtm-muted">{presta.description}</p>
+              )}
+            </li>
+          ))}
+        </ul>
+
+        <h2 className="mt-10 font-display text-xl font-bold text-mtm-text">
+          Services techniques
+        </h2>
+        <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+          {steps('demarches.prestations-techniques', FALLBACK_PRESTATIONS_TECHNIQUES).map(
+            (presta) => (
+              <li
+                key={presta.title}
+                className="rounded-lg border border-mtm-border bg-mtm-surface p-4 shadow-card"
+              >
+                <h3 className="font-display text-sm font-bold text-mtm-text">{presta.title}</h3>
+                {presta.description && (
+                  <p className="mt-1 text-sm text-mtm-muted">{presta.description}</p>
+                )}
+              </li>
+            ),
+          )}
+        </ul>
+      </section>
+
+      {/* Le parcours en cinq étapes ne décrit que la vérification avant achat :
+          un dépôt de mutation ne suit pas ces étapes. Le titre le dit, pour ne
+          pas laisser croire que toute demande passe par une visite de terrain. */}
       <section className="mx-auto max-w-4xl px-4 py-14 sm:px-6">
+        <h2 className="mb-6 font-display text-xl font-bold text-mtm-text">
+          Comment se déroule une vérification avant achat
+        </h2>
         <ol className="flex flex-col gap-4">
           {steps('demarches.etapes', FALLBACK_STEPS).map((step, index) => (
             <li
@@ -86,7 +177,7 @@ export function DemarchesPage() {
                 {index + 1}
               </span>
               <div>
-                <h2 className="font-display text-base font-bold text-mtm-text">{step.title}</h2>
+                <h3 className="font-display text-base font-bold text-mtm-text">{step.title}</h3>
                 {step.description && <p className="mt-1 text-sm text-mtm-muted">{step.description}</p>}
               </div>
             </li>
