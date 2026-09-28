@@ -218,7 +218,7 @@ export class LocatairePortalService {
       select: { id: true },
     });
     if (!bail) throw new NotFoundException('Bail introuvable');
-    return this.incidents.creerSignalement(bailLocatifId, dto, null);
+    return this.incidents.creerSignalement(bailLocatifId, dto, userId);
   }
 
   private async locataireDuCompte(userId: string): Promise<string> {

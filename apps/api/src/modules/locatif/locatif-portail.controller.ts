@@ -14,6 +14,7 @@ import type { AuthenticatedUser } from '../auth/auth.types';
 import { ProprietairePortalService } from './proprietaire-portal.service';
 import { LocatairePortalService } from './locataire-portal.service';
 import { CreateIncidentDto } from './dto/incident.dto';
+import { AuditService } from '../audit/audit.service';
 
 /**
  * Espaces propriétaire et locataire (J2.1, sections 4 et 15 du cahier des
@@ -27,6 +28,7 @@ export class LocatifPortailController {
   constructor(
     private readonly proprietaire: ProprietairePortalService,
     private readonly locataire: LocatairePortalService,
+    private readonly audit: AuditService,
   ) {}
 
   @Get('proprietaire/biens')
@@ -74,11 +76,23 @@ export class LocatifPortailController {
         1000,
     },
   })
-  signalerIncident(
+  async signalerIncident(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: CreateIncidentDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.locataire.signalerIncident(user.id, id, dto);
+    const incident = await this.locataire.signalerIncident(user.id, id, dto);
+    await this.audit.record({
+      userId: user.id,
+      action: 'locataire.incident.created',
+      entityType: 'IncidentLocatif',
+      entityId: incident.id,
+      newValue: {
+        bailLocatifId: id,
+        nature: incident.nature,
+        type: incident.type,
+      },
+    });
+    return incident;
   }
 }
