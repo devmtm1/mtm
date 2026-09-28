@@ -1,8 +1,10 @@
 import { INestApplication } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { authenticator } from 'otplib';
 import request from 'supertest';
 import { createE2eApp, type E2eContext } from './helpers/e2e-app';
 import { describeE2e } from './helpers/e2e-database';
+import { TwoFactorService } from '../src/modules/auth/two-factor.service';
 import { libelleJalonType } from '../src/modules/construction/construction-options.service';
 
 /**
@@ -29,6 +31,8 @@ describeE2e('Parcours Construction J2.3 (e2e)', () => {
   let jalonFondationsId = '';
   let ligneCimentId = '';
   let depenseId = '';
+  /** Secret TOTP du comptable : son rôle est sensible, il lui faut un code. */
+  let secretComptable = '';
 
   beforeAll(async () => {
     context = await createE2eApp();
@@ -60,15 +64,21 @@ describeE2e('Parcours Construction J2.3 (e2e)', () => {
       'construction:valider',
       'construction:payer',
     ]);
+    // « comptable » fait partie des rôles sensibles (voir
+    // SensitiveTwoFactorGuard) : sans second facteur, le compte se voit
+    // refuser chaque requête, y compris celles que ses permissions
+    // autorisent. Un comptable réel en a donc un — le test passe par le
+    // même chemin, secret chiffré par le service de l'application et code
+    // TOTP généré à la connexion.
+    const twoFactor = app.get(TwoFactorService);
+    secretComptable = authenticator.generateSecret();
     const comptable = await data.seedUser({
       email: 'comptable.chantier@mtm.test',
       password: await bcrypt.hash(MOT_DE_PASSE, 4),
       firstName: 'Aïssatou',
       lastName: 'Ba',
-      // « comptable » fait partie des rôles sensibles : sans double
-      // authentification, le compte se voit refuser chaque requête. Un
-      // comptable réel en a donc une, et le test doit le refléter.
       twoFactorEnabled: true,
+      twoFactorSecret: twoFactor.encryptSecret(secretComptable),
     });
     await data.linkUserRole(comptable.id, roleComptable.id);
 
@@ -79,8 +89,15 @@ describeE2e('Parcours Construction J2.3 (e2e)', () => {
 
     const connexionComptable = await request(app.getHttpServer())
       .post('/api/auth/login')
-      .send({ email: 'comptable.chantier@mtm.test', password: MOT_DE_PASSE });
+      .send({
+        email: 'comptable.chantier@mtm.test',
+        password: MOT_DE_PASSE,
+        twoFactorCode: authenticator.generate(secretComptable),
+      });
     jetonComptable = connexionComptable.body.accessToken;
+    // Sans jeton, les quatre scénarios de contrôle échoueraient sur un 401
+    // sans dire pourquoi : autant le constater ici.
+    expect(jetonComptable).toBeTruthy();
 
     const prospect = await context.prisma.prospect.create({
       data: {
