@@ -2,7 +2,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { LucideEye, LucideEyeOff, LucideFileText, LucideMessageSquareQuote, LucideNewspaper, LucidePencil, LucidePlus, LucideTrash2 } from '@lucide/angular';
+import { LucideEye, LucideEyeOff, LucideFileText, LucideMessageSquareQuote, LucidePencil, LucidePlus, LucideTrash2 } from '@lucide/angular';
 import { ContentBlockApiService, type ContentBlock } from '../../core/services/api/content-block-api.service';
 import { SessionService } from '../../core/services/session.service';
 import { NotificationService } from '../../shared/services/notification.service';
@@ -26,7 +26,7 @@ interface NewsGroup {
 @Component({
   selector: 'app-content-blocks',
   standalone: true,
-  imports: [MatButtonModule, MatTooltipModule, LucideEye, LucideEyeOff, LucideFileText, LucideMessageSquareQuote, LucideNewspaper, LucidePencil, LucidePlus, LucideTrash2],
+  imports: [MatButtonModule, MatTooltipModule, LucideEye, LucideEyeOff, LucideFileText, LucideMessageSquareQuote, LucidePencil, LucidePlus, LucideTrash2],
   templateUrl: './content-blocks.html',
   styleUrl: './content-blocks.scss',
 })
