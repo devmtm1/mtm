@@ -20,6 +20,13 @@ export class QueryTerrainDto {
   @IsOptional() @IsString() region?: string;
   @IsOptional() @IsString() commune?: string;
   @IsOptional() @IsString() vocation?: string;
+  /**
+   * Nature du bien. À ne pas confondre avec `vocation`, qui dit l'usage du
+   * sol (habitation, commerce, agricole) et non ce qui est vendu.
+   */
+  @IsOptional() @IsString() typeBien?: string;
+  /** Typologie d'un bien bâti : F1, F2… */
+  @IsOptional() @IsString() nombrePieces?: string;
   @IsOptional() @IsUUID() proprietaireId?: string;
   @IsOptional() @Type(() => Number) @IsNumber() @Min(0) superficieMin?: number;
   @IsOptional() @Type(() => Number) @IsNumber() @Min(0) superficieMax?: number;
@@ -29,7 +36,14 @@ export class QueryTerrainDto {
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(200) pageSize = 25;
   @IsOptional()
   @IsString()
-  @IsIn(['createdAt', 'referenceInterne', 'nom', 'superficie', 'prixPublic'])
+  @IsIn([
+    'createdAt',
+    'referenceInterne',
+    'nom',
+    'superficie',
+    'surfaceHabitable',
+    'prixPublic',
+  ])
   sortBy = 'createdAt';
   @IsOptional() @IsIn(['asc', 'desc']) sortOrder: 'asc' | 'desc' = 'desc';
 }

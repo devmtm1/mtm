@@ -156,4 +156,77 @@ describe('TerrainsService', () => {
       ),
     ).rejects.toThrow(BadRequestException);
   });
+
+  // --- Biens bâtis : MTM vend aussi des villas, pas que du foncier ---
+
+  const ficheMinimale = {
+    referenceInterne: 'V-001',
+    nom: 'Villa Saly',
+    statutJuridique: 'Titre foncier',
+    niveauVerification: 'Vérifié',
+    statutCommercial: 'Disponible',
+  };
+
+  it('refuse les caractéristiques du bâti sur un terrain nu', async () => {
+    prismaMock.terrain.findUnique.mockResolvedValue(null);
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+
+    // Sans type explicite, la fiche est un terrain : « F3 » sur une parcelle
+    // vide décrirait une maison qui n'existe pas.
+    await expect(
+      service.create(
+        { ...ficheMinimale, nombrePieces: 'F3', surfaceHabitable: 120 },
+        internalUser,
+      ),
+    ).rejects.toThrow(/ne s’appliquent pas à un bien de type/);
+    expect(prismaMock.terrain.create).not.toHaveBeenCalled();
+  });
+
+  it('accepte les caractéristiques du bâti sur une villa', async () => {
+    prismaMock.terrain.findUnique.mockResolvedValue(null);
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+    prismaMock.terrain.create.mockResolvedValue({ id: 'v1', medias: [] });
+
+    await service.create(
+      {
+        ...ficheMinimale,
+        typeBien: 'villa',
+        superficie: 300,
+        surfaceHabitable: 120,
+        nombrePieces: 'F3',
+        nombreChambres: 2,
+      },
+      internalUser,
+    );
+
+    const data = prismaMock.terrain.create.mock.calls[0][0].data;
+    expect(data.typeBien).toBe('villa');
+    // Les deux surfaces coexistent : la parcelle et l'habitable.
+    expect(data.superficie).toBe(300);
+    expect(data.surfaceHabitable).toBe(120);
+  });
+
+  it('refuse un type de bien absent du référentiel', async () => {
+    prismaMock.terrain.findUnique.mockResolvedValue(null);
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+
+    await expect(
+      service.create(
+        { ...ficheMinimale, typeBien: 'chateau' },
+        internalUser,
+      ),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('confronte une surface habitable au type déjà enregistré', async () => {
+    // La requête ne porte pas de type : il faut aller lire la fiche, sinon
+    // on laisserait passer une surface habitable sur un terrain nu.
+    prismaMock.terrain.findFirst.mockResolvedValue({ id: 't1' });
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+    prismaMock.terrain.findUnique.mockResolvedValue({ typeBien: 'terrain' });
+
+    await expect(
+      service.update('t1', { surfaceHabitable: 90 }, internalUser),
+    ).rejects.toThrow(/ne s’appliquent pas à un bien de type/);
+  });
 });

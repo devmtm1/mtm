@@ -59,6 +59,8 @@ export class TerrainsPublicService {
       ...(query.region ? { region: query.region } : {}),
       ...(query.commune ? { commune: query.commune } : {}),
       ...(query.vocation ? { vocation: query.vocation } : {}),
+      ...(query.typeBien ? { typeBien: query.typeBien } : {}),
+      ...(query.nombrePieces ? { nombrePieces: query.nombrePieces } : {}),
       ...(query.superficieMin !== undefined || query.superficieMax !== undefined
         ? {
             superficie: {
@@ -156,9 +158,17 @@ export class TerrainsPublicService {
       localisationDetail: string | null;
       latitude: number | null;
       longitude: number | null;
+      typeBien: string;
       superficie: number | null;
       uniteSuperficie: string | null;
       dimensions: Record<string, unknown> | null;
+      surfaceHabitable: number | null;
+      nombrePieces: string | null;
+      nombreChambres: number | null;
+      nombreSallesEau: number | null;
+      niveaux: number | null;
+      anneeConstruction: number | null;
+      etatBien: string | null;
       prixPublic: number | null;
       misEnAvant: boolean;
       description: string | null;
@@ -236,9 +246,17 @@ export class TerrainsPublicService {
       localisationDetail: source.localisationDetail,
       latitude: source.latitude,
       longitude: source.longitude,
+      typeBien: source.typeBien,
       superficie: source.superficie,
       uniteSuperficie: source.uniteSuperficie,
       dimensions: source.dimensions,
+      surfaceHabitable: source.surfaceHabitable,
+      nombrePieces: source.nombrePieces,
+      nombreChambres: source.nombreChambres,
+      nombreSallesEau: source.nombreSallesEau,
+      niveaux: source.niveaux,
+      anneeConstruction: source.anneeConstruction,
+      etatBien: source.etatBien,
       prixPublic: source.prixPublic,
       misEnAvant: source.misEnAvant,
       description: source.description,

@@ -4,6 +4,7 @@ import {
   ArrayMaxSize,
   IsArray,
   IsBoolean,
+  IsInt,
   IsNumber,
   IsObject,
   IsOptional,
@@ -43,8 +44,61 @@ export class CreateTerrainDto {
   @Min(-180)
   @Max(180)
   longitude?: number;
-  @ApiPropertyOptional() @IsOptional() @IsNumber() @Min(0) superficie?: number;
+  @ApiPropertyOptional({
+    description: 'Nature du bien : terrain, villa, appartement…',
+    example: 'villa',
+  })
+  @IsOptional()
+  @IsString()
+  typeBien?: string;
+  @ApiPropertyOptional({ description: 'Surface de la parcelle' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  superficie?: number;
   @ApiPropertyOptional() @IsOptional() @IsString() uniteSuperficie?: string;
+  // --- Caractéristiques du bâti ---
+  // Refusées par le service sur un terrain nu : une parcelle vide n'a ni
+  // pièces ni surface habitable.
+  @ApiPropertyOptional({
+    description: 'Surface habitable, distincte de la parcelle',
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  surfaceHabitable?: number;
+  @ApiPropertyOptional({ example: 'F3' })
+  @IsOptional()
+  @IsString()
+  nombrePieces?: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(50)
+  nombreChambres?: number;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(50)
+  nombreSallesEau?: number;
+  @ApiPropertyOptional({ description: 'Niveaux, rez-de-chaussée compris' })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(50)
+  niveaux?: number;
+  @ApiPropertyOptional({ example: 2019 })
+  @IsOptional()
+  @IsInt()
+  @Min(1900)
+  @Max(2200)
+  anneeConstruction?: number;
+  @ApiPropertyOptional({ example: 'bon_etat' })
+  @IsOptional()
+  @IsString()
+  etatBien?: string;
   @ApiPropertyOptional() @IsOptional() @IsObject() dimensions?: Record<
     string,
     unknown

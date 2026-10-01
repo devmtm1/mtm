@@ -139,9 +139,47 @@ model Terrain {
   localisationDetail      String?
   latitude                Decimal?              @db.Decimal(10, 7)
   longitude               Decimal?              @db.Decimal(10, 7)
+  /**
+   * Nature du bien mis en vente : terrain nu, villa, appartement…
+   * MTM ne vend plus seulement du foncier. Le partage entre un terrain et une
+   * villa est d'environ 80 % — référence, propriétaire, localisation, prix,
+   * mandats, dossiers de vente — d'où ce champ discriminant plutôt qu'un
+   * second modèle qui aurait dédoublé toute la chaîne commerciale.
+   * Vocabulaire commun avec la gestion locative (`locatif.typesBien`).
+   */
+  typeBien                String                @default("terrain")
+  /**
+   * Surface de la parcelle, pour un terrain comme pour une villa.
+   */
   superficie              Decimal?              @db.Decimal(14, 2)
   uniteSuperficie         String?
   dimensions              Json?
+  // --- Caractéristiques du bâti (villa, appartement, studio…) ---
+  // Nulles sur un terrain nu. Elles ne décrivent pas la parcelle mais ce qui
+  // est construit dessus, et n'apparaissent dans les écrans que si le type
+  // du bien les rend pertinentes.
+  /**
+   * /**
+   * Surface habitable, distincte de la parcelle. Les deux coexistent : une
+   * villa de 120 m² habitables peut occuper une parcelle de 300 m², et les
+   * confondre fausserait toute comparaison au catalogue.
+   */
+  surfaceHabitable        Decimal?              @db.Decimal(10, 2)
+  /**
+   * Typologie commerciale : F1 à F6.
+   */
+  nombrePieces            String?
+  nombreChambres          Int?
+  nombreSallesEau         Int?
+  /**
+   * Nombre de niveaux, rez-de-chaussée compris.
+   */
+  niveaux                 Int?
+  anneeConstruction       Int?
+  /**
+   * neuf | bon_etat | a_rafraichir | a_renover
+   */
+  etatBien                String?
   prixAcquisition         Decimal?              @db.Decimal(15, 2)
   prixPublic              Decimal?              @db.Decimal(15, 2)
   marge                   Decimal?              @db.Decimal(15, 2)
@@ -180,6 +218,7 @@ model Terrain {
   @@index([region, commune])
   @@index([superficie])
   @@index([prixPublic])
+  @@index([typeBien])
   @@map("terrains")
 }
 
@@ -515,6 +554,7 @@ model Prospect {
   // vivre dans une table à part, pour qu'une seule fiche porte le budget et
   // la zone du client — deux exemplaires finiraient par diverger.
   /**
+   * /**
    * /** Vrai dès qu'un mandat de recherche est ouvert pour ce prospect.
    */
   rechercheActive               Boolean   @default(false)
@@ -1164,6 +1204,7 @@ model BailLocatif {
 
   // --- Sortie et cas particuliers (section 15) ---
   /**
+   * /**
    * /**
    * /**
    * /**

@@ -46,10 +46,53 @@ export const DEFAULT_TERRAIN_OPTIONS = {
     'Délibération',
     'Morcellement',
     'Régularisation en cours',
+    'Notification de bail',
+    'Attribution',
   ],
   niveauVerification: ['Non vérifié', 'En cours', 'Vérifié', 'À compléter'],
   statutCommercial: ['Brouillon', 'Disponible', 'Réservé', 'Vendu', 'Suspendu'],
+  /**
+   * Nature du bien mis en vente. Même vocabulaire que la gestion locative
+   * (`locatif.typesBien`) : deux listes divergentes pour désigner les mêmes
+   * biens finiraient par se contredire dans les écrans.
+   */
+  typeBien: [
+    'terrain',
+    'villa',
+    'appartement',
+    'studio',
+    'commerce',
+    'bureau',
+    'autre',
+  ],
+  /** Typologie commerciale d'un bien bâti. */
+  nombrePieces: ['F1', 'F2', 'F3', 'F4', 'F5', 'F6'],
+  etatBien: ['neuf', 'bon_etat', 'a_rafraichir', 'a_renover'],
 } as const;
+
+/**
+ * Types qui désignent un bien bâti : seuls ceux-là portent une surface
+ * habitable, des pièces et des chambres. Un terrain nu qui les recevrait
+ * décrirait une maison qui n'existe pas.
+ */
+export const TYPES_BIEN_BATI = [
+  'villa',
+  'appartement',
+  'studio',
+  'commerce',
+  'bureau',
+] as const;
+
+/** Champs qui n'ont de sens que sur un bien bâti. */
+export const CHAMPS_BATI = [
+  'surfaceHabitable',
+  'nombrePieces',
+  'nombreChambres',
+  'nombreSallesEau',
+  'niveaux',
+  'anneeConstruction',
+  'etatBien',
+] as const;
 
 /**
  * Fiche terrain interne (J1.1, section 8 CDC) : recherche dans le périmètre
@@ -108,6 +151,8 @@ export class TerrainsService {
       ...(query.region ? { region: query.region } : {}),
       ...(query.commune ? { commune: query.commune } : {}),
       ...(query.vocation ? { vocation: query.vocation } : {}),
+      ...(query.typeBien ? { typeBien: query.typeBien } : {}),
+      ...(query.nombrePieces ? { nombrePieces: query.nombrePieces } : {}),
       ...(query.proprietaireId ? { proprietaireId: query.proprietaireId } : {}),
       ...(query.superficieMin !== undefined || query.superficieMax !== undefined
         ? {
@@ -225,6 +270,9 @@ export class TerrainsService {
     if (existing)
       throw new ConflictException('Une référence terrain existe déjà');
     await this.validateStatuses(dto);
+    await this.assertChampsBatiCoherents(
+      dto as unknown as Record<string, unknown>,
+    );
 
     const data = { ...dto } as unknown as Prisma.TerrainUncheckedCreateInput;
     // Sans rattachement, un commercial ne verrait plus le terrain qu'il
@@ -262,6 +310,10 @@ export class TerrainsService {
       );
     }
     await this.validateStatuses(dto);
+    await this.assertChampsBatiCoherents(
+      dto as unknown as Record<string, unknown>,
+      id,
+    );
     this.assertJustificationForSensitiveFields(
       dto as unknown as Record<string, unknown>,
     );
@@ -356,11 +408,15 @@ export class TerrainsService {
   }
 
   async getOptions() {
-    const [legal, verification, commercial] = await Promise.all([
-      this.settings.getRawValue('terrains.statutJuridique'),
-      this.settings.getRawValue('terrains.niveauVerification'),
-      this.settings.getRawValue('terrains.statutCommercial'),
-    ]);
+    const [legal, verification, commercial, types, pieces, etats] =
+      await Promise.all([
+        this.settings.getRawValue('terrains.statutJuridique'),
+        this.settings.getRawValue('terrains.niveauVerification'),
+        this.settings.getRawValue('terrains.statutCommercial'),
+        this.settings.getRawValue('terrains.typeBien'),
+        this.settings.getRawValue('terrains.nombrePieces'),
+        this.settings.getRawValue('terrains.etatBien'),
+      ]);
     return {
       statutJuridique: SettingsService.asStringList(
         legal,
@@ -374,6 +430,20 @@ export class TerrainsService {
         commercial,
         DEFAULT_TERRAIN_OPTIONS.statutCommercial,
       ),
+      typeBien: SettingsService.asStringList(
+        types,
+        DEFAULT_TERRAIN_OPTIONS.typeBien,
+      ),
+      nombrePieces: SettingsService.asStringList(
+        pieces,
+        DEFAULT_TERRAIN_OPTIONS.nombrePieces,
+      ),
+      etatBien: SettingsService.asStringList(
+        etats,
+        DEFAULT_TERRAIN_OPTIONS.etatBien,
+      ),
+      /** Les écrans y lisent quels types ouvrent la section « bâti ». */
+      typesBati: [...TYPES_BIEN_BATI],
     };
   }
 
@@ -381,7 +451,12 @@ export class TerrainsService {
     data: Partial<
       Pick<
         CreateTerrainDto,
-        'statutJuridique' | 'niveauVerification' | 'statutCommercial'
+        | 'statutJuridique'
+        | 'niveauVerification'
+        | 'statutCommercial'
+        | 'typeBien'
+        | 'nombrePieces'
+        | 'etatBien'
       >
     >,
   ): Promise<void> {
@@ -389,6 +464,9 @@ export class TerrainsService {
       'statutJuridique',
       'niveauVerification',
       'statutCommercial',
+      'typeBien',
+      'nombrePieces',
+      'etatBien',
     ] as const;
 
     for (const field of fields) {
@@ -396,7 +474,42 @@ export class TerrainsService {
         `terrains.${field}`,
         DEFAULT_TERRAIN_OPTIONS[field],
         data[field],
-        `Statut de terrain invalide : ${field}`,
+        `Valeur de référentiel invalide : ${field}`,
+      );
+    }
+  }
+
+  /**
+   * Un terrain nu n'a ni pièces, ni chambres, ni surface habitable. Accepter
+   * ces champs sur un terrain produirait des fiches qui décrivent une maison
+   * inexistante, et un catalogue où « F3 » s'affiche sur une parcelle vide.
+   *
+   * Le type effectif se lit sur la fiche quand la requête ne le change pas :
+   * une mise à jour qui n'envoie qu'une surface habitable doit être
+   * confrontée au type déjà enregistré.
+   */
+  private async assertChampsBatiCoherents(
+    dto: Record<string, unknown>,
+    terrainId?: string,
+  ): Promise<void> {
+    const renseignes = CHAMPS_BATI.filter(
+      (champ) => dto[champ] !== undefined && dto[champ] !== null,
+    );
+    if (renseignes.length === 0) return;
+
+    let type = dto['typeBien'] as string | undefined;
+    if (type === undefined && terrainId) {
+      const fiche = await this.prisma.terrain.findUnique({
+        where: { id: terrainId },
+        select: { typeBien: true },
+      });
+      type = fiche?.typeBien;
+    }
+    type ??= 'terrain';
+
+    if (!(TYPES_BIEN_BATI as readonly string[]).includes(type)) {
+      throw new BadRequestException(
+        `Les caractéristiques du bâti (${renseignes.join(', ')}) ne s’appliquent pas à un bien de type « ${type} »`,
       );
     }
   }

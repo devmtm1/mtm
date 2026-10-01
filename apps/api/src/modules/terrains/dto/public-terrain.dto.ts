@@ -38,9 +38,19 @@ export interface PublicTerrainResponse {
   localisationDetail: string | null;
   latitude: number | null;
   longitude: number | null;
+  typeBien: string;
+  /** Surface de la parcelle. */
   superficie: number | null;
   uniteSuperficie: string | null;
   dimensions: Record<string, unknown> | null;
+  /** Surface habitable, nulle sur un terrain nu. */
+  surfaceHabitable: number | null;
+  nombrePieces: string | null;
+  nombreChambres: number | null;
+  nombreSallesEau: number | null;
+  niveaux: number | null;
+  anneeConstruction: number | null;
+  etatBien: string | null;
   prixPublic: number | null;
   misEnAvant: boolean;
   description: string | null;
