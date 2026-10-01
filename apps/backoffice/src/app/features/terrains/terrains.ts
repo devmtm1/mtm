@@ -124,7 +124,18 @@ export class Terrains implements OnInit {
 
   protected readonly columnDefs: ColDef<TerrainListItem>[] = [
     { field: 'referenceInterne', headerName: 'Réf.', flex: 0.6, minWidth: 84, sortable: true, cellClass: 'cell-strong' },
-    { field: 'nom', headerName: 'Terrain', flex: 1.6, minWidth: 170, sortable: true, tooltipField: 'nom' },
+    { field: 'nom', headerName: 'Bien', flex: 1.6, minWidth: 170, sortable: true, tooltipField: 'nom' },
+    {
+      // Sans cette colonne, rien ne distingue une villa d'une parcelle dans
+      // le tableau : la vue en cartes le montre, celle-ci l'ignorait.
+      field: 'typeBien',
+      headerName: 'Nature',
+      flex: 0.8,
+      minWidth: 104,
+      sortable: true,
+      cellRenderer: (p: ICellRendererParams<TerrainListItem>) =>
+        this.pill(TYPE_BIEN, p.value as string, typeBienLabel(p.value as string)),
+    },
     {
       headerName: 'Localisation',
       flex: 1.1,
@@ -133,11 +144,31 @@ export class Terrains implements OnInit {
     },
     {
       field: 'superficie',
-      headerName: 'Superficie',
+      // « Superficie » devenait ambigu dès qu'une villa entrait dans la
+      // liste : c'est toujours la parcelle, jamais l'habitable.
+      headerName: 'Parcelle',
       flex: 0.7,
       minWidth: 96,
       type: 'rightAligned',
       valueFormatter: (p) => (p.value == null ? '—' : `${Number(p.value).toLocaleString('fr-FR')} m²`),
+    },
+    {
+      // Typologie et surface habitable, les deux chiffres qu'un commercial
+      // cite au téléphone pour un bien bâti. Vide sur une parcelle nue.
+      colId: 'habitable',
+      headerName: 'Habitable',
+      flex: 0.8,
+      minWidth: 112,
+      type: 'rightAligned',
+      valueGetter: (p) => {
+        if (!p.data || !this.estBati(p.data)) return '';
+        const surface =
+          p.data.surfaceHabitable == null
+            ? null
+            : `${Number(p.data.surfaceHabitable).toLocaleString('fr-FR')} m²`;
+        return [p.data.nombrePieces, surface].filter(Boolean).join(' · ');
+      },
+      valueFormatter: (p) => (p.value ? String(p.value) : '—'),
     },
     {
       field: 'prixPublic',
@@ -296,11 +327,19 @@ export class Terrains implements OnInit {
     this.terrainsApi.getStats().subscribe({ next: (stats) => this.stats.set(stats) });
   }
 
-  private pill(map: Record<string, { tone: string; help: string }>, value: string | null): HTMLElement | string {
+  /**
+   * `libelle` sert aux référentiels dont le code n'est pas lisible tel quel :
+   * la nature d'un bien est stockée en « villa » et s'affiche « Villa ».
+   */
+  private pill(
+    map: Record<string, { tone: string; help: string }>,
+    value: string | null,
+    libelle?: string,
+  ): HTMLElement | string {
     if (!value) return '—';
     const span = document.createElement('span');
     span.className = pillClass(map as never, value);
-    span.textContent = value;
+    span.textContent = libelle ?? value;
     span.title = statusHelp(map as never, value);
     return span;
   }
