@@ -42,9 +42,11 @@ import {
   COMMERCIAL_STATUS,
   LEGAL_STATUS,
   VERIFICATION_STATUS,
+  etatBienLabel,
   isPublished,
   pillClass,
   statusHelp,
+  typeBienLabel,
 } from '../terrain-status';
 
 /**
@@ -185,6 +187,17 @@ export class TerrainDetail implements OnInit, OnDestroy {
 
   protected help(map: Record<string, { help: string }>, value: string | null | undefined): string {
     return statusHelp(map as never, value);
+  }
+
+  protected readonly typeBienLabel = typeBienLabel;
+  protected readonly etatBienLabel = etatBienLabel;
+
+  /** Le bien est-il construit ? La liste des types bâtis vient de l'API. */
+  protected estBati(terrain: { typeBien: string }): boolean {
+    const types = this.options()?.typesBati ?? [];
+    return types.length
+      ? types.includes(terrain.typeBien)
+      : terrain.typeBien !== 'terrain';
   }
 
   protected formatNumber(value: number | string | null): string {

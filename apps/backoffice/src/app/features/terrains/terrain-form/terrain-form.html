@@ -68,10 +68,21 @@
       @if (currentStep() === 1) {
         <section class="page-card form-block">
           <div class="form-block__head">
-            <h2>Référence et nom</h2>
+            <h2>Nature et identité</h2>
             <p>La référence est votre code interne (ex. <code>T-2026-014</code>) ; le nom est celui affiché sur le site.</p>
           </div>
           <div class="form-grid">
+            <!-- Posé en premier : le type commande les champs du reste de la
+                 fiche. Une parcelle nue n'a ni pièces ni surface habitable. -->
+            <mat-form-field appearance="outline">
+              <mat-label>Nature du bien</mat-label>
+              <mat-select formControlName="typeBien">
+                @for (type of options().typeBien; track type) {
+                  <mat-option [value]="type">{{ typeBienLabel(type) }}</mat-option>
+                }
+              </mat-select>
+              <mat-hint>{{ typeBienAide(form.controls.typeBien.value) }}</mat-hint>
+            </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Référence interne</mat-label>
               <input matInput formControlName="referenceInterne" placeholder="T-2026-014" autocomplete="off" />
@@ -224,8 +235,11 @@
           </div>
           <div class="form-grid">
             <mat-form-field appearance="outline">
-              <mat-label>Superficie (m²)</mat-label>
+              <mat-label>Superficie de la parcelle (m²)</mat-label>
               <input matInput type="number" min="0" formControlName="superficie" placeholder="300" />
+              @if (estBati()) {
+                <mat-hint>Le terrain d’assise, pas la surface habitable.</mat-hint>
+              }
               <mat-error>Valeur positive.</mat-error>
             </mat-form-field>
             <mat-form-field appearance="outline">
@@ -298,6 +312,63 @@
             }
           </div>
         </section>
+
+        <!-- Caractéristiques du bâti : n'apparaissent que pour un bien
+             construit. Les afficher sur une parcelle nue inviterait à saisir
+             des pièces que l'API refuse de toute façon. -->
+        @if (estBati()) {
+          <section class="page-card form-block">
+            <div class="form-block__head">
+              <h2>Caractéristiques du bâti</h2>
+              <p>Ce qui est construit sur la parcelle : surface habitable, pièces, état.</p>
+            </div>
+            <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Surface habitable (m²)</mat-label>
+                <input matInput type="number" min="0" formControlName="surfaceHabitable" placeholder="120" />
+                <mat-hint>Distincte de la parcelle saisie plus haut.</mat-hint>
+                <mat-error>Valeur positive.</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Typologie</mat-label>
+                <mat-select formControlName="nombrePieces">
+                  <mat-option value="">Non précisée</mat-option>
+                  @for (piece of options().nombrePieces; track piece) {
+                    <mat-option [value]="piece">{{ piece }}</mat-option>
+                  }
+                </mat-select>
+                <mat-hint>F3 = trois pièces principales, cuisine et sanitaires exclus.</mat-hint>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Chambres</mat-label>
+                <input matInput type="number" min="0" max="50" formControlName="nombreChambres" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Salles d’eau</mat-label>
+                <input matInput type="number" min="0" max="50" formControlName="nombreSallesEau" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Niveaux</mat-label>
+                <input matInput type="number" min="0" max="50" formControlName="niveaux" />
+                <mat-hint>Rez-de-chaussée compris.</mat-hint>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Année de construction</mat-label>
+                <input matInput type="number" min="1900" max="2200" formControlName="anneeConstruction" placeholder="2019" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>État</mat-label>
+                <mat-select formControlName="etatBien">
+                  <mat-option value="">Non précisé</mat-option>
+                  @for (etat of options().etatBien; track etat) {
+                    <mat-option [value]="etat">{{ etatBienLabel(etat) }}</mat-option>
+                  }
+                </mat-select>
+                <mat-hint>{{ etatBienAide(form.controls.etatBien.value) }}</mat-hint>
+              </mat-form-field>
+            </div>
+          </section>
+        }
       }
 
       <!-- ÉTAPE 3 : prix et publication ------------------------------------- -->

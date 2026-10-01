@@ -24,6 +24,8 @@ export const LEGAL_STATUS: Record<string, StatusMeaning> = {
   Délibération: { tone: 'info', help: 'Délibération communale : à transformer en bail ou titre.' },
   Morcellement: { tone: 'info', help: 'Issu d’un morcellement : vérifier la parcelle mère.' },
   'Régularisation en cours': { tone: 'warning', help: 'Situation juridique en cours de régularisation.' },
+  'Notification de bail': { tone: 'info', help: 'Bail notifié à l’occupant : à confirmer par l’acte définitif.' },
+  Attribution: { tone: 'info', help: 'Terrain attribué : vérifier l’acte d’attribution et les conditions de mise en valeur.' },
 };
 
 export const VERIFICATION_STATUS: Record<string, StatusMeaning> = {
@@ -32,6 +34,46 @@ export const VERIFICATION_STATUS: Record<string, StatusMeaning> = {
   Vérifié: { tone: 'success', help: 'Documents et situation contrôlés par MTM.' },
   'À compléter': { tone: 'danger', help: 'Des pièces manquent pour conclure la vérification.' },
 };
+
+/**
+ * Nature du bien mis en vente. MTM ne vend plus seulement du foncier : le
+ * catalogue mêle parcelles nues et biens bâtis, et un commercial doit voir
+ * la différence sans ouvrir la fiche.
+ */
+export const TYPE_BIEN: Record<string, StatusMeaning> = {
+  terrain: { tone: 'info', help: 'Parcelle nue : ni surface habitable ni pièces.' },
+  villa: { tone: 'primary', help: 'Maison individuelle, typée F1 à F6.' },
+  appartement: { tone: 'primary', help: 'Logement dans un immeuble.' },
+  studio: { tone: 'primary', help: 'Logement d’une seule pièce principale.' },
+  commerce: { tone: 'success', help: 'Local commercial bâti.' },
+  bureau: { tone: 'success', help: 'Local professionnel bâti.' },
+  autre: { tone: 'neutral', help: 'Autre nature de bien : à décrire dans la fiche.' },
+};
+
+/** Libellé lisible d'un type de bien, première lettre en capitale. */
+export function typeBienLabel(value: string | null | undefined): string {
+  if (!value) return '—';
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+/** État d'un bien bâti, de la livraison neuve au chantier de rénovation. */
+export const ETAT_BIEN: Record<string, StatusMeaning> = {
+  neuf: { tone: 'success', help: 'Jamais habité ou livré récemment.' },
+  bon_etat: { tone: 'primary', help: 'Habitable en l’état, sans travaux.' },
+  a_rafraichir: { tone: 'warning', help: 'Peinture et finitions à reprendre.' },
+  a_renover: { tone: 'danger', help: 'Travaux lourds à prévoir avant occupation.' },
+};
+
+export const ETAT_BIEN_LABELS: Record<string, string> = {
+  neuf: 'Neuf',
+  bon_etat: 'Bon état',
+  a_rafraichir: 'À rafraîchir',
+  a_renover: 'À rénover',
+};
+
+export function etatBienLabel(value: string | null | undefined): string {
+  return (value && ETAT_BIEN_LABELS[value]) || (value ?? '—');
+}
 
 export function statusTone(map: Record<string, StatusMeaning>, value: string | null | undefined): PillTone {
   return (value && map[value]?.tone) || 'neutral';

@@ -34,12 +34,22 @@ import { MoneyPipe } from '../../shared/pipes/money.pipe';
 import {
   COMMERCIAL_STATUS,
   LEGAL_STATUS,
+  TYPE_BIEN,
   VERIFICATION_STATUS,
   pillClass,
   statusHelp,
+  typeBienLabel,
 } from './terrain-status';
 
-const EMPTY_FILTERS = { search: '', statutCommercial: '', statutJuridique: '', niveauVerification: '' };
+const EMPTY_FILTERS = {
+  search: '',
+  // Nature du bien : le catalogue mêle parcelles et villas, et un
+  // commercial travaille le plus souvent sur l'une ou sur l'autre.
+  typeBien: '',
+  statutCommercial: '',
+  statutJuridique: '',
+  niveauVerification: '',
+};
 
 /**
  * Liste des terrains (J1.1). L'écran répond à trois questions : combien de
@@ -88,7 +98,15 @@ export class Terrains implements OnInit {
   protected readonly rowData = signal<TerrainListItem[]>([]);
   protected readonly total = signal(0);
   protected readonly stats = signal<TerrainStats | null>(null);
-  protected readonly options = signal<TerrainOptions>({ statutJuridique: [], niveauVerification: [], statutCommercial: [] });
+  protected readonly options = signal<TerrainOptions>({
+    statutJuridique: [],
+    niveauVerification: [],
+    statutCommercial: [],
+    typeBien: [],
+    nombrePieces: [],
+    etatBien: [],
+    typesBati: [],
+  });
   protected readonly viewMode = signal<'table' | 'grid'>(this.restoreViewMode());
   protected readonly canCreate = computed(() => this.sessionService.hasPermission('terrains:creer'));
   protected readonly canModify = computed(() => this.sessionService.hasPermission('terrains:modifier'));
@@ -221,6 +239,19 @@ export class Terrains implements OnInit {
   protected readonly commercialStatus = COMMERCIAL_STATUS;
   protected readonly legalStatus = LEGAL_STATUS;
   protected readonly verificationStatus = VERIFICATION_STATUS;
+  protected readonly typeBienMeanings = TYPE_BIEN;
+  protected readonly typeBienLabel = typeBienLabel;
+
+  /**
+   * Le bien est-il construit ? La liste des types bâtis vient de l'API, pour
+   * que la liste et le formulaire s'accordent sans la redéfinir ici.
+   */
+  protected estBati(terrain: { typeBien: string }): boolean {
+    const types = this.options().typesBati;
+    return types.length
+      ? types.includes(terrain.typeBien)
+      : terrain.typeBien !== 'terrain';
+  }
 
   private load(): void {
     this.loading.set(true);

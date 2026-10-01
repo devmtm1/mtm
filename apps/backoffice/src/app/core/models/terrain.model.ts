@@ -21,7 +21,14 @@ export interface TerrainListItem {
   niveauVerification: string;
   region: string | null;
   commune: string | null;
+  /** Nature du bien : terrain nu, villa, appartement… */
+  typeBien: string;
+  /** Surface de la parcelle. */
   superficie: NumericOrString;
+  /** Surface habitable, nulle sur un terrain nu. */
+  surfaceHabitable: NumericOrString;
+  /** Typologie commerciale d'un bien bâti : F1 à F6. */
+  nombrePieces: string | null;
   prixPublic: NumericOrString;
   statutCommercial: string;
   misEnAvant: boolean;
@@ -43,6 +50,12 @@ export interface TerrainDetail extends TerrainListItem {
   electriciteDisponible: boolean | null;
   voisinage: string | null;
   vocation: string | null;
+  // --- Caractéristiques du bâti, nulles sur un terrain nu ---
+  nombreChambres: number | null;
+  nombreSallesEau: number | null;
+  niveaux: number | null;
+  anneeConstruction: number | null;
+  etatBien: string | null;
   proximiteAxes: string | null;
   pointsInteret: TerrainPointInteret[] | null;
   description: string | null;
@@ -89,6 +102,9 @@ export interface TerrainQuery {
   niveauVerification?: string;
   statutCommercial?: string;
   vocation?: string;
+  /** Nature du bien — à ne pas confondre avec `vocation`, l'usage du sol. */
+  typeBien?: string;
+  nombrePieces?: string;
   proprietaireId?: string;
   page?: number;
   pageSize?: number;
@@ -116,6 +132,15 @@ export interface TerrainOptions {
   statutJuridique: string[];
   niveauVerification: string[];
   statutCommercial: string[];
+  typeBien: string[];
+  nombrePieces: string[];
+  etatBien: string[];
+  /**
+   * Types qui ouvrent la section « bâti » du formulaire. L'API en est la
+   * source : les écrans n'ont pas à deviner qu'un studio est bâti et un
+   * terrain non.
+   */
+  typesBati: string[];
 }
 
 export interface CreateTerrainPayload {
@@ -131,9 +156,18 @@ export interface CreateTerrainPayload {
   localisationDetail?: string;
   latitude?: number;
   longitude?: number;
+  typeBien?: string;
   superficie?: number;
   uniteSuperficie?: string;
   dimensions?: Record<string, unknown>;
+  // --- Caractéristiques du bâti : refusées par l'API sur un terrain nu ---
+  surfaceHabitable?: number;
+  nombrePieces?: string;
+  nombreChambres?: number;
+  nombreSallesEau?: number;
+  niveaux?: number;
+  anneeConstruction?: number;
+  etatBien?: string;
   prixAcquisition?: number;
   prixPublic?: number;
   marge?: number;

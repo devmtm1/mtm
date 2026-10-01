@@ -98,6 +98,15 @@
           <input matInput formControlName="search" placeholder="Référence, nom, parcelle…" autocomplete="off" />
         </mat-form-field>
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Nature du bien</mat-label>
+          <mat-select formControlName="typeBien">
+            <mat-option value="">Tous</mat-option>
+            @for (option of options().typeBien; track option) {
+              <mat-option [value]="option">{{ typeBienLabel(option) }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Commercialisation</mat-label>
           <mat-select formControlName="statutCommercial">
             <mat-option value="">Tous</mat-option>
@@ -209,15 +218,35 @@
               <div class="terrain-card__body">
                 <div class="terrain-card__topline">
                   <span class="terrain-card__reference">{{ terrain.referenceInterne }}</span>
+                  <!-- Le catalogue mêle parcelles nues et biens bâtis : sans
+                       cette pastille, rien ne distingue une villa d'un terrain
+                       avant d'ouvrir la fiche. -->
+                  <span [class]="pillClass(typeBienMeanings, terrain.typeBien)">
+                    {{ typeBienLabel(terrain.typeBien) }}
+                  </span>
                   <span [class]="pillClass(commercialStatus, terrain.statutCommercial)">{{ terrain.statutCommercial }}</span>
                 </div>
                 <h3>{{ terrain.nom }}</h3>
                 <p class="terrain-card__location">{{ formatLocation(terrain) }}</p>
                 <dl class="terrain-card__facts">
                   <div>
-                    <dt>Superficie</dt>
+                    <dt>{{ estBati(terrain) ? 'Parcelle' : 'Superficie' }}</dt>
                     <dd>{{ terrain.superficie === null ? '—' : terrain.superficie + ' m²' }}</dd>
                   </div>
+                  <!-- Sur un bien bâti, c'est l'habitable que l'acheteur
+                       regarde en premier : on l'affiche à côté de la parcelle
+                       plutôt qu'à sa place. -->
+                  @if (estBati(terrain)) {
+                    <div>
+                      <dt>Habitable</dt>
+                      <dd>
+                        {{ terrain.surfaceHabitable === null ? '—' : terrain.surfaceHabitable + ' m²' }}
+                        @if (terrain.nombrePieces) {
+                          · {{ terrain.nombrePieces }}
+                        }
+                      </dd>
+                    </div>
+                  }
                   <div>
                     <dt>Prix public</dt>
                     <dd>{{ terrain.prixPublic | mtmMoney }}</dd>

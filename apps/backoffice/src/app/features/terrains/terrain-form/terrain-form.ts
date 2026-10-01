@@ -30,7 +30,16 @@ import { SessionService } from '../../../core/services/session.service';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { ProprietaireDialog } from '../proprietaire-dialog';
-import { COMMERCIAL_STATUS, LEGAL_STATUS, VERIFICATION_STATUS, statusHelp } from '../terrain-status';
+import {
+  COMMERCIAL_STATUS,
+  ETAT_BIEN,
+  LEGAL_STATUS,
+  TYPE_BIEN,
+  VERIFICATION_STATUS,
+  etatBienLabel,
+  statusHelp,
+  typeBienLabel,
+} from '../terrain-status';
 
 interface SelectedAsset {
   file: File;
@@ -61,6 +70,17 @@ export const STEPS: Step[] = [
  * quatre étapes courtes, chacune expliquant à quoi servent ses champs. En
  * modification, l'enregistrement est possible depuis n'importe quelle étape.
  */
+/** Champs qui n'ont de sens que sur un bien bâti (voir TerrainsService). */
+const CHAMPS_BATI = [
+  'surfaceHabitable',
+  'nombrePieces',
+  'nombreChambres',
+  'nombreSallesEau',
+  'niveaux',
+  'anneeConstruction',
+  'etatBien',
+] as const;
+
 @Component({
   selector: 'app-terrain-form',
   imports: [
@@ -106,7 +126,23 @@ export class TerrainForm implements OnInit {
   protected readonly loading = signal(this.isEdit);
   protected readonly saving = signal(false);
   protected readonly currentStep = signal(1);
-  protected readonly options = signal<{ statutJuridique: string[]; niveauVerification: string[]; statutCommercial: string[] }>({ statutJuridique: [], niveauVerification: [], statutCommercial: [] });
+  protected readonly options = signal<{
+    statutJuridique: string[];
+    niveauVerification: string[];
+    statutCommercial: string[];
+    typeBien: string[];
+    nombrePieces: string[];
+    etatBien: string[];
+    typesBati: string[];
+  }>({
+    statutJuridique: [],
+    niveauVerification: [],
+    statutCommercial: [],
+    typeBien: [],
+    nombrePieces: [],
+    etatBien: [],
+    typesBati: [],
+  });
   protected readonly proprietaires = signal<ProprietaireSummary[]>([]);
   /** Commerciaux affectables : réservé à l'encadrement (un commercial est rattaché d'office). */
   protected readonly commercials = signal<CommercialSummary[]>([]);
@@ -131,9 +167,19 @@ export class TerrainForm implements OnInit {
     localisationDetail: [''],
     latitude: [null as number | null, [Validators.min(-90), Validators.max(90)]],
     longitude: [null as number | null, [Validators.min(-180), Validators.max(180)]],
+    typeBien: ['terrain'],
     superficie: [null as number | null, Validators.min(0)],
     uniteSuperficie: ['m²'],
     dimensions: [''],
+    // Caractéristiques du bâti : l'API les refuse sur un terrain nu, et
+    // `cleanPayload` ne les envoie donc que pour un bien construit.
+    surfaceHabitable: [null as number | null, Validators.min(0)],
+    nombrePieces: [''],
+    nombreChambres: [null as number | null, [Validators.min(0), Validators.max(50)]],
+    nombreSallesEau: [null as number | null, [Validators.min(0), Validators.max(50)]],
+    niveaux: [null as number | null, [Validators.min(0), Validators.max(50)]],
+    anneeConstruction: [null as number | null, [Validators.min(1900), Validators.max(2200)]],
+    etatBien: [''],
     prixAcquisition: [null as number | null, Validators.min(0)],
     prixPublic: [null as number | null, Validators.min(0)],
     marge: [null as number | null],
@@ -154,6 +200,29 @@ export class TerrainForm implements OnInit {
 
   /** Valeur courante du formulaire sous forme de signal (pour les calculs d'aide). */
   private readonly formValue = signal(this.form.getRawValue());
+
+  /**
+   * Le bien est-il construit ? La liste des types bâtis vient de l'API : les
+   * écrans n'ont pas à deviner qu'un studio l'est et un terrain non. Elle
+   * commande l'affichage de la section « bâti » et son envoi à l'API.
+   */
+  protected readonly estBati = computed(() => {
+    const types = this.options().typesBati;
+    const type = this.formValue().typeBien ?? 'terrain';
+    // Avant le chargement des options, on se fie au seul cas certain.
+    return types.length ? types.includes(type) : type !== 'terrain';
+  });
+
+  protected readonly typeBienLabel = typeBienLabel;
+  protected readonly etatBienLabel = etatBienLabel;
+
+  protected typeBienAide(valeur: string | null | undefined): string {
+    return statusHelp(TYPE_BIEN, valeur);
+  }
+
+  protected etatBienAide(valeur: string | null | undefined): string {
+    return statusHelp(ETAT_BIEN, valeur);
+  }
 
   /** Marge calculée à titre indicatif : prix public − prix d'acquisition. */
   protected readonly computedMargin = computed(() => {
@@ -417,7 +486,15 @@ export class TerrainForm implements OnInit {
       localisationDetail: terrain.localisationDetail ?? '',
       latitude: this.toNumber(terrain.latitude),
       longitude: this.toNumber(terrain.longitude),
+      typeBien: terrain.typeBien ?? 'terrain',
       superficie: this.toNumber(terrain.superficie),
+      surfaceHabitable: this.toNumber(terrain.surfaceHabitable),
+      nombrePieces: terrain.nombrePieces ?? '',
+      nombreChambres: terrain.nombreChambres,
+      nombreSallesEau: terrain.nombreSallesEau,
+      niveaux: terrain.niveaux,
+      anneeConstruction: terrain.anneeConstruction,
+      etatBien: terrain.etatBien ?? '',
       dimensions: typeof terrain.dimensions === 'string' ? terrain.dimensions : terrain.dimensions ? JSON.stringify(terrain.dimensions) : '',
       prixAcquisition: this.toNumber(terrain.prixAcquisition),
       prixPublic: this.toNumber(terrain.prixPublic),
@@ -456,6 +533,12 @@ export class TerrainForm implements OnInit {
     if (this.terrainId) {
       delete cleaned['statutJuridique'];
       delete cleaned['niveauVerification'];
+    }
+    // Une parcelle nue n'a ni pièces ni surface habitable : l'API rejette la
+    // requête si ces champs l'accompagnent. On les retire plutôt que de
+    // laisser passer une 400 incompréhensible après un changement de type.
+    if (!this.estBati()) {
+      for (const champ of CHAMPS_BATI) delete cleaned[champ];
     }
     for (const [key, item] of Object.entries(cleaned)) {
       if (typeof item === 'string' && item.trim() === '') cleaned[key] = undefined;

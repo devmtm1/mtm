@@ -149,9 +149,43 @@
             <dd class="fact-list__price">{{ t.prixPublic | mtmMoney }}</dd>
           </div>
           <div>
-            <dt>Superficie</dt>
+            <dt>Nature</dt>
+            <dd>{{ typeBienLabel(t.typeBien) }}</dd>
+          </div>
+          <div>
+            <dt>{{ estBati(t) ? 'Parcelle' : 'Superficie' }}</dt>
             <dd>{{ formatNumber(t.superficie) }} m²</dd>
           </div>
+          <!-- Sur un bien bâti, l'habitable et la typologie passent devant la
+               vocation : ce sont les deux chiffres que le commercial cite au
+               téléphone. -->
+          @if (estBati(t)) {
+            <div>
+              <dt>Surface habitable</dt>
+              <dd>
+                {{ t.surfaceHabitable === null ? '—' : formatNumber(t.surfaceHabitable) + ' m²' }}
+              </dd>
+            </div>
+            <div>
+              <dt>Typologie</dt>
+              <dd>
+                {{ t.nombrePieces || '—' }}
+                @if (t.nombreChambres !== null) {
+                  <small>{{ t.nombreChambres }} chambre{{ t.nombreChambres > 1 ? 's' : '' }}</small>
+                }
+              </dd>
+            </div>
+            <div>
+              <dt>État</dt>
+              <dd>{{ etatBienLabel(t.etatBien) }}</dd>
+            </div>
+            @if (t.anneeConstruction !== null) {
+              <div>
+                <dt>Construction</dt>
+                <dd>{{ t.anneeConstruction }}</dd>
+              </div>
+            }
+          }
           <div>
             <dt>Vocation</dt>
             <dd>{{ t.vocation || '—' }}</dd>
