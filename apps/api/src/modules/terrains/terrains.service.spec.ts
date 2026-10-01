@@ -211,10 +211,7 @@ describe('TerrainsService', () => {
     prismaMock.systemSetting.findUnique.mockResolvedValue(null);
 
     await expect(
-      service.create(
-        { ...ficheMinimale, typeBien: 'chateau' },
-        internalUser,
-      ),
+      service.create({ ...ficheMinimale, typeBien: 'chateau' }, internalUser),
     ).rejects.toThrow(BadRequestException);
   });
 
