@@ -53,100 +53,177 @@
   @if (loading()) {
     <div class="skeleton" style="height: 240px"></div>
   } @else {
-    <div class="content-grid">
-      @for (group of groups; track group.id) {
-        <section class="page-card detail-section" [attr.aria-labelledby]="'group-' + group.id">
-          <div class="detail-section__head">
-            <div>
-              <h2 [id]="'group-' + group.id">{{ group.title }}</h2>
-              <p class="detail-section__hint">{{ group.help }}</p>
-            </div>
-          </div>
-          <ul class="setting-list">
-            @for (slot of group.slots; track slot.key) {
-              @let setting = settingFor(slot);
-              @let view = display(setting, slot);
-              <li class="setting" [class.is-empty]="!setting" [class.is-technical]="slot.kind === 'json'">
-                <div class="setting__main">
-                  <div class="setting__head">
-                    <strong>{{ slot.label }}</strong>
-                    @if (setting?.isSensitive) {
-                      <span class="status-pill status-pill--warning" matTooltip="Valeur protégée : visible et modifiable par les administrateurs uniquement"><svg lucideLock aria-hidden="true"></svg>Sensible</span>
-                    }
-                    @if (slot.kind === 'json') {
-                      <span class="status-pill" matTooltip="Format technique : à modifier avec le développeur">Technique</span>
-                    }
-                  </div>
-                  <p class="setting__help">{{ slot.help }}</p>
-                  @switch (view.kind) {
-                    @case ('masked') {
-                      <p class="setting__value setting__value--masked">••••••••  (valeur masquée)</p>
-                    }
-                    @case ('list') {
-                      <ul class="setting__chips">
-                        @for (item of view.items; track $index) {
-                          <li>{{ item }}</li>
-                        }
-                      </ul>
-                    }
-                    @default {
-                      <p class="setting__value" [class.setting__value--empty]="!setting">{{ view.text }}</p>
-                    }
-                  }
-                </div>
-                <div class="setting__actions">
-                  @if ((setting && canModify && !setting.redacted) || (!setting && canCreate)) {
-                    <button mat-stroked-button type="button" (click)="edit(slot, setting)">
-                      <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>{{ setting ? 'Modifier' : 'Définir' }}
-                    </button>
-                  }
-                </div>
-              </li>
-            }
-          </ul>
-        </section>
-      }
+    <div class="settings-layout">
+      <aside class="settings-nav" aria-label="Catégories de paramètres">
+        <label class="settings-nav__search">
+          <svg lucideSearch aria-hidden="true"></svg>
+          <input type="search" [value]="search()" (input)="setSearch($any($event.target).value)" placeholder="Rechercher un paramètre…" autocomplete="off" aria-label="Rechercher un paramètre" />
+        </label>
+        <nav>
+          @for (group of groups; track group.id) {
+            <button type="button" class="settings-nav__item" [class.is-active]="!searching() && activeId() === group.id" (click)="select(group.id)">
+              <span>{{ group.title }}</span>
+              <small [class.is-partial]="configuredCount(group) < group.slots.length">{{ configuredCount(group) }}/{{ group.slots.length }}</small>
+            </button>
+          }
+          @if (others().length > 0) {
+            <span class="settings-nav__divider" role="separator">Avancé</span>
+            <button type="button" class="settings-nav__item settings-nav__item--advanced" [class.is-active]="!searching() && activeId() === 'others'" (click)="select('others')">
+              <span><svg lucideCode aria-hidden="true"></svg>Hors catalogue</span>
+              <small>{{ others().length }}</small>
+            </button>
+          }
+        </nav>
+      </aside>
 
-      @if (others().length > 0) {
-        <section class="page-card detail-section detail-section--wide" aria-labelledby="group-others">
-          <div class="detail-section__head">
-            <div>
-              <h2 id="group-others">Autres paramètres</h2>
-              <p class="detail-section__hint">Paramètres hors catalogue, ajoutés à la main. L’application ne les lit que si le développeur l’a prévu.</p>
+      <div class="settings-content">
+        @if (searching() && visibleGroups().length === 0 && visibleOthers().length === 0) {
+          <div class="empty-state">
+            <svg lucideSearch aria-hidden="true"></svg>
+            <h3>Aucun paramètre ne correspond</h3>
+            <p>Essayez un autre mot, ou effacez la recherche.</p>
+            <button mat-stroked-button type="button" (click)="setSearch('')">Effacer la recherche</button>
+          </div>
+        }
+
+        @for (group of visibleGroups(); track group.id) {
+          <section class="page-card settings-card" [attr.aria-labelledby]="'group-' + group.id">
+            <div class="settings-card__head">
+              <h2 [id]="'group-' + group.id">{{ group.title }}</h2>
+              <p>{{ group.help }}</p>
             </div>
-          </div>
-          <div class="table-scroll">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Clé technique</th>
-                  <th>Valeur</th>
-                  <th>Description</th>
-                  <th class="is-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (setting of others(); track setting.id) {
-                  @let view = display(setting);
+            <div class="table-scroll">
+              <table class="data-table settings-table">
+                <thead>
                   <tr>
-                    <td><code>{{ setting.key }}</code>@if (setting.isSensitive) { <span class="status-pill status-pill--warning">Sensible</span> }</td>
-                    <td class="cell-muted">{{ view.kind === 'masked' ? '••••••••' : view.kind === 'list' ? view.items?.join(', ') : view.text }}</td>
-                    <td>{{ setting.description || '—' }}</td>
-                    <td class="is-right">
-                      @if (canModify && !setting.redacted) {
-                        <button mat-icon-button type="button" (click)="edit(undefined, setting)" matTooltip="Modifier" aria-label="Modifier"><svg lucidePencil aria-hidden="true"></svg></button>
-                      }
-                      @if (canDelete) {
-                        <button mat-icon-button type="button" class="setting__delete" (click)="remove(setting)" matTooltip="Supprimer" aria-label="Supprimer"><svg lucideTrash2 aria-hidden="true"></svg></button>
-                      }
-                    </td>
+                    <th scope="col">Paramètre</th>
+                    <th scope="col">Valeur</th>
+                    <th scope="col">Statut</th>
+                    <th scope="col" class="is-right">Action</th>
                   </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </section>
-      }
+                </thead>
+                <tbody>
+                  @for (slot of group.slots; track slot.key) {
+                    @let setting = settingFor(slot);
+                    @let view = display(setting, slot);
+                    <tr>
+                      <td class="settings-table__label">
+                        <strong>{{ slot.label }}</strong>
+                        <small>{{ slot.help }}</small>
+                      </td>
+                      <td class="settings-table__value">
+                        @switch (view.kind) {
+                          @case ('masked') {
+                            <span class="value value--masked">••••••••</span>
+                          }
+                          @case ('list') {
+                            <ul class="chips">
+                              @for (item of view.items; track $index) {
+                                <li>{{ item }}</li>
+                              }
+                            </ul>
+                          }
+                          @default {
+                            <span class="value" [class.value--empty]="!setting">{{ setting ? view.text : '—' }}</span>
+                          }
+                        }
+                      </td>
+                      <td>
+                        <div class="status-stack">
+                          @if (setting) {
+                            <span class="status-pill status-pill--success">Personnalisé</span>
+                          } @else {
+                            <span class="status-pill" matTooltip="Non enregistré : l’application utilise sa valeur d’origine">Par défaut</span>
+                          }
+                          @if (setting?.isSensitive) {
+                            <span class="status-pill status-pill--warning" matTooltip="Valeur protégée : visible et modifiable par les administrateurs uniquement"><svg lucideLock aria-hidden="true"></svg>Sensible</span>
+                          }
+                          @if (slot.kind === 'json') {
+                            <span class="status-pill status-pill--primary" matTooltip="Format technique : à modifier avec le développeur">Technique</span>
+                          }
+                        </div>
+                      </td>
+                      <td class="is-right">
+                        @if ((setting && canModify && !setting.redacted) || (!setting && canCreate)) {
+                          <button mat-stroked-button type="button" (click)="edit(slot, setting)">
+                            <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>{{ setting ? 'Modifier' : 'Définir' }}
+                          </button>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </section>
+        }
+
+        @if (visibleOthers().length > 0) {
+          <section class="page-card settings-card" aria-labelledby="group-others">
+            <div class="settings-card__head">
+              <h2 id="group-others">Paramètres hors catalogue</h2>
+              <p>Identifiés par leur clé technique, sans libellé.</p>
+            </div>
+            <div class="settings-note" role="note">
+              <svg lucideInfo aria-hidden="true"></svg>
+              <p>
+                Ces paramètres ont été ajoutés à la main. L’application ne les utilise que si le développeur l’a prévu :
+                en créer ou en modifier un n’a aucun effet visible par lui-même. À manipuler avec le développeur.
+              </p>
+            </div>
+            <div class="table-scroll">
+              <table class="data-table settings-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Clé technique</th>
+                    <th scope="col">Valeur</th>
+                    <th scope="col">Description</th>
+                    <th scope="col" class="is-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (setting of pagedOthers(); track setting.id) {
+                    @let view = display(setting);
+                    <tr>
+                      <td><code>{{ setting.key }}</code>@if (setting.isSensitive) { <span class="status-pill status-pill--warning">Sensible</span> }</td>
+                      <td class="settings-table__value">{{ view.kind === 'masked' ? '••••••••' : view.kind === 'list' ? view.items?.join(', ') : view.text }}</td>
+                      <td class="settings-table__label"><small>{{ setting.description || '—' }}</small></td>
+                      <td class="is-right">
+                        @if (canModify && !setting.redacted) {
+                          <button mat-icon-button type="button" (click)="edit(undefined, setting)" matTooltip="Modifier" aria-label="Modifier"><svg lucidePencil aria-hidden="true"></svg></button>
+                        }
+                        @if (canDelete) {
+                          <button mat-icon-button type="button" class="setting__delete" (click)="remove(setting)" matTooltip="Supprimer" aria-label="Supprimer"><svg lucideTrash2 aria-hidden="true"></svg></button>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <nav class="pager" aria-label="Pagination des paramètres">
+              <span class="pager__range">{{ rangeStart() }}–{{ rangeEnd() }} sur {{ visibleOthers().length }}</span>
+              <label class="pager__size">
+                Lignes par page
+                <select [value]="pageSize()" (change)="setPageSize(+$any($event.target).value)">
+                  @for (size of pageSizes; track size) {
+                    <option [value]="size" [selected]="size === pageSize()">{{ size }}</option>
+                  }
+                </select>
+              </label>
+              <div class="pager__nav">
+                <button type="button" mat-icon-button [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)" aria-label="Page précédente">
+                  <svg lucideChevronLeft aria-hidden="true"></svg>
+                </button>
+                <span>Page {{ currentPage() + 1 }} / {{ totalPages() }}</span>
+                <button type="button" mat-icon-button [disabled]="currentPage() >= totalPages() - 1" (click)="goToPage(currentPage() + 1)" aria-label="Page suivante">
+                  <svg lucideChevronRight aria-hidden="true"></svg>
+                </button>
+              </div>
+            </nav>
+          </section>
+        }
+      </div>
     </div>
   }
 </div>

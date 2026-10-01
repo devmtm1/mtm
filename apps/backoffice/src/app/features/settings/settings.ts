@@ -2,7 +2,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { LucideLock, LucidePencil, LucidePlus, LucideSettings, LucideSlidersHorizontal, LucideTrash2 } from '@lucide/angular';
+import { LucideChevronLeft, LucideChevronRight, LucideCode, LucideInfo, LucideLock, LucidePencil, LucidePlus, LucideSearch, LucideSettings, LucideSlidersHorizontal, LucideTrash2 } from '@lucide/angular';
 import { SessionService } from '../../core/services/session.service';
 import { SettingsApiService } from '../../core/services/api/settings-api.service';
 import type { SettingListItem } from '../../core/models/setting.model';
@@ -19,7 +19,7 @@ import { SETTING_GROUPS, inferKind, settingSlotByKey, type SettingSlot } from '.
  */
 @Component({
   selector: 'app-settings',
-  imports: [MatButtonModule, MatTooltipModule, LucideLock, LucidePencil, LucidePlus, LucideSettings, LucideSlidersHorizontal, LucideTrash2],
+  imports: [MatButtonModule, MatTooltipModule, LucideChevronLeft, LucideChevronRight, LucideCode, LucideInfo, LucideLock, LucidePencil, LucidePlus, LucideSearch, LucideSettings, LucideSlidersHorizontal, LucideTrash2],
   templateUrl: './settings.html',
   styleUrl: './settings.scss',
 })
@@ -44,6 +44,66 @@ export class Settings implements OnInit {
   protected readonly sensitiveCount = computed(() => this.settings().filter((setting) => setting.isSensitive).length);
   protected readonly slotCount = this.groups.reduce((sum, group) => sum + group.slots.length, 0);
   protected readonly missing = computed(() => this.groups.flatMap((group) => group.slots).filter((slot) => !this.byKey().has(slot.key)));
+
+  protected readonly activeId = signal<string>(this.groups[0]?.id ?? 'others');
+  protected readonly search = signal('');
+  protected readonly searching = computed(() => this.search().trim() !== '');
+
+  /** Sans recherche : la catégorie choisie ; avec recherche : tous les paramètres qui correspondent. */
+  protected readonly visibleGroups = computed(() => {
+    const term = this.search().trim().toLowerCase();
+    if (!term) return this.groups.filter((group) => group.id === this.activeId());
+    return this.groups
+      .map((group) => ({
+        ...group,
+        slots: group.slots.filter((slot) => `${slot.label} ${slot.help} ${slot.key}`.toLowerCase().includes(term)),
+      }))
+      .filter((group) => group.slots.length > 0);
+  });
+
+  protected readonly visibleOthers = computed(() => {
+    const term = this.search().trim().toLowerCase();
+    if (!term) return this.activeId() === 'others' ? this.others() : [];
+    return this.others().filter((setting) => `${setting.key} ${setting.description ?? ''}`.toLowerCase().includes(term));
+  });
+
+  protected readonly pageSizes = [10, 25, 50];
+  protected readonly pageSize = signal(10);
+  private readonly pageIndex = signal(0);
+  protected readonly totalPages = computed(() => Math.max(1, Math.ceil(this.visibleOthers().length / this.pageSize())));
+  /** Page affichée, ramenée dans les bornes quand une recherche réduit la liste. */
+  protected readonly currentPage = computed(() => Math.min(this.pageIndex(), this.totalPages() - 1));
+  protected readonly pagedOthers = computed(() => {
+    const start = this.currentPage() * this.pageSize();
+    return this.visibleOthers().slice(start, start + this.pageSize());
+  });
+  protected readonly rangeStart = computed(() => (this.visibleOthers().length === 0 ? 0 : this.currentPage() * this.pageSize() + 1));
+  protected readonly rangeEnd = computed(() => Math.min(this.visibleOthers().length, (this.currentPage() + 1) * this.pageSize()));
+
+  protected select(id: string): void {
+    this.activeId.set(id);
+    this.search.set('');
+    this.pageIndex.set(0);
+  }
+
+  protected setSearch(term: string): void {
+    this.search.set(term);
+    this.pageIndex.set(0);
+  }
+
+  protected goToPage(index: number): void {
+    this.pageIndex.set(Math.min(Math.max(0, index), this.totalPages() - 1));
+  }
+
+  protected setPageSize(size: number): void {
+    this.pageSize.set(size);
+    this.pageIndex.set(0);
+  }
+
+  /** Paramètres du catalogue déjà enregistrés dans la catégorie. */
+  protected configuredCount(group: { slots: SettingSlot[] }): number {
+    return group.slots.filter((slot) => this.byKey().has(slot.key)).length;
+  }
 
   ngOnInit(): void {
     this.load();
