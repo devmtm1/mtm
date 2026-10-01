@@ -544,6 +544,14 @@ export class TerrainForm implements OnInit {
       if (typeof item === 'string' && item.trim() === '') cleaned[key] = undefined;
     }
     if (!this.justificationRequired()) delete cleaned['justification'];
+    // Sans accès financier, la fiche nous a renvoyé des montants à `null` :
+    // les réexpédier effacerait les vrais. L'API les ignore aussi de son
+    // côté, mais autant ne pas les envoyer du tout.
+    if (!this.canViewFinancials) {
+      for (const champ of ['prixAcquisition', 'marge', 'commission']) {
+        delete cleaned[champ];
+      }
+    }
     // Un commercial ne choisit pas le responsable : l'API le rattache lui-même.
     if (!this.canAssign) delete cleaned['commercialResponsableId'];
     return cleaned as unknown as CreateTerrainPayload;

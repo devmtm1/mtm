@@ -314,19 +314,39 @@ export class TerrainsService {
       dto as unknown as Record<string, unknown>,
       id,
     );
-    this.assertJustificationForSensitiveFields(
-      dto as unknown as Record<string, unknown>,
-    );
     const terrainData = { ...dto } as Record<string, unknown>;
     delete terrainData['justification'];
 
+    // Les montants internes sont masqués en lecture pour qui n'y a pas droit :
+    // la fiche les lui renvoie à `null`, et son formulaire les réexpédierait
+    // tels quels. Sans ce filtre, un commercial sans accès financier effacerait
+    // le prix d'acquisition en enregistrant n'importe quelle autre correction.
+    // Écarté avant le contrôle de justification : ces `null` ressembleraient
+    // sinon à une baisse de prix, et réclameraient une justification pour une
+    // modification que l'auteur n'a jamais demandée.
+    if (!this.hasFinancialAccess(user)) {
+      for (const champ of ['prixAcquisition', 'marge', 'commission'] as const) {
+        delete terrainData[champ];
+      }
+    }
+
+    await this.assertJustificationForSensitiveFields(id, terrainData);
+
+    // Marge déduite quand elle n'est pas saisie. Calculée sur `terrainData`,
+    // c'est-à-dire après le filtre ci-dessus : sur le DTO brut, un prix
+    // d'acquisition masqué (`null`) aurait réintroduit une marge égale au
+    // prix public pour un auteur sans accès financier. Les deux montants
+    // doivent être des nombres, pas des « pas de valeur ».
+    const nombre = (valeur: unknown): number | null =>
+      typeof valeur === 'number' && Number.isFinite(valeur) ? valeur : null;
+    const prixPublic = nombre(terrainData['prixPublic']);
+    const prixAcquisition = nombre(terrainData['prixAcquisition']);
     if (
-      dto.prixPublic !== undefined &&
-      dto.prixAcquisition !== undefined &&
-      (dto.marge === undefined || dto.marge === null)
+      prixPublic !== null &&
+      prixAcquisition !== null &&
+      (terrainData['marge'] === undefined || terrainData['marge'] === null)
     ) {
-      terrainData['marge'] =
-        Number(dto.prixPublic) - Number(dto.prixAcquisition);
+      terrainData['marge'] = prixPublic - prixAcquisition;
     }
 
     const terrain = await this.prisma.terrain.update({
@@ -521,20 +541,75 @@ export class TerrainsService {
     'proprietaireId',
   ] as const;
 
-  private assertJustificationForSensitiveFields(
+  /**
+   * Justification exigée quand une donnée sensible **change** réellement.
+   *
+   * La règle portait sur la simple présence du champ dans la requête. Un
+   * écran qui renvoie tout son formulaire — c'est le cas de la fiche
+   * terrain — réexpédie le prix d'acquisition même sans y toucher : chaque
+   * enregistrement était donc refusé, alors que le formulaire, lui, compare
+   * à la valeur d'origine et n'affichait pas le champ de justification.
+   * Comparer à ce qui est enregistré remet les deux d'accord.
+   */
+  private async assertJustificationForSensitiveFields(
+    id: string,
     dto: Record<string, unknown>,
-  ): void {
-    const touchesSensitiveField = TerrainsService.SENSITIVE_FIELDS.some(
+  ): Promise<void> {
+    const concerne = TerrainsService.SENSITIVE_FIELDS.filter(
       (field) => dto[field] !== undefined,
     );
-    if (
-      touchesSensitiveField &&
-      !(typeof dto['justification'] === 'string' && dto['justification'].trim())
-    ) {
+    if (concerne.length === 0) return;
+
+    const actuel = await this.prisma.terrain.findUnique({
+      where: { id },
+      select: {
+        prixAcquisition: true,
+        marge: true,
+        commission: true,
+        proprietaireId: true,
+      },
+    });
+    if (!actuel) throw new NotFoundException('Terrain introuvable');
+
+    // `null` et `undefined` désignent tous deux « pas de valeur » ; les
+    // montants arrivent en nombre et sortent en Decimal, d'où la comparaison
+    // sur leur forme numérique.
+    const comparable = (valeur: unknown): number | string | null =>
+      valeur === null || valeur === undefined
+        ? null
+        : typeof valeur === 'string'
+          ? valeur
+          : Number(valeur);
+
+    const change = concerne.some(
+      (field) => comparable(dto[field]) !== comparable(actuel[field]),
+    );
+    if (!change) return;
+
+    if (!(
+      typeof dto['justification'] === 'string' && dto['justification'].trim()
+    )) {
       throw new BadRequestException(
         'Une justification est obligatoire pour modifier un champ sensible (prix d’acquisition, marge, commission, propriétaire)',
       );
     }
+  }
+
+  /**
+   * Qui a le droit de voir — et donc de modifier — les montants internes.
+   * Partagé entre la lecture (qui les masque) et l'écriture (qui les ignore),
+   * pour que les deux ne puissent pas diverger.
+   */
+  private hasFinancialAccess(user?: {
+    roles?: string[];
+    permissions?: string[];
+  }): boolean {
+    return (
+      !user ||
+      Boolean(user.roles?.includes('administrateur')) ||
+      Boolean(user.roles?.includes('direction')) ||
+      Boolean(user.permissions?.includes('terrains:consulter_financier'))
+    );
   }
 
   private toInternal<T extends Record<string, unknown>>(
@@ -546,11 +621,7 @@ export class TerrainsService {
       documents?: Array<Record<string, unknown>>;
     } = terrain;
 
-    const hasFinancialAccess =
-      !user ||
-      user.roles?.includes('administrateur') ||
-      user.roles?.includes('direction') ||
-      user.permissions?.includes('terrains:consulter_financier');
+    const hasFinancialAccess = this.hasFinancialAccess(user);
 
     const result = {
       ...terrain,

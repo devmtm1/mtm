@@ -157,6 +157,107 @@ describe('TerrainsService', () => {
     ).rejects.toThrow(BadRequestException);
   });
 
+  // --- Champs sensibles : la justification suit un vrai changement ---
+
+  it('laisse enregistrer sans justification quand le prix n’a pas bougé', async () => {
+    prismaMock.terrain.findFirst.mockResolvedValue({ id: 't1' });
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+    // La fiche renvoie tout son formulaire : le prix d'acquisition repart
+    // identique sans que personne n'y ait touché.
+    prismaMock.terrain.findUnique.mockResolvedValue({
+      prixAcquisition: 5_000_000,
+      marge: null,
+      commission: null,
+      proprietaireId: null,
+    });
+    prismaMock.terrain.update.mockResolvedValue({ id: 't1', medias: [] });
+
+    await service.update(
+      't1',
+      { nom: 'Nom corrigé', prixAcquisition: 5_000_000 },
+      { id: 'u-dir', roles: ['direction'], permissions: [] },
+    );
+
+    expect(prismaMock.terrain.update).toHaveBeenCalled();
+  });
+
+  it('exige une justification dès que le prix change vraiment', async () => {
+    prismaMock.terrain.findFirst.mockResolvedValue({ id: 't1' });
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+    prismaMock.terrain.findUnique.mockResolvedValue({
+      prixAcquisition: 5_000_000,
+      marge: null,
+      commission: null,
+      proprietaireId: null,
+    });
+
+    await expect(
+      service.update(
+        't1',
+        { prixAcquisition: 6_000_000 },
+        { id: 'u-dir', roles: ['direction'], permissions: [] },
+      ),
+    ).rejects.toThrow(/justification est obligatoire/);
+  });
+
+  it('n’efface pas les montants quand l’auteur n’a pas accès au financier', async () => {
+    prismaMock.terrain.findFirst.mockResolvedValue({ id: 't1' });
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+    prismaMock.terrain.findUnique.mockResolvedValue({
+      prixAcquisition: 5_000_000,
+      marge: 1_000_000,
+      commission: 200_000,
+      proprietaireId: null,
+    });
+    prismaMock.terrain.update.mockResolvedValue({ id: 't1', medias: [] });
+
+    // La fiche lui a renvoyé des montants à `null` : son formulaire les
+    // réexpédie tels quels, et ils effaceraient les vrais.
+    await service.update(
+      't1',
+      {
+        nom: 'Nom corrigé',
+        prixAcquisition: null as unknown as number,
+        marge: null as unknown as number,
+        commission: null as unknown as number,
+      },
+      internalUser,
+    );
+
+    const data = prismaMock.terrain.update.mock.calls[0][0].data;
+    expect(data).not.toHaveProperty('prixAcquisition');
+    expect(data).not.toHaveProperty('marge');
+    expect(data).not.toHaveProperty('commission');
+    expect(data.nom).toBe('Nom corrigé');
+  });
+
+  it('ne déduit pas une marge à partir d’un prix d’acquisition masqué', async () => {
+    prismaMock.terrain.findFirst.mockResolvedValue({ id: 't1' });
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+    prismaMock.terrain.findUnique.mockResolvedValue({
+      prixAcquisition: 5_000_000,
+      marge: 1_000_000,
+      commission: null,
+      proprietaireId: null,
+    });
+    prismaMock.terrain.update.mockResolvedValue({ id: 't1', medias: [] });
+
+    // Sans accès financier, le prix d'acquisition arrive à `null` : déduire
+    // la marge de ce `null` la rendrait égale au prix public.
+    await service.update(
+      't1',
+      {
+        prixPublic: 8_000_000,
+        prixAcquisition: null as unknown as number,
+        marge: null as unknown as number,
+      },
+      internalUser,
+    );
+
+    const data = prismaMock.terrain.update.mock.calls[0][0].data;
+    expect(data).not.toHaveProperty('marge');
+  });
+
   // --- Biens bâtis : MTM vend aussi des villas, pas que du foncier ---
 
   const ficheMinimale = {
