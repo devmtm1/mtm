@@ -129,6 +129,13 @@ export class CloudinaryService {
    */
   url(publicId: string, resourceType: string, isPublic: boolean): string {
     if (isPublic) {
+      // Sans compte Cloudinary (poste local sans .env complet), le SDK lève
+      // une exception qui faisait échouer toute liste portant une photo :
+      // mieux vaut un lien vide, l'interface affiche alors son visuel de repli.
+      if (!this.config.get('CLOUDINARY_CLOUD_NAME')) {
+        this.warnNotConfigured();
+        return '';
+      }
       return cloudinary.url(publicId, {
         secure: true,
         resource_type: resourceType,
@@ -225,6 +232,16 @@ export class CloudinaryService {
       resourceType,
       secureUrl: this.url(publicId, resourceType, isPublic),
     };
+  }
+
+  private warnedNotConfigured = false;
+
+  private warnNotConfigured(): void {
+    if (this.warnedNotConfigured) return;
+    this.warnedNotConfigured = true;
+    this.logger.warn(
+      'CLOUDINARY_CLOUD_NAME absent : les liens de photos sont vides. Renseignez CLOUDINARY_* dans .env.',
+    );
   }
 
   private apiPublicUrl(): string {
