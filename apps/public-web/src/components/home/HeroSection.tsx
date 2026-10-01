@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ROUTES } from '../../routes';
 import { LinkButton } from '../ui/LinkButton';
 import { useContentBlocks } from '../../hooks/useContentBlocks';
@@ -9,8 +9,15 @@ const DEFAULT_SUBTITLE =
   "MTM Immobilier accompagne particuliers et membres de la diaspora dans l'achat de terrains et de villas, la vérification foncière, la gestion locative et la construction — avec transparence et suivi à distance.";
 const DEFAULT_CTA = 'Voir nos biens';
 
-/** Connexions sur lesquelles une vidéo de fond coûte plus qu'elle n'apporte. */
-const RESEAUX_LENTS = ['slow-2g', '2g', '3g'];
+/**
+ * Connexions sur lesquelles 18 Mo ne passeront pas, quoi qu'on fasse.
+ *
+ * `3g` en est volontairement absent : `effectiveType` est une mesure de
+ * latence et de débit, pas le type de radio. Un téléphone en vraie 4G se
+ * déclare couramment « 3g » dès que le réseau est un peu chargé — l'y inclure
+ * écartait la vidéo chez la plupart des visiteurs, sans que rien ne le dise.
+ */
+const RESEAUX_LENTS = ['slow-2g', '2g'];
 
 /**
  * La vidéo de fond joue désormais sur mobile aussi : s'en priver donnait un
@@ -19,8 +26,9 @@ const RESEAUX_LENTS = ['slow-2g', '2g', '3g'];
  * Elle reste soumise à trois réserves, parce que le fichier pèse ~18 Mo :
  *
  * - « mouvement réduit » : on respecte la préférence système ;
- * - mode économie de données, ou réseau annoncé en 2G/3G : l'image fixe suffit,
- *   et 18 Mo de forfait pour un décor serait une facture imposée au visiteur ;
+ * - mode économie de données explicitement activé, ou réseau mesuré en 2G :
+ *   l'image fixe suffit, 18 Mo de forfait pour un décor serait une facture
+ *   imposée au visiteur ;
  * - montage différé : la vidéo n'est ajoutée qu'une fois la page au repos,
  *   pour qu'elle ne dispute pas la bande passante au premier affichage ni au
  *   catalogue.
@@ -65,6 +73,16 @@ function useShouldPlayBackgroundVideo(): boolean {
 export function HeroSection() {
   const { data } = useContentBlocks();
   const playVideo = useShouldPlayBackgroundVideo();
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // `autoPlay` seul ne suffit pas : plusieurs navigateurs mobiles ignorent
+  // l'attribut et n'en disent rien. On demande la lecture explicitement, et
+  // un refus (mode économie d'énergie sur iOS, par exemple) laisse simplement
+  // l'image fixe en place.
+  useEffect(() => {
+    if (!playVideo) return;
+    void videoRef.current?.play().catch(() => undefined);
+  }, [playVideo]);
 
   const findContent = (key: string): string | undefined =>
     data?.find((block) => block.key === key)?.content;
@@ -88,9 +106,9 @@ export function HeroSection() {
       {playVideo && (
         <video
           className="absolute inset-0 h-full w-full object-cover motion-safe:animate-fade-in"
+          ref={videoRef}
           src="/video.mp4"
           poster="/hero-poster.jpg"
-          preload="none"
           autoPlay
           muted
           loop
