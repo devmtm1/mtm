@@ -34,7 +34,7 @@
         <span class="kpi__icon"><svg lucideLandPlot aria-hidden="true"></svg></span>
         <span class="kpi__body">
           <strong>{{ stats().terrains }}</strong>
-          <span>Terrains confiés</span>
+          <span>Biens confiés</span>
         </span>
       </div>
       <button type="button" class="kpi kpi--success" (click)="setScope('avec-mandat')">
@@ -49,7 +49,7 @@
         <span class="kpi__icon"><svg lucideUserX aria-hidden="true"></svg></span>
         <span class="kpi__body">
           <strong>{{ stats().sansTerrain }}</strong>
-          <span>Sans terrain</span>
+          <span>Sans bien</span>
           <small>Enregistrés mais rien de confié : à relancer</small>
         </span>
       </button>
@@ -82,7 +82,7 @@
           <mat-select [value]="scope()" (valueChange)="setScope($event)">
             <mat-option value="">Tous</mat-option>
             <mat-option value="avec-mandat">Sous mandat</mat-option>
-            <mat-option value="sans-terrain">Sans terrain confié</mat-option>
+            <mat-option value="sans-terrain">Sans bien confié</mat-option>
           </mat-select>
         </mat-form-field>
         @if (hasActiveFilters()) {
@@ -102,7 +102,7 @@
           <button mat-stroked-button type="button" (click)="resetFilters()">Effacer les filtres</button>
         } @else {
           <h3>Aucun propriétaire pour le moment</h3>
-          <p>Enregistrez d’abord le propriétaire (prénom, nom, téléphone) ; vous lui rattacherez ensuite ses terrains et son mandat.</p>
+          <p>Enregistrez d’abord le propriétaire (prénom, nom, téléphone) ; vous lui rattacherez ensuite ses biens et son mandat.</p>
           @if (canCreate()) {
             <button mat-flat-button color="primary" type="button" (click)="openCreate()">
               <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Créer le premier propriétaire

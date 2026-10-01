@@ -6,9 +6,9 @@ const ACTION_LABELS: Record<string, string> = {
   'mandat.created': 'Création du mandat',
   'mandat.updated': 'Modification du mandat',
   'mandat.deleted': 'Suppression du mandat',
-  'mandat.lot.created': 'Terrain rattaché',
+  'mandat.lot.created': 'Bien rattaché',
   'mandat.lot.updated': 'Avancement d’un lot modifié',
-  'mandat.lot.deleted': 'Terrain retiré',
+  'mandat.lot.deleted': 'Bien retiré',
   'mandat.document.created': 'Ajout d’un document',
   'mandat.document.deleted': 'Suppression d’un document',
 };

@@ -271,7 +271,7 @@ export class TerrainsService {
       where: { id },
       include: terrainInclude,
     });
-    if (!terrain) throw new NotFoundException('Terrain introuvable');
+    if (!terrain) throw new NotFoundException('Bien introuvable');
     return this.toInternal(terrain, user);
   }
 
@@ -283,7 +283,7 @@ export class TerrainsService {
       where: { referenceInterne: dto.referenceInterne },
     });
     if (existing)
-      throw new ConflictException('Une référence terrain existe déjà');
+      throw new ConflictException('Une référence de bien existe déjà');
     await this.validateStatuses(dto);
     await this.assertChampsBatiCoherents(
       dto as unknown as Record<string, unknown>,
@@ -383,7 +383,7 @@ export class TerrainsService {
     await this.validateStatuses({ [field]: value });
     if (field === 'statutJuridique' && !justification?.trim()) {
       throw new BadRequestException(
-        'Une justification est obligatoire pour modifier le statut juridique d’un terrain',
+        'Une justification est obligatoire pour modifier le statut juridique d’un bien',
       );
     }
     const terrain = await this.prisma.terrain.update({
@@ -591,7 +591,7 @@ export class TerrainsService {
         proprietaireId: true,
       },
     });
-    if (!actuel) throw new NotFoundException('Terrain introuvable');
+    if (!actuel) throw new NotFoundException('Bien introuvable');
 
     // `null` et `undefined` désignent tous deux « pas de valeur » ; les
     // montants arrivent en nombre et sortent en Decimal, d'où la comparaison

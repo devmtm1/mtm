@@ -20,7 +20,7 @@ export interface GlobalSearchResult {
 }
 
 const KIND_LABELS: Record<SearchResultKind, string> = {
-  terrain: 'Terrains',
+  terrain: 'Biens',
   prospect: 'Prospects',
   mandat: 'Mandats',
   vente: 'Dossiers de vente',

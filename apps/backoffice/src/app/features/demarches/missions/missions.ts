@@ -168,7 +168,7 @@ export class Missions implements OnInit {
       // Le terrain du catalogue quand il existe ; sinon la localisation
       // libre décrite par le client. La nature de la vérification passe en
       // seconde ligne : elle ne justifiait plus une colonne à elle seule.
-      headerName: 'Terrain / localisation',
+      headerName: 'Bien / localisation',
       flex: 1.6,
       minWidth: 200,
       valueGetter: (p) =>

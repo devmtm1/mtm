@@ -37,7 +37,7 @@
       <div class="alert-banner__head">
         <svg lucideGlobe aria-hidden="true"></svg>
         <strong>{{ pendingRequests().length }} demande{{ pendingRequests().length > 1 ? 's' : '' }} de réservation reçue{{ pendingRequests().length > 1 ? 's' : '' }} du site</strong>
-        <span>Un visiteur souhaite réserver un terrain : créez le dossier pour le rappeler.</span>
+        <span>Un visiteur souhaite réserver un bien : créez le dossier pour le rappeler.</span>
       </div>
       <ul class="alert-banner__list">
         @for (request of pendingRequests().slice(0, 6); track request.id) {

@@ -629,6 +629,6 @@ export class DemarchesService {
       where: { id: terrainId },
       select: { id: true },
     });
-    if (!terrain) throw new BadRequestException('Terrain introuvable');
+    if (!terrain) throw new BadRequestException('Bien introuvable');
   }
 }

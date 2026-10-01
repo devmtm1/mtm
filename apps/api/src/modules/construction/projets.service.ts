@@ -496,7 +496,7 @@ export class ProjetsConstructionService {
       where: { id: terrainId },
       select: { id: true },
     });
-    if (!terrain) throw new BadRequestException('Terrain introuvable');
+    if (!terrain) throw new BadRequestException('Bien introuvable');
   }
 
   /** Référence lisible attribuée à la création : C-2026-0004. */

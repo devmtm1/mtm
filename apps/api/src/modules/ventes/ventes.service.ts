@@ -54,7 +54,7 @@ export class VentesService {
     });
     if (exclusiveMandat && exclusiveMandat.id !== mandatId) {
       throw new ConflictException(
-        'Ce terrain est couvert par un mandat exclusif actif : la vente doit être rattachée à ce mandat',
+        'Ce bien est couvert par un mandat exclusif actif : la vente doit être rattachée à ce mandat',
       );
     }
   }
@@ -243,7 +243,7 @@ export class VentesService {
         statutCommercial: true,
       },
     });
-    if (!terrain) throw new NotFoundException('Terrain introuvable');
+    if (!terrain) throw new NotFoundException('Bien introuvable');
     // Liste blanche : seul un terrain explicitement « Disponible » accepte une
     // demande publique. Une liste noire laissait passer « Suspendu », « Brouillon »
     // et « Réservé », et testait un statut « Indisponible » qui n'existe pas.
@@ -386,7 +386,7 @@ export class VentesService {
     ]);
     if (!prospect) throw new NotFoundException('Prospect introuvable');
     if (dto.terrainId && !terrain)
-      throw new NotFoundException('Terrain introuvable');
+      throw new NotFoundException('Bien introuvable');
     if (dto.mandatId && !mandat)
       throw new NotFoundException('Mandat introuvable');
     if (terrain && terrain.statutCommercial !== 'Disponible') {
@@ -461,7 +461,7 @@ export class VentesService {
         where: { id: dto.terrainId },
         select: { id: true, statutCommercial: true },
       });
-      if (!terrain) throw new NotFoundException('Terrain introuvable');
+      if (!terrain) throw new NotFoundException('Bien introuvable');
       if (terrain.statutCommercial !== 'Disponible') {
         throw new BadRequestException(
           'Seul un terrain « Disponible » peut être rattaché à un dossier',

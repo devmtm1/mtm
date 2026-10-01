@@ -136,7 +136,7 @@ export class NotificationsFeedService {
                 title: `Demande de réservation de ${request.nom}`,
                 detail: request.terrain
                   ? `${request.terrain.referenceInterne} · ${request.terrain.nom}`
-                  : 'Terrain non précisé',
+                  : 'Bien non précisé',
                 route: ['/ventes'],
               })),
           ),

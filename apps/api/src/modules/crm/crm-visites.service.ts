@@ -157,7 +157,7 @@ export class CrmVisitesService {
       where: { id: terrainId },
       select: { id: true },
     });
-    if (!terrain) throw new BadRequestException('Terrain introuvable');
+    if (!terrain) throw new BadRequestException('Bien introuvable');
   }
 
   private async assertReferentials(
@@ -174,7 +174,7 @@ export class CrmVisitesService {
       dto.terrainPlait &&
       !CRM_DEFAULTS.appreciationsTerrain.includes(dto.terrainPlait as never)
     )
-      throw new BadRequestException('Appréciation du terrain invalide');
+      throw new BadRequestException('Appréciation du bien invalide');
     if (
       dto.prixAccepte &&
       !CRM_DEFAULTS.prixAccepte.includes(dto.prixAccepte as never)

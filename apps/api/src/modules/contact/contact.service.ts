@@ -31,7 +31,7 @@ export class ContactService {
         where: { id: dto.terrainId },
         select: { id: true, referenceInterne: true, nom: true },
       });
-      if (!terrain) throw new NotFoundException('Terrain introuvable');
+      if (!terrain) throw new NotFoundException('Bien introuvable');
       terrainLabel = `${terrain.referenceInterne} — ${terrain.nom}`;
     }
     const contact = await this.prisma.contact.create({

@@ -120,8 +120,8 @@
       <section class="page-card detail-section detail-section--wide">
         <div class="detail-section__head">
           <div>
-            <h2>Terrains confiés (lots)</h2>
-            <p class="detail-section__hint">Les terrains que ce mandat autorise MTM à commercialiser, et où en est chacun.</p>
+            <h2>Biens confiés (lots)</h2>
+            <p class="detail-section__hint">Les biens que ce mandat autorise MTM à commercialiser, et où en est chacun.</p>
           </div>
           @if (canModify) {
             <button mat-stroked-button type="button" (click)="addLot()">
@@ -134,12 +134,12 @@
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Terrain</th>
+                  <th>Bien</th>
                   <th>Localisation</th>
                   <th class="is-right">Superficie</th>
                   <th class="is-right">Prix public</th>
                   <th>Avancement</th>
-                  <th>Fiche terrain</th>
+                  <th>Fiche du bien</th>
                   <th></th>
                 </tr>
               </thead>
@@ -180,7 +180,7 @@
           <div class="detail-note">
             Aucun terrain rattaché. Le mandat ne porte sur rien tant qu’aucun lot n’est ajouté.
             @if (canModify) {
-              <button mat-button type="button" (click)="addLot()">Rattacher un terrain</button>
+              <button mat-button type="button" (click)="addLot()">Rattacher un bien</button>
             }
           </div>
         }

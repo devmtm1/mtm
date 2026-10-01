@@ -201,7 +201,7 @@ export class ConstatDialog {
 
   protected get introDialogue(): string {
     if (this.estPhysique) {
-      return 'Ce qui a été vu sur place : état du terrain, accès, environnement, coordonnées relevées.';
+      return 'Ce qui a été vu sur place : état du bien, accès, environnement, coordonnées relevées.';
     }
     return this.estTechnique
       ? 'Le prestataire sollicité et où en est le plan commandé.'
@@ -209,7 +209,7 @@ export class ConstatDialog {
   }
 
   protected get placeholderTitre(): string {
-    if (this.estPhysique) return 'Ex. : visite du terrain et relevé GPS';
+    if (this.estPhysique) return 'Ex. : visite sur place et relevé GPS';
     return this.estTechnique
       ? 'Ex. : remise du devis par le géomètre'
       : 'Ex. : consultation du service des Domaines de Mbour';
@@ -280,7 +280,7 @@ export class ConstatDialog {
 
   private titreParDefaut(): string {
     const titres: Record<string, string> = {
-      verification_physique: 'Visite du terrain',
+      verification_physique: 'Visite sur place',
       verification_administrative: 'Consultation d’une administration',
       faisabilite: 'Étude préalable',
       rapport: 'Rédaction du rapport',

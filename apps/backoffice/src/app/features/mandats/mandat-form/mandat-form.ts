@@ -178,7 +178,7 @@ export class MandatForm implements OnInit {
     request$.subscribe({
       next: (mandat) => {
         this.saving.set(false);
-        this.notify.success(this.mandatId ? 'Mandat mis à jour' : 'Mandat créé — rattachez maintenant les terrains concernés');
+        this.notify.success(this.mandatId ? 'Mandat mis à jour' : 'Mandat créé — rattachez maintenant les biens concernés');
         void this.router.navigate(['/mandats', mandat.id]);
       },
       error: (error: unknown) => {

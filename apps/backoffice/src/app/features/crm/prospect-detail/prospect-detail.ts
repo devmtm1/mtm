@@ -78,7 +78,7 @@ const ACTION_LABELS: Record<string, string> = {
   'prospect.activite.created': 'Action planifiée',
   'prospect.activite.updated': 'Action modifiée',
   'prospect.activite.deleted': 'Action supprimée',
-  'prospect.visite.created': 'Terrain proposé',
+  'prospect.visite.created': 'Bien proposé',
   'prospect.visite.updated': 'Visite ou retour mis à jour',
   'prospect.visite.deleted': 'Proposition supprimée',
   'prospect.document.created': 'Document ajouté',
@@ -105,7 +105,7 @@ const FIELD_LABELS: Record<string, string> = {
   prochaineAction: 'Prochaine action',
   prochaineRelanceLe: 'Date de relance',
   motifSortie: 'Motif de sortie',
-  terrainChoisiId: 'Terrain choisi',
+  terrainChoisiId: 'Bien choisi',
   offreClient: 'Offre du client',
   prixNegocie: 'Prix négocié',
   commentaireNegociation: 'Commentaire de négociation',
@@ -448,7 +448,7 @@ export class ProspectDetail implements OnInit {
     const prospect = this.prospect();
     if (!prospect) return;
     VisiteDialog.open(this.dialog, { prospectName: this.name(), commercials: this.commercials() }).subscribe((payload) => {
-      if (payload) this.run(this.api.addVisite(prospect.id, payload), 'Terrain proposé au client');
+      if (payload) this.run(this.api.addVisite(prospect.id, payload), 'Bien proposé au client');
     });
   }
 
@@ -536,7 +536,7 @@ export class ProspectDetail implements OnInit {
         if (!created) return;
         // « Ouvrir le dossier » : on arrive directement sur le dossier créé,
         // où se font la réservation et les paiements.
-        this.notify.success('Dossier de vente ouvert : réservez le terrain puis enregistrez les paiements ici');
+        this.notify.success('Dossier de vente ouvert : réservez le bien puis enregistrez les paiements ici');
         void this.router.navigate(['/ventes', created.id]);
       });
   }

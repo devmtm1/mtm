@@ -54,7 +54,7 @@ export interface TerrainSummary {
   statutCommercial?: string | null;
 }
 
-/** Terrain proposé à un prospect : rendez-vous de visite et retour du client. */
+/** Bien proposé à un prospect : rendez-vous de visite et retour du client. */
 export interface VisiteProspectItem {
   id: string;
   statut: string;

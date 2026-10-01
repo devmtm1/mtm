@@ -302,7 +302,7 @@ export class TerrainForm implements OnInit {
       this.api.findOne(this.terrainId).subscribe({
         next: (terrain) => this.hydrate(terrain),
         error: (error: unknown) => {
-          this.notify.error(error, 'Terrain introuvable');
+          this.notify.error(error, 'Bien introuvable');
           this.goBack();
         },
       });

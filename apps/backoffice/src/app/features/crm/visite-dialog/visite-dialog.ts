@@ -34,7 +34,7 @@ export type VisiteDialogResult = VisiteProspectPayload;
   standalone: true,
   imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatCheckboxModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
-    <h2 mat-dialog-title>{{ data.visite ? 'Visite et retour client' : 'Proposer un terrain' }}</h2>
+    <h2 mat-dialog-title>{{ data.visite ? 'Visite et retour client' : 'Proposer un bien' }}</h2>
     <mat-dialog-content class="visite-dialog">
       <p class="visite-dialog__intro">
         Pour <strong>{{ data.prospectName }}</strong>. Chaque terrain proposé garde sa propre visite et son
@@ -43,7 +43,7 @@ export type VisiteDialogResult = VisiteProspectPayload;
 
       <form [formGroup]="form" class="visite-dialog__form">
         <mat-form-field appearance="outline" class="visite-dialog__wide">
-          <mat-label>Terrain proposé</mat-label>
+          <mat-label>Bien proposé</mat-label>
           <mat-select formControlName="terrainId">
             @for (terrain of terrains(); track terrain.id) {
               <mat-option [value]="terrain.id">
@@ -55,7 +55,7 @@ export type VisiteDialogResult = VisiteProspectPayload;
             }
           </mat-select>
           <mat-hint>{{ terrainHint() }}</mat-hint>
-          <mat-error>Choisissez le terrain concerné.</mat-error>
+          <mat-error>Choisissez le bien concerné.</mat-error>
         </mat-form-field>
 
         <p class="visite-dialog__section">Rendez-vous</p>
@@ -109,7 +109,7 @@ export type VisiteDialogResult = VisiteProspectPayload;
           <mat-hint>Saisir un retour passe la visite en « effectuée ».</mat-hint>
         </mat-form-field>
         <mat-form-field appearance="outline">
-          <mat-label>Le terrain plaît ?</mat-label>
+          <mat-label>Le bien plaît ?</mat-label>
           <mat-select formControlName="terrainPlait">
             <mat-option value="">Pas encore de retour</mat-option>
             @for (avis of appreciations(); track avis) {
@@ -135,14 +135,14 @@ export type VisiteDialogResult = VisiteProspectPayload;
               <mat-option [value]="objection">{{ objectionLabel(objection) }}</mat-option>
             }
           </mat-select>
-          <mat-hint>Sert à comprendre ce qui bloque, terrain par terrain.</mat-hint>
+          <mat-hint>Sert à comprendre ce qui bloque, bien par bien.</mat-hint>
         </mat-form-field>
         <mat-form-field appearance="outline" class="visite-dialog__wide">
           <mat-label>Commentaires du client</mat-label>
           <textarea matInput rows="2" formControlName="commentaireClient" placeholder="Ses mots à lui : ce qui plaît, ce qui gêne…"></textarea>
         </mat-form-field>
         <div class="visite-dialog__check visite-dialog__wide">
-          <mat-checkbox formControlName="souhaiteAutreTerrain">Souhaite voir un autre terrain</mat-checkbox>
+          <mat-checkbox formControlName="souhaiteAutreTerrain">Souhaite voir un autre bien</mat-checkbox>
         </div>
       </form>
     </mat-dialog-content>
@@ -221,7 +221,7 @@ export class VisiteDialog {
 
   protected terrainHint(): string {
     const terrain = this.terrains().find((item) => item.id === this.form.controls.terrainId.value);
-    if (!terrain) return 'Le terrain montré ou à montrer au client.';
+    if (!terrain) return 'Le bien montré ou à montrer au client.';
     const superficie = terrain.superficie ? `${terrain.superficie} m²` : null;
     return [terrain.commune, superficie, terrain.statutCommercial].filter(Boolean).join(' · ');
   }

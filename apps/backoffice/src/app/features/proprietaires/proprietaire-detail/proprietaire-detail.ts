@@ -88,7 +88,7 @@ export class ProprietaireDetail implements OnInit {
     if (!proprietaire || terrains === null || mandats === null) return [];
     const items: { label: string; hint: string }[] = [];
     if (!proprietaire.phone && !proprietaire.email) items.push({ label: 'Renseigner un moyen de contact', hint: 'Téléphone ou e-mail, pour le joindre.' });
-    if (terrains.length === 0) items.push({ label: 'Enregistrer ses terrains', hint: 'Créez la fiche de chaque parcelle confiée.' });
+    if (terrains.length === 0) items.push({ label: 'Enregistrer ses biens', hint: 'Créez la fiche de chaque parcelle confiée.' });
     if (terrains.length > 0 && mandats.length === 0) items.push({ label: 'Formaliser un mandat', hint: 'Sans mandat signé, MTM n’est pas autorisée à commercialiser.' });
     return items;
   });

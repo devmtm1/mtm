@@ -16,7 +16,7 @@ export const MANDAT_STATUS: Record<string, StatusMeaning> = {
 
 /** Statuts d'un lot (terrain rattaché au mandat). */
 export const LOT_STATUS: Record<string, StatusMeaning> = {
-  Confie: { tone: 'info', help: 'Terrain confié à MTM, pas encore mis en vente.' },
+  Confie: { tone: 'info', help: 'Bien confié à MTM, pas encore mis en vente.' },
   Disponible: { tone: 'success', help: 'Proposé à la vente dans le cadre du mandat.' },
   Réservé: { tone: 'warning', help: 'Un dossier de vente est en cours.' },
   Vendu: { tone: 'primary', help: 'Vente conclue : compte dans le chiffre d’affaires du mandat.' },

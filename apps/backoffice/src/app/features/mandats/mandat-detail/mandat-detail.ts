@@ -113,7 +113,7 @@ export class MandatDetail implements OnInit {
     const mandat = this.mandat();
     if (!mandat) return [];
     const items: { label: string; hint: string }[] = [];
-    if (mandat.lots.length === 0) items.push({ label: 'Rattacher les terrains concernés', hint: 'Sans lot, le mandat ne porte sur rien.' });
+    if (mandat.lots.length === 0) items.push({ label: 'Rattacher les biens concernés', hint: 'Sans lot, le mandat ne porte sur rien.' });
     if (!mandat.documents.some((document) => document.type === 'contrat')) items.push({ label: 'Joindre le contrat signé', hint: 'Preuve de l’accord avec le propriétaire.' });
     if (mandat.statut === 'Brouillon') items.push({ label: 'Passer le mandat en « Actif »', hint: 'Une fois signé, pour déclencher le suivi et les alertes.' });
     const echeance = this.echeance();
@@ -201,7 +201,7 @@ export class MandatDetail implements OnInit {
       .open(MandatLotDialog, { width: '560px', maxWidth: 'calc(100vw - 32px)', data: { mandat, options: this.options() } })
       .afterClosed()
       .subscribe((result: { terrainId: string; statutLot: string } | undefined) => {
-        if (result) this.run(this.api.addLot(mandat.id, result), 'Terrain rattaché au mandat');
+        if (result) this.run(this.api.addLot(mandat.id, result), 'Bien rattaché au mandat');
       });
   }
 
@@ -211,7 +211,7 @@ export class MandatDetail implements OnInit {
     if (!mandat || !options) return;
     StatusChoiceDialog.open(this.dialog, {
       title: 'Avancement du lot',
-      intro: 'Suit la commercialisation de ce terrain dans le cadre du mandat. « Vendu » alimente le chiffre d’affaires du mandat.',
+      intro: 'Suit la commercialisation de ce bien dans le cadre du mandat. « Vendu » alimente le chiffre d’affaires du mandat.',
       subject: `Lot ${lot.terrain.referenceInterne} — ${lot.terrain.nom}`,
       current: lot.statutLot,
       choices: statusChoices(LOT_STATUS, options.statutLot, LOT_STATUS_LABELS),
@@ -223,7 +223,7 @@ export class MandatDetail implements OnInit {
   protected removeLot(lot: MandatLotItem): void {
     const mandat = this.mandat();
     if (!mandat || !confirm(`Retirer le terrain ${lot.terrain.referenceInterne} de ce mandat ?`)) return;
-    this.run(this.api.removeLot(mandat.id, lot.id), 'Terrain retiré du mandat');
+    this.run(this.api.removeLot(mandat.id, lot.id), 'Bien retiré du mandat');
   }
 
   protected addDocument(): void {

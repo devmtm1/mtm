@@ -33,13 +33,13 @@ export interface SalesDossierDialogData {
         commissions ; il se gère ensuite dans <strong>Ventes</strong>.
       </p>
       <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
-        <mat-label>Terrain concerné</mat-label>
+        <mat-label>Bien concerné</mat-label>
         <input matInput [value]="query()" (input)="query.set($any($event.target).value)" placeholder="Référence, nom, commune…" autocomplete="off" />
       </mat-form-field>
       @if (loading()) {
         <div class="skeleton" style="height: 48px"></div>
       } @else if (filtered().length === 0) {
-        <p class="dossier-dialog__empty">Aucun terrain « Disponible » ne correspond. Seuls les terrains publiés peuvent faire l’objet d’un dossier.</p>
+        <p class="dossier-dialog__empty">Aucun bien « Disponible » ne correspond. Seuls les biens publiés peuvent faire l’objet d’un dossier.</p>
       } @else {
         <ul class="dossier-dialog__list" role="listbox" aria-label="Terrains disponibles">
           @for (terrain of filtered(); track terrain.id) {

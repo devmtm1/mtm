@@ -28,7 +28,7 @@ export class TerrainsAccessService {
       where: { id, ...this.ownershipFilter(user) },
       select: { id: true },
     });
-    if (!terrain) throw new NotFoundException('Terrain introuvable');
+    if (!terrain) throw new NotFoundException('Bien introuvable');
   }
 
   ownershipFilter(user?: {

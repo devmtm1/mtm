@@ -25,7 +25,7 @@ export class MandatsLotsService {
       where: { id: dto.terrainId },
       select: { id: true },
     });
-    if (!terrain) throw new NotFoundException('Terrain introuvable');
+    if (!terrain) throw new NotFoundException('Bien introuvable');
 
     const mandat = await this.prisma.mandat.findUnique({
       where: { id: mandatId },

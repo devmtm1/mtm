@@ -161,7 +161,7 @@ export class TerrainDetail implements OnInit, OnDestroy {
       },
       error: (error: unknown) => {
         this.loading.set(false);
-        this.notify.error(error, 'Terrain introuvable');
+        this.notify.error(error, 'Bien introuvable');
         this.goBack();
       },
     });

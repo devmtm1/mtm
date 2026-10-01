@@ -43,7 +43,7 @@ export class DemarchesClientService {
         where: { id: dto.terrainId },
         select: { id: true },
       });
-      if (!terrain) throw new BadRequestException('Terrain introuvable');
+      if (!terrain) throw new BadRequestException('Bien introuvable');
     }
 
     const mission = await this.prisma.missionVerification.create({

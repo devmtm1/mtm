@@ -22,7 +22,7 @@ export type ActiviteDialogResult = CreateActiviteCrmPayload;
 
 const TITLE_SUGGESTIONS: Record<string, string> = {
   appel: 'Rappeler pour faire le point',
-  'rendez-vous': 'Visite du terrain',
+  'rendez-vous': 'Visite du bien',
   tache: 'Envoyer la proposition',
   relance: 'Relance après proposition',
   email: 'Envoyer les documents',

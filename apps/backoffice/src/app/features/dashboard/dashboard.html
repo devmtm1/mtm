@@ -59,11 +59,11 @@
         <span class="kpi__body">
           @if (terrainStats(); as s) {
             <strong>{{ s.parStatut['Disponible'] ?? 0 }}<small class="kpi__of">/ {{ s.total }}</small></strong>
-            <span>Terrains disponibles</span>
+            <span>Biens disponibles</span>
             <small>{{ s.sansGps + s.sansPhotoPublique > 0 ? (s.sansGps + s.sansPhotoPublique) + ' fiche' + (s.sansGps + s.sansPhotoPublique > 1 ? 's' : '') + ' à compléter' : 'Toutes les fiches sont complètes' }}</small>
           } @else {
             <strong>…</strong>
-            <span>Terrains</span>
+            <span>Biens</span>
           }
         </span>
       </button>
@@ -292,7 +292,7 @@
                 <tr>
                   <th>Référence</th>
                   <th>Client</th>
-                  <th>Terrain</th>
+                  <th>Bien</th>
                   <th class="is-right">Prix</th>
                   <th>Statut</th>
                   <th>Ouvert le</th>
@@ -303,7 +303,7 @@
                   <tr class="is-clickable" (click)="openVente(vente.id)">
                     <td><strong>{{ vente.referenceInterne || 'Dossier' }}</strong></td>
                     <td>{{ vente.prospect.prenom }} {{ vente.prospect.nom }}</td>
-                    <td>{{ vente.terrain?.nom || 'Terrain non défini' }}</td>
+                    <td>{{ vente.terrain?.nom || 'Bien non défini' }}</td>
                     <td class="is-right">{{ vente.prixVente | mtmMoney }}</td>
                     <td><span [class]="venteStatusPill(vente.statut)">{{ venteStatusLabel(vente.statut) }}</span></td>
                     <td>{{ vente.createdAt | date: 'dd/MM/yyyy' }}</td>

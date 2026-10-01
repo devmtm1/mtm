@@ -80,7 +80,7 @@
         <span class="kpi__icon"><svg lucideLandPlot aria-hidden="true"></svg></span>
         <span class="kpi__body">
           <strong>{{ terrains()?.length ?? p._count.terrains }}</strong>
-          <span>Terrains confiés</span>
+          <span>Biens confiés</span>
           <small>dont {{ terrainsDisponibles() }} publié{{ terrainsDisponibles() > 1 ? 's' : '' }} sur le site</small>
         </span>
       </div>
@@ -100,7 +100,7 @@
         <section class="page-card detail-section detail-section--wide">
           <div class="detail-section__head">
             <div>
-              <h2>Terrains</h2>
+              <h2>Biens</h2>
               <p class="detail-section__hint">Parcelles enregistrées au nom de ce propriétaire.</p>
             </div>
             @if (canCreateTerrain) {
@@ -116,7 +116,7 @@
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Terrain</th>
+                    <th>Bien</th>
                     <th>Localisation</th>
                     <th class="is-right">Superficie</th>
                     <th class="is-right">Prix public</th>
@@ -140,7 +140,7 @@
             <div class="detail-note">
               Aucun terrain enregistré pour ce propriétaire.
               @if (canCreateTerrain) {
-                <button mat-button type="button" (click)="newTerrain()">Créer sa première fiche terrain</button>
+                <button mat-button type="button" (click)="newTerrain()">Créer sa première fiche de bien</button>
               }
             </div>
           }

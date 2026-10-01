@@ -26,21 +26,21 @@ export interface MandatLotDialogData {
   standalone: true,
   imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, MoneyPipe],
   template: `
-    <h2 mat-dialog-title>Rattacher un terrain</h2>
+    <h2 mat-dialog-title>Rattacher un bien</h2>
     <mat-dialog-content class="lot-dialog">
       <p class="lot-dialog__intro">
         Un « lot » est un terrain que le propriétaire confie à MTM dans le cadre de ce mandat. Il compte
         ensuite dans le suivi commercial (disponible, réservé, vendu).
       </p>
       <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
-        <mat-label>Rechercher un terrain</mat-label>
+        <mat-label>Rechercher un bien</mat-label>
         <input matInput [value]="query()" (input)="query.set($any($event.target).value)" placeholder="Référence, nom, commune…" autocomplete="off" />
       </mat-form-field>
       @if (loading()) {
         <div class="skeleton" style="height: 48px"></div>
         <div class="skeleton" style="height: 48px"></div>
       } @else if (filtered().length === 0) {
-        <p class="lot-dialog__empty">Aucun terrain disponible ne correspond. Créez d’abord la fiche terrain.</p>
+        <p class="lot-dialog__empty">Aucun bien disponible ne correspond. Créez d’abord sa fiche.</p>
       } @else {
         <ul class="lot-dialog__list" role="listbox" aria-label="Terrains">
           @for (terrain of filtered(); track terrain.id) {

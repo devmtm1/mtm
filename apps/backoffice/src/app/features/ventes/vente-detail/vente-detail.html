@@ -59,7 +59,7 @@
             <svg class="btn-icon" lucideBanknote aria-hidden="true"></svg>Enregistrer un paiement
           </button>
           @if (canReserve()) {
-            <button mat-stroked-button type="button" (click)="reserve()">Réserver le terrain</button>
+            <button mat-stroked-button type="button" (click)="reserve()">Réserver le bien</button>
           }
         }
         @if (canModify) {
@@ -223,7 +223,7 @@
         <div class="detail-section__head">
           <div>
             <h2>Réservation</h2>
-            <p class="detail-section__hint">Bloque le terrain pour ce client pendant une durée convenue.</p>
+            <p class="detail-section__hint">Bloque le bien pour ce client pendant une durée convenue.</p>
           </div>
           @if (canReserve()) {
             <button mat-stroked-button type="button" (click)="reserve()">Réserver</button>
@@ -251,7 +251,7 @@
             }
           </div>
         } @else {
-          <p class="detail-section__text">Aucune réservation. Réservez dès que le client verse un acompte : le terrain est alors retiré du site public.</p>
+          <p class="detail-section__text">Aucune réservation. Réservez dès que le client verse un acompte : le bien est alors retiré du site public.</p>
         }
       </section>
 
@@ -347,7 +347,7 @@
         <h2>Informations</h2>
         <dl class="info-list">
           <div><dt>Client</dt><dd>{{ client() }}<small>{{ d.prospect.email || '' }}</small></dd></div>
-          <div><dt>Terrain</dt><dd>{{ d.terrain ? d.terrain.referenceInterne + ' — ' + d.terrain.nom : 'Non défini' }}<small>{{ d.terrain?.statutCommercial || '' }}</small></dd></div>
+          <div><dt>Bien</dt><dd>{{ d.terrain ? d.terrain.referenceInterne + ' — ' + d.terrain.nom : 'Non défini' }}<small>{{ d.terrain?.statutCommercial || '' }}</small></dd></div>
           <div><dt>Mandat</dt><dd>{{ d.mandat?.referenceInterne || '—' }}</dd></div>
           <div><dt>Commercial</dt><dd>{{ d.commercialResponsable ? d.commercialResponsable.firstName + ' ' + d.commercialResponsable.lastName : '—' }}</dd></div>
           <div><dt>Ouvert le</dt><dd>{{ d.createdAt | date: 'dd/MM/yyyy à HH:mm' }}</dd></div>

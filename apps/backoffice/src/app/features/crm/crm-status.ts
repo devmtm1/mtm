@@ -17,7 +17,7 @@ export const PIPELINE: Record<string, StatusMeaning> = {
   en_reflexion: { tone: 'warning', label: 'En réflexion', help: 'Le client réfléchit : garder le contact.' },
   a_relancer: { tone: 'warning', label: 'À relancer', help: 'Sans nouvelle : relance à programmer.' },
   negociation: { tone: 'warning', label: 'Négociation', help: 'Discussion sur le prix et les conditions.' },
-  reservation: { tone: 'warning', label: 'Réservation', help: 'Acompte versé ou en cours : le terrain lui est bloqué.' },
+  reservation: { tone: 'warning', label: 'Réservation', help: 'Acompte versé ou en cours : le bien lui est bloqué.' },
   vente: { tone: 'success', label: 'Vente conclue', help: 'Vente conclue : le prospect est devenu client.' },
   refuse: { tone: 'danger', label: 'Refusé', help: 'Le client ne donne pas suite : motif obligatoire.' },
   abandonne: { tone: 'danger', label: 'Projet abandonné', help: 'Le projet est abandonné : motif obligatoire.' },
@@ -68,7 +68,7 @@ export const PURCHASE_GOALS: Record<string, StatusMeaning> = {
 export const RECHERCHE_STATUS: Record<string, StatusMeaning> = {
   nouvelle: { tone: 'info', label: 'Nouvelle', help: 'Demande enregistrée, la recherche n’a pas commencé.' },
   en_recherche: { tone: 'primary', label: 'En recherche', help: 'Nous prospectons activement pour ce client.' },
-  trouve: { tone: 'success', label: 'Terrain trouvé', help: 'Un terrain correspondant a été proposé au client.' },
+  trouve: { tone: 'success', label: 'Bien trouvé', help: 'Un bien correspondant a été proposé au client.' },
   abandonnee: { tone: 'neutral', label: 'Abandonnée', help: 'La recherche est arrêtée.' },
 };
 
@@ -103,14 +103,14 @@ export const RECHERCHE_EXIGENCES: Record<string, StatusMeaning> = {
 
 /** Importance accordée à l'accès et à la voirie. */
 export const RECHERCHE_ACCES: Record<string, StatusMeaning> = {
-  prioritaire: { tone: 'primary', label: 'Prioritaire', help: 'Un terrain mal desservi est écarté.' },
+  prioritaire: { tone: 'primary', label: 'Prioritaire', help: 'Un bien mal desservi est écarté.' },
   souhaite: { tone: 'info', label: 'Souhaité', help: 'Un plus, sans être éliminatoire.' },
   indifferent: { tone: 'neutral', label: 'Indifférent', help: 'Ce critère n’entre pas en compte.' },
 };
 
 /** Statut d'une proposition de terrain (§ 3 de la fiche de suivi). */
 export const VISITE_STATUS: Record<string, StatusMeaning> = {
-  proposee: { tone: 'info', label: 'Terrain proposé', help: 'Terrain présenté au client, pas encore de rendez-vous.' },
+  proposee: { tone: 'info', label: 'Bien proposé', help: 'Bien présenté au client, pas encore de rendez-vous.' },
   programmee: { tone: 'warning', label: 'Visite programmée', help: 'Rendez-vous fixé avec le client.' },
   effectuee: { tone: 'success', label: 'Visite effectuée', help: 'La visite a eu lieu.' },
   annulee: { tone: 'danger', label: 'Non effectuée', help: 'Visite annulée, reportée ou client injoignable.' },
@@ -127,10 +127,10 @@ export const VISITE_CANCEL_REASONS: Record<string, StatusMeaning> = {
 
 /** Appréciation du terrain après la visite. */
 export const VISITE_FEEDBACK: Record<string, StatusMeaning> = {
-  oui_beaucoup: { tone: 'success', label: 'Oui, beaucoup', help: 'Le terrain plaît nettement.' },
+  oui_beaucoup: { tone: 'success', label: 'Oui, beaucoup', help: 'Le bien plaît nettement.' },
   oui_hesitation: { tone: 'warning', label: 'Oui, avec hésitation', help: 'Plaît, mais un point bloque.' },
   moyennement: { tone: 'warning', label: 'Moyennement', help: 'Réserves importantes.' },
-  non: { tone: 'danger', label: 'Non', help: 'Le terrain ne convient pas.' },
+  non: { tone: 'danger', label: 'Non', help: 'Le bien ne convient pas.' },
 };
 
 /** Position du client sur le prix. */
@@ -146,7 +146,7 @@ export const OBJECTIONS: Record<string, StatusMeaning> = {
   emplacement: { tone: 'warning', label: 'Emplacement', help: 'Quartier ou zone qui ne convient pas.' },
   distance: { tone: 'warning', label: 'Distance', help: 'Trop loin du travail ou de la famille.' },
   environnement: { tone: 'warning', label: 'Environnement', help: 'Voisinage, accès, nuisances.' },
-  documents: { tone: 'danger', label: 'Documents', help: 'Doute sur le statut juridique du terrain.' },
+  documents: { tone: 'danger', label: 'Documents', help: 'Doute sur le statut juridique du bien.' },
   surface: { tone: 'warning', label: 'Surface', help: 'Trop petit ou trop grand.' },
   delais: { tone: 'info', label: 'Délais', help: 'Le calendrier ne convient pas.' },
   autre: { tone: 'neutral', label: 'Autre', help: 'Autre objection : voir les commentaires.' },

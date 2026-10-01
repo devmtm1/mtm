@@ -248,8 +248,8 @@
       <section class="page-card detail-section detail-section--wide">
         <div class="detail-section__head">
           <div>
-            <h2>Terrains proposés et visites</h2>
-            <p class="detail-section__hint">Un terrain proposé, sa visite et le retour du client. L’historique évite de reproposer deux fois le même terrain.</p>
+            <h2>Biens proposés et visites</h2>
+            <p class="detail-section__hint">Un bien proposé, sa visite et le retour du client. L’historique évite de reproposer deux fois le même bien.</p>
           </div>
           @if (canModify) {
             <button mat-stroked-button type="button" (click)="proposeTerrain()">
@@ -298,7 +298,7 @@
                     <div><dt>Non effectuée</dt><dd>{{ cancelLabel(visite.motifNonEffectuee) }}</dd></div>
                   }
                   @if (visite.terrainPlait) {
-                    <div><dt>Le terrain plaît</dt><dd><span [class]="feedbackPill(visite.terrainPlait)">{{ feedbackLabel(visite.terrainPlait) }}</span></dd></div>
+                    <div><dt>Le bien plaît</dt><dd><span [class]="feedbackPill(visite.terrainPlait)">{{ feedbackLabel(visite.terrainPlait) }}</span></dd></div>
                   }
                   @if (visite.prixAccepte) {
                     <div><dt>Prix</dt><dd>{{ priceLabel(visite.prixAccepte) }}</dd></div>
@@ -307,7 +307,7 @@
                     <div><dt>Objection</dt><dd>{{ objectionLabel(visite.objectionPrincipale) }}</dd></div>
                   }
                   @if (visite.souhaiteAutreTerrain) {
-                    <div><dt>Suite</dt><dd>Souhaite voir un autre terrain</dd></div>
+                    <div><dt>Suite</dt><dd>Souhaite voir un autre bien</dd></div>
                   }
                 </dl>
                 @if (visite.commentaireClient) {
@@ -317,7 +317,7 @@
             }
           </ul>
         } @else {
-          <p class="detail-section__text">Aucun terrain proposé pour l’instant. Proposez-en un pour déclencher une visite.</p>
+          <p class="detail-section__text">Aucun bien proposé pour l’instant. Proposez-en un pour déclencher une visite.</p>
         }
       </section>
 
@@ -457,7 +457,7 @@
         <div class="detail-section__head">
           <div>
             <h2>Dossiers de vente</h2>
-            <p class="detail-section__hint">Un dossier par terrain : réservation, paiements, documents et commissions se suivent dans Ventes.</p>
+            <p class="detail-section__hint">Un dossier par bien : réservation, paiements, documents et commissions se suivent dans Ventes.</p>
           </div>
           <span class="detail-section__actions">
             @if (canCreateMission()) {
@@ -483,7 +483,7 @@
               <thead>
                 <tr>
                   <th>Référence</th>
-                  <th>Terrain</th>
+                  <th>Bien</th>
                   <th>Mandat</th>
                   <th>Ouvert le</th>
                   <th>Statut</th>

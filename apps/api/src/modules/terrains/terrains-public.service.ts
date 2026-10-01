@@ -109,7 +109,7 @@ export class TerrainsPublicService {
       where: { id, statutCommercial: 'Disponible' },
       select: publicTerrainSelect,
     });
-    if (!terrain) throw new NotFoundException('Terrain introuvable');
+    if (!terrain) throw new NotFoundException('Bien introuvable');
     return this.toPublic(terrain);
   }
 

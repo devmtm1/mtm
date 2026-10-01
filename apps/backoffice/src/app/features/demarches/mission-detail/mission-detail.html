@@ -133,9 +133,9 @@
                 </mat-form-field>
 
                 <mat-form-field appearance="outline" class="wide">
-                  <mat-label>Terrain du catalogue</mat-label>
+                  <mat-label>Bien du catalogue</mat-label>
                   <mat-select formControlName="terrainId">
-                    <mat-option value="">Terrain hors catalogue</mat-option>
+                    <mat-option value="">Bien hors catalogue</mat-option>
                     @for (terrain of terrains(); track terrain.id) {
                       <mat-option [value]="terrain.id">
                         {{ terrain.referenceInterne }} · {{ terrain.nom }}
@@ -864,7 +864,7 @@
 
         <section class="page-card detail-section">
           <div class="detail-section__head">
-            <h2>Le terrain</h2>
+            <h2>Le bien</h2>
           </div>
           <dl class="info-list mission-detail__faits">
             <div>

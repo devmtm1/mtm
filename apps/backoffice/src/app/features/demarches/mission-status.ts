@@ -90,12 +90,12 @@ export const TYPES_VERIFICATION: Record<string, StatusMeaning> = {
   verification_fonciere: {
     tone: 'primary',
     label: 'Vérification foncière',
-    help: 'Contrôle complet : terrain et situation administrative.',
+    help: 'Contrôle complet : le bien et sa situation administrative.',
   },
   verification_physique: {
     tone: 'info',
     label: 'Vérification physique',
-    help: 'Visite du terrain uniquement : constat sur place.',
+    help: 'Visite sur place uniquement : constat sur le bien.',
   },
   verification_administrative: {
     tone: 'info',
@@ -182,7 +182,7 @@ export const CONFORMITES: Record<string, StatusMeaning> = {
   conforme: {
     tone: 'success',
     label: 'Conforme',
-    help: 'Le terrain correspond aux informations fournies.',
+    help: 'Le bien correspond aux informations fournies.',
   },
   ecart_mineur: {
     tone: 'warning',
@@ -203,7 +203,7 @@ export const CONFORMITES: Record<string, StatusMeaning> = {
 
 /** Administrations consultées (étape 4). */
 export const ADMINISTRATIONS: Record<string, StatusMeaning> = {
-  mairie: { tone: 'info', label: 'Mairie', help: 'Commune du lieu du terrain.' },
+  mairie: { tone: 'info', label: 'Mairie', help: 'Commune où se trouve le bien.' },
   service_domaines: {
     tone: 'info',
     label: 'Service des Domaines',

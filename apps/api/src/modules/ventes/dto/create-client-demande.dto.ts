@@ -23,7 +23,7 @@ export class CreateClientDemandeDto {
   message!: string;
 
   @ApiPropertyOptional({
-    description: 'Terrain concerné (obligatoire pour une réservation)',
+    description: 'Bien concerné (obligatoire pour une réservation)',
   })
   @IsOptional()
   @IsUUID()

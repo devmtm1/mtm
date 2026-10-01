@@ -64,12 +64,12 @@
       ></textarea>
     </mat-form-field>
 
-    <p class="form-section-title wide">Le terrain concerné</p>
+    <p class="form-section-title wide">Le bien concerné</p>
 
     <mat-form-field appearance="outline" class="wide">
-      <mat-label>Terrain du catalogue (facultatif)</mat-label>
+      <mat-label>Bien du catalogue (facultatif)</mat-label>
       <mat-select formControlName="terrainId">
-        <mat-option value="">Terrain hors catalogue</mat-option>
+        <mat-option value="">Bien hors catalogue</mat-option>
         @for (terrain of terrains(); track terrain.id) {
           <mat-option [value]="terrain.id">
             {{ terrain.referenceInterne }} · {{ terrain.nom }}
