@@ -15,9 +15,17 @@ const baseTerrain: Terrain = {
   localisationDetail: null,
   latitude: null,
   longitude: null,
+  typeBien: 'terrain',
   superficie: 300,
   uniteSuperficie: 'm²',
   dimensions: null,
+  surfaceHabitable: null,
+  nombrePieces: null,
+  nombreChambres: null,
+  nombreSallesEau: null,
+  niveaux: null,
+  anneeConstruction: null,
+  etatBien: null,
   prixPublic: 15000000,
   misEnAvant: true,
   description: null,
@@ -70,5 +78,36 @@ describe('TerrainCard', () => {
   it("renvoie vers la fiche détaillée du terrain", () => {
     renderCard();
     expect(screen.getByRole('link')).toHaveAttribute('href', '/terrains/terrain-1');
+  });
+
+  // --- MTM vend aussi des villas : la carte doit les distinguer ---
+
+  it('annonce la nature du bien', () => {
+    renderCard();
+    expect(screen.getByText('Terrain')).toBeInTheDocument();
+  });
+
+  it('affiche la surface habitable et la typologie d’une villa', () => {
+    renderCard({
+      ...baseTerrain,
+      typeBien: 'villa',
+      nom: 'Villa F3 à Saly',
+      superficie: 300,
+      surfaceHabitable: 120,
+      nombrePieces: 'F3',
+      nombreChambres: 2,
+    });
+
+    expect(screen.getByText('Villa')).toBeInTheDocument();
+    expect(screen.getByText('F3')).toBeInTheDocument();
+    // C'est l'habitable qui compte pour un acheteur de villa, pas la
+    // parcelle : 120 m² doit primer sur les 300 m² de terrain.
+    expect(screen.getByText('120 m²')).toBeInTheDocument();
+    expect(screen.queryByText('300 m²')).not.toBeInTheDocument();
+  });
+
+  it('affiche la parcelle sur un terrain nu', () => {
+    renderCard();
+    expect(screen.getByText('300 m²')).toBeInTheDocument();
   });
 });

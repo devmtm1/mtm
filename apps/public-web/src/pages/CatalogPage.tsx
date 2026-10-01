@@ -71,9 +71,9 @@ export function CatalogPage() {
   const { data, loading, error } = useTerrainsCatalog(queryFilters);
 
   usePageMetadata({
-    title: 'Nos terrains disponibles',
+    title: 'Terrains et villas disponibles',
     description:
-      'Catalogue de terrains vérifiés à vendre au Sénégal : filtrez par zone, commune, type, statut juridique, superficie et budget.',
+      'Catalogue de terrains et de villas vérifiés à vendre au Sénégal : filtrez par type de bien, zone, commune, statut juridique, superficie et budget.',
   });
 
   // Les champs saisis au clavier (recherche libre, min/max) passent par un
@@ -189,8 +189,8 @@ export function CatalogPage() {
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
       <SectionHeading
         eyebrow="Catalogue"
-        title="Nos terrains disponibles"
-        description="Filtrez par zone, type, superficie et budget pour trouver le terrain qui vous correspond."
+        title="Nos biens disponibles"
+        description="Terrains, villas et appartements vérifiés : filtrez par type de bien, zone, superficie et budget."
       />
 
       {/* Mobile / tablette : recherche + bouton Filtres (critères en feuille).
@@ -251,10 +251,10 @@ export function CatalogPage() {
         </div>
 
         {(loadingFresh || (loading && viewMode === 'carte')) && <CardGridSkeleton count={8} gridClassName={CATALOG_GRID} compact />}
-        {error && <EmptyState title="Impossible de charger les terrains" description={error} />}
+        {error && <EmptyState title="Impossible de charger les biens" description={error} />}
         {!loading && !error && data && data.items.length === 0 && (
           <EmptyState
-            title="Aucun terrain ne correspond à votre recherche"
+            title="Aucun bien ne correspond à votre recherche"
             description="Essayez d'élargir vos critères de filtre."
             action={
               hasActiveFilters ? (
@@ -292,7 +292,7 @@ export function CatalogPage() {
       </div>
 
       {sheetOpen && (
-        <Modal title="Filtrer les terrains" onClose={() => setSheetOpen(false)}>
+        <Modal title="Filtrer les biens" onClose={() => setSheetOpen(false)}>
           <TerrainFilters value={sheetDraft} onChange={setSheetDraft} onSubmit={applySheet} sheet />
           <div className="mt-5 grid grid-cols-2 gap-2 border-t border-mtm-border pt-4">
             <Button variant="secondary" onClick={() => setSheetDraft({ search: sheetDraft.search, pageSize: PAGE_SIZE })}>

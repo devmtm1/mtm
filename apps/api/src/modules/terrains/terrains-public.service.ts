@@ -124,7 +124,13 @@ export class TerrainsPublicService {
       this.settings.getRawValue('terrains.statutJuridique'),
       this.prisma.terrain.findMany({
         where: { statutCommercial: 'Disponible' },
-        select: { region: true, commune: true, vocation: true },
+        select: {
+          region: true,
+          commune: true,
+          vocation: true,
+          typeBien: true,
+          nombrePieces: true,
+        },
       }),
     ]);
 
@@ -143,6 +149,10 @@ export class TerrainsPublicService {
       region: distinct(published.map((terrain) => terrain.region)),
       commune: distinct(published.map((terrain) => terrain.commune)),
       vocation: distinct(published.map((terrain) => terrain.vocation)),
+      // Dérivés des biens publiés, comme les zones : le catalogue ne doit
+      // pas proposer « villa » quand il n'en reste aucune à vendre.
+      typeBien: distinct(published.map((terrain) => terrain.typeBien)),
+      nombrePieces: distinct(published.map((terrain) => terrain.nombrePieces)),
     };
   }
 

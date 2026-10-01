@@ -43,9 +43,22 @@ export interface Terrain {
   localisationDetail: string | null;
   latitude: number | null;
   longitude: number | null;
+  /** Nature du bien : terrain nu, villa, appartement… */
+  typeBien: string;
+  /** Surface de la parcelle, pour un terrain comme pour un bien bâti. */
   superficie: number | null;
   uniteSuperficie: string | null;
   dimensions: Record<string, unknown> | null;
+  // --- Caractéristiques du bâti, nulles sur une parcelle nue ---
+  /** Surface habitable, distincte de la parcelle. */
+  surfaceHabitable: number | null;
+  /** Typologie commerciale : F1 à F6. */
+  nombrePieces: string | null;
+  nombreChambres: number | null;
+  nombreSallesEau: number | null;
+  niveaux: number | null;
+  anneeConstruction: number | null;
+  etatBien: string | null;
   prixPublic: number | null;
   misEnAvant: boolean;
   description: string | null;
@@ -74,6 +87,13 @@ export interface TerrainFilters {
   region?: string;
   commune?: string;
   vocation?: string;
+  /**
+   * Nature du bien recherché. À ne pas confondre avec `vocation`, qui dit
+   * l'usage du sol et non ce qui est vendu.
+   */
+  typeBien?: string;
+  /** Typologie d'un bien bâti : F3, F4… */
+  nombrePieces?: string;
   statutJuridique?: string;
   niveauVerification?: string;
   misEnAvant?: boolean;

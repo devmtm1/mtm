@@ -14,6 +14,7 @@ import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 import { formatMoney, formatSuperficie } from '../utils/format';
+import { estBienBati, etatBienLabel, typeBienLabel } from '../utils/bienLabels';
 
 type ActiveModal = 'visite' | 'infos' | 'reservation' | null;
 
@@ -23,6 +24,8 @@ export function TerrainDetailPage() {
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
 
   const location = [terrain?.commune, terrain?.region].filter(Boolean).join(', ');
+  const bati = terrain ? estBienBati(terrain) : false;
+  const etatLabel = terrain ? etatBienLabel(terrain.etatBien) : null;
 
   // Titre dynamique : le nom du terrain (et sa localisation) identifie la
   // fiche dans les onglets, l'historique et les résultats de recherche.
@@ -70,8 +73,15 @@ export function TerrainDetailPage() {
               </p>
             )}
             <div className="mt-3 flex flex-wrap gap-2">
+              {/* La nature avant le statut juridique : le visiteur doit savoir
+                  en un coup d'œil s'il regarde une parcelle ou une maison. */}
+              <Badge tone="primary">{typeBienLabel(terrain.typeBien)}</Badge>
+              {bati && terrain.nombrePieces && (
+                <Badge tone="primary">{terrain.nombrePieces}</Badge>
+              )}
               <Badge tone="primary">{terrain.statutJuridique}</Badge>
               <Badge tone="success">{terrain.niveauVerification}</Badge>
+              {etatLabel && <Badge tone="neutral">{etatLabel}</Badge>}
               {terrain.vocation && <Badge tone="neutral">{terrain.vocation}</Badge>}
             </div>
           </div>
@@ -90,8 +100,51 @@ export function TerrainDetailPage() {
           <section>
             <h2 className="font-display text-lg font-bold text-mtm-text">Caractéristiques</h2>
             <dl className="mt-3 grid grid-cols-2 gap-4 rounded-lg border border-mtm-border bg-mtm-surface p-4 sm:grid-cols-3">
+              {/* Sur un bien bâti, l'habitable et les pièces passent devant :
+                  c'est ce qu'un acheteur de villa regarde en premier. La
+                  parcelle reste affichée, nommée pour ce qu'elle est. */}
+              {bati && (
+                <>
+                  <div>
+                    <dt className="text-xs text-mtm-muted">Surface habitable</dt>
+                    <dd className="text-sm font-semibold text-mtm-text">
+                      {terrain.surfaceHabitable === null
+                        ? '—'
+                        : formatSuperficie(terrain.surfaceHabitable, terrain.uniteSuperficie)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-mtm-muted">Pièces</dt>
+                    <dd className="text-sm font-semibold text-mtm-text">
+                      {terrain.nombrePieces ?? '—'}
+                      {terrain.nombreChambres !== null &&
+                        ` · ${terrain.nombreChambres} chambre${terrain.nombreChambres > 1 ? 's' : ''}`}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-mtm-muted">Salles d’eau</dt>
+                    <dd className="text-sm font-semibold text-mtm-text">
+                      {terrain.nombreSallesEau ?? '—'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-mtm-muted">Niveaux</dt>
+                    <dd className="text-sm font-semibold text-mtm-text">
+                      {terrain.niveaux ?? '—'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-mtm-muted">Année de construction</dt>
+                    <dd className="text-sm font-semibold text-mtm-text">
+                      {terrain.anneeConstruction ?? '—'}
+                    </dd>
+                  </div>
+                </>
+              )}
               <div>
-                <dt className="text-xs text-mtm-muted">Superficie</dt>
+                <dt className="text-xs text-mtm-muted">
+                  {bati ? 'Superficie du terrain' : 'Superficie'}
+                </dt>
                 <dd className="text-sm font-semibold text-mtm-text">
                   {formatSuperficie(terrain.superficie, terrain.uniteSuperficie)}
                 </dd>

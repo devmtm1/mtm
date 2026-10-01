@@ -2,6 +2,7 @@ import type { FormEvent, ReactNode } from 'react';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { TerrainFilters as TerrainFiltersValue } from '../../types/terrain';
+import { typeBienLabel } from '../../utils/bienLabels';
 import { useTerrainFilterOptions } from '../../hooks/useTerrainFilterOptions';
 import { Button } from '../ui/Button';
 import { ROUTES } from '../../routes';
@@ -71,8 +72,47 @@ export function TerrainFilters({ value, onChange, onSubmit, compact = false, she
     </Field>
   );
 
+  // La nature du bien d'abord : c'est le premier tri que fait un visiteur,
+  // bien avant la zone ou le budget. À ne pas confondre avec la vocation
+  // juste en dessous, qui dit l'usage du sol et non ce qui est vendu.
+  const typeBienField = (
+    <Field label="Type de bien">
+      <select
+        className={inputClass}
+        value={value.typeBien ?? ''}
+        onChange={(event) => set('typeBien', event.target.value || undefined)}
+      >
+        <option value="">Tous les biens</option>
+        {options?.typeBien.map((type) => (
+          <option key={type} value={type}>
+            {typeBienLabel(type)}
+          </option>
+        ))}
+      </select>
+    </Field>
+  );
+
+  // N'a de sens que si des biens bâtis sont en vente : l'API ne renvoie des
+  // typologies que si des villas ou appartements sont publiés.
+  const nombrePiecesField = options?.nombrePieces.length ? (
+    <Field label="Nombre de pièces">
+      <select
+        className={inputClass}
+        value={value.nombrePieces ?? ''}
+        onChange={(event) => set('nombrePieces', event.target.value || undefined)}
+      >
+        <option value="">Indifférent</option>
+        {options.nombrePieces.map((piece) => (
+          <option key={piece} value={piece}>
+            {piece}
+          </option>
+        ))}
+      </select>
+    </Field>
+  ) : null;
+
   const vocationField = (
-    <Field label="Type de terrain">
+    <Field label="Usage du terrain">
       <select
         className={inputClass}
         value={value.vocation ?? ''}
@@ -101,12 +141,12 @@ export function TerrainFilters({ value, onChange, onSubmit, compact = false, she
     return (
       <form
         onSubmit={handleSubmit}
-        aria-label="Recherche rapide de terrains"
+        aria-label="Recherche rapide de biens"
         className="rounded-lg border border-mtm-border bg-mtm-surface p-4 shadow-card"
       >
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {typeBienField}
           {regionField}
-          {vocationField}
           <Field label="Budget maximum (FCFA)">
             <input
               type="number"
@@ -142,6 +182,8 @@ export function TerrainFilters({ value, onChange, onSubmit, compact = false, she
           : 'grid grid-cols-1 gap-3 rounded-lg border border-mtm-border bg-mtm-surface p-4 shadow-card sm:grid-cols-2 lg:grid-cols-4'
       }
     >
+      {typeBienField}
+
       {regionField}
 
       <Field label="Commune">
@@ -158,6 +200,8 @@ export function TerrainFilters({ value, onChange, onSubmit, compact = false, she
           ))}
         </select>
       </Field>
+
+      {nombrePiecesField}
 
       {vocationField}
 
@@ -177,7 +221,10 @@ export function TerrainFilters({ value, onChange, onSubmit, compact = false, she
       </Field>
 
       <fieldset className="flex flex-col gap-1">
-        <legend className={labelClass}>Superficie (m²)</legend>
+        {/* Toujours la parcelle, jamais l'habitable : comparer la surface
+            au sol d'un terrain à l'habitable d'une villa n'aurait aucun sens
+            dans un même filtre. */}
+        <legend className={labelClass}>Superficie du terrain (m²)</legend>
         <div className="flex items-center gap-2">
           <input
             type="number"

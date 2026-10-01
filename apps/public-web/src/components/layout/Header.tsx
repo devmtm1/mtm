@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/auth-context-store';
 
 const PRIMARY_LINKS = [
   { to: ROUTES.home, label: 'Accueil' },
-  { to: ROUTES.catalog, label: 'Nos terrains' },
+  { to: ROUTES.catalog, label: 'Nos biens' },
   { to: ROUTES.realisations, label: 'Nos réalisations' },
   { to: ROUTES.projetsAVenir, label: 'Projets à venir' },
   { to: ROUTES.about, label: 'À propos' },
