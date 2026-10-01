@@ -106,11 +106,61 @@ export class ContactService {
     return contact;
   }
 
-  async findAll(options: { lu?: boolean } = {}): Promise<Contact[]> {
-    return this.prisma.contact.findMany({
+  /**
+   * Chaque message porte le prospect déjà rattaché à la personne (même
+   * e-mail ou même téléphone, la règle qu'applique `convertToProspect`), pour
+   * que le back-office distingue « à créer » de « déjà au CRM ».
+   */
+  async findAll(options: { lu?: boolean } = {}) {
+    const contacts = await this.prisma.contact.findMany({
       where: { ...(options.lu !== undefined ? { lu: options.lu } : {}) },
       orderBy: { createdAt: 'desc' },
       include: { terrain: { select: { id: true, referenceInterne: true } } },
+    });
+
+    // Comparaison tolérante : e-mail sans casse ni espaces, téléphone réduit à
+    // ses neuf derniers chiffres (« +221 78 246 32 32 » = « 782463232 »).
+    const emailKey = (value?: string | null) =>
+      value?.trim().toLowerCase() || undefined;
+    const phoneKey = (value?: string | null) => {
+      const digits = value?.replace(/\D/g, '') ?? '';
+      return digits.length >= 7 ? digits.slice(-9) : undefined;
+    };
+
+    const prospects = contacts.length
+      ? await this.prisma.prospect.findMany({
+          where: {
+            OR: [{ email: { not: null } }, { telephone: { not: null } }],
+          },
+          orderBy: { createdAt: 'asc' },
+          select: {
+            id: true,
+            referenceInterne: true,
+            email: true,
+            telephone: true,
+          },
+        })
+      : [];
+    const byEmail = new Map<string, (typeof prospects)[number]>();
+    const byPhone = new Map<string, (typeof prospects)[number]>();
+    for (const p of prospects) {
+      const e = emailKey(p.email);
+      const t = phoneKey(p.telephone);
+      if (e && !byEmail.has(e)) byEmail.set(e, p);
+      if (t && !byPhone.has(t)) byPhone.set(t, p);
+    }
+
+    return contacts.map((contact) => {
+      const e = emailKey(contact.email);
+      const t = phoneKey(contact.telephone);
+      const found =
+        (e ? byEmail.get(e) : undefined) ?? (t ? byPhone.get(t) : undefined);
+      return {
+        ...contact,
+        prospect: found
+          ? { id: found.id, referenceInterne: found.referenceInterne }
+          : null,
+      };
     });
   }
 

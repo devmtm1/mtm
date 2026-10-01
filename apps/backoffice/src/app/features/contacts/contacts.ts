@@ -5,8 +5,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { LucideCheck, LucideInbox, LucideLandPlot, LucideMail, LucideMailOpen, LucidePhone, LucideSearch, LucideUserPlus, LucideX } from '@lucide/angular';
+import { LucideCheck, LucideUserCheck, LucideChevronLeft, LucideChevronRight, LucideInbox, LucideLandPlot, LucideMail, LucideClock, LucideEllipsisVertical, LucideMessageSquare, LucidePhone, LucideSearch, LucideUserPlus, LucideX } from '@lucide/angular';
 import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ContactApiService, type ContactMessage } from '../../core/services/api/contact-api.service';
@@ -25,7 +26,7 @@ type Scope = 'all' | 'unread' | 'read';
  */
 @Component({
   selector: 'app-contacts',
-  imports: [DatePipe, MatButtonModule, MatFormFieldModule, MatInputModule, MatTooltipModule, LucideCheck, LucideInbox, LucideLandPlot, LucideMail, LucideMailOpen, LucidePhone, LucideSearch, LucideUserPlus, LucideX],
+  imports: [DatePipe, MatButtonModule, MatFormFieldModule, MatInputModule, MatMenuModule, MatTooltipModule, LucideCheck, LucideUserCheck, LucideChevronLeft, LucideChevronRight, LucideClock, LucideEllipsisVertical, LucideInbox, LucideLandPlot, LucideMail, LucideMessageSquare, LucidePhone, LucideSearch, LucideUserPlus, LucideX],
   templateUrl: './contacts.html',
   styleUrl: './contacts.scss',
 })
@@ -44,6 +45,7 @@ export class Contacts implements OnInit {
   protected readonly search = signal('');
   protected readonly canConvert = this.session.hasPermission('crm:creer');
   protected readonly canSeeTerrain = this.session.hasPermission('terrains:consulter');
+  protected readonly canSeeProspect = this.session.hasPermission('crm:consulter');
   private readonly isSupervisor = this.session.hasSupervisionScope('crm');
 
   protected readonly unreadCount = computed(() => this.contacts().filter((contact) => !contact.lu).length);
@@ -51,6 +53,15 @@ export class Contacts implements OnInit {
     const limit = Date.now() - 7 * 86_400_000;
     return this.contacts().filter((contact) => new Date(contact.createdAt).getTime() >= limit).length;
   });
+
+  protected readonly previousWeekCount = computed(() => {
+    const now = Date.now();
+    return this.contacts().filter((contact) => {
+      const time = new Date(contact.createdAt).getTime();
+      return time >= now - 14 * 86_400_000 && time < now - 7 * 86_400_000;
+    }).length;
+  });
+  protected readonly weekDelta = computed(() => this.weekCount() - this.previousWeekCount());
 
   protected readonly filtered = computed(() => {
     const scope = this.scope();
@@ -60,23 +71,68 @@ export class Contacts implements OnInit {
       .filter((contact) => !term || `${contact.nom} ${contact.email ?? ''} ${contact.telephone ?? ''} ${contact.sujet ?? ''} ${contact.message}`.toLowerCase().includes(term));
   });
 
-  protected readonly hasActiveFilters = computed(() => this.scope() !== 'all' || this.search().trim() !== '');
+  protected readonly pageSizes = [10, 25, 50];
+  protected readonly pageSize = signal(10);
+  private readonly pageIndex = signal(0);
+  protected readonly totalPages = computed(() => Math.max(1, Math.ceil(this.filtered().length / this.pageSize())));
+  /** Page affichée, ramenée dans les bornes quand un filtre réduit la liste. */
+  protected readonly currentPage = computed(() => Math.min(this.pageIndex(), this.totalPages() - 1));
+  protected readonly paged = computed(() => {
+    const start = this.currentPage() * this.pageSize();
+    return this.filtered().slice(start, start + this.pageSize());
+  });
+  protected readonly rangeStart = computed(() => (this.filtered().length === 0 ? 0 : this.currentPage() * this.pageSize() + 1));
+  protected readonly rangeEnd = computed(() => Math.min(this.filtered().length, (this.currentPage() + 1) * this.pageSize()));
+
+  protected readonly hasActiveFilters =computed(() => this.scope() !== 'all' || this.search().trim() !== '');
 
   ngOnInit(): void {
     this.load();
   }
 
+  protected initials(name: string): string {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    return ((parts[0]?.[0] ?? '?') + (parts.length > 1 ? (parts[parts.length - 1][0] ?? '') : '')).toUpperCase();
+  }
+
+  /** Teinte stable par personne, pour repérer un même expéditeur d'un coup d'œil. */
+  protected avatarColor(name: string): string {
+    let hash = 0;
+    for (const char of name) hash = (hash * 31 + char.charCodeAt(0)) % 360;
+    return `hsl(${hash} 55% 42%)`;
+  }
+
   protected setScope(scope: Scope): void {
     this.scope.set(scope);
+    this.pageIndex.set(0);
+  }
+
+  protected setSearch(term: string): void {
+    this.search.set(term);
+    this.pageIndex.set(0);
   }
 
   protected resetFilters(): void {
     this.scope.set('all');
     this.search.set('');
+    this.pageIndex.set(0);
+  }
+
+  protected goToPage(index: number): void {
+    this.pageIndex.set(Math.min(Math.max(0, index), this.totalPages() - 1));
+  }
+
+  protected setPageSize(size: number): void {
+    this.pageSize.set(size);
+    this.pageIndex.set(0);
   }
 
   protected openTerrain(contact: ContactMessage): void {
     if (contact.terrain) void this.router.navigate(['/terrains', contact.terrain.id]);
+  }
+
+  protected openProspect(contact: ContactMessage): void {
+    if (contact.prospect) void this.router.navigate(['/crm/prospects', contact.prospect.id]);
   }
 
   protected markAsRead(contact: ContactMessage): void {

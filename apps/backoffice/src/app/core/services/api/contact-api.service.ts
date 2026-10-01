@@ -17,6 +17,11 @@ export interface ContactMessage {
     id: string;
     referenceInterne: string;
   } | null;
+  /** Prospect CRM déjà rattaché à cette personne (même e-mail ou téléphone). */
+  prospect?: {
+    id: string;
+    referenceInterne?: string | null;
+  } | null;
 }
 
 @Injectable({ providedIn: 'root' })
