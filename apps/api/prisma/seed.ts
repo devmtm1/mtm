@@ -842,6 +842,8 @@ async function main(): Promise<void> {
         'Délibération',
         'Morcellement',
         'Régularisation en cours',
+        'Notification de bail',
+        'Attribution',
       ],
       description:
         'Liste des statuts juridiques configurables pour les terrains',
