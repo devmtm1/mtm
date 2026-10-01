@@ -1632,14 +1632,14 @@ async function main(): Promise<void> {
       key: 'home.hero.subtitle',
       title: 'Sous-titre hero',
       content:
-        'Terrains vérifiés, accompagnement transparent et solutions concrètes pour investir, construire et transmettre au Sénégal.',
+        'Terrains et villas vérifiés, accompagnement transparent et solutions concrètes pour investir, construire et transmettre au Sénégal.',
       type: 'hero',
       ordre: 1,
     },
     {
       key: 'home.cta.title',
       title: 'CTA principal',
-      content: 'Découvrir nos terrains',
+      content: 'Découvrir nos biens',
       type: 'stat',
       ordre: 2,
     },
@@ -1825,7 +1825,7 @@ async function main(): Promise<void> {
       key: 'demarches.intro',
       title: 'Démarches — introduction',
       content:
-        'Vous envisagez d’acheter un terrain, notamment depuis l’étranger ? Notre équipe se déplace pour vérifier le bien avant votre engagement. Tarif communiqué sur devis selon la nature du dossier.',
+        'Vous envisagez d’acheter un terrain ou une villa, notamment depuis l’étranger ? Notre équipe se déplace pour vérifier le bien avant votre engagement. Tarif communiqué sur devis selon la nature du dossier.',
       type: 'text',
       ordre: 54,
     },
@@ -1837,7 +1837,7 @@ async function main(): Promise<void> {
       title:
         'Démarches — prestations (une par ligne, format « Titre | Description »)',
       content:
-        'Vérification avant achat | Contrôle du terrain et de sa situation administrative avant votre engagement.\nDépôt de mutation | Transfert de propriété déposé au service des Impôts et Domaines.\nDépôt de bail | Constitution du dossier et dépôt auprès du service compétent.\nDépôt d’autorisation de construire | Demande déposée auprès de la mairie, suivie jusqu’à la décision.\nRetrait de documents | Retrait de vos pièces auprès des mairies ou des services des Impôts et Domaines.\nAutres démarches foncières | Décrivez votre besoin : nous vous disons si nous pouvons le traiter.',
+        'Vérification avant achat | Contrôle du bien et de sa situation administrative avant votre engagement.\nDépôt de mutation | Transfert de propriété déposé au service des Impôts et Domaines.\nDépôt de bail | Constitution du dossier et dépôt auprès du service compétent.\nDépôt d’autorisation de construire | Demande déposée auprès de la mairie, suivie jusqu’à la décision.\nRetrait de documents | Retrait de vos pièces auprès des mairies ou des services des Impôts et Domaines.\nAutres démarches foncières | Décrivez votre besoin : nous vous disons si nous pouvons le traiter.',
       type: 'text',
       ordre: 53,
     },
@@ -1855,7 +1855,7 @@ async function main(): Promise<void> {
       title:
         'Démarches — étapes (une par ligne, format « Titre | Description »)',
       content:
-        'Demande | Vous nous transmettez le terrain concerné et vos pièces disponibles.\nÉtude de faisabilité | Une étude préalable peut être réalisée avant engagement complet.\nVérification physique | Visite sur site : constat, photos, accès, environnement.\nVérification administrative | Consultation des administrations compétentes (mairie, service des Domaines...).\nRapport | Conclusion structurée et recommandation : favorable, défavorable ou à compléter.',
+        'Demande | Vous nous transmettez le bien concerné et vos pièces disponibles.\nÉtude de faisabilité | Une étude préalable peut être réalisée avant engagement complet.\nVérification physique | Visite sur site : constat, photos, accès, environnement.\nVérification administrative | Consultation des administrations compétentes (mairie, service des Domaines...).\nRapport | Conclusion structurée et recommandation : favorable, défavorable ou à compléter.',
       type: 'text',
       ordre: 55,
     },

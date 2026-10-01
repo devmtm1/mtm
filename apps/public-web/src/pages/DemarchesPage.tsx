@@ -9,10 +9,10 @@ import { usePageMetadata } from '../hooks/usePageMetadata';
 import { useSiteContact } from '../hooks/useSiteContact';
 
 const FALLBACK_INTRO =
-  "Vous envisagez d'acheter un terrain, notamment depuis l'étranger ? Notre équipe se déplace pour vérifier le bien avant votre engagement. Tarif communiqué sur devis selon la nature du dossier.";
+  "Vous envisagez d'acheter un terrain ou une villa, notamment depuis l'étranger ? Notre équipe se déplace pour vérifier le bien avant votre engagement. Tarif communiqué sur devis selon la nature du dossier.";
 
 const FALLBACK_STEPS: EditableStep[] = [
-  { title: 'Demande', description: 'Vous nous transmettez le terrain concerné et vos pièces disponibles.' },
+  { title: 'Demande', description: 'Vous nous transmettez le bien concerné et vos pièces disponibles.' },
   { title: 'Étude de faisabilité', description: 'Une étude préalable peut être réalisée avant engagement complet.' },
   { title: 'Vérification physique', description: 'Visite sur site : constat, photos, accès, environnement.' },
   {
@@ -47,7 +47,7 @@ const FALLBACK_PRESTATIONS: EditableStep[] = [
   {
     title: 'Vérification avant achat',
     description:
-      'Contrôle du terrain et de sa situation administrative avant votre engagement.',
+      'Contrôle du bien et de sa situation administrative avant votre engagement.',
   },
   {
     title: 'Dépôt de mutation',
