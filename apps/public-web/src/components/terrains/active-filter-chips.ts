@@ -1,6 +1,6 @@
 import type { TerrainFilters } from '../../types/terrain';
 import { formatMoney } from '../../utils/format';
-import { typeBienLabel } from '../../utils/bienLabels';
+import { typeBienLabel, vocationLabel } from '../../utils/bienLabels';
 
 export interface FilterChip {
   key: string;
@@ -21,7 +21,9 @@ export function activeFilterChips(filters: TerrainFilters): FilterChip[] {
   }
   if (filters.region) chips.push({ key: 'region', label: filters.region, clears: ['region'] });
   if (filters.commune) chips.push({ key: 'commune', label: filters.commune, clears: ['commune'] });
-  if (filters.vocation) chips.push({ key: 'vocation', label: filters.vocation, clears: ['vocation'] });
+  if (filters.vocation) {
+    chips.push({ key: 'vocation', label: vocationLabel(filters.vocation), clears: ['vocation'] });
+  }
   if (filters.statutJuridique) chips.push({ key: 'statut', label: filters.statutJuridique, clears: ['statutJuridique'] });
   if (filters.superficieMin !== undefined || filters.superficieMax !== undefined) {
     chips.push({

@@ -877,6 +877,48 @@ async function main(): Promise<void> {
     },
   });
 
+  // --- Vocations et natures de bien configurables ---
+  // Saisies librement jusqu'ici : les écrans produisaient des doublons de
+  // casse que le filtre public proposait comme des critères distincts.
+  await prisma.systemSetting.upsert({
+    where: { key: 'terrains.vocation' },
+    update: {},
+    create: {
+      key: 'terrains.vocation',
+      value: [
+        'habitation',
+        'residentiel',
+        'commercial',
+        'agricole',
+        'touristique',
+        'industriel',
+        'mixte',
+        'autre',
+      ],
+      description: 'Usages prévus du sol, proposés à la saisie d’un bien',
+      isSensitive: false,
+    },
+  });
+
+  await prisma.systemSetting.upsert({
+    where: { key: 'terrains.typeBien' },
+    update: {},
+    create: {
+      key: 'terrains.typeBien',
+      value: [
+        'terrain',
+        'villa',
+        'appartement',
+        'studio',
+        'commerce',
+        'bureau',
+        'autre',
+      ],
+      description: 'Natures de bien mises en vente (terrain nu, villa…)',
+      isSensitive: false,
+    },
+  });
+
   // --- Types de mandats configurables (J1.4) ---
   await prisma.systemSetting.upsert({
     where: { key: 'mandats.typeMandat' },

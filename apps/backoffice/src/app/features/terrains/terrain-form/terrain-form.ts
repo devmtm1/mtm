@@ -39,6 +39,7 @@ import {
   etatBienLabel,
   statusHelp,
   typeBienLabel,
+  vocationLabel,
 } from '../terrain-status';
 
 interface SelectedAsset {
@@ -134,6 +135,7 @@ export class TerrainForm implements OnInit {
     nombrePieces: string[];
     etatBien: string[];
     typesBati: string[];
+    vocation: string[];
   }>({
     statutJuridique: [],
     niveauVerification: [],
@@ -142,6 +144,7 @@ export class TerrainForm implements OnInit {
     nombrePieces: [],
     etatBien: [],
     typesBati: [],
+    vocation: [],
   });
   protected readonly proprietaires = signal<ProprietaireSummary[]>([]);
   /** Commerciaux affectables : réservé à l'encadrement (un commercial est rattaché d'office). */
@@ -215,6 +218,7 @@ export class TerrainForm implements OnInit {
 
   protected readonly typeBienLabel = typeBienLabel;
   protected readonly etatBienLabel = etatBienLabel;
+  protected readonly vocationLabel = vocationLabel;
 
   protected typeBienAide(valeur: string | null | undefined): string {
     return statusHelp(TYPE_BIEN, valeur);

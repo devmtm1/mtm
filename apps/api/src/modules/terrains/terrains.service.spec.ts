@@ -307,6 +307,20 @@ describe('TerrainsService', () => {
     expect(data.surfaceHabitable).toBe(120);
   });
 
+  it('refuse une vocation absente du référentiel', async () => {
+    prismaMock.terrain.findUnique.mockResolvedValue(null);
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+
+    // La vocation était un champ libre : « Residentiel » et « residentiel »
+    // cohabitaient en base et le filtre public les proposait séparément.
+    await expect(
+      service.create(
+        { ...ficheMinimale, vocation: 'Residentiel' },
+        internalUser,
+      ),
+    ).rejects.toThrow(BadRequestException);
+  });
+
   it('refuse un type de bien absent du référentiel', async () => {
     prismaMock.terrain.findUnique.mockResolvedValue(null);
     prismaMock.systemSetting.findUnique.mockResolvedValue(null);

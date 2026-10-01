@@ -75,6 +75,26 @@ export function etatBienLabel(value: string | null | undefined): string {
   return (value && ETAT_BIEN_LABELS[value]) || (value ?? '—');
 }
 
+/**
+ * Usage prévu du sol. Saisi librement jusqu'ici, d'où des doublons de casse
+ * en base ; la liste est maintenant fermée et ces libellés la rendent lisible.
+ */
+export const VOCATION_LABELS: Record<string, string> = {
+  habitation: 'Habitation',
+  residentiel: 'Résidentiel',
+  commercial: 'Commercial',
+  agricole: 'Agricole',
+  touristique: 'Touristique',
+  industriel: 'Industriel',
+  mixte: 'Mixte',
+  autre: 'Autre',
+};
+
+export function vocationLabel(value: string | null | undefined): string {
+  if (!value) return '—';
+  return VOCATION_LABELS[value] ?? value;
+}
+
 export function statusTone(map: Record<string, StatusMeaning>, value: string | null | undefined): PillTone {
   return (value && map[value]?.tone) || 'neutral';
 }

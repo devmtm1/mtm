@@ -135,6 +135,8 @@ export interface TerrainOptions {
   typeBien: string[];
   nombrePieces: string[];
   etatBien: string[];
+  /** Usage prévu du sol, désormais contrôlé et non plus saisi librement. */
+  vocation: string[];
   /**
    * Types qui ouvrent la section « bâti » du formulaire. L'API en est la
    * source : les écrans n'ont pas à deviner qu'un studio est bâti et un

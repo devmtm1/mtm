@@ -2,7 +2,7 @@ import type { FormEvent, ReactNode } from 'react';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { TerrainFilters as TerrainFiltersValue } from '../../types/terrain';
-import { typeBienLabel } from '../../utils/bienLabels';
+import { typeBienLabel, vocationLabel } from '../../utils/bienLabels';
 import { useTerrainFilterOptions } from '../../hooks/useTerrainFilterOptions';
 import { Button } from '../ui/Button';
 import { ROUTES } from '../../routes';
@@ -141,7 +141,7 @@ export function TerrainFilters({ value, onChange, onSubmit, compact = false, she
         <option value="">Tous les types</option>
         {options?.vocation.map((vocation) => (
           <option key={vocation} value={vocation}>
-            {vocation}
+            {vocationLabel(vocation)}
           </option>
         ))}
       </select>

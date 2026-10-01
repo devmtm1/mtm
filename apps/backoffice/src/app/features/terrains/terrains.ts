@@ -108,6 +108,7 @@ export class Terrains implements OnInit {
     nombrePieces: [],
     etatBien: [],
     typesBati: [],
+    vocation: [],
   });
   protected readonly viewMode = signal<'table' | 'grid'>(this.restoreViewMode());
   protected readonly canCreate = computed(() => this.sessionService.hasPermission('terrains:creer'));

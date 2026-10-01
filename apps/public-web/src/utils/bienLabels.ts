@@ -33,6 +33,25 @@ export function etatBienLabel(value: string | null | undefined): string | null {
 }
 
 /**
+ * Usage prévu du sol. Le visiteur lit « Résidentiel », pas « residentiel ».
+ */
+const VOCATION_LABELS: Record<string, string> = {
+  habitation: 'Habitation',
+  residentiel: 'Résidentiel',
+  commercial: 'Commercial',
+  agricole: 'Agricole',
+  touristique: 'Touristique',
+  industriel: 'Industriel',
+  mixte: 'Mixte',
+  autre: 'Autre',
+};
+
+export function vocationLabel(value: string | null | undefined): string {
+  if (!value) return '';
+  return VOCATION_LABELS[value] ?? value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+/**
  * Le bien est-il construit ? On le déduit de la présence de caractéristiques
  * du bâti plutôt que d'une liste de types tenue en double ici : l'API refuse
  * déjà ces champs sur une parcelle nue, et un type ajouté en Paramètres

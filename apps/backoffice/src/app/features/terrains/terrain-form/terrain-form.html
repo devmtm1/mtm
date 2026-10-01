@@ -246,10 +246,18 @@
               <mat-label>Dimensions</mat-label>
               <input matInput formControlName="dimensions" placeholder="Ex. 20 m × 15 m" />
             </mat-form-field>
+            <!-- Liste fermée : la saisie libre avait produit « Residentiel »
+                 et « residentiel » en base, que le filtre public proposait
+                 comme deux critères distincts. -->
             <mat-form-field appearance="outline">
               <mat-label>Vocation</mat-label>
-              <input matInput formControlName="vocation" placeholder="Résidentiel, commercial, agricole…" />
-              <mat-hint>Usage prévu du terrain.</mat-hint>
+              <mat-select formControlName="vocation">
+                <mat-option value="">Non précisée</mat-option>
+                @for (usage of options().vocation; track usage) {
+                  <mat-option [value]="usage">{{ vocationLabel(usage) }}</mat-option>
+                }
+              </mat-select>
+              <mat-hint>Usage prévu du sol.</mat-hint>
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Proximité des axes</mat-label>

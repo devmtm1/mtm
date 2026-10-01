@@ -68,6 +68,21 @@ export const DEFAULT_TERRAIN_OPTIONS = {
   /** Typologie commerciale d'un bien bâti. */
   nombrePieces: ['F1', 'F2', 'F3', 'F4', 'F5', 'F6'],
   etatBien: ['neuf', 'bon_etat', 'a_rafraichir', 'a_renover'],
+  /**
+   * Usage prévu du sol. C'était un champ libre : « Residentiel » et
+   * « residentiel » coexistaient en base et le filtre public, qui dérive ses
+   * options des biens publiés, les proposait comme deux critères distincts.
+   */
+  vocation: [
+    'habitation',
+    'residentiel',
+    'commercial',
+    'agricole',
+    'touristique',
+    'industriel',
+    'mixte',
+    'autre',
+  ],
 } as const;
 
 /**
@@ -428,7 +443,7 @@ export class TerrainsService {
   }
 
   async getOptions() {
-    const [legal, verification, commercial, types, pieces, etats] =
+    const [legal, verification, commercial, types, pieces, etats, vocations] =
       await Promise.all([
         this.settings.getRawValue('terrains.statutJuridique'),
         this.settings.getRawValue('terrains.niveauVerification'),
@@ -436,6 +451,7 @@ export class TerrainsService {
         this.settings.getRawValue('terrains.typeBien'),
         this.settings.getRawValue('terrains.nombrePieces'),
         this.settings.getRawValue('terrains.etatBien'),
+        this.settings.getRawValue('terrains.vocation'),
       ]);
     return {
       statutJuridique: SettingsService.asStringList(
@@ -462,6 +478,10 @@ export class TerrainsService {
         etats,
         DEFAULT_TERRAIN_OPTIONS.etatBien,
       ),
+      vocation: SettingsService.asStringList(
+        vocations,
+        DEFAULT_TERRAIN_OPTIONS.vocation,
+      ),
       /** Les écrans y lisent quels types ouvrent la section « bâti ». */
       typesBati: [...TYPES_BIEN_BATI],
     };
@@ -477,6 +497,7 @@ export class TerrainsService {
         | 'typeBien'
         | 'nombrePieces'
         | 'etatBien'
+        | 'vocation'
       >
     >,
   ): Promise<void> {
@@ -487,6 +508,7 @@ export class TerrainsService {
       'typeBien',
       'nombrePieces',
       'etatBien',
+      'vocation',
     ] as const;
 
     for (const field of fields) {

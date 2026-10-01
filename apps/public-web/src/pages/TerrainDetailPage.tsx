@@ -14,7 +14,7 @@ import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 import { formatMoney, formatSuperficie } from '../utils/format';
-import { estBienBati, etatBienLabel, typeBienLabel } from '../utils/bienLabels';
+import { estBienBati, etatBienLabel, typeBienLabel, vocationLabel } from '../utils/bienLabels';
 
 type ActiveModal = 'visite' | 'infos' | 'reservation' | null;
 
@@ -82,7 +82,7 @@ export function TerrainDetailPage() {
               <Badge tone="primary">{terrain.statutJuridique}</Badge>
               <Badge tone="success">{terrain.niveauVerification}</Badge>
               {etatLabel && <Badge tone="neutral">{etatLabel}</Badge>}
-              {terrain.vocation && <Badge tone="neutral">{terrain.vocation}</Badge>}
+              {terrain.vocation && <Badge tone="neutral">{vocationLabel(terrain.vocation)}</Badge>}
             </div>
           </div>
 
