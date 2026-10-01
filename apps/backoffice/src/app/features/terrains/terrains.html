@@ -107,8 +107,8 @@
           </mat-select>
         </mat-form-field>
         <!-- La typologie n'a de sens que sur du bâti : le filtre n'apparaît
-             pas tant que la liste est restreinte aux terrains nus. -->
-        @if (filters.controls.typeBien.value !== 'terrain') {
+             qu'une fois une villa, un appartement ou un local choisi. -->
+        @if (batiSelectionne()) {
           <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>Typologie</mat-label>
             <mat-select formControlName="nombrePieces">

@@ -44,12 +44,25 @@ export function TerrainFilters({ value, onChange, onSubmit, compact = false, she
   // dans le front, conformément à la section 25 du CDC.
   const { data: options } = useTerrainFilterOptions();
 
+  /**
+   * Le bâti et le sol ne se décrivent pas avec les mêmes critères : une villa
+   * a une typologie (F1 à F6), une parcelle a un usage (habitation, commerce,
+   * agricole). Les deux occupent donc le même emplacement, selon la nature
+   * choisie. Sans type choisi, le catalogue reste mixte et c'est l'usage du
+   * sol qui s'applique à tout.
+   */
+  const batiSelectionne = Boolean(value.typeBien) && value.typeBien !== 'terrain';
+
   function set<K extends keyof TerrainFiltersValue>(key: K, next: TerrainFiltersValue[K]): void {
     const suivant = { ...value, [key]: next, page: 1 };
-    // Une parcelle nue n'a pas de pièces : revenir sur « Terrain » doit
-    // libérer la typologie, sinon le catalogue continuerait de filtrer sur un
-    // critère que le visiteur ne voit plus.
-    if (key === 'typeBien' && next === 'terrain') delete suivant.nombrePieces;
+    // Changer de nature libère le critère qui vient de disparaître : sinon le
+    // catalogue continuerait de filtrer sur quelque chose que le visiteur ne
+    // voit plus et ne peut plus annuler.
+    if (key === 'typeBien') {
+      const versBati = Boolean(next) && next !== 'terrain';
+      if (versBati) delete suivant.vocation;
+      else delete suivant.nombrePieces;
+    }
     onChange(suivant);
   }
 
@@ -97,11 +110,11 @@ export function TerrainFilters({ value, onChange, onSubmit, compact = false, she
     </Field>
   );
 
-  // N'a de sens que si des biens bâtis sont en vente — l'API ne renvoie des
-  // typologies que si des villas ou appartements sont publiés — et que la
-  // recherche n'est pas restreinte aux parcelles nues.
+  // Affichée à la place de l'usage du sol quand la recherche porte sur du
+  // bâti. L'API ne renvoie des typologies que si des villas ou appartements
+  // sont publiés : sans aucun, le filtre n'apparaît pas.
   const nombrePiecesField =
-    options?.nombrePieces.length && value.typeBien !== 'terrain' ? (
+    options?.nombrePieces.length && batiSelectionne ? (
     <Field label="Nombre de pièces">
       <select
         className={inputClass}
@@ -118,7 +131,7 @@ export function TerrainFilters({ value, onChange, onSubmit, compact = false, she
     </Field>
   ) : null;
 
-  const vocationField = (
+  const vocationField = batiSelectionne ? null : (
     <Field label="Usage du terrain">
       <select
         className={inputClass}

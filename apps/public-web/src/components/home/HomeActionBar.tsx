@@ -5,7 +5,7 @@ import { ROUTES } from '../../routes';
 
 /**
  * Barre d'action fixe de l'accueil sur mobile : les deux gestes qui comptent
- * (voir les terrains, écrire sur WhatsApp) restent sous le pouce quelle que
+ * (voir nos biens, écrire sur WhatsApp) restent sous le pouce quelle que
  * soit la section affichée. Remplace le bouton WhatsApp flottant sur cette page.
  */
 export function HomeActionBar() {
@@ -18,7 +18,7 @@ export function HomeActionBar() {
           className="inline-flex items-center justify-center gap-2 rounded-md bg-mtm-primary px-4 py-2.5 text-sm font-semibold text-white"
         >
           <Search className="h-4 w-4" aria-hidden="true" />
-          Voir les terrains
+          Voir nos biens
         </Link>
         <a
           href={`https://wa.me/${whatsapp}`}

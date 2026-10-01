@@ -187,12 +187,12 @@ export class Terrains implements OnInit {
     this.terrainsApi.getOptions().subscribe({ next: (options) => this.options.set(options) });
     this.loadStats();
     this.load();
-    // Repasser sur « Terrain » masque le filtre de typologie : s'il restait
+    // Quitter une nature bâtie masque le filtre de typologie : s'il restait
     // armé, la liste continuerait de filtrer sur un critère devenu invisible.
     this.filters.controls.typeBien.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((type) => {
-        if (type === 'terrain' && this.filters.controls.nombrePieces.value) {
+      .subscribe(() => {
+        if (!this.batiSelectionne() && this.filters.controls.nombrePieces.value) {
           this.filters.controls.nombrePieces.setValue('');
         }
       });
@@ -252,6 +252,16 @@ export class Terrains implements OnInit {
   protected readonly verificationStatus = VERIFICATION_STATUS;
   protected readonly typeBienMeanings = TYPE_BIEN;
   protected readonly typeBienLabel = typeBienLabel;
+
+  /**
+   * La typologie ne concerne que le bâti : elle n'apparaît qu'une fois une
+   * villa, un appartement ou un local choisi. Même règle que le catalogue
+   * public, pour que les deux écrans se lisent pareil.
+   */
+  protected batiSelectionne(): boolean {
+    const type = this.filters.controls.typeBien.value;
+    return Boolean(type) && type !== 'terrain';
+  }
 
   /**
    * Le bien est-il construit ? La liste des types bâtis vient de l'API, pour

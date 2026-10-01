@@ -22,7 +22,7 @@ export function FeaturedTerrainsSection() {
           description="Une sélection d'opportunités vérifiées, prêtes à la commercialisation."
         />
         <LinkButton to={ROUTES.catalog} variant="secondary" className="hidden shrink-0 sm:inline-flex">
-          Voir tous les terrains
+          Voir tous nos biens
         </LinkButton>
       </div>
 

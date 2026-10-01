@@ -24,7 +24,7 @@ export function CtaBand({
         </div>
         <div className="flex flex-wrap gap-3">
           <LinkButton to={ROUTES.catalog} variant="onDark">
-            Voir les terrains
+            Voir nos biens
           </LinkButton>
           <LinkButton to={ROUTES.contact} variant="onDarkOutline">
             Nous contacter

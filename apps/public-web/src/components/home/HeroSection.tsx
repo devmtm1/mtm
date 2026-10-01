@@ -88,7 +88,7 @@ export function HeroSection() {
         </div>
 
         {/* Mobile : le champ de recherche et la barre d'action fixe portent
-            déjà « voir les terrains » ; seule la vérification reste ici. */}
+            déjà « voir nos biens » ; seule la vérification reste ici. */}
         <div className="flex w-full flex-wrap gap-3 sm:w-auto">
           <LinkButton to={ROUTES.catalog} variant="accent" className="hidden sm:inline-flex">
             {ctaLabel}

@@ -145,7 +145,7 @@ export function ShowcaseDetailPage() {
                   Nous écrire
                 </Button>
                 <LinkButton to={ROUTES.catalog} variant="secondary">
-                  Voir les terrains disponibles
+                  Voir les biens disponibles
                 </LinkButton>
               </div>
               <dl className="mt-6 grid grid-cols-1 gap-3 border-t border-mtm-border pt-5 text-sm">

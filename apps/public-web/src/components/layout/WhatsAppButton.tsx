@@ -11,7 +11,7 @@ export function WhatsAppButton() {
   // L'espace client propose déjà WhatsApp dans son encart « Une question ? » :
   // sur mobile, le bouton flottant y masquerait les montants et statuts.
   const inClientArea = segments[0] === 'espace-client';
-  // L'accueil a sa propre barre d'action (Voir les terrains / WhatsApp).
+  // L'accueil a sa propre barre d'action (Voir nos biens / WhatsApp).
   const onHome = segments.length === 0;
 
   return (
