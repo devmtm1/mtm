@@ -9,18 +9,54 @@ const DEFAULT_SUBTITLE =
   "MTM Immobilier accompagne particuliers et membres de la diaspora dans l'achat de terrains et de villas, la vérification foncière, la gestion locative et la construction — avec transparence et suivi à distance.";
 const DEFAULT_CTA = 'Voir nos biens';
 
+/** Connexions sur lesquelles une vidéo de fond coûte plus qu'elle n'apporte. */
+const RESEAUX_LENTS = ['slow-2g', '2g', '3g'];
+
 /**
- * La vidéo de fond (~18 Mo) n'est chargée que sur grand écran et hors
- * préférence "mouvement réduit" — pour ne pas pénaliser le mobile/la 4G
- * ni les utilisateurs sensibles aux animations.
+ * La vidéo de fond joue désormais sur mobile aussi : s'en priver donnait un
+ * accueil immobile précisément là où la clientèle regarde le site.
+ *
+ * Elle reste soumise à trois réserves, parce que le fichier pèse ~18 Mo :
+ *
+ * - « mouvement réduit » : on respecte la préférence système ;
+ * - mode économie de données, ou réseau annoncé en 2G/3G : l'image fixe suffit,
+ *   et 18 Mo de forfait pour un décor serait une facture imposée au visiteur ;
+ * - montage différé : la vidéo n'est ajoutée qu'une fois la page au repos,
+ *   pour qu'elle ne dispute pas la bande passante au premier affichage ni au
+ *   catalogue.
+ *
+ * L'image fixe est affichée dans tous les cas, donc personne ne voit un fond
+ * vide pendant que la vidéo arrive.
  */
 function useShouldPlayBackgroundVideo(): boolean {
   const [shouldPlay, setShouldPlay] = useState(false);
 
   useEffect(() => {
-    const isDesktop = window.matchMedia('(min-width: 768px)').matches;
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    setShouldPlay(isDesktop && !prefersReducedMotion);
+    if (prefersReducedMotion) return;
+
+    // `connection` n'existe pas partout (Safari notamment) : son absence ne
+    // doit pas priver de vidéo, seule une information explicite le fait.
+    const connection = (
+      navigator as Navigator & {
+        connection?: { saveData?: boolean; effectiveType?: string };
+      }
+    ).connection;
+    if (connection?.saveData) return;
+    if (connection?.effectiveType && RESEAUX_LENTS.includes(connection.effectiveType)) return;
+
+    const demarrer = () => setShouldPlay(true);
+    const planifier = (
+      window as Window & { requestIdleCallback?: (cb: () => void) => number }
+    ).requestIdleCallback;
+    if (planifier) {
+      const id = planifier(demarrer);
+      return () => {
+        (window as Window & { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback?.(id);
+      };
+    }
+    const minuteur = window.setTimeout(demarrer, 1200);
+    return () => window.clearTimeout(minuteur);
   }, []);
 
   return shouldPlay;
@@ -39,9 +75,9 @@ export function HeroSection() {
 
   return (
     <section className="relative overflow-hidden bg-mtm-primary-dark">
-      {/* Image fixe extraite de la vidéo : fond immédiat sur tous les écrans
-          (pas d'aplat de couleur pendant le chargement, ni sur mobile où la
-          vidéo n'est pas chargée), et `poster` de la vidéo sur grand écran. */}
+      {/* Image fixe extraite de la vidéo : fond immédiat sur tous les écrans,
+          pendant que la vidéo se charge et quand elle est écartée (économie
+          de données, réseau lent, mouvement réduit). */}
       <img
         src="/hero-poster.jpg"
         alt=""
@@ -54,6 +90,7 @@ export function HeroSection() {
           className="absolute inset-0 h-full w-full object-cover motion-safe:animate-fade-in"
           src="/video.mp4"
           poster="/hero-poster.jpg"
+          preload="none"
           autoPlay
           muted
           loop
