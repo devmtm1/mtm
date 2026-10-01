@@ -12,9 +12,9 @@ import { usePageMetadata } from '../hooks/usePageMetadata';
 
 export function HomePage() {
   usePageMetadata({
-    title: 'Terrains vérifiés, gestion locative et construction au Sénégal',
+    title: 'Terrains et villas vérifiés, gestion locative et construction au Sénégal',
     description:
-      "MTM Immobilier accompagne particuliers et diaspora dans l'achat de terrains vérifiés, la vérification foncière, la gestion locative et la construction au Sénégal.",
+      "MTM Immobilier accompagne particuliers et diaspora dans l'achat de terrains et de villas vérifiés, la vérification foncière, la gestion locative et la construction au Sénégal.",
   });
 
   return (

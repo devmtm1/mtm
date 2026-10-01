@@ -12,8 +12,8 @@ import { TerrainPicker, type TerrainChoice } from './TerrainPicker';
 
 const TYPES: { value: ClientDemandeType; label: string; help: string; icon: typeof Info }[] = [
   { value: 'information', label: 'Une question', help: 'Sur un dossier, un paiement, un document…', icon: Info },
-  { value: 'visite', label: 'Une visite', help: 'Voir un terrain sur place ou en vidéo.', icon: CalendarCheck },
-  { value: 'reservation', label: 'Réserver', help: 'Bloquer un terrain disponible avec un acompte.', icon: MessageSquare },
+  { value: 'visite', label: 'Une visite', help: 'Voir un bien sur place ou en vidéo.', icon: CalendarCheck },
+  { value: 'reservation', label: 'Réserver', help: 'Bloquer un bien disponible avec un acompte.', icon: MessageSquare },
 ];
 
 /**
@@ -52,7 +52,7 @@ export function NewDemandeModal({ onClose }: { onClose: () => void }) {
     if (!accessToken) return;
     const text = message.trim();
     if (type === 'reservation' && !terrain) {
-      setError('Choisissez le terrain que vous souhaitez réserver.');
+      setError('Choisissez le bien que vous souhaitez réserver.');
       return;
     }
     if (text.length < 10 || text.length > 2000) {
@@ -107,7 +107,7 @@ export function NewDemandeModal({ onClose }: { onClose: () => void }) {
                     checked={type === value}
                     onChange={() => {
                       setType(value);
-                      // Un terrain d'un dossier ne se réserve pas à nouveau.
+                      // Un bien d'un dossier ne se réserve pas à nouveau.
                       if (value === 'reservation' && terrain?.mine) setTerrain(null);
                     }}
                     className="sr-only"
@@ -121,7 +121,7 @@ export function NewDemandeModal({ onClose }: { onClose: () => void }) {
           </fieldset>
 
           <FormField
-            label={type === 'reservation' ? 'Terrain à réserver' : 'Terrain concerné (facultatif)'}
+            label={type === 'reservation' ? 'Bien à réserver' : 'Bien concerné (facultatif)'}
             htmlFor="demande-terrain"
             required={type === 'reservation'}
           >
@@ -131,7 +131,7 @@ export function NewDemandeModal({ onClose }: { onClose: () => void }) {
               onChange={setTerrain}
               pinned={myTerrains}
               availableOnly={type === 'reservation'}
-              placeholder={type === 'reservation' ? 'Rechercher un terrain disponible…' : 'Référence, nom ou commune…'}
+              placeholder={type === 'reservation' ? 'Rechercher un bien disponible…' : 'Référence, nom ou commune…'}
             />
           </FormField>
 
@@ -146,7 +146,7 @@ export function NewDemandeModal({ onClose }: { onClose: () => void }) {
                 type === 'visite'
                   ? 'Ex. Je suis disponible samedi matin pour une visite.'
                   : type === 'reservation'
-                    ? 'Ex. Je souhaite réserver ce terrain et convenir de l’acompte.'
+                    ? 'Ex. Je souhaite réserver ce bien et convenir de l’acompte.'
                     : 'Ex. Pouvez-vous me confirmer la date de la prochaine échéance ?'
               }
             />

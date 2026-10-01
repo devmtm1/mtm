@@ -112,7 +112,7 @@ export function TerrainPicker({ id, value, onChange, pinned, availableOnly, plac
         <button
           type="button"
           onClick={() => onChange(null)}
-          aria-label="Retirer le terrain"
+          aria-label="Retirer le bien"
           className="rounded-full p-1 text-mtm-muted hover:bg-white hover:text-mtm-text"
         >
           <X className="h-4 w-4" aria-hidden="true" />
@@ -185,13 +185,13 @@ export function TerrainPicker({ id, value, onChange, pinned, availableOnly, plac
                   {choice.referenceInterne} · {choice.nom}
                 </span>
                 <span className="block truncate text-xs text-mtm-muted">
-                  {choice.mine ? 'Mon dossier' : choice.location ?? 'Terrain disponible'}
+                  {choice.mine ? 'Mon dossier' : choice.location ?? 'Bien disponible'}
                 </span>
               </span>
             </li>
           ))}
           {results.length === 0 && (
-            <li className="px-3 py-2 text-sm text-mtm-muted">{loading ? 'Recherche…' : 'Aucun terrain ne correspond.'}</li>
+            <li className="px-3 py-2 text-sm text-mtm-muted">{loading ? 'Recherche…' : 'Aucun bien ne correspond.'}</li>
           )}
           {results.length > 0 && loading && <li className="px-3 py-1 text-xs text-mtm-muted">Recherche…</li>}
         </ul>

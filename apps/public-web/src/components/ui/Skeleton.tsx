@@ -85,11 +85,11 @@ export function CardGridSkeleton({
   );
 }
 
-/** Silhouette de la fiche terrain (en-tête + galerie à gauche, encart prix à droite). */
+/** Silhouette de la fiche d’un bien (en-tête + galerie à gauche, encart prix à droite). */
 export function TerrainDetailSkeleton() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6" aria-busy="true">
-      <span className="sr-only">Chargement du terrain...</span>
+      <span className="sr-only">Chargement du bien…</span>
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.6fr_1fr]" aria-hidden="true">
         <div className="flex flex-col gap-8">
           <div>

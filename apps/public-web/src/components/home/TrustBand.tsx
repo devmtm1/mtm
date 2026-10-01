@@ -1,7 +1,7 @@
 import { Globe2, ShieldCheck, UserCheck } from 'lucide-react';
 
 const ITEMS = [
-  { icon: ShieldCheck, title: 'Terrains vérifiés', text: 'Contrôlés par nos équipes avant publication.' },
+  { icon: ShieldCheck, title: 'Biens vérifiés', text: 'Contrôlés par nos équipes avant publication.' },
   { icon: Globe2, title: 'Suivi à distance', text: 'Pensé pour la diaspora, où que vous soyez.' },
   { icon: UserCheck, title: 'Un interlocuteur dédié', text: 'Le même conseiller jusqu’à la signature.' },
 ];

@@ -243,8 +243,8 @@ export function CatalogPage() {
               ? 'Recherche…'
               : data
                 ? data.total === 1
-                  ? '1 terrain trouvé'
-                  : `${data.total} terrains trouvés`
+                  ? '1 bien trouvé'
+                  : `${data.total} biens trouvés`
                 : ''}
           </p>
           {viewSwitch}
@@ -280,7 +280,7 @@ export function CatalogPage() {
             {viewMode === 'liste' && currentPage < totalPages && (
               <div className="mt-8 flex flex-col items-center gap-2">
                 <Button variant="secondary" className="w-full sm:w-auto" disabled={loadingMore} onClick={() => commitFilters({ ...filters, page: currentPage + 1 })}>
-                  {loadingMore ? 'Chargement…' : 'Afficher plus de terrains'}
+                  {loadingMore ? 'Chargement…' : 'Afficher plus de biens'}
                 </Button>
                 <p className="text-xs text-mtm-muted">
                   {listItems.length} sur {data.total}

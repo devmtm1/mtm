@@ -9,7 +9,7 @@ const VALUES = [
     icon: ShieldCheck,
     title: 'Transparence',
     description:
-      "Chaque terrain est vérifié avant commercialisation ; les documents justificatifs sont accessibles à nos clients.",
+      "Chaque bien est vérifié avant commercialisation ; les documents justificatifs sont accessibles à nos clients.",
   },
   {
     icon: Users,
@@ -26,7 +26,7 @@ const VALUES = [
 
 const DEFAULT_TAGLINE = 'Une présence locale, une vision ouverte.';
 const DEFAULT_TEXT =
-  "MTM Immobilier accompagne particuliers et investisseurs — au Sénégal comme à l'international — dans la commercialisation de terrains, la gestion locative, la construction et les démarches foncières, avec un haut niveau de transparence et de suivi à distance.";
+  "MTM Immobilier accompagne particuliers et investisseurs — au Sénégal comme à l'international — dans la commercialisation de terrains et de villas, la gestion locative, la construction et les démarches foncières, avec un haut niveau de transparence et de suivi à distance.";
 
 export function AboutPage() {
   const { data } = useContentBlocks();

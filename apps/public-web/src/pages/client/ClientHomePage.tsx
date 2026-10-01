@@ -155,7 +155,7 @@ export function ClientHomePage() {
             <EmptyState
               title="Aucun dossier pour le moment"
               description="Vos dossiers de vente apparaîtront ici dès qu'un conseiller MTM vous en aura rattaché un."
-              action={<LinkButton to={ROUTES.catalog} variant="secondary">Découvrir les terrains</LinkButton>}
+              action={<LinkButton to={ROUTES.catalog} variant="secondary">Découvrir nos biens</LinkButton>}
             />
           )}
           {!dossiersLoading && !dossiersError && list.length > 0 && (

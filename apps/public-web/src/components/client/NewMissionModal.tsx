@@ -14,11 +14,11 @@ const TYPES = [
   {
     value: 'verification_fonciere',
     label: 'Vérification complète',
-    help: 'Le terrain et sa situation administrative : la formule la plus demandée.',
+    help: 'Le bien et sa situation administrative : la formule la plus demandée.',
   },
   {
     value: 'verification_physique',
-    label: 'Visite du terrain',
+    label: 'Visite sur place',
     help: 'Nous allons sur place constater l’état réel et prendre des photos.',
   },
   {
@@ -75,7 +75,7 @@ export function NewMissionModal({
       return;
     }
     if (!terrain && !localisation.trim()) {
-      setError('Indiquez le terrain concerné, ou au moins l’endroit où il se trouve.');
+      setError('Indiquez le bien concerné, ou au moins l’endroit où il se trouve.');
       return;
     }
     setError(null);
@@ -156,7 +156,7 @@ export function NewMissionModal({
             </div>
           </fieldset>
 
-          <FormField label="Terrain de notre catalogue (facultatif)" htmlFor="mission-terrain">
+          <FormField label="Bien de notre catalogue (facultatif)" htmlFor="mission-terrain">
             <TerrainPicker
               id="mission-terrain"
               value={terrain}
@@ -167,7 +167,7 @@ export function NewMissionModal({
             />
           </FormField>
 
-          <FormField label="Où se trouve le terrain ?" htmlFor="mission-localisation">
+          <FormField label="Où se trouve le bien ?" htmlFor="mission-localisation">
             <input
               id="mission-localisation"
               type="text"
@@ -207,7 +207,7 @@ export function NewMissionModal({
               value={objectif}
               onChange={(event) => setObjectif(event.target.value)}
               className={fieldInputClass}
-              placeholder="Ex. : on me propose ce terrain depuis la France. Je veux être sûr qu'il existe, qu'il est libre et que le titre est authentique avant d'envoyer l'argent."
+              placeholder="Ex. : on me propose ce bien depuis la France. Je veux être sûr qu'il existe, qu'il est libre et que le titre est authentique avant d'envoyer l'argent."
               required
             />
           </FormField>

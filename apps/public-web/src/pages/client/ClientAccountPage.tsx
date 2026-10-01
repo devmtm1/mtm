@@ -86,7 +86,7 @@ export function ClientAccountPage() {
 
       <ClientCard title="Comment ça marche ?">
         <ol className="flex flex-col gap-2 text-sm text-mtm-muted">
-          <li><strong className="text-mtm-text">1.</strong> Vous réservez un terrain avec un acompte.</li>
+          <li><strong className="text-mtm-text">1.</strong> Vous réservez un bien avec un acompte.</li>
           <li><strong className="text-mtm-text">2.</strong> Chaque paiement validé par MTM apparaît dans votre dossier, avec son reçu.</li>
           <li><strong className="text-mtm-text">3.</strong> Une fois le prix soldé, vous recevez vos documents définitifs.</li>
         </ol>

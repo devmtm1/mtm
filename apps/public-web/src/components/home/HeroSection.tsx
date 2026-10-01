@@ -6,8 +6,8 @@ import { HeroQuickSearch } from './HeroQuickSearch';
 
 const DEFAULT_TITLE = 'Investissez en toute confiance, où que vous soyez';
 const DEFAULT_SUBTITLE =
-  "MTM Immobilier accompagne particuliers et membres de la diaspora dans l'achat de terrains, la vérification foncière, la gestion locative et la construction — avec transparence et suivi à distance.";
-const DEFAULT_CTA = 'Voir les terrains';
+  "MTM Immobilier accompagne particuliers et membres de la diaspora dans l'achat de terrains et de villas, la vérification foncière, la gestion locative et la construction — avec transparence et suivi à distance.";
+const DEFAULT_CTA = 'Voir nos biens';
 
 /**
  * La vidéo de fond (~18 Mo) n'est chargée que sur grand écran et hors

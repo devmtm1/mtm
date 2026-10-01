@@ -27,10 +27,10 @@ export function TerrainDetailPage() {
   const bati = terrain ? estBienBati(terrain) : false;
   const etatLabel = terrain ? etatBienLabel(terrain.etatBien) : null;
 
-  // Titre dynamique : le nom du terrain (et sa localisation) identifie la
+  // Titre dynamique : le nom du bien (et sa localisation) identifie la
   // fiche dans les onglets, l'historique et les résultats de recherche.
   usePageMetadata({
-    title: terrain ? [terrain.nom, location].filter(Boolean).join(' – ') : 'Fiche terrain',
+    title: terrain ? [terrain.nom, location].filter(Boolean).join(' – ') : 'Fiche du bien',
     description: terrain?.description?.slice(0, 160) ?? undefined,
   });
 
@@ -39,8 +39,8 @@ export function TerrainDetailPage() {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
         <EmptyState
-          title="Terrain introuvable"
-          description={error ?? "Ce terrain n'est plus disponible ou a été retiré du catalogue."}
+          title="Bien introuvable"
+          description={error ?? "Ce bien n'est plus disponible ou a été retiré du catalogue."}
         />
       </div>
     );

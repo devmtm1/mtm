@@ -50,7 +50,7 @@ export function ClientMissionsPage() {
       {!missionsLoading && !missionsError && list.length === 0 && (
         <EmptyState
           title="Aucune vérification en cours"
-          description="Vous pouvez nous confier la vérification d'un terrain avant d'acheter : visite sur place, contrôle des documents auprès des administrations, puis rapport écrit."
+          description="Vous pouvez nous confier la vérification d'un bien avant d'acheter : visite sur place, contrôle des documents auprès des administrations, puis rapport écrit."
           action={
             <div className="flex flex-wrap justify-center gap-2">
               <Button onClick={() => setDemandeOuverte(true)}>Demander une vérification</Button>

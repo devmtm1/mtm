@@ -6,8 +6,8 @@ import { SectionHeading } from '../ui/SectionHeading';
 const SERVICES = [
   {
     icon: LandPlot,
-    title: 'Vente de terrains',
-    description: 'Terrains vérifiés, titrés et prêts à la commercialisation, partout au Sénégal.',
+    title: 'Vente de terrains et villas',
+    description: 'Terrains titrés et villas F1 à F4, vérifiés et prêts à la commercialisation, partout au Sénégal.',
     to: ROUTES.catalog,
   },
   {

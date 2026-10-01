@@ -74,8 +74,8 @@ export function TerrainsMap({ terrains }: { terrains: Terrain[] }) {
   if (located.length === 0) {
     return (
       <EmptyState
-        title="Aucun terrain géolocalisé"
-        description="Les terrains correspondant à votre recherche n'ont pas encore de coordonnées GPS."
+        title="Aucun bien géolocalisé"
+        description="Les biens correspondant à votre recherche n'ont pas encore de coordonnées GPS."
       />
     );
   }
@@ -85,7 +85,7 @@ export function TerrainsMap({ terrains }: { terrains: Terrain[] }) {
       ref={containerRef}
       className="h-[32rem] w-full overflow-hidden rounded-lg border border-mtm-border"
       role="img"
-      aria-label="Carte des terrains disponibles"
+      aria-label="Carte des biens disponibles"
     />
   );
 }

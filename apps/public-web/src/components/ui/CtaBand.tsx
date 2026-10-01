@@ -13,7 +13,7 @@ interface CtaBandProps {
  */
 export function CtaBand({
   title = 'Un projet au Sénégal ?',
-  description = 'Parlons-en : terrains vérifiés, gestion locative, construction ou démarches foncières, notre équipe vous accompagne où que vous soyez.',
+  description = 'Parlons-en : terrains et villas vérifiés, gestion locative, construction ou démarches foncières, notre équipe vous accompagne où que vous soyez.',
 }: CtaBandProps) {
   return (
     <section className="bg-mtm-primary-dark">

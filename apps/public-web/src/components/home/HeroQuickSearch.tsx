@@ -30,7 +30,7 @@ export function HeroQuickSearch() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex w-full flex-col gap-2.5" aria-label="Recherche rapide de terrains">
+    <form onSubmit={handleSubmit} className="flex w-full flex-col gap-2.5" aria-label="Recherche rapide de biens">
       <div className="flex overflow-hidden rounded-md bg-white shadow-card">
         <div className="relative min-w-0 flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mtm-muted" aria-hidden="true" />

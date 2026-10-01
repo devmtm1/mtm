@@ -9,7 +9,7 @@ export function ContactPage() {
   usePageMetadata({
     title: 'Contact',
     description:
-      'Contactez MTM Immobilier pour une visite, une vérification de terrain ou un projet immobilier au Sénégal — réponse rapide, y compris depuis l’étranger.',
+      'Contactez MTM Immobilier pour une visite, une vérification de bien ou un projet immobilier au Sénégal — réponse rapide, y compris depuis l’étranger.',
   });
 
   return (
