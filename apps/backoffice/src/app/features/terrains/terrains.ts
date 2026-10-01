@@ -46,6 +46,8 @@ const EMPTY_FILTERS = {
   // Nature du bien : le catalogue mêle parcelles et villas, et un
   // commercial travaille le plus souvent sur l'une ou sur l'autre.
   typeBien: '',
+  // Typologie d'un bien bâti : « on me demande un F3 ».
+  nombrePieces: '',
   statutCommercial: '',
   statutJuridique: '',
   niveauVerification: '',
@@ -185,6 +187,15 @@ export class Terrains implements OnInit {
     this.terrainsApi.getOptions().subscribe({ next: (options) => this.options.set(options) });
     this.loadStats();
     this.load();
+    // Repasser sur « Terrain » masque le filtre de typologie : s'il restait
+    // armé, la liste continuerait de filtrer sur un critère devenu invisible.
+    this.filters.controls.typeBien.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((type) => {
+        if (type === 'terrain' && this.filters.controls.nombrePieces.value) {
+          this.filters.controls.nombrePieces.setValue('');
+        }
+      });
     this.filters.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.load());

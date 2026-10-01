@@ -45,7 +45,12 @@ export function TerrainFilters({ value, onChange, onSubmit, compact = false, she
   const { data: options } = useTerrainFilterOptions();
 
   function set<K extends keyof TerrainFiltersValue>(key: K, next: TerrainFiltersValue[K]): void {
-    onChange({ ...value, [key]: next, page: 1 });
+    const suivant = { ...value, [key]: next, page: 1 };
+    // Une parcelle nue n'a pas de pièces : revenir sur « Terrain » doit
+    // libérer la typologie, sinon le catalogue continuerait de filtrer sur un
+    // critère que le visiteur ne voit plus.
+    if (key === 'typeBien' && next === 'terrain') delete suivant.nombrePieces;
+    onChange(suivant);
   }
 
   function handleSubmit(event: FormEvent): void {
@@ -92,9 +97,11 @@ export function TerrainFilters({ value, onChange, onSubmit, compact = false, she
     </Field>
   );
 
-  // N'a de sens que si des biens bâtis sont en vente : l'API ne renvoie des
-  // typologies que si des villas ou appartements sont publiés.
-  const nombrePiecesField = options?.nombrePieces.length ? (
+  // N'a de sens que si des biens bâtis sont en vente — l'API ne renvoie des
+  // typologies que si des villas ou appartements sont publiés — et que la
+  // recherche n'est pas restreinte aux parcelles nues.
+  const nombrePiecesField =
+    options?.nombrePieces.length && value.typeBien !== 'terrain' ? (
     <Field label="Nombre de pièces">
       <select
         className={inputClass}

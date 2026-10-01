@@ -1,5 +1,6 @@
 import type { TerrainFilters } from '../../types/terrain';
 import { formatMoney } from '../../utils/format';
+import { typeBienLabel } from '../../utils/bienLabels';
 
 export interface FilterChip {
   key: string;
@@ -11,6 +12,13 @@ export interface FilterChip {
 /** Puces lisibles des filtres actifs, dans l'ordre du formulaire. */
 export function activeFilterChips(filters: TerrainFilters): FilterChip[] {
   const chips: FilterChip[] = [];
+  // La nature du bien d'abord : c'est le tri le plus structurant du catalogue.
+  if (filters.typeBien) {
+    chips.push({ key: 'typeBien', label: typeBienLabel(filters.typeBien), clears: ['typeBien'] });
+  }
+  if (filters.nombrePieces) {
+    chips.push({ key: 'nombrePieces', label: filters.nombrePieces, clears: ['nombrePieces'] });
+  }
   if (filters.region) chips.push({ key: 'region', label: filters.region, clears: ['region'] });
   if (filters.commune) chips.push({ key: 'commune', label: filters.commune, clears: ['commune'] });
   if (filters.vocation) chips.push({ key: 'vocation', label: filters.vocation, clears: ['vocation'] });

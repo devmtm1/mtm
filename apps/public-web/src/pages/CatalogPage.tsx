@@ -17,7 +17,17 @@ import { SectionHeading } from '../components/ui/SectionHeading';
 import { fieldInputClass } from '../components/ui/FormField';
 import type { Terrain, TerrainFilters as TerrainFiltersValue } from '../types/terrain';
 
-const TEXT_FILTERS = ['search', 'region', 'commune', 'vocation', 'statutJuridique'] as const;
+// Relus depuis l'URL : un filtre absent d'ici est écrit dans l'adresse mais
+// jamais rechargé — il disparaîtrait au premier aller-retour.
+const TEXT_FILTERS = [
+  'search',
+  'typeBien',
+  'nombrePieces',
+  'region',
+  'commune',
+  'vocation',
+  'statutJuridique',
+] as const;
 const NUMBER_FILTERS = [
   'superficieMin',
   'superficieMax',

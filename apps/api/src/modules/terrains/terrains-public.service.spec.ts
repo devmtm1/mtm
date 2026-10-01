@@ -4,9 +4,66 @@ describe('TerrainsPublicService', () => {
   let publicCatalog: ReturnType<
     typeof createTerrainsTestContext
   >['publicCatalog'];
+  let prismaMock: ReturnType<typeof createTerrainsTestContext>['prismaMock'];
 
   beforeEach(() => {
-    ({ publicCatalog } = createTerrainsTestContext());
+    ({ publicCatalog, prismaMock } = createTerrainsTestContext());
+  });
+
+  // --- Filtres du catalogue : MTM vend des terrains et des villas ---
+
+  it('filtre le catalogue sur la nature du bien et sa typologie', async () => {
+    prismaMock.terrain.findMany.mockResolvedValue([]);
+    prismaMock.terrain.count.mockResolvedValue(0);
+
+    await publicCatalog.findPublic({
+      typeBien: 'villa',
+      nombrePieces: 'F3',
+      page: 1,
+      pageSize: 12,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+    });
+
+    const where = prismaMock.terrain.findMany.mock.calls[0][0].where;
+    expect(where.typeBien).toBe('villa');
+    expect(where.nombrePieces).toBe('F3');
+    // Le catalogue public ne montre jamais autre chose que du disponible.
+    expect(where.statutCommercial).toBe('Disponible');
+  });
+
+  it('propose comme filtres les natures réellement en vente', async () => {
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+    prismaMock.terrain.findMany.mockResolvedValue([
+      {
+        region: 'Thiès',
+        commune: 'Saly',
+        vocation: null,
+        typeBien: 'villa',
+        nombrePieces: 'F3',
+      },
+      {
+        region: 'Thiès',
+        commune: 'Saly',
+        vocation: null,
+        typeBien: 'terrain',
+        nombrePieces: null,
+      },
+      {
+        region: 'Thiès',
+        commune: 'Saly',
+        vocation: null,
+        typeBien: 'villa',
+        nombrePieces: 'F4',
+      },
+    ]);
+
+    const options = await publicCatalog.getPublicFilterOptions();
+
+    // Dédoublonné et trié, comme les zones : proposer « appartement » quand
+    // aucun n'est en vente n'offrirait au visiteur qu'une liste vide.
+    expect(options.typeBien).toEqual(['terrain', 'villa']);
+    expect(options.nombrePieces).toEqual(['F3', 'F4']);
   });
 
   it('retire les champs internes de la projection publique', () => {
