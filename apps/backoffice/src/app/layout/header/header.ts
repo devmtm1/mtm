@@ -262,12 +262,14 @@ export class Header {
 
     for (const section of NAVIGATION_SECTIONS) {
       for (const item of section.items) {
-        if (!this.matchesUrl(url, item.route)) continue;
-        match = { section: section.title, label: item.label };
-        for (const child of item.children ?? []) {
-          if (this.matchesUrl(url, child.route)) {
-            match = { section: `${section.title} · ${item.label}`, label: child.label };
-          }
+        if (item.children?.length) {
+          // Plusieurs enfants peuvent partager une racine (/ventes, /ventes/objectifs) : le plus précis l'emporte.
+          const child = item.children
+            .filter((candidate) => this.matchesUrl(url, candidate.route))
+            .sort((a, b) => b.route.length - a.route.length)[0];
+          if (child) match = { section: `${section.title} · ${item.label}`, label: child.label };
+        } else if (this.matchesUrl(url, item.route)) {
+          match = { section: section.title, label: item.label };
         }
       }
     }

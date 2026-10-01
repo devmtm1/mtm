@@ -42,7 +42,7 @@ export class NavItem implements OnInit {
   readonly navigate = output<void>();
 
   protected readonly hasChildren = computed(() => (this.item().children?.length ?? 0) > 0);
-  protected readonly open = signal(true);
+  protected readonly open = signal(false);
 
   /** Vrai si une route enfant est actuellement active (surbrillance du groupe). */
   protected readonly childActive = signal(false);
@@ -57,6 +57,7 @@ export class NavItem implements OnInit {
 
   ngOnInit(): void {
     // L'input requis est disponible après l'initialisation du composant.
+    this.open.set(this.item().defaultOpen ?? false);
     this.updateChildActive();
   }
 
@@ -81,15 +82,16 @@ export class NavItem implements OnInit {
     }
     const tree = this.activatedRoute.snapshot.pathFromRoot[0]?.url.join('/') ?? '';
     const base = tree ? `/${tree}` : '';
-    this.childActive.set(
-      children.some((child) =>
-        this.router.isActive(base + child.route, {
-          paths: 'subset',
-          queryParams: 'subset',
-          fragment: 'ignored',
-          matrixParams: 'ignored',
-        }),
-      ),
+    const active = children.some((child) =>
+      this.router.isActive(base + child.route, {
+        paths: child.exact ? 'exact' : 'subset',
+        queryParams: 'subset',
+        fragment: 'ignored',
+        matrixParams: 'ignored',
+      }),
     );
+    this.childActive.set(active);
+    // Arriver sur une page d'un groupe replié (lien direct, actualisation) le déplie.
+    if (active) this.open.set(true);
   }
 }

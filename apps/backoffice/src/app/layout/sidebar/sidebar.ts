@@ -29,12 +29,19 @@ export class Sidebar {
   readonly navigate = output<void>();
 
   /** Sections filtrées selon les permissions de l'utilisateur connecté. */
-  protected readonly sections = computed(() =>
-    NAVIGATION_SECTIONS.map((section) => ({
+  protected readonly sections = computed(() => {
+    const allowed = (entry: { permission?: string }) =>
+      !entry.permission || this.sessionService.hasPermission(entry.permission);
+    return NAVIGATION_SECTIONS.map((section) => ({
       ...section,
-      items: section.items.filter(
-        (item) => !item.permission || this.sessionService.hasPermission(item.permission),
-      ),
-    })).filter((section) => section.items.length > 0),
-  );
+      items: section.items
+        .map((item) => {
+          if (!item.children) return item;
+          // Un groupe se réduit à ses enfants autorisés et disparaît s'il n'en reste aucun.
+          const children = item.children.filter(allowed);
+          return { ...item, children, route: children[0]?.route ?? item.route };
+        })
+        .filter((item) => (item.children ? item.children.length > 0 : allowed(item))),
+    })).filter((section) => section.items.length > 0);
+  });
 }

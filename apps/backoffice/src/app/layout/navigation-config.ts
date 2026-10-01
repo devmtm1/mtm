@@ -3,7 +3,6 @@ import {
   LucideLayoutDashboard,
   LucideLock,
   LucideUsers,
-  LucideShield,
   LucideSettings,
   LucideFileClock,
   LucideFileText,
@@ -11,12 +10,8 @@ import {
   LucideInbox,
   LucideImages,
   LucideLandPlot,
-  LucideScrollText,
   LucideUserSearch,
   LucideClipboardCheck,
-  LucideReceipt,
-  LucideIdCard,
-  LucideTarget,
   LucideBuilding2,
 } from '@lucide/angular';
 
@@ -46,6 +41,12 @@ export interface NavLeaf {
    * alignée sur PermissionsGuard). Absente = visible par tous les connectés.
    */
   permission?: string;
+  /**
+   * Actif seulement sur cette route exacte. Nécessaire quand une autre entrée
+   * vit sous la même racine (`/ventes` et `/ventes/objectifs`), sinon les deux
+   * seraient surlignées ensemble.
+   */
+  exact?: boolean;
 }
 
 /** Enfant d'un groupe de navigation (sous-module). */
@@ -54,6 +55,8 @@ export type NavChild = NavLeaf;
 /** Item de premier niveau : lien simple ou groupe dépliable. */
 export interface NavItem extends NavLeaf {
   icon: LucideIcon;
+  /** Groupe déplié à l'ouverture de l'application (les autres sont repliés). */
+  defaultOpen?: boolean;
   children?: NavChild[];
 }
 
@@ -72,35 +75,28 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         route: '/dashboard',
         icon: LucideLayoutDashboard,
       },
+      // Un groupe n'a pas de permission propre : il s'affiche dès qu'un de ses
+      // enfants est autorisé, et `route` pointe vers le premier enfant.
       {
-        label: 'Terrains',
+        label: 'Immobilier',
         route: '/terrains',
         icon: LucideLandPlot,
-        permission: 'terrains:consulter',
+        defaultOpen: true,
+        children: [
+          { label: 'Terrains', route: '/terrains', permission: 'terrains:consulter' },
+          { label: 'Mandats', route: '/mandats', permission: 'mandats:consulter' },
+          { label: 'Propriétaires', route: '/proprietaires', permission: 'proprietaires:consulter' },
+        ],
       },
       {
-        label: 'Mandats',
-        route: '/mandats',
-        icon: LucideScrollText,
-        permission: 'mandats:consulter',
-      },
-      {
-        label: 'Propriétaires',
-        route: '/proprietaires',
-        icon: LucideIdCard,
-        permission: 'proprietaires:consulter',
-      },
-      {
-        label: 'Prospects',
+        label: 'Commercial',
         route: '/crm/prospects',
         icon: LucideUserSearch,
-        permission: 'crm:consulter',
-      },
-      {
-        label: 'Ventes',
-        route: '/ventes',
-        icon: LucideReceipt,
-        permission: 'ventes:consulter',
+        children: [
+          { label: 'Prospects', route: '/crm/prospects', permission: 'crm:consulter' },
+          { label: 'Ventes', route: '/ventes', permission: 'ventes:consulter', exact: true },
+          { label: 'Objectifs', route: '/ventes/objectifs', permission: 'ventes:consulter' },
+        ],
       },
       {
         label: 'Vérifications',
@@ -125,12 +121,6 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         icon: LucideHardHat,
         permission: 'construction:consulter',
       },
-      {
-        label: 'Objectifs',
-        route: '/ventes/objectifs',
-        icon: LucideTarget,
-        permission: 'ventes:consulter',
-      },
     ],
   },
   {
@@ -147,6 +137,7 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         route: '/content',
         icon: LucideFileText,
         permission: 'content:consulter',
+        exact: true,
       },
       {
         label: 'Réalisations & projets',
@@ -166,16 +157,13 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         icon: LucideLock,
       },
       {
-        label: 'Utilisateurs',
+        label: 'Accès',
         route: '/users',
         icon: LucideUsers,
-        permission: 'users:consulter',
-      },
-      {
-        label: 'Rôles & permissions',
-        route: '/roles',
-        icon: LucideShield,
-        permission: 'roles:consulter',
+        children: [
+          { label: 'Utilisateurs', route: '/users', permission: 'users:consulter' },
+          { label: 'Rôles & permissions', route: '/roles', permission: 'roles:consulter' },
+        ],
       },
       {
         label: 'Paramètres',
