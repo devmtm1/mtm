@@ -2089,6 +2089,15 @@ ag-grid-angular {
     background: var(--mtm-card-bg);
   }
 
+  /* Nature du bien, posée au-dessus du nom comme sur la carte du site. */
+  &__type {
+    color: var(--mtm-primary);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
   &__image {
     display: flex;
     align-items: center;

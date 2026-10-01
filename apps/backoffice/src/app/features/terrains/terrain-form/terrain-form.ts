@@ -61,7 +61,7 @@ interface Step {
 
 export const STEPS: Step[] = [
   { index: 1, title: 'Identité', hint: 'Qui est propriétaire, quel titre, quelle référence', controls: ['referenceInterne', 'nom', 'statutJuridique', 'niveauVerification'] },
-  { index: 2, title: 'Localisation', hint: 'Où se trouve le terrain et ce qu’il y a autour', controls: ['latitude', 'longitude', 'superficie'] },
+  { index: 2, title: 'Localisation', hint: 'Où se trouve le bien et ce qu’il y a autour', controls: ['latitude', 'longitude', 'superficie'] },
   { index: 3, title: 'Prix et publication', hint: 'Ce que voit le public, ce qui reste interne', controls: ['prixAcquisition', 'prixPublic', 'commission', 'statutCommercial'] },
   { index: 4, title: 'Photos et documents', hint: 'Ce qui illustre et justifie la fiche', controls: [] },
 ];
@@ -247,12 +247,30 @@ export class TerrainForm implements OnInit {
     );
   });
 
+  /**
+   * Le mot employé dans les titres, les aides et les exemples : « terrain »
+   * quand on saisit une parcelle, « villa » quand on saisit une villa. Sans
+   * cela, le formulaire parlait de terrain d'un bout à l'autre, y compris en
+   * créant un appartement.
+   */
+  protected readonly motBien = computed(() =>
+    typeBienLabel(this.formValue().typeBien || 'terrain').toLowerCase(),
+  );
+
   protected readonly publicPreview = computed(() => {
     const value = this.formValue();
+    const metres = (valeur: number | null) =>
+      valeur ? `${Number(valeur).toLocaleString('fr-FR')} m²` : null;
+    // L'aperçu reproduit la carte du site : sur un bien bâti, c'est
+    // l'habitable et la typologie que l'acheteur lit, pas la parcelle.
+    const surface = this.estBati()
+      ? [value.nombrePieces, metres(value.surfaceHabitable)].filter(Boolean).join(' · ')
+      : metres(value.superficie);
     return {
-      nom: value.nom || 'Nom du terrain',
+      nom: value.nom || `Nom du ${this.motBien()}`,
+      typeBien: typeBienLabel(value.typeBien || 'terrain'),
       location: [value.commune, value.region].filter(Boolean).join(', ') || 'Localisation',
-      superficie: value.superficie ? `${Number(value.superficie).toLocaleString('fr-FR')} m²` : 'Superficie',
+      superficie: surface || 'Superficie',
       prix: this.money.transform(value.prixPublic),
       published: value.statutCommercial === 'Disponible',
     };

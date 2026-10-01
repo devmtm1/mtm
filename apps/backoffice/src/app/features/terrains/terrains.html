@@ -2,16 +2,16 @@
   <header class="page-header">
     <div>
       <p class="eyebrow">Cœur commercial</p>
-      <h1 class="page-header__title">Terrains</h1>
+      <h1 class="page-header__title">Biens</h1>
       <p class="page-header__subtitle">
-        Toutes les parcelles suivies par MTM. Un terrain n’apparaît sur le site public que lorsqu’il
-        est <strong>Disponible</strong>.
+        Terrains, villas et appartements suivis par MTM. Un bien n’apparaît sur le site public
+        que lorsqu’il est <strong>Disponible</strong>.
       </p>
     </div>
     <div class="page-header__actions">
       @if (canCreate()) {
         <button mat-flat-button color="primary" type="button" (click)="openCreate()">
-          <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau terrain
+          <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau bien
         </button>
       }
     </div>
@@ -24,7 +24,7 @@
         <span class="kpi__icon"><svg lucideLandPlot aria-hidden="true"></svg></span>
         <span class="kpi__body">
           <strong>{{ s.total }}</strong>
-          <span>Terrains référencés</span>
+          <span>Biens référencés</span>
         </span>
       </button>
       <button type="button" class="kpi kpi--success" (click)="filterByStatus('Disponible')">
@@ -79,7 +79,7 @@
   <section class="page-section" aria-labelledby="terrains-list-title">
     <div class="list-toolbar">
       <div class="list-toolbar__title">
-        <h2 id="terrains-list-title">Liste des terrains</h2>
+        <h2 id="terrains-list-title">Liste des biens</h2>
         <p>
           @if (loading()) {
             Chargement…
@@ -178,11 +178,11 @@
       <div class="empty-state">
         <svg lucideLandPlot aria-hidden="true"></svg>
         @if (hasActiveFilters()) {
-          <h3>Aucun terrain ne correspond à ces filtres</h3>
+          <h3>Aucun bien ne correspond à ces filtres</h3>
           <p>Modifiez la recherche ou effacez les filtres pour revoir tout le portefeuille.</p>
           <button mat-stroked-button type="button" (click)="resetFilters()">Effacer les filtres</button>
         } @else {
-          <h3>Aucun terrain pour le moment</h3>
+          <h3>Aucun bien pour le moment</h3>
           <p>
             Commencez par créer la fiche d’un terrain : identité, localisation, prix et photos. Elle
             pourra ensuite être publiée sur le site en passant son statut à « Disponible ».
@@ -209,7 +209,7 @@
         (rowClicked)="$event.data && openDetail($event.data.id)"
       />
     } @else {
-      <div class="terrain-cards" aria-label="Terrains en cartes">
+      <div class="terrain-cards" aria-label="Biens en cartes">
         @if (loading()) {
           @for (i of [1, 2, 3, 4]; track i) {
             <div class="terrain-card terrain-card--skeleton" aria-hidden="true">

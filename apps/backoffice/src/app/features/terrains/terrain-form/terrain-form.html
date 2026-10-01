@@ -1,13 +1,13 @@
 <section class="form-page" aria-labelledby="terrain-form-title">
   <a class="back-link" href="/terrains" (click)="$event.preventDefault(); goBack()">
-    <svg lucideArrowLeft aria-hidden="true"></svg>{{ isEdit ? 'Retour à la fiche' : 'Retour à la liste des terrains' }}
+    <svg lucideArrowLeft aria-hidden="true"></svg>{{ isEdit ? 'Retour à la fiche' : 'Retour à la liste des biens' }}
   </a>
 
   <header class="page-header">
     <div>
       <p class="eyebrow">Terrains</p>
       <h1 id="terrain-form-title" class="page-header__title">
-        {{ isEdit ? 'Modifier le terrain' : 'Nouveau terrain' }}
+        {{ isEdit ? 'Modifier le ' + motBien() : 'Nouveau ' + motBien() }}
       </h1>
       <p class="page-header__subtitle">
         @if (isEdit) {
@@ -86,12 +86,12 @@
             <mat-form-field appearance="outline">
               <mat-label>Référence interne</mat-label>
               <input matInput formControlName="referenceInterne" placeholder="T-2026-014" autocomplete="off" />
-              <mat-hint>Unique. Sert à retrouver le terrain rapidement.</mat-hint>
+              <mat-hint>Unique. Sert à retrouver le {{ motBien() }} rapidement.</mat-hint>
               <mat-error>La référence est obligatoire.</mat-error>
             </mat-form-field>
             <mat-form-field appearance="outline">
-              <mat-label>Nom du terrain</mat-label>
-              <input matInput formControlName="nom" placeholder="Terrain 300 m² Diamniadio Lot 12" />
+              <mat-label>Nom du {{ motBien() }}</mat-label>
+              <input matInput formControlName="nom" [placeholder]="estBati() ? 'Villa F3 Saly, 120 m² habitables' : 'Terrain 300 m² Diamniadio Lot 12'" />
               <mat-hint>Visible par les visiteurs du site.</mat-hint>
               <mat-error>Le nom est obligatoire.</mat-error>
             </mat-form-field>
@@ -101,7 +101,7 @@
         <section class="page-card form-block">
           <div class="form-block__head">
             <h2>Propriétaire</h2>
-            <p>Personne qui confie le terrain à MTM. Le mandat de vente lui sera rattaché.</p>
+            <p>Personne qui confie le {{ motBien() }} à MTM. Le mandat de vente lui sera rattaché.</p>
           </div>
           <div class="form-grid">
             <mat-form-field appearance="outline">
@@ -124,7 +124,7 @@
                     <mat-option [value]="commercial.id">{{ commercial.firstName }} {{ commercial.lastName }}</mat-option>
                   }
                 </mat-select>
-                <mat-hint>Seul ce commercial (et l’encadrement) verra ce terrain dans le back-office.</mat-hint>
+                <mat-hint>Seul ce commercial (et l’encadrement) verra ce {{ motBien() }} dans le back-office.</mat-hint>
               </mat-form-field>
             }
             <div class="form-grid__side">
@@ -139,7 +139,7 @@
         <section class="page-card form-block">
           <div class="form-block__head">
             <h2>Situation juridique</h2>
-            <p>Quel titre couvre le terrain et jusqu’où MTM l’a vérifié. Ces statuts protègent l’acheteur — et MTM.</p>
+            <p>Quel titre couvre le {{ motBien() }} et jusqu’où MTM l’a vérifié. Ces statuts protègent l’acheteur — et MTM.</p>
           </div>
           <div class="form-grid">
             <mat-form-field appearance="outline">
@@ -174,7 +174,7 @@
           @if (isEdit) {
             <p class="form-note">
               Les statuts juridique et de vérification sont en lecture seule ici : modifiez-les depuis la
-              fiche du terrain (bouton « Changer un statut »), avec justification.
+              fiche du bien (bouton « Changer un statut »), avec justification.
             </p>
           } @else if (!canValidate) {
             <p class="form-note">Seul un utilisateur habilité (validation) peut fixer ces statuts ; ils gardent leur valeur par défaut.</p>
@@ -250,14 +250,14 @@
                  et « residentiel » en base, que le filtre public proposait
                  comme deux critères distincts. -->
             <mat-form-field appearance="outline">
-              <mat-label>Vocation</mat-label>
+              <mat-label>Usage du sol</mat-label>
               <mat-select formControlName="vocation">
                 <mat-option value="">Non précisée</mat-option>
                 @for (usage of options().vocation; track usage) {
                   <mat-option [value]="usage">{{ vocationLabel(usage) }}</mat-option>
                 }
               </mat-select>
-              <mat-hint>Usage prévu du sol.</mat-hint>
+              <mat-hint>Ce que le terrain d’assise permet d’y faire.</mat-hint>
             </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Proximité des axes</mat-label>
@@ -424,7 +424,7 @@
             <section class="page-card form-block">
               <div class="form-block__head">
                 <h2>Publication</h2>
-                <p>Le statut décide si le terrain est visible sur le site public.</p>
+                <p>Le statut décide si le {{ motBien() }} est visible sur le site public.</p>
               </div>
               <div class="form-grid">
                 <mat-form-field appearance="outline">
@@ -443,14 +443,14 @@
                       @if (form.controls.statutCommercial.value === 'Disponible') {
                         Affiché dans la sélection de la page d’accueil.
                       } @else {
-                        Possible uniquement pour un terrain « Disponible ».
+                        Possible uniquement pour un bien « Disponible ».
                       }
                     </small>
                   </div>
                 }
                 <mat-form-field appearance="outline" class="wide">
                   <mat-label>Description publique</mat-label>
-                  <textarea matInput rows="5" formControlName="description" placeholder="Décrivez le terrain comme vous le présenteriez à un acheteur : atouts, environnement, projets possibles…"></textarea>
+                  <textarea matInput rows="5" formControlName="description" [placeholder]="'Décrivez le ' + motBien() + ' comme vous le présenteriez à un acheteur : atouts, environnement, projets possibles…'"></textarea>
                   <mat-hint>Texte de présentation affiché sur le site.</mat-hint>
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="wide">
@@ -487,6 +487,9 @@
             <div class="preview__card">
               <div class="preview__image"><svg lucideImage aria-hidden="true"></svg></div>
               <div class="preview__body">
+                <!-- Même ordre que la carte du site : la nature du bien avant
+                     le nom, pour que l'aperçu ne mente pas sur le rendu. -->
+                <span class="preview__type">{{ publicPreview().typeBien }}</span>
                 <strong>{{ publicPreview().nom }}</strong>
                 <span>{{ publicPreview().location }}</span>
                 <span>{{ publicPreview().superficie }}</span>
@@ -591,7 +594,7 @@
         } @else {
           <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
             <svg class="btn-icon" lucideSave aria-hidden="true"></svg>
-            {{ saving() ? 'Enregistrement…' : isEdit ? 'Enregistrer les modifications' : 'Créer le terrain' }}
+            {{ saving() ? 'Enregistrement…' : isEdit ? 'Enregistrer les modifications' : 'Créer le ' + motBien() }}
           </button>
         }
       </footer>

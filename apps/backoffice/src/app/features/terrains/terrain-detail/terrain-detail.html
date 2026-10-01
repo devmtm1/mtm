@@ -209,7 +209,7 @@
               @if (t.commercialResponsable) {
                 {{ t.commercialResponsable.firstName }} {{ t.commercialResponsable.lastName }}
               } @else {
-                <span class="status-pill status-pill--warning">Aucun : seul l’encadrement voit ce terrain</span>
+                <span class="status-pill status-pill--warning">Aucun : seul l’encadrement voit ce bien</span>
               }
             </dd>
           </div>
@@ -252,7 +252,7 @@
 
     <section class="content-grid">
       <section class="page-card detail-section">
-        <h2>Identité du terrain</h2>
+        <h2>Identité du bien</h2>
         <dl class="info-list">
           <div><dt>Référence interne</dt><dd>{{ t.referenceInterne }}</dd></div>
           <div><dt>Parcelle / matricule</dt><dd>{{ t.parcelleMatricule || '—' }}</dd></div>

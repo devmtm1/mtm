@@ -83,7 +83,7 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         icon: LucideLandPlot,
         defaultOpen: true,
         children: [
-          { label: 'Terrains', route: '/terrains', permission: 'terrains:consulter' },
+          { label: 'Biens', route: '/terrains', permission: 'terrains:consulter' },
           { label: 'Mandats', route: '/mandats', permission: 'mandats:consulter' },
           { label: 'Propriétaires', route: '/proprietaires', permission: 'proprietaires:consulter' },
         ],
