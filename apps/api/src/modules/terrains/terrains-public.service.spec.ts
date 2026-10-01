@@ -35,27 +35,9 @@ describe('TerrainsPublicService', () => {
   it('propose comme filtres les natures réellement en vente', async () => {
     prismaMock.systemSetting.findUnique.mockResolvedValue(null);
     prismaMock.terrain.findMany.mockResolvedValue([
-      {
-        region: 'Thiès',
-        commune: 'Saly',
-        vocation: null,
-        typeBien: 'villa',
-        nombrePieces: 'F3',
-      },
-      {
-        region: 'Thiès',
-        commune: 'Saly',
-        vocation: null,
-        typeBien: 'terrain',
-        nombrePieces: null,
-      },
-      {
-        region: 'Thiès',
-        commune: 'Saly',
-        vocation: null,
-        typeBien: 'villa',
-        nombrePieces: 'F4',
-      },
+      { region: 'Thiès', commune: 'Saly', vocation: null, typeBien: 'villa' },
+      { region: 'Thiès', commune: 'Saly', vocation: null, typeBien: 'terrain' },
+      { region: 'Thiès', commune: 'Saly', vocation: null, typeBien: 'villa' },
     ]);
 
     const options = await publicCatalog.getPublicFilterOptions();
@@ -63,7 +45,26 @@ describe('TerrainsPublicService', () => {
     // Dédoublonné et trié, comme les zones : proposer « appartement » quand
     // aucun n'est en vente n'offrirait au visiteur qu'une liste vide.
     expect(options.typeBien).toEqual(['terrain', 'villa']);
-    expect(options.nombrePieces).toEqual(['F3', 'F4']);
+  });
+
+  it('propose toujours les typologies, même si aucune fiche ne la porte', async () => {
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+    // Le cas réel qui faisait disparaître le filtre : une villa publiée sans
+    // typologie renseignée. F1 à F6 est une liste fermée et connue d'avance ;
+    // la déduire des fiches empêchait de chercher un F3 tant que personne
+    // n'en avait saisi un, sans rien dire au visiteur.
+    prismaMock.terrain.findMany.mockResolvedValue([
+      {
+        region: 'Fatick',
+        commune: 'Fatick',
+        vocation: null,
+        typeBien: 'villa',
+      },
+    ]);
+
+    const options = await publicCatalog.getPublicFilterOptions();
+
+    expect(options.nombrePieces).toEqual(['F1', 'F2', 'F3', 'F4', 'F5', 'F6']);
   });
 
   it('retire les champs internes de la projection publique', () => {

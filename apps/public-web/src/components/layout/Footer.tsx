@@ -72,8 +72,8 @@ export function Footer() {
               <span className="font-display text-lg font-bold"><span className="text-mtm-info">MTM</span> Immobilier</span>
             </div>
             <p className="mt-3 max-w-sm text-sm text-white/75 sm:mt-4">
-              Terrains vérifiés, gestion locative, construction et démarches foncières — un
-              accompagnement fiable et transparent, y compris à distance.
+              Terrains et villas vérifiés, gestion locative, construction et démarches
+              foncières — un accompagnement fiable et transparent, y compris à distance.
             </p>
           </div>
 

@@ -120,8 +120,9 @@ export class TerrainsPublicService {
    * proposés correspondent toujours aux données disponibles.
    */
   async getPublicFilterOptions() {
-    const [legal, published] = await Promise.all([
+    const [legal, pieces, published] = await Promise.all([
       this.settings.getRawValue('terrains.statutJuridique'),
+      this.settings.getRawValue('terrains.nombrePieces'),
       this.prisma.terrain.findMany({
         where: { statutCommercial: 'Disponible' },
         select: {
@@ -129,7 +130,6 @@ export class TerrainsPublicService {
           commune: true,
           vocation: true,
           typeBien: true,
-          nombrePieces: true,
         },
       }),
     ]);
@@ -149,10 +149,18 @@ export class TerrainsPublicService {
       region: distinct(published.map((terrain) => terrain.region)),
       commune: distinct(published.map((terrain) => terrain.commune)),
       vocation: distinct(published.map((terrain) => terrain.vocation)),
-      // Dérivés des biens publiés, comme les zones : le catalogue ne doit
-      // pas proposer « villa » quand il n'en reste aucune à vendre.
+      // Dérivée des biens publiés, comme les zones : le catalogue ne doit pas
+      // proposer « villa » quand il n'en reste aucune à vendre.
       typeBien: distinct(published.map((terrain) => terrain.typeBien)),
-      nombrePieces: distinct(published.map((terrain) => terrain.nombrePieces)),
+      // Servie par le référentiel, elle, et non dérivée : F1 à F6 est une
+      // liste fermée et connue d'avance. La déduire des biens publiés faisait
+      // disparaître le filtre tant qu'aucune fiche ne portait sa typologie —
+      // le visiteur ne pouvait pas chercher un F3, et rien ne lui disait
+      // pourquoi. Même traitement que le statut juridique juste au-dessus.
+      nombrePieces: SettingsService.asStringList(
+        pieces,
+        DEFAULT_TERRAIN_OPTIONS.nombrePieces,
+      ),
     };
   }
 

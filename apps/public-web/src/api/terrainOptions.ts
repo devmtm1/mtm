@@ -12,7 +12,7 @@ export interface PublicTerrainFilterOptions {
   vocation: string[];
   /** Natures de bien effectivement en vente : terrain, villa… */
   typeBien: string[];
-  /** Typologies disponibles parmi les biens bâtis publiés. */
+  /** Typologies proposées à la recherche : F1 à F6, liste fermée. */
   nombrePieces: string[];
 }
 
