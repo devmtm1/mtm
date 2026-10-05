@@ -886,7 +886,6 @@ async function main(): Promise<void> {
     create: {
       key: 'terrains.vocation',
       value: [
-        'habitation',
         'residentiel',
         'commercial',
         'agricole',

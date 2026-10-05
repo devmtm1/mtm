@@ -121,12 +121,14 @@ export class TerrainsController {
     @Req() req: Request,
   ) {
     const terrain = await this.terrains.create(dto, user);
+    // Même raison qu'à la modification : la trace enregistre la fiche
+    // complète, pas la vue filtrée de son auteur.
     await this.audit.record({
       userId: user.id,
       action: 'terrain.created',
       entityType: 'Terrain',
       entityId: terrain.id,
-      newValue: terrain,
+      newValue: await this.terrains.findOne(terrain.id),
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });
@@ -139,15 +141,22 @@ export class TerrainsController {
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    const before = await this.terrains.findOne(id, user);
+    // Le journal est relu sans utilisateur, donc sans masquage financier.
+    // Enregistré depuis la vue d'un commercial, il notait « marge : null →
+    // null » pendant que la base passait de 0 à 25 millions : la trace était
+    // aveugle précisément sur les champs qu'elle existe pour protéger
+    // (section 8 du cahier des charges). Le client, lui, continue de recevoir
+    // la fiche filtrée selon ses droits.
+    const avant = await this.terrains.findOne(id);
     const terrain = await this.terrains.update(id, dto, user);
+    const apres = await this.terrains.findOne(id);
     await this.audit.record({
       userId: user.id,
       action: 'terrain.updated',
       entityType: 'Terrain',
       entityId: id,
-      oldValue: before,
-      newValue: terrain,
+      oldValue: avant,
+      newValue: apres,
       justification: dto.justification,
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],

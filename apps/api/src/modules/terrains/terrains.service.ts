@@ -73,8 +73,9 @@ export const DEFAULT_TERRAIN_OPTIONS = {
    * « residentiel » coexistaient en base et le filtre public, qui dérive ses
    * options des biens publiés, les proposait comme deux critères distincts.
    */
+  // « habitation » a été fusionné dans « residentiel » : les deux désignaient
+  // le même usage et scindaient les recherches en deux.
   vocation: [
-    'habitation',
     'residentiel',
     'commercial',
     'agricole',

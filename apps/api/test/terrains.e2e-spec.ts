@@ -283,5 +283,11 @@ describeE2e('Parcours Terrains J1.1/J1.2 (e2e)', () => {
     );
     expect(priceUpdate).toBeDefined();
     expect(priceUpdate.justification).toContain('Réévaluation');
+    // La trace doit porter les vrais montants. Enregistrée depuis la vue de
+    // son auteur, elle notait « null → null » quand celui-ci n'avait pas
+    // accès au financier : le journal était aveugle sur les champs mêmes
+    // qu'il existe pour protéger (section 8 du cahier des charges).
+    expect(Number(priceUpdate.newValue.prixAcquisition)).toBe(5500000);
+    expect(Number(priceUpdate.oldValue.prixAcquisition)).toBe(5000000);
   });
 });
