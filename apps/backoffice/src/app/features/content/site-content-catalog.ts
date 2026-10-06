@@ -47,12 +47,16 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
   {
     id: 'contact',
     title: 'Coordonnées',
-    where: 'Pied de page, page Contact, bouton WhatsApp et page Démarches',
+    where: 'Pied de page, page Contact (avec la carte), bouton « + » de l’application mobile, bouton WhatsApp et page Démarches',
     slots: [
       { key: 'contact.adresse', label: 'Adresse', help: 'Adresse de l’agence, telle qu’affichée aux visiteurs.' },
       { key: 'contact.telephone', label: 'Téléphone', help: 'Numéro affiché (ex. +221 78 366 26 51).' },
       { key: 'contact.email', label: 'E-mail', help: 'Adresse de contact publique.' },
       { key: 'contact.whatsapp', label: 'Numéro WhatsApp', help: 'Numéro du bouton WhatsApp flottant, au format international sans espaces (ex. 221783662651).' },
+      { key: 'contact.facebook', label: 'Page Facebook', help: 'Adresse complète de la page (https://www.facebook.com/…). Le bouton Facebook du site n’apparaît que si ce champ est rempli.' },
+      { key: 'contact.tiktok', label: 'Compte TikTok', help: 'Adresse complète du compte (https://www.tiktok.com/@…). Le bouton TikTok du site n’apparaît que si ce champ est rempli.' },
+      { key: 'contact.latitude', label: 'Position de l’agence — latitude', help: 'Pour la carte et l’itinéraire (ex. 14.7753). Dans Google Maps, un clic droit sur l’agence donne les deux nombres.' },
+      { key: 'contact.longitude', label: 'Position de l’agence — longitude', help: 'Ex. -17.4081 (le signe moins compte).' },
       { key: 'contact.whatsapp.demarches', label: 'Numéro WhatsApp — démarches administratives', help: 'Numéro joint depuis la page « Démarches administratives », suivi par la direction. Même format, sans espaces. Laisser vide pour réutiliser le numéro WhatsApp général.' },
     ],
   },

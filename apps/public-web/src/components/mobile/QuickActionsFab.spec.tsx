@@ -5,13 +5,23 @@ import { QuickActionsFab } from './QuickActionsFab';
 
 vi.mock('../../hooks/useSiteContact', () => ({
   toTelHref: (telephone: string) => `tel:${telephone.replace(/\s/g, '')}`,
-  useSiteContact: () => ({
-    adresse: 'Dakar, Sénégal',
+  toMapsHref: ({ latitude, longitude }: { latitude: number; longitude: number }) =>
+    `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`,
+  useSiteContact: () => contactDeTest.valeur,
+}));
+
+const contactDeTest = vi.hoisted(() => ({
+  valeur: {
+    adresse: 'Malibou, Cité Dalal Diam, Dakar',
     telephone: '+221 78 000 00 00',
     email: 'contact@exemple.sn',
     whatsapp: '221780000000',
     whatsappDemarches: '221780000000',
-  }),
+    facebook: 'https://www.facebook.com/mtm-test',
+    tiktok: 'https://www.tiktok.com/@mtm-test',
+    latitude: 14.7753,
+    longitude: -17.4081,
+  },
 }));
 
 function renderFab() {
@@ -31,7 +41,7 @@ describe('QuickActionsFab', () => {
     expect(screen.getByRole('button', { name: 'Ouvrir les actions rapides' })).toHaveAttribute('aria-expanded', 'false');
   });
 
-  it('déploie les cinq actions, avec les coordonnées administrées par MTM', () => {
+  it('déploie les actions : appeler, WhatsApp, Facebook, TikTok et la carte', () => {
     renderFab();
     ouvrir();
     const liste = screen.getByRole('list', { name: 'Actions rapides' });
@@ -39,18 +49,36 @@ describe('QuickActionsFab', () => {
 
     expect(screen.getByRole('link', { name: /Appeler/ })).toHaveAttribute('href', 'tel:+221780000000');
     expect(screen.getByRole('link', { name: /WhatsApp/ })).toHaveAttribute('href', 'https://wa.me/221780000000');
-    expect(screen.getByRole('link', { name: /Envoyer un e-mail/ })).toHaveAttribute('href', 'mailto:contact@exemple.sn');
-    expect(screen.getByRole('link', { name: /Prendre rendez-vous/ })).toHaveAttribute('href', '/contact');
+    expect(screen.getByRole('link', { name: /Facebook/ })).toHaveAttribute('href', 'https://www.facebook.com/mtm-test');
+    expect(screen.getByRole('link', { name: /TikTok/ })).toHaveAttribute('href', 'https://www.tiktok.com/@mtm-test');
     expect(screen.getByRole('link', { name: /Voir sur la carte/ })).toHaveAttribute(
       'href',
-      'https://www.google.com/maps/search/?api=1&query=Dakar%2C%20S%C3%A9n%C3%A9gal',
+      'https://www.google.com/maps/search/?api=1&query=14.7753,-17.4081',
     );
+  });
+
+  it('ne propose plus l’e-mail ni le rendez-vous', () => {
+    renderFab();
+    ouvrir();
+    expect(screen.queryByRole('link', { name: /e-mail/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /rendez-vous/i })).not.toBeInTheDocument();
+  });
+
+  it('masque un réseau social tant que son lien n’est pas renseigné', () => {
+    const avant = contactDeTest.valeur;
+    contactDeTest.valeur = { ...avant, facebook: '', tiktok: '' };
+    renderFab();
+    ouvrir();
+    expect(screen.queryByRole('link', { name: /Facebook/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /TikTok/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('list', { name: 'Actions rapides' }).querySelectorAll('li')).toHaveLength(3);
+    contactDeTest.valeur = avant;
   });
 
   it('les liens externes s’ouvrent dans un nouvel onglet sans transmettre l’origine', () => {
     renderFab();
     ouvrir();
-    for (const nom of [/WhatsApp/, /Voir sur la carte/]) {
+    for (const nom of [/WhatsApp/, /Facebook/, /TikTok/, /Voir sur la carte/]) {
       const lien = screen.getByRole('link', { name: nom });
       expect(lien).toHaveAttribute('target', '_blank');
       expect(lien).toHaveAttribute('rel', 'noopener noreferrer');

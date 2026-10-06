@@ -1,8 +1,9 @@
 import { useId, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
+import { ChevronDown, Facebook, Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
 import { ROUTES } from '../../routes';
-import { toTelHref, useSiteContact } from '../../hooks/useSiteContact';
+import { toMapsHref, toTelHref, useSiteContact } from '../../hooks/useSiteContact';
+import { TikTokIcon } from '../ui/TikTokIcon';
 
 const SERVICE_LINKS = [
   { to: ROUTES.catalog, label: 'Terrains et villas' },
@@ -98,10 +99,48 @@ export function Footer() {
                 </li>
               ))}
             </ul>
-            <p className="mt-3 flex items-center gap-2 text-sm text-white/75">
-              <MapPin className="h-4 w-4 shrink-0" aria-hidden="true" />
-              {contact.adresse}
-            </p>
+            <a
+              href={toMapsHref(contact)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 flex items-start gap-2 text-sm text-white/75 transition-colors hover:text-white"
+            >
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>
+                {contact.adresse}
+                <span className="block text-xs text-white/60 underline">Voir sur la carte</span>
+              </span>
+            </a>
+            {(contact.facebook || contact.tiktok) && (
+              <ul className="mt-3 flex gap-2" aria-label="Réseaux sociaux">
+                {contact.facebook && (
+                  <li>
+                    <a
+                      href={contact.facebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="MTM Immobilier sur Facebook"
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/25 text-white transition-colors hover:bg-white/10"
+                    >
+                      <Facebook className="h-[18px] w-[18px]" aria-hidden="true" />
+                    </a>
+                  </li>
+                )}
+                {contact.tiktok && (
+                  <li>
+                    <a
+                      href={contact.tiktok}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="MTM Immobilier sur TikTok"
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/25 text-white transition-colors hover:bg-white/10"
+                    >
+                      <TikTokIcon className="h-[18px] w-[18px]" />
+                    </a>
+                  </li>
+                )}
+              </ul>
+            )}
           </div>
 
           <nav aria-label="Services" className="lg:col-start-2 lg:row-start-1">

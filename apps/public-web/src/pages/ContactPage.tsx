@@ -1,7 +1,8 @@
-import { Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
+import { Mail, MapPin, MessageCircle, Navigation, Phone } from 'lucide-react';
 import { PageIntro } from '../components/layout/PageIntro';
 import { ContactForm } from '../components/contact/ContactForm';
-import { toTelHref, useSiteContact } from '../hooks/useSiteContact';
+import { TerrainMap } from '../components/terrains/TerrainMap';
+import { toMapsHref, toTelHref, useSiteContact } from '../hooks/useSiteContact';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 
 export function ContactPage() {
@@ -84,6 +85,26 @@ export function ContactPage() {
         <div className="rounded-lg border border-mtm-border bg-mtm-surface p-6 shadow-card">
           <ContactForm />
         </div>
+      </section>
+
+      {/* Où nous trouver : la position de l'agence, et l'itinéraire en un toucher. */}
+      <section aria-labelledby="nous-trouver" className="mx-auto max-w-5xl px-4 pb-14 sm:px-6">
+        <h2 id="nous-trouver" className="font-display text-xl font-bold text-mtm-text">
+          Nous trouver
+        </h2>
+        <p className="mt-1 text-sm text-mtm-muted">{contact.adresse}</p>
+        <div className="mt-4 overflow-hidden rounded-2xl border border-mtm-border/70 shadow-card lg:rounded-lg">
+          <TerrainMap latitude={contact.latitude} longitude={contact.longitude} title="MTM Immobilier" />
+        </div>
+        <a
+          href={toMapsHref(contact)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 inline-flex items-center justify-center gap-2 rounded-xl bg-mtm-primary px-5 py-3 text-sm font-semibold text-white transition-transform active:scale-[0.98] lg:rounded-md"
+        >
+          <Navigation className="h-4 w-4" aria-hidden="true" />
+          Itinéraire
+        </a>
       </section>
     </div>
   );

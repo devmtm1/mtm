@@ -1,17 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { CalendarCheck, Check, Mail, MapPin, MessageCircle, Phone, Plus, type LucideIcon } from 'lucide-react';
-import { ROUTES } from '../../routes';
-import { toTelHref, useSiteContact } from '../../hooks/useSiteContact';
+import { useLocation } from 'react-router-dom';
+import { Check, Facebook, MapPin, MessageCircle, Phone, Plus, type LucideIcon } from 'lucide-react';
+import { toMapsHref, toTelHref, useSiteContact } from '../../hooks/useSiteContact';
+import { TikTokIcon } from '../ui/TikTokIcon';
 
 interface Action {
   key: string;
   label: string;
-  icon: LucideIcon;
+  icon: LucideIcon | (({ className }: { className?: string }) => React.JSX.Element);
   /** Couleur du pastille : la palette de MTM, jamais une couleur étrangère. */
   tone: string;
   href?: string;
-  to?: string;
   external?: boolean;
   /** Message affiché un instant après le toucher (ex. « Ouverture de WhatsApp… »). */
   toast?: string;
@@ -19,15 +18,18 @@ interface Action {
 
 /**
  * Décalage horizontal de chaque action par rapport au bouton : les actions
- * dessinent un arc, plus écarté au milieu qu'aux extrémités.
+ * dessinent un arc, plus écarté au milieu qu'aux extrémités, quel que soit
+ * leur nombre (les réseaux sociaux ne s'affichent que s'ils sont renseignés).
  */
-const ARC_OFFSETS = [0, 14, 22, 14, 0];
+function arcOffset(index: number, count: number): number {
+  return count < 3 ? 0 : Math.round(Math.sin((index / (count - 1)) * Math.PI) * 22);
+}
 
 /**
  * Bouton d'actions rapides de l'application mobile. Au repos, un bouton
  * discret ; au toucher, les gestes qui comptent pour un visiteur — appeler,
- * écrire sur WhatsApp, envoyer un e-mail, prendre rendez-vous, situer l'agence —
- * jaillissent en arc. Les coordonnées sont celles que MTM administre au
+ * écrire sur WhatsApp, suivre MTM sur Facebook et TikTok, situer l'agence sur la
+ * carte — jaillissent en arc. Les coordonnées sont celles que MTM administre au
  * back-office.
  */
 export function QuickActionsFab() {
@@ -65,14 +67,18 @@ export function QuickActionsFab() {
       external: true,
       toast: 'Ouverture de WhatsApp…',
     },
-    { key: 'mail', label: 'Envoyer un e-mail', icon: Mail, tone: 'bg-mtm-primary-medium', href: `mailto:${contact.email}` },
-    { key: 'rdv', label: 'Prendre rendez-vous', icon: CalendarCheck, tone: 'bg-mtm-warning', to: ROUTES.contact },
+    ...(contact.facebook
+      ? [{ key: 'facebook', label: 'Facebook', icon: Facebook, tone: 'bg-mtm-primary-medium', href: contact.facebook, external: true }]
+      : []),
+    ...(contact.tiktok
+      ? [{ key: 'tiktok', label: 'TikTok', icon: TikTokIcon, tone: 'bg-mtm-primary-dark', href: contact.tiktok, external: true }]
+      : []),
     {
       key: 'map',
       label: 'Voir sur la carte',
       icon: MapPin,
       tone: 'bg-mtm-accent',
-      href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contact.adresse)}`,
+      href: toMapsHref(contact),
       external: true,
     },
   ];
@@ -107,29 +113,23 @@ export function QuickActionsFab() {
                 </>
               );
               const style = {
-                marginRight: `${ARC_OFFSETS[index]}px`,
+                marginRight: `${arcOffset(index, actions.length)}px`,
                 // Les actions les plus proches du bouton apparaissent d'abord.
                 animationDelay: `${reversedIndex * 45}ms`,
               } as React.CSSProperties;
               return (
                 <li key={action.key} className="motion-safe:animate-pop-in" style={style}>
-                  {action.to ? (
-                    <Link to={action.to} onClick={close} className={pillClass}>
-                      {content}
-                    </Link>
-                  ) : (
-                    <a
-                      href={action.href}
-                      {...(action.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                      onClick={() => {
-                        if (action.toast) setToast(action.toast);
-                        close();
-                      }}
-                      className={pillClass}
-                    >
-                      {content}
-                    </a>
-                  )}
+                  <a
+                    href={action.href}
+                    {...(action.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                    onClick={() => {
+                      if (action.toast) setToast(action.toast);
+                      close();
+                    }}
+                    className={pillClass}
+                  >
+                    {content}
+                  </a>
                 </li>
               );
             })}
