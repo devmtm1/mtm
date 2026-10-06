@@ -132,6 +132,11 @@
                       <svg lucideLandPlot aria-hidden="true"></svg>Terrain {{ contact.terrain.referenceInterne }}
                     </button>
                   }
+                  @if (contact.bienLocatif) {
+                    <button type="button" class="link-button message-cell__terrain" (click)="openBien(contact)" [disabled]="!canSeeBien">
+                      <svg lucideKeyRound aria-hidden="true"></svg>Location {{ contact.bienLocatif.referenceInterne }}
+                    </button>
+                  }
                 </td>
                 <td class="nowrap">{{ contact.createdAt | date: 'dd/MM/yyyy' }}<small>{{ contact.createdAt | date: 'HH:mm' }}</small></td>
                 <td>

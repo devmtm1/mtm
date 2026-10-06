@@ -6,6 +6,7 @@ import { environment } from '../../../../environments/environment';
 import type {
   BailDetail,
   BienDetail,
+  BienMedia,
   BienPage,
   BienQuery,
   ChangerLocatairePayload,
@@ -85,6 +86,23 @@ export class LocatifApiService {
 
   updateBien(id: string, payload: UpdateBienPayload): Observable<BienDetail> {
     return this.http.patch<BienDetail>(`${this.baseUrl}/biens/${id}`, payload);
+  }
+
+  /** Dépose une photo ou une vidéo d'annonce (formulaire multipart). */
+  addBienMedia(id: string, file: File, title?: string): Observable<BienMedia> {
+    const body = new FormData();
+    body.append('file', file);
+    if (title) body.append('title', title);
+    return this.http.post<BienMedia>(`${this.baseUrl}/biens/${id}/medias`, body);
+  }
+
+  removeBienMedia(id: string, mediaId: string): Observable<{ success: boolean }> {
+    return this.http.delete<{ success: boolean }>(`${this.baseUrl}/biens/${id}/medias/${mediaId}`);
+  }
+
+  /** La première photo de la liste devient la couverture de l'annonce. */
+  reorderBienMedias(id: string, ids: string[]): Observable<{ success: boolean }> {
+    return this.http.put<{ success: boolean }>(`${this.baseUrl}/biens/${id}/medias/ordre`, { ids });
   }
 
   removeBien(id: string): Observable<{ success: boolean }> {

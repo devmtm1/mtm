@@ -7,7 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { LucideCheck, LucideUserCheck, LucideChevronLeft, LucideChevronRight, LucideInbox, LucideLandPlot, LucideMail, LucideClock, LucideEllipsisVertical, LucideMessageSquare, LucidePhone, LucideSearch, LucideUserPlus, LucideX } from '@lucide/angular';
+import { LucideCheck, LucideUserCheck, LucideChevronLeft, LucideChevronRight, LucideInbox, LucideKeyRound, LucideLandPlot, LucideMail, LucideClock, LucideEllipsisVertical, LucideMessageSquare, LucidePhone, LucideSearch, LucideUserPlus, LucideX } from '@lucide/angular';
 import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ContactApiService, type ContactMessage } from '../../core/services/api/contact-api.service';
@@ -26,7 +26,7 @@ type Scope = 'all' | 'unread' | 'read';
  */
 @Component({
   selector: 'app-contacts',
-  imports: [DatePipe, MatButtonModule, MatFormFieldModule, MatInputModule, MatMenuModule, MatTooltipModule, LucideCheck, LucideUserCheck, LucideChevronLeft, LucideChevronRight, LucideClock, LucideEllipsisVertical, LucideInbox, LucideLandPlot, LucideMail, LucideMessageSquare, LucidePhone, LucideSearch, LucideUserPlus, LucideX],
+  imports: [DatePipe, MatButtonModule, MatFormFieldModule, MatInputModule, MatMenuModule, MatTooltipModule, LucideCheck, LucideUserCheck, LucideChevronLeft, LucideChevronRight, LucideClock, LucideEllipsisVertical, LucideInbox, LucideKeyRound, LucideLandPlot, LucideMail, LucideMessageSquare, LucidePhone, LucideSearch, LucideUserPlus, LucideX],
   templateUrl: './contacts.html',
   styleUrl: './contacts.scss',
 })
@@ -45,6 +45,7 @@ export class Contacts implements OnInit {
   protected readonly search = signal('');
   protected readonly canConvert = this.session.hasPermission('crm:creer');
   protected readonly canSeeTerrain = this.session.hasPermission('terrains:consulter');
+  protected readonly canSeeBien = this.session.hasPermission('locatif:consulter');
   protected readonly canSeeProspect = this.session.hasPermission('crm:consulter');
   private readonly isSupervisor = this.session.hasSupervisionScope('crm');
 
@@ -129,6 +130,10 @@ export class Contacts implements OnInit {
 
   protected openTerrain(contact: ContactMessage): void {
     if (contact.terrain) void this.router.navigate(['/terrains', contact.terrain.id]);
+  }
+
+  protected openBien(contact: ContactMessage): void {
+    if (contact.bienLocatif) void this.router.navigate(['/locatif/biens', contact.bienLocatif.id]);
   }
 
   protected openProspect(contact: ContactMessage): void {

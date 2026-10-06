@@ -44,12 +44,64 @@ export interface BienListItem {
   proprietaire: BienProprietaire;
   responsable: LocatifPersonne | null;
   baux: BailResume[];
+  /** Annonce visible sur le site public (tant que le bien est disponible). */
+  publie: boolean;
+  misEnAvant: boolean;
+  /** Nombre de photos et vidéos d'annonce. */
+  _count?: { medias: number };
   createdAt: string;
   updatedAt: string;
 }
 
-export interface BienDetail extends BienListItem {
+/** Photo ou vidéo d'annonce d'un bien en location. */
+export interface BienMedia {
+  id: string;
+  type: 'photo' | 'video';
+  title: string | null;
+  sortOrder: number;
+  secureUrl: string;
+}
+
+/** Champs d'annonce d'un bien : ce qui le décrit pour un visiteur du site. */
+export interface BienAnnonce {
+  titre: string | null;
+  description: string | null;
+  loyerMensuel: number | string | null;
+  charges: number | string | null;
+  moisCaution: number | null;
+  nombrePieces: number | null;
+  nombreChambres: number | null;
+  nombreSallesEau: number | null;
+  meuble: boolean;
+  equipements: string[];
+  latitude: number | string | null;
+  longitude: number | string | null;
+  disponibleLe: string | null;
+  publieLe: string | null;
+}
+
+export interface BienDetail extends BienListItem, BienAnnonce {
   createdBy: LocatifPersonne | null;
+  medias: BienMedia[];
+}
+
+/** Ce que le formulaire d'annonce peut modifier (la publication passe par ses propres boutons). */
+export interface AnnoncePayload {
+  titre?: string;
+  description?: string;
+  loyerMensuel?: number;
+  charges?: number;
+  moisCaution?: number;
+  nombrePieces?: number;
+  nombreChambres?: number;
+  nombreSallesEau?: number;
+  meuble?: boolean;
+  equipements?: string[];
+  latitude?: number;
+  longitude?: number;
+  disponibleLe?: string;
+  publie?: boolean;
+  misEnAvant?: boolean;
 }
 
 export interface EcheanceLoyer {
@@ -328,10 +380,11 @@ export interface CreateBienPayload {
   responsableId?: string;
 }
 
-export type UpdateBienPayload = Partial<Omit<CreateBienPayload, 'proprietaireId'>> & {
-  proprietaireId?: string;
-  statut?: string;
-};
+export type UpdateBienPayload = Partial<Omit<CreateBienPayload, 'proprietaireId'>> &
+  AnnoncePayload & {
+    proprietaireId?: string;
+    statut?: string;
+  };
 
 export interface CreateBailPayload {
   locataireId: string;

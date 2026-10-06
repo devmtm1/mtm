@@ -17,6 +17,13 @@ export interface ContactMessage {
     id: string;
     referenceInterne: string;
   } | null;
+  /** Annonce de location d'où vient la demande. */
+  bienLocatif?: {
+    id: string;
+    referenceInterne: string;
+    titre?: string | null;
+    type: string;
+  } | null;
   /** Prospect CRM déjà rattaché à cette personne (même e-mail ou téléphone). */
   prospect?: {
     id: string;

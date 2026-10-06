@@ -201,11 +201,21 @@ locataire ; loyers, caution, relances ; espaces propriétaire et locataire.
 **Preuves** : `test/locatif.e2e-spec.ts`, `src/modules/locatif/*.spec.ts`,
 notification quotidienne des relances à envoyer.
 
+**Annonces de location sur le site public** (ajout) : un bien se prépare au back-office
+(photos, loyer, description), se publie avec la permission `locatif:publier`, apparaît sur la page
+« Locations » avec ses filtres et sa fiche, disparaît dès qu’il est loué, et peut être demandé par un
+visiteur. Preuves : `test/locations.e2e-spec.ts` (19 scénarios : conditions de publication, aucune donnée
+interne exposée, filtres, bien loué masqué, demande), `annonce.helper.spec.ts`, tests du site
+(`LocationCard`, filtres, formats).
+
 | Recette MTM | Fait | Date |
 | --- | --- | --- |
 | Un bail réel de la signature à la sortie, avec restitution de caution | ☐ | |
 | Relance de loyer en retard : calendrier et modèles validés | ☐ | |
 | Espace locataire et espace propriétaire : lecture des quittances et des loyers | ☐ | |
+| Publication d’un bien réel : photos, loyer, mise en ligne, vérification sur le site (téléphone compris) | ☐ | |
+| Demande de visite faite depuis l’annonce : réception par les gestionnaires (cloche et e-mail) | ☐ | |
+| Création d’un bail : l’annonce disparaît du site | ☐ | |
 
 **Anomalies et réserves** : aucune connue.
 

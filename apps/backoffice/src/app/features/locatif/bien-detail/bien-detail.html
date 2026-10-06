@@ -160,6 +160,14 @@
       </section>
     }
 
+    <!-- Annonce sur le site public : photos, loyer affiché, publication. -->
+    <app-bien-annonce
+      [bien]="b"
+      [canModify]="canModify()"
+      [canPublish]="canPublish()"
+      (changed)="rafraichirBien()"
+    />
+
     @if (bailActuel(); as bail) {
       <div class="bien-detail__layout">
         <!-- Colonne principale : l'argent, c'est-à-dire le travail quotidien -->

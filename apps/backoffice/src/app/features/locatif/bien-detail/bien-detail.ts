@@ -66,6 +66,7 @@ import {
   simpleLabel,
   typeSignalementLabel,
 } from '../locatif-status';
+import { BienAnnonceCard } from '../bien-annonce/bien-annonce';
 import { BailDialog } from './bail-dialog';
 import { CautionDialog } from './caution-dialog';
 import { ChangementLocataireDialog } from './changement-locataire-dialog';
@@ -83,6 +84,7 @@ import { SortieDialog } from './sortie-dialog';
 @Component({
   selector: 'app-bien-detail',
   imports: [
+    BienAnnonceCard,
     DatePipe,
     MoneyPipe,
     ReactiveFormsModule,
@@ -604,6 +606,19 @@ export class BienDetailPage implements OnInit {
         this.notify.error(error, 'Bien introuvable');
         this.retour();
       },
+    });
+  }
+
+  /**
+   * Recharge la fiche sans repasser par l'écran de chargement : après un
+   * dépôt de photo ou une publication, la page ne doit pas se vider.
+   */
+  protected rafraichirBien(): void {
+    const id = this.bien()?.id;
+    if (!id) return;
+    this.api.findBien(id).subscribe({
+      next: (bien) => this.bien.set(bien),
+      error: (error: unknown) => this.notify.error(error, 'Actualisation impossible'),
     });
   }
 

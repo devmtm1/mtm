@@ -1,0 +1,157 @@
+<section class="page-card detail-section annonce" aria-labelledby="annonce-title">
+  <div class="detail-section__head">
+    <div>
+      <h2 id="annonce-title">Annonce sur le site</h2>
+      <p class="detail-section__hint">
+        Les visiteurs voient ce bien sur la page « Locations » tant qu’il est publié <strong>et</strong> disponible.
+        Dès qu’un bail est créé, il disparaît tout seul du site.
+      </p>
+    </div>
+    <span [class]="statutClass()">{{ statutLabel() }}</span>
+  </div>
+
+  <div class="annonce__summary">
+    <div>
+      <span>Loyer affiché</span>
+      <strong>{{ hasLoyer() ? (bien().loyerMensuel | mtmMoney) : 'Non renseigné' }}</strong>
+      @if (bien().charges) {
+        <small>+ {{ bien().charges | mtmMoney }} de charges</small>
+      }
+    </div>
+    <div>
+      <span>Caution</span>
+      <strong>{{ bien().moisCaution !== null ? bien().moisCaution + ' mois' : '—' }}</strong>
+    </div>
+    <div>
+      <span>Chambres</span>
+      <strong>{{ bien().nombreChambres ?? '—' }}</strong>
+    </div>
+    <div>
+      <span>Ameublement</span>
+      <strong>{{ bien().meuble ? 'Meublé' : 'Non meublé' }}</strong>
+    </div>
+  </div>
+
+  @if (bien().titre) {
+    <p class="annonce__title">« {{ bien().titre }} »</p>
+  }
+
+  @if (!bien().publie) {
+    <ul class="annonce__checklist" aria-label="Avant de publier">
+      <li [class.is-done]="hasLoyer()">
+        @if (hasLoyer()) {
+          <svg lucideCheck aria-hidden="true"></svg>
+        } @else {
+          <svg lucideCircle aria-hidden="true"></svg>
+        }
+        Loyer mensuel renseigné
+      </li>
+      <li [class.is-done]="hasPhoto()">
+        @if (hasPhoto()) {
+          <svg lucideCheck aria-hidden="true"></svg>
+        } @else {
+          <svg lucideCircle aria-hidden="true"></svg>
+        }
+        Au moins une photo
+      </li>
+    </ul>
+  }
+
+  @if (bien().publie && !estLibre()) {
+    <p class="annonce__note">
+      Le bien est « {{ bien().statut === 'loue' ? 'loué' : 'indisponible' }} » : l’annonce est masquée et réapparaîtra
+      dès qu’il sera de nouveau disponible.
+    </p>
+  }
+
+  <div class="annonce__actions">
+    @if (canModify()) {
+      <button mat-stroked-button type="button" (click)="modifier()" [disabled]="busy()">Modifier l’annonce</button>
+    }
+    @if (canPublish()) {
+      @if (bien().publie) {
+        <button mat-stroked-button type="button" (click)="publier(false)" [disabled]="busy()">Retirer du site</button>
+      } @else {
+        <button
+          mat-flat-button
+          color="primary"
+          type="button"
+          (click)="publier(true)"
+          [disabled]="busy()"
+          [matTooltip]="peutPublier() ? '' : 'À faire : ' + manques().join(' ; ')"
+        >
+          Publier sur le site
+        </button>
+      }
+    }
+    @if (enLigne()) {
+      <a mat-button [href]="urlPublique()" target="_blank" rel="noopener noreferrer">
+        <svg class="btn-icon" lucideExternalLink aria-hidden="true"></svg>Voir sur le site
+      </a>
+    }
+  </div>
+  @if (!canPublish() && canModify()) {
+    <p class="annonce__note">La publication sur le site est réservée aux personnes autorisées à publier.</p>
+  }
+
+  <h3 class="annonce__photos-title">
+    Photos et vidéos <span>({{ bien().medias.length }}/20)</span>
+  </h3>
+  <p class="detail-section__hint">
+    La première photo sert de couverture dans la liste. Formats JPEG, PNG, WebP ou vidéo MP4, 10 Mo maximum chacun.
+  </p>
+
+  <div class="annonce__photos">
+    @for (media of bien().medias; track media.id; let i = $index; let first = $first; let last = $last) {
+      <figure class="annonce__photo" [class.is-cover]="first">
+        @if (media.type === 'video') {
+          <video [src]="media.secureUrl" muted preload="metadata"></video>
+        } @else {
+          <img [src]="media.secureUrl" [alt]="media.title ?? 'Photo ' + (i + 1)" loading="lazy" />
+        }
+        @if (first) {
+          <span class="annonce__cover-badge">Couverture</span>
+        }
+        @if (canModify()) {
+          <div class="annonce__photo-actions">
+            <button
+              type="button"
+              class="annonce__icon-btn"
+              (click)="deplacer(i, -1)"
+              [disabled]="first || busy()"
+              aria-label="Avancer cette photo"
+            >
+              <svg lucideArrowLeft aria-hidden="true"></svg>
+            </button>
+            <button
+              type="button"
+              class="annonce__icon-btn"
+              (click)="deplacer(i, 1)"
+              [disabled]="last || busy()"
+              aria-label="Reculer cette photo"
+            >
+              <svg lucideArrowRight aria-hidden="true"></svg>
+            </button>
+            <button
+              type="button"
+              class="annonce__icon-btn annonce__icon-btn--danger"
+              (click)="supprimer(media.id)"
+              [disabled]="busy()"
+              aria-label="Supprimer cette photo"
+            >
+              <svg lucideTrash2 aria-hidden="true"></svg>
+            </button>
+          </div>
+        }
+      </figure>
+    }
+
+    @if (canModify() && bien().medias.length < 20) {
+      <label class="annonce__add" [class.is-busy]="busy()">
+        <svg lucideImagePlus aria-hidden="true"></svg>
+        <span>{{ busy() ? 'Envoi en cours…' : 'Ajouter des photos' }}</span>
+        <input type="file" [accept]="accept" multiple (change)="deposer($event)" [disabled]="busy()" />
+      </label>
+    }
+  </div>
+</section>
