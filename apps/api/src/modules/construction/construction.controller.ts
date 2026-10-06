@@ -44,6 +44,7 @@ import {
   UpdateLigneBudgetDto,
   ValiderDepenseDto,
 } from './dto/chantier-suivi.dto';
+import { Authenticated } from '../auth/decorators/authenticated.decorator';
 
 /**
  * Construction et suivi de chantier (J2.3, section 16 du cahier des charges).
@@ -70,11 +71,13 @@ export class ConstructionController {
   // pour un identifiant de chantier.
   // ----------------------------------------------------------------
 
+  @Authenticated()
   @Get('client/chantiers')
   getClientChantiers(@CurrentUser() user: AuthenticatedUser) {
     return this.client.getChantiers(user.id);
   }
 
+  @Authenticated()
   @Get('client/chantiers/:id')
   getClientChantier(
     @Param('id', ParseUUIDPipe) id: string,
@@ -83,6 +86,7 @@ export class ConstructionController {
     return this.client.getChantier(user.id, id);
   }
 
+  @Authenticated()
   @Get('client/documents/:documentId')
   getClientDocument(
     @Param('documentId', ParseUUIDPipe) documentId: string,

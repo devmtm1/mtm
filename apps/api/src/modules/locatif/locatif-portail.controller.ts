@@ -15,6 +15,7 @@ import { ProprietairePortalService } from './proprietaire-portal.service';
 import { LocatairePortalService } from './locataire-portal.service';
 import { CreateIncidentDto } from './dto/incident.dto';
 import { AuditService } from '../audit/audit.service';
+import { Authenticated } from '../auth/decorators/authenticated.decorator';
 
 /**
  * Espaces propriétaire et locataire (J2.1, sections 4 et 15 du cahier des
@@ -31,33 +32,39 @@ export class LocatifPortailController {
     private readonly audit: AuditService,
   ) {}
 
+  @Authenticated()
   @Get('proprietaire/biens')
   getBiensProprietaire(@CurrentUser() user: AuthenticatedUser) {
     return this.proprietaire.getBiens(user.id);
   }
 
   /** Loyers appelés, encaissés et solde du portefeuille (section 15). */
+  @Authenticated()
   @Get('proprietaire/synthese')
   getSyntheseProprietaire(@CurrentUser() user: AuthenticatedUser) {
     return this.proprietaire.getSynthese(user.id);
   }
 
+  @Authenticated()
   @Get('proprietaire/documents')
   getDocumentsProprietaire(@CurrentUser() user: AuthenticatedUser) {
     return this.proprietaire.getDocuments(user.id);
   }
 
+  @Authenticated()
   @Get('locataire/baux')
   getBauxLocataire(@CurrentUser() user: AuthenticatedUser) {
     return this.locataire.getBaux(user.id);
   }
 
+  @Authenticated()
   @Get('locataire/paiements')
   getPaiementsLocataire(@CurrentUser() user: AuthenticatedUser) {
     return this.locataire.getPaiements(user.id);
   }
 
   /** Incidents et demandes : `nature` filtre l'un ou l'autre (sections 4 et 15). */
+  @Authenticated()
   @Get('locataire/incidents')
   getIncidentsLocataire(
     @Query('nature') nature: string | undefined,
@@ -67,6 +74,7 @@ export class LocatifPortailController {
   }
 
   /** Un locataire connecté reste un émetteur externe : même garde-fou que les formulaires publics. */
+  @Authenticated()
   @Post('locataire/baux/:id/incidents')
   @Throttle({
     default: {

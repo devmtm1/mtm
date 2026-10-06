@@ -40,6 +40,7 @@ import {
   CreateEtapeMissionDto,
   UpdateEtapeMissionDto,
 } from './dto/etape-mission.dto';
+import { Authenticated } from '../auth/decorators/authenticated.decorator';
 
 /**
  * Missions de vérification foncière (J2.2, section 14 du cahier des charges).
@@ -63,6 +64,7 @@ export class DemarchesController {
   // Déclarées avant les routes à paramètre, sinon « client » serait pris
   // pour un identifiant de mission.
 
+  @Authenticated()
   @Get('client/missions')
   getClientMissions(@CurrentUser() user: AuthenticatedUser) {
     return this.client.getMissions(user.id);
@@ -72,6 +74,7 @@ export class DemarchesController {
    * Demande déposée par le client depuis son espace. Même limitation que les
    * formulaires publics : un client connecté reste un émetteur externe.
    */
+  @Authenticated()
   @Post('client/missions')
   @Throttle({
     default: {
@@ -96,6 +99,7 @@ export class DemarchesController {
     return mission;
   }
 
+  @Authenticated()
   @Get('client/missions/documents/:documentId')
   getClientDocument(
     @Param('documentId', ParseUUIDPipe) documentId: string,

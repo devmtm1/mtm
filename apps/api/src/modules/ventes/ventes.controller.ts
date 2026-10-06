@@ -27,6 +27,7 @@ import { AuditService } from '../audit/audit.service';
 import { CreateDossierVenteDto } from './dto/create-dossier-vente.dto';
 import { UpdateDossierVenteDto } from './dto/update-dossier-vente.dto';
 import { CreateCommissionDto } from './dto/create-commission.dto';
+import { Authenticated } from '../auth/decorators/authenticated.decorator';
 import { CreatePaiementDto } from './dto/create-paiement.dto';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { CreateDocumentVenteDto } from './dto/create-document-vente.dto';
@@ -127,11 +128,13 @@ export class VentesController {
     return this.clientPortal.createClientAccount(dto);
   }
 
+  @Authenticated()
   @Get('client/portal')
   getClientPortal(@CurrentUser() user: AuthenticatedUser) {
     return this.clientPortal.getClientPortal(user.id);
   }
 
+  @Authenticated()
   @Get('client/portal/demandes')
   getClientDemandes(@CurrentUser() user: AuthenticatedUser) {
     return this.clientPortal.getClientDemandes(user.id);
@@ -139,6 +142,7 @@ export class VentesController {
 
   // Même limitation que les formulaires publics : un client connecté reste
   // un émetteur externe.
+  @Authenticated()
   @Post('client/portal/demandes')
   @Throttle({
     default: {
@@ -164,6 +168,7 @@ export class VentesController {
     return result;
   }
 
+  @Authenticated()
   @Get('client/portal/documents/:documentId')
   getClientDocument(
     @Param('documentId', ParseUUIDPipe) documentId: string,

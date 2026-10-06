@@ -42,7 +42,7 @@ export class UsersController {
     @CurrentUser() currentUser: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    const user = await this.usersService.create(dto);
+    const user = await this.usersService.create(dto, currentUser);
     await this.auditService.record({
       userId: currentUser.id,
       action: 'user.created',
@@ -68,7 +68,7 @@ export class UsersController {
     @Req() req: Request,
   ) {
     const before = await this.usersService.findById(id);
-    const user = await this.usersService.update(id, dto);
+    const user = await this.usersService.update(id, dto, currentUser);
     await this.auditService.record({
       userId: currentUser.id,
       action: 'user.updated',
@@ -100,7 +100,7 @@ export class UsersController {
     @CurrentUser() currentUser: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    await this.usersService.remove(id);
+    await this.usersService.remove(id, currentUser);
     await this.auditService.record({
       userId: currentUser.id,
       action: 'user.deleted',
@@ -119,7 +119,7 @@ export class UsersController {
     @CurrentUser() currentUser: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    const user = await this.usersService.setActive(id, true);
+    const user = await this.usersService.setActive(id, true, currentUser);
     await this.auditService.record({
       userId: currentUser.id,
       action: 'user.activated',
@@ -138,7 +138,7 @@ export class UsersController {
     @CurrentUser() currentUser: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    const user = await this.usersService.setActive(id, false);
+    const user = await this.usersService.setActive(id, false, currentUser);
     await this.auditService.record({
       userId: currentUser.id,
       action: 'user.deactivated',
@@ -158,7 +158,7 @@ export class UsersController {
     @Req() req: Request,
   ) {
     const before = await this.usersService.findById(id);
-    const user = await this.usersService.resetTwoFactor(id);
+    const user = await this.usersService.resetTwoFactor(id, currentUser);
     await this.auditService.record({
       userId: currentUser.id,
       action: 'user.2fa_reset',
@@ -182,7 +182,7 @@ export class UsersController {
     @CurrentUser() currentUser: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    await this.usersService.assignRole(id, dto.roleId);
+    await this.usersService.assignRole(id, dto.roleId, currentUser);
     await this.auditService.record({
       userId: currentUser.id,
       action: 'user.role_assigned',
@@ -203,7 +203,7 @@ export class UsersController {
     @CurrentUser() currentUser: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    await this.usersService.removeRole(id, roleId);
+    await this.usersService.removeRole(id, roleId, currentUser);
     await this.auditService.record({
       userId: currentUser.id,
       action: 'user.role_removed',

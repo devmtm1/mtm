@@ -1,4 +1,9 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../database/prisma.service';
@@ -14,9 +19,89 @@ export type UserWithRoles = User & {
   }[];
 };
 
+/** Celui qui agit : ses rôles et permissions décident de ce qu'il peut accorder. */
+export type UserActor = {
+  id: string;
+  roles: string[];
+  permissions: string[];
+};
+
+const ADMIN_ROLE = 'administrateur';
+
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
+
+  // ------------------------------------------------------------------
+  // Garde-fous d'administration (sections 24 et 27 CDC)
+  // ------------------------------------------------------------------
+
+  /**
+   * On ne peut pas accorder plus de droits qu'on n'en a. Sans cette règle,
+   * toute personne autorisée à créer des utilisateurs pouvait se créer, ou
+   * créer, un compte administrateur. Les administrateurs sont exemptés.
+   */
+  async assertCanGrantRole(actor: UserActor, roleId: string): Promise<void> {
+    if (actor.roles.includes(ADMIN_ROLE)) return;
+    const role = await this.prisma.role.findUnique({
+      where: { id: roleId },
+      select: {
+        permissions: { select: { permission: { select: { name: true } } } },
+      },
+    });
+    if (!role) throw new BadRequestException('Rôle introuvable');
+    const manquantes = role.permissions
+      .map((lien) => lien.permission.name)
+      .filter((nom) => !actor.permissions.includes(nom));
+    if (manquantes.length > 0) {
+      throw new ForbiddenException(
+        'Vous ne pouvez pas attribuer un rôle qui donne plus de droits que les vôtres.',
+      );
+    }
+  }
+
+  /**
+   * Seul un administrateur touche à un compte administrateur : sinon, un
+   * simple droit « modifier un utilisateur » permettrait de réinitialiser son
+   * mot de passe ou sa double authentification, donc de le supplanter.
+   */
+  async assertCanManageTarget(
+    actor: UserActor,
+    targetId: string,
+  ): Promise<void> {
+    if (actor.roles.includes(ADMIN_ROLE) || actor.id === targetId) return;
+    const cible = await this.prisma.userRole.count({
+      where: { userId: targetId, role: { name: ADMIN_ROLE } },
+    });
+    if (cible > 0) {
+      throw new ForbiddenException(
+        'Seul un administrateur peut modifier un compte administrateur.',
+      );
+    }
+  }
+
+  /**
+   * Garde au moins un administrateur actif : perdre le dernier, c'est perdre
+   * l'accès au paramétrage, aux rôles et à la récupération de comptes.
+   */
+  private async assertNotLastAdmin(userId: string): Promise<void> {
+    const estAdmin = await this.prisma.userRole.count({
+      where: { userId, role: { name: ADMIN_ROLE } },
+    });
+    if (estAdmin === 0) return;
+    const autres = await this.prisma.user.count({
+      where: {
+        id: { not: userId },
+        isActive: true,
+        roles: { some: { role: { name: ADMIN_ROLE } } },
+      },
+    });
+    if (autres === 0) {
+      throw new ConflictException(
+        'Ce compte est le dernier administrateur actif : désignez-en un autre d’abord.',
+      );
+    }
+  }
 
   async findByEmail(email: string): Promise<UserWithRoles | null> {
     return await this.prisma.user.findUnique({
@@ -144,7 +229,8 @@ export class UsersService {
     });
   }
 
-  async resetTwoFactor(userId: string): Promise<User> {
+  async resetTwoFactor(userId: string, actor: UserActor): Promise<User> {
+    await this.assertCanManageTarget(actor, userId);
     return await this.disableTwoFactor(userId);
   }
 
@@ -159,7 +245,8 @@ export class UsersService {
   // CRUD utilisateurs (administration)
   // ============================================================
 
-  async create(dto: CreateUserDto): Promise<UserWithRoles> {
+  async create(dto: CreateUserDto, actor: UserActor): Promise<UserWithRoles> {
+    await this.assertCanGrantRole(actor, dto.roleId);
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -216,7 +303,21 @@ export class UsersService {
     });
   }
 
-  async update(userId: string, dto: UpdateUserDto): Promise<UserWithRoles> {
+  async update(
+    userId: string,
+    dto: UpdateUserDto,
+    actor: UserActor,
+  ): Promise<UserWithRoles> {
+    await this.assertCanManageTarget(actor, userId);
+    if (dto.roleId) {
+      await this.assertCanGrantRole(actor, dto.roleId);
+      // Changer le rôle d'un administrateur pour un autre le retire de la
+      // liste des administrateurs : même garde que pour sa désactivation.
+      const reste = await this.prisma.userRole.count({
+        where: { userId, roleId: dto.roleId },
+      });
+      if (reste === 0) await this.assertNotLastAdmin(userId);
+    }
     const data: {
       email?: string;
       firstName?: string;
@@ -235,32 +336,69 @@ export class UsersService {
         data: { revokedAt: new Date() },
       });
     }
-    await this.prisma.user.update({ where: { id: userId }, data });
-    if (dto.roleId) {
-      await this.prisma.userRole.deleteMany({ where: { userId } });
-      await this.prisma.userRole.create({
-        data: { userId, roleId: dto.roleId },
-      });
-    }
+    const roleId = dto.roleId;
+    // Un seul bloc : un échec entre la suppression et la création du rôle
+    // laisserait le compte sans aucun rôle.
+    await this.prisma.$transaction(async (tx) => {
+      await tx.user.update({ where: { id: userId }, data });
+      if (roleId) {
+        await tx.userRole.deleteMany({ where: { userId } });
+        await tx.userRole.create({ data: { userId, roleId } });
+      }
+    });
     return (await this.findById(userId))!;
   }
 
-  async remove(userId: string): Promise<void> {
+  async remove(userId: string, actor: UserActor): Promise<void> {
+    if (userId === actor.id) {
+      throw new ConflictException(
+        'Vous ne pouvez pas supprimer votre propre compte.',
+      );
+    }
+    await this.assertCanManageTarget(actor, userId);
+    await this.assertNotLastAdmin(userId);
     await this.prisma.user.delete({ where: { id: userId } });
   }
 
-  async setActive(userId: string, isActive: boolean): Promise<User> {
-    return await this.prisma.user.update({
+  async setActive(
+    userId: string,
+    isActive: boolean,
+    actor: UserActor,
+  ): Promise<User> {
+    await this.assertCanManageTarget(actor, userId);
+    if (!isActive) {
+      if (userId === actor.id) {
+        throw new ConflictException(
+          'Vous ne pouvez pas désactiver votre propre compte.',
+        );
+      }
+      await this.assertNotLastAdmin(userId);
+    }
+    const user = await this.prisma.user.update({
       where: { id: userId },
       data: { isActive },
     });
+    if (!isActive) {
+      // Une session ouverte ne doit pas survivre à la désactivation.
+      await this.prisma.refreshToken.updateMany({
+        where: { userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+    }
+    return user;
   }
 
   // ============================================================
   // Attribution de rôles
   // ============================================================
 
-  async assignRole(userId: string, roleId: string): Promise<void> {
+  async assignRole(
+    userId: string,
+    roleId: string,
+    actor: UserActor,
+  ): Promise<void> {
+    await this.assertCanManageTarget(actor, userId);
+    await this.assertCanGrantRole(actor, roleId);
     await this.prisma.userRole.upsert({
       where: { userId_roleId: { userId, roleId } },
       update: {},
@@ -268,7 +406,16 @@ export class UsersService {
     });
   }
 
-  async removeRole(userId: string, roleId: string): Promise<void> {
+  async removeRole(
+    userId: string,
+    roleId: string,
+    actor: UserActor,
+  ): Promise<void> {
+    await this.assertCanManageTarget(actor, userId);
+    const estAdmin = await this.prisma.userRole.count({
+      where: { userId, roleId, role: { name: ADMIN_ROLE } },
+    });
+    if (estAdmin > 0) await this.assertNotLastAdmin(userId);
     await this.prisma.userRole.deleteMany({
       where: { userId, roleId },
     });

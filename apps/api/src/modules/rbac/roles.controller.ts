@@ -108,7 +108,11 @@ export class RolesController {
     @CurrentUser() currentUser: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    await this.rolesService.assignPermissions(id, dto.permissionNames);
+    await this.rolesService.assignPermissions(
+      id,
+      dto.permissionNames,
+      currentUser,
+    );
     await this.auditService.record({
       userId: currentUser.id,
       action: 'role.permissions_assigned',
@@ -129,7 +133,7 @@ export class RolesController {
     @CurrentUser() currentUser: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    await this.rolesService.removePermission(id, permissionId);
+    await this.rolesService.removePermission(id, permissionId, currentUser);
     await this.auditService.record({
       userId: currentUser.id,
       action: 'role.permission_removed',

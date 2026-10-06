@@ -1,6 +1,9 @@
 import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PermissionsGuard } from './permissions.guard';
+import { PERMISSIONS_KEY } from '../decorators/require-permissions.decorator';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { AUTHENTICATED_KEY } from '../decorators/authenticated.decorator';
 import type { AuthenticatedUser } from '../auth.types';
 
 describe('PermissionsGuard', () => {
@@ -33,20 +36,40 @@ describe('PermissionsGuard', () => {
     guard = new PermissionsGuard(reflector as unknown as Reflector);
   });
 
-  it('autorise si aucune permission n’est requise sur la route', () => {
+  // Un oubli de décorateur ne doit jamais ouvrir une route : sans permission,
+  // sans @Public et sans @Authenticated, l'accès est refusé.
+  it('refuse une route qui ne déclare aucun accès', () => {
     reflector.getAllAndOverride.mockReturnValue(undefined);
 
-    const result = guard.canActivate(buildContext(buildUser([])));
-
-    expect(result).toBe(true);
+    expect(() => guard.canActivate(buildContext(buildUser([])))).toThrow(
+      ForbiddenException,
+    );
   });
 
-  it('autorise si le tableau de permissions requises est vide', () => {
-    reflector.getAllAndOverride.mockReturnValue([]);
+  it('refuse une route dont la liste de permissions est vide et sans autre déclaration', () => {
+    reflector.getAllAndOverride.mockImplementation((cle: string) =>
+      cle === PERMISSIONS_KEY ? [] : undefined,
+    );
 
-    const result = guard.canActivate(buildContext(buildUser([])));
+    expect(() => guard.canActivate(buildContext(buildUser([])))).toThrow(
+      ForbiddenException,
+    );
+  });
 
-    expect(result).toBe(true);
+  it('ouvre une route publique', () => {
+    reflector.getAllAndOverride.mockImplementation((cle: string) =>
+      cle === IS_PUBLIC_KEY ? true : undefined,
+    );
+
+    expect(guard.canActivate(buildContext(undefined))).toBe(true);
+  });
+
+  it('ouvre une route réservée aux utilisateurs connectés', () => {
+    reflector.getAllAndOverride.mockImplementation((cle: string) =>
+      cle === AUTHENTICATED_KEY ? true : undefined,
+    );
+
+    expect(guard.canActivate(buildContext(buildUser([])))).toBe(true);
   });
 
   it("rejette si aucun utilisateur n'est présent sur la requête", () => {

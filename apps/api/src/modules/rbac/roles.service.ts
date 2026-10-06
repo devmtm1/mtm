@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -65,11 +66,33 @@ export class RolesService {
     await this.prisma.role.delete({ where: { id } });
   }
 
+  /**
+   * Un rôle ne peut recevoir que des droits que celui qui les accorde
+   * possède lui-même ; sans cette règle, le détenteur de `roles:administrer`
+   * pouvait s'octroyer toutes les permissions via son propre rôle.
+   * Les administrateurs sont exemptés.
+   */
   async assignPermissions(
     roleId: string,
     permissionNames: string[],
+    actor?: { roles: string[]; permissions: string[] },
   ): Promise<void> {
-    await this.findById(roleId);
+    const role = await this.findById(roleId);
+    if (actor && !actor.roles.includes('administrateur')) {
+      if (role.name === 'administrateur') {
+        throw new ForbiddenException(
+          'Seul un administrateur peut modifier le rôle administrateur.',
+        );
+      }
+      const nonDetenues = permissionNames.filter(
+        (nom) => !actor.permissions.includes(nom),
+      );
+      if (nonDetenues.length > 0) {
+        throw new ForbiddenException(
+          `Vous ne pouvez pas accorder des droits que vous n'avez pas : ${nonDetenues.join(', ')}`,
+        );
+      }
+    }
 
     const permissions = await this.prisma.permission.findMany({
       where: { name: { in: permissionNames } },
@@ -98,8 +121,24 @@ export class RolesService {
     );
   }
 
-  async removePermission(roleId: string, permissionId: string): Promise<void> {
-    await this.findById(roleId);
+  async removePermission(
+    roleId: string,
+    permissionId: string,
+    actor?: { roles: string[] },
+  ): Promise<void> {
+    const role = await this.findById(roleId);
+    // Le rôle administrateur garde tous ses droits : en retirer un pourrait
+    // fermer l'accès au paramétrage ou à la récupération de comptes.
+    if (role.name === 'administrateur') {
+      throw new BadRequestException(
+        'Les permissions du rôle administrateur ne peuvent pas être retirées.',
+      );
+    }
+    if (actor && !actor.roles.includes('administrateur') && role.isSystem) {
+      throw new ForbiddenException(
+        'Seul un administrateur peut modifier un rôle système.',
+      );
+    }
     await this.prisma.rolePermission.deleteMany({
       where: { roleId, permissionId },
     });

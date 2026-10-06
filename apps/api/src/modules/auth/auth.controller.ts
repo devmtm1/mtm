@@ -25,6 +25,7 @@ import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { VerifyTwoFactorDto } from './dto/verify-two-factor.dto';
 import type { AuthenticatedUser } from './auth.types';
+import { Authenticated } from './decorators/authenticated.decorator';
 
 const REFRESH_COOKIE_NAME = 'mtm_refresh_token';
 
@@ -124,6 +125,7 @@ export class AuthController {
     return { success: true };
   }
 
+  @Authenticated()
   @Post('logout')
   @SkipPasswordCheck()
   @SkipTwoFactorRequirement()
@@ -144,6 +146,7 @@ export class AuthController {
    * une session après un rechargement de page : /auth/refresh ne
    * renvoie qu'un accessToken, pas le profil.
    */
+  @Authenticated()
   @Get('me')
   @SkipPasswordCheck()
   @SkipTwoFactorRequirement()
@@ -155,6 +158,7 @@ export class AuthController {
    * Changement de mot de passe. Exempté du blocage mustChangePassword
    * puisque c'est précisément la route qui permet de le lever.
    */
+  @Authenticated()
   @Post('change-password')
   @SkipPasswordCheck()
   @SkipTwoFactorRequirement()
@@ -170,12 +174,14 @@ export class AuthController {
     return { success: true };
   }
 
+  @Authenticated()
   @Post('2fa/setup')
   @SkipTwoFactorRequirement()
   async setupTwoFactor(@CurrentUser() user: AuthenticatedUser) {
     return this.authService.setupTwoFactor(user.id, user.email);
   }
 
+  @Authenticated()
   @Post('2fa/confirm')
   @SkipTwoFactorRequirement()
   async confirmTwoFactor(
@@ -191,6 +197,7 @@ export class AuthController {
     return { success: true, recoveryCodes };
   }
 
+  @Authenticated()
   @Post('2fa/disable')
   async disableTwoFactor(
     @CurrentUser() user: AuthenticatedUser,

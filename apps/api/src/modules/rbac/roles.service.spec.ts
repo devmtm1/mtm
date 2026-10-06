@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
 import { RolesService } from './roles.service';
@@ -120,6 +121,80 @@ describe('RolesService', () => {
 
       expect(prismaMock.$transaction).toHaveBeenCalled();
       expect(prismaMock.rolePermission.upsert).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('garde contre l’élévation de privilèges', () => {
+    const gestionnaire = {
+      roles: ['gestionnaire_roles'],
+      permissions: ['roles:administrer', 'crm:consulter'],
+    };
+
+    it('refuse d’accorder à un rôle des droits que l’auteur n’a pas', async () => {
+      prismaMock.role.findUnique.mockResolvedValue({
+        id: 'r1',
+        name: 'commercial',
+        isSystem: false,
+        permissions: [],
+      });
+
+      await expect(
+        service.assignPermissions(
+          'r1',
+          ['crm:consulter', 'settings:administrer'],
+          gestionnaire,
+        ),
+      ).rejects.toThrow(ForbiddenException);
+      expect(prismaMock.rolePermission.upsert).not.toHaveBeenCalled();
+    });
+
+    it('réserve la modification du rôle administrateur aux administrateurs', async () => {
+      prismaMock.role.findUnique.mockResolvedValue({
+        id: 'r-admin',
+        name: 'administrateur',
+        isSystem: true,
+        permissions: [],
+      });
+
+      await expect(
+        service.assignPermissions('r-admin', ['crm:consulter'], gestionnaire),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('un administrateur accorde sans restriction', async () => {
+      prismaMock.role.findUnique.mockResolvedValue({
+        id: 'r1',
+        name: 'commercial',
+        isSystem: false,
+        permissions: [],
+      });
+      prismaMock.permission.findMany.mockResolvedValue([
+        { id: 'p1', name: 'settings:administrer' },
+      ]);
+      prismaMock.rolePermission.upsert.mockResolvedValue({});
+
+      await expect(
+        service.assignPermissions('r1', ['settings:administrer'], {
+          roles: ['administrateur'],
+          permissions: [],
+        }),
+      ).resolves.toBeUndefined();
+    });
+
+    it('les permissions du rôle administrateur ne se retirent pas', async () => {
+      prismaMock.role.findUnique.mockResolvedValue({
+        id: 'r-admin',
+        name: 'administrateur',
+        isSystem: true,
+        permissions: [],
+      });
+
+      await expect(
+        service.removePermission('r-admin', 'p1', {
+          roles: ['administrateur'],
+        }),
+      ).rejects.toThrow(BadRequestException);
+      expect(prismaMock.rolePermission.deleteMany).not.toHaveBeenCalled();
     });
   });
 });
