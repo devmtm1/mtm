@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import {
   ArrayMaxSize,
   IsArray,
@@ -16,6 +16,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { TerrainPointInteretDto } from './terrain-point-interet.dto';
+import { versBooleen } from '../../../common/utils/booleen.transform';
 
 export class CreateTerrainDto {
   @ApiProperty() @IsString() @Length(1, 100) referenceInterne!: string;
@@ -112,7 +113,11 @@ export class CreateTerrainDto {
   @ApiPropertyOptional() @IsOptional() @IsNumber() marge?: number;
   @ApiPropertyOptional() @IsOptional() @IsNumber() @Min(0) commission?: number;
   @ApiProperty() @IsString() statutCommercial!: string;
-  @ApiPropertyOptional() @IsOptional() @IsBoolean() misEnAvant?: boolean;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(versBooleen)
+  @IsBoolean()
+  misEnAvant?: boolean;
   @ApiPropertyOptional({
     description: 'Descriptif commercial affiché sur la fiche publique',
   })
@@ -121,7 +126,11 @@ export class CreateTerrainDto {
   @Length(0, 5000)
   description?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() accesRoutier?: string;
-  @ApiPropertyOptional() @IsOptional() @IsBoolean() eauDisponible?: boolean;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(versBooleen)
+  @IsBoolean()
+  eauDisponible?: boolean;
   @ApiPropertyOptional()
   @IsOptional()
   @IsBoolean()

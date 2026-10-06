@@ -13,6 +13,7 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
+import { versBooleen } from '../../../common/utils/booleen.transform';
 
 /** Champs de tri acceptés sur la liste des chantiers. */
 const TRIS = [
@@ -25,10 +26,6 @@ const TRIS = [
   'dateFinPrevue',
   'montantDevis',
 ] as const;
-
-/** Un booléen arrivant en query string vaut « true »/« 1 », pas `true`. */
-const versBooleen = ({ value }: { value: unknown }) =>
-  value === true || value === 'true' || value === '1';
 
 export class CreateProjetDto {
   @IsUUID()
@@ -239,6 +236,7 @@ export class UpdateProjetDto {
   responsableId?: string;
 
   @IsOptional()
+  @Transform(versBooleen)
   @IsBoolean()
   visibleClient?: boolean;
 

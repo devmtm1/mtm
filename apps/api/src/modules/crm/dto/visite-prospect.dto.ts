@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import {
   IsBoolean,
@@ -9,6 +10,7 @@ import {
   Length,
   Min,
 } from 'class-validator';
+import { versBooleen } from '../../../common/utils/booleen.transform';
 
 /**
  * Terrain proposé à un prospect : le rendez-vous de visite et le retour du
@@ -35,7 +37,11 @@ export class CreateVisiteProspectDto {
   @IsInt()
   @Min(0)
   fraisVisite?: number;
-  @ApiPropertyOptional() @IsOptional() @IsBoolean() fraisPayes?: boolean;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(versBooleen)
+  @IsBoolean()
+  fraisPayes?: boolean;
   @ApiPropertyOptional({ description: 'Commercial qui accompagne la visite' })
   @IsOptional()
   @IsUUID()
@@ -75,6 +81,7 @@ export class CreateVisiteProspectDto {
   commentaireClient?: string;
   @ApiPropertyOptional()
   @IsOptional()
+  @Transform(versBooleen)
   @IsBoolean()
   souhaiteAutreTerrain?: boolean;
 }

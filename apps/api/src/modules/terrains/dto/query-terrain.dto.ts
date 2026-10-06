@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsIn,
@@ -10,13 +10,14 @@ import {
   Max,
   Min,
 } from 'class-validator';
+import { versBooleen } from '../../../common/utils/booleen.transform';
 
 export class QueryTerrainDto {
   @IsOptional() @IsString() search?: string;
   @IsOptional() @IsString() statutJuridique?: string;
   @IsOptional() @IsString() niveauVerification?: string;
   @IsOptional() @IsString() statutCommercial?: string;
-  @IsOptional() @IsBoolean() misEnAvant?: boolean;
+  @IsOptional() @Transform(versBooleen) @IsBoolean() misEnAvant?: boolean;
   @IsOptional() @IsString() region?: string;
   @IsOptional() @IsString() commune?: string;
   @IsOptional() @IsString() vocation?: string;

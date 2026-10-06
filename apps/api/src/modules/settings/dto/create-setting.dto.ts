@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
@@ -7,6 +8,7 @@ import {
   Length,
   Matches,
 } from 'class-validator';
+import { versBooleen } from '../../../common/utils/booleen.transform';
 
 export class CreateSettingDto {
   @ApiProperty({ example: 'commission.taux_defaut' })
@@ -38,6 +40,7 @@ export class CreateSettingDto {
       'Si vrai, requiert la permission settings:administrer (et non settings:modifier) pour être modifié ou consulté en clair',
   })
   @IsOptional()
+  @Transform(versBooleen)
   @IsBoolean()
   isSensitive?: boolean;
 }

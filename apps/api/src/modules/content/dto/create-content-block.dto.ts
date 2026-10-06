@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
@@ -8,6 +9,7 @@ import {
   Max,
   Min,
 } from 'class-validator';
+import { versBooleen } from '../../../common/utils/booleen.transform';
 
 export class CreateContentBlockDto {
   @ApiProperty({ example: 'home.hero.title' })
@@ -43,6 +45,7 @@ export class CreateContentBlockDto {
 
   @ApiPropertyOptional({ example: true })
   @IsOptional()
+  @Transform(versBooleen)
   @IsBoolean()
   isActive?: boolean = true;
 }

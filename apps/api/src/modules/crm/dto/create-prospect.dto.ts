@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
@@ -10,6 +11,7 @@ import {
   Length,
   Min,
 } from 'class-validator';
+import { versBooleen } from '../../../common/utils/booleen.transform';
 
 /**
  * Fiche prospect de MTM (fiche de suivi « client potentiel »). Seuls le nom
@@ -35,6 +37,7 @@ export class CreateProspectDto {
   telephone?: string;
   @ApiPropertyOptional({ description: 'Ce numéro est joignable sur WhatsApp' })
   @IsOptional()
+  @Transform(versBooleen)
   @IsBoolean()
   whatsapp?: boolean;
   @ApiPropertyOptional()
@@ -99,6 +102,7 @@ export class CreateProspectDto {
     description: 'Ouvre un mandat de recherche et lui attribue sa référence',
   })
   @IsOptional()
+  @Transform(versBooleen)
   @IsBoolean()
   rechercheActive?: boolean;
   @ApiPropertyOptional({ example: 'en_recherche' })
@@ -135,6 +139,7 @@ export class CreateProspectDto {
     description: 'Le type de document est-il une condition ferme ?',
   })
   @IsOptional()
+  @Transform(versBooleen)
   @IsBoolean()
   documentNonNegociable?: boolean;
   @ApiPropertyOptional({ example: 'indifferent' })
@@ -182,6 +187,7 @@ export class CreateProspectDto {
       'Le client accepte de recevoir d’autres opportunités que celles qu’il a demandées',
   })
   @IsOptional()
+  @Transform(versBooleen)
   @IsBoolean()
   accepteOpportunitesSimilaires?: boolean;
 

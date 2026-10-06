@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
@@ -10,6 +11,7 @@ import {
   Length,
   Min,
 } from 'class-validator';
+import { versBooleen } from '../../../common/utils/booleen.transform';
 
 export class CreateMandatDto {
   @ApiProperty() @IsString() @Length(1, 100) referenceInterne!: string;
@@ -21,7 +23,11 @@ export class CreateMandatDto {
   @ApiProperty() @IsString() typeMandat!: string;
   @ApiProperty() @IsDateString() dateDebut!: string;
   @ApiProperty() @IsDateString() dateFin!: string;
-  @ApiPropertyOptional() @IsOptional() @IsBoolean() exclusivite?: boolean;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(versBooleen)
+  @IsBoolean()
+  exclusivite?: boolean;
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()

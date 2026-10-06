@@ -1,13 +1,6 @@
 import { Transform } from 'class-transformer';
+import { versBooleen } from '../../../common/utils/booleen.transform';
 import { IsBoolean, IsOptional, IsString, MaxLength } from 'class-validator';
-
-/** « true »/« 1 » d'un envoi multipart ou booléen d'un corps JSON. */
-const versBooleen = ({ value }: { value: unknown }): unknown => {
-  if (typeof value === 'boolean') return value;
-  if (value === 'true' || value === '1') return true;
-  if (value === 'false' || value === '0') return false;
-  return value;
-};
 
 /** Pièce jointe d'un bail : contrat scanné, état des lieux, autre document. */
 export class CreateDocumentLocatifDto {

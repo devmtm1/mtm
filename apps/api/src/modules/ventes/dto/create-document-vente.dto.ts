@@ -1,5 +1,7 @@
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { versBooleen } from '../../../common/utils/booleen.transform';
 
 export class CreateDocumentVenteDto {
   @ApiProperty({ example: 'bon_reservation' })
@@ -13,6 +15,7 @@ export class CreateDocumentVenteDto {
 
   @ApiPropertyOptional()
   @IsOptional()
+  @Transform(versBooleen)
   @IsBoolean()
   isPublic?: boolean;
 }

@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsDateString,
@@ -12,6 +12,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
+import { versBooleen } from '../../../common/utils/booleen.transform';
 
 /**
  * Étape 1 du cahier des charges : la demande du client. Le terrain peut ne
@@ -87,7 +88,7 @@ export class UpdateMissionDto {
   @IsOptional() @IsString() @MaxLength(4000) reserves?: string;
   @IsOptional() @IsString() @MaxLength(4000) recommandation?: string;
 
-  @IsOptional() @IsBoolean() visibleClient?: boolean;
+  @IsOptional() @Transform(versBooleen) @IsBoolean() visibleClient?: boolean;
 }
 
 /** Changement d'étape, avec la justification exigée pour un abandon. */

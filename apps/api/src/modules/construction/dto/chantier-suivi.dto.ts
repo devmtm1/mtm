@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsInt,
@@ -12,6 +12,7 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
+import { versBooleen } from '../../../common/utils/booleen.transform';
 
 // ------------------------------------------------------------------
 // Planning : jalons
@@ -170,10 +171,12 @@ export class CreateEntreeJournalDto {
    * remonte dans les alertes tant que personne ne l'a soldée.
    */
   @IsOptional()
+  @Transform(versBooleen)
   @IsBoolean()
   resolu?: boolean;
 
   @IsOptional()
+  @Transform(versBooleen)
   @IsBoolean()
   visibleClient?: boolean;
 }
@@ -231,10 +234,12 @@ export class UpdateEntreeJournalDto {
   prochaineAction?: string;
 
   @IsOptional()
+  @Transform(versBooleen)
   @IsBoolean()
   resolu?: boolean;
 
   @IsOptional()
+  @Transform(versBooleen)
   @IsBoolean()
   visibleClient?: boolean;
 }
