@@ -68,6 +68,31 @@ export default {
           from: { opacity: '0', transform: 'translate(var(--pop-x, 0px), 28px) scale(0.7)' },
           to: { opacity: '1', transform: 'translate(var(--pop-x, 0px), 0) scale(1)' },
         },
+        // Bouton d'actions rapides : trajectoire courbe (deux courbes d'accélération
+        // pour l'axe horizontal et l'axe vertical), dépassement, puis libellé qui se déploie.
+        'fab-x': { from: { transform: 'translateX(var(--fab-x0, 30px))' }, to: { transform: 'none' } },
+        'fab-y': {
+          '0%': { opacity: '0', transform: 'translateY(var(--fab-y0, 56px)) scale(0.35) rotate(-70deg)' },
+          '45%': { opacity: '1' },
+          '100%': { opacity: '1', transform: 'none' },
+        },
+        'fab-x-out': { from: { transform: 'none' }, to: { transform: 'translateX(var(--fab-x0, 30px))' } },
+        'fab-y-out': {
+          from: { opacity: '1', transform: 'none' },
+          to: { opacity: '0', transform: 'translateY(var(--fab-y0, 56px)) scale(0.4) rotate(40deg)' },
+        },
+        'fab-label': {
+          from: { maxWidth: '0px', opacity: '0', paddingRight: '0px' },
+          to: { maxWidth: '12rem', opacity: '1', paddingRight: '1rem' },
+        },
+        'fab-ring': {
+          '0%': { opacity: '0.7', transform: 'scale(1)' },
+          '100%': { opacity: '0', transform: 'scale(2.3)' },
+        },
+        'fab-halo': {
+          '0%': { opacity: '0.55', transform: 'scale(1)' },
+          '100%': { opacity: '0', transform: 'scale(1.9)' },
+        },
         'slide-down': {
           from: { opacity: '0', transform: 'translateY(-6px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
@@ -81,6 +106,15 @@ export default {
         'slide-down': 'slide-down 160ms ease-out both',
         'sheet-right': 'sheet-right 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both',
         'pop-in': 'pop-in 260ms cubic-bezier(0.2, 0.9, 0.3, 1.15) both',
+        // Les deux axes n'ont pas la même courbe : la trajectoire s'incurve.
+        'fab-x': 'fab-x 420ms cubic-bezier(0.16, 1, 0.3, 1) both',
+        'fab-y': 'fab-y 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both',
+        'fab-x-out': 'fab-x-out 220ms ease-in both',
+        'fab-y-out': 'fab-y-out 240ms cubic-bezier(0.5, 0, 0.75, 0) both',
+        'fab-label': 'fab-label 280ms ease-out both',
+        'fab-ring': 'fab-ring 700ms ease-out both',
+        // Halo au repos : après trois secondes, deux pulsations seulement.
+        'fab-halo': 'fab-halo 1500ms ease-out 3s 2 forwards',
       },
     },
   },

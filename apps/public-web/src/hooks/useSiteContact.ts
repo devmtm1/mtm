@@ -17,9 +17,9 @@ export interface SiteContact {
    * pour qu'aucun bouton ne reste sans destinataire.
    */
   whatsappDemarches: string;
-  /** Adresse de la page Facebook ; vide tant qu'elle n'est pas renseignée au back-office. */
+  /** Page Facebook ; à défaut de lien au back-office, la recherche « MTM Immobilier ». */
   facebook: string;
-  /** Adresse du compte TikTok ; vide tant qu'elle n'est pas renseignée au back-office. */
+  /** Compte TikTok ; à défaut de lien au back-office, la recherche « MTM Immobilier ». */
   tiktok: string;
   /** Position de l'agence, pour la carte et l'itinéraire. */
   latitude: number;
@@ -32,8 +32,10 @@ const FALLBACK: SiteContact = {
   email: 'contact@mtm-immobilier.sn',
   whatsapp: '221783662651',
   whatsappDemarches: '221771551810',
-  facebook: '',
-  tiktok: '',
+  // Tant que les liens officiels ne sont pas saisis au back-office, les boutons
+  // ouvrent la recherche du nom de l'agence : ils restent utiles, sans adresse inventée.
+  facebook: 'https://www.facebook.com/search/top?q=MTM%20Immobilier',
+  tiktok: 'https://www.tiktok.com/search?q=MTM%20Immobilier',
   // Quartier de Malibou (Guédiawaye), repéré sur OpenStreetMap : à affiner au
   // back-office (contact.latitude, contact.longitude) avec la position exacte.
   latitude: 14.7753,
@@ -64,8 +66,8 @@ export function useSiteContact(): SiteContact {
     email: get('contact.email', FALLBACK.email),
     whatsapp,
     whatsappDemarches: get('contact.whatsapp.demarches', whatsapp),
-    facebook: lienSur(get('contact.facebook', '')),
-    tiktok: lienSur(get('contact.tiktok', '')),
+    facebook: lienSur(get('contact.facebook', '')) || FALLBACK.facebook,
+    tiktok: lienSur(get('contact.tiktok', '')) || FALLBACK.tiktok,
     latitude: coordonnee(get('contact.latitude', ''), FALLBACK.latitude, 90),
     longitude: coordonnee(get('contact.longitude', ''), FALLBACK.longitude, 180),
   };

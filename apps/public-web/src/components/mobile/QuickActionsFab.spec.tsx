@@ -64,14 +64,17 @@ describe('QuickActionsFab', () => {
     expect(screen.queryByRole('link', { name: /rendez-vous/i })).not.toBeInTheDocument();
   });
 
-  it('masque un réseau social tant que son lien n’est pas renseigné', () => {
+  it('garde Facebook et TikTok même sans lien officiel : ils ouvrent une recherche du nom de l’agence', () => {
     const avant = contactDeTest.valeur;
-    contactDeTest.valeur = { ...avant, facebook: '', tiktok: '' };
+    contactDeTest.valeur = {
+      ...avant,
+      facebook: 'https://www.facebook.com/search/top?q=MTM%20Immobilier',
+      tiktok: 'https://www.tiktok.com/search?q=MTM%20Immobilier',
+    };
     renderFab();
     ouvrir();
-    expect(screen.queryByRole('link', { name: /Facebook/ })).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /TikTok/ })).not.toBeInTheDocument();
-    expect(screen.getByRole('list', { name: 'Actions rapides' }).querySelectorAll('li')).toHaveLength(3);
+    expect(screen.getByRole('link', { name: /Facebook/ })).toHaveAttribute('href', expect.stringContaining('facebook.com/search'));
+    expect(screen.getByRole('link', { name: /TikTok/ })).toHaveAttribute('href', expect.stringContaining('tiktok.com/search'));
     contactDeTest.valeur = avant;
   });
 
