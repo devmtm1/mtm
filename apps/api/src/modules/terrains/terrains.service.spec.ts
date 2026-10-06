@@ -200,6 +200,30 @@ describe('TerrainsService', () => {
     ).rejects.toThrow(/justification est obligatoire/);
   });
 
+  it('accepte le changement de prix quand une justification est fournie', async () => {
+    prismaMock.terrain.findFirst.mockResolvedValue({ id: 't1' });
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+    prismaMock.terrain.findUnique.mockResolvedValue({
+      prixAcquisition: 5_000_000,
+      marge: null,
+      commission: null,
+      proprietaireId: null,
+    });
+    prismaMock.terrain.update.mockResolvedValue({ id: 't1', medias: [] });
+
+    await service.update(
+      't1',
+      { prixAcquisition: 6_000_000, justification: 'Réévaluation' },
+      { id: 'u-dir', roles: ['direction'], permissions: [] },
+    );
+
+    // La justification sert au contrôle et à l'audit ; elle n'est pas une
+    // colonne du terrain.
+    const donnees = prismaMock.terrain.update.mock.calls[0][0].data;
+    expect(donnees.prixAcquisition).toBe(6_000_000);
+    expect(donnees).not.toHaveProperty('justification');
+  });
+
   it('n’efface pas les montants quand l’auteur n’a pas accès au financier', async () => {
     prismaMock.terrain.findFirst.mockResolvedValue({ id: 't1' });
     prismaMock.systemSetting.findUnique.mockResolvedValue(null);

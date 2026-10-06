@@ -346,7 +346,11 @@ export class TerrainsService {
       }
     }
 
-    await this.assertJustificationForSensitiveFields(id, terrainData);
+    await this.assertJustificationForSensitiveFields(
+      id,
+      terrainData,
+      dto.justification,
+    );
 
     // Marge déduite quand elle n'est pas saisie. Calculée sur `terrainData`,
     // c'est-à-dire après le filtre ci-dessus : sur le DTO brut, un prix
@@ -577,6 +581,7 @@ export class TerrainsService {
   private async assertJustificationForSensitiveFields(
     id: string,
     dto: Record<string, unknown>,
+    justification: string | undefined,
   ): Promise<void> {
     const concerne = TerrainsService.SENSITIVE_FIELDS.filter(
       (field) => dto[field] !== undefined,
@@ -609,9 +614,9 @@ export class TerrainsService {
     );
     if (!change) return;
 
-    if (!(
-      typeof dto['justification'] === 'string' && dto['justification'].trim()
-    )) {
+    // La justification est reçue à part : `dto` n'en contient plus (elle est
+    // retirée avant l'écriture en base, ce n'est pas une colonne du terrain).
+    if (!justification?.trim()) {
       throw new BadRequestException(
         'Une justification est obligatoire pour modifier un champ sensible (prix d’acquisition, marge, commission, propriétaire)',
       );
