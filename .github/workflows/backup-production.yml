@@ -1,0 +1,194 @@
+name: Sauvegarde de la production
+
+# Sauvegarde quotidienne de la base de production vers un stockage EXTERNE
+# (compatible S3 : Cloudflare R2, Backblaze B2, AWS S3…), chiffrée avant envoi,
+# puis restauration de contrôle chaque semaine dans une base jetable.
+#
+# Pourquoi hors de Neon : une sauvegarde qui vit chez le même fournisseur que la
+# base disparaît avec elle (compte suspendu, suppression par erreur, incident).
+# Le chiffrement garantit que le stockage externe ne voit jamais de données
+# clients en clair (section 27 du cahier des charges).
+#
+# Secrets à créer dans GitHub (Settings → Secrets and variables → Actions),
+# sur l'organisation MTM — jamais sur un compte personnel :
+#   PROD_DATABASE_URL              URL de la base de production (lecture suffit)
+#   BACKUP_PASSPHRASE              phrase de passe de chiffrement (la conserver
+#                                  ailleurs : sans elle, les sauvegardes sont
+#                                  illisibles)
+#   BACKUP_S3_ENDPOINT             ex. https://<compte>.r2.cloudflarestorage.com
+#   BACKUP_S3_BUCKET               nom du bucket
+#   BACKUP_S3_ACCESS_KEY_ID
+#   BACKUP_S3_SECRET_ACCESS_KEY
+#
+# Durée de conservation : à régler par une règle de cycle de vie du bucket
+# (30 jours conseillés pour les sauvegardes quotidiennes) ; voir docs/BACKUP.md.
+
+on:
+  schedule:
+    - cron: '30 2 * * *' # tous les jours à 02h30 UTC
+    - cron: '0 5 * * 0' # restauration de contrôle, le dimanche à 05h00 UTC
+  workflow_dispatch:
+    inputs:
+      verifier:
+        description: 'Lancer aussi la restauration de contrôle'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup-production
+  cancel-in-progress: false
+
+env:
+  PG_VERSION: '17'
+
+jobs:
+  sauvegarde:
+    name: Sauvegarde chiffrée vers le stockage externe
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # La sauvegarde du dimanche 05h00 n'est pas une sauvegarde : seul le job de contrôle s'y exécute.
+    if: github.event.schedule != '0 5 * * 0'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Vérifier que la configuration est complète
+        env:
+          PROD_DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+          BACKUP_S3_ENDPOINT: ${{ secrets.BACKUP_S3_ENDPOINT }}
+          BACKUP_S3_BUCKET: ${{ secrets.BACKUP_S3_BUCKET }}
+          BACKUP_S3_ACCESS_KEY_ID: ${{ secrets.BACKUP_S3_ACCESS_KEY_ID }}
+          BACKUP_S3_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_S3_SECRET_ACCESS_KEY }}
+        run: |
+          manquants=""
+          for nom in PROD_DATABASE_URL BACKUP_PASSPHRASE BACKUP_S3_ENDPOINT BACKUP_S3_BUCKET BACKUP_S3_ACCESS_KEY_ID BACKUP_S3_SECRET_ACCESS_KEY; do
+            [ -n "${!nom}" ] || manquants="$manquants $nom"
+          done
+          if [ -n "$manquants" ]; then
+            echo "::error::Sauvegarde NON configurée, secrets manquants :$manquants. Aucune sauvegarde de production n'est faite tant que ce n'est pas corrigé."
+            exit 1
+          fi
+
+      - name: Installer le client PostgreSQL ${{ env.PG_VERSION }}
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq "postgresql-client-${PG_VERSION}"
+
+      - name: Sauvegarder, chiffrer, contrôler
+        id: dump
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/dump"
+          BACKUP_DIR="$RUNNER_TEMP/dump" bash apps/api/scripts/backup.sh
+          fichier="$(ls "$RUNNER_TEMP"/dump/mtm_immobilier_*.dump | head -n1)"
+          # Le dump doit être lisible avant d'être envoyé : un fichier corrompu
+          # qu'on découvre le jour du sinistre ne sert à rien.
+          pg_restore --list "$fichier" > /dev/null
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$BACKUP_PASSPHRASE" \
+            --symmetric --cipher-algo AES256 --output "$fichier.gpg" "$fichier"
+          rm -f "$fichier"
+          (cd "$RUNNER_TEMP/dump" && sha256sum "$(basename "$fichier").gpg" > "$(basename "$fichier").gpg.sha256")
+          echo "nom=$(basename "$fichier").gpg" >> "$GITHUB_OUTPUT"
+          ls -lh "$RUNNER_TEMP/dump"
+
+      - name: Envoyer vers le stockage externe
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.BACKUP_S3_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_S3_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          ENDPOINT: ${{ secrets.BACKUP_S3_ENDPOINT }}
+          BUCKET: ${{ secrets.BACKUP_S3_BUCKET }}
+          NOM: ${{ steps.dump.outputs.nom }}
+        run: |
+          set -euo pipefail
+          cible="s3://${BUCKET}/mtm/production/$(date -u +%Y/%m)"
+          aws s3 cp "$RUNNER_TEMP/dump/$NOM" "$cible/$NOM" --endpoint-url "$ENDPOINT" --only-show-errors
+          aws s3 cp "$RUNNER_TEMP/dump/$NOM.sha256" "$cible/$NOM.sha256" --endpoint-url "$ENDPOINT" --only-show-errors
+          # Relecture : l'objet envoyé existe et a la taille attendue.
+          taille_locale="$(stat -c %s "$RUNNER_TEMP/dump/$NOM")"
+          taille_distante="$(aws s3api head-object --bucket "$BUCKET" --key "mtm/production/$(date -u +%Y/%m)/$NOM" --endpoint-url "$ENDPOINT" --query ContentLength --output text)"
+          [ "$taille_locale" = "$taille_distante" ] || { echo "::error::Taille distante ($taille_distante) différente de la taille locale ($taille_locale)"; exit 1; }
+          echo "Sauvegarde envoyée : $cible/$NOM ($taille_locale octets)"
+
+  restauration-de-controle:
+    name: Restauration de contrôle dans une base jetable
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: [sauvegarde]
+    # Le dimanche (la sauvegarde y est ignorée) et sur déclenchement manuel.
+    if: >-
+      always() && (
+        github.event.schedule == '0 5 * * 0' ||
+        (github.event_name == 'workflow_dispatch' && inputs.verifier)
+      )
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: restore
+          POSTGRES_PASSWORD: restore
+          POSTGRES_DB: restore_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U restore -d restore_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer le client PostgreSQL ${{ env.PG_VERSION }}
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq "postgresql-client-${PG_VERSION}"
+
+      - name: Récupérer la sauvegarde la plus récente
+        id: recuperer
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.BACKUP_S3_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_S3_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          ENDPOINT: ${{ secrets.BACKUP_S3_ENDPOINT }}
+          BUCKET: ${{ secrets.BACKUP_S3_BUCKET }}
+        run: |
+          set -euo pipefail
+          cle="$(aws s3api list-objects-v2 --bucket "$BUCKET" --prefix mtm/production/ --endpoint-url "$ENDPOINT" \
+            --query "sort_by(Contents[?ends_with(Key, '.gpg')], &LastModified)[-1].Key" --output text)"
+          [ -n "$cle" ] && [ "$cle" != "None" ] || { echo "::error::Aucune sauvegarde trouvée dans le stockage externe"; exit 1; }
+          mkdir -p "$RUNNER_TEMP/restore"
+          aws s3 cp "s3://$BUCKET/$cle" "$RUNNER_TEMP/restore/dump.gpg" --endpoint-url "$ENDPOINT" --only-show-errors
+          aws s3 cp "s3://$BUCKET/$cle.sha256" "$RUNNER_TEMP/restore/dump.gpg.sha256" --endpoint-url "$ENDPOINT" --only-show-errors
+          echo "cle=$cle" >> "$GITHUB_OUTPUT"
+          echo "Sauvegarde contrôlée : $cle"
+
+      - name: Vérifier l'empreinte, déchiffrer, restaurer
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/restore"
+          # L'empreinte enregistrée porte le nom d'origine du fichier : on la rejoue sur le nom local.
+          attendu="$(cut -d' ' -f1 dump.gpg.sha256)"
+          obtenu="$(sha256sum dump.gpg | cut -d' ' -f1)"
+          [ "$attendu" = "$obtenu" ] || { echo "::error::Empreinte SHA-256 différente : sauvegarde altérée ou incomplète"; exit 1; }
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$BACKUP_PASSPHRASE" --output dump.dump --decrypt dump.gpg
+          export DATABASE_URL="postgresql://restore:restore@localhost:5432/restore_test"
+          bash "$GITHUB_WORKSPACE/apps/api/scripts/restore.sh" --force "$RUNNER_TEMP/restore/dump.dump"
+
+      - name: Contrôles de cohérence
+        env:
+          DATABASE_URL: postgresql://restore:restore@localhost:5432/restore_test
+        run: bash apps/api/scripts/verify-restored-backup.sh apps/api/prisma/migrations
