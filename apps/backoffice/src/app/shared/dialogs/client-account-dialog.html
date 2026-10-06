@@ -4,7 +4,7 @@
   @if (!created()) {
     <p class="account-dialog__intro">
       L’espace client permet à <strong>{{ data.name }}</strong> de {{ data.scopeDescription }} sur le
-      site public. Un e-mail d’invitation part à <strong>{{ data.email }}</strong> : il y choisit son mot de passe.
+      site public. Un e-mail d’invitation part à <strong>{{ data.email }}</strong> : il y choisit son mot de passe. Si cette personne a déjà un espace client avec cette adresse, l’accès est simplement ajouté à son compte.
     </p>
     <mat-form-field appearance="outline" class="account-dialog__field">
       <mat-label>Mot de passe de secours</mat-label>
@@ -18,6 +18,19 @@
     @if (error()) {
       <p class="account-dialog__box account-dialog__box--error">{{ error() }}</p>
     }
+  } @else if (compteExistant()) {
+    <div class="account-dialog__box account-dialog__box--success">
+      <strong>Accès ajouté à l’espace client existant de {{ data.email }}.</strong>
+      <p>
+        Cette personne avait déjà un espace client : l’accès est ajouté à son compte, avec son mot de passe habituel
+        (aucun mot de passe à lui transmettre).
+        @if (invitationSent()) {
+          Un e-mail l’en informe.
+        } @else {
+          L’e-mail d’information n’a pas pu partir : prévenez-la vous-même de se reconnecter.
+        }
+      </p>
+    </div>
   } @else if (invitationSent()) {
     <div class="account-dialog__box account-dialog__box--success">
       <strong>Compte créé — invitation envoyée à {{ data.email }}.</strong>
@@ -46,7 +59,9 @@
       {{ creating() ? 'Création…' : 'Créer le compte et inviter' }}
     </button>
   } @else {
-    <button mat-stroked-button type="button" (click)="copyCredentials()">Copier les identifiants</button>
+    @if (!compteExistant()) {
+      <button mat-stroked-button type="button" (click)="copyCredentials()">Copier les identifiants</button>
+    }
     <button mat-flat-button color="primary" type="button" (click)="close()">Fermer</button>
   }
 </mat-dialog-actions>

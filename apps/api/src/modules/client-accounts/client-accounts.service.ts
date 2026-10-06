@@ -55,11 +55,18 @@ export class ClientAccountsService {
     }
     const existant = await this.prisma.user.findUnique({
       where: { email: demande.email },
-      select: { id: true },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        clientProspectId: true,
+        clientProprietaireId: true,
+        clientLocataireId: true,
+        roles: { select: { role: { select: { name: true } } } },
+      },
     });
-    if (existant) {
-      throw new ConflictException('Cette adresse e-mail est déjà utilisée');
-    }
+    if (existant) return this.rattacherAuCompteExistant(existant, demande);
 
     const hashed = await bcrypt.hash(demande.password, 12);
     const rawToken = randomBytes(32).toString('hex');
@@ -104,6 +111,79 @@ export class ClientAccountsService {
       ...user,
       invitationSent: sent,
       resetToken: sent ? undefined : rawToken,
+      compteExistant: false,
+    };
+  }
+
+  /**
+   * La personne a déjà un espace client (par exemple comme acheteur) : on y
+   * ajoute le nouveau rattachement au lieu de refuser l'adresse e-mail. Sans
+   * cela, un client qui devient locataire ou propriétaire ne verrait jamais
+   * « Ma location » ou « Mon bien » : l'espace client n'affiche ces onglets
+   * que pour un compte rattaché.
+   *
+   * Seuls les comptes purement « client » sont concernés : jamais un compte du
+   * personnel, dont l'adresse serait seulement la même. Le mot de passe n'est
+   * pas touché.
+   */
+  private async rattacherAuCompteExistant(
+    existant: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      clientProspectId: string | null;
+      clientProprietaireId: string | null;
+      clientLocataireId: string | null;
+      roles: { role: { name: string } }[];
+    },
+    demande: OuvertureCompteClient,
+  ) {
+    const estCompteClient =
+      existant.roles.length > 0 &&
+      existant.roles.every((lien) => lien.role.name === 'client');
+    if (!estCompteClient) {
+      throw new ConflictException(
+        'Cette adresse e-mail est déjà utilisée par un compte du personnel',
+      );
+    }
+
+    const [champ] = Object.keys(
+      demande.rattachement,
+    ) as (keyof RattachementClient)[];
+    if (existant[champ]) {
+      throw new ConflictException(
+        'Cette adresse e-mail a déjà un espace client rattaché à un autre dossier de ce type',
+      );
+    }
+
+    await this.prisma.user.update({
+      where: { id: existant.id },
+      data: { ...demande.rattachement },
+    });
+
+    const baseUrl = this.config.get<string>('PUBLIC_WEB_URL');
+    const sent = await this.mail.send({
+      to: existant.email,
+      subject: "Votre espace client MTM Immobilier s'enrichit",
+      text: [
+        `Bonjour ${existant.firstName},`,
+        demande.introduction,
+        'Connectez-vous avec votre identifiant habituel : le nouvel espace apparaît dans votre espace client.',
+        `${baseUrl}/espace-client/connexion`,
+        `Identifiant : ${existant.email}`,
+      ].join('\n\n'),
+    });
+
+    return {
+      id: existant.id,
+      email: existant.email,
+      firstName: existant.firstName,
+      lastName: existant.lastName,
+      invitationSent: sent,
+      resetToken: undefined,
+      /** Le client garde son mot de passe : rien à lui transmettre. */
+      compteExistant: true,
     };
   }
 }

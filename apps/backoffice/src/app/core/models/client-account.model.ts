@@ -8,4 +8,6 @@ export interface ClientAccountCreated {
   invitationSent: boolean;
   /** Jeton de première connexion, uniquement quand l'e-mail n'a pas pu partir. */
   resetToken?: string;
+  /** true si le client avait déjà un espace : le nouvel accès y a été ajouté, son mot de passe est inchangé. */
+  compteExistant?: boolean;
 }

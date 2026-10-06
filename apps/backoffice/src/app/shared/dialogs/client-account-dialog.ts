@@ -60,6 +60,7 @@ export class ClientAccountDialog {
   protected readonly createdPassword = signal('');
   protected readonly invitationSent = signal(false);
   protected readonly resetToken = signal<string | null>(null);
+  protected readonly compteExistant = signal(false);
   protected readonly error = signal<string | null>(null);
 
   protected regeneratePassword(): void {
@@ -76,6 +77,7 @@ export class ClientAccountDialog {
         this.createdPassword.set(password);
         this.invitationSent.set(result.invitationSent);
         this.resetToken.set(result.resetToken ?? null);
+        this.compteExistant.set(result.compteExistant ?? false);
         this.created.set(true);
         this.creating.set(false);
       },

@@ -103,15 +103,68 @@ describe('LocatairesService', () => {
       expect(prismaMock.user.create).not.toHaveBeenCalled();
     });
 
-    it('refuse si l’adresse e-mail est déjà utilisée par un autre compte', async () => {
+    it('refuse si l’adresse e-mail est celle d’un compte du personnel', async () => {
       prismaMock.locataire.findUnique.mockResolvedValue(locataire);
       prismaMock.role.findUnique.mockResolvedValue({ id: 'role-client' });
-      prismaMock.user.findUnique.mockResolvedValue({ id: 'un-autre-compte' });
+      prismaMock.user.findUnique.mockResolvedValue({
+        id: 'un-agent',
+        roles: [{ role: { name: 'commercial' } }],
+      });
 
       await expect(
         locataires.createClientAccount('loc-1', 'MotDePasse123!'),
       ).rejects.toThrow(ConflictException);
       expect(prismaMock.user.create).not.toHaveBeenCalled();
+      expect(prismaMock.user.update).not.toHaveBeenCalled();
+    });
+
+    it('ajoute l’espace locataire au compte client que la personne a déjà', async () => {
+      prismaMock.locataire.findUnique.mockResolvedValue(locataire);
+      prismaMock.role.findUnique.mockResolvedValue({ id: 'role-client' });
+      prismaMock.user.findUnique.mockResolvedValue({
+        id: 'compte-client',
+        firstName: 'Awa',
+        lastName: 'Diop',
+        email: locataire.email,
+        clientProspectId: 'prospect-1',
+        clientProprietaireId: null,
+        clientLocataireId: null,
+        roles: [{ role: { name: 'client' } }],
+      });
+      prismaMock.user.update.mockResolvedValue({});
+
+      const result = await locataires.createClientAccount(
+        'loc-1',
+        'MotDePasse123!',
+      );
+
+      expect(result.compteExistant).toBe(true);
+      expect(prismaMock.user.create).not.toHaveBeenCalled();
+      // Seul le rattachement est ajouté : ni mot de passe, ni autre lien.
+      expect(prismaMock.user.update).toHaveBeenCalledWith({
+        where: { id: 'compte-client' },
+        data: { clientLocataireId: 'loc-1' },
+      });
+    });
+
+    it('refuse un compte client déjà rattaché à un autre locataire', async () => {
+      prismaMock.locataire.findUnique.mockResolvedValue(locataire);
+      prismaMock.role.findUnique.mockResolvedValue({ id: 'role-client' });
+      prismaMock.user.findUnique.mockResolvedValue({
+        id: 'compte-client',
+        firstName: 'Awa',
+        lastName: 'Diop',
+        email: locataire.email,
+        clientProspectId: null,
+        clientProprietaireId: null,
+        clientLocataireId: 'autre-locataire',
+        roles: [{ role: { name: 'client' } }],
+      });
+
+      await expect(
+        locataires.createClientAccount('loc-1', 'MotDePasse123!'),
+      ).rejects.toThrow(ConflictException);
+      expect(prismaMock.user.update).not.toHaveBeenCalled();
     });
   });
 });

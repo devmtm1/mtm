@@ -10,7 +10,7 @@ describe('ProprietairesService.createClientAccount', () => {
   const prismaMock = {
     proprietaire: { findUnique: jest.fn() },
     role: { findUnique: jest.fn() },
-    user: { findUnique: jest.fn(), create: jest.fn() },
+    user: { findUnique: jest.fn(), create: jest.fn(), update: jest.fn() },
   };
   const configMock = { get: jest.fn() };
   const mailMock = { send: jest.fn().mockResolvedValue(true) };
@@ -98,10 +98,41 @@ describe('ProprietairesService.createClientAccount', () => {
     expect(prismaMock.user.create).not.toHaveBeenCalled();
   });
 
-  it('refuse si l’adresse e-mail est déjà utilisée par un autre compte', async () => {
+  it('ajoute l’espace propriétaire au compte client que la personne a déjà', async () => {
     prismaMock.proprietaire.findUnique.mockResolvedValue(proprietaire);
     prismaMock.role.findUnique.mockResolvedValue({ id: 'role-client' });
-    prismaMock.user.findUnique.mockResolvedValue({ id: 'un-autre-compte' });
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'compte-client',
+      firstName: 'Moussa',
+      lastName: 'Fall',
+      email: proprietaire.email,
+      clientProspectId: 'prospect-1',
+      clientProprietaireId: null,
+      clientLocataireId: null,
+      roles: [{ role: { name: 'client' } }],
+    });
+    prismaMock.user.update.mockResolvedValue({});
+
+    const result = await service.createClientAccount(
+      'prop-1',
+      'MotDePasse123!',
+    );
+
+    expect(result.compteExistant).toBe(true);
+    expect(prismaMock.user.create).not.toHaveBeenCalled();
+    expect(prismaMock.user.update).toHaveBeenCalledWith({
+      where: { id: 'compte-client' },
+      data: { clientProprietaireId: 'prop-1' },
+    });
+  });
+
+  it('refuse si l’adresse e-mail est celle d’un compte du personnel', async () => {
+    prismaMock.proprietaire.findUnique.mockResolvedValue(proprietaire);
+    prismaMock.role.findUnique.mockResolvedValue({ id: 'role-client' });
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'un-agent',
+      roles: [{ role: { name: 'commercial' } }],
+    });
 
     await expect(
       service.createClientAccount('prop-1', 'MotDePasse123!'),
