@@ -7,6 +7,7 @@ import { useAuth } from '../../contexts/auth-context-store';
 const PRIMARY_LINKS = [
   { to: ROUTES.home, label: 'Accueil' },
   { to: ROUTES.catalog, label: 'Nos biens' },
+  { to: ROUTES.locations, label: 'Locations' },
   { to: ROUTES.realisations, label: 'Nos réalisations' },
   { to: ROUTES.projetsAVenir, label: 'Projets à venir' },
   { to: ROUTES.about, label: 'À propos' },
@@ -62,17 +63,19 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-mtm-border bg-mtm-surface/95 shadow-[0_1px_0_rgba(31,41,55,0.04)] backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
         <NavLink to={ROUTES.home} className="flex items-center gap-2.5" onClick={() => setMobileOpen(false)}>
           <img src="/logomtm.jpeg" alt="MTM Immobilier" className="h-11 w-11 rounded-full object-cover" />
-          <span className="whitespace-nowrap font-display text-lg font-bold">
+          {/* Entre lg et xl, le menu n'a plus la place du nom : le logo seul suffit. */}
+          <span className="hidden whitespace-nowrap font-display text-lg font-bold sm:inline lg:hidden xl:inline">
             <span className="text-mtm-accent">MTM</span> <span className="text-mtm-primary">Immobilier</span>
           </span>
         </NavLink>
 
-        <nav className="hidden items-center gap-5 whitespace-nowrap lg:flex">
-          {PRIMARY_LINKS.map((link) => (
-            <NavLink key={link.to} to={link.to} className={navLinkClass} end={link.to === ROUTES.home}>
+        <nav className="hidden items-center gap-4 whitespace-nowrap lg:flex xl:gap-5">
+          {/* « Accueil » reste dans le menu mobile ; sur ordinateur, le logo y mène. */}
+          {PRIMARY_LINKS.filter((link) => link.to !== ROUTES.home).map((link) => (
+            <NavLink key={link.to} to={link.to} className={navLinkClass}>
               {link.label}
             </NavLink>
           ))}

@@ -2,6 +2,8 @@ import { PageIntro } from '../components/layout/PageIntro';
 import { ContactCtaSection } from '../components/home/ContactCtaSection';
 import { useEditableContent } from '../hooks/useEditableContent';
 import { usePageMetadata } from '../hooks/usePageMetadata';
+import { LinkButton } from '../components/ui/LinkButton';
+import { ROUTES } from '../routes';
 
 const FALLBACK_INTRO =
   "Confiez-nous la gestion de vos biens : nous nous occupons des locataires, des loyers et du suivi administratif, pour une tranquillité d'esprit totale.";
@@ -40,6 +42,19 @@ export function GestionLocativePage() {
             </li>
           ))}
         </ul>
+      </section>
+      <section className="mx-auto max-w-3xl px-4 pb-14 sm:px-6">
+        <div className="flex flex-col items-start gap-4 rounded-xl border border-mtm-border bg-mtm-surface p-6 shadow-card sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="font-display text-lg font-bold text-mtm-text">Vous cherchez un logement à louer ?</h2>
+            <p className="mt-1 text-sm text-mtm-muted">
+              Découvrez les appartements, villas et studios que nous gérons et demandez une visite en ligne.
+            </p>
+          </div>
+          <LinkButton to={ROUTES.locations} className="shrink-0">
+            Voir les locations
+          </LinkButton>
+        </div>
       </section>
       <ContactCtaSection />
     </div>

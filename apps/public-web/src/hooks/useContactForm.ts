@@ -9,12 +9,19 @@ const EMPTY_VALUES: ContactFormValues = { nom: '', email: '', telephone: '', suj
 
 export interface UseContactFormOptions {
   terrainId?: string;
+  /** Annonce de location demandée : la demande rejoint les gestionnaires locatifs. */
+  bienLocatifId?: string;
   initialSujet?: string;
   /** Nature de la demande quand elle part d'un client connecté. */
   demandeType?: Exclude<ClientDemandeType, 'reservation'>;
 }
 
-export function useContactForm({ terrainId, initialSujet, demandeType = 'information' }: UseContactFormOptions = {}) {
+export function useContactForm({
+  terrainId,
+  bienLocatifId,
+  initialSujet,
+  demandeType = 'information',
+}: UseContactFormOptions = {}) {
   // Client connecté : identité prise dans son compte, envoi authentifié pour
   // que la demande soit rattachée à son espace (et non à l'e-mail saisi).
   const client = useClientSession();
@@ -46,6 +53,20 @@ export function useContactForm({ terrainId, initialSujet, demandeType = 'informa
     setSubmitting(true);
     setSubmitError(null);
     try {
+      // Une demande de location passe toujours par le formulaire public, même
+      // connecté : elle est adressée aux gestionnaires locatifs, pas rangée
+      // parmi les demandes d'achat de l'espace client.
+      if (client && bienLocatifId) {
+        await sendContactMessage({
+          nom: `${client.firstName} ${client.lastName}`.trim(),
+          email: client.email,
+          sujet: values.sujet.trim() || undefined,
+          message: values.message.trim(),
+          bienLocatifId,
+        });
+        setSubmitted(true);
+        return;
+      }
       if (client) {
         await createClientDemande(client.token, {
           type: demandeType,
@@ -63,6 +84,7 @@ export function useContactForm({ terrainId, initialSujet, demandeType = 'informa
         sujet: values.sujet.trim() || undefined,
         message: values.message.trim(),
         terrainId,
+        bienLocatifId,
       });
       setSubmitted(true);
     } catch (error) {
@@ -72,7 +94,7 @@ export function useContactForm({ terrainId, initialSujet, demandeType = 'informa
     } finally {
       setSubmitting(false);
     }
-  }, [values, terrainId, client, demandeType]);
+  }, [values, terrainId, bienLocatifId, client, demandeType]);
 
   return { values, setValue, errors, submitting, submitted, submitError, submit, reset, client };
 }

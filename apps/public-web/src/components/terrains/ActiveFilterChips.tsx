@@ -1,9 +1,13 @@
 import { X } from 'lucide-react';
-import type { FilterChip } from './active-filter-chips';
+/** Ce dont la puce a besoin pour s'afficher : les filtres de chaque catalogue y ajoutent leurs champs. */
+interface ChipBase {
+  key: string;
+  label: string;
+}
 
-interface ActiveFilterChipsProps {
-  chips: FilterChip[];
-  onRemove: (chip: FilterChip) => void;
+interface ActiveFilterChipsProps<T extends ChipBase> {
+  chips: T[];
+  onRemove: (chip: T) => void;
   onClear: () => void;
 }
 
@@ -11,7 +15,7 @@ interface ActiveFilterChipsProps {
  * Ce qui filtre la liste, en un coup d'œil — et retirable d'un tap, sans
  * rouvrir le formulaire. Indispensable sur mobile où les critères sont repliés.
  */
-export function ActiveFilterChips({ chips, onRemove, onClear }: ActiveFilterChipsProps) {
+export function ActiveFilterChips<T extends ChipBase>({ chips, onRemove, onClear }: ActiveFilterChipsProps<T>) {
   if (chips.length === 0) return null;
   return (
     <ul className="flex flex-wrap items-center gap-2" aria-label="Filtres actifs">

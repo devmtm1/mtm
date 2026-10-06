@@ -6,6 +6,7 @@ import { FormField, fieldInputClass } from '../ui/FormField';
 
 interface ContactFormProps {
   terrainId?: string;
+  bienLocatifId?: string;
   initialSujet?: string;
   /**
    * Sujets proposés au lieu d'un champ libre. La page « Démarches » y passe
@@ -21,6 +22,7 @@ interface ContactFormProps {
 
 export function ContactForm({
   terrainId,
+  bienLocatifId,
   initialSujet,
   sujetOptions,
   demandeType,
@@ -28,6 +30,7 @@ export function ContactForm({
 }: ContactFormProps) {
   const { values, setValue, errors, submitting, submitted, submitError, submit, client } = useContactForm({
     terrainId,
+    bienLocatifId,
     initialSujet,
     demandeType,
   });
@@ -58,7 +61,7 @@ export function ContactForm({
       }}
     >
       {client ? (
-        <ClientIdentityNotice client={client} />
+        <ClientIdentityNotice client={client} dansEspaceClient={!bienLocatifId} />
       ) : (
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <FormField label="Nom complet" htmlFor="contact-nom" error={errors.nom} required>

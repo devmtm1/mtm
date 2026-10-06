@@ -26,6 +26,11 @@ const LAZY_ROUTES: { path: string; Page: ComponentType }[] = [
     path: '/terrains/:id',
     Page: lazyPage(() => import('./pages/TerrainDetailPage').then((m) => m.TerrainDetailPage)),
   },
+  { path: ROUTES.locations, Page: lazyPage(() => import('./pages/LocationsPage').then((m) => m.LocationsPage)) },
+  {
+    path: '/locations/:id',
+    Page: lazyPage(() => import('./pages/LocationDetailPage').then((m) => m.LocationDetailPage)),
+  },
   { path: ROUTES.about, Page: lazyPage(() => import('./pages/AboutPage').then((m) => m.AboutPage)) },
   {
     path: ROUTES.gestionLocative,

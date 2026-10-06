@@ -6,6 +6,7 @@ import { toTelHref, useSiteContact } from '../../hooks/useSiteContact';
 
 const SERVICE_LINKS = [
   { to: ROUTES.catalog, label: 'Terrains et villas' },
+  { to: ROUTES.locations, label: 'Locations disponibles' },
   { to: ROUTES.gestionLocative, label: 'Gestion locative' },
   { to: ROUTES.construction, label: 'Construction' },
   { to: ROUTES.demarches, label: 'Démarches administratives' },

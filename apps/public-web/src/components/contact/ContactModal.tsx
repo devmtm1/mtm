@@ -5,6 +5,7 @@ import { ContactForm } from './ContactForm';
 interface ContactModalProps {
   title?: string;
   terrainId?: string;
+  bienLocatifId?: string;
   initialSujet?: string;
   /** Sujets proposés au lieu d'un champ libre. */
   sujetOptions?: string[];
@@ -21,6 +22,7 @@ interface ContactModalProps {
 export function ContactModal({
   title = 'Nous contacter',
   terrainId,
+  bienLocatifId,
   initialSujet,
   sujetOptions,
   intro,
@@ -32,6 +34,7 @@ export function ContactModal({
       {intro}
       <ContactForm
         terrainId={terrainId}
+        bienLocatifId={bienLocatifId}
         initialSujet={initialSujet}
         sujetOptions={sujetOptions}
         demandeType={demandeType}

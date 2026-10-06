@@ -8,8 +8,11 @@ import { ROUTES } from '../../routes';
  */
 export function ClientIdentityNotice({
   client,
+  dansEspaceClient = true,
 }: {
   client: { firstName: string; lastName: string; email: string };
+  /** Faux pour une demande de location : elle part aux gestionnaires locatifs, hors de l'espace client. */
+  dansEspaceClient?: boolean;
 }) {
   return (
     <div className="flex items-start gap-2.5 rounded-md bg-mtm-primary-subtle px-3.5 py-3 text-sm">
@@ -19,11 +22,18 @@ export function ClientIdentityNotice({
         <strong>
           {client.firstName} {client.lastName}
         </strong>{' '}
-        ({client.email}). Vous retrouverez cette demande et sa prise en charge dans{' '}
-        <Link to={ROUTES.clientDemandes} className="font-semibold text-mtm-primary hover:underline">
-          votre espace client
-        </Link>
-        .
+        ({client.email}).{' '}
+        {dansEspaceClient ? (
+          <>
+            Vous retrouverez cette demande et sa prise en charge dans{' '}
+            <Link to={ROUTES.clientDemandes} className="font-semibold text-mtm-primary hover:underline">
+              votre espace client
+            </Link>
+            .
+          </>
+        ) : (
+          'Notre équipe vous recontactera à cette adresse.'
+        )}
       </p>
     </div>
   );
