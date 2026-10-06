@@ -141,6 +141,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Politique de sécurité du contenu (CSP)
+        run: node scripts/check-csp.mjs
+
+      - name: Lint
+        working-directory: apps/public-web
+        run: npx eslint .
+
       - name: Build
         working-directory: apps/public-web
         run: npm run build
+
+      - name: Unit tests
+        working-directory: apps/public-web
+        run: npm run test

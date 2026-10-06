@@ -37,7 +37,7 @@
             "allowedCommonJsDependencies": ["leaflet"],
             "optimization": {
               "scripts": true,
-              "styles": true,
+              "styles": { "minify": true, "inlineCritical": false },
               "fonts": false
             }
           },
@@ -45,7 +45,7 @@
             "production": {
               "optimization": {
                 "scripts": true,
-                "styles": true,
+                "styles": { "minify": true, "inlineCritical": false },
                 "fonts": false
               },
               "outputHashing": "all",
@@ -61,7 +61,7 @@
             "staging": {
               "optimization": {
                 "scripts": true,
-                "styles": true,
+                "styles": { "minify": true, "inlineCritical": false },
                 "fonts": false
               },
               "outputHashing": "all",
