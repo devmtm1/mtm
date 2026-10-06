@@ -39,7 +39,7 @@ export function LocationCard({ location, compact = false }: LocationCardProps) {
   return (
     <Link
       to={ROUTES.locationDetail(location.id)}
-      className="group flex flex-col overflow-hidden rounded-xl border border-mtm-border bg-mtm-surface shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-mtm-primary-light hover:shadow-card-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mtm-primary"
+      className="group flex flex-col overflow-hidden rounded-2xl border border-mtm-border/70 bg-mtm-surface shadow-card transition-all duration-150 active:scale-[0.98] lg:rounded-xl lg:border-mtm-border lg:duration-200 lg:hover:-translate-y-0.5 lg:hover:border-mtm-primary-light lg:hover:shadow-card-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mtm-primary"
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-mtm-border">
         <MediaImage

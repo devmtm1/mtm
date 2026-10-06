@@ -88,11 +88,11 @@ export function CardGridSkeleton({
 /** Silhouette de la fiche d’un bien (en-tête + galerie à gauche, encart prix à droite). */
 export function TerrainDetailSkeleton() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6" aria-busy="true">
+    <div className="mx-auto max-w-6xl px-4 pb-10 sm:px-6 lg:py-10" aria-busy="true">
       <span className="sr-only">Chargement du bien…</span>
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.6fr_1fr]" aria-hidden="true">
-        <div className="flex flex-col gap-8">
-          <div>
+        <div className="flex flex-col gap-6 lg:gap-8">
+          <div className="order-2 lg:order-1">
             <Skeleton className="h-3 w-16" />
             <Skeleton className="mt-2 h-8 w-2/3" />
             <Skeleton className="mt-3 h-4 w-1/3" />
@@ -101,8 +101,8 @@ export function TerrainDetailSkeleton() {
               <Skeleton className="h-5 w-16 rounded-full" />
             </div>
           </div>
-          <Skeleton className="aspect-video w-full rounded-lg" />
-          <div>
+          <Skeleton className="order-1 -mx-4 aspect-[4/3] rounded-none sm:-mx-6 lg:order-2 lg:mx-0 lg:aspect-video lg:rounded-lg" />
+          <div className="order-3">
             <Skeleton className="h-5 w-32" />
             <Skeleton className="mt-3 h-4 w-full" />
             <Skeleton className="mt-2 h-4 w-11/12" />

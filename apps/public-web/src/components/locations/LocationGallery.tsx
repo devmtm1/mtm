@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { ChevronLeft, ChevronRight, Expand, Play, X } from 'lucide-react';
 import type { LocationMedia } from '../../types/location';
 import { MediaImage } from '../ui/MediaImage';
@@ -6,6 +7,10 @@ import { MediaImage } from '../ui/MediaImage';
 interface LocationGalleryProps {
   medias: LocationMedia[];
   alt: string;
+  /** Classes du conteneur (ex. pleine largeur sur mobile). */
+  className?: string;
+  /** Actions posées sur la photo, en haut à droite (favori…). */
+  overlay?: ReactNode;
 }
 
 /**
@@ -13,7 +18,7 @@ interface LocationGalleryProps {
  * écran au clic — un locataire juge un logement sur ses photos, elles doivent
  * pouvoir se regarder en grand, au clavier comme au doigt (flèches, Échap).
  */
-export function LocationGallery({ medias, alt }: LocationGalleryProps) {
+export function LocationGallery({ medias, alt, className = '', overlay }: LocationGalleryProps) {
   const [index, setIndex] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -48,8 +53,10 @@ export function LocationGallery({ medias, alt }: LocationGalleryProps) {
 
   if (!active) {
     return (
-      <div className="flex aspect-[16/10] items-center justify-center rounded-xl border border-mtm-border bg-mtm-border/40 text-sm text-mtm-muted">
-        Les photos arrivent bientôt
+      <div className={className}>
+        <div className="flex aspect-[4/3] items-center justify-center bg-mtm-border/40 text-sm text-mtm-muted sm:aspect-[16/10] lg:rounded-xl lg:border lg:border-mtm-border">
+          Les photos arrivent bientôt
+        </div>
       </div>
     );
   }
@@ -67,12 +74,12 @@ export function LocationGallery({ medias, alt }: LocationGalleryProps) {
   };
 
   const arrowClass =
-    'absolute top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-mtm-text shadow-card transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-mtm-primary';
+    'absolute top-1/2 z-10 hidden h-10 w-10 lg:flex -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-mtm-text shadow-card transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-mtm-primary';
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className={`flex flex-col gap-3 ${className}`}>
       <div
-        className="group relative aspect-[16/10] overflow-hidden rounded-xl border border-mtm-border bg-mtm-border/40"
+        className="group relative aspect-[4/3] overflow-hidden bg-mtm-border/40 sm:aspect-[16/10] lg:rounded-xl lg:border lg:border-mtm-border"
         {...swipe}
       >
         {active.type === 'video' ? (
@@ -106,7 +113,20 @@ export function LocationGallery({ medias, alt }: LocationGalleryProps) {
           </>
         )}
 
-        <div className="pointer-events-none absolute bottom-3 right-3 flex items-center gap-2">
+        {overlay && <div className="absolute right-3 top-3 z-10 flex gap-2">{overlay}</div>}
+
+        {count > 1 && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-9 flex justify-center gap-1.5 lg:hidden" aria-hidden="true">
+            {medias.map((media, position) => (
+              <span
+                key={media.id}
+                className={`h-1.5 rounded-full bg-white shadow-card transition-all ${position === index ? 'w-5' : 'w-1.5 opacity-60'}`}
+              />
+            ))}
+          </div>
+        )}
+
+        <div className="pointer-events-none absolute bottom-9 right-3 flex items-center gap-2 lg:bottom-3">
           <span className="rounded-full bg-black/60 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur">
             {index + 1} / {count}
           </span>
@@ -119,7 +139,7 @@ export function LocationGallery({ medias, alt }: LocationGalleryProps) {
       </div>
 
       {count > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Photos du bien">
+        <div className="hidden gap-2 overflow-x-auto pb-1 lg:flex" role="tablist" aria-label="Photos du bien">
           {medias.map((media, position) => (
             <button
               key={media.id}

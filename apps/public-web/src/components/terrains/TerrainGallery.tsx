@@ -1,24 +1,64 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import type { ReactNode, TouchEvent } from 'react';
 import { Play } from 'lucide-react';
 import type { TerrainMedia } from '../../types/terrain';
 import { MediaImage } from '../ui/MediaImage';
 
-export function TerrainGallery({ medias, alt }: { medias: TerrainMedia[]; alt: string }) {
+interface TerrainGalleryProps {
+  medias: TerrainMedia[];
+  alt: string;
+  /** Classes du conteneur (ex. pleine largeur sur mobile). */
+  className?: string;
+  /** Actions posées sur la photo, en haut à droite (favori…). */
+  overlay?: ReactNode;
+}
+
+/**
+ * Galerie de la fiche. Sur mobile : photo pleine largeur qui se feuillette au
+ * doigt, avec compteur et points ; sur ordinateur : photo et vignettes.
+ */
+export function TerrainGallery({ medias, alt, className = '', overlay }: TerrainGalleryProps) {
   const photosAndVideos = medias.filter((media) => media.type !== 'plan');
   const [activeId, setActiveId] = useState(photosAndVideos[0]?.id);
-  const active = photosAndVideos.find((media) => media.id === activeId) ?? photosAndVideos[0];
+  const touchStartX = useRef<number | null>(null);
+  const count = photosAndVideos.length;
+  const activeIndex = Math.max(
+    photosAndVideos.findIndex((media) => media.id === activeId),
+    0,
+  );
+  const active = photosAndVideos[activeIndex];
 
   if (!active) {
     return (
-      <div className="flex aspect-video items-center justify-center rounded-lg border border-mtm-border bg-mtm-border/40 text-sm text-mtm-muted">
-        Aucun média disponible pour le moment
+      <div className={className}>
+        <div className="flex aspect-[4/3] items-center justify-center bg-mtm-border/40 text-sm text-mtm-muted sm:aspect-video lg:rounded-lg lg:border lg:border-mtm-border">
+          Aucun média disponible pour le moment
+        </div>
       </div>
     );
   }
 
+  const go = (delta: number) => {
+    setActiveId(photosAndVideos[(activeIndex + delta + count) % count].id);
+  };
+  const swipe = {
+    onTouchStart: (event: TouchEvent) => {
+      touchStartX.current = event.touches[0].clientX;
+    },
+    onTouchEnd: (event: TouchEvent) => {
+      if (touchStartX.current === null) return;
+      const delta = event.changedTouches[0].clientX - touchStartX.current;
+      touchStartX.current = null;
+      if (count > 1 && Math.abs(delta) > 50) go(delta < 0 ? 1 : -1);
+    },
+  };
+
   return (
-    <div className="flex flex-col gap-3">
-      <div className="aspect-video overflow-hidden rounded-lg border border-mtm-border bg-mtm-border/40">
+    <div className={`flex flex-col gap-3 ${className}`}>
+      <div
+        className="relative aspect-[4/3] overflow-hidden bg-mtm-border/40 sm:aspect-video lg:rounded-lg lg:border lg:border-mtm-border"
+        {...swipe}
+      >
         {active.type === 'video' ? (
           <video src={active.secureUrl} controls className="h-full w-full object-cover" />
         ) : (
@@ -31,10 +71,28 @@ export function TerrainGallery({ medias, alt }: { medias: TerrainMedia[]; alt: s
             className="h-full w-full object-cover"
           />
         )}
+
+        {overlay && <div className="absolute right-3 top-3 z-10 flex gap-2">{overlay}</div>}
+
+        {count > 1 && (
+          <>
+            <span className="pointer-events-none absolute bottom-9 right-3 rounded-full bg-black/60 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur lg:bottom-3">
+              {activeIndex + 1} / {count}
+            </span>
+            <div className="pointer-events-none absolute inset-x-0 bottom-9 flex justify-center gap-1.5 lg:hidden" aria-hidden="true">
+              {photosAndVideos.map((media, position) => (
+                <span
+                  key={media.id}
+                  className={`h-1.5 rounded-full bg-white shadow-card transition-all ${position === activeIndex ? 'w-5' : 'w-1.5 opacity-60'}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
-      {photosAndVideos.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-1">
+      {count > 1 && (
+        <div className="hidden gap-2 overflow-x-auto pb-1 lg:flex">
           {photosAndVideos.map((media) => (
             <button
               key={media.id}

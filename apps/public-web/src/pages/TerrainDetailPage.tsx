@@ -12,6 +12,8 @@ import { TerrainDetailSkeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
+import { DetailActionBar } from '../components/mobile/DetailActionBar';
+import { FavoriteButton } from '../components/mobile/FavoriteButton';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 import { formatMoney, formatSuperficie } from '../utils/format';
 import { estBienBati, etatBienLabel, typeBienLabel, vocationLabel } from '../utils/bienLabels';
@@ -47,7 +49,7 @@ export function TerrainDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 pb-28 sm:px-6 sm:py-10 sm:pb-28 lg:pb-10">
+    <div className="mx-auto max-w-6xl px-4 pb-6 sm:px-6 lg:py-10 lg:pb-10">
       <Link
         to={ROUTES.catalog}
         className="mb-6 hidden lg:inline-flex items-center gap-1.5 text-sm font-semibold text-mtm-muted transition-colors hover:text-mtm-primary"
@@ -57,8 +59,8 @@ export function TerrainDetailPage() {
       </Link>
 
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.6fr_1fr]">
-        <div className="flex flex-col gap-8">
-          <div>
+        <div className="flex flex-col gap-6 lg:gap-8">
+          <div className="relative order-2 -mx-4 -mt-12 rounded-t-3xl bg-mtm-bg px-4 pt-5 sm:-mx-6 sm:px-6 lg:order-1 lg:mx-0 lg:mt-0 lg:rounded-none lg:bg-transparent lg:px-0 lg:pt-0">
             <span className="text-xs font-semibold uppercase tracking-wide text-mtm-muted">
               {terrain.referenceInterne}
             </span>
@@ -72,7 +74,9 @@ export function TerrainDetailPage() {
                 {terrain.localisationDetail && ` · ${terrain.localisationDetail}`}
               </p>
             )}
-            <div className="mt-3 flex flex-wrap gap-2">
+            {/* Mobile : le prix se lit tout de suite sous le nom, comme sur une carte d'annonce. */}
+            <p className="mt-2 font-display text-2xl font-bold text-mtm-primary lg:hidden">{formatMoney(terrain.prixPublic)}</p>
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] lg:flex-wrap lg:overflow-visible lg:pb-0 [&::-webkit-scrollbar]:hidden [&>*]:shrink-0">
               {/* La nature avant le statut juridique : le visiteur doit savoir
                   en un coup d'œil s'il regarde une parcelle ou une maison. */}
               <Badge tone="primary">{typeBienLabel(terrain.typeBien)}</Badge>
@@ -86,8 +90,14 @@ export function TerrainDetailPage() {
             </div>
           </div>
 
-          <TerrainGallery medias={terrain.medias} alt={terrain.nom} />
+          <TerrainGallery
+            medias={terrain.medias}
+            alt={terrain.nom}
+            className="order-1 -mx-4 sm:-mx-6 lg:mx-0 lg:order-2"
+            overlay={<FavoriteButton kind="terrain" id={terrain.id} label={terrain.nom} className="h-10 w-10" />}
+          />
 
+          <div className="order-3 flex flex-col gap-6 lg:gap-8">
           {terrain.description && (
             <section>
               <h2 className="font-display text-lg font-bold text-mtm-text">Description</h2>
@@ -218,15 +228,17 @@ export function TerrainDetailPage() {
               </ul>
             </section>
           )}
+          </div>
         </div>
 
-        <aside className="h-fit rounded-lg border border-mtm-border bg-mtm-surface p-6 shadow-card lg:sticky lg:top-24">
-          <p className="text-xs font-semibold uppercase tracking-wide text-mtm-muted">Prix public</p>
-          <p className="mt-1 font-display text-3xl font-bold text-mtm-primary">
+        <aside className="h-fit rounded-2xl border border-mtm-border bg-mtm-surface p-5 shadow-card lg:sticky lg:top-24 lg:rounded-lg lg:p-6">
+          <p className="hidden text-xs font-semibold uppercase tracking-wide text-mtm-muted lg:block">Prix public</p>
+          <p className="mt-1 hidden font-display text-3xl font-bold text-mtm-primary lg:block">
             {formatMoney(terrain.prixPublic)}
           </p>
+          <h2 className="font-display text-lg font-bold text-mtm-text lg:hidden">Intéressé par ce bien ?</h2>
 
-          <div className="mt-6 flex flex-col gap-3">
+          <div className="mt-4 flex flex-col gap-3 lg:mt-6">
             <Button onClick={() => setActiveModal('visite')}>
               <CalendarCheck className="h-4 w-4" aria-hidden="true" />
               Demander une visite
@@ -260,19 +272,13 @@ export function TerrainDetailPage() {
       </div>
 
       {/* Mobile : le prix et l'action principale restent sous le pouce, sans
-          avoir à défiler jusqu'au panneau latéral (rendu après la carte). */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-mtm-border bg-mtm-surface/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-4px_16px_rgba(31,41,55,0.08)] backdrop-blur lg:hidden">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-mtm-muted">Prix public</p>
-            <p className="whitespace-nowrap font-display text-base font-bold text-mtm-primary">{formatMoney(terrain.prixPublic)}</p>
-          </div>
-          <Button className="shrink-0 px-3.5" onClick={() => setActiveModal('visite')}>
-            <CalendarCheck className="h-4 w-4" aria-hidden="true" />
-            Demander une visite
-          </Button>
-        </div>
-      </div>
+          avoir à défiler jusqu'au panneau latéral. */}
+      <DetailActionBar label="Prix public" price={formatMoney(terrain.prixPublic)}>
+        <Button className="px-4" onClick={() => setActiveModal('visite')}>
+          <CalendarCheck className="h-4 w-4" aria-hidden="true" />
+          Visiter
+        </Button>
+      </DetailActionBar>
 
       {activeModal === 'visite' && (
         <ContactModal

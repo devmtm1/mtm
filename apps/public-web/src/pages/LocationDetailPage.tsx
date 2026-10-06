@@ -25,6 +25,8 @@ import { TerrainDetailSkeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
+import { DetailActionBar } from '../components/mobile/DetailActionBar';
+import { FavoriteButton } from '../components/mobile/FavoriteButton';
 import { LinkButton } from '../components/ui/LinkButton';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 import { useSiteContact } from '../hooks/useSiteContact';
@@ -96,7 +98,7 @@ export function LocationDetailPage() {
   const demandeSujet = (verbe: string) => `${verbe} — ${location.referenceInterne}`;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 pb-28 sm:px-6 sm:py-10 sm:pb-28 lg:pb-10">
+    <div className="mx-auto max-w-6xl px-4 pb-6 sm:px-6 lg:py-10 lg:pb-10">
       <Link
         to={ROUTES.locations}
         className="mb-6 hidden lg:inline-flex items-center gap-1.5 text-sm font-semibold text-mtm-muted transition-colors hover:text-mtm-primary"
@@ -106,8 +108,8 @@ export function LocationDetailPage() {
       </Link>
 
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.6fr_1fr]">
-        <div className="flex flex-col gap-8">
-          <div>
+        <div className="flex flex-col gap-6 lg:gap-8">
+          <div className="relative order-2 -mx-4 -mt-12 rounded-t-3xl bg-mtm-bg px-4 pt-5 sm:-mx-6 sm:px-6 lg:order-1 lg:mx-0 lg:mt-0 lg:rounded-none lg:bg-transparent lg:px-0 lg:pt-0">
             <span className="text-xs font-semibold uppercase tracking-wide text-mtm-muted">
               {location.referenceInterne}
             </span>
@@ -118,7 +120,11 @@ export function LocationDetailPage() {
                 {place}
               </p>
             )}
-            <div className="mt-3 flex flex-wrap gap-2">
+            <p className="mt-2 font-display text-2xl font-bold text-mtm-primary lg:hidden">
+              {formatLoyerMontant(location.loyerMensuel)}
+              <span className="ml-1 text-sm font-semibold text-mtm-muted">/ mois</span>
+            </p>
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] lg:flex-wrap lg:overflow-visible lg:pb-0 [&::-webkit-scrollbar]:hidden [&>*]:shrink-0">
               <Badge tone="primary">{typeLabel}</Badge>
               {location.meuble && (
                 <Badge tone="info">
@@ -131,7 +137,14 @@ export function LocationDetailPage() {
             </div>
           </div>
 
-          <LocationGallery medias={location.medias} alt={titre} />
+          <LocationGallery
+            medias={location.medias}
+            alt={titre}
+            className="order-1 -mx-4 sm:-mx-6 lg:mx-0 lg:order-2"
+            overlay={<FavoriteButton kind="location" id={location.id} label={titre} className="h-10 w-10" />}
+          />
+
+          <div className="order-3 flex flex-col gap-6 lg:gap-8">
 
           {faits.length > 0 && (
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="L’essentiel">
@@ -184,15 +197,17 @@ export function LocationDetailPage() {
               </div>
             </section>
           )}
+          </div>
         </div>
 
-        <aside className="h-fit rounded-xl border border-mtm-border bg-mtm-surface p-6 shadow-card lg:sticky lg:top-24">
-          <p className="text-xs font-semibold uppercase tracking-wide text-mtm-muted">Loyer mensuel</p>
-          <p className="mt-1 font-display text-3xl font-bold text-mtm-primary">
+        <aside className="h-fit rounded-2xl border border-mtm-border bg-mtm-surface p-5 shadow-card lg:sticky lg:top-24 lg:rounded-xl lg:p-6">
+          <p className="hidden text-xs font-semibold uppercase tracking-wide text-mtm-muted lg:block">Loyer mensuel</p>
+          <p className="mt-1 hidden font-display text-3xl font-bold text-mtm-primary lg:block">
             {formatLoyerMontant(location.loyerMensuel)}
           </p>
+          <h2 className="font-display text-lg font-bold text-mtm-text lg:hidden">Conditions de location</h2>
 
-          <dl className="mt-4 flex flex-col gap-2 border-t border-mtm-border pt-4 text-sm">
+          <dl className="mt-3 flex flex-col gap-2 border-t border-mtm-border pt-4 text-sm lg:mt-4">
             {location.charges !== null && location.charges > 0 && (
               <div className="flex justify-between gap-4">
                 <dt className="text-mtm-muted">Charges</dt>
@@ -248,20 +263,12 @@ export function LocationDetailPage() {
       </div>
 
       {/* Mobile : le loyer et l'action principale restent sous le pouce. */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-mtm-border bg-mtm-surface/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-4px_16px_rgba(31,41,55,0.08)] backdrop-blur lg:hidden">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-mtm-muted">Loyer / mois</p>
-            <p className="whitespace-nowrap font-display text-base font-bold text-mtm-primary">
-              {formatLoyerMontant(location.loyerMensuel)}
-            </p>
-          </div>
-          <Button className="shrink-0 px-3.5" onClick={() => setActiveModal('visite')}>
-            <CalendarCheck className="h-4 w-4" aria-hidden="true" />
-            Demander une visite
-          </Button>
-        </div>
-      </div>
+      <DetailActionBar label="Loyer / mois" price={formatLoyerMontant(location.loyerMensuel)}>
+        <Button className="px-4" onClick={() => setActiveModal('visite')}>
+          <CalendarCheck className="h-4 w-4" aria-hidden="true" />
+          Visiter
+        </Button>
+      </DetailActionBar>
 
       {activeModal === 'visite' && (
         <ContactModal

@@ -13,6 +13,8 @@ import { Skeleton } from '../components/ui/Skeleton';
 import { ShowcaseCard } from '../components/showcase/ShowcaseCard';
 import { ContactModal } from '../components/contact/ContactModal';
 import { CtaBand } from '../components/ui/CtaBand';
+import { Carousel } from '../components/ui/Carousel';
+import { DetailActionBar } from '../components/mobile/DetailActionBar';
 import { formatDate } from '../utils/format';
 
 const CATEGORY_INFO = {
@@ -84,10 +86,10 @@ export function ShowcaseDetailPage() {
 
   return (
     <div>
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+      <div className="mx-auto max-w-6xl px-4 pb-6 sm:px-6 lg:py-10">
         <Link
           to={info.listRoute}
-          className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-mtm-muted transition-colors hover:text-mtm-primary"
+          className="mb-6 hidden items-center lg:inline-flex gap-1.5 text-sm font-semibold text-mtm-muted transition-colors hover:text-mtm-primary"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           {info.listLabel}
@@ -95,9 +97,9 @@ export function ShowcaseDetailPage() {
 
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.6fr_1fr]">
           <article className="flex flex-col gap-6">
-            <div>
+            <div className="relative order-2 -mx-4 -mt-12 rounded-t-3xl bg-mtm-bg px-4 pt-5 sm:-mx-6 sm:px-6 lg:order-1 lg:mx-0 lg:mt-0 lg:rounded-none lg:bg-transparent lg:px-0 lg:pt-0">
               <Badge tone="primary">{info.label}</Badge>
-              <h1 className="mt-3 font-display text-3xl font-bold text-mtm-text sm:text-4xl">{item.title}</h1>
+              <h1 className="mt-3 font-display text-2xl font-bold text-mtm-text sm:text-3xl lg:text-4xl">{item.title}</h1>
               <p className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-mtm-muted">
                 {item.location && (
                   <span className="inline-flex items-center gap-1.5">
@@ -114,7 +116,7 @@ export function ShowcaseDetailPage() {
               </p>
             </div>
 
-            <div className="aspect-video w-full overflow-hidden rounded-lg border border-mtm-border bg-mtm-border">
+            <div className="order-1 -mx-4 sm:-mx-6 lg:mx-0 aspect-[4/3] overflow-hidden bg-mtm-border sm:aspect-video lg:order-2 lg:rounded-lg lg:border lg:border-mtm-border">
               <MediaImage
                 src={item.imageUrl}
                 alt={item.title}
@@ -123,7 +125,7 @@ export function ShowcaseDetailPage() {
               />
             </div>
 
-            <section>
+            <section className="order-3">
               <h2 className="font-display text-lg font-bold text-mtm-text">Le projet</h2>
               {item.description ? (
                 <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-mtm-muted sm:text-base">
@@ -136,7 +138,7 @@ export function ShowcaseDetailPage() {
           </article>
 
           <aside className="lg:sticky lg:top-24 lg:self-start">
-            <div className="rounded-lg border border-mtm-border bg-mtm-surface p-6 shadow-card">
+            <div className="rounded-2xl border border-mtm-border bg-mtm-surface p-5 shadow-card lg:rounded-lg lg:p-6">
               <h2 className="font-display text-lg font-bold text-mtm-text">{info.cta}</h2>
               <p className="mt-2 text-sm text-mtm-muted">{info.ctaText}</p>
               <div className="mt-5 flex flex-col gap-2">
@@ -171,25 +173,42 @@ export function ShowcaseDetailPage() {
         </div>
 
         {others.length > 0 && (
-          <section className="mt-14">
+          <section className="mt-8 lg:mt-14">
             <div className="flex items-end justify-between gap-4">
-              <h2 className="font-display text-xl font-bold text-mtm-text">
+              <h2 className="font-display text-lg font-bold text-mtm-text lg:text-xl">
                 {item.category === 'projet_a_venir' ? 'Autres projets à venir' : 'Autres réalisations'}
               </h2>
-              <Link to={info.listRoute} className="text-sm font-semibold text-mtm-primary hover:underline">
-                {info.listLabel}
+              <Link to={info.listRoute} className="shrink-0 text-[13px] font-semibold text-mtm-primary hover:underline lg:text-sm">
+                <span className="lg:hidden">Voir tout</span>
+                <span className="hidden lg:inline">{info.listLabel}</span>
               </Link>
             </div>
-            <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
-              {others.map((sibling) => (
-                <ShowcaseCard key={sibling.id} item={sibling} />
-              ))}
+            <div className="mt-4 lg:mt-6">
+              <Carousel
+                ariaLabel={item.category === 'projet_a_venir' ? 'Autres projets à venir' : 'Autres réalisations'}
+                itemClassName="w-[72%] sm:w-[46%] lg:w-auto"
+                lgClassName="lg:grid lg:grid-cols-4 lg:gap-5"
+                dotsOnly
+              >
+                {others.map((sibling) => (
+                  <ShowcaseCard key={sibling.id} item={sibling} />
+                ))}
+              </Carousel>
             </div>
           </section>
         )}
       </div>
 
-      <CtaBand />
+      <div className="hidden lg:block">
+        <CtaBand />
+      </div>
+
+      <DetailActionBar>
+        <Button onClick={() => setContactOpen(true)}>
+          <MessageSquare className="h-4 w-4" aria-hidden="true" />
+          Nous écrire
+        </Button>
+      </DetailActionBar>
 
       {contactOpen && (
         <ContactModal

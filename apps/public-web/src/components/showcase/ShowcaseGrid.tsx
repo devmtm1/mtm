@@ -34,6 +34,7 @@ export function ShowcaseGrid({ category, emptyLabel, limit, columns = 3, mobileC
       <Carousel
         ariaLabel={category === 'projet_a_venir' ? 'Projets à venir' : 'Nos réalisations'}
         itemClassName="w-[72%] sm:w-[46%] lg:w-auto"
+        dotsOnly
         lgClassName={`lg:grid lg:gap-5 ${columns === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}
       >
         {items.map((item) => (

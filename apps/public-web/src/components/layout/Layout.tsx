@@ -45,7 +45,7 @@ export function Layout() {
       </main>
       {/* Le pied de page reste sur mobile : la barre d'onglets, fixe, ne doit pas
           en recouvrir le bas. Le fond de la réserve est celui du pied de page. */}
-      <div className={tabBar ? 'bg-mtm-primary-dark pb-[calc(4.25rem+env(safe-area-inset-bottom))]' : undefined}>
+      <div className={isMobile ? 'bg-mtm-primary-dark pb-[calc(4.25rem+env(safe-area-inset-bottom))]' : undefined}>
         <Footer />
       </div>
       <WhatsAppButton />

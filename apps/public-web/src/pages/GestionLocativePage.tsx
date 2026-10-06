@@ -36,7 +36,7 @@ export function GestionLocativePage() {
           {lines('gestion-locative.points', FALLBACK_POINTS).map((point) => (
             <li
               key={point}
-              className="rounded-md border border-mtm-border bg-mtm-surface px-4 py-3 text-sm text-mtm-text"
+              className="rounded-xl border border-mtm-border/70 bg-mtm-surface px-4 py-3.5 text-sm text-mtm-text shadow-card lg:rounded-md lg:border-mtm-border lg:py-3 lg:shadow-none"
             >
               {point}
             </li>
@@ -44,7 +44,7 @@ export function GestionLocativePage() {
         </ul>
       </section>
       <section className="mx-auto max-w-3xl px-4 pb-14 sm:px-6">
-        <div className="flex flex-col items-start gap-4 rounded-xl border border-mtm-border bg-mtm-surface p-6 shadow-card sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col items-start gap-4 rounded-3xl border border-mtm-border/70 bg-mtm-surface p-5 shadow-card sm:flex-row lg:rounded-xl lg:border-mtm-border lg:p-6 sm:items-center sm:justify-between">
           <div>
             <h2 className="font-display text-lg font-bold text-mtm-text">Vous cherchez un logement à louer ?</h2>
             <p className="mt-1 text-sm text-mtm-muted">

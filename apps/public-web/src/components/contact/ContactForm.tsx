@@ -150,7 +150,7 @@ export function ContactForm({
         </p>
       )}
 
-      <Button type="submit" disabled={submitting} className="self-start">
+      <Button type="submit" disabled={submitting} className="w-full sm:w-auto sm:self-start">
         {submitting ? 'Envoi en cours...' : 'Envoyer le message'}
       </Button>
     </form>

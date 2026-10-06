@@ -70,7 +70,7 @@ export function MobileTabBar() {
     <>
       <nav
         aria-label="Navigation de l’application"
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-mtm-border/70 bg-mtm-surface/92 pb-[env(safe-area-inset-bottom)] shadow-[0_-6px_24px_rgba(31,41,55,0.07)] backdrop-blur-xl lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-mtm-border/70 bg-mtm-surface/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-6px_24px_rgba(31,41,55,0.07)] backdrop-blur-xl lg:hidden"
       >
         <ul className="mx-auto grid max-w-xl grid-cols-5">
           {before.map((tab) => (

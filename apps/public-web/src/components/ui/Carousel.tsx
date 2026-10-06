@@ -20,6 +20,8 @@ interface CarouselProps {
   className?: string;
   /** Teinte des commandes sur fond sombre. */
   inverted?: boolean;
+  /** Pas de flèches : le geste et les points suffisent (mobile). */
+  dotsOnly?: boolean;
 }
 
 /**
@@ -28,7 +30,7 @@ interface CarouselProps {
  * facultatif. Sans bibliothèque : le navigateur gère l'inertie et l'accroche
  * (`scroll-snap`), le composant ne fait que suivre et piloter la position.
  */
-export function Carousel({ children, ariaLabel, itemClassName, lgClassName = '', autoplayMs = 0, className = '', inverted = false }: CarouselProps) {
+export function Carousel({ children, ariaLabel, itemClassName, lgClassName = '', autoplayMs = 0, className = '', inverted = false, dotsOnly = false }: CarouselProps) {
   const items = Children.toArray(children);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
@@ -123,13 +125,13 @@ export function Carousel({ children, ariaLabel, itemClassName, lgClassName = '',
       </div>
 
       {count > 1 && (
-        <div className={`mt-4 flex items-center justify-between gap-3 ${lgClassName ? 'lg:hidden' : ''}`}>
+        <div className={`mt-3 flex items-center gap-3 ${dotsOnly ? 'justify-center' : 'justify-between'} ${lgClassName ? 'lg:hidden' : ''}`}>
           <button
             type="button"
             onClick={() => goTo(active - 1)}
             disabled={active === 0}
             aria-label="Précédent"
-            className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${controlClass}`}
+            className={`${dotsOnly ? 'hidden' : 'flex'} h-9 w-9 items-center justify-center rounded-full border transition-colors ${controlClass}`}
           >
             <ChevronLeft className="h-4 w-4" aria-hidden="true" />
           </button>
@@ -149,7 +151,7 @@ export function Carousel({ children, ariaLabel, itemClassName, lgClassName = '',
             onClick={() => goTo(active + 1)}
             disabled={active >= count - 1}
             aria-label="Suivant"
-            className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${controlClass}`}
+            className={`${dotsOnly ? 'hidden' : 'flex'} h-9 w-9 items-center justify-center rounded-full border transition-colors ${controlClass}`}
           >
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </button>

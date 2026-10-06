@@ -13,24 +13,25 @@ export function TestimonialsSection() {
   if (loading || error || !data || data.length === 0) return null;
 
   return (
-    <section className="bg-mtm-primary-dark py-10 sm:py-16">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+    <section className="px-4 py-3 lg:bg-mtm-primary-dark lg:p-0 lg:py-16">
+      <div className="mx-auto max-w-6xl rounded-3xl bg-mtm-primary-dark px-4 py-6 shadow-card sm:px-6 lg:rounded-none lg:p-0 lg:px-6 lg:shadow-none">
         <SectionHeading
+          app
           eyebrow="Ils nous font confiance"
           title="Ce que disent nos clients"
           align="center"
           inverted
         />
         {/* Témoignages : un par écran, défilement automatique toutes les 6 s. */}
-        <div className="mt-6 sm:mt-10">
-        <Carousel ariaLabel="Témoignages de clients" itemClassName="w-[88%] sm:w-[60%] lg:w-auto" lgClassName="lg:grid lg:grid-cols-3 lg:gap-6" autoplayMs={6000} inverted>
+        <div className="mt-4 lg:mt-10">
+        <Carousel ariaLabel="Témoignages de clients" itemClassName="w-[88%] sm:w-[60%] lg:w-auto" lgClassName="lg:grid lg:grid-cols-3 lg:gap-6" autoplayMs={6000} inverted dotsOnly>
           {data.map((block) => {
             const author = block.title ? parseTestimonialAuthor(block.title) : null;
             const flag = author?.country ? countryFlag(author.country) : null;
             return (
               <blockquote
                 key={block.key}
-                className="flex h-full flex-col gap-4 rounded-lg bg-white/5 p-5 text-white sm:p-6"
+                className="flex h-full flex-col gap-3 rounded-2xl bg-white/10 p-5 text-white sm:p-6 lg:gap-4 lg:rounded-lg lg:bg-white/5"
               >
                 <Quote className="h-6 w-6 text-white/50" aria-hidden="true" />
                 <p className="text-sm text-white/90">{block.content}</p>
