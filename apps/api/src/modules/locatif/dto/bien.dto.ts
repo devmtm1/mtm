@@ -1,4 +1,5 @@
 import { Type } from 'class-transformer';
+import { AnnonceBienFields } from './annonce.dto';
 import {
   IsIn,
   IsInt,
@@ -12,7 +13,7 @@ import {
 } from 'class-validator';
 
 /** Fiche bien locatif (section 15 du cahier des charges, étape 1 de J2.1). */
-export class CreateBienDto {
+export class CreateBienDto extends AnnonceBienFields {
   @IsUUID() proprietaireId!: string;
   @IsString() @MaxLength(60) type!: string;
   @IsString() @MaxLength(500) adresse!: string;
@@ -23,7 +24,7 @@ export class CreateBienDto {
   @IsOptional() @IsUUID() responsableId?: string;
 }
 
-export class UpdateBienDto {
+export class UpdateBienDto extends AnnonceBienFields {
   @IsOptional() @IsUUID() proprietaireId?: string;
   @IsOptional() @IsString() @MaxLength(60) type?: string;
   @IsOptional() @IsString() @MaxLength(500) adresse?: string;

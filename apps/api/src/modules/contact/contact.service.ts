@@ -7,6 +7,8 @@ import {
 import { InternalNotificationService } from '../../common/mail/internal-notification.service';
 import { nextProspectReference } from '../crm/prospect-reference';
 import { PrismaService } from '../../database/prisma.service';
+import { LocatifPublicService } from '../locatif/locatif-public.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import {
   COMMERCIAL_ROLES,
   hasAnyRole,
@@ -22,6 +24,8 @@ export class ContactService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: InternalNotificationService,
+    private readonly locations: LocatifPublicService,
+    private readonly notificationsInternes: NotificationsService,
   ) {}
 
   async create(dto: CreateContactDto): Promise<Contact> {
@@ -34,30 +38,57 @@ export class ContactService {
       if (!terrain) throw new NotFoundException('Bien introuvable');
       terrainLabel = `${terrain.referenceInterne} — ${terrain.nom}`;
     }
+    // Demande venant d'une annonce de location : seule une annonce visible
+    // sur le site peut être demandée (une annonce retirée ou déjà louée
+    // répond « introuvable », comme sa page).
+    let bienLabel: string | undefined;
+    if (dto.bienLocatifId) {
+      const bien = await this.locations.estVisible(dto.bienLocatifId);
+      if (!bien) throw new NotFoundException('Annonce introuvable');
+      bienLabel = `${bien.referenceInterne} — ${bien.label}`;
+    }
+    const sujet =
+      dto.sujet ?? (dto.bienLocatifId ? 'Demande de location' : undefined);
     const contact = await this.prisma.contact.create({
       data: {
         nom: dto.nom,
         email: dto.email,
         telephone: dto.telephone,
-        sujet: dto.sujet,
+        sujet,
         message: dto.message,
         terrainId: dto.terrainId,
+        bienLocatifId: dto.bienLocatifId,
       },
     });
 
     // Notification à l'équipe : non bloquante, la demande est déjà enregistrée.
     void this.notifications.notify(
-      `Nouveau message : ${dto.sujet || 'sans sujet'}`,
+      `Nouveau message : ${sujet || 'sans sujet'}`,
       [
         `De : ${dto.nom} <${dto.email}>`,
         dto.telephone ? `Téléphone : ${dto.telephone}` : '',
         terrainLabel ? `Terrain : ${terrainLabel}` : '',
+        bienLabel ? `Bien en location : ${bienLabel}` : '',
         '',
         dto.message,
         '',
         'À traiter dans le back-office (Contacts / CRM).',
       ],
     );
+
+    // Les gestionnaires locatifs la voient dans leur cloche : une demande de
+    // location attend un rappel rapide, avant qu'un autre bien ne soit choisi.
+    if (dto.bienLocatifId) {
+      void this.notificationsInternes.notifierPermission('locatif:modifier', {
+        type: 'demande_location',
+        titre: `Demande de location — ${bienLabel ?? 'bien'}`,
+        message: `${dto.nom}${dto.telephone ? ` · ${dto.telephone}` : ''}`,
+        lien: '/contacts',
+        entityType: 'Contact',
+        entityId: contact.id,
+        dedupeKey: `demande-location:${contact.id}`,
+      });
+    }
 
     // --- Génération automatique de prospect CRM ---
     try {
@@ -80,7 +111,7 @@ export class ContactService {
             telephone: dto.telephone,
             referenceInterne: await nextProspectReference(this.prisma),
             sourceAcquisition: 'site',
-            besoins: `[${dto.sujet || 'Contact public'}] ${dto.message}`,
+            besoins: `[${sujet || 'Contact public'}] ${dto.message}`,
             statutPipeline: 'nouveau',
           },
         });
@@ -90,7 +121,7 @@ export class ContactService {
         data: {
           prospectId: prospect.id,
           type: 'note',
-          titre: `Demande de contact web: ${dto.sujet || 'Sans sujet'}`,
+          titre: `Demande de contact web: ${sujet || 'Sans sujet'}`,
           description: dto.message,
           statut: 'realise',
           priorite: 'haute',
@@ -115,7 +146,12 @@ export class ContactService {
     const contacts = await this.prisma.contact.findMany({
       where: { ...(options.lu !== undefined ? { lu: options.lu } : {}) },
       orderBy: { createdAt: 'desc' },
-      include: { terrain: { select: { id: true, referenceInterne: true } } },
+      include: {
+        terrain: { select: { id: true, referenceInterne: true } },
+        bienLocatif: {
+          select: { id: true, referenceInterne: true, titre: true, type: true },
+        },
+      },
     });
 
     // Comparaison tolérante : e-mail sans casse ni espaces, téléphone réduit à

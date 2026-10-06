@@ -79,6 +79,18 @@ jobs:
         working-directory: apps/api
         run: npx prisma db seed
 
+      # Détecte tout écart entre le schéma Prisma et les migrations versionnées :
+      # un index, une valeur par défaut ou une colonne que les tests n'utilisent
+      # pas passeraient inaperçus, et la production, elle, ne les recevrait jamais.
+      - name: Migrations et schéma Prisma identiques
+        working-directory: apps/api
+        env:
+          PGPASSWORD: mtm_test
+          SHADOW_DATABASE_URL: postgresql://mtm_test:mtm_test@localhost:5432/shadow_diff
+        run: |
+          psql -h localhost -U mtm_test -d postgres -c "CREATE DATABASE shadow_diff"
+          npm run db:diff
+
       - name: Lint
         working-directory: apps/api
         run: npx eslint "src/**/*.ts" "test/**/*.ts"

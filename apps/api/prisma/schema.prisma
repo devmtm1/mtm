@@ -161,6 +161,7 @@ model Terrain {
   // du bien les rend pertinentes.
   /**
    * /**
+   * /**
    * Surface habitable, distincte de la parcelle. Les deux coexistent : une
    * villa de 120 m² habitables peut occuper une parcelle de 300 m², et les
    * confondre fausserait toute comparaison au catalogue.
@@ -482,18 +483,21 @@ model SystemSetting {
 // ============================================================
 
 model Contact {
-  id        String   @id @default(uuid())
-  terrainId String? // terrain de référence si la demande provient d'une fiche
-  terrain   Terrain? @relation("TerrainContacts", fields: [terrainId], references: [id], onDelete: SetNull)
-  nom       String
-  email     String
-  telephone String?
-  sujet     String? // "Acquérir un terrain" / "Vérification foncière" / "Gestion locative" / ...
-  message   String
-  lu        Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id            String       @id @default(uuid())
+  terrainId     String? // terrain de référence si la demande provient d'une fiche
+  terrain       Terrain?     @relation("TerrainContacts", fields: [terrainId], references: [id], onDelete: SetNull)
+  bienLocatifId String? // bien en location de référence si la demande vient d'une annonce
+  bienLocatif   BienLocatif? @relation("BienLocatifContacts", fields: [bienLocatifId], references: [id], onDelete: SetNull)
+  nom           String
+  email         String
+  telephone     String?
+  sujet         String? // "Acquérir un terrain" / "Vérification foncière" / "Gestion locative" / ...
+  message       String
+  lu            Boolean      @default(false)
+  createdAt     DateTime     @default(now())
 
   @@index([terrainId])
+  @@index([bienLocatifId])
   @@index([lu])
   @@index([createdAt])
   @@map("contacts")
@@ -555,6 +559,7 @@ model Prospect {
   // vivre dans une table à part, pour qu'une seule fiche porte le budget et
   // la zone du client — deux exemplaires finiraient par diverger.
   /**
+   * /**
    * /**
    * /** Vrai dès qu'un mandat de recherche est ouvert pour ce prospect.
    */
@@ -1159,16 +1164,45 @@ model BienLocatif {
   statut     String   @default("disponible")
   notes      String?
 
+  // --- Publication sur le site public (location) ---
+  /**
+   * /**
+   * Visible sur le site tant que le bien est « disponible ». Réservé à la
+   * permission locatif:publier ; exige un loyer et au moins une photo.
+   */
+  publie          Boolean   @default(false)
+  publieLe        DateTime?
+  misEnAvant      Boolean   @default(false)
+  titre           String?
+  description     String?
+  loyerMensuel    Decimal?  @db.Decimal(15, 2)
+  charges         Decimal?  @db.Decimal(15, 2)
+  /**
+   * Caution demandée, en mois de loyer.
+   */
+  moisCaution     Int?
+  nombrePieces    Int?
+  nombreChambres  Int?
+  nombreSallesEau Int?
+  meuble          Boolean   @default(false)
+  equipements     String[]  @default([])
+  latitude        Decimal?  @db.Decimal(9, 6)
+  longitude       Decimal?  @db.Decimal(9, 6)
+  disponibleLe    DateTime?
+
   createdById String?
   createdBy   User?    @relation("BienLocatifCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  baux BailLocatif[]
+  baux     BailLocatif[]
+  medias   BienLocatifMedia[]
+  contacts Contact[]          @relation("BienLocatifContacts")
 
   @@index([proprietaireId])
   @@index([responsableId])
   @@index([statut])
+  @@index([publie, statut])
   @@map("biens_locatifs")
 }
 
@@ -1205,6 +1239,7 @@ model BailLocatif {
 
   // --- Sortie et cas particuliers (section 15) ---
   /**
+   * /**
    * /**
    * /**
    * /**
@@ -1853,11 +1888,15 @@ model Notification {
   niveau     String    @default("info") // info | alerte
   titre      String
   message    String?
-  /** Route du back-office où traiter l'événement (ex. /ventes/<id>). */
+  /**
+   * Route du back-office où traiter l'événement (ex. /ventes/<id>).
+   */
   lien       String?
   entityType String?
   entityId   String?
-  /** Unique par destinataire : NULL autorisé plusieurs fois, valeur unique sinon. */
+  /**
+   * Unique par destinataire : NULL autorisé plusieurs fois, valeur unique sinon.
+   */
   dedupeKey  String?
   readAt     DateTime?
   createdAt  DateTime  @default(now())
@@ -1865,4 +1904,24 @@ model Notification {
   @@unique([userId, dedupeKey])
   @@index([userId, readAt, createdAt])
   @@map("notifications")
+}
+
+/**
+ * Photos et vidéos d'annonce d'un bien en location. Toutes sont publiques
+ * (déposées en accès public) : les pièces privées du bien — bail, état des
+ * lieux — restent des DocumentLocatif.
+ */
+model BienLocatifMedia {
+  id            String      @id @default(uuid())
+  bienLocatifId String
+  bienLocatif   BienLocatif @relation(fields: [bienLocatifId], references: [id], onDelete: Cascade)
+  type          String      @default("photo") // photo | video
+  storageKey    String
+  resourceType  String      @default("image")
+  title         String?
+  sortOrder     Int         @default(0)
+  createdAt     DateTime    @default(now())
+
+  @@index([bienLocatifId, sortOrder])
+  @@map("biens_locatifs_medias")
 }

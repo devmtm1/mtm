@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Body,
+  ForbiddenException,
   Controller,
   Delete,
   Get,
@@ -8,9 +9,14 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Put,
   Query,
   Req,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { MAX_ASSET_SIZE } from '../../common/storage/asset-validation';
 import { ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -18,12 +24,14 @@ import { RequirePermissions } from '../auth/decorators/require-permissions.decor
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AuditService } from '../audit/audit.service';
 import { BiensService } from './biens.service';
+import { BienMediasService } from './bien-medias.service';
 import { BauxService } from './baux.service';
 import { DocumentsLocatifService } from './documents.service';
 import { LocatifOptionsService } from './locatif-options.service';
 import { CreateBienDto, QueryBienDto, UpdateBienDto } from './dto/bien.dto';
 import { ChangerLocataireDto, CreateBailDto } from './dto/bail.dto';
 import { GenererReleveDto } from './dto/releve.dto';
+import { CreateBienMediaDto, ReorderBienMediasDto } from './dto/annonce.dto';
 
 /**
  * Biens locatifs (J2.1, section 15 du cahier des charges).
@@ -37,6 +45,7 @@ import { GenererReleveDto } from './dto/releve.dto';
 export class BiensController {
   constructor(
     private readonly biens: BiensService,
+    private readonly medias: BienMediasService,
     private readonly baux: BauxService,
     private readonly documents: DocumentsLocatifService,
     private readonly options: LocatifOptionsService,
@@ -72,11 +81,11 @@ export class BiensController {
 
   @Get(':id')
   @RequirePermissions('locatif:consulter')
-  findOne(
+  async findOne(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.biens.findOne(id, user);
+    return this.medias.withUrls(await this.biens.findOne(id, user));
   }
 
   @Post()
@@ -86,6 +95,7 @@ export class BiensController {
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
+    this.assertPeutPublier(dto, user);
     const bien = await this.biens.create(dto, user);
     await this.audit.record({
       userId: user.id,
@@ -96,7 +106,7 @@ export class BiensController {
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });
-    return bien;
+    return this.medias.withUrls(bien);
   }
 
   @Patch(':id')
@@ -107,6 +117,7 @@ export class BiensController {
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
+    this.assertPeutPublier(dto, user);
     const avant = await this.biens.findOne(id, user);
     const bien = await this.biens.update(id, dto, user);
     await this.audit.record({
@@ -114,12 +125,65 @@ export class BiensController {
       action: 'bien.updated',
       entityType: 'BienLocatif',
       entityId: id,
-      oldValue: { statut: avant.statut },
+      oldValue: { statut: avant.statut, publie: avant.publie },
       newValue: dto,
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });
-    return bien;
+    return this.medias.withUrls(bien);
+  }
+
+  // --- Photos et vidéos d'annonce ---
+
+  @Post(':id/medias')
+  @RequirePermissions('locatif:modifier')
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_ASSET_SIZE } }),
+  )
+  async addMedia(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateBienMediaDto,
+    @UploadedFile() file: Express.Multer.File | undefined,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const media = await this.medias.add(id, dto, file, user);
+    await this.audit.record({
+      userId: user.id,
+      action: 'bien.media.added',
+      entityType: 'BienLocatif',
+      entityId: id,
+      newValue: { mediaId: media.id, type: media.type },
+    });
+    return media;
+  }
+
+  // Déclaré avant « :id/medias/:mediaId » : « ordre » n'est pas un identifiant.
+  @Put(':id/medias/ordre')
+  @RequirePermissions('locatif:modifier')
+  reorderMedias(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ReorderBienMediasDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.medias.reorder(id, dto.ids, user);
+  }
+
+  @Delete(':id/medias/:mediaId')
+  @RequirePermissions('locatif:modifier')
+  async removeMedia(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('mediaId', ParseUUIDPipe) mediaId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    await this.medias.remove(id, mediaId, user);
+    await this.audit.record({
+      userId: user.id,
+      action: 'bien.media.removed',
+      entityType: 'BienLocatif',
+      entityId: id,
+      oldValue: { mediaId },
+    });
+    return { success: true };
   }
 
   @Delete(':id')
@@ -234,5 +298,23 @@ export class BiensController {
       userAgent: req.headers['user-agent'],
     });
     return bail;
+  }
+
+  /**
+   * Publier une annonce, la retirer ou la mettre en avant engage l'image de
+   * MTM sur le site : permission dédiée (section 24 : « publier »).
+   */
+  private assertPeutPublier(
+    dto: { publie?: boolean; misEnAvant?: boolean },
+    user: AuthenticatedUser,
+  ): void {
+    if (
+      (dto.publie !== undefined || dto.misEnAvant !== undefined) &&
+      !user.permissions.includes('locatif:publier')
+    ) {
+      throw new ForbiddenException(
+        'Publier une annonce nécessite la permission locatif:publier',
+      );
+    }
   }
 }

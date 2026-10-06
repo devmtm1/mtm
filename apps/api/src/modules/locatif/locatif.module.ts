@@ -12,6 +12,9 @@ import { LocatifAccessService } from './locatif-access.service';
 import { LocatifOptionsService } from './locatif-options.service';
 import { LocatairesService } from './locataires.service';
 import { BiensService } from './biens.service';
+import { BienMediasService } from './bien-medias.service';
+import { LocatifPublicService } from './locatif-public.service';
+import { LocatifPublicController } from './locatif-public.controller';
 import { BauxService } from './baux.service';
 import { PaiementsLoyerService } from './paiements.service';
 import { CautionService } from './caution.service';
@@ -31,12 +34,15 @@ import { LocatairePortalService } from './locataire-portal.service';
     LocatairesController,
     RelancesController,
     LocatifPortailController,
+    LocatifPublicController,
   ],
   providers: [
     LocatifAccessService,
     LocatifOptionsService,
     LocatairesService,
     BiensService,
+    BienMediasService,
+    LocatifPublicService,
     BauxService,
     PaiementsLoyerService,
     CautionService,
@@ -48,6 +54,11 @@ import { LocatairePortalService } from './locataire-portal.service';
     LocatairePortalService,
     CloudinaryService,
   ],
-  exports: [BiensService, BauxService, LocatifAccessService],
+  exports: [
+    BiensService,
+    BauxService,
+    LocatifAccessService,
+    LocatifPublicService,
+  ],
 })
 export class LocatifModule {}

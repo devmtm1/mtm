@@ -2,9 +2,10 @@ import { Module } from '@nestjs/common';
 import { ContactController } from './contact.controller';
 import { ContactService } from './contact.service';
 import { AuditModule } from '../audit/audit.module';
+import { LocatifModule } from '../locatif/locatif.module';
 
 @Module({
-  imports: [AuditModule],
+  imports: [AuditModule, LocatifModule],
   controllers: [ContactController],
   providers: [ContactService],
   exports: [ContactService],

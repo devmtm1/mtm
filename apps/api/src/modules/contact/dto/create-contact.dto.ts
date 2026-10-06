@@ -35,4 +35,10 @@ export class CreateContactDto {
   @IsOptional()
   @IsUUID()
   terrainId?: string;
+
+  /** Annonce de location d'où vient la demande (site public). */
+  @ApiProperty({ example: 'a1b2c3d4-...', required: false })
+  @IsOptional()
+  @IsUUID()
+  bienLocatifId?: string;
 }

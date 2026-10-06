@@ -13,6 +13,7 @@ import {
 } from './locatif-access.service';
 import { LocatifOptionsService } from './locatif-options.service';
 import { CreateBienDto, QueryBienDto, UpdateBienDto } from './dto/bien.dto';
+import { annonceData, verifierPublication } from './annonce.helper';
 
 const bailActifInclude = {
   where: { statut: { in: ['actif', 'preavis'] } },
@@ -29,11 +30,18 @@ const bienListInclude = {
   proprietaire: { select: { id: true, firstName: true, lastName: true } },
   responsable: { select: { id: true, firstName: true, lastName: true } },
   baux: bailActifInclude,
+  // Le nombre de photos suffit à la liste : il dit si l'annonce peut se publier.
+  _count: { select: { medias: true } },
 } satisfies Prisma.BienLocatifInclude;
+
+export const mediasAnnonceInclude = {
+  orderBy: [{ sortOrder: 'asc' as const }, { createdAt: 'asc' as const }],
+} satisfies Prisma.BienLocatif$mediasArgs;
 
 const bienInclude = {
   ...bienListInclude,
   createdBy: { select: { id: true, firstName: true, lastName: true } },
+  medias: mediasAnnonceInclude,
 } satisfies Prisma.BienLocatifInclude;
 
 /**
@@ -173,6 +181,9 @@ export class BiensService {
         region: dto.region,
         superficie: dto.superficie,
         notes: dto.notes,
+        // Un bien se crée toujours non publié : la publication exige des
+        // photos, qui ne peuvent être ajoutées qu'une fois la fiche créée.
+        ...annonceData(dto),
         responsableId,
         createdById: user.id,
       },
@@ -200,9 +211,13 @@ export class BiensService {
         ? undefined
         : await this.access.resolveResponsable(dto.responsableId, user);
 
+    const publication = await this.donneesPublication(id, dto);
+
     const bien = await this.prisma.bienLocatif.update({
       where: { id },
       data: {
+        ...annonceData(dto),
+        ...publication,
         ...(dto.proprietaireId !== undefined
           ? { proprietaireId: dto.proprietaireId }
           : {}),
@@ -218,6 +233,38 @@ export class BiensService {
       include: bienInclude,
     });
     return bien;
+  }
+
+  /**
+   * Publication sur le site : le bien doit avoir un loyer et au moins une
+   * photo une fois la modification appliquée. La première publication date
+   * l'annonce ; retirer l'annonce garde cette date.
+   */
+  private async donneesPublication(
+    id: string,
+    dto: UpdateBienDto,
+  ): Promise<Prisma.BienLocatifUncheckedUpdateInput> {
+    const data: Prisma.BienLocatifUncheckedUpdateInput = {};
+    if (dto.misEnAvant !== undefined) data.misEnAvant = dto.misEnAvant;
+    if (dto.publie === undefined) return data;
+    if (!dto.publie) return { ...data, publie: false };
+
+    const actuel = await this.prisma.bienLocatif.findUnique({
+      where: { id },
+      select: {
+        loyerMensuel: true,
+        publieLe: true,
+        _count: { select: { medias: true } },
+      },
+    });
+    if (!actuel) throw new NotFoundException('Bien locatif introuvable');
+    verifierPublication({
+      loyerMensuel:
+        dto.loyerMensuel ??
+        (actuel.loyerMensuel === null ? null : Number(actuel.loyerMensuel)),
+      nombrePhotos: actuel._count.medias,
+    });
+    return { ...data, publie: true, publieLe: actuel.publieLe ?? new Date() };
   }
 
   async remove(id: string, user: LocatifUser) {
