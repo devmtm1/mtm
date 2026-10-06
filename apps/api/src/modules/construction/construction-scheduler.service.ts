@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../database/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { ConstructionOptionsService } from './construction-options.service';
 import {
   STATUTS_CHANTIER_TERMINES,
@@ -19,6 +20,13 @@ import {
  *
  * Le calcul étant idempotent, un jour manqué se rattrape de lui-même.
  */
+/** Ce qui dérape sur un chantier, en quelques mots. */
+function libelleSituation(situation: string): string {
+  if (situation === 'retard_et_depassement') return 'en retard et hors budget';
+  if (situation === 'depassement_budget') return 'budget dépassé';
+  return 'en retard';
+}
+
 @Injectable()
 export class ConstructionSchedulerService {
   private readonly logger = new Logger(ConstructionSchedulerService.name);
@@ -27,6 +35,7 @@ export class ConstructionSchedulerService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly options: ConstructionOptionsService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_1AM)
@@ -41,6 +50,19 @@ export class ConstructionSchedulerService {
         action: 'construction.entretien_quotidien',
         entityType: 'ProjetConstruction',
         newValue: bilan,
+      });
+    }
+    for (const alerte of bilan.alertesNouvelles) {
+      await this.notifications.notifierPermission('construction:administrer', {
+        type: 'chantier_alerte',
+        niveau: 'alerte',
+        titre: `Chantier ${alerte.referenceInterne} — ${libelleSituation(alerte.situation)}`,
+        lien: `/construction/chantiers/${alerte.id}`,
+        entityType: 'ProjetConstruction',
+        entityId: alerte.id,
+        // Une notification par chantier et par changement de situation.
+        dedupeKey: `chantier-alerte:${alerte.id}:${alerte.situation}`,
+        email: true,
       });
     }
   }
@@ -58,6 +80,11 @@ export class ConstructionSchedulerService {
     let budgetDepasse = 0;
     let nouvellesAlertes = 0;
     const retardsCritiques: string[] = [];
+    const alertesNouvelles: {
+      id: string;
+      referenceInterne: string;
+      situation: string;
+    }[] = [];
 
     for (const chantier of chantiers) {
       const synthese = await this.prisma.$transaction((tx) =>
@@ -77,6 +104,11 @@ export class ConstructionSchedulerService {
         synthese.alertes.situation !== chantier.situationAlerte
       ) {
         nouvellesAlertes += 1;
+        alertesNouvelles.push({
+          id: chantier.id,
+          referenceInterne: chantier.referenceInterne,
+          situation: synthese.alertes.situation,
+        });
       }
       if (synthese.alertes.joursRetardProjet >= reglages.retardCritiqueJours) {
         retardsCritiques.push(chantier.referenceInterne);
@@ -89,6 +121,7 @@ export class ConstructionSchedulerService {
       budgetDepasse,
       nouvellesAlertes,
       retardsCritiques,
+      alertesNouvelles,
     };
   }
 }

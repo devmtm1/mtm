@@ -63,6 +63,7 @@ export function createLocatifTestContext() {
       auditMock as never,
       options,
       relances,
+      { notifierPermission: jest.fn().mockResolvedValue(0) } as never,
     ),
     locataires: new LocatairesService(prisma, comptesClient),
   };

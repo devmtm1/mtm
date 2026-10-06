@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../database/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { LocatifOptionsService } from './locatif-options.service';
 import { RelancesLoyerService } from './relances.service';
 import {
@@ -30,6 +31,7 @@ export class LocatifSchedulerService {
     private readonly audit: AuditService,
     private readonly options: LocatifOptionsService,
     private readonly relances: RelancesLoyerService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_1AM)
@@ -44,6 +46,20 @@ export class LocatifSchedulerService {
         action: 'locatif.entretien_quotidien',
         entityType: 'BailLocatif',
         newValue: bilan,
+      });
+    }
+    if (bilan.relancesCreees > 0) {
+      // Une relance en file ne part pas toute seule : quelqu'un doit la
+      // valider. Une notification par jour, pas une par passage.
+      await this.notifications.notifierPermission('locatif:valider', {
+        type: 'loyer_relances',
+        niveau: 'alerte',
+        titre: `${bilan.relancesCreees} relance(s) de loyer à envoyer`,
+        message:
+          'Des loyers sont en retard : les relances sont prêtes à être envoyées.',
+        lien: '/locatif/relances',
+        dedupeKey: `loyer-relances:${new Date().toISOString().slice(0, 10)}`,
+        email: true,
       });
     }
   }

@@ -38,6 +38,7 @@ import {
   GlobalSearchService,
   type GlobalSearchResult,
 } from '../../core/services/global-search.service';
+import { NotificationsApiService } from '../../core/services/api/notifications-api.service';
 import {
   NotificationsFeedService,
   type FeedItem,
@@ -90,6 +91,7 @@ export class Header {
   private readonly router = inject(Router);
   private readonly globalSearch = inject(GlobalSearchService);
   private readonly feedService = inject(NotificationsFeedService);
+  private readonly notificationsApi = inject(NotificationsApiService);
 
   /** Sidebar replié (adapte l'icône de bascule). */
   readonly collapsed = input(false);
@@ -189,6 +191,11 @@ export class Header {
   }
 
   protected openFeedItem(item: FeedItem): void {
+    if (item.notificationId) {
+      // Ouvrir l'événement vaut accusé de lecture ; l'échec n'empêche pas la navigation.
+      this.notificationsApi.markRead(item.notificationId).subscribe({ error: () => undefined });
+      this.feed.update((items) => items.filter((entry) => entry.id !== item.id));
+    }
     void this.router.navigate(
       item.route,
       item.queryParams ? { queryParams: item.queryParams } : undefined,

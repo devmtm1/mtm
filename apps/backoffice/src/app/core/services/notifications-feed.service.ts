@@ -5,6 +5,7 @@ import { ConstructionApiService } from './api/construction-api.service';
 import { LocatifApiService } from './api/locatif-api.service';
 import { ContactApiService } from './api/contact-api.service';
 import { CrmApiService } from './api/crm-api.service';
+import { NotificationsApiService } from './api/notifications-api.service';
 import { MandatsApiService } from './api/mandats-api.service';
 import { VentesApiService } from './api/ventes-api.service';
 import { SessionService } from './session.service';
@@ -18,7 +19,16 @@ export interface FeedItem {
   detail: string;
   route: string[];
   queryParams?: Record<string, string>;
+  /** Notification serveur à marquer lue à l'ouverture (absente des signaux calculés). */
+  notificationId?: string;
 }
+
+/**
+ * Types de notifications serveur déjà représentés par un signal calculé du
+ * fil (mandats qui expirent, loyers à relancer, chantiers en alerte) : les
+ * afficher deux fois serait du bruit. Ils partent quand même par e-mail.
+ */
+const TYPES_DEJA_AU_FIL = new Set(['mandat_echeance', 'loyer_relances', 'chantier_alerte']);
 
 const MANDAT_ALERT_DAYS = 30;
 const MAX_ITEMS_PER_SOURCE = 5;
@@ -39,8 +49,8 @@ function alerteTitre(situation: string): string {
 
 /**
  * Fil des points d'attention affiché derrière la cloche de l'en-tête. Il
- * n'existe pas encore de service de notifications côté API (prévu J2.4) :
- * le fil agrège les signaux métier déjà disponibles — mandats qui expirent,
+ * agrège les notifications du serveur (paiement à valider, réservation
+ * expirée…) et les signaux métier calculés — mandats qui expirent,
  * tâches CRM en retard, loyers impayés à relancer, chantiers en retard ou
  * hors budget, demandes web non lues, demandes de réservation à traiter —
  * chacun limité aux permissions de l'utilisateur.
@@ -54,6 +64,7 @@ export class NotificationsFeedService {
   private readonly ventesApi = inject(VentesApiService);
   private readonly constructionApi = inject(ConstructionApiService);
   private readonly locatifApi = inject(LocatifApiService);
+  private readonly notificationsApi = inject(NotificationsApiService);
 
   load(): Observable<FeedItem[]> {
     const sources: Observable<FeedItem[]>[] = [];
@@ -190,7 +201,31 @@ export class NotificationsFeedService {
       );
     }
 
-    if (sources.length === 0) return of([]);
+    // Événements à traiter, avec état lu / non lu : ouverts par tout utilisateur.
+    sources.push(
+      this.notificationsApi.list({ nonLues: true, limite: 20 }).pipe(
+        map((page) =>
+          page.items
+            .filter((item) => !TYPES_DEJA_AU_FIL.has(item.type))
+            .slice(0, MAX_ITEMS_PER_SOURCE)
+            .map((item) => ({
+              id: `notification-${item.id}`,
+              notificationId: item.id,
+              severity: item.niveau === 'alerte' ? ('danger' as const) : ('info' as const),
+              title: item.titre,
+              detail: item.message ?? '',
+              route: item.lien
+                ? item.lien
+                    .split('/')
+                    .filter(Boolean)
+                    .map((part, index) => (index === 0 ? `/${part}` : part))
+                : ['/'],
+            })),
+        ),
+        catchError(() => of([])),
+      ),
+    );
+
     return forkJoin(sources).pipe(map((groups) => groups.flat()));
   }
 }

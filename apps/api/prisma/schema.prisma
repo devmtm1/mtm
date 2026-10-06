@@ -51,6 +51,7 @@ model User {
   roles                    UserRole[]
   refreshTokens            RefreshToken[]
   passwordResetTokens      PasswordResetToken[]
+  notifications            Notification[]        @relation("UserNotifications")
   auditLogs                AuditLog[]            @relation("AuditLogUser")
   settingsEdits            SystemSetting[]       @relation("SystemSettingEditor")
   contentEdits             ContentBlock[]        @relation("ContentBlockEditor")
@@ -1832,4 +1833,36 @@ model DocumentChantier {
   @@index([entreeJournalId])
   @@index([visibleClient])
   @@map("documents_chantier")
+}
+
+// ============================================================
+// Notifications internes (section 22 CDC)
+// ============================================================
+
+/**
+ * Notification adressée à un utilisateur du back-office : événement à traiter
+ * (paiement à valider, mandat qui expire, réservation expirée, loyers à
+ * relancer, chantier en alerte). La clé de dédoublonnage évite qu'une tâche
+ * planifiée qui repasse toutes les heures n'envoie dix fois la même alerte.
+ */
+model Notification {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  type       String // paiement_a_valider, mandat_echeance, reservation_expiree, loyer_relances, chantier_alerte
+  niveau     String    @default("info") // info | alerte
+  titre      String
+  message    String?
+  /** Route du back-office où traiter l'événement (ex. /ventes/<id>). */
+  lien       String?
+  entityType String?
+  entityId   String?
+  /** Unique par destinataire : NULL autorisé plusieurs fois, valeur unique sinon. */
+  dedupeKey  String?
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, readAt, createdAt])
+  @@map("notifications")
 }

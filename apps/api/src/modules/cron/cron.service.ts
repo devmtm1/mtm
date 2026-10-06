@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../database/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PIPELINE_CLOSED_STAGES } from '../crm/crm-options.service';
 
 @Injectable()
@@ -11,6 +12,7 @@ export class CronService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
@@ -64,6 +66,7 @@ export class CronService {
             daysRemaining: daysUntilExpiry,
           },
         });
+        await this.notifierEcheanceMandat(mandat, daysUntilExpiry, now);
       }
     }
     this.logger.log(
@@ -95,11 +98,17 @@ export class CronService {
 
     for (const task of pendingTasks) {
       const isOverdue = task.dateEcheance && task.dateEcheance < now;
+      const action = isOverdue
+        ? 'crm.activite_en_retard'
+        : 'crm.activite_echeance_proche';
+      // La tâche est examinée toutes les heures : sans ce garde-fou, elle
+      // laisserait 24 lignes par jour dans le journal d'audit.
+      if (await this.dejaSignaleAujourdhui(action, 'ActiviteCrm', task.id)) {
+        continue;
+      }
       await this.audit.record({
         userId: task.prospect.commercialResponsableId,
-        action: isOverdue
-          ? 'crm.activite_en_retard'
-          : 'crm.activite_echeance_proche',
+        action,
         entityType: 'ActiviteCrm',
         entityId: task.id,
         newValue: {
@@ -212,6 +221,18 @@ export class CronService {
       );
 
       if (hasValidatedPayments || isSoldOrPartiallyPaid) {
+        // Une réservation payée en partie reste active jusqu'au solde : elle
+        // revient à chaque passage horaire, mais n'est signalée qu'une fois
+        // par jour.
+        if (
+          await this.dejaSignaleAujourdhui(
+            'vente.reservation.expiry_skipped',
+            'Reservation',
+            reservation.id,
+          )
+        ) {
+          continue;
+        }
         await this.audit.record({
           action: 'vente.reservation.expiry_skipped',
           entityType: 'Reservation',
@@ -255,6 +276,107 @@ export class CronService {
         entityId: reservation.id,
         newValue: { dossierVenteId: reservation.dossierVenteId },
       });
+      await this.notifierReservationExpiree(
+        reservation.dossierVenteId,
+        reservation.id,
+      );
     }
+  }
+
+  /** Nettoyage quotidien : les notifications lues depuis plus de 90 jours disparaissent. */
+  @Cron(CronExpression.EVERY_DAY_AT_3AM)
+  async handlePurgeNotifications(): Promise<void> {
+    const supprimees = await this.notifications.purgerLues(90);
+    if (supprimees > 0) {
+      this.logger.log(`Notifications lues purgées : ${supprimees}.`);
+    }
+  }
+
+  /**
+   * Le commercial responsable est prévenu, par e-mail aussi : une échéance de
+   * mandat manquée coûte un portefeuille. Sans responsable, c'est
+   * l'encadrement des mandats qui reçoit l'alerte.
+   */
+  private async notifierEcheanceMandat(
+    mandat: {
+      id: string;
+      referenceInterne: string | null;
+      commercialResponsableId: string | null;
+    },
+    joursRestants: number,
+    now: Date,
+  ): Promise<void> {
+    const input = {
+      type: 'mandat_echeance',
+      niveau: joursRestants <= 7 ? ('alerte' as const) : ('info' as const),
+      titre:
+        `Mandat ${mandat.referenceInterne ?? ''} : échéance dans ${Math.max(0, joursRestants)} jour(s)`.replace(
+          '  ',
+          ' ',
+        ),
+      lien: `/mandats/${mandat.id}`,
+      entityType: 'Mandat',
+      entityId: mandat.id,
+      dedupeKey: `mandat-echeance:${mandat.id}:${now.toISOString().slice(0, 10)}`,
+      email: true,
+    };
+    if (mandat.commercialResponsableId) {
+      await this.notifications.notifier(
+        [mandat.commercialResponsableId],
+        input,
+      );
+    } else {
+      await this.notifications.notifierPermission('mandats:administrer', input);
+    }
+  }
+
+  private async notifierReservationExpiree(
+    dossierVenteId: string,
+    reservationId: string,
+  ): Promise<void> {
+    const dossier = await this.prisma.dossierVente.findUnique({
+      where: { id: dossierVenteId },
+      select: { referenceInterne: true, commercialResponsableId: true },
+    });
+    const input = {
+      type: 'reservation_expiree',
+      titre: `Réservation expirée — dossier ${dossier?.referenceInterne ?? dossierVenteId}`,
+      message: 'Le terrain est redevenu disponible et le dossier a été annulé.',
+      lien: `/ventes/${dossierVenteId}`,
+      entityType: 'Reservation',
+      entityId: reservationId,
+      dedupeKey: `reservation-expiree:${reservationId}`,
+    };
+    if (dossier?.commercialResponsableId) {
+      await this.notifications.notifier(
+        [dossier.commercialResponsableId],
+        input,
+      );
+    } else {
+      await this.notifications.notifierPermission('ventes:valider', input);
+    }
+  }
+  /** Une alerte identique a-t-elle déjà été tracée depuis minuit ? */
+  private async dejaSignaleAujourdhui(
+    action: string,
+    entityType: string,
+    entityId: string,
+  ): Promise<boolean> {
+    const now = new Date();
+    const debutDeJournee = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
+    const existant = await this.prisma.auditLog.findFirst({
+      where: {
+        action,
+        entityType,
+        entityId,
+        createdAt: { gte: debutDeJournee },
+      },
+      select: { id: true },
+    });
+    return existant !== null;
   }
 }
