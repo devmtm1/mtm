@@ -23,6 +23,6 @@ import { DemarchesClientService } from './demarches-client.service';
     DemarchesClientService,
     CloudinaryService,
   ],
-  exports: [DemarchesService],
+  exports: [DemarchesService, DemarchesAccessService],
 })
 export class DemarchesModule {}

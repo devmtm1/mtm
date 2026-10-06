@@ -24,6 +24,6 @@ import { SettingsModule } from '../settings/settings.module';
     CrmReportingService,
     CloudinaryService,
   ],
-  exports: [CrmService],
+  exports: [CrmService, CrmAccessService],
 })
 export class CrmModule {}

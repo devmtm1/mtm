@@ -40,11 +40,24 @@ export class CrmDocumentsService {
       `mtm/crm/${prospectId}/documents`,
       dto.isPublic ?? false,
     );
+    // Même objet, même type, même titre : c'est une nouvelle version du document.
+    const version =
+      ((
+        await this.prisma.documentCrm.aggregate({
+          where: {
+            prospectId: prospectId,
+            type: dto.type,
+            title: dto.title ?? null,
+          },
+          _max: { version: true },
+        })
+      )._max.version ?? 0) + 1;
     return this.prisma.documentCrm.create({
       data: {
         prospectId,
         type: dto.type,
         title: dto.title,
+        version,
         isPublic: dto.isPublic ?? false,
         storageKey: uploaded.publicId,
         resourceType: uploaded.resourceType,

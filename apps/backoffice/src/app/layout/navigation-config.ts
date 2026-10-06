@@ -6,6 +6,7 @@ import {
   LucideSettings,
   LucideFileClock,
   LucideFileText,
+  LucideFolderOpen,
   LucideHardHat,
   LucideInbox,
   LucideImages,
@@ -120,6 +121,13 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         route: '/construction/chantiers',
         icon: LucideHardHat,
         permission: 'construction:consulter',
+      },
+      // GED : visible de tous les collaborateurs ; la recherche ne remonte que
+      // les modules que chacun a le droit de consulter.
+      {
+        label: 'Documents',
+        route: '/documents',
+        icon: LucideFolderOpen,
       },
     ],
   },

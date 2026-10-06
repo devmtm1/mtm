@@ -27,6 +27,7 @@ import { VentesModule } from './modules/ventes/ventes.module';
 import { LocatifModule } from './modules/locatif/locatif.module';
 import { ConstructionModule } from './modules/construction/construction.module';
 import { CronModule } from './modules/cron/cron.module';
+import { GedModule } from './modules/ged/ged.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
@@ -65,6 +66,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     LocatifModule,
     ConstructionModule,
     NotificationsModule,
+    GedModule,
     CronModule,
     HealthModule,
   ],

@@ -26,6 +26,9 @@ describe('VentesDocumentsService', () => {
     });
     prismaMock.dossierVente.findFirst.mockResolvedValue({ id: 'd1' });
     prismaMock.documentVente.count.mockResolvedValue(0);
+    prismaMock.documentVente.aggregate.mockResolvedValue({
+      _max: { version: 2 },
+    });
     prismaMock.contentBlock.findMany.mockResolvedValue([]);
     prismaMock.systemSetting.findUnique.mockResolvedValue({
       value: [
@@ -58,6 +61,8 @@ describe('VentesDocumentsService', () => {
           isGenerated: true,
           title: 'Bon de réservation',
           dossierVenteId: 'd1',
+          // Deux versions existent déjà pour ce titre : celle-ci est la troisième.
+          version: 3,
         }),
       }),
     );

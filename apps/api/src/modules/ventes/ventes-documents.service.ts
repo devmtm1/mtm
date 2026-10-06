@@ -64,11 +64,24 @@ export class VentesDocumentsService {
     if (!allowedDocumentTypes.includes(dto.type))
       throw new BadRequestException('Type de document invalide');
     const uploaded = await this.cloudinary.upload(file, `ventes/${id}`, false);
+    // Même objet, même type, même titre : c'est une nouvelle version du document.
+    const version =
+      ((
+        await this.prisma.documentVente.aggregate({
+          where: {
+            dossierVenteId: id,
+            type: dto.type,
+            title: dto.title ?? null,
+          },
+          _max: { version: true },
+        })
+      )._max.version ?? 0) + 1;
     return this.prisma.documentVente.create({
       data: {
         dossierVenteId: id,
         type: dto.type,
         title: dto.title,
+        version,
         isPublic,
         storageKey: uploaded.publicId,
         resourceType: uploaded.resourceType,
@@ -193,11 +206,21 @@ export class VentesDocumentsService {
       `ventes/${id}/documents`,
       false,
     );
+    const titre = dto.title ?? this.defaultDocumentTitle(dto.type);
+    // Même objet, même type, même titre : c'est une nouvelle version du document.
+    const version =
+      ((
+        await this.prisma.documentVente.aggregate({
+          where: { dossierVenteId: id, type: dto.type, title: titre },
+          _max: { version: true },
+        })
+      )._max.version ?? 0) + 1;
     return this.prisma.documentVente.create({
       data: {
         dossierVenteId: id,
         type: dto.type,
-        title: dto.title ?? this.defaultDocumentTitle(dto.type),
+        title: titre,
+        version,
         isGenerated: true,
         isPublic,
         storageKey: uploaded.publicId,

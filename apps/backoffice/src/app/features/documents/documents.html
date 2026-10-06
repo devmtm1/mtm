@@ -1,0 +1,127 @@
+<section class="documents-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Documents</p>
+      <h1 class="page-header__title">Tous les documents</h1>
+      <p class="page-header__subtitle">
+        Les documents de tous les modules au même endroit : titres, plans, contrats, reçus, rapports, quittances.
+        Vous ne voyez que ceux que vos droits sur chaque module vous permettent de voir. La recherche porte sur le
+        titre, le type et la référence du dossier, pas sur le contenu des fichiers.
+      </p>
+    </div>
+  </header>
+
+  <section class="page-section" aria-labelledby="documents-title">
+    <div class="list-toolbar">
+      <div class="list-toolbar__title">
+        <h2 id="documents-title">Résultats</h2>
+        <p>
+          @if (loading()) {
+            Chargement…
+          } @else {
+            {{ total() }} document{{ total() > 1 ? 's' : '' }}
+          }
+        </p>
+      </div>
+      <form class="list-filters" [formGroup]="filters" (ngSubmit)="$event.preventDefault()">
+        <mat-form-field appearance="outline" class="list-filters__search" subscriptSizing="dynamic">
+          <mat-label>Rechercher</mat-label>
+          <svg matPrefix class="list-filters__icon" lucideSearch aria-hidden="true"></svg>
+          <input matInput formControlName="q" placeholder="Titre, type, référence du dossier…" autocomplete="off" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Module</mat-label>
+          <mat-select formControlName="origine">
+            <mat-option value="">Tous</mat-option>
+            @for (option of originOptions(); track option.value) {
+              <mat-option [value]="option.value">{{ option.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Type</mat-label>
+          <input matInput formControlName="type" placeholder="contrat, plan…" autocomplete="off" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Du</mat-label>
+          <input matInput type="date" formControlName="depuis" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Au</mat-label>
+          <input matInput type="date" formControlName="jusqua" />
+        </mat-form-field>
+        <button mat-button type="button" class="list-filters__reset" (click)="reset()">
+          <svg class="btn-icon" lucideX aria-hidden="true"></svg>Effacer
+        </button>
+      </form>
+    </div>
+
+    @if (loading()) {
+      <div class="documents-skeleton">
+        <div class="skeleton" style="height: 48px"></div>
+        <div class="skeleton" style="height: 48px"></div>
+        <div class="skeleton" style="height: 48px"></div>
+      </div>
+    } @else if (failed()) {
+      <div class="empty-state">
+        <svg lucideFileText aria-hidden="true"></svg>
+        <h3>Recherche impossible</h3>
+        <p>Les documents n’ont pas pu être chargés. Réessayez dans un instant.</p>
+      </div>
+    } @else if (!documents().length) {
+      <div class="empty-state">
+        <svg lucideFileText aria-hidden="true"></svg>
+        <h3>Aucun document</h3>
+        <p>Aucun document ne correspond à cette recherche dans les modules que vous pouvez consulter.</p>
+      </div>
+    } @else {
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Document</th>
+              <th>Module</th>
+              <th>Dossier</th>
+              <th>Type</th>
+              <th>Créé le</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (document of documents(); track document.origine + document.id) {
+              <tr class="is-clickable" (click)="openParent(document)">
+                <td>
+                  <span class="doc-cell">
+                    <svg lucideFileText aria-hidden="true"></svg>
+                    <strong>{{ document.titre }}</strong>
+                    <small>v{{ document.version }}</small>
+                    @if (document.diffuse) {
+                      <span class="status-pill status-pill--info">Diffusé</span>
+                    }
+                  </span>
+                </td>
+                <td>{{ originLabel(document.origine) }}</td>
+                <td>{{ document.entiteLibelle }}</td>
+                <td><span class="status-pill">{{ document.type }}</span></td>
+                <td>{{ document.createdAt | date: 'dd/MM/yyyy' }}</td>
+                <td class="is-right">
+                  @if (document.url) {
+                    <a mat-button [href]="document.url" target="_blank" rel="noopener noreferrer" (click)="$event.stopPropagation()">
+                      <svg class="btn-icon" lucideExternalLink aria-hidden="true"></svg>Ouvrir
+                    </a>
+                  }
+                  <button mat-button type="button" (click)="openParent(document); $event.stopPropagation()">Dossier</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <nav class="pager" aria-label="Pagination">
+        <button mat-button type="button" (click)="previous()" [disabled]="page() <= 1">Précédent</button>
+        <span>Page {{ page() }} sur {{ pageCount() }}</span>
+        <button mat-button type="button" (click)="next()" [disabled]="page() >= pageCount()">Suivant</button>
+      </nav>
+    }
+  </section>
+</section>

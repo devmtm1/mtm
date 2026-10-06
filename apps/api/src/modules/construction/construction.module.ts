@@ -29,6 +29,6 @@ import { ConstructionSchedulerService } from './construction-scheduler.service';
     ConstructionSchedulerService,
     CloudinaryService,
   ],
-  exports: [ProjetsConstructionService],
+  exports: [ProjetsConstructionService, ConstructionAccessService],
 })
 export class ConstructionModule {}

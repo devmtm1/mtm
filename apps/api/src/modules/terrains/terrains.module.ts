@@ -18,6 +18,6 @@ import { SettingsModule } from '../settings/settings.module';
     TerrainsService,
     CloudinaryService,
   ],
-  exports: [TerrainsService],
+  exports: [TerrainsService, TerrainsAccessService],
 })
 export class TerrainsModule {}

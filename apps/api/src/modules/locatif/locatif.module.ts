@@ -48,6 +48,6 @@ import { LocatairePortalService } from './locataire-portal.service';
     LocatairePortalService,
     CloudinaryService,
   ],
-  exports: [BiensService, BauxService],
+  exports: [BiensService, BauxService, LocatifAccessService],
 })
 export class LocatifModule {}

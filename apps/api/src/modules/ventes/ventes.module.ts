@@ -32,6 +32,6 @@ import { VentesReportingService } from './ventes-reporting.service';
     ObjectifsService,
     CloudinaryService,
   ],
-  exports: [VentesService],
+  exports: [VentesService, VentesAccessService],
 })
 export class VentesModule {}

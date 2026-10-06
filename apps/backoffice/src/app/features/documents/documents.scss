@@ -1,0 +1,35 @@
+.documents-page {
+  display: grid;
+  gap: 16px;
+}
+
+.documents-skeleton {
+  display: grid;
+  gap: 8px;
+  padding: 16px 20px;
+}
+
+.doc-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    color: var(--mtm-text-muted);
+  }
+
+  small {
+    color: var(--mtm-text-muted);
+  }
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 12px 20px;
+  color: var(--mtm-text-muted);
+}

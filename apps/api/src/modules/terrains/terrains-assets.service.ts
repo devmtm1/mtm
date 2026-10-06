@@ -57,11 +57,20 @@ export class TerrainsAssetsService {
       `mtm/terrains/${id}/documents`,
       dto.isPublic ?? false,
     );
+    // Même objet, même type, même titre : c'est une nouvelle version du document.
+    const version =
+      ((
+        await this.prisma.terrainDocument.aggregate({
+          where: { terrainId: id, type: dto.type, title: dto.title ?? null },
+          _max: { version: true },
+        })
+      )._max.version ?? 0) + 1;
     return this.prisma.terrainDocument.create({
       data: {
         terrainId: id,
         type: dto.type,
         title: dto.title,
+        version,
         isPublic: dto.isPublic ?? false,
         storageKey: uploaded.publicId,
         resourceType: uploaded.resourceType,

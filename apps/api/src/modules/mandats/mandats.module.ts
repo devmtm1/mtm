@@ -22,6 +22,6 @@ import { SettingsModule } from '../settings/settings.module';
     MandatsService,
     CloudinaryService,
   ],
-  exports: [MandatsService],
+  exports: [MandatsService, MandatsAccessService],
 })
 export class MandatsModule {}

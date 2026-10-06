@@ -172,6 +172,11 @@ export const routes: Routes = [
       },
       // Routes fixes d'abord : « ventes/:id » capturerait « objectifs » et « documents ».
       {
+        path: 'documents',
+        loadComponent: () =>
+          import('./features/documents/documents').then((m) => m.DocumentsPage),
+      },
+      {
         path: 'ventes/objectifs',
         canActivate: [permissionsGuard(['ventes:consulter'])],
         loadComponent: () =>
