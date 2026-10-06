@@ -19,6 +19,7 @@ import { ServicesSheet } from '../mobile/ServicesSheet';
 import { mergeRecent } from '../mobile/recent-properties';
 import { Skeleton } from '../ui/Skeleton';
 import { useHeroContent } from './hero-content';
+import { HeroBackdrop } from './HeroBackdrop';
 import { ServicesSection } from './ServicesSection';
 import { UpcomingProjectsSection } from './UpcomingProjectsSection';
 import { RealisationsPreviewSection } from './RealisationsPreviewSection';
@@ -56,7 +57,7 @@ const CATEGORIES: Category[] = [
  */
 export function MobileHome() {
   const navigate = useNavigate();
-  const { title, subtitle } = useHeroContent();
+  const { title } = useHeroContent();
   const [query, setQuery] = useState('');
   const [othersOpen, setOthersOpen] = useState(false);
   const closeOthers = useCallback(() => setOthersOpen(false), []);
@@ -80,17 +81,19 @@ export function MobileHome() {
 
   return (
     <div className="pb-4">
-      {/* Visuel d'accueil : l'image du site, le titre administré, et la recherche
+      {/* Visuel d'accueil : la vidéo du site, le titre administré, et la recherche
           qui chevauche le bas de la carte. */}
       <section className="px-4 pt-3">
         <div className="relative">
-          <div className="relative h-[17rem] overflow-hidden rounded-3xl bg-mtm-primary-dark shadow-card">
-            <img src="/hero-poster.jpg" alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover" fetchPriority="high" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/10" aria-hidden="true" />
-            <div className="absolute inset-0 bg-mtm-primary-dark/20 mix-blend-multiply" aria-hidden="true" />
-            <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1.5 px-5 pb-10">
-              <h1 className="whitespace-pre-line font-display text-[1.65rem] font-bold leading-tight text-white drop-shadow">{title}</h1>
-              <p className="line-clamp-2 text-[13px] text-white/85">{subtitle}</p>
+          {/* Carte plus basse et moins chargée : la vidéo de MTM reste visible. Seul
+              le bas est assombri, juste assez pour lire le titre. */}
+          <div className="relative h-[12.5rem] overflow-hidden rounded-3xl bg-mtm-primary-dark shadow-card">
+            <HeroBackdrop />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
+            <div className="absolute inset-x-0 bottom-0 px-5 pb-9">
+              <h1 className="line-clamp-2 whitespace-pre-line font-display text-[1.3rem] font-bold leading-tight text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.55)]">
+                {title}
+              </h1>
             </div>
           </div>
 
