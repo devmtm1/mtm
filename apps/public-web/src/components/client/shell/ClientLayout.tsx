@@ -27,17 +27,11 @@ import {
   useProprietaireSynthese,
 } from '../../../hooks/useClientPortal';
 import { ROUTES } from '../../../routes';
+import { ClientTabBar, type ClientTab } from './ClientTabBar';
 import { ScrollManager } from '../../layout/ScrollManager';
 import { RouteAnnouncer } from '../../layout/RouteAnnouncer';
 
 const MAIN_ID = 'contenu-principal';
-
-interface ClientTab {
-  to: string;
-  label: string;
-  icon: typeof Home;
-  end: boolean;
-}
 
 const BASE_TABS: ClientTab[] = [
   { to: ROUTES.clientPortal, label: 'Accueil', icon: Home, end: true },
@@ -243,41 +237,13 @@ export function ClientLayout() {
           </header>
 
           <main id={MAIN_ID} tabIndex={-1} className="flex-1 outline-none">
-            <div className="mx-auto w-full max-w-5xl px-4 pb-24 pt-4 sm:px-6 sm:pt-6 lg:pb-10 lg:pt-8">
+            <div className="mx-auto w-full max-w-5xl px-4 pb-28 pt-4 sm:px-6 sm:pt-6 lg:pb-10 lg:pt-8">
               <Outlet />
             </div>
           </main>
 
           {/* ---- Onglets (mobile / tablette) ---- */}
-          <nav
-            className="fixed inset-x-0 bottom-0 z-40 border-t border-mtm-border bg-mtm-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
-            aria-label="Espace client"
-          >
-            <ul className="grid" style={{ gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))` }}>
-              {TABS.map(({ to, label, icon: Icon, end }) => (
-                <li key={to}>
-                  <NavLink
-                    to={to}
-                    end={end}
-                    className={({ isActive }) =>
-                      `flex flex-col items-center gap-0.5 px-1 pb-2 pt-2.5 text-[11px] font-semibold transition-colors ${
-                        isActive ? 'text-mtm-primary' : 'text-mtm-muted hover:text-mtm-text'
-                      }`
-                    }
-                  >
-                    {({ isActive }) => (
-                      <>
-                        <span className={`flex h-7 w-12 items-center justify-center rounded-full ${isActive ? 'bg-mtm-primary-subtle' : ''}`}>
-                          <Icon className="h-5 w-5" aria-hidden="true" />
-                        </span>
-                        {label}
-                      </>
-                    )}
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          <ClientTabBar tabs={TABS} onLogout={() => void handleLogout()} />
         </div>
         <RouteAnnouncer mainId={MAIN_ID} />
       </div>

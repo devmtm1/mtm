@@ -20,6 +20,7 @@ import { ROUTES } from '../../routes';
 import { useAuth } from '../../contexts/auth-context-store';
 import { toTelHref, useSiteContact } from '../../hooks/useSiteContact';
 import { useFavorites } from '../../hooks/useFavorites';
+import { InstallAppRow } from './InstallAppRow';
 import { MobileSheet } from './MobileSheet';
 
 /** Icône de chaque destination : le menu se lit à l'image autant qu'au texte. */
@@ -157,6 +158,8 @@ export function MobileMenuSheet({ onClose }: { onClose: () => void }) {
         )}
         <ChevronRight className="h-4 w-4 text-mtm-muted" aria-hidden="true" />
       </Link>
+
+      <InstallAppRow />
     </MobileSheet>
   );
 }

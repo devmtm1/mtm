@@ -13,6 +13,19 @@
   # navigateur la bloque ; le test « csp » du dépôt rappelle cette règle.
   Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://res.cloudinary.com https://*.tile.openstreetmap.org https://server.arcgisonline.com; media-src 'self' https://res.cloudinary.com; connect-src 'self' https://mtm-api-zm5i.onrender.com https://mtm-2-v2wo.onrender.com;
 
+# Le service worker et le manifeste doivent se revalider : une mise à jour
+# du site ne doit pas rester bloquée derrière un ancien fichier.
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+  Service-Worker-Allowed: /
+
+/manifest.webmanifest
+  Content-Type: application/manifest+json
+  Cache-Control: public, max-age=86400
+
+/offline.html
+  Cache-Control: public, max-age=0, must-revalidate
+
 # Fichiers au nom haché par Vite : ils ne changent jamais sans changer de nom.
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
