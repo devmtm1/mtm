@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { CheckCircle2 } from 'lucide-react';
 import { createLocataireIncident } from '../../api/clientPortal';
 import { ApiError } from '../../api/client';
 import { useAuth } from '../../contexts/auth-context-store';
 import { Button } from '../ui/Button';
 import { FormField, fieldInputClass } from '../ui/FormField';
 import { Modal } from '../ui/Modal';
+import { useToast } from '../ui/toast-store';
 
 const TYPES_INCIDENT = [
   { value: 'plomberie', label: 'Plomberie' },
@@ -45,7 +45,7 @@ export function NewIncidentModal({
   const [type, setType] = useState(types[0].value);
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const toast = useToast();
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(event: FormEvent): Promise<void> {
@@ -60,8 +60,10 @@ export function NewIncidentModal({
     setSubmitting(true);
     try {
       await createLocataireIncident(accessToken, bailId, { nature, type, description: texte });
-      setSubmitted(true);
       onCreated();
+      toast.show(estDemande ? 'Demande transmise : MTM vous répond ici' : 'Incident signalé : notre équipe est prévenue');
+      onClose();
+      return;
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : "L'envoi a échoué. Merci de réessayer.");
     } finally {
@@ -71,33 +73,34 @@ export function NewIncidentModal({
 
   return (
     <Modal title={estDemande ? 'Faire une demande' : 'Signaler un incident'} onClose={onClose}>
-      {submitted ? (
-        <div className="flex flex-col items-center gap-3 py-6 text-center">
-          <CheckCircle2 className="h-10 w-10 text-mtm-success" aria-hidden="true" />
-          <p className="font-semibold text-mtm-text">
-            {estDemande ? 'Demande transmise' : 'Incident signalé'}
-          </p>
-          <p className="text-sm text-mtm-muted">Notre équipe a été notifiée et reviendra vers vous.</p>
-          <Button variant="secondary" onClick={onClose}>
-            Fermer
-          </Button>
-        </div>
-      ) : (
         <form className="flex flex-col gap-4" onSubmit={(event) => void handleSubmit(event)}>
-          <FormField label={estDemande ? 'Objet de la demande' : "Type d'incident"} htmlFor="incident-type">
-            <select
-              id="incident-type"
-              value={type}
-              onChange={(event) => setType(event.target.value)}
-              className={fieldInputClass}
-            >
+          <fieldset>
+            <legend className="mb-2 text-sm font-semibold text-mtm-text">
+              {estDemande ? 'Objet de la demande' : "Type d'incident"}
+            </legend>
+            <div className="flex flex-wrap gap-2">
               {types.map(({ value, label }) => (
-                <option key={value} value={value}>
+                <label
+                  key={value}
+                  className={`cursor-pointer rounded-full border px-4 py-2.5 text-sm font-semibold transition-colors active:scale-95 ${
+                    type === value
+                      ? 'border-mtm-primary bg-mtm-primary-subtle text-mtm-primary'
+                      : 'border-mtm-border text-mtm-text hover:border-mtm-primary/50'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="incident-type"
+                    value={value}
+                    checked={type === value}
+                    onChange={() => setType(value)}
+                    className="sr-only"
+                  />
                   {label}
-                </option>
+                </label>
               ))}
-            </select>
-          </FormField>
+            </div>
+          </fieldset>
 
           <FormField
             label={estDemande ? 'Précisez votre demande' : 'Décrivez le problème'}
@@ -134,7 +137,6 @@ export function NewIncidentModal({
             </Button>
           </div>
         </form>
-      )}
     </Modal>
   );
 }

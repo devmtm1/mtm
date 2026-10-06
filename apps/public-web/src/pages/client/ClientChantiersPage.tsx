@@ -94,7 +94,7 @@ export function ClientChantiersPage() {
   if (chantiersLoading) {
     return (
       <div className="flex flex-col gap-4">
-        <Skeleton className="h-56 rounded-lg" />
+        <Skeleton className="h-56 rounded-2xl" />
       </div>
     );
   }
@@ -143,7 +143,7 @@ export function ClientChantiersPage() {
         </div>
       )}
 
-      {detailLoading && <Skeleton className="h-56 rounded-lg" />}
+      {detailLoading && <Skeleton className="h-56 rounded-2xl" />}
       {detailError && <EmptyState title="Chantier indisponible" description={detailError} />}
 
       {!detailLoading && !detailError && detail && (

@@ -64,6 +64,7 @@ export function ClientDemandesList({ data, loading, error, limit, emptyAction }:
   if (items.length === 0) {
     return (
       <EmptyState
+        icon={MessageSquare}
         title="Aucune demande envoyée"
         description="Vos demandes de visite, d'information ou de réservation apparaîtront ici."
         action={emptyAction}
@@ -72,10 +73,10 @@ export function ClientDemandesList({ data, loading, error, limit, emptyAction }:
   }
 
   return (
-    <ul className="divide-y divide-mtm-border">
+    <ul className="divide-y divide-mtm-border/70">
       {items.map((item) => (
-        <li key={item.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-mtm-primary-subtle text-mtm-primary">
+        <li key={item.id} className="flex items-start gap-3 py-3.5 first:pt-0 last:pb-0">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-mtm-primary-subtle text-mtm-primary">
             {item.kind === 'reservation' ? (
               <CalendarCheck className="h-4 w-4" aria-hidden="true" />
             ) : (

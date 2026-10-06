@@ -1,48 +1,43 @@
-import { Building2, CalendarClock, FolderOpen, KeyRound, Mail, MapPin, MessageCircle, Phone, Wallet } from 'lucide-react';
+import { useMemo } from 'react';
+import {
+  AlertTriangle,
+  Building2,
+  CalendarClock,
+  CheckCircle2,
+  ChevronRight,
+  FolderOpen,
+  HardHat,
+  KeyRound,
+  Mail,
+  MapPin,
+  MessageCircle,
+  MessageSquare,
+  Phone,
+  ShieldCheck,
+  Wallet,
+  type LucideIcon,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/auth-context-store';
 import { useClientData } from '../../contexts/client-data-store';
 import { toTelHref, useSiteContact } from '../../hooks/useSiteContact';
 import { usePageMetadata } from '../../hooks/usePageMetadata';
-import { ClientCard, ClientPageHeader } from '../../components/client/shell/ClientUi';
+import { ClientCard, ProgressBar, StatTile } from '../../components/client/shell/ClientUi';
 import { ClientDemandesList } from '../../components/client/ClientDemandesSection';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { LinkButton } from '../../components/ui/LinkButton';
 import { formatDate, formatMoney } from '../../utils/format';
+import { prochainePriorite, type Priorite } from '../../utils/clientPriority';
 import { dossierStatus } from '../../utils/labels';
 import { ROUTES } from '../../routes';
 import type { ClientDossier } from '../../types/clientPortal';
-import type { ClientBailLocataire } from '../../types/locatif';
-
-/** Prochaine échéance de loyer non soldée du bail locataire actif. */
-function nextEcheanceLocataire(bail: ClientBailLocataire | null) {
-  if (!bail) return undefined;
-  return bail.echeances
-    .filter((echeance) => echeance.statut !== 'payee')
-    .map((echeance) => ({ echeance, reste: Math.max(0, echeance.montantPrevu - echeance.montantPaye) }))
-    .filter((item) => item.reste > 0)
-    .sort((a, b) => new Date(a.echeance.dateEcheance).getTime() - new Date(b.echeance.dateEcheance).getTime())[0];
-}
-
-/** Prochaine échéance non soldée, tous dossiers confondus. */
-function nextEcheance(dossiers: ClientDossier[]) {
-  return dossiers
-    .filter((dossier) => !['solde', 'annule'].includes(dossier.statut))
-    .flatMap((dossier) =>
-      dossier.echeances
-        .filter((echeance) => echeance.statut !== 'payee')
-        .map((echeance) => ({ dossier, echeance, reste: Math.max(0, echeance.montantPrevu - echeance.montantPaye) })),
-    )
-    .filter((item) => item.reste > 0)
-    .sort((a, b) => new Date(a.echeance.dateEcheance).getTime() - new Date(b.echeance.dateEcheance).getTime())[0];
-}
 
 /**
- * Accueil de l'espace client : l'essentiel en un écran — où en est le
- * paiement, la prochaine échéance, les dossiers en cours, les dernières
- * demandes et comment joindre son conseiller.
+ * Accueil de l'espace client : en haut, ce qui demande son attention
+ * maintenant (un loyer, une échéance), puis ses espaces, sa situation
+ * financière, ses dossiers et comment joindre son conseiller.
  */
 export function ClientHomePage() {
   const { user } = useAuth();
@@ -54,6 +49,8 @@ export function ClientHomePage() {
     demandes,
     demandesLoading,
     demandesError,
+    missions,
+    chantiers,
     proprietaireBiens,
     proprietaireLoading,
     locataireBaux,
@@ -61,105 +58,127 @@ export function ClientHomePage() {
   } = useClientData();
   usePageMetadata({ title: 'Mon espace client' });
 
-  const list = dossiers ?? [];
+  const list = useMemo(() => dossiers ?? [], [dossiers]);
   const open = list.filter((dossier) => !['solde', 'annule'].includes(dossier.statut));
   const totalPaid = list.reduce((sum, dossier) => sum + dossier.montantPaye, 0);
   const totalRemaining = list
     .filter((dossier) => dossier.statut !== 'annule')
     .reduce((sum, dossier) => sum + Math.max(0, (dossier.prixVente ?? 0) - dossier.montantPaye), 0);
-  const upcoming = nextEcheance(list);
+
+  const bailActif = locataireBaux?.find((b) => b.statut === 'actif' || b.statut === 'preavis') ?? locataireBaux?.[0] ?? null;
+  const priorite = useMemo(() => prochainePriorite(dossiers, bailActif), [dossiers, bailActif]);
+  const chargement = dossiersLoading || locataireLoading;
 
   const biens = proprietaireBiens;
   const biensAvecBail = (biens ?? []).filter((bien) => bien.bail);
   const loyersEncaissesTotal = biensAvecBail.reduce((sum, bien) => sum + (bien.bail?.loyersEncaisses ?? 0), 0);
 
-  const baux = locataireBaux;
-  const bailActifLocataire = baux?.find((b) => b.statut === 'actif' || b.statut === 'preavis') ?? baux?.[0] ?? null;
-  const prochaineEcheanceLocataire = nextEcheanceLocataire(bailActifLocataire);
+  const demandesEnAttente =
+    (demandes?.messages.filter((demande) => !demande.traite).length ?? 0) +
+    (demandes?.reservations.filter((demande) => demande.statut !== 'traitee').length ?? 0);
+
+  // Les espaces que ce compte possède vraiment : ni tuile vide, ni détour inutile.
+  const espaces: EspaceProps[] = [
+    {
+      to: ROUTES.clientDossiers,
+      icon: FolderOpen,
+      label: 'Mes dossiers',
+      detail: open.length > 0 ? `${open.length} en cours` : list.length > 0 ? 'Tout est soldé' : 'Aucun pour le moment',
+    },
+    ...(bailActif
+      ? [
+          {
+            to: ROUTES.clientLocataire,
+            icon: KeyRound,
+            label: 'Ma location',
+            detail: bailActif.solde.resteADevoir > 0 ? `${formatMoney(bailActif.solde.resteADevoir)} à régler` : 'Loyers à jour',
+            alerte: bailActif.solde.resteADevoir > 0,
+          },
+        ]
+      : []),
+    ...(biens !== null
+      ? [
+          {
+            to: ROUTES.clientProprietaire,
+            icon: Building2,
+            label: 'Mon bien',
+            detail: biens.length > 0 ? `${biens.length} bien${biens.length > 1 ? 's' : ''} confié${biens.length > 1 ? 's' : ''}` : 'Aucun bien',
+          },
+        ]
+      : []),
+    ...(chantiers !== null && chantiers.length > 0
+      ? [
+          {
+            to: ROUTES.clientChantiers,
+            icon: HardHat,
+            label: 'Mon chantier',
+            detail: `${chantiers.length} suivi${chantiers.length > 1 ? 's' : ''}`,
+          },
+        ]
+      : []),
+    {
+      to: ROUTES.clientMissions,
+      icon: ShieldCheck,
+      label: 'Vérifications',
+      detail: (missions?.length ?? 0) > 0 ? `${missions?.length} demandée${(missions?.length ?? 0) > 1 ? 's' : ''}` : 'Faire vérifier un terrain',
+    },
+    {
+      to: ROUTES.clientDemandes,
+      icon: MessageSquare,
+      label: 'Mes demandes',
+      detail: demandesEnAttente > 0 ? `${demandesEnAttente} en attente` : 'Écrire à MTM',
+    },
+  ];
 
   return (
-    <div className="flex flex-col gap-4 sm:gap-6">
-      <ClientPageHeader
-        title={`Bonjour ${user?.firstName ?? ''}`}
-        description="Voici où en sont vos projets avec MTM Immobilier."
-      />
+    <div className="flex flex-col gap-5 sm:gap-6">
+      {/* Accueil : la salutation et l'essentiel, sur le fond de la marque. */}
+      <section className="rounded-3xl bg-gradient-to-br from-mtm-primary to-mtm-primary-dark p-5 text-white shadow-card lg:rounded-lg">
+        <p className="text-sm text-white/75">Bonjour,</p>
+        <h1 className="font-display text-[1.65rem] font-bold leading-tight">{user?.firstName ?? 'et bienvenue'}</h1>
+        <div className="mt-4">
+          <PrioriteBloc priorite={priorite} loading={chargement} aDesDonnees={list.length > 0 || bailActif !== null} />
+        </div>
+      </section>
 
-      {/* Synthèse */}
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4">
-        {dossiersLoading ? (
-          [0, 1, 2].map((index) => <Skeleton key={index} className={`h-20 rounded-lg sm:h-24 ${index === 0 ? 'col-span-2 sm:col-span-1' : ''}`} />)
-        ) : (
-          <>
-            <Kpi icon={<FolderOpen className="h-5 w-5" aria-hidden="true" />} value={String(open.length)} label={open.length > 1 ? 'Dossiers en cours' : 'Dossier en cours'} wide />
-            <Kpi icon={<Wallet className="h-5 w-5" aria-hidden="true" />} value={formatMoney(totalPaid)} label="Total payé" tone="success" />
-            <Kpi icon={<Wallet className="h-5 w-5" aria-hidden="true" />} value={formatMoney(totalRemaining)} label="Reste à payer" />
-          </>
-        )}
-      </div>
+      {/* Mes espaces : un toucher pour y aller, l'état en une ligne. */}
+      <nav aria-label="Mes espaces">
+        <ul className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+          {espaces.map((espace) => (
+            <li key={espace.to}>
+              <EspaceTile {...espace} />
+            </li>
+          ))}
+        </ul>
+      </nav>
 
-      {/* Prochaine échéance : l'information que le client vient chercher le plus souvent. */}
+      {/* Situation financière des ventes, seulement s'il y en a. */}
       {!dossiersLoading && !dossiersError && list.length > 0 && (
-        <section className="rounded-lg bg-mtm-primary-dark p-4 text-white sm:p-5">
-          <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-white/10">
-              <CalendarClock className="h-5 w-5" aria-hidden="true" />
-            </span>
-            {upcoming ? (
-              <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-white/60">Prochaine échéance</p>
-                <p className="mt-0.5 font-display text-xl font-bold">{formatMoney(upcoming.reste)}</p>
-                <p className="mt-0.5 text-sm text-white/80">
-                  Avant le {formatDate(upcoming.echeance.dateEcheance)} · {upcoming.dossier.terrain?.nom ?? upcoming.dossier.referenceInterne}
-                </p>
-              </div>
-            ) : (
-              <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-white/60">Échéances</p>
-                <p className="mt-0.5 font-display text-lg font-bold">Rien à régler pour le moment</p>
-                <p className="mt-0.5 text-sm text-white/80">Vos prochaines échéances apparaîtront ici.</p>
-              </div>
-            )}
-          </div>
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:flex">
-            <a
-              href={toTelHref(contact.telephone)}
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-semibold text-mtm-primary-dark sm:px-5"
-            >
-              <Phone className="h-4 w-4" aria-hidden="true" />
-              Appeler
-            </a>
-            <a
-              href={`https://wa.me/${contact.whatsapp}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-md border border-white/30 px-3 py-2 text-sm font-semibold text-white sm:px-5"
-            >
-              <MessageCircle className="h-4 w-4" aria-hidden="true" />
-              WhatsApp
-            </a>
-          </div>
+        <section aria-label="Mes paiements" className="grid grid-cols-2 gap-3">
+          <StatTile icon={Wallet} value={formatMoney(totalPaid)} label="Déjà payé" tone="success" />
+          <StatTile icon={Wallet} value={formatMoney(totalRemaining)} label="Reste à payer" tone="warning" />
         </section>
       )}
 
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-[1.4fr_1fr]">
-        {/* Dossiers en cours, en version compacte */}
+      <div className="grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-[1.4fr_1fr]">
         <ClientCard title="Mes dossiers" to={ROUTES.clientDossiers} linkLabel="Détail" className="self-start">
           {dossiersLoading && (
             <div className="flex flex-col gap-3">
-              <Skeleton className="h-16 rounded-md" />
-              <Skeleton className="h-16 rounded-md" />
+              <Skeleton className="h-20 rounded-2xl" />
+              <Skeleton className="h-20 rounded-2xl" />
             </div>
           )}
           {dossiersError && <EmptyState title="Impossible de charger vos dossiers" description={dossiersError} />}
           {!dossiersLoading && !dossiersError && list.length === 0 && (
             <EmptyState
+              icon={FolderOpen}
               title="Aucun dossier pour le moment"
               description="Vos dossiers de vente apparaîtront ici dès qu'un conseiller MTM vous en aura rattaché un."
               action={<LinkButton to={ROUTES.catalog} variant="secondary">Découvrir nos biens</LinkButton>}
             />
           )}
           {!dossiersLoading && !dossiersError && list.length > 0 && (
-            <ul className="divide-y divide-mtm-border">
+            <ul className="flex flex-col gap-3">
               {list.map((dossier) => (
                 <li key={dossier.id}>
                   <DossierRow dossier={dossier} />
@@ -169,44 +188,15 @@ export function ClientHomePage() {
           )}
         </ClientCard>
 
-        <div className="flex flex-col gap-4 sm:gap-6">
-          {proprietaireLoading && <Skeleton className="h-20 rounded-lg" />}
-          {!proprietaireLoading && biens !== null && (
-            <ClientCard title="Mon bien" to={ROUTES.clientProprietaire}>
-              <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-mtm-primary-subtle text-mtm-primary">
-                  <Building2 className="h-5 w-5" aria-hidden="true" />
-                </span>
-                <div className="min-w-0">
-                  <p className="truncate font-semibold text-mtm-text">
-                    {biens.length > 0 ? `${biens.length} bien${biens.length > 1 ? 's' : ''} confié${biens.length > 1 ? 's' : ''}` : 'Aucun bien pour le moment'}
-                  </p>
-                  <p className="text-sm text-mtm-muted">
-                    {biensAvecBail.length > 0 ? `${formatMoney(loyersEncaissesTotal)} de loyers encaissés au total` : 'Aucun bail en cours'}
-                  </p>
-                </div>
-              </div>
-            </ClientCard>
-          )}
-
-          {locataireLoading && <Skeleton className="h-20 rounded-lg" />}
-          {!locataireLoading && baux !== null && (
-            <ClientCard title="Ma location" to={ROUTES.clientLocataire}>
-              <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-mtm-primary-subtle text-mtm-primary">
-                  <KeyRound className="h-5 w-5" aria-hidden="true" />
-                </span>
-                <div className="min-w-0">
-                  {prochaineEcheanceLocataire ? (
-                    <>
-                      <p className="truncate font-semibold text-mtm-text">{formatMoney(prochaineEcheanceLocataire.reste)} à régler</p>
-                      <p className="text-sm text-mtm-muted">Avant le {formatDate(prochaineEcheanceLocataire.echeance.dateEcheance)}</p>
-                    </>
-                  ) : (
-                    <p className="truncate font-semibold text-mtm-text">Rien à régler pour le moment</p>
-                  )}
-                </div>
-              </div>
+        <div className="flex flex-col gap-5 sm:gap-6">
+          {!proprietaireLoading && biens !== null && biens.length > 0 && (
+            <ClientCard title="Mes loyers encaissés" to={ROUTES.clientProprietaire}>
+              <p className="font-display text-2xl font-bold text-mtm-success">{formatMoney(loyersEncaissesTotal)}</p>
+              <p className="mt-0.5 text-sm text-mtm-muted">
+                {biensAvecBail.length > 0
+                  ? `sur ${biensAvecBail.length} bien${biensAvecBail.length > 1 ? 's' : ''} loué${biensAvecBail.length > 1 ? 's' : ''}`
+                  : 'Aucun bail en cours'}
+              </p>
             </ClientCard>
           )}
 
@@ -216,19 +206,10 @@ export function ClientHomePage() {
 
           <ClientCard title="Votre conseiller">
             <p className="text-sm text-mtm-muted">MTM vous répond du lundi au samedi.</p>
-            <ul className="mt-3 flex flex-col gap-2 text-sm">
-              <li>
-                <a href={toTelHref(contact.telephone)} className="flex items-center gap-2.5 rounded-md border border-mtm-border px-3 py-2 font-semibold text-mtm-text hover:border-mtm-primary hover:text-mtm-primary">
-                  <Phone className="h-4 w-4 text-mtm-primary" aria-hidden="true" />
-                  {contact.telephone}
-                </a>
-              </li>
-              <li>
-                <a href={`mailto:${contact.email}`} className="flex items-center gap-2.5 rounded-md border border-mtm-border px-3 py-2 font-semibold text-mtm-text hover:border-mtm-primary hover:text-mtm-primary">
-                  <Mail className="h-4 w-4 text-mtm-primary" aria-hidden="true" />
-                  <span className="truncate">{contact.email}</span>
-                </a>
-              </li>
+            <ul className="mt-3 grid grid-cols-3 gap-2">
+              <ContactTile href={toTelHref(contact.telephone)} icon={Phone} label="Appeler" tone="text-mtm-success" />
+              <ContactTile href={`https://wa.me/${contact.whatsapp}`} icon={MessageCircle} label="WhatsApp" tone="text-mtm-success" external />
+              <ContactTile href={`mailto:${contact.email}`} icon={Mail} label="E-mail" tone="text-mtm-primary" />
             </ul>
           </ClientCard>
         </div>
@@ -237,60 +218,123 @@ export function ClientHomePage() {
   );
 }
 
+interface EspaceProps {
+  to: string;
+  icon: LucideIcon;
+  label: string;
+  detail: string;
+  /** Met la ligne d'état en valeur : un solde à régler se remarque. */
+  alerte?: boolean;
+}
+
+function EspaceTile({ to, icon: Icon, label, detail, alerte = false }: EspaceProps) {
+  return (
+    <Link
+      to={to}
+      className="flex h-full items-center gap-3 rounded-2xl border border-mtm-border/70 bg-mtm-surface p-3.5 shadow-card transition-transform active:scale-[0.97] lg:rounded-lg lg:border-mtm-border lg:hover:border-mtm-primary-light"
+    >
+      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${alerte ? 'bg-mtm-warning/10 text-mtm-warning' : 'bg-mtm-primary-subtle text-mtm-primary'}`}>
+        <Icon className="h-5 w-5" aria-hidden="true" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-bold text-mtm-text">{label}</span>
+        <span className={`block truncate text-xs ${alerte ? 'font-semibold text-mtm-warning' : 'text-mtm-muted'}`}>{detail}</span>
+      </span>
+      <ChevronRight className="hidden h-4 w-4 shrink-0 text-mtm-muted sm:block" aria-hidden="true" />
+    </Link>
+  );
+}
+
+function ContactTile({ href, icon: Icon, label, tone, external = false }: { href: string; icon: LucideIcon; label: string; tone: string; external?: boolean }) {
+  return (
+    <li>
+      <a
+        href={href}
+        {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+        className="flex flex-col items-center gap-1.5 rounded-2xl border border-mtm-border bg-mtm-bg px-2 py-3 text-xs font-semibold text-mtm-text transition-transform active:scale-95"
+      >
+        <Icon className={`h-5 w-5 ${tone}`} aria-hidden="true" />
+        {label}
+      </a>
+    </li>
+  );
+}
+
+/** Ce qui demande l'attention du client : en retard, à venir, ou rien du tout. */
+function PrioriteBloc({ priorite, loading, aDesDonnees }: { priorite: Priorite | null; loading: boolean; aDesDonnees: boolean }) {
+  if (loading) return <Skeleton className="h-28 rounded-2xl bg-white/15" />;
+
+  if (!priorite) {
+    return (
+      <div className="flex items-start gap-3 rounded-2xl bg-white/10 p-4">
+        <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 text-white" aria-hidden="true" />
+        <div>
+          <p className="font-display text-lg font-bold">{aDesDonnees ? 'Tout est à jour' : 'Bienvenue dans votre espace'}</p>
+          <p className="mt-0.5 text-sm text-white/80">
+            {aDesDonnees
+              ? 'Aucun paiement n’est attendu pour le moment.'
+              : 'Vos dossiers, loyers et demandes apparaîtront ici dès qu’un conseiller MTM les aura rattachés à votre compte.'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const cible = priorite.cible === 'locataire' ? ROUTES.clientLocataire : ROUTES.clientDossiers;
+  return (
+    <div className={`rounded-2xl p-4 ${priorite.enRetard ? 'bg-white text-mtm-text' : 'bg-white/10'}`}>
+      <p className={`flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider ${priorite.enRetard ? 'text-mtm-accent' : 'text-white/85'}`}>
+        {priorite.enRetard ? <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" /> : <CalendarClock className="h-3.5 w-3.5" aria-hidden="true" />}
+        {priorite.enRetard ? `En retard de ${priorite.joursRetard} jour${priorite.joursRetard > 1 ? 's' : ''}` : 'À régler prochainement'}
+      </p>
+      <p className="mt-1 font-display text-2xl font-bold">{formatMoney(priorite.reste)}</p>
+      <p className={`mt-0.5 text-sm ${priorite.enRetard ? 'text-mtm-muted' : 'text-white/80'}`}>
+        {priorite.objet} · {priorite.enRetard ? 'était dû le' : 'avant le'} {formatDate(priorite.dateEcheance)}
+      </p>
+      <div className="mt-3.5 flex gap-2">
+        <Link
+          to={cible}
+          className={`inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-semibold transition-transform active:scale-95 ${
+            priorite.enRetard ? 'bg-mtm-primary text-white' : 'bg-white text-mtm-primary-dark'
+          }`}
+        >
+          Voir le détail
+          <ChevronRight className="h-4 w-4" aria-hidden="true" />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 function DossierRow({ dossier }: { dossier: ClientDossier }) {
   const status = dossierStatus(dossier.statut);
   const price = dossier.prixVente ?? 0;
-  const progress = price > 0 ? Math.min(100, Math.round((dossier.montantPaye / price) * 100)) : 0;
+  const progress = price > 0 ? (dossier.montantPaye / price) * 100 : 0;
   const remaining = Math.max(0, price - dossier.montantPaye);
   const location = [dossier.terrain?.commune, dossier.terrain?.region].filter(Boolean).join(', ');
 
   return (
-    <Link to={ROUTES.clientDossiers} className="-mx-1 flex flex-col gap-2 rounded-md px-1 py-3 first:pt-0 last:pb-0 hover:bg-mtm-bg">
+    <Link
+      to={ROUTES.clientDossiers}
+      className="block rounded-2xl border border-mtm-border/70 bg-mtm-bg/60 p-3.5 transition-transform active:scale-[0.98]"
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate font-display text-[15px] font-bold text-mtm-text">{dossier.terrain?.nom ?? dossier.referenceInterne ?? 'Dossier de vente'}</p>
           {location && (
             <p className="mt-0.5 flex items-center gap-1 text-xs text-mtm-muted">
-              <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
-              {location}
+              <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <span className="truncate">{location}</span>
             </p>
           )}
         </div>
         <Badge tone={status.tone} className="shrink-0">{status.label}</Badge>
       </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-mtm-border" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label="Avancement du paiement">
-        <div className="h-full rounded-full bg-mtm-success" style={{ width: `${progress}%` }} />
-      </div>
-      <p className="text-xs text-mtm-muted">
+      <ProgressBar value={progress} label="Avancement du paiement" className="mt-3" />
+      <p className="mt-1.5 text-xs text-mtm-muted">
         <span className="font-semibold text-mtm-success">{formatMoney(dossier.montantPaye)}</span> payés sur {formatMoney(price || null)}
         {remaining > 0 ? ` · reste ${formatMoney(remaining)}` : ''}
       </p>
     </Link>
-  );
-}
-
-function Kpi({
-  icon,
-  value,
-  label,
-  tone = 'primary',
-  wide = false,
-}: {
-  icon: React.ReactNode;
-  value: string;
-  label: string;
-  tone?: 'primary' | 'success';
-  wide?: boolean;
-}) {
-  const iconClass = tone === 'success' ? 'bg-mtm-success/10 text-mtm-success' : 'bg-mtm-primary-subtle text-mtm-primary';
-  const valueClass = tone === 'success' ? 'text-mtm-success' : 'text-mtm-text';
-  return (
-    <div className={`flex items-center gap-3 rounded-lg border border-mtm-border bg-mtm-surface px-3.5 py-3 shadow-card sm:gap-4 sm:px-4 sm:py-4 ${wide ? 'col-span-2 sm:col-span-1' : ''}`}>
-      <span className={`h-9 w-9 shrink-0 items-center justify-center rounded-md sm:flex sm:h-11 sm:w-11 ${iconClass} ${wide ? 'flex' : 'hidden'}`}>{icon}</span>
-      <div className="min-w-0">
-        <p className={`font-display text-lg font-bold leading-tight sm:text-xl ${valueClass}`}>{value}</p>
-        <p className="text-xs font-semibold text-mtm-muted sm:text-sm">{label}</p>
-      </div>
-    </div>
   );
 }

@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { AlertTriangle, FileText, MessageSquarePlus } from 'lucide-react';
+import { AlertTriangle, FileText, MessageSquarePlus, Receipt } from 'lucide-react';
 import { useClientData } from '../../contexts/client-data-store';
 import { usePageMetadata } from '../../hooks/usePageMetadata';
-import { ClientCard, ClientPageHeader } from '../../components/client/shell/ClientUi';
+import { ClientCard, ClientPageHeader, ClientRow, ProgressBar } from '../../components/client/shell/ClientUi';
+import { etatPaiementIcone } from '../../components/client/shell/etat-paiement';
 import { NewIncidentModal } from '../../components/client/NewIncidentModal';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
@@ -57,7 +58,8 @@ export function ClientLocatairePage() {
   if (locataireLoading) {
     return (
       <div className="flex flex-col gap-4">
-        <Skeleton className="h-56 rounded-lg" />
+        <Skeleton className="h-40 rounded-2xl" />
+        <Skeleton className="h-56 rounded-2xl" />
       </div>
     );
   }
@@ -85,13 +87,14 @@ export function ClientLocatairePage() {
         title="Ma location"
         description={[bailActif.bien.adresse, bailActif.bien.commune].filter(Boolean).join(', ')}
         action={
-          <div className="flex flex-wrap gap-2">
-            <Button onClick={() => setSignalement({ bailId: bailActif.id, nature: 'incident' })}>
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+            <Button className="px-3" onClick={() => setSignalement({ bailId: bailActif.id, nature: 'incident' })}>
               <AlertTriangle className="h-4 w-4" aria-hidden="true" />
               Signaler un incident
             </Button>
             <Button
               variant="secondary"
+              className="px-3"
               onClick={() => setSignalement({ bailId: bailActif.id, nature: 'demande' })}
             >
               <MessageSquarePlus className="h-4 w-4" aria-hidden="true" />
@@ -104,6 +107,25 @@ export function ClientLocatairePage() {
       {/* Mon bail : le statut, ce qui est dû, ce qui est réglé, la caution. */}
       <ClientCard title="Mon bail">
         <div className="flex flex-col gap-3.5">
+          {/* Ce qui reste à régler, en grand : la première chose qu'un locataire cherche. */}
+          <div className="rounded-2xl bg-mtm-bg p-4">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-mtm-muted">
+              {solde.resteADevoir > 0 ? 'Reste à régler' : 'Solde'}
+            </p>
+            <p className={`mt-0.5 font-display text-3xl font-bold ${solde.resteADevoir > 0 ? 'text-mtm-warning' : 'text-mtm-success'}`}>
+              {solde.resteADevoir > 0 ? formatMoney(solde.resteADevoir) : 'Loyers à jour'}
+            </p>
+            <ProgressBar
+              className="mt-3"
+              value={solde.loyersDus > 0 ? (solde.loyersRegles / solde.loyersDus) * 100 : 100}
+              label="Loyers réglés"
+            />
+            <p className="mt-1.5 text-xs text-mtm-muted">
+              {formatMoney(solde.loyersRegles)} réglés sur {formatMoney(solde.loyersDus)} appelés
+              {solde.enAttenteDeValidation > 0 ? ` · dont ${formatMoney(solde.enAttenteDeValidation)} en cours de validation` : ''}
+            </p>
+          </div>
+
           <div className="flex flex-wrap items-center gap-2">
             <Badge tone={statut.tone}>{statut.label}</Badge>
             <Badge tone={situation.tone}>{situation.label}</Badge>
@@ -111,23 +133,13 @@ export function ClientLocatairePage() {
           </div>
           <p className="text-sm text-mtm-muted">{situation.help || statut.help}</p>
 
-          <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+          <dl className="grid grid-cols-2 gap-3 text-sm">
             <Fait
               label="Loyer mensuel"
               value={formatMoney(bailActif.loyerMensuel)}
               hint={bailActif.charges ? `+ ${formatMoney(bailActif.charges)} charges` : undefined}
             />
             <Fait label="Loyers appelés" value={formatMoney(solde.loyersDus)} />
-            <Fait label="Loyers réglés" value={formatMoney(solde.loyersRegles)} />
-            <Fait
-              label={solde.resteADevoir > 0 ? 'Reste à régler' : 'Solde'}
-              value={formatMoney(solde.resteADevoir)}
-              hint={
-                solde.enAttenteDeValidation > 0
-                  ? `dont ${formatMoney(solde.enAttenteDeValidation)} en cours de validation`
-                  : undefined
-              }
-            />
           </dl>
 
           {bailActif.preavisDepartPrevu && (
@@ -174,24 +186,19 @@ export function ClientLocatairePage() {
       </ClientCard>
 
       <ClientCard title="Mes échéances">
-        <ul className="-my-1 divide-y divide-mtm-border">
+        <ul className="-my-1">
           {bailActif.echeances.map((echeance) => {
             const echeanceStatut = loyerEcheanceStatus(echeance.statut);
+            const { icon, tone } = etatPaiementIcone(echeance.statut);
             return (
-              <li
-                key={echeance.id}
-                className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm"
-              >
-                <span className="font-medium text-mtm-text">
-                  {new Date(echeance.periode).toLocaleDateString('fr-FR', {
-                    month: 'long',
-                    year: 'numeric',
-                  })}
-                </span>
-                <span className="text-mtm-muted">
-                  {formatMoney(echeance.montantPaye)} / {formatMoney(echeance.montantPrevu)}
-                </span>
-                <Badge tone={echeanceStatut.tone}>{echeanceStatut.label}</Badge>
+              <li key={echeance.id}>
+                <ClientRow
+                  icon={icon}
+                  tone={tone}
+                  title={new Date(echeance.periode).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                  subtitle={`${formatMoney(echeance.montantPaye)} / ${formatMoney(echeance.montantPrevu)}`}
+                  trailing={<Badge tone={echeanceStatut.tone}>{echeanceStatut.label}</Badge>}
+                />
               </li>
             );
           })}
@@ -200,21 +207,15 @@ export function ClientLocatairePage() {
 
       {bailActif.documents.length > 0 && (
         <ClientCard title="Mes quittances et documents">
-          <ul className="-my-1 divide-y divide-mtm-border">
+          <ul className="-my-1">
             {bailActif.documents.map((document) => (
               <li key={document.id}>
-                <a
+                <ClientRow
                   href={document.secureUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 py-2.5 text-sm font-medium text-mtm-text hover:text-mtm-primary"
-                >
-                  <FileText className="h-4 w-4 flex-none text-mtm-muted" aria-hidden="true" />
-                  <span className="truncate">{document.title ?? locatifDocumentType(document.type)}</span>
-                  <span className="ml-auto flex-none text-xs font-normal text-mtm-muted">
-                    {formatDate(document.createdAt)}
-                  </span>
-                </a>
+                  icon={FileText}
+                  title={document.title ?? locatifDocumentType(document.type)}
+                  subtitle={formatDate(document.createdAt)}
+                />
               </li>
             ))}
           </ul>
@@ -223,17 +224,19 @@ export function ClientLocatairePage() {
 
       {paiements.length > 0 && (
         <ClientCard title="Mes règlements">
-          <ul className="-my-1 divide-y divide-mtm-border">
+          <ul className="-my-1">
             {paiements.map((paiement) => {
               const statutPaiement = paiementStatus(paiement.statut);
+              const { tone } = etatPaiementIcone(paiement.statut);
               return (
-                <li
-                  key={paiement.id}
-                  className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-sm"
-                >
-                  <span className="text-mtm-muted">{formatDate(paiement.datePaiement)}</span>
-                  <span className="font-semibold text-mtm-text">{formatMoney(paiement.montant)}</span>
-                  <Badge tone={statutPaiement.tone}>{statutPaiement.label}</Badge>
+                <li key={paiement.id}>
+                  <ClientRow
+                    icon={Receipt}
+                    tone={tone}
+                    title={formatMoney(paiement.montant)}
+                    subtitle={formatDate(paiement.datePaiement)}
+                    trailing={<Badge tone={statutPaiement.tone}>{statutPaiement.label}</Badge>}
+                  />
                 </li>
               );
             })}

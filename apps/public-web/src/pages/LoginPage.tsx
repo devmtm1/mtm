@@ -35,8 +35,8 @@ export function LoginPage() {
         title="Accédez à votre espace"
         description="Suivez vos dossiers, vos paiements et vos documents, où que vous soyez."
       />
-      <div className="mx-auto max-w-md px-4 pb-12 sm:px-6 sm:pb-16">
-        <div className="rounded-lg border border-mtm-border bg-mtm-surface p-5 shadow-card sm:p-6">
+      <div className="mx-auto max-w-md px-4 pb-12 pt-5 sm:px-6 sm:pb-16 lg:pt-0">
+        <div className="rounded-2xl border border-mtm-border/70 bg-mtm-surface p-5 shadow-card sm:p-6 lg:rounded-lg lg:border-mtm-border">
           {user?.mustChangePassword ? (
             <ChangePasswordForm />
           ) : mode === 'twoFactor' && pendingCredentials ? (

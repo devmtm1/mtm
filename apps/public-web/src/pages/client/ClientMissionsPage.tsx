@@ -32,7 +32,7 @@ export function ClientMissionsPage() {
             : undefined
         }
         action={
-          <Button onClick={() => setDemandeOuverte(true)}>
+          <Button className="w-full sm:w-auto" onClick={() => setDemandeOuverte(true)}>
             <ShieldCheck className="h-4 w-4" aria-hidden="true" />
             Demander une vérification
           </Button>
@@ -40,8 +40,8 @@ export function ClientMissionsPage() {
       />
       {missionsLoading && (
         <div className="flex flex-col gap-4">
-          <Skeleton className="h-56 rounded-lg" />
-          <Skeleton className="h-56 rounded-lg" />
+          <Skeleton className="h-56 rounded-2xl" />
+          <Skeleton className="h-56 rounded-2xl" />
         </div>
       )}
       {missionsError && (
@@ -49,6 +49,7 @@ export function ClientMissionsPage() {
       )}
       {!missionsLoading && !missionsError && list.length === 0 && (
         <EmptyState
+          icon={ShieldCheck}
           title="Aucune vérification en cours"
           description="Vous pouvez nous confier la vérification d'un bien avant d'acheter : visite sur place, contrôle des documents auprès des administrations, puis rapport écrit."
           action={

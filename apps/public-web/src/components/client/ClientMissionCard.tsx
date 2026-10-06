@@ -4,6 +4,7 @@ import { cloudinaryWidth, isCloudinaryImage } from '../../utils/cloudinary';
 import { formatDate, formatMoney } from '../../utils/format';
 import { missionDecision, missionDocumentType, missionStatus, missionType } from '../../utils/labels';
 import { Badge } from '../ui/Badge';
+import { ProgressBar } from './shell/ClientUi';
 
 /** Ordre d'avancement affiché au client : les cinq étapes, sans le jargon. */
 const ETAPES = [
@@ -37,7 +38,7 @@ export function ClientMissionCard({ mission }: { mission: ClientMission }) {
   const fichiers = mission.documents.filter((document) => !isCloudinaryImage(document.secureUrl));
 
   return (
-    <article className="overflow-hidden rounded-lg border border-mtm-border bg-mtm-surface shadow-card">
+    <article className="overflow-hidden rounded-2xl border border-mtm-border/70 bg-mtm-surface shadow-card lg:rounded-lg lg:border-mtm-border">
       <header className="flex flex-col gap-2 border-b border-mtm-border px-4 py-3.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3 sm:px-5 sm:py-4">
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
@@ -53,17 +54,12 @@ export function ClientMissionCard({ mission }: { mission: ClientMission }) {
             </p>
           )}
         </div>
-        <Badge tone={status.tone}>{status.label}</Badge>
+        <Badge tone={status.tone} className="self-start sm:self-auto">{status.label}</Badge>
       </header>
 
       <div className="flex flex-col gap-4 px-4 py-4 sm:px-5">
         <div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-mtm-border">
-            <div
-              className="h-full rounded-full bg-mtm-primary transition-all"
-              style={{ width: `${avancement}%` }}
-            />
-          </div>
+          <ProgressBar value={avancement} label="Avancement de la vérification" tone="primary" />
           <p className="mt-2 text-sm text-mtm-muted">{status.help}</p>
         </div>
 
@@ -75,7 +71,7 @@ export function ClientMissionCard({ mission }: { mission: ClientMission }) {
         )}
 
         {mission.objectif && (
-          <div className="rounded-md bg-mtm-bg px-3 py-2.5">
+          <div className="rounded-xl bg-mtm-bg px-3 py-2.5">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
               Votre demande
             </p>
@@ -84,7 +80,7 @@ export function ClientMissionCard({ mission }: { mission: ClientMission }) {
         )}
 
         {decision && (
-          <div className="rounded-md border border-mtm-border px-3 py-3">
+          <div className="rounded-xl border border-mtm-border px-3 py-3">
             <div className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 flex-none text-mtm-muted" aria-hidden="true" />
               <p className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
@@ -109,7 +105,7 @@ export function ClientMissionCard({ mission }: { mission: ClientMission }) {
 
         {mission.montantDevis !== null && (
           <dl className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
-            <div className="rounded-md bg-mtm-bg px-3 py-2">
+            <div className="rounded-xl bg-mtm-bg px-3 py-2">
               <dt className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
                 Montant de la mission
               </dt>
@@ -118,7 +114,7 @@ export function ClientMissionCard({ mission }: { mission: ClientMission }) {
               </dd>
             </div>
             {mission.montantPaye !== null && (
-              <div className="rounded-md bg-mtm-bg px-3 py-2">
+              <div className="rounded-xl bg-mtm-bg px-3 py-2">
                 <dt className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
                   Réglé
                 </dt>
@@ -142,7 +138,7 @@ export function ClientMissionCard({ mission }: { mission: ClientMission }) {
                     href={photo.secureUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="block overflow-hidden rounded-md border border-mtm-border transition-colors hover:border-mtm-primary"
+                    className="block overflow-hidden rounded-xl border border-mtm-border transition-colors hover:border-mtm-primary"
                   >
                     <img
                       src={cloudinaryWidth(photo.secureUrl, 400)}
@@ -170,7 +166,7 @@ export function ClientMissionCard({ mission }: { mission: ClientMission }) {
                     href={document.secureUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-2 rounded-md border border-mtm-border px-3 py-2 text-sm font-medium text-mtm-text transition-colors hover:border-mtm-primary hover:text-mtm-primary"
+                    className="flex items-center gap-2 rounded-xl border border-mtm-border px-3 py-2 text-sm font-medium text-mtm-text transition-colors hover:border-mtm-primary hover:text-mtm-primary"
                   >
                     <FileText className="h-4 w-4 flex-none text-mtm-muted" aria-hidden="true" />
                     <span className="truncate">

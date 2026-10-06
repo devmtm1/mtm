@@ -1,3 +1,4 @@
+import { FolderOpen } from 'lucide-react';
 import { useClientData } from '../../contexts/client-data-store';
 import { usePageMetadata } from '../../hooks/usePageMetadata';
 import { ClientPageHeader } from '../../components/client/shell/ClientUi';
@@ -21,13 +22,14 @@ export function ClientDossiersPage() {
       />
       {dossiersLoading && (
         <div className="flex flex-col gap-4">
-          <Skeleton className="h-64 rounded-lg" />
-          <Skeleton className="h-64 rounded-lg" />
+          <Skeleton className="h-64 rounded-2xl" />
+          <Skeleton className="h-64 rounded-2xl" />
         </div>
       )}
       {dossiersError && <EmptyState title="Impossible de charger vos dossiers" description={dossiersError} />}
       {!dossiersLoading && !dossiersError && list.length === 0 && (
         <EmptyState
+          icon={FolderOpen}
           title="Aucun dossier pour le moment"
           description="Vos dossiers de vente apparaîtront ici dès qu'un conseiller MTM vous en aura rattaché un."
           action={<LinkButton to={ROUTES.catalog} variant="secondary">Découvrir nos biens</LinkButton>}

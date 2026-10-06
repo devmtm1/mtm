@@ -14,7 +14,7 @@ export function ClientDemandesPage() {
   usePageMetadata({ title: 'Mes demandes' });
 
   const newRequest = (
-    <Button variant="secondary" className="w-full sm:w-auto" onClick={() => setOpen(true)}>
+    <Button className="w-full sm:w-auto" onClick={() => setOpen(true)}>
       <Plus className="h-4 w-4" aria-hidden="true" />
       Nouvelle demande
     </Button>

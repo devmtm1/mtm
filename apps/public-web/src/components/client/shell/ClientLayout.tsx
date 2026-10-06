@@ -218,8 +218,8 @@ export function ClientLayout() {
 
         <div className="flex min-w-0 flex-1 flex-col">
           {/* ---- Barre supérieure (mobile / tablette) ---- */}
-          <header className="sticky top-0 z-40 border-b border-mtm-border bg-mtm-surface/95 backdrop-blur lg:hidden">
-            <div className="flex h-14 items-center justify-between px-4">
+          <header className="sticky top-0 z-40 border-b border-mtm-border/70 bg-mtm-surface/90 pt-[env(safe-area-inset-top)] backdrop-blur-xl lg:hidden">
+            <div className="mx-auto flex h-14 max-w-xl items-center justify-between px-4 sm:max-w-none">
               <NavLink to={ROUTES.clientPortal} className="flex items-center gap-2.5">
                 <img src="/logomtm.jpeg" alt="" className="h-8 w-8 rounded-full object-cover" />
                 <span className="font-display text-base font-bold leading-tight">
@@ -229,7 +229,7 @@ export function ClientLayout() {
               <NavLink
                 to={ROUTES.clientCompte}
                 aria-label="Mon compte"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-mtm-primary text-xs font-bold text-white"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-mtm-primary text-xs font-bold text-white shadow-card active:scale-90"
               >
                 {user ? initials(user.firstName, user.lastName) : '?'}
               </NavLink>

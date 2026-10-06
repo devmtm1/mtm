@@ -5,6 +5,7 @@ import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { PageFallback } from './components/layout/PageFallback';
 import { AuthProvider } from './contexts/AuthContext';
+import { ToastProvider } from './components/ui/ToastProvider';
 import { RequireClientAuth } from './components/auth/RequireClientAuth';
 import { ROUTES } from './routes';
 
@@ -112,6 +113,7 @@ function Deferred({ children }: { children: ReactNode }) {
 export function App() {
   return (
     <AuthProvider>
+      <ToastProvider>
       <BrowserRouter>
         <Routes>
           <Route element={<Layout />}>
@@ -153,6 +155,7 @@ export function App() {
           </Route>
         </Routes>
       </BrowserRouter>
+      </ToastProvider>
     </AuthProvider>
   );
 }

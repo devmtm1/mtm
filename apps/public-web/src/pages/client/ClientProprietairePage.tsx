@@ -1,7 +1,7 @@
-import { Building2, FileText } from 'lucide-react';
+import { Building2, FileText, KeyRound, TrendingUp, Wallet } from 'lucide-react';
 import { useClientData } from '../../contexts/client-data-store';
 import { usePageMetadata } from '../../hooks/usePageMetadata';
-import { ClientCard, ClientPageHeader } from '../../components/client/shell/ClientUi';
+import { ClientCard, ClientPageHeader, ClientRow, StatTile } from '../../components/client/shell/ClientUi';
 import { Badge } from '../../components/ui/Badge';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Skeleton } from '../../components/ui/Skeleton';
@@ -39,7 +39,8 @@ export function ClientProprietairePage() {
   if (proprietaireLoading) {
     return (
       <div className="flex flex-col gap-4">
-        <Skeleton className="h-40 rounded-lg" />
+        <Skeleton className="h-28 rounded-2xl" />
+        <Skeleton className="h-40 rounded-2xl" />
       </div>
     );
   }
@@ -49,6 +50,7 @@ export function ClientProprietairePage() {
       <div className="flex flex-col gap-6">
         <ClientPageHeader title="Mon bien" />
         <EmptyState
+          icon={Building2}
           title="Aucun bien confié pour l'instant"
           description="Dès qu'un bien vous appartenant sera enregistré par MTM, il apparaîtra ici avec le suivi des loyers et votre solde."
         />
@@ -65,25 +67,21 @@ export function ClientProprietairePage() {
 
       {/* Le portefeuille en quatre chiffres. */}
       {proprietaireSynthese && (
-        <ClientCard title="Ma gérance">
-          <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-            <Fait
-              label="Biens loués"
-              value={`${proprietaireSynthese.loues} / ${proprietaireSynthese.biens}`}
-            />
-            <Fait label="Loyers appelés" value={formatMoney(proprietaireSynthese.loyersDus)} />
-            <Fait label="Encaissés" value={formatMoney(proprietaireSynthese.loyersEncaisses)} />
-            <Fait
-              label="Reste à recouvrer"
-              value={formatMoney(proprietaireSynthese.solde)}
-              hint={
-                proprietaireSynthese.echeancesImpayees > 0
-                  ? `${proprietaireSynthese.echeancesImpayees} échéance${proprietaireSynthese.echeancesImpayees > 1 ? 's' : ''}`
-                  : undefined
-              }
-            />
-          </dl>
-        </ClientCard>
+        <section aria-label="Ma gérance" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <StatTile icon={KeyRound} value={`${proprietaireSynthese.loues} / ${proprietaireSynthese.biens}`} label="Biens loués" />
+          <StatTile icon={TrendingUp} value={formatMoney(proprietaireSynthese.loyersDus)} label="Loyers appelés" />
+          <StatTile icon={Wallet} value={formatMoney(proprietaireSynthese.loyersEncaisses)} label="Encaissés" tone="success" />
+          <StatTile
+            icon={Wallet}
+            value={formatMoney(proprietaireSynthese.solde)}
+            label={
+              proprietaireSynthese.echeancesImpayees > 0
+                ? `À recouvrer · ${proprietaireSynthese.echeancesImpayees} échéance${proprietaireSynthese.echeancesImpayees > 1 ? 's' : ''}`
+                : 'À recouvrer'
+            }
+            tone={proprietaireSynthese.solde > 0 ? 'warning' : 'neutral'}
+          />
+        </section>
       )}
 
       {biens.map((bien) => {
@@ -94,8 +92,10 @@ export function ClientProprietairePage() {
             <div className="flex flex-col gap-3.5">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <h2 className="flex items-center gap-2 font-display text-base font-bold text-mtm-text">
-                    <Building2 className="h-4 w-4 flex-none text-mtm-primary" aria-hidden="true" />
+                  <h2 className="flex items-center gap-2.5 font-display text-base font-bold text-mtm-text">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-mtm-primary-subtle text-mtm-primary">
+                      <Building2 className="h-[18px] w-[18px]" aria-hidden="true" />
+                    </span>
                     {bien.adresse}
                   </h2>
                   <p className="mt-0.5 text-sm text-mtm-muted">
@@ -133,26 +133,15 @@ export function ClientProprietairePage() {
 
       {documents.length > 0 && (
         <ClientCard title="Mes relevés et documents">
-          <ul className="-my-1 divide-y divide-mtm-border">
+          <ul className="-my-1">
             {documents.map((document) => (
               <li key={document.id}>
-                <a
+                <ClientRow
                   href={document.secureUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-2 py-2.5 text-sm font-medium text-mtm-text hover:text-mtm-primary"
-                >
-                  <FileText className="h-4 w-4 flex-none text-mtm-muted" aria-hidden="true" />
-                  <span className="truncate">
-                    {document.title ?? locatifDocumentType(document.type)}
-                    <span className="ml-1 text-xs font-normal text-mtm-muted">
-                      {document.bailLocatif.bienLocatif.referenceInterne}
-                    </span>
-                  </span>
-                  <span className="ml-auto flex-none text-xs font-normal text-mtm-muted">
-                    {formatDate(document.createdAt)}
-                  </span>
-                </a>
+                  icon={FileText}
+                  title={document.title ?? locatifDocumentType(document.type)}
+                  subtitle={`${document.bailLocatif.bienLocatif.referenceInterne} · ${formatDate(document.createdAt)}`}
+                />
               </li>
             ))}
           </ul>

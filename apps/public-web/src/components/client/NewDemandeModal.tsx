@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
-import { CalendarCheck, CheckCircle2, Info, MessageSquare } from 'lucide-react';
+import { CalendarCheck, Info, MessageSquare } from 'lucide-react';
 import { createClientDemande, type ClientDemandeType } from '../../api/clientPortal';
 import { ApiError } from '../../api/client';
 import { useAuth } from '../../contexts/auth-context-store';
@@ -8,6 +8,7 @@ import { useClientData } from '../../contexts/client-data-store';
 import { Button } from '../ui/Button';
 import { FormField, fieldInputClass } from '../ui/FormField';
 import { Modal } from '../ui/Modal';
+import { useToast } from '../ui/toast-store';
 import { TerrainPicker, type TerrainChoice } from './TerrainPicker';
 
 const TYPES: { value: ClientDemandeType; label: string; help: string; icon: typeof Info }[] = [
@@ -28,7 +29,7 @@ export function NewDemandeModal({ onClose }: { onClose: () => void }) {
   const [terrain, setTerrain] = useState<TerrainChoice | null>(null);
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const toast = useToast();
   const [error, setError] = useState<string | null>(null);
 
   // Terrains des dossiers du client, proposés en premier dans la recherche.
@@ -63,8 +64,10 @@ export function NewDemandeModal({ onClose }: { onClose: () => void }) {
     setSubmitting(true);
     try {
       await createClientDemande(accessToken, { type, message: text, terrainId: terrain?.id });
-      setSubmitted(true);
       refetchDemandes();
+      toast.show('Demande envoyée : votre conseiller vous répond rapidement');
+      onClose();
+      return;
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : "L'envoi a échoué. Merci de réessayer.");
     } finally {
@@ -74,19 +77,6 @@ export function NewDemandeModal({ onClose }: { onClose: () => void }) {
 
   return (
     <Modal title="Nouvelle demande" onClose={onClose}>
-      {submitted ? (
-        <div className="flex flex-col items-center gap-3 py-6 text-center">
-          <CheckCircle2 className="h-10 w-10 text-mtm-success" aria-hidden="true" />
-          <p className="font-semibold text-mtm-text">Demande envoyée</p>
-          <p className="text-sm text-mtm-muted">
-            Votre conseiller MTM vous répond rapidement. Vous pouvez suivre sa prise en charge dans
-            l'onglet « Demandes ».
-          </p>
-          <Button variant="secondary" onClick={onClose}>
-            Fermer
-          </Button>
-        </div>
-      ) : (
         <form className="flex flex-col gap-4" onSubmit={(event) => void handleSubmit(event)}>
           <fieldset>
             <legend className="mb-2 text-sm font-semibold text-mtm-text">Je souhaite…</legend>
@@ -94,7 +84,7 @@ export function NewDemandeModal({ onClose }: { onClose: () => void }) {
               {TYPES.map(({ value, label, icon: Icon }) => (
                 <label
                   key={value}
-                  className={`flex cursor-pointer flex-col items-center gap-1.5 rounded-md border px-2 py-3 text-center text-xs font-semibold transition-colors ${
+                  className={`flex cursor-pointer flex-col items-center gap-1.5 rounded-xl border px-2 py-3.5 text-center text-xs font-semibold transition-colors ${
                     type === value
                       ? 'border-mtm-primary bg-mtm-primary-subtle text-mtm-primary'
                       : 'border-mtm-border text-mtm-text hover:border-mtm-primary/50'
@@ -162,7 +152,6 @@ export function NewDemandeModal({ onClose }: { onClose: () => void }) {
             {submitting ? 'Envoi en cours...' : 'Envoyer la demande'}
           </Button>
         </form>
-      )}
     </Modal>
   );
 }

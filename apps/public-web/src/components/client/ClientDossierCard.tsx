@@ -3,6 +3,8 @@ import type { ClientDossier } from '../../types/clientPortal';
 import { formatDate, formatDateShort, formatMoney } from '../../utils/format';
 import { documentType, dossierStatus, echeanceStatus, paymentMode, reservationStatus } from '../../utils/labels';
 import { Badge } from '../ui/Badge';
+import { ProgressBar } from './shell/ClientUi';
+import { etatPaiementIcone } from './shell/etat-paiement';
 
 /**
  * Un dossier de vente vu par le client : où en est-il (statut expliqué,
@@ -19,6 +21,19 @@ function DateCell({ value }: { value: string }) {
   );
 }
 
+/** Petit rond qui dit l'état d'une échéance avant qu'on lise le mot. */
+function StatutPuce({ statut }: { statut: string }) {
+  const { icon: Icon, tone } = etatPaiementIcone(statut);
+  const classes = {
+    success: 'text-mtm-success',
+    accent: 'text-mtm-accent',
+    warning: 'text-mtm-warning',
+    primary: 'text-mtm-primary',
+    neutral: 'text-mtm-border',
+  } as const;
+  return <Icon className={`h-4 w-4 shrink-0 ${classes[tone]}`} aria-hidden="true" />;
+}
+
 export function ClientDossierCard({ dossier }: { dossier: ClientDossier }) {
   const status = dossierStatus(dossier.statut);
   const price = dossier.prixVente ?? 0;
@@ -29,7 +44,7 @@ export function ClientDossierCard({ dossier }: { dossier: ClientDossier }) {
   const activeReservation = dossier.reservations.find((reservation) => reservation.statut === 'active' || reservation.statut === 'confirmee') ?? dossier.reservations[0];
 
   return (
-    <article className="overflow-hidden rounded-lg border border-mtm-border bg-mtm-surface shadow-card">
+    <article className="overflow-hidden rounded-2xl border border-mtm-border/70 bg-mtm-surface shadow-card lg:rounded-lg lg:border-mtm-border">
       <header className="flex flex-col gap-2 border-b border-mtm-border px-4 py-3.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3 sm:px-5 sm:py-4">
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
@@ -64,16 +79,7 @@ export function ClientDossierCard({ dossier }: { dossier: ClientDossier }) {
               <p className="font-display text-lg font-bold text-mtm-text sm:text-xl">{formatMoney(price || null)}</p>
             </div>
           </div>
-          <div
-            className="mt-2 h-2 w-full overflow-hidden rounded-full bg-mtm-border"
-            role="progressbar"
-            aria-valuenow={progress}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label="Avancement du paiement"
-          >
-            <div className="h-full rounded-full bg-mtm-success transition-[width]" style={{ width: `${progress}%` }} />
-          </div>
+          <ProgressBar className="mt-2" value={progress} label="Avancement du paiement" />
           <p className="mt-1.5 text-xs text-mtm-muted">
             {progress}% payé
             {remaining > 0 ? ` · reste ${formatMoney(remaining)}` : price > 0 ? ' · dossier soldé' : ''}
@@ -90,9 +96,10 @@ export function ClientDossierCard({ dossier }: { dossier: ClientDossier }) {
                   const state = echeanceStatus(echeance.statut);
                   const due = Math.max(0, echeance.montantPrevu - echeance.montantPaye);
                   return (
-                    <li key={echeance.numero} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 py-1.5">
-                      <span className="min-w-0 text-mtm-muted">
-                        <span className="font-semibold text-mtm-text">{echeance.numero}.</span> <DateCell value={echeance.dateEcheance} />
+                    <li key={echeance.numero} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 py-2.5">
+                      <span className="flex min-w-0 items-center gap-2 text-mtm-muted">
+                        <StatutPuce statut={echeance.statut} />
+                        <span><span className="font-semibold text-mtm-text">{echeance.numero}.</span> <DateCell value={echeance.dateEcheance} /></span>
                         {echeance.statut === 'partielle' && (
                           <span className="block text-xs">reste {formatMoney(due)}</span>
                         )}
@@ -109,7 +116,7 @@ export function ClientDossierCard({ dossier }: { dossier: ClientDossier }) {
           )}
 
           {activeReservation && (
-            <div className="mt-4 flex items-start gap-2.5 rounded-md bg-mtm-primary-subtle px-3 py-2.5 text-sm sm:px-3.5 sm:py-3">
+            <div className="mt-4 flex items-start gap-2.5 rounded-2xl bg-mtm-primary-subtle px-3.5 py-3 text-sm">
               <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-mtm-primary" aria-hidden="true" />
               <div>
                 <p className="font-semibold text-mtm-text">
@@ -136,7 +143,7 @@ export function ClientDossierCard({ dossier }: { dossier: ClientDossier }) {
             ) : (
               <ul className="mt-1.5 divide-y divide-mtm-border text-sm">
                 {dossier.paiements.map((paiement, index) => (
-                  <li key={index} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 py-1.5">
+                  <li key={index} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 py-2.5">
                     <span className="min-w-0 text-mtm-muted">
                       <DateCell value={paiement.datePaiement} /> · {paymentMode(paiement.mode)}
                     </span>
@@ -162,7 +169,7 @@ export function ClientDossierCard({ dossier }: { dossier: ClientDossier }) {
                       href={document.secureUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 rounded-md border border-mtm-border px-2.5 py-1.5 text-xs font-semibold text-mtm-primary transition-colors hover:border-mtm-primary hover:bg-mtm-primary-subtle"
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-mtm-border px-3 py-2.5 text-[13px] font-semibold text-mtm-primary transition-colors active:scale-95 hover:border-mtm-primary hover:bg-mtm-primary-subtle"
                     >
                       <FileText className="h-3.5 w-3.5" aria-hidden="true" />
                       {document.title ?? documentType(document.type)}

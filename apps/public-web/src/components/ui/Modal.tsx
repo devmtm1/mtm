@@ -93,8 +93,9 @@ export function Modal({ title, onClose, children }: ModalProps) {
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="relative flex max-h-[92dvh] w-full max-w-lg flex-col overflow-y-auto overflow-x-hidden rounded-t-2xl bg-mtm-surface p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-lg outline-none motion-safe:animate-sheet-in sm:max-h-full sm:rounded-lg sm:p-6 sm:motion-safe:animate-scale-in"
+        className="relative flex max-h-[92dvh] w-full max-w-lg flex-col overflow-y-auto overflow-x-hidden rounded-t-3xl bg-mtm-surface px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-lg outline-none motion-safe:animate-sheet-in sm:max-h-full sm:rounded-lg sm:p-6 sm:motion-safe:animate-scale-in"
       >
+        <span className="mx-auto mb-3 h-1.5 w-10 shrink-0 rounded-full bg-mtm-border sm:hidden" aria-hidden="true" />
         <div className="mb-4 flex items-center justify-between">
           <h2 id={titleId} className="font-display text-lg font-bold text-mtm-text">
             {title}
@@ -103,7 +104,7 @@ export function Modal({ title, onClose, children }: ModalProps) {
             type="button"
             onClick={onClose}
             aria-label="Fermer"
-            className="rounded-md p-1 text-mtm-muted transition-colors hover:bg-mtm-bg hover:text-mtm-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mtm-primary"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-mtm-bg text-mtm-muted transition-colors active:scale-90 hover:text-mtm-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mtm-primary"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
