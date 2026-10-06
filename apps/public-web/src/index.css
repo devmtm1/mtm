@@ -6,6 +6,25 @@
   html {
     scroll-behavior: smooth;
   }
+
+  /* Ressenti d'application sur téléphone : pas de halo gris au toucher, pas de
+     délai ni de zoom au double toucher sur les commandes, pas de rebond qui
+     entraîne la page derrière une feuille ouverte. */
+  @media (max-width: 1023px) {
+    html {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-text-size-adjust: 100%;
+      overscroll-behavior-y: none;
+    }
+    a,
+    button,
+    summary,
+    label,
+    select,
+    [role='tab'] {
+      touch-action: manipulation;
+    }
+  }
 }
 
 @layer components {

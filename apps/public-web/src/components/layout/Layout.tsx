@@ -5,6 +5,11 @@ import { WhatsAppButton } from './WhatsAppButton';
 import { ScrollManager } from './ScrollManager';
 import { RouteAnnouncer } from './RouteAnnouncer';
 import { PageTransition } from './PageTransition';
+import { MobileAppBar } from '../mobile/MobileAppBar';
+import { MobileTabBar } from '../mobile/MobileTabBar';
+import { QuickActionsFab } from '../mobile/QuickActionsFab';
+import { showsQuickActions, showsTabBar } from '../mobile/mobile-routes';
+import { useIsMobile } from '../../hooks/useMediaQuery';
 
 const MAIN_ID = 'contenu-principal';
 
@@ -12,6 +17,10 @@ export function Layout() {
   // Clé sur le chemin seul : un changement de page rejoue l'animation
   // d'entrée, un changement de filtres (query string) sur la même page non.
   const { pathname } = useLocation();
+  // Téléphone et petite tablette : une application (barre du haut, onglets en
+  // bas, bouton d'actions rapides) ; ordinateur : le site classique.
+  const isMobile = useIsMobile();
+  const tabBar = isMobile && showsTabBar(pathname);
 
   return (
     <div className="flex min-h-screen flex-col bg-mtm-bg text-mtm-text">
@@ -26,16 +35,19 @@ export function Layout() {
         Aller au contenu principal
       </a>
 
-      <Header />
+      {isMobile ? <MobileAppBar /> : <Header />}
       {/* `tabIndex={-1}` rend le conteneur focusable par programme : c'est la
           cible du focus après chaque changement de route (voir RouteAnnouncer). */}
-      <main id={MAIN_ID} tabIndex={-1} className="flex-1 outline-none">
+      <main id={MAIN_ID} tabIndex={-1} className={`flex-1 outline-none ${tabBar ? 'pb-[calc(4.25rem+env(safe-area-inset-bottom))]' : ''}`}>
         <PageTransition key={pathname}>
           <Outlet />
         </PageTransition>
       </main>
-      <Footer />
+      {/* Sur mobile, le pied de page est remplacé par le menu (contact, pages légales). */}
+      {!isMobile && <Footer />}
       <WhatsAppButton />
+      {tabBar && <MobileTabBar />}
+      {isMobile && showsQuickActions(pathname) && <QuickActionsFab />}
       <RouteAnnouncer mainId={MAIN_ID} />
     </div>
   );

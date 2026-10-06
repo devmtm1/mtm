@@ -5,6 +5,7 @@ import { formatMoney, formatSuperficie } from '../../utils/format';
 import { estBienBati, typeBienLabel } from '../../utils/bienLabels';
 import { Badge } from '../ui/Badge';
 import { MediaImage } from '../ui/MediaImage';
+import { FavoriteButton } from '../mobile/FavoriteButton';
 import { ROUTES } from '../../routes';
 
 interface TerrainCardProps {
@@ -44,6 +45,7 @@ export function TerrainCard({ terrain, compact = false }: TerrainCardProps) {
           alt={terrain.nom}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
+        <FavoriteButton kind="terrain" id={terrain.id} label={terrain.nom} className="absolute right-2.5 top-2.5" />
         {terrain.misEnAvant && (
           <span
             className={`absolute left-2.5 top-2.5 rounded-full bg-mtm-accent font-semibold text-white shadow-card ${

@@ -6,6 +6,8 @@ export const ROUTES = {
   /** Annonces de location (biens en gestion locative publiés par MTM). */
   locations: '/locations',
   locationDetail: (id: string) => `/locations/${id}`,
+  /** Biens et locations mis de côté par le visiteur (gardés sur son appareil). */
+  favoris: '/favoris',
   about: '/a-propos',
   gestionLocative: '/gestion-locative',
   construction: '/construction',

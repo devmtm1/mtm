@@ -13,6 +13,7 @@ import {
   sallesEauLabel,
 } from '../../utils/locationFormat';
 import { MediaImage } from '../ui/MediaImage';
+import { FavoriteButton } from '../mobile/FavoriteButton';
 
 interface LocationCardProps {
   location: Location;
@@ -52,6 +53,8 @@ export function LocationCard({ location, compact = false }: LocationCardProps) {
           className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/65 to-transparent"
         />
 
+        <FavoriteButton kind="location" id={location.id} label={titre} className="absolute right-2.5 top-2.5" />
+
         <div className="absolute left-2.5 top-2.5 flex flex-wrap gap-1.5">
           {location.misEnAvant && (
             <span
@@ -75,7 +78,7 @@ export function LocationCard({ location, compact = false }: LocationCardProps) {
         </div>
 
         {location.medias.length > 1 && (
-          <span className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur">
+          <span className="absolute bottom-2.5 right-2.5 inline-flex items-center gap-1 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur">
             <Camera className="h-3 w-3" aria-hidden="true" />
             {location.medias.length}
           </span>

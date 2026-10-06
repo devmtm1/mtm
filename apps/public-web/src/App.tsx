@@ -31,6 +31,7 @@ const LAZY_ROUTES: { path: string; Page: ComponentType }[] = [
     path: '/locations/:id',
     Page: lazyPage(() => import('./pages/LocationDetailPage').then((m) => m.LocationDetailPage)),
   },
+  { path: ROUTES.favoris, Page: lazyPage(() => import('./pages/FavorisPage').then((m) => m.FavorisPage)) },
   { path: ROUTES.about, Page: lazyPage(() => import('./pages/AboutPage').then((m) => m.AboutPage)) },
   {
     path: ROUTES.gestionLocative,

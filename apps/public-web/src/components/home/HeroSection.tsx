@@ -1,13 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { ROUTES } from '../../routes';
 import { LinkButton } from '../ui/LinkButton';
-import { useContentBlocks } from '../../hooks/useContentBlocks';
+import { useHeroContent } from './hero-content';
 import { HeroQuickSearch } from './HeroQuickSearch';
-
-const DEFAULT_TITLE = 'Investissez en toute confiance, où que vous soyez';
-const DEFAULT_SUBTITLE =
-  "MTM Immobilier accompagne particuliers et membres de la diaspora dans l'achat de terrains et de villas, la vérification foncière, la gestion locative et la construction — avec transparence et suivi à distance.";
-const DEFAULT_CTA = 'Voir nos biens';
 
 /**
  * Connexions sur lesquelles 18 Mo ne passeront pas, quoi qu'on fasse.
@@ -71,7 +66,7 @@ function useShouldPlayBackgroundVideo(): boolean {
 }
 
 export function HeroSection() {
-  const { data } = useContentBlocks();
+  const { title, subtitle, ctaLabel } = useHeroContent();
   const playVideo = useShouldPlayBackgroundVideo();
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -83,13 +78,6 @@ export function HeroSection() {
     if (!playVideo) return;
     void videoRef.current?.play().catch(() => undefined);
   }, [playVideo]);
-
-  const findContent = (key: string): string | undefined =>
-    data?.find((block) => block.key === key)?.content;
-
-  const title = findContent('home.hero.title') ?? DEFAULT_TITLE;
-  const subtitle = findContent('home.hero.subtitle') ?? DEFAULT_SUBTITLE;
-  const ctaLabel = findContent('home.cta.title') ?? DEFAULT_CTA;
 
   return (
     <section className="relative overflow-hidden bg-mtm-primary-dark">

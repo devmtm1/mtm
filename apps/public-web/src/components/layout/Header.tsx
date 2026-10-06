@@ -1,23 +1,10 @@
 import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { ChevronDown, Menu, User, X } from 'lucide-react';
+import { ChevronDown, Heart, User } from 'lucide-react';
 import { ROUTES } from '../../routes';
 import { useAuth } from '../../contexts/auth-context-store';
-
-const PRIMARY_LINKS = [
-  { to: ROUTES.home, label: 'Accueil' },
-  { to: ROUTES.catalog, label: 'Nos biens' },
-  { to: ROUTES.locations, label: 'Locations' },
-  { to: ROUTES.realisations, label: 'Nos réalisations' },
-  { to: ROUTES.projetsAVenir, label: 'Projets à venir' },
-  { to: ROUTES.about, label: 'À propos' },
-];
-
-const SERVICE_LINKS = [
-  { to: ROUTES.gestionLocative, label: 'Gestion locative' },
-  { to: ROUTES.construction, label: 'Construction' },
-  { to: ROUTES.demarches, label: 'Démarches administratives' },
-];
+import { useFavorites } from '../../hooks/useFavorites';
+import { PRIMARY_LINKS, SERVICE_LINKS } from './nav-links';
 
 // Lien actif : couleur + filet sous le libellé, pour que l'état ne repose pas
 // sur la seule couleur (lisibilité, daltonisme).
@@ -29,25 +16,21 @@ function navLinkClass({ isActive }: { isActive: boolean }): string {
   }`;
 }
 
-function mobileLinkClass({ isActive }: { isActive: boolean }): string {
-  return `block rounded-md px-3 py-2.5 text-[15px] font-semibold transition-colors ${
-    isActive ? 'bg-mtm-primary-subtle text-mtm-primary' : 'text-mtm-text hover:bg-mtm-bg hover:text-mtm-primary'
-  }`;
-}
-
+/**
+ * En-tête de l'interface ordinateur. Sur téléphone et petite tablette, c'est
+ * la barre d'application (`MobileAppBar`) qui prend le relais, avec son menu.
+ */
 export function Header() {
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const { user } = useAuth();
+  const { count: favoris } = useFavorites();
   const { pathname } = useLocation();
   const clientLabel = user ? user.firstName : 'Espace client';
   const servicesActive = SERVICE_LINKS.some((link) => pathname.startsWith(link.to));
 
-  // Filet de sécurité : tout changement de route referme les menus, quelle
-  // que soit la façon dont la navigation a été déclenchée (clic, clavier,
-  // bouton Retour du navigateur).
+  // Tout changement de route referme le menu déroulant, quelle que soit la
+  // façon dont la navigation a été déclenchée (clic, clavier, bouton Retour).
   useEffect(() => {
-    setMobileOpen(false);
     setServicesOpen(false);
   }, [pathname]);
 
@@ -64,15 +47,15 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-mtm-border bg-mtm-surface/95 shadow-[0_1px_0_rgba(31,41,55,0.04)] backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-        <NavLink to={ROUTES.home} className="flex items-center gap-2.5" onClick={() => setMobileOpen(false)}>
+        <NavLink to={ROUTES.home} className="flex items-center gap-2.5">
           <img src="/logomtm.jpeg" alt="MTM Immobilier" className="h-11 w-11 rounded-full object-cover" />
           {/* Entre lg et xl, le menu n'a plus la place du nom : le logo seul suffit. */}
-          <span className="hidden whitespace-nowrap font-display text-lg font-bold sm:inline lg:hidden xl:inline">
+          <span className="hidden whitespace-nowrap font-display text-lg font-bold lg:hidden xl:inline">
             <span className="text-mtm-accent">MTM</span> <span className="text-mtm-primary">Immobilier</span>
           </span>
         </NavLink>
 
-        <nav className="hidden items-center gap-4 whitespace-nowrap lg:flex xl:gap-5">
+        <nav className="flex items-center gap-4 whitespace-nowrap xl:gap-5">
           {/* « Accueil » reste dans le menu mobile ; sur ordinateur, le logo y mène. */}
           {PRIMARY_LINKS.filter((link) => link.to !== ROUTES.home).map((link) => (
             <NavLink key={link.to} to={link.to} className={navLinkClass}>
@@ -118,6 +101,20 @@ export function Header() {
           <NavLink to={ROUTES.actualites} className={navLinkClass}>
             Actualités
           </NavLink>
+          {/* Les favoris se gardent sans compte : un visiteur qui a touché un
+              cœur doit pouvoir les retrouver depuis l'ordinateur aussi. */}
+          {favoris > 0 && (
+            <NavLink
+              to={ROUTES.favoris}
+              aria-label={`Mes favoris (${favoris})`}
+              className="relative flex items-center text-mtm-text hover:text-mtm-accent"
+            >
+              <Heart className="h-5 w-5" aria-hidden="true" />
+              <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-mtm-accent px-1 text-[10px] font-bold leading-none text-white">
+                {favoris}
+              </span>
+            </NavLink>
+          )}
           <NavLink to={ROUTES.clientPortal} className="flex items-center gap-1.5 text-sm font-semibold text-mtm-text hover:text-mtm-primary">
             <User className="h-4 w-4" aria-hidden="true" />
             {clientLabel}
@@ -129,83 +126,7 @@ export function Header() {
             Contact
           </NavLink>
         </nav>
-
-        <button
-          type="button"
-          className="inline-flex items-center justify-center rounded-md p-2 text-mtm-text lg:hidden"
-          onClick={() => setMobileOpen((open) => !open)}
-          aria-label={mobileOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
-          aria-expanded={mobileOpen}
-        >
-          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
       </div>
-
-      {mobileOpen && (
-        <nav
-          className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-mtm-border bg-mtm-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] motion-safe:animate-slide-down lg:hidden"
-          aria-label="Menu principal"
-        >
-          {/* CTA bien visible dès l'ouverture du menu : Services regroupe trois
-              pages, pas de destination unique, donc un bouton qui déplie sa
-              liste plutôt qu'un lien direct. */}
-          <div className="pt-3">
-            <button
-              type="button"
-              onClick={() => setServicesOpen((open) => !open)}
-              aria-expanded={servicesOpen}
-              className={`flex w-full items-center justify-between rounded-md border px-3.5 py-2.5 text-[15px] font-semibold transition-colors ${
-                servicesActive
-                  ? 'border-mtm-primary bg-mtm-primary-subtle text-mtm-primary'
-                  : 'border-mtm-primary/40 text-mtm-primary hover:bg-mtm-primary-subtle'
-              }`}
-            >
-              Services
-              <ChevronDown
-                className={`h-4 w-4 transition-transform duration-200 ${servicesOpen ? 'rotate-180' : ''}`}
-                aria-hidden="true"
-              />
-            </button>
-            {servicesOpen && (
-              <ul className="mt-1 flex flex-col gap-0.5 pl-2 motion-safe:animate-slide-down">
-                {SERVICE_LINKS.map((link) => (
-                  <li key={link.to}>
-                    <NavLink to={link.to} className={mobileLinkClass} onClick={() => setMobileOpen(false)}>
-                      {link.label}
-                    </NavLink>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-          <ul className="mt-1 flex flex-col gap-0.5">
-            {[...PRIMARY_LINKS, { to: ROUTES.actualites, label: 'Actualités' }].map((link) => (
-              <li key={link.to}>
-                <NavLink to={link.to} className={mobileLinkClass} end={link.to === ROUTES.home} onClick={() => setMobileOpen(false)}>
-                  {link.label}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-4 grid grid-cols-2 gap-2 border-t border-mtm-border pt-4">
-            <NavLink
-              to={ROUTES.clientPortal}
-              onClick={() => setMobileOpen(false)}
-              className="inline-flex items-center justify-center gap-1.5 rounded-md border border-mtm-primary px-4 py-2.5 text-sm font-semibold text-mtm-primary"
-            >
-              <User className="h-4 w-4" aria-hidden="true" />
-              {clientLabel}
-            </NavLink>
-            <NavLink
-              to={ROUTES.contact}
-              onClick={() => setMobileOpen(false)}
-              className="inline-flex items-center justify-center rounded-md bg-mtm-primary px-4 py-2.5 text-sm font-semibold text-white"
-            >
-              Contact
-            </NavLink>
-          </div>
-        </nav>
-      )}
     </header>
   );
 }

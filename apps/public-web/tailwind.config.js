@@ -59,6 +59,15 @@ export default {
           from: { opacity: '0', transform: 'translateY(24px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
         },
+        'sheet-right': {
+          from: { opacity: '0.6', transform: 'translateX(100%)' },
+          to: { opacity: '1', transform: 'none' },
+        },
+        // Entrée des actions rapides : elles jaillissent du bouton, l'une après l'autre.
+        'pop-in': {
+          from: { opacity: '0', transform: 'translate(var(--pop-x, 0px), 28px) scale(0.7)' },
+          to: { opacity: '1', transform: 'translate(var(--pop-x, 0px), 0) scale(1)' },
+        },
         'slide-down': {
           from: { opacity: '0', transform: 'translateY(-6px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
@@ -70,6 +79,8 @@ export default {
         'scale-in': 'scale-in 180ms ease-out both',
         'sheet-in': 'sheet-in 220ms ease-out both',
         'slide-down': 'slide-down 160ms ease-out both',
+        'sheet-right': 'sheet-right 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both',
+        'pop-in': 'pop-in 260ms cubic-bezier(0.2, 0.9, 0.3, 1.15) both',
       },
     },
   },

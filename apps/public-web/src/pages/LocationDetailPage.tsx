@@ -99,7 +99,7 @@ export function LocationDetailPage() {
     <div className="mx-auto max-w-6xl px-4 py-8 pb-28 sm:px-6 sm:py-10 sm:pb-28 lg:pb-10">
       <Link
         to={ROUTES.locations}
-        className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-mtm-muted transition-colors hover:text-mtm-primary"
+        className="mb-6 hidden lg:inline-flex items-center gap-1.5 text-sm font-semibold text-mtm-muted transition-colors hover:text-mtm-primary"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         Retour aux locations
