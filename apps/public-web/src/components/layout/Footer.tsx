@@ -115,9 +115,17 @@ export function Footer() {
       <div className="border-t border-white/10 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 text-center text-xs text-white/60 sm:flex-row sm:px-6 sm:text-left">
           <span>© {year} MTM Immobilier. Tous droits réservés.</span>
-          <Link to={ROUTES.clientPortal} className="font-semibold text-white/85 hover:text-white">
-            Espace client
-          </Link>
+          <nav aria-label="Informations légales" className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+            <Link to={ROUTES.mentionsLegales} className="hover:text-white">
+              Mentions légales
+            </Link>
+            <Link to={ROUTES.confidentialite} className="hover:text-white">
+              Confidentialité
+            </Link>
+            <Link to={ROUTES.clientPortal} className="font-semibold text-white/85 hover:text-white">
+              Espace client
+            </Link>
+          </nav>
         </div>
       </div>
     </footer>

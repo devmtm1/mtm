@@ -14,6 +14,8 @@ export const ROUTES = {
     `${category === 'projet_a_venir' ? '/projets-a-venir' : '/realisations'}/${id}`,
   actualites: '/actualites',
   contact: '/contact',
+  mentionsLegales: '/mentions-legales',
+  confidentialite: '/confidentialite',
   clientLogin: '/espace-client/connexion',
   /** Espace client : une application à part (sans en-tête ni pied de page du site). */
   clientPortal: '/espace-client',

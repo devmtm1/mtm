@@ -60,6 +60,14 @@ const LAZY_ROUTES: { path: string; Page: ComponentType }[] = [
     Page: lazyPage(() => import('./pages/ActualitesPage').then((m) => m.ActualitesPage)),
   },
   { path: ROUTES.contact, Page: lazyPage(() => import('./pages/ContactPage').then((m) => m.ContactPage)) },
+  {
+    path: ROUTES.mentionsLegales,
+    Page: lazyPage(() => import('./pages/LegalPages').then((m) => m.MentionsLegalesPage)),
+  },
+  {
+    path: ROUTES.confidentialite,
+    Page: lazyPage(() => import('./pages/LegalPages').then((m) => m.ConfidentialitePage)),
+  },
   { path: ROUTES.clientLogin, Page: lazyPage(() => import('./pages/LoginPage').then((m) => m.LoginPage)) },
 ];
 
