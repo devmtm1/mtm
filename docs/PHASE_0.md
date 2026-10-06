@@ -15,7 +15,7 @@ environnement de travail propre — aucune fonctionnalité métier.
 
 - [ ] Dépôt Git sous compte/organisation MTM (**à faire par MTM, volontairement exclu de cette intervention**)
 - [x] Environnements séparés : développement, test, production (`.env.example`, configuration Docker Compose, variables distinctes par environnement)
-- [x] Architecture backend centralisée, structure modulaire (NestJS, 7 modules : Auth, Users, RBAC, Audit, Settings, Health, Database)
+- [x] Architecture backend centralisée, structure modulaire (NestJS ; 7 modules à la clôture : Auth, Users, RBAC, Audit, Settings, Health, Database — d'autres ont été ajoutés depuis)
 - [x] PostgreSQL provisionné, schéma initial (8 tables), migrations (voir anomalie #1 ci-dessous)
 - [x] Authentification email/mot de passe, politique de mot de passe (12 caractères min.), gestion de session (JWT access + refresh token rotatif en cookie httpOnly)
 - [x] Double authentification (2FA) pour comptes admin/sensibles — implémentation TOTP complète (otplib + QR code), pas un stub
@@ -62,14 +62,11 @@ marketing et site public relèvent désormais des jalons J1.1 et J1.2.
 
 ## Anomalies connues
 
-### #1 — Test e2e PostgreSQL réel à compléter
+### #1 — Test e2e PostgreSQL réel — RÉSOLU
 
-**Sévérité : moyenne, à compléter avant la recette finale.**
-
-La génération Prisma, les migrations, le seed et le build API passent
-maintenant localement contre PostgreSQL. Le parcours e2e critique utilise
-encore `FakePrismaService`; un scénario CI séparé sans override Prisma doit
-être ajouté pour valider la persistance réelle.
+Les parcours e2e (`apps/api/test/*.e2e-spec.ts`) tournent désormais sur une
+vraie base PostgreSQL, sans doublure Prisma : voir « Tests e2e » dans le README
+racine. Le parcours critique de Phase 0 y est inclus.
 
 ### #2 — Réplication externe des sauvegardes
 
@@ -143,8 +140,7 @@ du parcours aux utilisateurs.
 2. Confirmer que le workflow CI s'exécute correctement au premier push
    (voir anomalie #3).
 3. Configurer la réplication externe des backups une fois l'hébergement choisi.
-4. Changer le mot de passe administrateur par défaut (`ChangeMe!2026`,
-   généré par le seed) dès la première connexion réelle.
+4. Changer le mot de passe administrateur par défaut (le seed n’en génère plus : il exige `SEED_ADMIN_PASSWORD` ; une ancienne version utilisait `ChangeMe!2026` — vérifier qu’elle n’a jamais servi en production) dès la première connexion réelle.
 5. Valider par écrit ce jalon (conformément à l'exigence de gouvernance
    du planning d'exécution) avant de démarrer le Jalon J1.1.
 

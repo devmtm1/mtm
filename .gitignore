@@ -50,3 +50,15 @@ backups/*.dump
 # Exports Trello du backlog : contiennent les adresses e-mail des cartes
 # (qui permettent d'écrire dans le tableau), donc jamais versionnés.
 *mtm-immobilier-backlog-planning*.json
+
+# Ancienne sortie de compilation (périmée), jamais versionnée
+apps/api/dist-build/
+
+# Copie texte du cahier des charges (le PDF fait foi)
+pdf_text.txt
+.kilo/
+
+# Sorties de compilation des scripts (les .ts font foi)
+apps/api/scripts/*.js
+apps/api/scripts/*.d.ts
+apps/api/scripts/*.js.map

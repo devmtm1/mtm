@@ -14,6 +14,14 @@ l'environnement d'execution ou le gestionnaire de secrets de l'hebergeur.
 
 ## 2. Restauration de la base
 
+Production : la sauvegarde la plus récente est dans le stockage externe
+(`mtm/production/AAAA/MM/*.dump.gpg`), chiffrée. La récupérer, vérifier
+l’empreinte `.sha256`, la déchiffrer (`gpg --decrypt`) avec la phrase de passe
+`BACKUP_PASSPHRASE`, puis suivre les étapes ci-dessous. Le workflow
+`backup-production.yml` rejoue cette restauration chaque dimanche : en cas
+de doute, consulter son dernier passage.
+
+
 1. Choisir le dump valide le plus recent dans le stockage de backup.
 2. Restaurer dans une base temporaire avec `apps/api/scripts/restore.sh`.
 3. Executer `apps/api/scripts/test-backup-restore.sh` ou une verification

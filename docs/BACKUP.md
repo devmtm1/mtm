@@ -82,6 +82,46 @@ Tables — original : 9 / restauré : 9
 Testé avec des données réelles présentes (pas une base vide) pour
 valider un cycle significatif, pas un cas dégénéré.
 
+## Production : sauvegarde externe chiffrée et restauration de contrôle
+
+La production tourne sur Render et Neon : le service `backup` de
+`docker-compose.yml` n'y existe pas. La sauvegarde de production est faite
+par le workflow GitHub `.github/workflows/backup-production.yml` :
+
+- **chaque jour (02h30 UTC)** : `pg_dump` de la base de production, contrôle de
+  lisibilité (`pg_restore --list`), chiffrement AES-256 (`gpg`), empreinte
+  SHA-256, envoi vers un stockage **externe** compatible S3 (Cloudflare R2,
+  Backblaze B2, AWS S3…), puis relecture de la taille de l'objet envoyé ;
+- **chaque dimanche (05h00 UTC)** : téléchargement de la sauvegarde la plus
+  récente, vérification de l'empreinte, déchiffrement, **restauration dans une
+  base jetable**, puis `apps/api/scripts/verify-restored-backup.sh` : migrations
+  toutes appliquées, tables clés présentes, rôles, permissions et paramètres
+  du seed présents, au moins un administrateur actif. Un fichier de
+  sauvegarde qui ne se restaure pas est découvert le dimanche, pas le jour du
+  sinistre.
+
+**Mise en service (à faire une fois, par MTM)**
+
+1. Créer un bucket dans un compte de stockage **appartenant à MTM**, et y régler
+   une règle de cycle de vie (30 jours conseillés) : c'est elle qui assure la
+   rétention.
+2. Dans GitHub, sur l'organisation MTM : *Settings → Secrets and variables →
+   Actions*, créer `PROD_DATABASE_URL`, `BACKUP_PASSPHRASE`,
+   `BACKUP_S3_ENDPOINT`, `BACKUP_S3_BUCKET`, `BACKUP_S3_ACCESS_KEY_ID`,
+   `BACKUP_S3_SECRET_ACCESS_KEY`. **Conserver la phrase de passe dans un
+   second endroit sûr** (coffre de mots de passe de la direction) : sans elle,
+   aucune sauvegarde ne peut être relue.
+3. Lancer le workflow à la main (*Actions → Sauvegarde de la production → Run
+   workflow*, case « restauration de contrôle » cochée) et vérifier que les
+   deux jobs passent.
+4. Tant que les secrets manquent, le workflow **échoue volontairement** avec la
+   liste de ce qui manque : une sauvegarde non configurée ne doit pas passer
+   pour une sauvegarde qui fonctionne.
+
+**Limite** : le script de contrôle et le workflow n'ont pas pu être exécutés
+de bout en bout hors de GitHub (pas de client PostgreSQL local) ; leur syntaxe
+est vérifiée, leur première exécution réelle est l'étape 3 ci-dessus.
+
 ## Limite connue
 
 `pg_dump`/`pg_restore` ne reconnaissent pas le paramètre `?schema=public`

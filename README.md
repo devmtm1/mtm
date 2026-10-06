@@ -3,10 +3,12 @@
 Monorepo du projet MTM Immobilier : backend API (NestJS), back-office
 (Angular) et futur site public.
 
-> **État actuel : Phase 1 — Cœur commercial finalisé et audité** (Jalons J1.1 à J1.6 du
-> planning d'exécution). Le socle technique Phase 0 est terminé. Les modules
-> terrains, site public, cartographie, mandats, CRM et ventes/réservations/paiements/commissions/GED
-> sont implémentés. Voir `docs/PHASE_0.md` pour le rapport de clôture de la Phase 0.
+> **État actuel : Phase 2 en cours.** Phase 0 (socle) et Phase 1 (cœur commercial,
+> J1.1 à J1.6) sont implémentées ; la gestion locative (J2.1), les démarches de
+> vérification foncière (J2.2) et le suivi de chantier (J2.3) le sont aussi. Restent :
+> agenda, tâches et notifications (J2.4), application mobile (J2.5), puis les
+> Phases 3 et 4. Voir `docs/PHASE_0.md` pour le rapport de clôture de la Phase 0 et
+> `docs/AUDIT_2026-10-05.md` pour le dernier audit et l'état des corrections.
 
 ## Structure du monorepo
 
@@ -191,14 +193,14 @@ personnalisés gratuits), et le dépôt contient déjà ce qu'il faut :
 d'entrée toujours revalidée).
 
 Chaque site porte aussi une **politique de sécurité du contenu** (CSP) dans
-son fichier `public/_headers`, posée d'abord en mode observation
-(`Content-Security-Policy-Report-Only`) : les écarts sont signalés dans la
-console du navigateur sans rien bloquer. Une fois l'accueil, une fiche
-terrain avec sa carte et l'espace client vérifiés sans avertissement,
-renommer l'en-tête en `Content-Security-Policy` pour qu'il soit appliqué.
-Les origines autorisées y sont explicites : polices Google, images
-Cloudinary, tuiles OpenStreetMap et Esri, et les deux API. Toute nouvelle
-dépendance externe devra y être ajoutée.
+son fichier `public/_headers`, **appliquée** (`Content-Security-Policy`). Les
+origines autorisées y sont explicites : polices Google, images Cloudinary,
+tuiles OpenStreetMap et Esri, feuille Leaflet (back-office) et les deux API.
+Toute nouvelle dépendance externe — police, carte, API, domaine personnalisé
+de l'API — doit y être ajoutée **avant** son déploiement, sinon le navigateur
+la bloque. `npm run check:csp` (exécuté par la CI) refuse un en-tête repassé
+en observation, un `script-src` permissif, un script ou un gestionnaire en
+ligne dans la page d'entrée, et une ressource externe non autorisée.
 
 Réglages d'un projet Pages, à créer deux fois (*Workers & Pages → Create →
 Pages → Connect to Git*), en laissant le *Root directory* sur `/` :

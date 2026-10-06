@@ -1,7 +1,7 @@
 # CI — GitHub Actions
 
 `.github/workflows/ci.yml` s'exécute sur chaque push/PR vers `main` et
-`develop`, avec deux jobs indépendants et parallèles.
+`develop`, avec trois jobs indépendants et parallèles (API, back-office, site public).
 
 ## Job `api`
 
@@ -21,6 +21,20 @@
 3. Build (`ng build`)
 4. Tests unitaires (`ng test`, environnement jsdom — pas besoin de
    Chrome headless)
+
+## Job `public-web`
+
+1. Installation des dépendances
+2. Lint (`eslint`)
+3. Build (`npm run build`, vérifie aussi les types)
+4. Tests unitaires (`vitest run`)
+
+## Tests e2e : base et encodage
+
+Les e2e tournent sur PostgreSQL 16 (service du job). En local, sans
+`E2E_DATABASE_URL`, un PostgreSQL embarqué est démarré en **UTF-8** : sans cet
+encodage imposé, initdb choisit WIN1252 sous Windows et refuse certains
+caractères du français.
 
 ## Validation effectuée
 

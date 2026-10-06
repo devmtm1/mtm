@@ -1,7 +1,4 @@
-
-
-Mtm immobilier planning jalons backlog · MD
-MTM Immobilier — Planning d'exécution en jalons & Backlog complet
+# MTM Immobilier — Planning d'exécution en jalons & Backlog complet
 Document à proposer à la direction MTM Immobilier — base de discussion et de validation, conformément à la section 30 du cahier des charges.
 
 Hypothèse de calendrier : démarrage à S1 (semaine 1). Remplacer par les dates réelles une fois validé. Durées en semaines pleines de travail, pour un développeur unique.
