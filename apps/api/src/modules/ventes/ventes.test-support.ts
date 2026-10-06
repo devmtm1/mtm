@@ -3,6 +3,7 @@ import { SettingsService } from '../settings/settings.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import { InternalNotificationService } from '../../common/mail/internal-notification.service';
 import { createPrismaMock } from '../../../test/helpers/prisma-mock';
+import { NotificationsService } from '../notifications/notifications.service';
 import { VentesService } from './ventes.service';
 import { VentesAccessService } from './ventes-access.service';
 import { VentesWorkflowService } from './ventes-workflow.service';
@@ -22,6 +23,10 @@ export function createVentesTestContext() {
     url: jest.fn().mockReturnValue('https://example.com/document.pdf'),
   };
   const notificationsMock = { notify: jest.fn().mockResolvedValue(undefined) };
+  const notifierMock = {
+    notifier: jest.fn().mockResolvedValue(1),
+    notifierPermission: jest.fn().mockResolvedValue(1),
+  };
 
   const prisma = prismaMock as unknown as PrismaService;
   const cloudinary = cloudinaryMock as unknown as CloudinaryService;
@@ -33,6 +38,7 @@ export function createVentesTestContext() {
     prismaMock: prismaMock,
     cloudinaryMock,
     notificationsMock,
+    notifierMock,
     access,
     workflow,
     service: new VentesService(
@@ -42,7 +48,12 @@ export function createVentesTestContext() {
       notificationsMock as unknown as InternalNotificationService,
       workflow,
     ),
-    paiements: new VentesPaiementsService(prisma, access, workflow),
+    paiements: new VentesPaiementsService(
+      prisma,
+      access,
+      workflow,
+      notifierMock as unknown as NotificationsService,
+    ),
     commissions: new VentesCommissionsService(prisma, access, workflow),
     documents: new VentesDocumentsService(prisma, cloudinary, access, settings),
   };

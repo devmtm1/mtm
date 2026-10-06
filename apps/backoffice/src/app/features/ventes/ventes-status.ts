@@ -21,6 +21,7 @@ export const PAYMENT_STATUS: Record<string, StatusMeaning> = {
   en_attente: { tone: 'warning', label: 'À valider', help: 'Enregistré par un commercial, en attente de contrôle (comptabilité / direction).' },
   valide: { tone: 'success', label: 'Validé', help: 'Contrôlé : compte dans le montant payé.' },
   refuse: { tone: 'danger', label: 'Refusé', help: 'Paiement non retenu.' },
+  annule: { tone: 'danger', label: 'Contre-passé', help: 'Paiement validé puis annulé (erreur, rejet bancaire ou remboursement) : il ne compte plus dans le montant payé.' },
 };
 
 export const PAYMENT_MODES: Record<string, string> = {

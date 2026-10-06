@@ -81,6 +81,12 @@ export class SettingsService {
     return SettingsService.asStringList(await this.getRawValue(key), fallback);
   }
 
+  /** Interrupteur paramétré (`true`/`false`), avec repli. */
+  async getBoolean(key: string, fallback: boolean): Promise<boolean> {
+    const value = await this.getRawValue(key);
+    return typeof value === 'boolean' ? value : fallback;
+  }
+
   /** Nombre paramétré, strictement positif, avec repli. */
   async getPositiveNumber(key: string, fallback: number): Promise<number> {
     const value = await this.getRawValue(key);

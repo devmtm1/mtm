@@ -173,6 +173,10 @@
                         <button mat-stroked-button type="button" (click)="validatePayment(payment)" [matTooltip]="validateHint()">
                           <svg class="btn-icon" lucideCheck aria-hidden="true"></svg>Valider
                         </button>
+                        <button mat-button type="button" (click)="refusePayment(payment)" matTooltip="Refuser ce paiement (le motif est conservé)">Refuser</button>
+                      }
+                      @if (payment.statut === 'valide' && canAdminister) {
+                        <button mat-button type="button" (click)="reversePayment(payment)" matTooltip="Contre-passer ce paiement validé (erreur, rejet bancaire, remboursement)">Contre-passer</button>
                       }
                     </td>
                   </tr>

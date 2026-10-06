@@ -1280,6 +1280,19 @@ async function main(): Promise<void> {
     },
   });
 
+  // --- Séparation des tâches sur la validation des paiements ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'paiements.validationParUnAutre' },
+    update: {},
+    create: {
+      key: 'paiements.validationParUnAutre',
+      value: false,
+      description:
+        'Si vrai, la personne qui enregistre un paiement ne peut pas le valider elle-même (contrôle à deux personnes)',
+      isSensitive: false,
+    },
+  });
+
   // --- Durée de blocage d'une réservation, en jours (section 12 CDC) ---
   await prisma.systemSetting.upsert({
     where: { key: 'reservations.dureeBlocageJours' },
@@ -1822,7 +1835,8 @@ async function main(): Promise<void> {
     // retombe sur `contact.whatsapp` si ce bloc est vidé.
     {
       key: 'contact.whatsapp.demarches',
-      title: 'Numéro WhatsApp — démarches administratives (format international, sans +)',
+      title:
+        'Numéro WhatsApp — démarches administratives (format international, sans +)',
       content: '221771551810',
       type: 'text',
       ordre: 44,

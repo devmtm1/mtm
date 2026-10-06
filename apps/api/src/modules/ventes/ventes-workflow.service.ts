@@ -95,6 +95,16 @@ export class VentesWorkflowService {
     );
   }
 
+  /**
+   * Séparation des tâches (section 12 CDC : validation selon le workflow
+   * interne) : quand le paramètre est actif, celui qui a enregistré un
+   * paiement ne peut pas le valider lui-même. Désactivé par défaut : une
+   * équipe d'une seule personne doit pouvoir encaisser.
+   */
+  isValidationParUnAutreRequise(): Promise<boolean> {
+    return this.settings.getBoolean('paiements.validationParUnAutre', false);
+  }
+
   getDefaultEcheanceCount(): Promise<number> {
     return this.settings.getPositiveNumber(
       'ventes.echeancesDefaut',

@@ -263,7 +263,15 @@ export class VenteDetailPage implements OnInit {
       current: dossier.statut,
       choices,
     }).subscribe((result) => {
-      if (result) this.run(this.api.updateStatus(dossier.id, result.value), `Dossier passé à « ${this.statusLabel(result.value)} »`);
+      if (!result) return;
+      let motif: string | undefined;
+      // Annuler un dossier qui a encaissé de l’argent oblige à dire ce que deviennent les paiements.
+      const aDesPaiementsValides = this.payments().some((payment) => payment.statut === 'valide');
+      if (result.value === 'annule' && aDesPaiementsValides) {
+        motif = window.prompt('Ce dossier a des paiements validés. Que deviennent-ils ? (acompte conservé selon les conditions de réservation, ou remboursé après contre-passation — obligatoire)')?.trim();
+        if (!motif) return;
+      }
+      this.run(this.api.updateStatus(dossier.id, result.value, motif), `Dossier passé à « ${this.statusLabel(result.value)} »`);
     });
   }
 
@@ -308,6 +316,24 @@ export class VenteDetailPage implements OnInit {
     if (!dossier) return;
     const label = dossier.statut === 'en_cours' || dossier.statut === 'pre_reserve' ? 'Paiement validé : dossier en paiement partiel, terrain réservé' : 'Paiement validé';
     this.run(this.api.validatePayment(dossier.id, payment.id), label);
+  }
+
+  protected refusePayment(payment: VentePaiement): void {
+    const dossier = this.dossier();
+    if (!dossier) return;
+    const motif = window.prompt('Motif du refus (obligatoire, conservé sur le paiement) :')?.trim();
+    if (!motif) return;
+    this.run(this.api.refusePayment(dossier.id, payment.id, motif), 'Paiement refusé');
+  }
+
+  protected reversePayment(payment: VentePaiement): void {
+    const dossier = this.dossier();
+    if (!dossier) return;
+    const motif = window.prompt('Motif de la contre-passation (obligatoire, conservé sur le paiement) :')?.trim();
+    if (!motif) return;
+    const remboursement = confirm('L’argent a-t-il été rendu au client ? OK = remboursé, Annuler = simple correction.');
+    const referenceRemboursement = remboursement ? window.prompt('Référence du remboursement (facultatif) :')?.trim() || undefined : undefined;
+    this.run(this.api.reversePayment(dossier.id, payment.id, { motif, remboursement, referenceRemboursement }), 'Paiement contre-passé : montants et statut recalculés');
   }
 
   protected addCommission(): void {

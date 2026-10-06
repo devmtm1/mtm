@@ -671,6 +671,20 @@ export class VentesService {
     );
     const prixVente = Number(dossier.prixVente ?? 0);
 
+    // Annuler un dossier qui a encaissé de l'argent ne doit pas laisser ce
+    // sort implicite : acompte conservé selon les conditions de réservation,
+    // ou remboursé (contre-passation préalable). Le motif le dit.
+    if (
+      dto.statut === 'annule' &&
+      dossier.statut !== 'annule' &&
+      totalPaye > 0 &&
+      !dto.motif?.trim()
+    ) {
+      throw new ConflictException(
+        'Ce dossier a des paiements validés : précisez en motif ce qu’ils deviennent (conservés selon les conditions de réservation, ou remboursés après contre-passation).',
+      );
+    }
+
     if (dto.statut === 'solde' && prixVente > 0 && totalPaye < prixVente) {
       throw new ConflictException(
         'Le dossier ne peut pas être placé en soldé sans paiement total validé.',

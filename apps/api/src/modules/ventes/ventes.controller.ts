@@ -27,7 +27,8 @@ import { AuditService } from '../audit/audit.service';
 import { CreateDossierVenteDto } from './dto/create-dossier-vente.dto';
 import { UpdateDossierVenteDto } from './dto/update-dossier-vente.dto';
 import { CreateCommissionDto } from './dto/create-commission.dto';
-import { Authenticated } from '../auth/decorators/authenticated.decorator';
+import { RefusePaiementDto } from './dto/refuse-paiement.dto';
+import { ReversePaiementDto } from './dto/reverse-paiement.dto';
 import { CreatePaiementDto } from './dto/create-paiement.dto';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { CreateDocumentVenteDto } from './dto/create-document-vente.dto';
@@ -43,6 +44,7 @@ import { VentesReportingService } from './ventes-reporting.service';
 import { VentesWorkflowService } from './ventes-workflow.service';
 import { VentesPaiementsService } from './ventes-paiements.service';
 import { VentesCommissionsService } from './ventes-commissions.service';
+import { Authenticated } from '../auth/decorators/authenticated.decorator';
 
 @ApiTags('ventes')
 @Controller('ventes')
@@ -333,6 +335,56 @@ export class VentesController {
     return result;
   }
 
+  @Post(':id/paiements/:paymentId/refuse')
+  @RequirePermissions('ventes:valider')
+  async refusePayment(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('paymentId', ParseUUIDPipe) paymentId: string,
+    @Body() dto: RefusePaiementDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const result = await this.paiements.refusePaiement(
+      id,
+      paymentId,
+      dto,
+      user,
+    );
+    await this.audit.record({
+      userId: user.id,
+      action: 'vente.paiement.refused',
+      entityType: 'Paiement',
+      entityId: paymentId,
+      newValue: result,
+    });
+    return result;
+  }
+
+  // Correction d'un encaissement déjà validé : réservée à l'encadrement
+  // (ventes:administrer), motif obligatoire, tracée à l'audit.
+  @Post(':id/paiements/:paymentId/reverse')
+  @RequirePermissions('ventes:administrer')
+  async reversePayment(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('paymentId', ParseUUIDPipe) paymentId: string,
+    @Body() dto: ReversePaiementDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const result = await this.paiements.reversePaiement(
+      id,
+      paymentId,
+      dto,
+      user,
+    );
+    await this.audit.record({
+      userId: user.id,
+      action: 'vente.paiement.reversed',
+      entityType: 'Paiement',
+      entityId: paymentId,
+      newValue: result,
+    });
+    return result;
+  }
+
   // Séparation des tâches : l'encadrement décide de la commission (création
   // et validation, ventes:administrer) ; la comptabilité l'exécute
   // (ventes:payer) une fois le dossier soldé.
@@ -411,7 +463,7 @@ export class VentesController {
       action: 'vente.status.updated',
       entityType: 'DossierVente',
       entityId: id,
-      newValue: { statut: dto.statut },
+      newValue: { statut: dto.statut, motif: dto.motif ?? null },
     });
     return dossier;
   }

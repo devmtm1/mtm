@@ -35,3 +35,41 @@ export async function applyPaymentToEcheances(
     montantRestant -= montantAffecte;
   }
 }
+
+/**
+ * Inverse de `applyPaymentToEcheances` : retire un montant des échéances en
+ * partant de la dernière échéance réglée, puisque l'imputation a rempli les
+ * premières d'abord. Sert à la contre-passation d'un paiement validé.
+ */
+export async function reversePaymentFromEcheances(
+  transaction: PrismaTransaction,
+  dossierVenteId: string,
+  montant: number,
+): Promise<void> {
+  let montantRestant = montant;
+  const echeances = await transaction.echeancePaiement.findMany({
+    where: { dossierVenteId },
+    orderBy: { numero: 'desc' },
+  });
+
+  for (const echeance of echeances) {
+    if (montantRestant <= 0) break;
+    const dejaPaye = Number(echeance.montantPaye);
+    if (dejaPaye <= 0) continue;
+    const retire = Math.min(dejaPaye, montantRestant);
+    const montantPaye = dejaPaye - retire;
+    await transaction.echeancePaiement.update({
+      where: { id: echeance.id },
+      data: {
+        montantPaye,
+        statut:
+          montantPaye >= Number(echeance.montantPrevu)
+            ? 'payee'
+            : montantPaye > 0
+              ? 'partielle'
+              : 'en_attente',
+      },
+    });
+    montantRestant -= retire;
+  }
+}

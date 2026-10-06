@@ -35,13 +35,19 @@ export class VentesApiService {
   /** Compléter un dossier ouvert : terrain, prix, commercial, notes. */
   updateDossier(
     dossierId: string,
-    payload: { terrainId?: string; mandatId?: string; commercialResponsableId?: string; prixVente?: number; notes?: string },
+    payload: {
+      terrainId?: string;
+      mandatId?: string;
+      commercialResponsableId?: string;
+      prixVente?: number;
+      notes?: string;
+    },
   ): Observable<VenteDetail> {
     return this.http.patch<VenteDetail>(`${this.baseUrl}/${dossierId}`, payload);
   }
 
-  updateStatus(dossierId: string, statut: string): Observable<unknown> {
-    return this.http.post(`${this.baseUrl}/${dossierId}/status`, { statut });
+  updateStatus(dossierId: string, statut: string, motif?: string): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/${dossierId}/status`, motif ? { statut, motif } : { statut });
   }
 
   /** Export CSV tracé : la justification est obligatoire côté API (section 24). */
@@ -96,7 +102,13 @@ export class VentesApiService {
 
   createPaiement(
     dossierId: string,
-    payload: { montant: number; mode: string; reference?: string; datePaiement?: string; notes?: string },
+    payload: {
+      montant: number;
+      mode: string;
+      reference?: string;
+      datePaiement?: string;
+      notes?: string;
+    },
   ): Observable<unknown> {
     return this.http.post(`${this.baseUrl}/${dossierId}/paiements`, payload);
   }
@@ -184,6 +196,18 @@ export class VentesApiService {
     },
   ): Observable<unknown> {
     return this.http.post(`${this.baseUrl}/${dossierId}/commissions`, payload);
+  }
+
+  refusePayment(dossierId: string, paymentId: string, motif: string): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/${dossierId}/paiements/${paymentId}/refuse`, { motif });
+  }
+
+  reversePayment(
+    dossierId: string,
+    paymentId: string,
+    body: { motif: string; remboursement?: boolean; referenceRemboursement?: string },
+  ): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/${dossierId}/paiements/${paymentId}/reverse`, body);
   }
 
   validateCommission(dossierId: string, commissionId: string): Observable<unknown> {
