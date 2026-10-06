@@ -1,25 +1,21 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ChevronRight,
-  FileSearch,
-  Hammer,
   Home,
   KeyRound,
   LandPlot,
   LayoutGrid,
-  Newspaper,
   Search,
   SlidersHorizontal,
-  Sparkles,
   type LucideIcon,
 } from 'lucide-react';
 import { ROUTES } from '../../routes';
 import { useTerrainsCatalog } from '../../hooks/useTerrainsCatalog';
 import { useLocationsCatalog } from '../../hooks/useLocations';
 import { AppPropertyCard } from '../mobile/AppPropertyCard';
-import { MobileSheet } from '../mobile/MobileSheet';
+import { ServicesSheet } from '../mobile/ServicesSheet';
 import { mergeRecent } from '../mobile/recent-properties';
 import { Skeleton } from '../ui/Skeleton';
 import { useHeroContent } from './hero-content';
@@ -52,15 +48,6 @@ const CATEGORIES: Category[] = [
   { label: 'Autres', icon: LayoutGrid, tone: 'text-mtm-primary-medium', box: 'bg-mtm-info-bg' },
 ];
 
-const OTHER_LINKS: { to: string; label: string; icon: LucideIcon }[] = [
-  { to: ROUTES.gestionLocative, label: 'Gestion locative', icon: KeyRound },
-  { to: ROUTES.construction, label: 'Construction', icon: Hammer },
-  { to: ROUTES.demarches, label: 'Démarches administratives', icon: FileSearch },
-  { to: ROUTES.realisations, label: 'Nos réalisations', icon: Sparkles },
-  { to: ROUTES.projetsAVenir, label: 'Projets à venir', icon: Hammer },
-  { to: ROUTES.actualites, label: 'Actualités et conseils', icon: Newspaper },
-];
-
 /**
  * Accueil de l'application mobile : un visuel d'accueil avec la recherche, les
  * grandes catégories, puis les biens les plus récents — ventes et locations
@@ -72,6 +59,7 @@ export function MobileHome() {
   const { title, subtitle } = useHeroContent();
   const [query, setQuery] = useState('');
   const [othersOpen, setOthersOpen] = useState(false);
+  const closeOthers = useCallback(() => setOthersOpen(false), []);
 
   const terrainsFilters = useMemo(() => ({ pageSize: 6 }), []);
   const locationsFilters = useMemo(() => ({ pageSize: 6 }), []);
@@ -224,27 +212,7 @@ export function MobileHome() {
         </Reveal>
       </div>
 
-      {othersOpen && (
-        <MobileSheet title="Autres services" onClose={() => setOthersOpen(false)}>
-          <ul className="flex flex-col gap-1 pb-2">
-            {OTHER_LINKS.map(({ to, label, icon: Icon }) => (
-              <li key={to}>
-                <Link
-                  to={to}
-                  onClick={() => setOthersOpen(false)}
-                  className="flex items-center gap-3 rounded-2xl px-3 py-3 text-[15px] font-semibold text-mtm-text active:scale-[0.98] active:bg-mtm-bg"
-                >
-                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-mtm-primary-subtle text-mtm-primary">
-                    <Icon className="h-5 w-5" aria-hidden="true" />
-                  </span>
-                  <span className="flex-1">{label}</span>
-                  <ChevronRight className="h-4 w-4 text-mtm-muted" aria-hidden="true" />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </MobileSheet>
-      )}
+      {othersOpen && <ServicesSheet title="Autres services" onClose={closeOthers} />}
     </div>
   );
 }

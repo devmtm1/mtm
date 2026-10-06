@@ -38,13 +38,16 @@ export function Layout() {
       {isMobile ? <MobileAppBar /> : <Header />}
       {/* `tabIndex={-1}` rend le conteneur focusable par programme : c'est la
           cible du focus après chaque changement de route (voir RouteAnnouncer). */}
-      <main id={MAIN_ID} tabIndex={-1} className={`flex-1 outline-none ${tabBar ? 'pb-[calc(4.25rem+env(safe-area-inset-bottom))]' : ''}`}>
+      <main id={MAIN_ID} tabIndex={-1} className="flex-1 outline-none">
         <PageTransition key={pathname}>
           <Outlet />
         </PageTransition>
       </main>
-      {/* Sur mobile, le pied de page est remplacé par le menu (contact, pages légales). */}
-      {!isMobile && <Footer />}
+      {/* Le pied de page reste sur mobile : la barre d'onglets, fixe, ne doit pas
+          en recouvrir le bas. Le fond de la réserve est celui du pied de page. */}
+      <div className={tabBar ? 'bg-mtm-primary-dark pb-[calc(4.25rem+env(safe-area-inset-bottom))]' : undefined}>
+        <Footer />
+      </div>
       <WhatsAppButton />
       {tabBar && <MobileTabBar />}
       {isMobile && showsQuickActions(pathname) && <QuickActionsFab />}

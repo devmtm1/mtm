@@ -3,6 +3,7 @@ import {
   Building2,
   ChevronRight,
   FileSearch,
+  Heart,
   Home,
   Info,
   KeyRound,
@@ -18,6 +19,7 @@ import {
 import { ROUTES } from '../../routes';
 import { useAuth } from '../../contexts/auth-context-store';
 import { toTelHref, useSiteContact } from '../../hooks/useSiteContact';
+import { useFavorites } from '../../hooks/useFavorites';
 import { MobileSheet } from './MobileSheet';
 
 /** Icône de chaque destination : le menu se lit à l'image autant qu'au texte. */
@@ -71,9 +73,10 @@ function LinkRow({ to, label, onNavigate }: { to: string; label: string; onNavig
   );
 }
 
-/** Menu complet de l'application mobile : destinations, contact direct et pages légales. */
+/** Menu complet de l'application mobile : destinations, services, contact direct et favoris. */
 export function MobileMenuSheet({ onClose }: { onClose: () => void }) {
   const { user } = useAuth();
+  const { count: favoris } = useFavorites();
   const contact = useSiteContact();
 
   return (
@@ -139,16 +142,21 @@ export function MobileMenuSheet({ onClose }: { onClose: () => void }) {
         </a>
       </div>
 
-      <div className="mt-6 flex items-center justify-center gap-4 border-t border-mtm-border pt-4 text-xs text-mtm-muted">
-        <Link to={ROUTES.mentionsLegales} onClick={onClose} className="active:text-mtm-primary">
-          Mentions légales
-        </Link>
-        <span aria-hidden="true">·</span>
-        <Link to={ROUTES.confidentialite} onClick={onClose} className="active:text-mtm-primary">
-          Confidentialité
-        </Link>
-      </div>
-      <p className="mt-3 text-center text-[11px] text-mtm-muted">© {new Date().getFullYear()} MTM Immobilier</p>
+
+      <Link
+        to={ROUTES.favoris}
+        onClick={onClose}
+        className="mt-4 flex items-center gap-3 rounded-2xl border border-mtm-border px-3 py-3 text-[15px] font-semibold text-mtm-text active:scale-[0.98] active:bg-mtm-bg"
+      >
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-mtm-accent-subtle text-mtm-accent">
+          <Heart className="h-[18px] w-[18px]" aria-hidden="true" />
+        </span>
+        <span className="flex-1">Mes favoris</span>
+        {favoris > 0 && (
+          <span className="rounded-full bg-mtm-accent px-2 py-0.5 text-xs font-bold text-white">{favoris}</span>
+        )}
+        <ChevronRight className="h-4 w-4 text-mtm-muted" aria-hidden="true" />
+      </Link>
     </MobileSheet>
   );
 }
