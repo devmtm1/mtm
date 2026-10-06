@@ -5,6 +5,7 @@ import type { PointInteret } from '../../types/terrain';
 import { markerIcon } from './leaflet-icon';
 import { observeMapResize } from './map-resize';
 import { installBaseLayers } from './map-layers';
+import { popupText } from './map-popup';
 
 interface TerrainMapProps {
   latitude: number;
@@ -29,14 +30,16 @@ export function TerrainMap({ latitude, longitude, title, pointsInteret }: Terrai
 
     installBaseLayers(map);
 
-    L.marker([latitude, longitude], { icon: markerIcon }).addTo(map).bindPopup(title);
+    L.marker([latitude, longitude], { icon: markerIcon }).addTo(map).bindPopup(popupText(title, true));
 
     for (const point of pointsInteret ?? []) {
       if (point.latitude === undefined || point.longitude === undefined) continue;
       L.marker([point.latitude, point.longitude], { icon: markerIcon })
         .addTo(map)
         .bindPopup(
-          `${point.nom}${point.distanceKm !== undefined ? ` · ${point.distanceKm} km` : ''}`,
+          popupText(
+            `${point.nom}${point.distanceKm !== undefined ? ` · ${point.distanceKm} km` : ''}`,
+          ),
         );
     }
 

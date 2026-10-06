@@ -356,7 +356,10 @@ export class TerrainDetail implements OnInit, OnDestroy {
     // accès, végétation — ce qu'un plan ne montre pas.
     installBaseLayers(map);
     const icon = L.divIcon({ className: 'mtm-map-pin', html: '<span class="mtm-map-pin-dot"></span>', iconSize: [22, 22], iconAnchor: [11, 11] });
-    L.marker([lat, lng], { icon }).addTo(map).bindPopup(`<strong>${terrain.nom}</strong>`);
+    // Nœud de texte : bindPopup(chaîne) insère du HTML, et le nom est saisi par le personnel.
+    const popup = document.createElement('strong');
+    popup.textContent = terrain.nom;
+    L.marker([lat, lng], { icon }).addTo(map).bindPopup(popup);
     this.map = map;
     setTimeout(() => map.invalidateSize(), 150);
   }
