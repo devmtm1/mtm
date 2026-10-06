@@ -1,186 +1,201 @@
-import { CalendarClock, CalendarDays, FileText, MapPin, Receipt } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { CalendarClock, CalendarDays, Download, FileText, Info, MapPin, Receipt } from 'lucide-react';
 import type { ClientDossier } from '../../types/clientPortal';
-import { formatDate, formatDateShort, formatMoney } from '../../utils/format';
-import { documentType, dossierStatus, echeanceStatus, paymentMode, reservationStatus } from '../../utils/labels';
+import { construireFrise, echeanceAMettreEnAvant } from '../../utils/clientFrise';
+import { formatDate, formatMoney } from '../../utils/format';
+import { documentType, dossierStatus, paymentMode, reservationStatus } from '../../utils/labels';
 import { Badge } from '../ui/Badge';
-import { ProgressBar } from './shell/ClientUi';
-import { etatPaiementIcone } from './shell/etat-paiement';
+import { ClientRow, ProgressBar } from './shell/ClientUi';
+import { ClientDisclosure } from './shell/Disclosure';
+import { Frise, type FriseItem } from './shell/Frise';
 
-/**
- * Un dossier de vente vu par le client : où en est-il (statut expliqué,
- * avancement du paiement), ce qui a été payé, la réservation en cours et
- * l'échéancier convenu et les documents à télécharger.
- */
-/** Date longue sur grand écran, courte sur mobile où chaque ligne doit tenir sans retour. */
-function DateCell({ value }: { value: string }) {
+function Section({ icon: Icon, title, children }: { icon: typeof Receipt; title: string; children: React.ReactNode }) {
   return (
-    <>
-      <span className="sm:hidden">{formatDateShort(value)}</span>
-      <span className="hidden sm:inline">{formatDate(value)}</span>
-    </>
+    <section className="mt-5 first:mt-0">
+      <h4 className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-mtm-muted">
+        <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+        {title}
+      </h4>
+      {children}
+    </section>
   );
 }
 
-/** Petit rond qui dit l'état d'une échéance avant qu'on lise le mot. */
-function StatutPuce({ statut }: { statut: string }) {
-  const { icon: Icon, tone } = etatPaiementIcone(statut);
-  const classes = {
-    success: 'text-mtm-success',
-    accent: 'text-mtm-accent',
-    warning: 'text-mtm-warning',
-    primary: 'text-mtm-primary',
-    neutral: 'text-mtm-border',
-  } as const;
-  return <Icon className={`h-4 w-4 shrink-0 ${classes[tone]}`} aria-hidden="true" />;
-}
-
-export function ClientDossierCard({ dossier }: { dossier: ClientDossier }) {
+/**
+ * Un dossier de vente vu par le client, en carte repliable. Replié : le bien,
+ * le statut, l'avancement du paiement et la prochaine échéance. Déplié :
+ * l'explication du statut, la réservation, l'échéancier en frise, les
+ * paiements validés et les documents à télécharger.
+ */
+export function ClientDossierCard({ dossier, defaultOpen = false }: { dossier: ClientDossier; defaultOpen?: boolean }) {
   const status = dossierStatus(dossier.statut);
   const price = dossier.prixVente ?? 0;
   const paid = dossier.montantPaye;
   const remaining = Math.max(0, price - paid);
-  const progress = price > 0 ? Math.min(100, Math.round((paid / price) * 100)) : 0;
+  const progress = price > 0 ? (paid / price) * 100 : 0;
   const location = [dossier.terrain?.commune, dossier.terrain?.region].filter(Boolean).join(', ');
-  const activeReservation = dossier.reservations.find((reservation) => reservation.statut === 'active' || reservation.statut === 'confirmee') ?? dossier.reservations[0];
+  const activeReservation =
+    dossier.reservations.find((reservation) => reservation.statut === 'active' || reservation.statut === 'confirmee') ??
+    dossier.reservations[0];
+
+  const frise = useMemo(() => construireFrise(dossier.echeances), [dossier.echeances]);
+  const enAvant = echeanceAMettreEnAvant(frise);
+  const reglees = frise.filter((etape) => etape.etat === 'reglee');
+  const [reglesVisibles, setReglesVisibles] = useState(false);
+  // Une seule échéance réglée tient dans la liste ; au-delà, elles se replient.
+  const replierReglees = reglees.length > 1 && !reglesVisibles;
+
+  const items: FriseItem[] = frise
+    .filter((etape) => !(replierReglees && etape.etat === 'reglee'))
+    .map((etape) => ({
+      key: etape.numero,
+      etat: etape.etat,
+      titre: (
+        <>
+          {etape.numero}. {formatDate(etape.dateEcheance)}
+        </>
+      ),
+      detail:
+        etape.etat === 'retard'
+          ? `En retard de ${etape.joursRetard} jour${etape.joursRetard > 1 ? 's' : ''}`
+          : etape.etat === 'prochaine'
+            ? etape.reste < etape.montantPrevu
+              ? `Prochaine échéance · reste ${formatMoney(etape.reste)}`
+              : 'Prochaine échéance'
+            : etape.etat === 'reglee'
+              ? 'Réglée'
+              : undefined,
+      droite: formatMoney(etape.montantPrevu),
+    }));
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-mtm-border/70 bg-mtm-surface shadow-card lg:rounded-lg lg:border-mtm-border">
-      <header className="flex flex-col gap-2 border-b border-mtm-border px-4 py-3.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3 sm:px-5 sm:py-4">
-        <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
-            {dossier.referenceInterne ?? 'Dossier de vente'} · ouvert le {formatDate(dossier.createdAt)}
-          </p>
-          <h3 className="mt-0.5 truncate font-display text-lg font-bold text-mtm-text">
-            {dossier.terrain?.nom ?? 'Dossier de vente'}
-          </h3>
-          {dossier.terrain && (
-            <p className="mt-0.5 flex items-center gap-1 text-sm text-mtm-muted">
-              <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
-              {dossier.terrain.referenceInterne}
-              {location ? ` · ${location}` : ''}
-            </p>
-          )}
-        </div>
-        <div className="flex items-center gap-2 sm:flex-col sm:items-end sm:gap-1">
-          <Badge tone={status.tone} className="shrink-0">{status.label}</Badge>
-          <span className="text-xs text-mtm-muted sm:max-w-[260px] sm:text-right">{status.help}</span>
-        </div>
-      </header>
-
-      <div className="grid grid-cols-1 gap-4 px-4 py-3.5 sm:gap-5 sm:px-5 sm:py-4 md:grid-cols-[1.4fr_1fr]">
-        <div>
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <p className="text-xs text-mtm-muted">Déjà payé</p>
-              <p className="font-display text-lg font-bold text-mtm-success sm:text-xl">{formatMoney(paid)}</p>
+    <ClientDisclosure
+      defaultOpen={defaultOpen}
+      summary={
+        <>
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <h3 className="truncate font-display text-[17px] font-bold text-mtm-text">
+                {dossier.terrain?.nom ?? 'Dossier de vente'}
+              </h3>
+              {location && (
+                <p className="mt-0.5 flex items-center gap-1 text-xs text-mtm-muted">
+                  <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span className="truncate">{location}</span>
+                </p>
+              )}
             </div>
-            <div className="text-right">
-              <p className="text-xs text-mtm-muted">Prix de vente</p>
-              <p className="font-display text-lg font-bold text-mtm-text sm:text-xl">{formatMoney(price || null)}</p>
-            </div>
+            <Badge tone={status.tone} className="shrink-0">
+              {status.label}
+            </Badge>
           </div>
-          <ProgressBar className="mt-2" value={progress} label="Avancement du paiement" />
+
+          <ProgressBar value={progress} label="Avancement du paiement" className="mt-3" />
           <p className="mt-1.5 text-xs text-mtm-muted">
-            {progress}% payé
+            <span className="font-semibold text-mtm-success">{formatMoney(paid)}</span> payés sur {formatMoney(price || null)}
             {remaining > 0 ? ` · reste ${formatMoney(remaining)}` : price > 0 ? ' · dossier soldé' : ''}
           </p>
 
-          {dossier.echeances.length > 0 && (
-            <section className="mt-4">
-              <h4 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-mtm-muted">
-                <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
-                Échéancier convenu
-              </h4>
-              <ul className="mt-1.5 divide-y divide-mtm-border text-sm">
-                {dossier.echeances.map((echeance) => {
-                  const state = echeanceStatus(echeance.statut);
-                  const due = Math.max(0, echeance.montantPrevu - echeance.montantPaye);
-                  return (
-                    <li key={echeance.numero} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 py-2.5">
-                      <span className="flex min-w-0 items-center gap-2 text-mtm-muted">
-                        <StatutPuce statut={echeance.statut} />
-                        <span><span className="font-semibold text-mtm-text">{echeance.numero}.</span> <DateCell value={echeance.dateEcheance} /></span>
-                        {echeance.statut === 'partielle' && (
-                          <span className="block text-xs">reste {formatMoney(due)}</span>
-                        )}
-                      </span>
-                      <span className="ml-auto flex shrink-0 items-center gap-2">
-                        <span className="whitespace-nowrap font-semibold text-mtm-text">{formatMoney(echeance.montantPrevu)}</span>
-                        <Badge tone={state.tone} className="whitespace-nowrap">{state.label}</Badge>
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
+          {enAvant && (
+            <p
+              className={`mt-2.5 flex items-start gap-1.5 rounded-xl px-2.5 py-2 text-xs font-semibold ${
+                enAvant.etat === 'retard' ? 'bg-mtm-accent-subtle text-mtm-accent' : 'bg-mtm-primary-subtle text-mtm-primary'
+              }`}
+            >
+              <CalendarClock className="mt-px h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>
+                {enAvant.etat === 'retard' ? 'En retard' : 'Prochaine échéance'} · {formatMoney(enAvant.reste)}{' '}
+                {enAvant.etat === 'retard' ? 'était dû le' : 'avant le'} {formatDate(enAvant.dateEcheance)}
+              </span>
+            </p>
           )}
+        </>
+      }
+    >
+      <p className="flex items-start gap-2 rounded-xl bg-mtm-bg px-3 py-2.5 text-sm text-mtm-muted">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-mtm-primary" aria-hidden="true" />
+        <span>
+          {status.help}
+          <span className="mt-1 block text-xs">
+            {dossier.referenceInterne ?? 'Dossier de vente'}
+            {dossier.terrain ? ` · ${dossier.terrain.referenceInterne}` : ''} · ouvert le {formatDate(dossier.createdAt)}
+          </span>
+        </span>
+      </p>
 
-          {activeReservation && (
-            <div className="mt-4 flex items-start gap-2.5 rounded-2xl bg-mtm-primary-subtle px-3.5 py-3 text-sm">
-              <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-mtm-primary" aria-hidden="true" />
-              <div>
-                <p className="font-semibold text-mtm-text">
-                  Réservation {reservationStatus(activeReservation.statut).label.toLowerCase()}
-                  {activeReservation.montantAcompte > 0 ? ` · acompte ${formatMoney(activeReservation.montantAcompte)}` : ''}
-                </p>
-                <p className="text-xs text-mtm-muted">
-                  {activeReservation.statut === 'active' ? 'Valable jusqu’au ' : 'Date limite : '}
-                  {formatDate(activeReservation.dateExpiration)} — {reservationStatus(activeReservation.statut).help}
-                </p>
-              </div>
-            </div>
-          )}
+      {activeReservation && (
+        <div className="mt-4 flex items-start gap-2.5 rounded-xl bg-mtm-primary-subtle px-3.5 py-3 text-sm">
+          <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-mtm-primary" aria-hidden="true" />
+          <div>
+            <p className="font-semibold text-mtm-text">
+              Réservation {reservationStatus(activeReservation.statut).label.toLowerCase()}
+              {activeReservation.montantAcompte > 0 ? ` · acompte ${formatMoney(activeReservation.montantAcompte)}` : ''}
+            </p>
+            <p className="text-xs text-mtm-muted">
+              {activeReservation.statut === 'active' ? 'Valable jusqu’au ' : 'Date limite : '}
+              {formatDate(activeReservation.dateExpiration)} — {reservationStatus(activeReservation.statut).help}
+            </p>
+          </div>
         </div>
+      )}
 
-        <div className="flex flex-col gap-4 border-t border-mtm-border pt-4 md:border-l md:border-t-0 md:pl-5 md:pt-0">
-          <section>
-            <h4 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-mtm-muted">
-              <Receipt className="h-3.5 w-3.5" aria-hidden="true" />
-              Paiements validés
-            </h4>
-            {dossier.paiements.length === 0 ? (
-              <p className="mt-1.5 text-sm text-mtm-muted">Aucun paiement enregistré pour le moment.</p>
-            ) : (
-              <ul className="mt-1.5 divide-y divide-mtm-border text-sm">
-                {dossier.paiements.map((paiement, index) => (
-                  <li key={index} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 py-2.5">
-                    <span className="min-w-0 text-mtm-muted">
-                      <DateCell value={paiement.datePaiement} /> · {paymentMode(paiement.mode)}
-                    </span>
-                    <span className="ml-auto shrink-0 whitespace-nowrap font-semibold text-mtm-text">{formatMoney(paiement.montant)}</span>
-                  </li>
-                ))}
-              </ul>
+      {dossier.echeances.length > 0 && (
+        <div className="mt-5">
+          <Section icon={CalendarDays} title="Échéancier convenu">
+            {replierReglees && (
+              <button
+                type="button"
+                onClick={() => setReglesVisibles(true)}
+                className="mb-2 flex w-full items-center justify-between rounded-xl border border-mtm-border px-3 py-2.5 text-left text-[13px] font-semibold text-mtm-success active:scale-[0.99]"
+              >
+                <span>{reglees.length} échéances déjà réglées</span>
+                <span className="text-xs font-semibold text-mtm-primary">Voir</span>
+              </button>
             )}
-          </section>
-
-          <section>
-            <h4 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-mtm-muted">
-              <FileText className="h-3.5 w-3.5" aria-hidden="true" />
-              Documents
-            </h4>
-            {dossier.documents.length === 0 ? (
-              <p className="mt-1.5 text-sm text-mtm-muted">Vos reçus et contrats apparaîtront ici.</p>
-            ) : (
-              <ul className="mt-1.5 flex flex-wrap gap-2">
-                {dossier.documents.map((document) => (
-                  <li key={document.id}>
-                    <a
-                      href={document.secureUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-mtm-border px-3 py-2.5 text-[13px] font-semibold text-mtm-primary transition-colors active:scale-95 hover:border-mtm-primary hover:bg-mtm-primary-subtle"
-                    >
-                      <FileText className="h-3.5 w-3.5" aria-hidden="true" />
-                      {document.title ?? documentType(document.type)}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+            <Frise items={items} label="Échéancier du dossier" />
+          </Section>
         </div>
-      </div>
-    </article>
+      )}
+
+      <Section icon={Receipt} title="Paiements validés">
+        {dossier.paiements.length === 0 ? (
+          <p className="text-sm text-mtm-muted">Aucun paiement enregistré pour le moment.</p>
+        ) : (
+          <ul>
+            {dossier.paiements.map((paiement, index) => (
+              <li key={index}>
+                <ClientRow
+                  icon={Receipt}
+                  tone="success"
+                  title={formatMoney(paiement.montant)}
+                  subtitle={`${formatDate(paiement.datePaiement)} · ${paymentMode(paiement.mode)}`}
+                  trailing={<span className="text-xs font-semibold text-mtm-success">Validé</span>}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </Section>
+
+      <Section icon={FileText} title="Documents">
+        {dossier.documents.length === 0 ? (
+          <p className="text-sm text-mtm-muted">Vos reçus et contrats apparaîtront ici.</p>
+        ) : (
+          <ul>
+            {dossier.documents.map((document) => (
+              <li key={document.id}>
+                <ClientRow
+                  href={document.secureUrl}
+                  icon={FileText}
+                  title={document.title ?? documentType(document.type)}
+                  subtitle={documentType(document.type)}
+                  trailing={<Download className="h-4 w-4 shrink-0 text-mtm-primary" aria-label="Télécharger" />}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </Section>
+    </ClientDisclosure>
   );
 }

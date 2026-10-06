@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { FileText, HardHat } from 'lucide-react';
+import { Download, FileText, HardHat } from 'lucide-react';
 import { useAuth } from '../../contexts/auth-context-store';
 import { useClientData } from '../../contexts/client-data-store';
 import { usePageMetadata } from '../../hooks/usePageMetadata';
 import { fetchClientChantier } from '../../api/clientPortal';
-import { ClientCard, ClientPageHeader } from '../../components/client/shell/ClientUi';
+import { ClientCard, ClientPageHeader, ClientRow, ProgressBar } from '../../components/client/shell/ClientUi';
+import { ShowMoreButton } from '../../components/client/shell/Disclosure';
+import { Frise, type FriseItem } from '../../components/client/shell/Frise';
 import { Badge } from '../../components/ui/Badge';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Skeleton } from '../../components/ui/Skeleton';
@@ -17,24 +19,36 @@ import {
 } from '../../utils/labels';
 import type { ClientChantierDetail } from '../../types/chantier';
 
-/** Barre d'avancement : la première chose que le client cherche. */
+/** Avancement : le chiffre en grand, la barre dessous. La première chose que le client cherche. */
 function Avancement({ valeur }: { valeur: number }) {
   const pourcent = Math.min(100, Math.max(0, valeur));
   return (
-    <div className="flex items-center gap-3">
-      <div
-        className="h-2 flex-1 overflow-hidden rounded-full bg-mtm-border"
-        role="progressbar"
-        aria-valuenow={pourcent}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-label="Avancement du chantier"
-      >
-        <div className="h-full rounded-full bg-mtm-primary" style={{ width: `${pourcent}%` }} />
+    <div className="rounded-2xl bg-mtm-bg p-4">
+      <div className="flex items-end justify-between">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-mtm-muted">Avancement du chantier</p>
+        <p className="font-display text-3xl font-bold leading-none text-mtm-primary">{pourcent} %</p>
       </div>
-      <span className="text-sm font-bold tabular-nums text-mtm-text">{pourcent} %</span>
+      <ProgressBar value={pourcent} label="Avancement du chantier" tone="primary" className="mt-3" />
     </div>
   );
+}
+
+/** Les étapes du planning : terminée, en cours (la prochaine à suivre), à venir ; une étape bloquée se signale. */
+function etapes(jalons: ClientChantierDetail['jalons']): FriseItem[] {
+  return jalons.map((jalon) => {
+    const termine = jalon.statut === 'termine';
+    const bloque = jalon.statut === 'bloque';
+    const etat: FriseItem['etat'] = termine ? 'reglee' : bloque ? 'retard' : jalon.statut === 'en_cours' ? 'prochaine' : 'plus-tard';
+    const etatLabel = chantierJalonStatus(jalon.statut).label;
+    const date = formatDate(jalon.dateFinReelle ?? jalon.dateFinPrevue);
+    return {
+      key: jalon.id,
+      etat,
+      titre: jalon.libelle,
+      detail: `${etatLabel}${date !== '—' ? ` · ${termine ? 'achevée le' : 'prévue le'} ${date}` : ''}`,
+      droite: termine ? undefined : `${Math.min(100, Math.max(0, jalon.avancement))} %`,
+    };
+  });
 }
 
 /** Libellé et valeur, alignés en colonne : la brique de lecture de la page. */
@@ -66,6 +80,7 @@ export function ClientChantiersPage() {
   const [detail, setDetail] = useState<ClientChantierDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
+  const [journalComplet, setJournalComplet] = useState(false);
 
   // Un seul chantier dans l'immense majorité des cas : on l'ouvre d'emblée
   // plutôt que d'imposer un clic pour arriver à la seule chose à lire.
@@ -112,6 +127,7 @@ export function ClientChantiersPage() {
   }
 
   const statut = detail ? chantierStatus(detail.statut) : null;
+  const journalVisible = detail ? (journalComplet ? detail.journal : detail.journal.slice(0, 3)) : [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -150,33 +166,25 @@ export function ClientChantiersPage() {
         <>
           <ClientCard>
             <div className="flex flex-col gap-4">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
+              <div>
+                <div className="flex items-start justify-between gap-2">
                   <p className="text-xs font-semibold uppercase tracking-wider text-mtm-muted">
                     {detail.referenceInterne}
                   </p>
-                  <h2 className="font-display text-lg font-bold text-mtm-text">
-                    {detail.intitule}
-                  </h2>
-                  <p className="text-sm text-mtm-muted">
-                    {chantierType(detail.typeProjet)}
-                    {[detail.adresse, detail.commune].filter(Boolean).length > 0 &&
-                      ` · ${[detail.adresse, detail.commune].filter(Boolean).join(', ')}`}
-                  </p>
+                  {statut && <Badge tone={statut.tone} className="shrink-0">{statut.label}</Badge>}
                 </div>
-                {statut && (
-                  <div className="text-right">
-                    <Badge tone={statut.tone}>{statut.label}</Badge>
-                    <p className="mt-1 max-w-[16rem] text-xs leading-snug text-mtm-muted">
-                      {statut.help}
-                    </p>
-                  </div>
-                )}
+                <h2 className="mt-0.5 font-display text-xl font-bold text-mtm-text">{detail.intitule}</h2>
+                <p className="text-sm text-mtm-muted">
+                  {chantierType(detail.typeProjet)}
+                  {[detail.adresse, detail.commune].filter(Boolean).length > 0 &&
+                    ` · ${[detail.adresse, detail.commune].filter(Boolean).join(', ')}`}
+                </p>
+                {statut && <p className="mt-2 text-sm leading-snug text-mtm-muted">{statut.help}</p>}
               </div>
 
               <Avancement valeur={detail.avancement} />
 
-              <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-3.5 sm:grid-cols-4">
                 <Fait
                   label="Montant du devis"
                   value={detail.montantDevis === null ? '—' : formatMoney(detail.montantDevis)}
@@ -203,42 +211,14 @@ export function ClientChantiersPage() {
 
           {detail.jalons.length > 0 && (
             <ClientCard title="Les étapes">
-              <ol className="flex flex-col gap-3">
-                {detail.jalons.map((jalon) => {
-                  const etat = chantierJalonStatus(jalon.statut);
-                  const part = jalon.statut === 'termine' ? 100 : jalon.avancement;
-                  return (
-                    <li key={jalon.id} className="flex flex-col gap-1">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="text-sm font-semibold text-mtm-text">
-                          {jalon.libelle}
-                        </span>
-                        <span className="flex items-center gap-2">
-                          <span className="text-xs text-mtm-muted">
-                            {formatDate(jalon.dateFinReelle ?? jalon.dateFinPrevue)}
-                          </span>
-                          <Badge tone={etat.tone}>{etat.label}</Badge>
-                        </span>
-                      </div>
-                      <div className="h-1.5 overflow-hidden rounded-full bg-mtm-border">
-                        <div
-                          className={`h-full rounded-full ${
-                            jalon.statut === 'termine' ? 'bg-mtm-success' : 'bg-mtm-primary'
-                          }`}
-                          style={{ width: `${Math.min(100, Math.max(0, part))}%` }}
-                        />
-                      </div>
-                    </li>
-                  );
-                })}
-              </ol>
+              <Frise label="Étapes du chantier" items={etapes(detail.jalons)} />
             </ClientCard>
           )}
 
           {detail.journal.length > 0 && (
             <ClientCard title="Ce qui s’est passé sur le chantier">
               <ol className="flex flex-col gap-4">
-                {detail.journal.map((journee) => (
+                {journalVisible.map((journee) => (
                   <li
                     key={journee.id}
                     className="border-l-2 border-mtm-border pl-3 first:border-mtm-primary"
@@ -289,34 +269,27 @@ export function ClientChantiersPage() {
                   </li>
                 ))}
               </ol>
+              <ShowMoreButton
+                hiddenCount={detail.journal.length - journalVisible.length}
+                expanded={journalComplet}
+                onToggle={() => setJournalComplet((ouvert) => !ouvert)}
+                noun="journées"
+              />
             </ClientCard>
           )}
 
           {detail.documents.length > 0 && (
             <ClientCard title="Rapports et documents">
-              <ul className="flex flex-col divide-y divide-mtm-border">
+              <ul className="-my-1">
                 {detail.documents.map((piece) => (
-                  <li key={piece.id} className="flex items-center justify-between gap-3 py-2.5">
-                    <span className="flex min-w-0 items-center gap-2">
-                      <FileText className="h-4 w-4 shrink-0 text-mtm-muted" aria-hidden="true" />
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-semibold text-mtm-text">
-                          {piece.title || chantierDocumentType(piece.type)}
-                        </span>
-                        <span className="block text-xs text-mtm-muted">
-                          {chantierDocumentType(piece.type)}
-                          {piece.createdAt && ` · ${formatDate(piece.createdAt)}`}
-                        </span>
-                      </span>
-                    </span>
-                    <a
+                  <li key={piece.id}>
+                    <ClientRow
                       href={piece.secureUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="shrink-0 text-sm font-semibold text-mtm-primary hover:underline"
-                    >
-                      Ouvrir
-                    </a>
+                      icon={FileText}
+                      title={piece.title || chantierDocumentType(piece.type)}
+                      subtitle={`${chantierDocumentType(piece.type)}${piece.createdAt ? ` · ${formatDate(piece.createdAt)}` : ''}`}
+                      trailing={<Download className="h-4 w-4 shrink-0 text-mtm-primary" aria-label="Ouvrir" />}
+                    />
                   </li>
                 ))}
               </ul>

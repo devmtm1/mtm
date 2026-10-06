@@ -65,7 +65,7 @@ export function ClientMissionsPage() {
       {!missionsLoading && !missionsError && list.length > 0 && (
         <div className="flex flex-col gap-4">
           {list.map((mission) => (
-            <ClientMissionCard key={mission.id} mission={mission} />
+            <ClientMissionCard key={mission.id} mission={mission} defaultOpen={list.length === 1} />
           ))}
         </div>
       )}

@@ -5,6 +5,7 @@ import { formatDate, formatMoney } from '../../utils/format';
 import { missionDecision, missionDocumentType, missionStatus, missionType } from '../../utils/labels';
 import { Badge } from '../ui/Badge';
 import { ProgressBar } from './shell/ClientUi';
+import { ClientDisclosure } from './shell/Disclosure';
 
 /** Ordre d'avancement affiché au client : les cinq étapes, sans le jargon. */
 const ETAPES = [
@@ -20,7 +21,7 @@ const ETAPES = [
  * a conclu, et le rapport à télécharger. Le client n'a pas accès aux constats
  * internes — seulement à ce qui lui est destiné.
  */
-export function ClientMissionCard({ mission }: { mission: ClientMission }) {
+export function ClientMissionCard({ mission, defaultOpen = false }: { mission: ClientMission; defaultOpen?: boolean }) {
   const status = missionStatus(mission.statut);
   const decision = mission.decision ? missionDecision(mission.decision) : null;
   const lieu =
@@ -38,37 +39,39 @@ export function ClientMissionCard({ mission }: { mission: ClientMission }) {
   const fichiers = mission.documents.filter((document) => !isCloudinaryImage(document.secureUrl));
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-mtm-border/70 bg-mtm-surface shadow-card lg:rounded-lg lg:border-mtm-border">
-      <header className="flex flex-col gap-2 border-b border-mtm-border px-4 py-3.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3 sm:px-5 sm:py-4">
-        <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
-            {mission.referenceInterne ?? 'Mission'} · demandée le {formatDate(mission.dateDemande)}
-          </p>
-          <h3 className="mt-0.5 font-display text-lg font-bold text-mtm-text">
-            {missionType(mission.typeVerification)}
-          </h3>
-          {lieu && (
-            <p className="mt-1 flex items-center gap-1.5 text-sm text-mtm-muted">
-              <MapPin className="h-4 w-4 flex-none" aria-hidden="true" />
-              <span className="truncate">{lieu}</span>
+    <ClientDisclosure
+      defaultOpen={defaultOpen}
+      summary={
+        <>
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
+                {mission.referenceInterne ?? 'Mission'} · demandée le {formatDate(mission.dateDemande)}
+              </p>
+              <h3 className="mt-0.5 font-display text-[17px] font-bold text-mtm-text">
+                {missionType(mission.typeVerification)}
+              </h3>
+              {lieu && (
+                <p className="mt-0.5 flex items-center gap-1 text-xs text-mtm-muted">
+                  <MapPin className="h-3.5 w-3.5 flex-none" aria-hidden="true" />
+                  <span className="truncate">{lieu}</span>
+                </p>
+              )}
+            </div>
+            <Badge tone={status.tone} className="shrink-0">{status.label}</Badge>
+          </div>
+          <ProgressBar value={avancement} label="Avancement de la vérification" tone="primary" className="mt-3" />
+          {mission.dateEcheance && !terminee && (
+            <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-mtm-primary">
+              <CalendarClock className="h-4 w-4 flex-none" aria-hidden="true" />
+              Réponse attendue pour le {formatDate(mission.dateEcheance)}
             </p>
           )}
-        </div>
-        <Badge tone={status.tone} className="self-start sm:self-auto">{status.label}</Badge>
-      </header>
-
-      <div className="flex flex-col gap-4 px-4 py-4 sm:px-5">
-        <div>
-          <ProgressBar value={avancement} label="Avancement de la vérification" tone="primary" />
-          <p className="mt-2 text-sm text-mtm-muted">{status.help}</p>
-        </div>
-
-        {mission.dateEcheance && !terminee && (
-          <p className="flex items-center gap-1.5 text-sm text-mtm-text">
-            <CalendarClock className="h-4 w-4 flex-none text-mtm-muted" aria-hidden="true" />
-            Réponse attendue pour le {formatDate(mission.dateEcheance)}
-          </p>
-        )}
+        </>
+      }
+    >
+      <div className="flex flex-col gap-4">
+        <p className="text-sm text-mtm-muted">{status.help}</p>
 
         {mission.objectif && (
           <div className="rounded-xl bg-mtm-bg px-3 py-2.5">
@@ -104,7 +107,7 @@ export function ClientMissionCard({ mission }: { mission: ClientMission }) {
         )}
 
         {mission.montantDevis !== null && (
-          <dl className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+          <dl className="grid grid-cols-2 gap-2 text-sm">
             <div className="rounded-xl bg-mtm-bg px-3 py-2">
               <dt className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
                 Montant de la mission
@@ -182,6 +185,6 @@ export function ClientMissionCard({ mission }: { mission: ClientMission }) {
           </div>
         )}
       </div>
-    </article>
+    </ClientDisclosure>
   );
 }

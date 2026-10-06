@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Building2, FileText, KeyRound, TrendingUp, Wallet } from 'lucide-react';
 import { useClientData } from '../../contexts/client-data-store';
 import { usePageMetadata } from '../../hooks/usePageMetadata';
 import { ClientCard, ClientPageHeader, ClientRow, StatTile } from '../../components/client/shell/ClientUi';
+import { ShowMoreButton } from '../../components/client/shell/Disclosure';
 import { Badge } from '../../components/ui/Badge';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Skeleton } from '../../components/ui/Skeleton';
@@ -35,6 +37,8 @@ export function ClientProprietairePage() {
   usePageMetadata({ title: 'Mon bien' });
   const biens = proprietaireBiens ?? [];
   const documents = proprietaireDocuments ?? [];
+  const [tousReleves, setTousReleves] = useState(false);
+  const relevesVisibles = tousReleves ? documents : documents.slice(0, 4);
 
   if (proprietaireLoading) {
     return (
@@ -134,7 +138,7 @@ export function ClientProprietairePage() {
       {documents.length > 0 && (
         <ClientCard title="Mes relevés et documents">
           <ul className="-my-1">
-            {documents.map((document) => (
+            {relevesVisibles.map((document) => (
               <li key={document.id}>
                 <ClientRow
                   href={document.secureUrl}
@@ -145,6 +149,12 @@ export function ClientProprietairePage() {
               </li>
             ))}
           </ul>
+          <ShowMoreButton
+            hiddenCount={documents.length - relevesVisibles.length}
+            expanded={tousReleves}
+            onToggle={() => setTousReleves((ouvert) => !ouvert)}
+            noun="documents"
+          />
         </ClientCard>
       )}
     </div>
