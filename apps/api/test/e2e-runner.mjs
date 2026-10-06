@@ -71,6 +71,10 @@ async function main() {
       port,
       user: 'mtm_test',
       password: 'mtm_test',
+      // Encodage imposé : sous Windows, initdb retombe sur WIN1252 et refuse
+      // des caractères que Neon (UTF8) accepte, comme l'espace insécable
+      // étroit du formatage français.
+      initdbFlags: ['--encoding=UTF8', '--locale=C'],
       persistent: false,
       onLog: () => {},
       onError: (error) => console.error('[postgres embarqué]', error),

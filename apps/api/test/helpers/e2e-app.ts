@@ -2,6 +2,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import cookieParser from 'cookie-parser';
 import { AppModule } from '../../src/app.module';
+import { CloudinaryService } from '../../src/common/storage/cloudinary.service';
 import { PrismaService } from '../../src/database/prisma.service';
 import { requestContextMiddleware } from '../../src/common/request-context/request-context';
 import { e2eDatabaseUrlOrThrow } from './e2e-database';
@@ -20,7 +21,17 @@ export interface E2eContext {
  * ValidationPipe que `main.ts` — sur la base PostgreSQL de test, vidée au
  * démarrage. Aucune doublure : ce qui passe ici passe en production.
  */
-export async function createE2eApp(): Promise<E2eContext> {
+export interface E2eOptions {
+  /**
+   * Doublure du stockage Cloudinary, pour les parcours qui envoient des
+   * fichiers : sans elle, l'envoi partirait vers le vrai service.
+   */
+  cloudinary?: object;
+}
+
+export async function createE2eApp(
+  options: E2eOptions = {},
+): Promise<E2eContext> {
   process.env.NODE_ENV = 'test';
   process.env.DATABASE_URL = e2eDatabaseUrlOrThrow();
   process.env.JWT_ACCESS_SECRET ??= 'e2e-test-access-secret-min-32-characters';
@@ -30,9 +41,11 @@ export async function createE2eApp(): Promise<E2eContext> {
   process.env.JWT_REFRESH_EXPIRES_IN ??= '7d';
   process.env.CORS_ORIGIN ??= 'http://localhost:4200';
 
-  const moduleRef = await Test.createTestingModule({
-    imports: [AppModule],
-  }).compile();
+  const builder = Test.createTestingModule({ imports: [AppModule] });
+  if (options.cloudinary) {
+    builder.overrideProvider(CloudinaryService).useValue(options.cloudinary);
+  }
+  const moduleRef = await builder.compile();
 
   const app = moduleRef.createNestApplication();
   app.setGlobalPrefix('api');
