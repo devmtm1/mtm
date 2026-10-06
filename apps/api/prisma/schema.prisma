@@ -160,8 +160,6 @@ model Terrain {
   // est construit dessus, et n'apparaissent dans les écrans que si le type
   // du bien les rend pertinentes.
   /**
-   * /**
-   * /**
    * Surface habitable, distincte de la parcelle. Les deux coexistent : une
    * villa de 120 m² habitables peut occuper une parcelle de 300 m², et les
    * confondre fausserait toute comparaison au catalogue.
@@ -559,8 +557,6 @@ model Prospect {
   // vivre dans une table à part, pour qu'une seule fiche porte le budget et
   // la zone du client — deux exemplaires finiraient par diverger.
   /**
-   * /**
-   * /**
    * /** Vrai dès qu'un mandat de recherche est ouvert pour ce prospect.
    */
   rechercheActive               Boolean   @default(false)
@@ -1166,7 +1162,6 @@ model BienLocatif {
 
   // --- Publication sur le site public (location) ---
   /**
-   * /**
    * Visible sur le site tant que le bien est « disponible ». Réservé à la
    * permission locatif:publier ; exige un loyer et au moins une photo.
    */
@@ -1239,11 +1234,6 @@ model BailLocatif {
 
   // --- Sortie et cas particuliers (section 15) ---
   /**
-   * /**
-   * /**
-   * /**
-   * /**
-   * /**
    * Cycle de vie du bail : actif | preavis | termine | resilie_sans_preavis.
    */
   statut                String    @default("actif")

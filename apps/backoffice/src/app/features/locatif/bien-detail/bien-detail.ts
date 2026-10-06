@@ -22,7 +22,9 @@ import {
   LucideUpload,
   LucideX,
 } from '@lucide/angular';
+import { forkJoin, of } from 'rxjs';
 import type { Observable } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { LocatifApiService } from '../../../core/services/api/locatif-api.service';
 import type {
   BailDetail,
@@ -373,9 +375,36 @@ export class BienDetailPage implements OnInit {
   protected creerBail(): void {
     const bien = this.bien();
     if (!bien) return;
-    BailDialog.open(this.dialog, { locataires: this.locataires() }).subscribe((payload) => {
-      if (!payload) return;
-      this.executer(this.api.createBail(bien.id, payload), 'Bail créé');
+    BailDialog.open(this.dialog, {
+      locataires: this.locataires(),
+      bien: { loyerMensuel: bien.loyerMensuel, charges: bien.charges, moisCaution: bien.moisCaution },
+    }).subscribe((resultat) => {
+      if (!resultat) return;
+      const { payload, pieces } = resultat;
+      const depots: [string, File | undefined][] = [
+        ['contrat', pieces.contrat],
+        ['etat_lieux_entree', pieces.etatLieuxEntree],
+      ];
+      const aDeposer = depots.filter((depot): depot is [string, File] => depot[1] !== undefined);
+      // Le bail d'abord (il donne son identifiant aux pièces) ; un dépôt qui
+      // échoue ne défait pas le bail, il est signalé et se refait depuis la fiche.
+      const creation = this.api.createBail(bien.id, payload).pipe(
+        switchMap((bail) =>
+          aDeposer.length === 0
+            ? of(bail)
+            : forkJoin(
+                aDeposer.map(([type, fichier]) =>
+                  this.api.addDocument(bail.id, type, fichier).pipe(
+                    catchError((error: unknown) => {
+                      this.notify.error(error, `Envoi de « ${fichier.name} » impossible : ajoutez-le depuis le bail`);
+                      return of(null);
+                    }),
+                  ),
+                ),
+              ).pipe(map(() => bail)),
+        ),
+      );
+      this.executer(creation, 'Bail créé');
     });
   }
 
@@ -430,7 +459,10 @@ export class BienDetailPage implements OnInit {
   protected changerLocataire(): void {
     const bien = this.bien();
     if (!bien) return;
-    ChangementLocataireDialog.open(this.dialog, { locataires: this.locataires() }).subscribe((payload) => {
+    ChangementLocataireDialog.open(this.dialog, {
+      locataires: this.locataires(),
+      bailActuel: this.bailActuel(),
+    }).subscribe((payload) => {
       if (!payload) return;
       this.executer(this.api.changerLocataire(bien.id, payload), 'Locataire changé');
     });

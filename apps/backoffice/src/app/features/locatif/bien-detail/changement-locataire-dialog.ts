@@ -16,10 +16,18 @@ import type { Observable } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { LocatifApiService } from '../../../core/services/api/locatif-api.service';
 import type { ChangerLocatairePayload, Locataire } from '../../../core/models/locatif.model';
+import { datesBailCoherentes, nombreOuUndefined, valeursParDefautBail } from '../locatif-form';
 import { LocataireQuickAddDialog } from './locataire-quick-add-dialog';
 
 export interface ChangementLocataireDialogData {
   locataires: Locataire[];
+  /** Le bail qui se termine : ses montants et son jour d'échéance sont repris. */
+  bailActuel?: {
+    loyerMensuel: number | string;
+    charges: number | string | null;
+    jourEcheance: number;
+    cautionMontant: number | string | null;
+  } | null;
 }
 
 /**
@@ -78,15 +86,47 @@ export interface ChangementLocataireDialogData {
       </button>
       <mat-form-field appearance="outline">
         <mat-label>Loyer mensuel (FCFA)</mat-label>
-        <input matInput type="number" min="0" formControlName="loyerMensuel" />
+        <input matInput type="number" min="1" formControlName="loyerMensuel" />
+        <mat-hint>Repris du bail qui se termine.</mat-hint>
+        @if (form.controls.loyerMensuel.hasError('min')) {
+          <mat-error>Le loyer doit être supérieur à zéro.</mat-error>
+        }
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Charges (FCFA)</mat-label>
+        <input matInput type="number" min="0" formControlName="charges" />
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Date de début</mat-label>
         <input matInput type="date" formControlName="dateDebut" />
       </mat-form-field>
       <mat-form-field appearance="outline">
+        <mat-label>Date de fin (facultatif)</mat-label>
+        <input matInput type="date" formControlName="dateFin" />
+        @if (form.hasError('datesIncoherentes')) {
+          <mat-error>La fin du bail précède son début.</mat-error>
+        }
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Jour d'échéance</mat-label>
+        <input matInput type="number" min="1" max="28" formControlName="jourEcheance" />
+        <mat-hint>Jour du mois où le loyer est dû (1 à 28)</mat-hint>
+        @if (form.controls.jourEcheance.invalid) {
+          <mat-error>Choisissez un jour entre 1 et 28.</mat-error>
+        }
+      </mat-form-field>
+      <mat-form-field appearance="outline">
         <mat-label>Caution (FCFA)</mat-label>
         <input matInput type="number" min="0" formControlName="cautionMontant" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Caution encaissée le</mat-label>
+        <input matInput type="date" formControlName="cautionDate" />
+        <mat-hint>Vide si elle n'est pas encore versée.</mat-hint>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="wide">
+        <mat-label>État des lieux d'entrée</mat-label>
+        <textarea matInput rows="2" formControlName="etatLieuxEntree"></textarea>
       </mat-form-field>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
@@ -111,15 +151,25 @@ export class ChangementLocataireDialog {
   protected readonly locataireOptions = signal(this.data.locataires);
   protected readonly locataireQuery = new FormControl<Locataire | string>('');
 
-  protected readonly form = this.formBuilder.nonNullable.group({
-    dateSortieReelle: [new Date().toISOString().slice(0, 10), Validators.required],
-    motifCloture: [''],
-    etatLieuxSortie: [''],
-    locataireId: ['', Validators.required],
-    loyerMensuel: [null as number | null, Validators.required],
-    dateDebut: ['', Validators.required],
-    cautionMontant: [null as number | null],
-  });
+  private readonly depart = valeursParDefautBail(this.data.bailActuel);
+
+  protected readonly form = this.formBuilder.nonNullable.group(
+    {
+      dateSortieReelle: [new Date().toISOString().slice(0, 10), Validators.required],
+      motifCloture: [''],
+      etatLieuxSortie: [''],
+      locataireId: ['', Validators.required],
+      loyerMensuel: [this.depart.loyerMensuel, [Validators.required, Validators.min(1)]],
+      charges: [this.depart.charges, [Validators.min(0)]],
+      jourEcheance: [this.depart.jourEcheance, [Validators.required, Validators.min(1), Validators.max(28)]],
+      dateDebut: ['', Validators.required],
+      dateFin: [''],
+      cautionMontant: [this.depart.cautionMontant, [Validators.min(0)]],
+      cautionDate: [''],
+      etatLieuxEntree: [''],
+    },
+    { validators: datesBailCoherentes },
+  );
 
   constructor() {
     this.locataireQuery.valueChanges
@@ -167,8 +217,13 @@ export class ChangementLocataireDialog {
       nouveauBail: {
         locataireId: valeur.locataireId,
         loyerMensuel: valeur.loyerMensuel ?? 0,
+        charges: nombreOuUndefined(valeur.charges),
+        jourEcheance: valeur.jourEcheance,
         dateDebut: valeur.dateDebut,
-        cautionMontant: valeur.cautionMontant ?? undefined,
+        dateFin: texte(valeur.dateFin),
+        cautionMontant: nombreOuUndefined(valeur.cautionMontant),
+        cautionDate: texte(valeur.cautionDate),
+        etatLieuxEntree: texte(valeur.etatLieuxEntree),
       },
     });
   }

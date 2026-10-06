@@ -5,6 +5,7 @@ import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dial
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import type { Observable } from 'rxjs';
+import { contactRequis } from '../locatif-form';
 import { LocatifApiService } from '../../../core/services/api/locatif-api.service';
 import type { Locataire } from '../../../core/models/locatif.model';
 import { NotificationService } from '../../../shared/services/notification.service';
@@ -27,12 +28,18 @@ import { NotificationService } from '../../../shared/services/notification.servi
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Téléphone</mat-label>
-        <input matInput formControlName="phone" />
+        <input matInput type="tel" formControlName="phone" />
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>E-mail</mat-label>
         <input matInput type="email" formControlName="email" />
+        @if (form.controls.email.hasError('email')) {
+          <mat-error>Adresse e-mail invalide.</mat-error>
+        }
       </mat-form-field>
+      @if (form.hasError('contactManquant') && form.touched) {
+        <p class="wide contact-error">Indiquez au moins un téléphone ou un e-mail.</p>
+      }
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-stroked-button type="button" mat-dialog-close>Annuler</button>
@@ -41,7 +48,7 @@ import { NotificationService } from '../../../shared/services/notification.servi
       </button>
     </mat-dialog-actions>
   `,
-  styles: `.quick-add-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; min-width: 360px; }`,
+  styles: `.quick-add-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; min-width: 360px; } .wide { grid-column: 1 / -1; } .contact-error { margin: 0; color: var(--mtm-danger, #b52c36); font-size: 0.82rem; }`,
 })
 export class LocataireQuickAddDialog {
   private readonly dialogRef = inject(MatDialogRef<LocataireQuickAddDialog>);
@@ -56,7 +63,7 @@ export class LocataireQuickAddDialog {
     lastName: ['', Validators.required],
     phone: [''],
     email: [''],
-  });
+  }, { validators: contactRequis });
 
   protected submit(): void {
     if (this.form.invalid) {

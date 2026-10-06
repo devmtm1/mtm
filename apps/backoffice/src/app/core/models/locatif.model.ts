@@ -369,7 +369,12 @@ export interface LocatifStats {
   impayesTotal: number;
 }
 
-export interface CreateBienPayload {
+/**
+ * Création d'un bien : la fiche (propriétaire, adresse, type) et ce qui le
+ * décrit pour la location (loyer, charges, caution, pièces). La publication,
+ * les photos et le texte de l'annonce se préparent ensuite sur la fiche.
+ */
+export interface CreateBienPayload extends Omit<AnnoncePayload, 'publie' | 'misEnAvant'> {
   proprietaireId: string;
   type: string;
   adresse: string;

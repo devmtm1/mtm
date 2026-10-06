@@ -14,6 +14,7 @@
   </header>
 
   <form [formGroup]="form" class="page-card form-block" (ngSubmit)="submit()">
+    <h2 class="form-section-title">Le bien</h2>
     <div class="form-grid">
       <mat-form-field appearance="outline" class="wide">
         <mat-label>Propriétaire</mat-label>
@@ -29,7 +30,7 @@
       <mat-form-field appearance="outline">
         <mat-label>Type de bien</mat-label>
         <mat-select formControlName="type">
-          @for (type of options().typesBien ?? []; track type) {
+          @for (type of types(); track type) {
             <mat-option [value]="type">{{ typeLabel(type) }}</mat-option>
           }
         </mat-select>
@@ -38,11 +39,15 @@
       <mat-form-field appearance="outline">
         <mat-label>Superficie (m²)</mat-label>
         <input matInput type="number" min="0" formControlName="superficie" />
+        @if (form.controls.superficie.hasError('min')) {
+          <mat-error>La superficie ne peut pas être négative.</mat-error>
+        }
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="wide">
         <mat-label>Adresse</mat-label>
         <input matInput formControlName="adresse" placeholder="Numéro, rue, quartier" />
+        <mat-hint>Interne : l’adresse exacte n’est jamais publiée sur le site.</mat-hint>
         <mat-error>L’adresse est nécessaire pour localiser le bien.</mat-error>
       </mat-form-field>
 
@@ -56,17 +61,123 @@
         <input matInput formControlName="region" />
       </mat-form-field>
 
+      @if (peutAssigner()) {
+        <mat-form-field appearance="outline" class="wide">
+          <mat-label>Responsable du suivi</mat-label>
+          <mat-select formControlName="responsableId">
+            <mat-option value="">Moi (par défaut)</mat-option>
+            @for (collaborateur of collaborateurs(); track collaborateur.id) {
+              <mat-option [value]="collaborateur.id">{{ personne(collaborateur) }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+    </div>
+
+    <h2 class="form-section-title">Loyer et conditions</h2>
+    <p class="form-section-hint">
+      Le loyer visé pour ce bien. Il est proposé à la création du bail, et sert à l’annonce sur le site.
+    </p>
+    <div class="form-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Loyer mensuel (FCFA)</mat-label>
+        <input matInput type="number" min="0" step="5000" formControlName="loyerMensuel" />
+        @if (form.controls.loyerMensuel.hasError('min')) {
+          <mat-error>Le loyer ne peut pas être négatif.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Charges mensuelles (FCFA)</mat-label>
+        <input matInput type="number" min="0" step="1000" formControlName="charges" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Caution (mois de loyer)</mat-label>
+        <input matInput type="number" min="0" max="12" formControlName="moisCaution" />
+        <mat-hint>Ex. 2 : deux mois de loyer.</mat-hint>
+        @if (form.controls.moisCaution.hasError('max')) {
+          <mat-error>Au plus 12 mois.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Ameublement</mat-label>
+        <mat-select formControlName="meuble">
+          <mat-option [value]="false">Non meublé</mat-option>
+          <mat-option [value]="true">Meublé</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <h2 class="form-section-title">Composition</h2>
+    <div class="form-grid form-grid--three">
+      <mat-form-field appearance="outline">
+        <mat-label>Pièces</mat-label>
+        <input matInput type="number" min="0" max="50" formControlName="nombrePieces" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Chambres</mat-label>
+        <input matInput type="number" min="0" max="30" formControlName="nombreChambres" />
+        <mat-hint>0 pour un studio.</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Salles d’eau</mat-label>
+        <input matInput type="number" min="0" max="30" formControlName="nombreSallesEau" />
+      </mat-form-field>
+    </div>
+
+    <h2 class="form-section-title">Photos et vidéos</h2>
+    <p class="form-section-hint">
+      Facultatif. Elles servent à l’annonce : la première est la couverture. JPEG, PNG, WebP ou MP4, 10 Mo au
+      maximum chacune. Elles pourront être réorganisées depuis la fiche.
+    </p>
+    <label class="photo-add">
+      <input type="file" multiple [accept]="accept" (change)="choisirPhotos($event)" />
+      <svg lucideImagePlus class="btn-icon" aria-hidden="true"></svg>
+      Ajouter des photos
+    </label>
+    @if (photos().length > 0) {
+      <ul class="photo-list" aria-label="Photos à déposer">
+        @for (photo of photos(); track photo.file; let i = $index) {
+          <li class="photo-item">
+            @if (photo.apercu) {
+              <img [src]="photo.apercu" alt="" />
+            } @else {
+              <span class="photo-item__video">Vidéo</span>
+            }
+            @if (i === 0) {
+              <span class="photo-item__cover">Couverture</span>
+            }
+            <button type="button" class="photo-item__remove" [attr.aria-label]="'Retirer ' + photo.file.name" (click)="retirerPhoto(i)">
+              <svg lucideX aria-hidden="true"></svg>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+
+    <h2 class="form-section-title">Notes internes</h2>
+    <div class="form-grid">
       <mat-form-field appearance="outline" class="wide">
         <mat-label>Notes</mat-label>
         <textarea matInput rows="2" formControlName="notes"></textarea>
+        <mat-hint>Visibles de l’équipe seulement.</mat-hint>
       </mat-form-field>
     </div>
+
+    <p class="form-section-hint">
+      Après l’enregistrement, la fiche permet de rédiger le texte de l’annonce, de la publier sur le site, et de
+      créer le bail (avec le contrat et l’état des lieux) dès qu’un locataire est trouvé.
+    </p>
 
     <div class="form-actions">
       <button mat-stroked-button type="button" (click)="retour()">Annuler</button>
       <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
         <svg class="btn-icon" lucideSave aria-hidden="true"></svg>
-        {{ saving() ? 'Enregistrement…' : 'Enregistrer le bien' }}
+        {{ saving() ? (photos().length > 0 ? 'Envoi des photos…' : 'Enregistrement…') : 'Enregistrer le bien' }}
       </button>
     </div>
   </form>
