@@ -6,9 +6,12 @@ import { TikTokIcon } from '../ui/TikTokIcon';
 
 interface Action {
   key: string;
+  /** Nom complet, lu par les lecteurs d'écran. */
   label: string;
+  /** Légende courte, sous l'icône. */
+  short: string;
   icon: LucideIcon | (({ className }: { className?: string }) => React.JSX.Element);
-  /** Couleur du pastille : la palette de MTM, jamais une couleur étrangère. */
+  /** Couleur du rond : la palette de MTM, jamais une couleur étrangère. */
   tone: string;
   href?: string;
   external?: boolean;
@@ -17,19 +20,27 @@ interface Action {
 }
 
 /** Durée de la fermeture : assez longue pour se voir, assez courte pour ne jamais gêner. */
-const CLOSE_MS = 260;
-/** Écart entre deux actions, à l'ouverture, en millisecondes. */
-const STAGGER_MS = 60;
-/** Distance entre deux actions empilées, pour calculer d'où elles jaillissent. */
-const ITEM_SPACING_PX = 56;
-
+const CLOSE_MS = 300;
+/** Écart entre deux actions à l'ouverture : elles apparaissent une par une. */
+const STAGGER_MS = 140;
+/** Rayon de l'arc, en pixels : de quoi laisser place aux légendes entre deux ronds de 48 px. */
+const RADIUS_PX = 140;
 /**
- * Décalage horizontal de chaque action par rapport au bouton : les actions
- * dessinent un arc, plus écarté au milieu qu'aux extrémités, quel que soit
- * leur nombre.
+ * Le bouton est dans le coin bas droit : l'arc part de la verticale (au-dessus
+ * du bouton), passe à sa gauche et descend un peu au-delà de l'horizontale
+ * (le dessous du bouton reste libre jusqu'à la barre d'onglets). Plus d'un
+ * quart de cercle, pour laisser de l'air aux actions et à leurs légendes.
  */
-function arcOffset(index: number, count: number): number {
-  return count < 3 ? 0 : Math.round(Math.sin((index / (count - 1)) * Math.PI) * 22);
+const ANGLE_START = 90;
+const ANGLE_END = 210;
+/** Marge du dessin de l'arc autour du bouton, en pixels. */
+const TRACK_PAD = 6;
+
+/** Position d'une action sur l'arc, par rapport au centre du bouton (x vers la droite, y vers le bas). */
+function positionOnArc(index: number, count: number): { x: number; y: number } {
+  const angle = count < 2 ? (ANGLE_START + ANGLE_END) / 2 : ANGLE_START + ((ANGLE_END - ANGLE_START) * index) / (count - 1);
+  const rad = (angle * Math.PI) / 180;
+  return { x: Math.round(RADIUS_PX * Math.cos(rad)), y: Math.round(-RADIUS_PX * Math.sin(rad)) };
 }
 
 /** Sans animation (préférence du système, ou environnement de test), tout est immédiat. */
@@ -42,12 +53,12 @@ type Phase = 'closed' | 'open' | 'closing';
 /**
  * Bouton d'actions rapides de l'application mobile. Au repos, un bouton
  * discret qui laisse deviner sa présence (un halo, deux fois seulement). Au
- * toucher : une onde part du bouton, qui se transforme en croix et vire à
- * l'accent de la marque, pendant que les actions — appeler, WhatsApp,
- * Facebook, TikTok, la carte — jaillissent sur une trajectoire courbe avec un
- * léger dépassement, icônes d'abord, libellés ensuite. La fermeture rejoue le
- * mouvement à l'envers, plus vite. Les coordonnées sont celles que MTM
- * administre au back-office.
+ * toucher : une onde part du bouton, qui se transforme en croix aux couleurs
+ * de la marque, un arc se dessine autour de lui, et les actions — appeler,
+ * WhatsApp, Facebook, TikTok, la carte — jaillissent du bouton l'une après
+ * l'autre pour se ranger sur l'arc, avec un léger dépassement, leur légende
+ * apparaissant ensuite. La fermeture rejoue le mouvement à l'envers, plus
+ * vite. Les coordonnées sont celles que MTM administre au back-office.
  */
 export function QuickActionsFab() {
   const contact = useSiteContact();
@@ -105,21 +116,23 @@ export function QuickActionsFab() {
   }, [toast]);
 
   const actions: Action[] = [
-    { key: 'call', label: 'Appeler', icon: Phone, tone: 'bg-mtm-success', href: toTelHref(contact.telephone) },
+    { key: 'call', label: 'Appeler', short: 'Appeler', icon: Phone, tone: 'bg-mtm-success', href: toTelHref(contact.telephone) },
     {
       key: 'whatsapp',
       label: 'WhatsApp',
+      short: 'WhatsApp',
       icon: MessageCircle,
       tone: 'bg-mtm-success',
       href: `https://wa.me/${contact.whatsapp}`,
       external: true,
       toast: 'Ouverture de WhatsApp…',
     },
-    { key: 'facebook', label: 'Facebook', icon: Facebook, tone: 'bg-mtm-primary-medium', href: contact.facebook, external: true },
-    { key: 'tiktok', label: 'TikTok', icon: TikTokIcon, tone: 'bg-mtm-primary-dark', href: contact.tiktok, external: true },
+    { key: 'facebook', label: 'Facebook', short: 'Facebook', icon: Facebook, tone: 'bg-mtm-primary-medium', href: contact.facebook, external: true },
+    { key: 'tiktok', label: 'TikTok', short: 'TikTok', icon: TikTokIcon, tone: 'bg-mtm-primary-dark', href: contact.tiktok, external: true },
     {
       key: 'map',
       label: 'Voir sur la carte',
+      short: 'Carte',
       icon: MapPin,
       tone: 'bg-mtm-accent',
       href: toMapsHref(contact),
@@ -127,8 +140,10 @@ export function QuickActionsFab() {
     },
   ];
 
-  const pillClass =
-    'flex items-center rounded-full bg-mtm-surface py-1.5 pl-1.5 text-[13px] font-semibold text-mtm-text shadow-[0_8px_24px_rgba(31,41,55,0.28)] active:scale-95';
+  const piste = RADIUS_PX + TRACK_PAD;
+  // Longueur de l'arc, pour qu'il se dessine progressivement.
+  const longueurArc = Math.ceil(RADIUS_PX * (((ANGLE_END - ANGLE_START) * Math.PI) / 180));
+  const finArc = positionOnArc(1, 2);
 
   return (
     <>
@@ -149,62 +164,83 @@ export function QuickActionsFab() {
         </>
       )}
 
-      <div className="pointer-events-none fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom)+0.9rem)] right-4 z-[46] flex flex-col items-end lg:hidden">
-        {visible && (
-          <ul className="pointer-events-auto mb-3 flex flex-col-reverse items-end gap-2.5" aria-label="Actions rapides">
-            {[...actions].reverse().map((action, ordre) => {
-              const index = actions.length - 1 - ordre;
-              const Icon = action.icon;
-              const delaiOuverture = ordre * STAGGER_MS;
-              const delaiFermeture = (actions.length - 1 - ordre) * 30;
-              const style = {
-                marginRight: `${arcOffset(index, actions.length)}px`,
-                // D'où l'action jaillit : le bouton, plus bas et plus à droite.
-                '--fab-x0': '34px',
-                '--fab-y0': `${(ordre + 1) * ITEM_SPACING_PX}px`,
-                '--fab-d': `${open ? delaiOuverture : delaiFermeture}ms`,
-              } as React.CSSProperties;
-              // Deux couches, deux courbes d'accélération : le déplacement
-              // horizontal et vertical ne vont pas à la même vitesse, la
-              // trajectoire s'incurve — et l'action dépasse un peu avant de se caler.
-              const couche = open
-                ? 'motion-safe:animate-fab-x [animation-delay:var(--fab-d)]'
-                : 'motion-safe:animate-fab-x-out [animation-delay:var(--fab-d)]';
-              const coucheY = open
-                ? 'motion-safe:animate-fab-y [animation-delay:var(--fab-d)]'
-                : 'motion-safe:animate-fab-y-out [animation-delay:var(--fab-d)]';
-              return (
-                <li key={action.key} className={couche} style={style}>
-                  <div className={coucheY}>
-                    <a
-                      href={action.href}
-                      {...(action.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                      onClick={() => {
-                        if (action.toast) setToast(action.toast);
-                        close();
-                      }}
-                      className={pillClass}
-                    >
-                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white ${action.tone}`}>
-                        <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
-                      </span>
-                      {/* Le libellé se déploie une fois l'icône en place. */}
-                      <span
-                        className={`block max-w-[12rem] overflow-hidden whitespace-nowrap pl-2.5 pr-4 ${
-                          open ? 'motion-safe:animate-fab-label [animation-delay:calc(var(--fab-d)+190ms)]' : ''
-                        }`}
-                      >
-                        {action.label}
-                      </span>
-                    </a>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+      <div className="pointer-events-none fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom)+0.9rem)] right-4 z-[46] lg:hidden">
+        <div className="relative h-14 w-14">
+          {visible && (
+            <>
+              {/* L'arc qui se dessine autour du bouton, sur lequel les actions viennent se ranger. */}
+              <svg
+                aria-hidden="true"
+                width={piste}
+                height={piste}
+                viewBox={`0 0 ${piste} ${piste}`}
+                className="absolute bottom-1/2 right-1/2 max-w-none overflow-visible"
+              >
+                <path
+                  d={`M ${piste} ${piste - RADIUS_PX} A ${RADIUS_PX} ${RADIUS_PX} 0 0 0 ${piste + finArc.x} ${piste + finArc.y}`}
+                  fill="none"
+                  stroke="rgba(255,255,255,0.55)"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeDasharray={longueurArc}
+                  strokeDashoffset={open ? 0 : longueurArc}
+                  className={open ? 'motion-safe:animate-fab-draw' : 'opacity-0 transition-opacity duration-200'}
+                  style={{ ['--fab-arc' as string]: longueurArc }}
+                />
+              </svg>
 
-        <div className="pointer-events-none relative h-14 w-14">
+              <ul className="pointer-events-none absolute left-1/2 top-1/2 h-0 w-0" aria-label="Actions rapides">
+                {actions.map((action, index) => {
+                  const Icon = action.icon;
+                  const { x, y } = positionOnArc(index, actions.length);
+                  const delaiOuverture = index * STAGGER_MS;
+                  const delaiFermeture = (actions.length - 1 - index) * 35;
+                  const style = {
+                    '--bx': `${x}px`,
+                    '--by': `${y}px`,
+                    animationDelay: `${open ? delaiOuverture : delaiFermeture}ms`,
+                    // Sans animation (préférence du système), l'action est déjà à sa place.
+                    transform: `translate(${x}px, ${y}px)`,
+                  } as React.CSSProperties;
+                  return (
+                    <li
+                      key={action.key}
+                      className={`pointer-events-auto absolute -left-6 -top-6 h-12 w-12 ${
+                        open ? 'motion-safe:animate-fab-burst' : 'motion-safe:animate-fab-burst-out'
+                      }`}
+                      style={style}
+                    >
+                      <a
+                        href={action.href}
+                        aria-label={action.label}
+                        {...(action.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                        onClick={() => {
+                          if (action.toast) setToast(action.toast);
+                          close();
+                        }}
+                        className={`flex h-12 w-12 items-center justify-center rounded-full text-white shadow-[0_8px_22px_rgba(0,0,0,0.35)] ring-2 ring-white/70 transition-transform active:scale-90 ${action.tone}`}
+                      >
+                        <Icon className="h-[22px] w-[22px]" aria-hidden="true" />
+                      </a>
+                      {/* La légende apparaît une fois l'action en place, côté extérieur de l'arc : au-dessus pour l'action du haut, à gauche pour les autres. */}
+                      <span
+                        aria-hidden="true"
+                        className={`pointer-events-none absolute whitespace-nowrap text-[11px] font-bold text-white [text-shadow:0_1px_6px_rgba(0,0,0,0.65)] ${
+                          index === 0 ? 'bottom-full left-1/2 mb-1.5 -translate-x-1/2' : 'right-full top-1/2 mr-2 -translate-y-1/2'
+                        } ${
+                          open ? 'motion-safe:animate-fab-caption' : 'opacity-0'
+                        }`}
+                        style={open ? { animationDelay: `${delaiOuverture + 300}ms` } : undefined}
+                      >
+                        {action.short}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          )}
+
           {/* Au repos : un halo qui attire l'œil, deux fois seulement, puis plus rien. */}
           {!visible && ouvertures === 0 && (
             <span
@@ -223,7 +259,8 @@ export function QuickActionsFab() {
               <span
                 key={`onde-b-${ouvertures}`}
                 aria-hidden="true"
-                className="absolute inset-0 rounded-full border-2 border-white/60 opacity-0 motion-safe:animate-fab-ring [animation-delay:140ms]"
+                className="absolute inset-0 rounded-full border-2 border-white/60 opacity-0 motion-safe:animate-fab-ring"
+                style={{ animationDelay: '160ms' }}
               />
             </>
           )}

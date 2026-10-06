@@ -68,23 +68,22 @@ export default {
           from: { opacity: '0', transform: 'translate(var(--pop-x, 0px), 28px) scale(0.7)' },
           to: { opacity: '1', transform: 'translate(var(--pop-x, 0px), 0) scale(1)' },
         },
-        // Bouton d'actions rapides : trajectoire courbe (deux courbes d'accélération
-        // pour l'axe horizontal et l'axe vertical), dépassement, puis libellé qui se déploie.
-        'fab-x': { from: { transform: 'translateX(var(--fab-x0, 30px))' }, to: { transform: 'none' } },
-        'fab-y': {
-          '0%': { opacity: '0', transform: 'translateY(var(--fab-y0, 56px)) scale(0.35) rotate(-70deg)' },
-          '45%': { opacity: '1' },
-          '100%': { opacity: '1', transform: 'none' },
+        // Bouton d'actions rapides : chaque action jaillit du bouton, décrit une
+        // courbe, dépasse un peu sa place sur l'arc puis s'y cale ; l'arc se dessine,
+        // les légendes apparaissent ensuite.
+        'fab-burst': {
+          '0%': { opacity: '0', transform: 'translate(0px, 0px) scale(0.2) rotate(-140deg)' },
+          '35%': { opacity: '1', transform: 'translate(calc(var(--bx) * 0.7), calc(var(--by) * 0.2)) scale(0.85) rotate(-60deg)' },
+          '72%': { transform: 'translate(calc(var(--bx) * 1.08), calc(var(--by) * 1.08)) scale(1.1) rotate(8deg)' },
+          '100%': { opacity: '1', transform: 'translate(var(--bx), var(--by)) scale(1) rotate(0deg)' },
         },
-        'fab-x-out': { from: { transform: 'none' }, to: { transform: 'translateX(var(--fab-x0, 30px))' } },
-        'fab-y-out': {
-          from: { opacity: '1', transform: 'none' },
-          to: { opacity: '0', transform: 'translateY(var(--fab-y0, 56px)) scale(0.4) rotate(40deg)' },
+        'fab-burst-out': {
+          '0%': { opacity: '1', transform: 'translate(var(--bx), var(--by)) scale(1) rotate(0deg)' },
+          '100%': { opacity: '0', transform: 'translate(0px, 0px) scale(0.25) rotate(120deg)' },
         },
-        'fab-label': {
-          from: { maxWidth: '0px', opacity: '0', paddingRight: '0px' },
-          to: { maxWidth: '12rem', opacity: '1', paddingRight: '1rem' },
-        },
+        // Opacité seule : la légende est centrée par un transform que l'animation ne doit pas écraser.
+        'fab-caption': { from: { opacity: '0' }, to: { opacity: '1' } },
+        'fab-draw': { from: { strokeDashoffset: 'var(--fab-arc)' }, to: { strokeDashoffset: '0' } },
         'fab-ring': {
           '0%': { opacity: '0.7', transform: 'scale(1)' },
           '100%': { opacity: '0', transform: 'scale(2.3)' },
@@ -106,12 +105,10 @@ export default {
         'slide-down': 'slide-down 160ms ease-out both',
         'sheet-right': 'sheet-right 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both',
         'pop-in': 'pop-in 260ms cubic-bezier(0.2, 0.9, 0.3, 1.15) both',
-        // Les deux axes n'ont pas la même courbe : la trajectoire s'incurve.
-        'fab-x': 'fab-x 420ms cubic-bezier(0.16, 1, 0.3, 1) both',
-        'fab-y': 'fab-y 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both',
-        'fab-x-out': 'fab-x-out 220ms ease-in both',
-        'fab-y-out': 'fab-y-out 240ms cubic-bezier(0.5, 0, 0.75, 0) both',
-        'fab-label': 'fab-label 280ms ease-out both',
+        'fab-burst': 'fab-burst 640ms cubic-bezier(0.22, 1, 0.36, 1) both',
+        'fab-burst-out': 'fab-burst-out 260ms cubic-bezier(0.5, 0, 0.75, 0) both',
+        'fab-caption': 'fab-caption 260ms ease-out both',
+        'fab-draw': 'fab-draw 620ms ease-out both',
         'fab-ring': 'fab-ring 700ms ease-out both',
         // Halo au repos : après trois secondes, deux pulsations seulement.
         'fab-halo': 'fab-halo 1500ms ease-out 3s 2 forwards',
