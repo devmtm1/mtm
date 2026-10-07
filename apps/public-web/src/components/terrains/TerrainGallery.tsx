@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react';
 import type { ReactNode, TouchEvent } from 'react';
-import { Play } from 'lucide-react';
+import { Expand, Play } from 'lucide-react';
 import type { TerrainMedia } from '../../types/terrain';
 import { MediaImage } from '../ui/MediaImage';
+import { PhotoLightbox } from '../ui/PhotoLightbox';
 
 interface TerrainGalleryProps {
   medias: TerrainMedia[];
@@ -21,12 +22,15 @@ export function TerrainGallery({ medias, alt, className = '', overlay }: Terrain
   const photosAndVideos = medias.filter((media) => media.type !== 'plan');
   const [activeId, setActiveId] = useState(photosAndVideos[0]?.id);
   const touchStartX = useRef<number | null>(null);
+  const [fullscreen, setFullscreen] = useState(false);
   const count = photosAndVideos.length;
   const activeIndex = Math.max(
     photosAndVideos.findIndex((media) => media.id === activeId),
     0,
   );
   const active = photosAndVideos[activeIndex];
+  const photos = photosAndVideos.filter((media) => media.type !== 'video');
+  const photoIndex = photos.findIndex((media) => media.id === active?.id);
 
   if (!active) {
     return (
@@ -62,14 +66,27 @@ export function TerrainGallery({ medias, alt, className = '', overlay }: Terrain
         {active.type === 'video' ? (
           <video src={active.secureUrl} controls className="h-full w-full object-cover" />
         ) : (
-          <MediaImage
-            src={active.secureUrl}
-            alt={active.title ?? alt}
-            loading="eager"
-            sizes="(min-width: 1024px) 60vw, 100vw"
-            fallbackLabel="Photo indisponible"
-            className="h-full w-full object-cover"
-          />
+          <button
+            type="button"
+            onClick={() => setFullscreen(true)}
+            aria-label="Voir la photo en plein écran"
+            className="block h-full w-full cursor-zoom-in"
+          >
+            <MediaImage
+              src={active.secureUrl}
+              alt={active.title ?? alt}
+              loading="eager"
+              sizes="(min-width: 1024px) 60vw, 100vw"
+              fallbackLabel="Photo indisponible"
+              className="h-full w-full object-cover"
+            />
+          </button>
+        )}
+        {active.type !== 'video' && (
+          <span className="pointer-events-none absolute bottom-9 left-3 flex items-center gap-1.5 rounded-full bg-black/55 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur lg:bottom-3" aria-hidden="true">
+            <Expand className="h-3.5 w-3.5" />
+            Agrandir
+          </span>
         )}
 
         {overlay && <div className="absolute right-3 top-3 z-10 flex gap-2">{overlay}</div>}
@@ -123,6 +140,15 @@ export function TerrainGallery({ medias, alt, className = '', overlay }: Terrain
             </button>
           ))}
         </div>
+      )}
+      {fullscreen && photoIndex >= 0 && (
+        <PhotoLightbox
+          label={`Photos — ${alt}`}
+          photos={photos.map((media) => ({ src: media.secureUrl, alt: media.title ?? alt }))}
+          index={photoIndex}
+          onIndexChange={(next) => setActiveId(photos[next].id)}
+          onClose={() => setFullscreen(false)}
+        />
       )}
     </div>
   );

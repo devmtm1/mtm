@@ -1,9 +1,14 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, CalendarCheck, Globe2, MapPin, MessageSquare, ShieldCheck, UserCheck } from 'lucide-react';
+import { ArrowLeft, CalendarCheck, Download, FileText, Globe2, MapPin, MessageSquare, Navigation, ShieldCheck, UserCheck } from 'lucide-react';
 import { ROUTES } from '../routes';
 import { useTerrain } from '../hooks/useTerrain';
 import { TerrainGallery } from '../components/terrains/TerrainGallery';
+import { TerrainCaracteristiques, TerrainEssentiel } from '../components/terrains/TerrainFacts';
+import { SimilarTerrains } from '../components/terrains/SimilarTerrains';
+import { ClientRow } from '../components/client/shell/ClientUi';
+import { ExpandableText } from '../components/ui/ExpandableText';
+import { ShareButton } from '../components/mobile/ShareButton';
 import { TerrainMap } from '../components/terrains/TerrainMap';
 import { PointsInteretList } from '../components/terrains/PointsInteretList';
 import { ContactModal } from '../components/contact/ContactModal';
@@ -15,7 +20,7 @@ import { Button } from '../components/ui/Button';
 import { DetailActionBar } from '../components/mobile/DetailActionBar';
 import { FavoriteButton } from '../components/mobile/FavoriteButton';
 import { usePageMetadata } from '../hooks/usePageMetadata';
-import { formatMoney, formatSuperficie } from '../utils/format';
+import { formatMoney } from '../utils/format';
 import { estBienBati, etatBienLabel, typeBienLabel, vocationLabel } from '../utils/bienLabels';
 
 type ActiveModal = 'visite' | 'infos' | 'reservation' | null;
@@ -94,106 +99,30 @@ export function TerrainDetailPage() {
             medias={terrain.medias}
             alt={terrain.nom}
             className="order-1 -mx-4 sm:-mx-6 lg:mx-0 lg:order-2"
-            overlay={<FavoriteButton kind="terrain" id={terrain.id} label={terrain.nom} className="h-10 w-10" />}
+            overlay={
+              <>
+                <ShareButton title={terrain.nom} />
+                <FavoriteButton kind="terrain" id={terrain.id} label={terrain.nom} className="h-10 w-10" />
+              </>
+            }
           />
 
           <div className="order-3 flex flex-col gap-6 lg:gap-8">
+          <TerrainEssentiel terrain={terrain} />
+
           {terrain.description && (
             <section>
               <h2 className="font-display text-lg font-bold text-mtm-text">Description</h2>
-              <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-mtm-muted">
-                {terrain.description}
-              </p>
+              <ExpandableText text={terrain.description} className="mt-3 text-sm leading-relaxed text-mtm-muted" />
             </section>
           )}
 
-          <section>
-            <h2 className="font-display text-lg font-bold text-mtm-text">Caractéristiques</h2>
-            <dl className="mt-3 grid grid-cols-2 gap-4 rounded-lg border border-mtm-border bg-mtm-surface p-4 sm:grid-cols-3">
-              {/* Sur un bien bâti, l'habitable et les pièces passent devant :
-                  c'est ce qu'un acheteur de villa regarde en premier. La
-                  parcelle reste affichée, nommée pour ce qu'elle est. */}
-              {bati && (
-                <>
-                  <div>
-                    <dt className="text-xs text-mtm-muted">Surface habitable</dt>
-                    <dd className="text-sm font-semibold text-mtm-text">
-                      {terrain.surfaceHabitable === null
-                        ? '—'
-                        : formatSuperficie(terrain.surfaceHabitable, terrain.uniteSuperficie)}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs text-mtm-muted">Pièces</dt>
-                    <dd className="text-sm font-semibold text-mtm-text">
-                      {terrain.nombrePieces ?? '—'}
-                      {terrain.nombreChambres !== null &&
-                        ` · ${terrain.nombreChambres} chambre${terrain.nombreChambres > 1 ? 's' : ''}`}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs text-mtm-muted">Salles d’eau</dt>
-                    <dd className="text-sm font-semibold text-mtm-text">
-                      {terrain.nombreSallesEau ?? '—'}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs text-mtm-muted">Niveaux</dt>
-                    <dd className="text-sm font-semibold text-mtm-text">
-                      {terrain.niveaux ?? '—'}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs text-mtm-muted">Année de construction</dt>
-                    <dd className="text-sm font-semibold text-mtm-text">
-                      {terrain.anneeConstruction ?? '—'}
-                    </dd>
-                  </div>
-                </>
-              )}
-              <div>
-                <dt className="text-xs text-mtm-muted">
-                  {bati ? 'Superficie du terrain' : 'Superficie'}
-                </dt>
-                <dd className="text-sm font-semibold text-mtm-text">
-                  {formatSuperficie(terrain.superficie, terrain.uniteSuperficie)}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs text-mtm-muted">Accès routier</dt>
-                <dd className="text-sm font-semibold text-mtm-text">{terrain.accesRoutier ?? '—'}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-mtm-muted">Eau</dt>
-                <dd className="text-sm font-semibold text-mtm-text">
-                  {terrain.eauDisponible === null ? '—' : terrain.eauDisponible ? 'Disponible' : 'Non disponible'}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs text-mtm-muted">Électricité</dt>
-                <dd className="text-sm font-semibold text-mtm-text">
-                  {terrain.electriciteDisponible === null
-                    ? '—'
-                    : terrain.electriciteDisponible
-                      ? 'Disponible'
-                      : 'Non disponible'}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs text-mtm-muted">Voisinage</dt>
-                <dd className="text-sm font-semibold text-mtm-text">{terrain.voisinage ?? '—'}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-mtm-muted">Proximité des axes</dt>
-                <dd className="text-sm font-semibold text-mtm-text">{terrain.proximiteAxes ?? '—'}</dd>
-              </div>
-            </dl>
-          </section>
+          <TerrainCaracteristiques terrain={terrain} />
 
           {terrain.latitude !== null && terrain.longitude !== null && (
             <section>
               <h2 className="font-display text-lg font-bold text-mtm-text">Localisation</h2>
-              <div className="mt-3">
+              <div className="mt-3 overflow-hidden rounded-2xl border border-mtm-border/70 shadow-card lg:rounded-lg">
                 <TerrainMap
                   latitude={terrain.latitude}
                   longitude={terrain.longitude}
@@ -201,6 +130,15 @@ export function TerrainDetailPage() {
                   pointsInteret={terrain.pointsInteret}
                 />
               </div>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${terrain.latitude},${terrain.longitude}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex items-center gap-2 rounded-xl border border-mtm-border bg-mtm-surface px-4 py-2.5 text-sm font-semibold text-mtm-primary transition-transform active:scale-[0.98] lg:rounded-md"
+              >
+                <Navigation className="h-4 w-4" aria-hidden="true" />
+                Itinéraire
+              </a>
               {terrain.pointsInteret && terrain.pointsInteret.length > 0 && (
                 <div className="mt-3">
                   <PointsInteretList points={terrain.pointsInteret} />
@@ -212,17 +150,15 @@ export function TerrainDetailPage() {
           {terrain.documents.length > 0 && (
             <section>
               <h2 className="font-display text-lg font-bold text-mtm-text">Documents</h2>
-              <ul className="mt-3 flex flex-col gap-2">
+              <ul className="mt-2">
                 {terrain.documents.map((document) => (
                   <li key={document.id}>
-                    <a
+                    <ClientRow
                       href={document.secureUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm font-semibold text-mtm-primary hover:underline"
-                    >
-                      {document.title ?? document.type}
-                    </a>
+                      icon={FileText}
+                      title={document.title ?? document.type}
+                      trailing={<Download className="h-4 w-4 shrink-0 text-mtm-primary" aria-label="Ouvrir" />}
+                    />
                   </li>
                 ))}
               </ul>
@@ -270,6 +206,8 @@ export function TerrainDetailPage() {
           </ul>
         </aside>
       </div>
+
+      <SimilarTerrains terrain={terrain} />
 
       {/* Mobile : le prix et l'action principale restent sous le pouce, sans
           avoir à défiler jusqu'au panneau latéral. */}
