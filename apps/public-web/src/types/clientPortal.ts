@@ -49,6 +49,9 @@ export interface ClientMessage {
   createdAt: string;
   /** Le message a été pris en charge par l'équipe MTM. */
   traite: boolean;
+  /** Réponse de l'équipe, une fois donnée. */
+  reponse: string | null;
+  reponduLe: string | null;
   terrain: ClientDemandeTerrain | null;
 }
 

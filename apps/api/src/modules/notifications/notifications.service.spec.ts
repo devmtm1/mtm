@@ -10,6 +10,7 @@ function creer() {
       create: jest.fn(),
       updateMany: jest.fn(),
     },
+    user: { findMany: jest.fn() },
   };
   const mail = { send: jest.fn().mockResolvedValue(undefined) };
   const config = {
@@ -85,5 +86,87 @@ describe('NotificationsService', () => {
         where: { id: 'n-autrui', userId: 'u1', readAt: null },
       }),
     );
+  });
+
+  describe('notifications d’espace client', () => {
+    it('retrouve les comptes actifs rattachés à la cible, sans en chercher quand elle est vide', async () => {
+      const { service, prisma } = creer();
+      prisma.user.findMany.mockResolvedValue([{ id: 'u1' }, { id: 'u2' }]);
+
+      const ids = await service.userIdsClient({
+        prospectId: 'p1',
+        email: 'Awa@Exemple.sn',
+      });
+
+      expect(ids).toEqual(['u1', 'u2']);
+      expect(prisma.user.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            isActive: true,
+            OR: [
+              { clientProspectId: 'p1' },
+              {
+                clientProspect: {
+                  email: { equals: 'Awa@Exemple.sn', mode: 'insensitive' },
+                },
+              },
+            ],
+          },
+        }),
+      );
+
+      prisma.user.findMany.mockClear();
+      expect(await service.userIdsClient({})).toEqual([]);
+      expect(prisma.user.findMany).not.toHaveBeenCalled();
+    });
+
+    it('crée la notification du client, sans e-mail, avec une route de son espace', async () => {
+      const { service, prisma, mail } = creer();
+      prisma.user.findMany.mockResolvedValue([{ id: 'u1' }]);
+      prisma.notification.create.mockResolvedValue({
+        id: 'n1',
+        user: { email: 'c@x.sn' },
+      });
+
+      const creees = await service.notifierClient(
+        { locataireId: 'l1' },
+        {
+          type: 'reglement_valide',
+          titre: 'Règlement validé',
+          lien: '/espace-client/ma-location',
+        },
+      );
+
+      expect(creees).toBe(1);
+      expect(prisma.notification.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            userId: 'u1',
+            lien: '/espace-client/ma-location',
+          }),
+        }),
+      );
+      expect(mail.send).not.toHaveBeenCalled();
+    });
+
+    it('un client sans compte n’est pas une erreur : rien n’est créé', async () => {
+      const { service, prisma } = creer();
+      prisma.user.findMany.mockResolvedValue([]);
+      expect(
+        await service.notifierClient(
+          { prospectId: 'p1' },
+          { type: 't', titre: 'T' },
+        ),
+      ).toBe(0);
+      expect(prisma.notification.create).not.toHaveBeenCalled();
+    });
+
+    it('ne lève jamais, même si la recherche du compte échoue', async () => {
+      const { service, prisma } = creer();
+      prisma.user.findMany.mockRejectedValue(new Error('base indisponible'));
+      await expect(
+        service.notifierClient({ prospectId: 'p1' }, { type: 't', titre: 'T' }),
+      ).resolves.toBe(0);
+    });
   });
 });

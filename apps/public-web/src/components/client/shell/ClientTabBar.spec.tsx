@@ -44,6 +44,17 @@ describe('ClientTabBar', () => {
     expect(plus.querySelector('span[aria-hidden="true"]')).toHaveClass('scale-x-100');
   });
 
+  it('signale par une pastille un espace où un paiement est en retard', () => {
+    renderBar([tab('/a', 'Accueil'), { ...tab('/l', 'Ma location'), alerte: true }, tab('/b', 'Dossiers')]);
+    expect(screen.getByRole('link', { name: /Ma location/ })).toHaveTextContent('Paiement en retard');
+    expect(screen.getByRole('link', { name: /Accueil/ })).not.toHaveTextContent('Paiement en retard');
+  });
+
+  it('la pastille de « Plus » prévient quand l’alerte est rangée dedans', () => {
+    renderBar([tab('/a', 'Accueil'), tab('/b', 'Dossiers'), tab('/c', 'Vérif'), tab('/d', 'Demandes'), { ...tab('/e', 'Ma location'), alerte: true }, tab('/f', 'Compte')]);
+    expect(screen.getByRole('button', { name: /Plus/ })).toHaveTextContent('Paiement en retard');
+  });
+
   it('permet de se déconnecter depuis « Plus »', () => {
     const onLogout = renderBar(SIX);
     fireEvent.click(screen.getByRole('button', { name: 'Plus' }));

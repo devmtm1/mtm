@@ -10,9 +10,12 @@ describe('PaiementsLoyerService', () => {
 
   let prismaMock: ReturnType<typeof createLocatifTestContext>['prismaMock'];
   let paiements: ReturnType<typeof createLocatifTestContext>['paiements'];
+  let notificationsMock: ReturnType<
+    typeof createLocatifTestContext
+  >['notificationsMock'];
 
   beforeEach(() => {
-    ({ prismaMock, paiements } = createLocatifTestContext());
+    ({ prismaMock, paiements, notificationsMock } = createLocatifTestContext());
     prismaMock.systemSetting.findUnique.mockResolvedValue(null);
     // Accès : le bail existe et appartient au périmètre du responsable.
     prismaMock.bailLocatif.findUnique.mockResolvedValue({
@@ -114,6 +117,49 @@ describe('PaiementsLoyerService', () => {
       expect(prismaMock.paiementLoyer.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({ statut: 'valide' }),
+        }),
+      );
+    });
+
+    it('prévient le locataire dans son espace quand son règlement est validé', async () => {
+      prismaMock.paiementLoyer.findFirst.mockResolvedValue({
+        id: 'p1',
+        type: 'normal',
+        montant: 100000,
+        echeanceId: 'ech-1',
+        statut: 'en_attente',
+      });
+      prismaMock.echeanceLoyer.findFirst.mockResolvedValue({
+        id: 'ech-1',
+        bailLocatifId: 'bail-1',
+        montantPrevu: 100000,
+        montantPaye: 0,
+        dateEcheance: new Date('2099-01-05'),
+      });
+      prismaMock.paiementLoyer.update.mockResolvedValue({
+        id: 'p1',
+        montant: 100000,
+      });
+      prismaMock.bailLocatif.findUnique
+        .mockResolvedValueOnce({
+          id: 'bail-1',
+          bienLocatifId: 'bien-1',
+          statut: 'actif',
+        })
+        .mockResolvedValueOnce({
+          locataireId: 'loc-1',
+          referenceInterne: 'BAIL-2026-0002',
+        });
+
+      await paiements.valider('bail-1', 'p1', responsable);
+
+      expect(notificationsMock.notifierClient).toHaveBeenCalledWith(
+        { locataireId: 'loc-1' },
+        expect.objectContaining({
+          type: 'reglement_valide',
+          lien: '/espace-client/ma-location',
+          dedupeKey: 'reglement-valide:p1',
+          message: expect.stringContaining('BAIL-2026-0002'),
         }),
       );
     });

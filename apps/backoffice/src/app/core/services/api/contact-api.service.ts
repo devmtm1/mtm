@@ -11,6 +11,9 @@ export interface ContactMessage {
   sujet?: string | null;
   message: string;
   lu: boolean;
+  /** Réponse de l'équipe, une fois donnée : elle part par e-mail et s'affiche dans l'espace client. */
+  reponse?: string | null;
+  reponduLe?: string | null;
   terrainId?: string | null;
   createdAt: string;
   terrain?: {
@@ -46,6 +49,11 @@ export class ContactApiService {
 
   markRead(id: string): Observable<ContactMessage> {
     return this.http.patch<ContactMessage>(`${this.baseUrl}/${id}/read`, {});
+  }
+
+  /** Répond au message : e-mail au demandeur, affichage dans son espace client. */
+  repondre(id: string, reponse: string): Observable<{ contact: ContactMessage; emailEnvoye: boolean }> {
+    return this.http.post<{ contact: ContactMessage; emailEnvoye: boolean }>(`${this.baseUrl}/${id}/repondre`, { reponse });
   }
 
   convertToProspect(id: string, commercialResponsableId?: string): Observable<unknown> {

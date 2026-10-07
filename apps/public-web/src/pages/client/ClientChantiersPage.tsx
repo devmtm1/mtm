@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Download, FileText, HardHat } from 'lucide-react';
+import { Download, HardHat } from 'lucide-react';
 import { useAuth } from '../../contexts/auth-context-store';
 import { useClientData } from '../../contexts/client-data-store';
 import { usePageMetadata } from '../../hooks/usePageMetadata';
@@ -10,6 +10,7 @@ import { Frise, type FriseItem } from '../../components/client/shell/Frise';
 import { Badge } from '../../components/ui/Badge';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { documentIcone } from '../../utils/documentIcon';
 import { formatDate, formatMoney } from '../../utils/format';
 import {
   chantierDocumentType,
@@ -25,7 +26,7 @@ function Avancement({ valeur }: { valeur: number }) {
   return (
     <div className="rounded-2xl bg-mtm-bg p-4">
       <div className="flex items-end justify-between">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-mtm-muted">Avancement du chantier</p>
+        <p className="text-xs font-bold uppercase tracking-wider text-mtm-muted">Avancement du chantier</p>
         <p className="font-display text-3xl font-bold leading-none text-mtm-primary">{pourcent} %</p>
       </div>
       <ProgressBar value={pourcent} label="Avancement du chantier" tone="primary" className="mt-3" />
@@ -55,7 +56,7 @@ function etapes(jalons: ClientChantierDetail['jalons']): FriseItem[] {
 function Fait({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">{label}</dt>
+      <dt className="text-xs font-semibold uppercase tracking-wider text-mtm-muted">{label}</dt>
       <dd className="mt-0.5 font-semibold text-mtm-text">{value}</dd>
     </div>
   );
@@ -285,7 +286,7 @@ export function ClientChantiersPage() {
                   <li key={piece.id}>
                     <ClientRow
                       href={piece.secureUrl}
-                      icon={FileText}
+                      icon={documentIcone(piece.type)}
                       title={piece.title || chantierDocumentType(piece.type)}
                       subtitle={`${chantierDocumentType(piece.type)}${piece.createdAt ? ` · ${formatDate(piece.createdAt)}` : ''}`}
                       trailing={<Download className="h-4 w-4 shrink-0 text-mtm-primary" aria-label="Ouvrir" />}

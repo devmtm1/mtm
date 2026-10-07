@@ -4,9 +4,10 @@ import { createVentesTestContext } from './ventes.test-support';
 describe('VentesPaiementsService', () => {
   let prismaMock: ReturnType<typeof createVentesTestContext>['prismaMock'];
   let paiements: ReturnType<typeof createVentesTestContext>['paiements'];
+  let notifierMock: ReturnType<typeof createVentesTestContext>['notifierMock'];
 
   beforeEach(() => {
-    ({ prismaMock, paiements } = createVentesTestContext());
+    ({ prismaMock, paiements, notifierMock } = createVentesTestContext());
   });
 
   it('refuse un nouveau paiement sur un dossier déjà soldé ou annulé', async () => {
@@ -62,6 +63,53 @@ describe('VentesPaiementsService', () => {
     );
     expect(prismaMock.terrain.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({ data: { statutCommercial: 'Réservé' } }),
+    );
+  });
+
+  it('prévient l’acheteur dans son espace quand son paiement est validé', async () => {
+    const user = {
+      id: 'u1',
+      roles: ['manager'],
+      permissions: ['ventes:valider', 'ventes:administrer'],
+    };
+    prismaMock.dossierVente.findFirst.mockResolvedValue({ id: 'd1' });
+    prismaMock.paiement.findFirst.mockResolvedValue({
+      id: 'p1',
+      montant: 5_000_000,
+      dossierVenteId: 'd1',
+    });
+    prismaMock.dossierVente.findUnique
+      .mockResolvedValueOnce({
+        prixVente: 15_000_000,
+        statut: 'en_cours',
+        terrainId: 't1',
+      })
+      .mockResolvedValueOnce({
+        prospectId: 'pros-1',
+        referenceInterne: 'VTE-2026-0004',
+      });
+    prismaMock.paiement.aggregate.mockResolvedValue({ _sum: { montant: 0 } });
+    prismaMock.paiement.update.mockResolvedValue({
+      id: 'p1',
+      statut: 'valide',
+      montant: 5_000_000,
+    });
+    prismaMock.echeancePaiement.findMany.mockResolvedValue([]);
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+    prismaMock.dossierVente.update.mockResolvedValue({});
+    prismaMock.terrain.updateMany.mockResolvedValue({ count: 1 });
+
+    await paiements.validatePaiement('d1', 'p1', user);
+
+    expect(notifierMock.notifierClient).toHaveBeenCalledWith(
+      { prospectId: 'pros-1' },
+      expect.objectContaining({
+        type: 'paiement_valide',
+        titre: 'Paiement validé',
+        lien: '/espace-client/dossiers',
+        dedupeKey: 'paiement-valide:p1',
+        message: expect.stringContaining('VTE-2026-0004'),
+      }),
     );
   });
 

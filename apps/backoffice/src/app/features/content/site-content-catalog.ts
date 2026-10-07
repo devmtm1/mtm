@@ -61,6 +61,20 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
     ],
   },
   {
+    id: 'espace-client',
+    title: 'Espace client',
+    where: 'Écrans « Ma location » et « Mes dossiers » de l’espace client',
+    slots: [
+      {
+        key: 'client.paiement',
+        label: 'Comment régler ? (modes de règlement)',
+        help: 'Ce que le client lit sous son solde à régler : numéros de mobile money, coordonnées bancaires, référence à indiquer. Une consigne par ligne. Laissé vide, un texte générique invite à contacter le conseiller.',
+        multiline: true,
+        format: 'lines',
+      },
+    ],
+  },
+  {
     id: 'gestion-locative',
     title: 'Gestion locative',
     where: 'Page « Gestion locative »',

@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InternalNotificationService } from '../../common/mail/internal-notification.service';
+import { MailService } from '../../common/mail/mail.service';
 import { nextProspectReference } from '../crm/prospect-reference';
 import { PrismaService } from '../../database/prisma.service';
 import { LocatifPublicService } from '../locatif/locatif-public.service';
@@ -26,6 +27,7 @@ export class ContactService {
     private readonly notifications: InternalNotificationService,
     private readonly locations: LocatifPublicService,
     private readonly notificationsInternes: NotificationsService,
+    private readonly mail: MailService,
   ) {}
 
   async create(dto: CreateContactDto): Promise<Contact> {
@@ -135,6 +137,74 @@ export class ContactService {
     }
 
     return contact;
+  }
+
+  /**
+   * Répond à un message. La réponse est enregistrée (elle s'affiche dans
+   * l'espace client du demandeur), envoyée par e-mail, et signalée dans la
+   * cloche du client s'il a un compte. Un e-mail qui ne part pas n'annule pas la
+   * réponse : l'équipe est prévenue et peut joindre le client autrement.
+   */
+  async repondre(
+    id: string,
+    reponse: string,
+    user: { id: string },
+  ): Promise<{ contact: Contact; emailEnvoye: boolean }> {
+    const existant = await this.prisma.contact.findUnique({ where: { id } });
+    if (!existant) throw new NotFoundException('Message introuvable');
+    const texte = reponse.trim();
+    if (texte.length < 2)
+      throw new BadRequestException('La réponse ne peut pas être vide');
+
+    const contact = await this.prisma.contact.update({
+      where: { id },
+      data: {
+        reponse: texte,
+        reponduLe: new Date(),
+        reponduParId: user.id,
+        // Répondre, c'est prendre en charge.
+        lu: true,
+      },
+    });
+
+    let emailEnvoye = false;
+    try {
+      emailEnvoye = await this.mail.send({
+        to: contact.email,
+        subject: `Réponse de MTM Immobilier${contact.sujet ? ` — ${contact.sujet}` : ''}`,
+        text: [
+          `Bonjour ${contact.nom},`,
+          '',
+          texte,
+          '',
+          '— L’équipe MTM Immobilier',
+          '',
+          'Votre message :',
+          contact.message,
+        ].join('\n'),
+      });
+    } catch (error) {
+      this.logger.warn(
+        `Réponse au contact ${id} enregistrée mais e-mail non envoyé : ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+    }
+
+    void this.notificationsInternes.notifierClient(
+      { email: contact.email },
+      {
+        type: 'reponse_demande',
+        titre: 'MTM a répondu à votre message',
+        message: texte.slice(0, 200),
+        lien: '/espace-client/demandes',
+        entityType: 'Contact',
+        entityId: contact.id,
+        dedupeKey: `reponse-contact:${contact.id}:${contact.reponduLe?.getTime() ?? Date.now()}`,
+      },
+    );
+
+    return { contact, emailEnvoye };
   }
 
   /**

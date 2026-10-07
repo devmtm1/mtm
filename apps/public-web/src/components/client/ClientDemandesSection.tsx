@@ -14,6 +14,9 @@ export interface DemandeItem {
   done: boolean;
   doneLabel: string;
   pendingLabel: string;
+  /** Réponse de l'équipe, pour un message auquel elle a répondu. */
+  reponse?: string | null;
+  reponduLe?: string | null;
 }
 
 /**
@@ -41,8 +44,10 @@ function buildDemandeItems(data: ClientDemandes | null): DemandeItem[] {
       message: demande.message,
       createdAt: demande.createdAt,
       done: demande.traite,
-      doneLabel: 'Prise en charge',
+      doneLabel: demande.reponse ? 'Répondu' : 'Prise en charge',
       pendingLabel: 'En attente',
+      reponse: demande.reponse,
+      reponduLe: demande.reponduLe,
     })),
   ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
@@ -90,6 +95,14 @@ export function ClientDemandesList({ data, loading, error, limit, emptyAction }:
             </div>
             {item.message && <p className="mt-0.5 line-clamp-2 text-sm text-mtm-muted">{item.message}</p>}
             <p className="mt-1 text-xs text-mtm-muted">Envoyée le {formatDate(item.createdAt)}</p>
+            {item.reponse && (
+              <div className="mt-2.5 rounded-xl bg-mtm-primary-subtle px-3 py-2.5">
+                <p className="text-xs font-bold uppercase tracking-wider text-mtm-primary">
+                  Réponse de MTM{item.reponduLe ? ` · ${formatDate(item.reponduLe)}` : ''}
+                </p>
+                <p className="mt-1 whitespace-pre-line text-sm text-mtm-text">{item.reponse}</p>
+              </div>
+            )}
           </div>
         </li>
       ))}

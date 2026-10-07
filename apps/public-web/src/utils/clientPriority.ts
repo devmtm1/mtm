@@ -16,6 +16,8 @@ export interface Priorite {
   objet: string;
   /** Écran où régler ou se renseigner. */
   cible: 'locataire' | 'dossiers';
+  /** Nombre d'autres paiements en retard : le client ne doit pas croire qu'il n'y en a qu'un. */
+  autresEnRetard: number;
 }
 
 const JOUR = 24 * 60 * 60 * 1000;
@@ -60,6 +62,7 @@ export function prochainePriorite(
       dateEcheance,
       enRetard: jours > 0,
       joursRetard: Math.max(0, jours),
+      autresEnRetard: 0,
     });
   };
 
@@ -84,6 +87,6 @@ export function prochainePriorite(
 
   const parDate = (a: Priorite, b: Priorite) => new Date(a.dateEcheance).getTime() - new Date(b.dateEcheance).getTime();
   const enRetard = candidats.filter((candidat) => candidat.enRetard).sort(parDate);
-  if (enRetard.length > 0) return enRetard[0];
+  if (enRetard.length > 0) return { ...enRetard[0], autresEnRetard: enRetard.length - 1 };
   return candidats.sort(parDate)[0] ?? null;
 }

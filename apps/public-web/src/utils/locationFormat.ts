@@ -1,9 +1,10 @@
+import { groupDigits } from './format';
 import type { Location, LocationFilters, LocationSortKey } from '../types/location';
 
 /** « 350 000 FCFA » : le loyer sans mention de période (elle est affichée à part). */
 export function formatLoyerMontant(value: number | null | undefined): string {
   if (value === null || value === undefined) return 'Loyer sur demande';
-  return `${Math.round(value).toLocaleString('fr-FR')} FCFA`;
+  return `${groupDigits(Math.round(value))} FCFA`;
 }
 
 /** Titre de l'annonce : celui saisi par MTM, sinon « Villa à Saly ». */

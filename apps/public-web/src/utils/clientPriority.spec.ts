@@ -39,6 +39,16 @@ describe('prochainePriorite', () => {
     expect(resultat).toMatchObject({ nature: 'loyer', enRetard: true, joursRetard: 5 });
   });
 
+  it('signale les autres paiements en retard', () => {
+    const resultat = prochainePriorite(
+      [dossier('en_cours', [{ numero: 1, dateEcheance: '2026-09-20', montantPrevu: 500000, montantPaye: 0, statut: 'en_retard' }])],
+      bail([echeanceLoyer('1', '2026-10-01', 250000), echeanceLoyer('2', '2026-09-05', 250000)]),
+      MAINTENANT,
+    );
+    expect(resultat).toMatchObject({ nature: 'loyer', autresEnRetard: 2 });
+    expect(prochainePriorite(null, bail([echeanceLoyer('1', '2026-10-20', 250000)]), MAINTENANT)).toMatchObject({ autresEnRetard: 0 });
+  });
+
   it('à retard égal, prend la plus proche dans le temps, loyer ou vente', () => {
     const resultat = prochainePriorite(
       [dossier('en_cours', [{ numero: 1, dateEcheance: '2026-10-12', montantPrevu: 500000, montantPaye: 0, statut: 'planifiee' }])],

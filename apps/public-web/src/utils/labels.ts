@@ -190,7 +190,7 @@ export const LOYER_ECHEANCE_STATUS: Record<string, StatusLabel> = {
   partielle: { label: 'Partielle', tone: 'info', help: 'Un règlement partiel a été reçu.' },
   en_retard: { label: 'En retard', tone: 'accent', help: 'Échéance dépassée : merci de régulariser.' },
   impayee: { label: 'Impayée', tone: 'accent', help: 'Échéance dépassée, rien n’a encore été réglé.' },
-  payee: { label: 'Payée', tone: 'success', help: 'Échéance intégralement réglée.' },
+  payee: { label: 'Réglée', tone: 'success', help: 'Échéance intégralement réglée.' },
 };
 
 /** Situation de paiement du bail : ce que le locataire doit lire en premier. */

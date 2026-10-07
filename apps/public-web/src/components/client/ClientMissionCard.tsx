@@ -45,7 +45,7 @@ export function ClientMissionCard({ mission, defaultOpen = false }: { mission: C
         <>
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
+              <p className="text-xs font-semibold uppercase tracking-wider text-mtm-muted">
                 {mission.referenceInterne ?? 'Mission'} · demandée le {formatDate(mission.dateDemande)}
               </p>
               <h3 className="mt-0.5 font-display text-[17px] font-bold text-mtm-text">
@@ -75,7 +75,7 @@ export function ClientMissionCard({ mission, defaultOpen = false }: { mission: C
 
         {mission.objectif && (
           <div className="rounded-xl bg-mtm-bg px-3 py-2.5">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
+            <p className="text-xs font-semibold uppercase tracking-wider text-mtm-muted">
               Votre demande
             </p>
             <p className="mt-1 text-sm text-mtm-text">{mission.objectif}</p>
@@ -86,7 +86,7 @@ export function ClientMissionCard({ mission, defaultOpen = false }: { mission: C
           <div className="rounded-xl border border-mtm-border px-3 py-3">
             <div className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 flex-none text-mtm-muted" aria-hidden="true" />
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
+              <p className="text-xs font-semibold uppercase tracking-wider text-mtm-muted">
                 Conclusion de MTM
               </p>
               <Badge tone={decision.tone}>{decision.label}</Badge>
@@ -109,7 +109,7 @@ export function ClientMissionCard({ mission, defaultOpen = false }: { mission: C
         {mission.montantDevis !== null && (
           <dl className="grid grid-cols-2 gap-2 text-sm">
             <div className="rounded-xl bg-mtm-bg px-3 py-2">
-              <dt className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
+              <dt className="text-xs font-semibold uppercase tracking-wider text-mtm-muted">
                 Montant de la mission
               </dt>
               <dd className="mt-0.5 font-semibold text-mtm-text">
@@ -118,7 +118,7 @@ export function ClientMissionCard({ mission, defaultOpen = false }: { mission: C
             </div>
             {mission.montantPaye !== null && (
               <div className="rounded-xl bg-mtm-bg px-3 py-2">
-                <dt className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
+                <dt className="text-xs font-semibold uppercase tracking-wider text-mtm-muted">
                   Réglé
                 </dt>
                 <dd className="mt-0.5 font-semibold text-mtm-text">
@@ -131,7 +131,7 @@ export function ClientMissionCard({ mission, defaultOpen = false }: { mission: C
 
         {photos.length > 0 && (
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
+            <p className="text-xs font-semibold uppercase tracking-wider text-mtm-muted">
               Photos de la visite
             </p>
             <ul className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
@@ -159,7 +159,7 @@ export function ClientMissionCard({ mission, defaultOpen = false }: { mission: C
 
         {fichiers.length > 0 && (
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
+            <p className="text-xs font-semibold uppercase tracking-wider text-mtm-muted">
               Documents
             </p>
             <ul className="mt-2 flex flex-col gap-1.5">

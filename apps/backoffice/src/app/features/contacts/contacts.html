@@ -137,11 +137,18 @@
                       <svg lucideKeyRound aria-hidden="true"></svg>Location {{ contact.bienLocatif.referenceInterne }}
                     </button>
                   }
+                  @if (contact.reponse) {
+                    <p class="message-cell__reponse" [matTooltip]="contact.reponse">
+                      <strong>Votre réponse{{ contact.reponduLe ? ' · ' + (contact.reponduLe | date: 'dd/MM/yyyy') : '' }} :</strong> {{ contact.reponse }}
+                    </p>
+                  }
                 </td>
                 <td class="nowrap">{{ contact.createdAt | date: 'dd/MM/yyyy' }}<small>{{ contact.createdAt | date: 'HH:mm' }}</small></td>
                 <td>
                   <div class="status-stack">
-                    @if (contact.lu) {
+                    @if (contact.reponse) {
+                      <span class="status-pill status-pill--success">Répondu</span>
+                    } @else if (contact.lu) {
                       <span class="status-pill">Lu</span>
                     } @else {
                       <span class="status-pill status-pill--warning">Non lu</span>
@@ -155,6 +162,11 @@
                 </td>
                 <td class="is-right">
                   <div class="row-actions">
+                    @if (canReply) {
+                      <button mat-stroked-button type="button" (click)="repondre(contact)" [disabled]="busyId() === contact.id" matTooltip="Répond par e-mail et dans l’espace client du demandeur">
+                        <svg class="btn-icon" lucideMessageSquare aria-hidden="true"></svg>{{ contact.reponse ? 'Modifier la réponse' : 'Répondre' }}
+                      </button>
+                    }
                     @if (contact.prospect) {
                       <button mat-stroked-button type="button" (click)="openProspect(contact)" [disabled]="!canSeeProspect" matTooltip="Ce contact est déjà dans le CRM : ouvrir la fiche">
                         <svg class="btn-icon" lucideUserCheck aria-hidden="true"></svg>Voir le prospect

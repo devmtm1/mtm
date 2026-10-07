@@ -26,6 +26,10 @@ import {
   synchroniserSituationPaiement,
 } from './locatif-finance.helper';
 import { CreatePaiementLoyerDto, RejetPaiementDto } from './dto/paiement.dto';
+import {
+  NotificationsService,
+  formaterMontant,
+} from '../notifications/notifications.service';
 
 const paiementInclude = {
   recordedBy: { select: { id: true, firstName: true, lastName: true } },
@@ -49,6 +53,7 @@ export class PaiementsLoyerService {
     private readonly prisma: PrismaService,
     private readonly access: LocatifAccessService,
     private readonly options: LocatifOptionsService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async findAll(bailLocatifId: string, user: LocatifUser) {
@@ -126,7 +131,7 @@ export class PaiementsLoyerService {
     await this.access.ensureBailAccessible(bailLocatifId, user);
     const impayeProlongeJours = await this.options.getImpayeProlongeJours();
 
-    return this.enTransaction(async (transaction) => {
+    const valide = await this.enTransaction(async (transaction) => {
       const paiement = await transaction.paiementLoyer.findFirst({
         where: { id: paiementId, bailLocatifId, statut: 'en_attente' },
       });
@@ -184,6 +189,39 @@ export class PaiementsLoyerService {
       );
       return valide;
     });
+    await this.notifierReglementValide(
+      bailLocatifId,
+      paiementId,
+      Number(valide.montant),
+    );
+    return valide;
+  }
+
+  /** Prévient le locataire, dans son espace, que son règlement est validé. */
+  private async notifierReglementValide(
+    bailLocatifId: string,
+    paiementId: string,
+    montant: number,
+  ): Promise<void> {
+    const bail = await this.prisma.bailLocatif.findUnique({
+      where: { id: bailLocatifId },
+      select: { locataireId: true, referenceInterne: true },
+    });
+    if (!bail?.locataireId) return;
+    await this.notifications.notifierClient(
+      { locataireId: bail.locataireId },
+      {
+        type: 'reglement_valide',
+        titre: 'Règlement validé',
+        message: `${formaterMontant(montant)} validés${
+          bail.referenceInterne ? ` sur ${bail.referenceInterne}` : ''
+        }.`,
+        lien: '/espace-client/ma-location',
+        entityType: 'PaiementLoyer',
+        entityId: paiementId,
+        dedupeKey: `reglement-valide:${paiementId}`,
+      },
+    );
   }
 
   /**

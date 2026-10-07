@@ -10,6 +10,7 @@ import type {
   ClientSyntheseProprietaire,
 } from '../types/locatif';
 import type { ClientChantier } from '../types/chantier';
+import type { ClientNotification } from '../types/notification';
 
 export interface ClientDataValue {
   dossiers: ClientDossier[] | null;
@@ -41,6 +42,11 @@ export interface ClientDataValue {
    */
   chantiers: ClientChantier[] | null;
   chantiersLoading: boolean;
+  /** Notifications du client : `null` tant qu'elles ne sont pas chargées. */
+  notifications: ClientNotification[] | null;
+  notificationsNonLues: number;
+  marquerNotificationLue: (id: string) => Promise<void>;
+  toutMarquerNotificationsLues: () => Promise<void>;
   /** À appeler après l'envoi d'une demande depuis l'espace client. */
   refetchDemandes: () => void;
   /** À appeler après avoir demandé une nouvelle vérification. */

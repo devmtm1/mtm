@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Building2, FileText, KeyRound, TrendingUp, Wallet } from 'lucide-react';
+import { Building2, KeyRound, TrendingUp, Wallet } from 'lucide-react';
 import { useClientData } from '../../contexts/client-data-store';
 import { usePageMetadata } from '../../hooks/usePageMetadata';
 import { ClientCard, ClientPageHeader, ClientRow, StatTile } from '../../components/client/shell/ClientUi';
@@ -7,6 +7,7 @@ import { ShowMoreButton } from '../../components/client/shell/Disclosure';
 import { Badge } from '../../components/ui/Badge';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { documentIcone } from '../../utils/documentIcon';
 import { formatDate, formatMoney } from '../../utils/format';
 import { bienLocatifStatus, locatifDocumentType, situationPaiement } from '../../utils/labels';
 
@@ -14,7 +15,7 @@ import { bienLocatifStatus, locatifDocumentType, situationPaiement } from '../..
 function Fait({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div>
-      <dt className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">{label}</dt>
+      <dt className="text-xs font-semibold uppercase tracking-wider text-mtm-muted">{label}</dt>
       <dd className="mt-0.5 font-semibold text-mtm-text">
         {value}
         {hint && <span className="ml-1 text-xs font-normal text-mtm-muted">{hint}</span>}
@@ -142,7 +143,7 @@ export function ClientProprietairePage() {
               <li key={document.id}>
                 <ClientRow
                   href={document.secureUrl}
-                  icon={FileText}
+                  icon={documentIcone(document.type)}
                   title={document.title ?? locatifDocumentType(document.type)}
                   subtitle={`${document.bailLocatif.bienLocatif.referenceInterne} · ${formatDate(document.createdAt)}`}
                 />

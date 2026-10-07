@@ -1,15 +1,17 @@
 import { useState } from 'react';
-import { AlertTriangle, FileText, MessageSquarePlus, Receipt } from 'lucide-react';
+import { AlertTriangle, MessageSquarePlus, Receipt } from 'lucide-react';
 import { useClientData } from '../../contexts/client-data-store';
 import { usePageMetadata } from '../../hooks/usePageMetadata';
 import { ClientCard, ClientPageHeader, ClientRow, IconBadge, ProgressBar } from '../../components/client/shell/ClientUi';
 import { ShowMoreButton } from '../../components/client/shell/Disclosure';
+import { CommentRegler } from '../../components/client/CommentRegler';
 import { etatPaiementIcone } from '../../components/client/shell/etat-paiement';
 import { NewIncidentModal } from '../../components/client/NewIncidentModal';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { documentIcone } from '../../utils/documentIcon';
 import { formatDate, formatMoney } from '../../utils/format';
 import {
   bailStatus,
@@ -27,7 +29,7 @@ import {
 function Fait({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div>
-      <dt className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">{label}</dt>
+      <dt className="text-xs font-semibold uppercase tracking-wider text-mtm-muted">{label}</dt>
       <dd className="mt-0.5 font-semibold text-mtm-text">
         {value}
         {hint && <span className="ml-1 text-xs font-normal text-mtm-muted">{hint}</span>}
@@ -122,7 +124,7 @@ export function ClientLocatairePage() {
         <div className="flex flex-col gap-3.5">
           {/* Ce qui reste à régler, en grand : la première chose qu'un locataire cherche. */}
           <div className="rounded-2xl bg-mtm-bg p-4">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-mtm-muted">
+            <p className="text-xs font-bold uppercase tracking-wider text-mtm-muted">
               {solde.resteADevoir > 0 ? 'Reste à régler' : 'Solde'}
             </p>
             <p className={`mt-0.5 font-display text-3xl font-bold ${solde.resteADevoir > 0 ? 'text-mtm-warning' : 'text-mtm-success'}`}>
@@ -165,7 +167,7 @@ export function ClientLocatairePage() {
           <div className="border-t border-mtm-border pt-3">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <p className="text-sm text-mtm-text">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">
+                <span className="text-xs font-semibold uppercase tracking-wider text-mtm-muted">
                   Caution
                 </span>
                 <span className="ml-2 font-semibold">{formatMoney(bailActif.caution.detenu)}</span>
@@ -197,6 +199,10 @@ export function ClientLocatairePage() {
           </div>
         </div>
       </ClientCard>
+
+      {solde.resteADevoir > 0 && (
+        <CommentRegler reference={`mon bail ${bailActif.referenceInterne ?? ''}`.trim()} montant={solde.resteADevoir} />
+      )}
 
       <ClientCard title="Mes échéances">
         <ul className="-my-1">
@@ -231,7 +237,7 @@ export function ClientLocatairePage() {
               <li key={document.id}>
                 <ClientRow
                   href={document.secureUrl}
-                  icon={FileText}
+                  icon={documentIcone(document.type)}
                   title={document.title ?? locatifDocumentType(document.type)}
                   subtitle={formatDate(document.createdAt)}
                 />

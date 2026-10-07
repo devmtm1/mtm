@@ -90,6 +90,9 @@ const ClientDossiersPage = lazyPage(() =>
 const ClientMissionsPage = lazyPage(() =>
   import('./pages/client/ClientMissionsPage').then((m) => m.ClientMissionsPage),
 );
+const ClientNotificationsPage = lazyPage(() =>
+  import('./pages/client/ClientNotificationsPage').then((m) => m.ClientNotificationsPage),
+);
 const ClientDemandesPage = lazyPage(() =>
   import('./pages/client/ClientDemandesPage').then((m) => m.ClientDemandesPage),
 );
@@ -148,6 +151,7 @@ export function App() {
             <Route path="dossiers" element={<Deferred><ClientDossiersPage /></Deferred>} />
             <Route path="verifications" element={<Deferred><ClientMissionsPage /></Deferred>} />
             <Route path="demandes" element={<Deferred><ClientDemandesPage /></Deferred>} />
+            <Route path="notifications" element={<Deferred><ClientNotificationsPage /></Deferred>} />
             <Route path="compte" element={<Deferred><ClientAccountPage /></Deferred>} />
             <Route path="mon-bien" element={<Deferred><ClientProprietairePage /></Deferred>} />
             <Route path="ma-location" element={<Deferred><ClientLocatairePage /></Deferred>} />

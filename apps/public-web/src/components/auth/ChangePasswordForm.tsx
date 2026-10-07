@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Button } from '../ui/Button';
-import { FormField, fieldInputClass } from '../ui/FormField';
+import { PasswordInput } from './PasswordInput';
+import { FormField } from '../ui/FormField';
 import { ApiError } from '../../api/client';
 import { changePassword } from '../../api/auth';
 import { useAuth } from '../../contexts/auth-context-store';
@@ -55,39 +56,15 @@ export function ChangePasswordForm({ onSuccess }: { onSuccess?: () => void } = {
       </p>
 
       <FormField label="Mot de passe actuel" htmlFor="cp-current" required>
-        <input
-          id="cp-current"
-          type="password"
-          required
-          autoComplete="current-password"
-          className={fieldInputClass}
-          value={currentPassword}
-          onChange={(event) => setCurrentPassword(event.target.value)}
-        />
+        <PasswordInput id="cp-current" value={currentPassword} onChange={setCurrentPassword} autoComplete="current-password" />
       </FormField>
 
       <FormField label="Nouveau mot de passe" htmlFor="cp-new" required>
-        <input
-          id="cp-new"
-          type="password"
-          required
-          autoComplete="new-password"
-          className={fieldInputClass}
-          value={newPassword}
-          onChange={(event) => setNewPassword(event.target.value)}
-        />
+        <PasswordInput id="cp-new" value={newPassword} onChange={setNewPassword} autoComplete="new-password" />
       </FormField>
 
       <FormField label="Confirmer le nouveau mot de passe" htmlFor="cp-confirm" required>
-        <input
-          id="cp-confirm"
-          type="password"
-          required
-          autoComplete="new-password"
-          className={fieldInputClass}
-          value={confirmPassword}
-          onChange={(event) => setConfirmPassword(event.target.value)}
-        />
+        <PasswordInput id="cp-confirm" value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" />
       </FormField>
       <p className="text-xs text-mtm-muted">{PASSWORD_HELP_TEXT}</p>
 

@@ -1,13 +1,15 @@
-import { useMemo } from 'react';
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
+  Bell,
   Building2,
   FolderOpen,
   Home,
   KeyRound,
   LogOut,
   MessageSquare,
+  RefreshCw,
   HardHat,
   ShieldCheck,
   UserRound,
@@ -27,17 +29,22 @@ import {
   useProprietaireSynthese,
 } from '../../../hooks/useClientPortal';
 import { ROUTES } from '../../../routes';
+import { usePullToRefresh } from '../../../hooks/usePullToRefresh';
+import { useClientNotifications } from '../../../hooks/useClientNotifications';
+import { markAllNotificationsRead, markNotificationRead } from '../../../api/notifications';
+import { prochainePriorite } from '../../../utils/clientPriority';
+import { useToast } from '../../ui/toast-store';
 import { ClientTabBar, type ClientTab } from './ClientTabBar';
 import { ScrollManager } from '../../layout/ScrollManager';
 import { RouteAnnouncer } from '../../layout/RouteAnnouncer';
 
 const MAIN_ID = 'contenu-principal';
 
-const BASE_TABS: ClientTab[] = [
-  { to: ROUTES.clientPortal, label: 'Accueil', icon: Home, end: true },
+const ONGLET_ACCUEIL: ClientTab = { to: ROUTES.clientPortal, label: 'Accueil', icon: Home, end: true };
+const ONGLETS_COMMUNS: ClientTab[] = [
   { to: ROUTES.clientDossiers, label: 'Dossiers', icon: FolderOpen, end: false },
-  { to: ROUTES.clientMissions, label: 'Vérifications', icon: ShieldCheck, end: false },
   { to: ROUTES.clientDemandes, label: 'Demandes', icon: MessageSquare, end: false },
+  { to: ROUTES.clientMissions, label: 'Vérifications', icon: ShieldCheck, end: false },
   { to: ROUTES.clientCompte, label: 'Compte', icon: UserRound, end: false },
 ];
 
@@ -56,7 +63,6 @@ function initials(firstName: string, lastName: string): string {
 export function ClientLayout() {
   const { user, accessToken, logout } = useAuth();
   const navigate = useNavigate();
-  const { pathname } = useLocation();
   const dossiers = useClientPortal(accessToken);
   const demandes = useClientDemandes(accessToken);
   const missions = useClientMissions(accessToken);
@@ -67,40 +73,89 @@ export function ClientLayout() {
   const locataireBaux = useLocataireBaux(accessToken);
   const locatairePaiements = useLocatairePaiements(accessToken);
   const locataireIncidents = useLocataireIncidents(accessToken);
+  const notificationsData = useClientNotifications(accessToken);
 
   // Un compte non rattaché reçoit `data: null` (voir clientPortal.ts) : ces
   // onglets n'existent que pour un vrai propriétaire ou locataire.
   const estProprietaire = proprietaireBiens.data !== null;
   const estLocataire = locataireBaux.data !== null;
   const suitUnChantier = (chantiers.data?.length ?? 0) > 0;
+  const bailActif = locataireBaux.data?.find((b) => b.statut === 'actif' || b.statut === 'preavis') ?? locataireBaux.data?.[0] ?? null;
+  const retardLoyer = useMemo(() => prochainePriorite(null, bailActif)?.enRetard === true, [bailActif]);
+  const retardVente = useMemo(() => prochainePriorite(dossiers.data, null)?.enRetard === true, [dossiers.data]);
+
+  // Les espaces propres au compte (location, bien, chantier) passent avant les
+  // écrans communs : un locataire retrouve « Ma location » dans la barre, pas
+  // derrière « Plus ». Une pastille signale un paiement en retard.
   const TABS = useMemo(() => {
-    const tabs = [...BASE_TABS];
+    const tabs: ClientTab[] = [ONGLET_ACCUEIL];
     if (estLocataire) {
-      tabs.splice(2, 0, {
-        to: ROUTES.clientLocataire,
-        label: 'Ma location',
-        icon: KeyRound,
-        end: false,
-      });
+      tabs.push({ to: ROUTES.clientLocataire, label: 'Ma location', icon: KeyRound, end: false, alerte: retardLoyer });
     }
     if (estProprietaire) {
-      tabs.splice(2, 0, {
-        to: ROUTES.clientProprietaire,
-        label: 'Mon bien',
-        icon: Building2,
-        end: false,
-      });
+      tabs.push({ to: ROUTES.clientProprietaire, label: 'Mon bien', icon: Building2, end: false });
     }
     if (suitUnChantier) {
-      tabs.splice(2, 0, {
-        to: ROUTES.clientChantiers,
-        label: 'Mon chantier',
-        icon: HardHat,
-        end: false,
-      });
+      tabs.push({ to: ROUTES.clientChantiers, label: 'Mon chantier', icon: HardHat, end: false });
     }
+    tabs.push(...ONGLETS_COMMUNS.map((tab) => (tab.to === ROUTES.clientDossiers ? { ...tab, alerte: retardVente } : tab)));
     return tabs;
-  }, [estProprietaire, estLocataire, suitUnChantier]);
+  }, [estProprietaire, estLocataire, suitUnChantier, retardLoyer, retardVente]);
+
+  const refetchNotifications = notificationsData.refetch;
+  const marquerNotificationLue = useCallback(
+    async (id: string) => {
+      if (!accessToken) return;
+      try {
+        await markNotificationRead(accessToken, id);
+      } finally {
+        refetchNotifications({ silent: true });
+      }
+    },
+    [accessToken, refetchNotifications],
+  );
+  const toutMarquerNotificationsLues = useCallback(async () => {
+    if (!accessToken) return;
+    try {
+      await markAllNotificationsRead(accessToken);
+    } finally {
+      refetchNotifications({ silent: true });
+    }
+  }, [accessToken, refetchNotifications]);
+
+  // Actualisation : au retour sur l'application après une minute d'absence, et
+  // au geste « tirer pour actualiser ». Silencieuse : l'écran garde ses données.
+  const toast = useToast();
+  const sources = [dossiers, demandes, missions, chantiers, proprietaireBiens, proprietaireSynthese, proprietaireDocuments, locataireBaux, locatairePaiements, locataireIncidents, notificationsData];
+  const sourcesRef = useRef(sources);
+  useEffect(() => {
+    sourcesRef.current = sources;
+  });
+  const derniereActualisation = useRef(Date.now());
+  const actualiser = useCallback(() => {
+    derniereActualisation.current = Date.now();
+    sourcesRef.current.forEach((source) => source.refetch({ silent: true }));
+  }, []);
+  useEffect(() => {
+    const auRetour = () => {
+      if (document.visibilityState === 'visible' && Date.now() - derniereActualisation.current > 60_000) actualiser();
+    };
+    document.addEventListener('visibilitychange', auRetour);
+    return () => document.removeEventListener('visibilitychange', auRetour);
+  }, [actualiser]);
+  // La cloche se met à jour seule, toutes les minutes, tant que l'écran est ouvert.
+  useEffect(() => {
+    const minuteur = window.setInterval(() => {
+      if (document.visibilityState === 'visible') refetchNotifications({ silent: true });
+    }, 60_000);
+    return () => window.clearInterval(minuteur);
+  }, [refetchNotifications]);
+  const nonLues = notificationsData.data?.nonLues ?? 0;
+  const { pull, refreshing } = usePullToRefresh(() => {
+    actualiser();
+    toast.show('Données à jour');
+  }, true);
+
 
   const value = useMemo(
     () => ({
@@ -124,6 +179,10 @@ export function ClientLayout() {
       locatairePaiements: locatairePaiements.data,
       locataireIncidents: locataireIncidents.data,
       locataireLoading: locataireBaux.loading || locatairePaiements.loading || locataireIncidents.loading,
+      notifications: notificationsData.data?.items ?? null,
+      notificationsNonLues: nonLues,
+      marquerNotificationLue,
+      toutMarquerNotificationsLues,
       refetchDemandes: demandes.refetch,
       refetchMissions: missions.refetch,
       refetchLocataireIncidents: locataireIncidents.refetch,
@@ -139,10 +198,10 @@ export function ClientLayout() {
       locataireBaux.data, locataireBaux.loading,
       locatairePaiements.data, locatairePaiements.loading,
       locataireIncidents.data, locataireIncidents.loading, locataireIncidents.refetch,
+      notificationsData.data, nonLues, marquerNotificationLue, toutMarquerNotificationsLues,
     ],
   );
 
-  const current = TABS.find((tab) => (tab.end ? pathname === tab.to : pathname.startsWith(tab.to))) ?? TABS[0];
   const displayName = user ? `${user.firstName} ${user.lastName}`.trim() : '';
 
   async function handleLogout(): Promise<void> {
@@ -189,6 +248,21 @@ export function ClientLayout() {
             ))}
           </nav>
 
+          <NavLink
+            to={ROUTES.clientNotifications}
+            className={({ isActive }) =>
+              `mx-3 mt-1 flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold transition-colors ${
+                isActive ? 'bg-white/15 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white'
+              }`
+            }
+          >
+            <Bell className="h-[18px] w-[18px]" aria-hidden="true" />
+            Notifications
+            {nonLues > 0 && (
+              <span className="ml-auto rounded-full bg-mtm-accent px-2 py-0.5 text-xs font-bold text-white">{nonLues}</span>
+            )}
+          </NavLink>
+
           <div className="mt-auto border-t border-white/10 px-3 py-4">
             <div className="flex items-center gap-3 px-2">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-mtm-accent text-xs font-bold text-white">
@@ -223,18 +297,50 @@ export function ClientLayout() {
               <NavLink to={ROUTES.clientPortal} className="flex items-center gap-2.5">
                 <img src="/logomtm.jpeg" alt="" className="h-8 w-8 rounded-full object-cover" />
                 <span className="font-display text-base font-bold leading-tight">
-                  {current.end ? 'Espace client' : current.label}
+                  Espace client
                 </span>
               </NavLink>
-              <NavLink
+              <div className="flex items-center gap-1.5">
+                <NavLink
+                  to={ROUTES.clientNotifications}
+                  aria-label={nonLues > 0 ? `Notifications, ${nonLues} non lue${nonLues > 1 ? 's' : ''}` : 'Notifications'}
+                  className="relative flex h-10 w-10 items-center justify-center rounded-full text-mtm-text active:scale-90 active:bg-mtm-bg"
+                >
+                  <Bell className="h-[22px] w-[22px]" aria-hidden="true" />
+                  {nonLues > 0 && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute right-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-mtm-surface bg-mtm-accent px-1 text-[10px] font-bold leading-none text-white"
+                    >
+                      {nonLues > 9 ? '9+' : nonLues}
+                    </span>
+                  )}
+                </NavLink>
+                              <NavLink
                 to={ROUTES.clientCompte}
                 aria-label="Mon compte"
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-mtm-primary text-xs font-bold text-white shadow-card active:scale-90"
               >
                 {user ? initials(user.firstName, user.lastName) : '?'}
               </NavLink>
+              </div>
             </div>
           </header>
+
+          {(pull > 0 || refreshing) && (
+            <div
+              aria-hidden="true"
+              className="pointer-events-none fixed inset-x-0 top-[calc(3.5rem+env(safe-area-inset-top))] z-30 flex justify-center lg:hidden"
+              style={{ transform: `translateY(${refreshing ? 14 : Math.max(pull - 28, 0)}px)` }}
+            >
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-mtm-surface text-mtm-primary shadow-card">
+                <RefreshCw
+                  className={`h-5 w-5 ${refreshing ? 'motion-safe:animate-spin' : ''}`}
+                  style={refreshing ? undefined : { transform: `rotate(${pull * 4}deg)` }}
+                />
+              </span>
+            </div>
+          )}
 
           <main id={MAIN_ID} tabIndex={-1} className="flex-1 outline-none">
             <div className="mx-auto w-full max-w-5xl px-4 pb-28 pt-4 sm:px-6 sm:pt-6 lg:pb-10 lg:pt-8">

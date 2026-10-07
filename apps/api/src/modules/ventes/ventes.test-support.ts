@@ -26,6 +26,7 @@ export function createVentesTestContext() {
   const notifierMock = {
     notifier: jest.fn().mockResolvedValue(1),
     notifierPermission: jest.fn().mockResolvedValue(1),
+    notifierClient: jest.fn().mockResolvedValue(0),
   };
 
   const prisma = prismaMock as unknown as PrismaService;

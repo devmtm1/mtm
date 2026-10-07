@@ -3,6 +3,7 @@ import { CalendarClock, CalendarDays, Download, FileText, Info, MapPin, Receipt 
 import type { ClientDossier } from '../../types/clientPortal';
 import { construireFrise, echeanceAMettreEnAvant } from '../../utils/clientFrise';
 import { formatDate, formatMoney } from '../../utils/format';
+import { documentIcone } from '../../utils/documentIcon';
 import { documentType, dossierStatus, paymentMode, reservationStatus } from '../../utils/labels';
 import { Badge } from '../ui/Badge';
 import { ClientRow, ProgressBar } from './shell/ClientUi';
@@ -186,7 +187,7 @@ export function ClientDossierCard({ dossier, defaultOpen = false }: { dossier: C
               <li key={document.id}>
                 <ClientRow
                   href={document.secureUrl}
-                  icon={FileText}
+                  icon={documentIcone(document.type)}
                   title={document.title ?? documentType(document.type)}
                   subtitle={documentType(document.type)}
                   trailing={<Download className="h-4 w-4 shrink-0 text-mtm-primary" aria-label="Télécharger" />}

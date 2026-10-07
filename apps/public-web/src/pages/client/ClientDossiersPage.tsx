@@ -3,6 +3,7 @@ import { useClientData } from '../../contexts/client-data-store';
 import { usePageMetadata } from '../../hooks/usePageMetadata';
 import { ClientPageHeader, StatTile } from '../../components/client/shell/ClientUi';
 import { ClientDossierCard } from '../../components/client/ClientDossierCard';
+import { CommentRegler } from '../../components/client/CommentRegler';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { LinkButton } from '../../components/ui/LinkButton';
 import { Skeleton } from '../../components/ui/Skeleton';
@@ -53,6 +54,11 @@ export function ClientDossiersPage() {
           {list.map((dossier) => (
             <ClientDossierCard key={dossier.id} dossier={dossier} defaultOpen={list.length === 1} />
           ))}
+          {totalRemaining > 0 && (
+            <CommentRegler
+              reference={list.length === 1 ? `mon dossier ${list[0].referenceInterne ?? ''}`.trim() : 'mes dossiers'}
+            />
+          )}
         </div>
       )}
     </div>

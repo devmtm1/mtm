@@ -80,6 +80,7 @@ model User {
   clientProprietaire        Proprietaire?      @relation("ProprietaireClientUser", fields: [clientProprietaireId], references: [id], onDelete: SetNull)
   clientLocataireId         String?            @unique
   clientLocataire           Locataire?         @relation("LocataireClientUser", fields: [clientLocataireId], references: [id], onDelete: SetNull)
+  contactsRepondus          Contact[]          @relation("ContactReponduPar")
   biensLocatifsResponsable  BienLocatif[]      @relation("BienLocatifResponsable")
   biensLocatifsCrees        BienLocatif[]      @relation("BienLocatifCreatedBy")
   bauxLocatifsCrees         BailLocatif[]      @relation("BailLocatifCreatedBy")
@@ -160,6 +161,7 @@ model Terrain {
   // est construit dessus, et n'apparaissent dans les écrans que si le type
   // du bien les rend pertinentes.
   /**
+   * /**
    * Surface habitable, distincte de la parcelle. Les deux coexistent : une
    * villa de 120 m² habitables peut occuper une parcelle de 300 m², et les
    * confondre fausserait toute comparaison au catalogue.
@@ -492,6 +494,14 @@ model Contact {
   sujet         String? // "Acquérir un terrain" / "Vérification foncière" / "Gestion locative" / ...
   message       String
   lu            Boolean      @default(false)
+  /**
+   * Réponse de l'équipe, envoyée par e-mail au demandeur et affichée dans son
+   * espace client (écran « Demandes »).
+   */
+  reponse       String?
+  reponduLe     DateTime?
+  reponduParId  String?
+  reponduPar    User?        @relation("ContactReponduPar", fields: [reponduParId], references: [id], onDelete: SetNull)
   createdAt     DateTime     @default(now())
 
   @@index([terrainId])
@@ -557,6 +567,7 @@ model Prospect {
   // vivre dans une table à part, pour qu'une seule fiche porte le budget et
   // la zone du client — deux exemplaires finiraient par diverger.
   /**
+   * /**
    * /** Vrai dès qu'un mandat de recherche est ouvert pour ce prospect.
    */
   rechercheActive               Boolean   @default(false)
@@ -1162,6 +1173,7 @@ model BienLocatif {
 
   // --- Publication sur le site public (location) ---
   /**
+   * /**
    * Visible sur le site tant que le bien est « disponible ». Réservé à la
    * permission locatif:publier ; exige un loyer et au moins une photo.
    */
@@ -1234,6 +1246,7 @@ model BailLocatif {
 
   // --- Sortie et cas particuliers (section 15) ---
   /**
+   * /**
    * Cycle de vie du bail : actif | preavis | termine | resilie_sans_preavis.
    */
   statut                String    @default("actif")

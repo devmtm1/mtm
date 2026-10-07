@@ -16,7 +16,10 @@ import { RefusePaiementDto } from './dto/refuse-paiement.dto';
 import { ReversePaiementDto } from './dto/reverse-paiement.dto';
 import { VentesAccessService, type MandatUser } from './ventes-access.service';
 import { VentesWorkflowService } from './ventes-workflow.service';
-import { NotificationsService } from '../notifications/notifications.service';
+import {
+  NotificationsService,
+  formaterMontant,
+} from '../notifications/notifications.service';
 
 /**
  * Paiements d'un dossier de vente (section 12 CDC) : enregistrement,
@@ -337,7 +340,7 @@ export class VentesPaiementsService {
 
   async validatePaiement(id: string, paymentId: string, user: MandatUser) {
     try {
-      return await this.prisma.$transaction(
+      const resultat = await this.prisma.$transaction(
         async (transaction) => {
           await this.access.ensureAccessible(id, user);
           const payment = await transaction.paiement.findFirst({
@@ -455,6 +458,8 @@ export class VentesPaiementsService {
         },
         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
       );
+      await this.notifierPaiementValide(id, paymentId, resultat);
+      return resultat;
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -466,6 +471,38 @@ export class VentesPaiementsService {
       }
       throw error;
     }
+  }
+
+  /**
+   * Prévient l'acheteur, dans son espace client, que son paiement est validé
+   * (ou que son dossier est soldé). Après la transaction : une panne de
+   * notification ne doit jamais défaire une validation.
+   */
+  private async notifierPaiementValide(
+    dossierId: string,
+    paymentId: string,
+    resultat: { payment: { montant: unknown }; soldeRestant: number | null },
+  ): Promise<void> {
+    const dossier = await this.prisma.dossierVente.findUnique({
+      where: { id: dossierId },
+      select: { prospectId: true, referenceInterne: true },
+    });
+    if (!dossier?.prospectId) return;
+    const solde = resultat.soldeRestant === 0;
+    await this.notifications.notifierClient(
+      { prospectId: dossier.prospectId },
+      {
+        type: 'paiement_valide',
+        titre: solde ? 'Votre dossier est soldé' : 'Paiement validé',
+        message: `${formaterMontant(Number(resultat.payment.montant))} validés${
+          dossier.referenceInterne ? ` sur ${dossier.referenceInterne}` : ''
+        }.`,
+        lien: '/espace-client/dossiers',
+        entityType: 'Paiement',
+        entityId: paymentId,
+        dedupeKey: `paiement-valide:${paymentId}`,
+      },
+    );
   }
 
   async getEcheances(id: string, user: MandatUser): Promise<unknown[]> {

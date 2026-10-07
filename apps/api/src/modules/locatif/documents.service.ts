@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../../database/prisma.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import { validateUploadedAsset } from '../../common/storage/asset-validation';
@@ -42,6 +43,7 @@ export class DocumentsLocatifService {
     private readonly cloudinary: CloudinaryService,
     private readonly access: LocatifAccessService,
     private readonly options: LocatifOptionsService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async findAll(bailLocatifId: string, user: LocatifUser) {
@@ -326,10 +328,16 @@ export class DocumentsLocatifService {
     await this.access.ensureBailAccessible(bailLocatifId, user);
     const document = await this.prisma.documentLocatif.findFirst({
       where: { id: documentId, bailLocatifId },
-      select: { id: true },
+      select: {
+        id: true,
+        type: true,
+        title: true,
+        visibleLocataire: true,
+        visibleProprietaire: true,
+      },
     });
     if (!document) throw new NotFoundException('Document introuvable');
-    return this.prisma.documentLocatif.update({
+    const miAJour = await this.prisma.documentLocatif.update({
       where: { id: documentId },
       data: {
         ...(dto.visibleLocataire !== undefined
@@ -341,6 +349,65 @@ export class DocumentsLocatifService {
       },
       include: documentInclude,
     });
+    await this.notifierPublication(bailLocatifId, document, dto);
+    return miAJour;
+  }
+
+  /** Prévient celui à qui un document vient d'être rendu visible. */
+  private async notifierPublication(
+    bailLocatifId: string,
+    document: {
+      id: string;
+      type: string;
+      title: string | null;
+      visibleLocataire: boolean;
+      visibleProprietaire: boolean;
+    },
+    dto: VisibiliteDocumentDto,
+  ): Promise<void> {
+    const pourLocataire =
+      dto.visibleLocataire === true && !document.visibleLocataire;
+    const pourProprietaire =
+      dto.visibleProprietaire === true && !document.visibleProprietaire;
+    if (!pourLocataire && !pourProprietaire) return;
+
+    const bail = await this.prisma.bailLocatif.findUnique({
+      where: { id: bailLocatifId },
+      select: {
+        locataireId: true,
+        bienLocatif: { select: { proprietaireId: true } },
+      },
+    });
+    if (!bail) return;
+    const nom = document.title ?? document.type;
+    if (pourLocataire && bail.locataireId) {
+      await this.notifications.notifierClient(
+        { locataireId: bail.locataireId },
+        {
+          type: 'document_disponible',
+          titre: 'Un document est disponible',
+          message: nom,
+          lien: '/espace-client/ma-location',
+          entityType: 'DocumentLocatif',
+          entityId: document.id,
+          dedupeKey: `document-visible:${document.id}:locataire`,
+        },
+      );
+    }
+    if (pourProprietaire && bail.bienLocatif?.proprietaireId) {
+      await this.notifications.notifierClient(
+        { proprietaireId: bail.bienLocatif.proprietaireId },
+        {
+          type: 'document_disponible',
+          titre: 'Un document est disponible',
+          message: nom,
+          lien: '/espace-client/mon-bien',
+          entityType: 'DocumentLocatif',
+          entityId: document.id,
+          dedupeKey: `document-visible:${document.id}:proprietaire`,
+        },
+      );
+    }
   }
 
   async removeDocument(

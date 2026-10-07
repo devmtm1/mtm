@@ -9,6 +9,8 @@ export interface ClientTab {
   label: string;
   icon: LucideIcon;
   end: boolean;
+  /** Un paiement en retard attend le client dans cet espace : une pastille le signale. */
+  alerte?: boolean;
 }
 
 /** Au-delà, les onglets ne tiennent plus sur une ligne : le reste passe dans « Plus ». */
@@ -19,9 +21,18 @@ const tabClass = (active: boolean): string =>
     active ? 'text-mtm-primary' : 'text-mtm-muted'
   }`;
 
-function TabContent({ icon: Icon, label, active }: { icon: LucideIcon; label: string; active: boolean }) {
+function TabContent({ icon: Icon, label, active, alerte = false }: { icon: LucideIcon; label: string; active: boolean; alerte?: boolean }) {
   return (
     <>
+      {alerte && (
+        <>
+          <span
+            aria-hidden="true"
+            className="absolute left-1/2 top-2.5 ml-2.5 h-2.5 w-2.5 rounded-full border-2 border-mtm-surface bg-mtm-accent"
+          />
+          <span className="sr-only">Paiement en retard</span>
+        </>
+      )}
       <Icon
         className={`h-[22px] w-[22px] transition-transform duration-200 ${active ? '-translate-y-0.5 scale-110' : ''}`}
         strokeWidth={active ? 2.4 : 2}
@@ -66,7 +77,7 @@ export function ClientTabBar({ tabs, onLogout }: { tabs: ClientTab[]; onLogout: 
           {visible.map((tab) => (
             <li key={tab.to}>
               <NavLink to={tab.to} end={tab.end} className={({ isActive: active }) => tabClass(active)}>
-                {({ isActive: active }) => <TabContent icon={tab.icon} label={tab.label} active={active} />}
+                {({ isActive: active }) => <TabContent icon={tab.icon} label={tab.label} active={active} alerte={tab.alerte} />}
               </NavLink>
             </li>
           ))}
@@ -79,7 +90,7 @@ export function ClientTabBar({ tabs, onLogout }: { tabs: ClientTab[]; onLogout: 
                 aria-expanded={moreOpen}
                 className={tabClass(moreActive)}
               >
-                <TabContent icon={Ellipsis} label="Plus" active={moreActive} />
+                <TabContent icon={Ellipsis} label="Plus" active={moreActive} alerte={hidden.some((tab) => tab.alerte)} />
               </button>
             </li>
           )}
@@ -89,7 +100,7 @@ export function ClientTabBar({ tabs, onLogout }: { tabs: ClientTab[]; onLogout: 
       {moreOpen && (
         <MobileSheet title="Mon espace" onClose={closeMore}>
           <ul className="flex flex-col gap-1 pb-2">
-            {hidden.map(({ to, label, icon: Icon }) => (
+            {hidden.map(({ to, label, icon: Icon, alerte }) => (
               <li key={to}>
                 <Link
                   to={to}
@@ -100,6 +111,7 @@ export function ClientTabBar({ tabs, onLogout }: { tabs: ClientTab[]; onLogout: 
                     <Icon className="h-5 w-5" aria-hidden="true" />
                   </span>
                   <span className="flex-1 text-[15px] font-semibold text-mtm-text">{label}</span>
+                  {alerte && <span className="rounded-full bg-mtm-accent-subtle px-2 py-0.5 text-xs font-bold text-mtm-accent">En retard</span>}
                   <ChevronRight className="h-4 w-4 shrink-0 text-mtm-muted" aria-hidden="true" />
                 </Link>
               </li>

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import {
   AlertTriangle,
+  Bell,
   Building2,
   CalendarClock,
   CheckCircle2,
@@ -55,6 +56,7 @@ export function ClientHomePage() {
     proprietaireLoading,
     locataireBaux,
     locataireLoading,
+    notificationsNonLues,
   } = useClientData();
   usePageMetadata({ title: 'Mon espace client' });
 
@@ -102,7 +104,12 @@ export function ClientHomePage() {
             to: ROUTES.clientProprietaire,
             icon: Building2,
             label: 'Mon bien',
-            detail: biens.length > 0 ? `${biens.length} bien${biens.length > 1 ? 's' : ''} confié${biens.length > 1 ? 's' : ''}` : 'Aucun bien',
+            detail:
+              loyersEncaissesTotal > 0
+                ? `${formatMoney(loyersEncaissesTotal)} encaissés`
+                : biens.length > 0
+                  ? `${biens.length} bien${biens.length > 1 ? 's' : ''} confié${biens.length > 1 ? 's' : ''}`
+                  : 'Aucun bien',
           },
         ]
       : []),
@@ -141,6 +148,21 @@ export function ClientHomePage() {
         </div>
       </section>
 
+      {notificationsNonLues > 0 && (
+        <Link
+          to={ROUTES.clientNotifications}
+          className="flex items-center gap-3 rounded-2xl border border-mtm-primary/30 bg-mtm-primary-subtle/60 px-4 py-3 transition-transform active:scale-[0.98]"
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-mtm-primary text-white">
+            <Bell className="h-[18px] w-[18px]" aria-hidden="true" />
+          </span>
+          <span className="min-w-0 flex-1 text-sm font-semibold text-mtm-text">
+            {notificationsNonLues} nouveauté{notificationsNonLues > 1 ? 's' : ''} sur votre compte
+          </span>
+          <ChevronRight className="h-4 w-4 shrink-0 text-mtm-primary" aria-hidden="true" />
+        </Link>
+      )}
+
       {/* Mes espaces : un toucher pour y aller, l'état en une ligne. */}
       <nav aria-label="Mes espaces">
         <ul className="grid grid-cols-2 gap-3 lg:grid-cols-3">
@@ -161,7 +183,7 @@ export function ClientHomePage() {
       )}
 
       <div className="grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <ClientCard title="Mes dossiers" to={ROUTES.clientDossiers} linkLabel="Détail" className="self-start">
+        <ClientCard title="Mes dossiers" to={ROUTES.clientDossiers} className="hidden self-start lg:block">
           {dossiersLoading && (
             <div className="flex flex-col gap-3">
               <Skeleton className="h-20 rounded-2xl" />
@@ -190,7 +212,7 @@ export function ClientHomePage() {
 
         <div className="flex flex-col gap-5 sm:gap-6">
           {!proprietaireLoading && biens !== null && biens.length > 0 && (
-            <ClientCard title="Mes loyers encaissés" to={ROUTES.clientProprietaire}>
+            <ClientCard title="Mes loyers encaissés" to={ROUTES.clientProprietaire} className="hidden lg:block">
               <p className="font-display text-2xl font-bold text-mtm-success">{formatMoney(loyersEncaissesTotal)}</p>
               <p className="mt-0.5 text-sm text-mtm-muted">
                 {biensAvecBail.length > 0
@@ -200,8 +222,8 @@ export function ClientHomePage() {
             </ClientCard>
           )}
 
-          <ClientCard title="Dernières demandes" to={ROUTES.clientDemandes}>
-            <ClientDemandesList data={demandes} loading={demandesLoading} error={demandesError} limit={2} />
+          <ClientCard title="Dernière demande" to={ROUTES.clientDemandes}>
+            <ClientDemandesList data={demandes} loading={demandesLoading} error={demandesError} limit={1} />
           </ClientCard>
 
           <ClientCard title="Votre conseiller">
@@ -283,7 +305,7 @@ function PrioriteBloc({ priorite, loading, aDesDonnees }: { priorite: Priorite |
   const cible = priorite.cible === 'locataire' ? ROUTES.clientLocataire : ROUTES.clientDossiers;
   return (
     <div className={`rounded-2xl p-4 ${priorite.enRetard ? 'bg-white text-mtm-text' : 'bg-white/10'}`}>
-      <p className={`flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider ${priorite.enRetard ? 'text-mtm-accent' : 'text-white/85'}`}>
+      <p className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider ${priorite.enRetard ? 'text-mtm-accent' : 'text-white/85'}`}>
         {priorite.enRetard ? <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" /> : <CalendarClock className="h-3.5 w-3.5" aria-hidden="true" />}
         {priorite.enRetard ? `En retard de ${priorite.joursRetard} jour${priorite.joursRetard > 1 ? 's' : ''}` : 'À régler prochainement'}
       </p>
@@ -291,6 +313,11 @@ function PrioriteBloc({ priorite, loading, aDesDonnees }: { priorite: Priorite |
       <p className={`mt-0.5 text-sm ${priorite.enRetard ? 'text-mtm-muted' : 'text-white/80'}`}>
         {priorite.objet} · {priorite.enRetard ? 'était dû le' : 'avant le'} {formatDate(priorite.dateEcheance)}
       </p>
+      {priorite.autresEnRetard > 0 && (
+        <p className="mt-2 text-xs font-semibold text-mtm-accent">
+          + {priorite.autresEnRetard} autre{priorite.autresEnRetard > 1 ? 's' : ''} paiement{priorite.autresEnRetard > 1 ? 's' : ''} en retard
+        </p>
+      )}
       <div className="mt-3.5 flex gap-2">
         <Link
           to={cible}

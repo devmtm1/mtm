@@ -41,22 +41,43 @@ export function createLocatifTestContext() {
     options,
     mailMock as never,
   );
-  const incidents = new IncidentsLocatifService(prisma, access, options);
+  const notificationsMock = {
+    notifierClient: jest.fn().mockResolvedValue(0),
+    notifierPermission: jest.fn().mockResolvedValue(0),
+  };
+  const incidents = new IncidentsLocatifService(
+    prisma,
+    access,
+    options,
+    notificationsMock as never,
+  );
 
   return {
     prismaMock,
     cloudinaryMock,
     configMock,
+    notificationsMock,
     mailMock,
     auditMock,
     access,
     options,
     biens: new BiensService(prisma, access, options),
     baux: new BauxService(prisma, access, options),
-    paiements: new PaiementsLoyerService(prisma, access, options),
+    paiements: new PaiementsLoyerService(
+      prisma,
+      access,
+      options,
+      notificationsMock as never,
+    ),
     caution: new CautionService(prisma, access, options),
     incidents,
-    documents: new DocumentsLocatifService(prisma, cloudinary, access, options),
+    documents: new DocumentsLocatifService(
+      prisma,
+      cloudinary,
+      access,
+      options,
+      notificationsMock as never,
+    ),
     relances,
     scheduler: new LocatifSchedulerService(
       prisma,

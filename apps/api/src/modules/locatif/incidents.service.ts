@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { NotificationsService } from '../notifications/notifications.service';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import {
@@ -24,6 +25,7 @@ export class IncidentsLocatifService {
     private readonly prisma: PrismaService,
     private readonly access: LocatifAccessService,
     private readonly options: LocatifOptionsService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async findAll(bailLocatifId: string, user: LocatifUser, nature?: string) {
@@ -82,10 +84,10 @@ export class IncidentsLocatifService {
     await this.options.assertStatutIncident(dto.statut);
     const existant = await this.prisma.incidentLocatif.findFirst({
       where: { id: incidentId, bailLocatifId },
-      select: { id: true },
+      select: { id: true, statut: true, resolutionNotes: true, nature: true },
     });
     if (!existant) throw new NotFoundException('Signalement introuvable');
-    return this.prisma.incidentLocatif.update({
+    const miAJour = await this.prisma.incidentLocatif.update({
       where: { id: incidentId },
       data: {
         ...(dto.statut !== undefined
@@ -100,5 +102,53 @@ export class IncidentsLocatifService {
       },
       include,
     });
+    await this.notifierMiseAJour(bailLocatifId, existant, dto);
+    return miAJour;
+  }
+
+  /**
+   * Prévient le locataire quand son signalement ou sa demande change d'état, ou
+   * reçoit une réponse : c'est ce qu'il attend d'une demande déposée depuis son
+   * espace.
+   */
+  private async notifierMiseAJour(
+    bailLocatifId: string,
+    avant: {
+      id: string;
+      statut: string;
+      resolutionNotes: string | null;
+      nature: string;
+    },
+    dto: UpdateIncidentDto,
+  ): Promise<void> {
+    const statutChange =
+      dto.statut !== undefined && dto.statut !== avant.statut;
+    const reponse = dto.resolutionNotes?.trim();
+    const reponseNouvelle =
+      !!reponse && reponse !== (avant.resolutionNotes ?? '').trim();
+    if (!statutChange && !reponseNouvelle) return;
+
+    const bail = await this.prisma.bailLocatif.findUnique({
+      where: { id: bailLocatifId },
+      select: { locataireId: true },
+    });
+    if (!bail?.locataireId) return;
+    const objet = avant.nature === 'demande' ? 'demande' : 'signalement';
+    await this.notifications.notifierClient(
+      { locataireId: bail.locataireId },
+      {
+        type: 'incident_maj',
+        titre: reponseNouvelle
+          ? `MTM a répondu à votre ${objet}`
+          : dto.statut === 'resolu'
+            ? `Votre ${objet} est résolu${objet === 'demande' ? 'e' : ''}`
+            : `Votre ${objet} est mis${objet === 'demande' ? 'e' : ''} à jour`,
+        message: reponseNouvelle ? reponse.slice(0, 200) : undefined,
+        lien: '/espace-client/ma-location',
+        entityType: 'IncidentLocatif',
+        entityId: avant.id,
+        dedupeKey: `incident-maj:${avant.id}:${Date.now()}`,
+      },
+    );
   }
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ApiError } from '../api/client';
 
 export interface AsyncState<T> {
@@ -16,13 +16,19 @@ export interface AsyncState<T> {
 export function useAsyncData<T>(
   fetcher: () => Promise<T>,
   deps: React.DependencyList,
-): AsyncState<T> & { refetch: () => void } {
+): AsyncState<T> & { refetch: (options?: { silent?: boolean }) => void } {
   const [state, setState] = useState<AsyncState<T>>({ data: null, loading: true, error: null });
   const [reloadToken, setReloadToken] = useState(0);
+  // Rechargement « silencieux » : l'écran garde ses données et n'affiche ni
+  // squelette ni erreur le temps de la mise à jour (retour sur l'application,
+  // geste d'actualisation).
+  const silent = useRef(false);
 
   const load = useCallback(() => {
     let cancelled = false;
-    setState((previous) => ({ ...previous, loading: true, error: null }));
+    const discret = silent.current;
+    silent.current = false;
+    if (!discret) setState((previous) => ({ ...previous, loading: true, error: null }));
 
     fetcher()
       .then((data) => {
@@ -30,6 +36,8 @@ export function useAsyncData<T>(
       })
       .catch((error: unknown) => {
         if (cancelled) return;
+        // Une actualisation qui échoue ne doit pas effacer ce que l'on affichait.
+        if (discret) return;
         const message =
           error instanceof ApiError
             ? error.message
@@ -45,5 +53,11 @@ export function useAsyncData<T>(
 
   useEffect(() => load(), [load, reloadToken]);
 
-  return { ...state, refetch: () => setReloadToken((token) => token + 1) };
+  return {
+    ...state,
+    refetch: (options?: { silent?: boolean }) => {
+      silent.current = options?.silent === true;
+      setReloadToken((token) => token + 1);
+    },
+  };
 }

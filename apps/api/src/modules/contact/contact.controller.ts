@@ -17,6 +17,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { ContactService } from './contact.service';
 import { CreateContactDto } from './dto/create-contact.dto';
+import { RepondreContactDto } from './dto/repondre-contact.dto';
 
 @ApiTags('contacts')
 @Controller(['contacts', 'contact'])
@@ -71,6 +72,29 @@ export class ContactController {
       entityId: id,
     });
     return this.contacts.markRead(id);
+  }
+
+  /**
+   * Répond à un message : la réponse part par e-mail au demandeur, s'affiche
+   * dans son espace client (écran « Demandes ») et le message passe à « pris en
+   * charge ».
+   */
+  @Post(':id/repondre')
+  @RequirePermissions('contact:modifier')
+  async repondre(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RepondreContactDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const resultat = await this.contacts.repondre(id, dto.reponse, user);
+    await this.audit.record({
+      userId: user.id,
+      action: 'contact.replied',
+      entityType: 'Contact',
+      entityId: id,
+      newValue: { emailEnvoye: resultat.emailEnvoye },
+    });
+    return resultat;
   }
 
   @Post(':id/convert-to-prospect')

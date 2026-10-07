@@ -16,6 +16,7 @@ import { SessionService } from '../../core/services/session.service';
 import type { CommercialSummary } from '../../core/models/prospect.model';
 import { NotificationService } from '../../shared/services/notification.service';
 import { StatusChoiceDialog } from '../../shared/dialogs/status-choice-dialog';
+import { RepondreDialog } from './repondre-dialog';
 
 type Scope = 'all' | 'unread' | 'read';
 
@@ -44,6 +45,7 @@ export class Contacts implements OnInit {
   protected readonly scope = signal<Scope>('all');
   protected readonly search = signal('');
   protected readonly canConvert = this.session.hasPermission('crm:creer');
+  protected readonly canReply = this.session.hasPermission('contact:modifier');
   protected readonly canSeeTerrain = this.session.hasPermission('terrains:consulter');
   protected readonly canSeeBien = this.session.hasPermission('locatif:consulter');
   protected readonly canSeeProspect = this.session.hasPermission('crm:consulter');
@@ -126,6 +128,38 @@ export class Contacts implements OnInit {
   protected setPageSize(size: number): void {
     this.pageSize.set(size);
     this.pageIndex.set(0);
+  }
+
+  /**
+   * Répond au message. La réponse est enregistrée même si l'e-mail ne part pas :
+   * l'équipe en est alors avertie pour joindre le client autrement.
+   */
+  protected repondre(contact: ContactMessage): void {
+    RepondreDialog.open(this.dialog, { contact }).subscribe((reponse) => {
+      if (!reponse) return;
+      this.busyId.set(contact.id);
+      this.contactApi.repondre(contact.id, reponse).subscribe({
+        next: ({ contact: misAJour, emailEnvoye }) => {
+          this.busyId.set(null);
+          this.contacts.update((liste) =>
+            liste.map((item) =>
+              item.id === contact.id
+                ? { ...item, lu: true, reponse: misAJour.reponse, reponduLe: misAJour.reponduLe }
+                : item,
+            ),
+          );
+          if (emailEnvoye) {
+            this.notify.success('Réponse envoyée par e-mail et visible dans l’espace client');
+          } else {
+            this.notify.info('Réponse enregistrée et visible dans l’espace client, mais l’e-mail n’a pas pu partir : joignez le client autrement.');
+          }
+        },
+        error: (error: unknown) => {
+          this.busyId.set(null);
+          this.notify.error(error, 'Envoi de la réponse impossible');
+        },
+      });
+    });
   }
 
   protected openTerrain(contact: ContactMessage): void {

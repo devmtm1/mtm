@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Button } from '../ui/Button';
+import { PasswordInput } from './PasswordInput';
 import { FormField, fieldInputClass } from '../ui/FormField';
 import { ApiError } from '../../api/client';
 import { useAuth } from '../../contexts/auth-context-store';
@@ -50,15 +51,7 @@ export function LoginForm({ onRequiresTwoFactor, onForgotPassword }: LoginFormPr
       </FormField>
 
       <FormField label="Mot de passe" htmlFor="login-password" required>
-        <input
-          id="login-password"
-          type="password"
-          required
-          autoComplete="current-password"
-          className={fieldInputClass}
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-        />
+        <PasswordInput id="login-password" value={password} onChange={setPassword} autoComplete="current-password" />
       </FormField>
 
       {error && (

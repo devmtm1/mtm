@@ -22,6 +22,23 @@ export interface NotifierInput {
   email?: boolean;
 }
 
+/** « 325 000 FCFA » : espace insécable ordinaire entre les milliers, lisible partout. */
+export function formaterMontant(valeur: number): string {
+  return `${Math.round(valeur)
+    .toLocaleString('fr-FR')
+    .replace(/\u202f/g, '\u00a0')} FCFA`;
+}
+
+/** À qui s'adresse une notification d'espace client : le compte rattaché à… */
+export interface CibleClient {
+  /** Acheteur (prospect converti en client). */
+  prospectId?: string | null;
+  locataireId?: string | null;
+  proprietaireId?: string | null;
+  /** Adresse e-mail du client : retrouve son compte à partir d'une demande déposée sans compte. */
+  email?: string | null;
+}
+
 /**
  * Notifications internes (section 22 CDC). L'e-mail n'est qu'un canal de
  * plus : sa panne ne doit jamais faire échouer l'opération métier qui a
@@ -53,6 +70,51 @@ export class NotificationsService {
       select: { id: true },
     });
     return users.map((user) => user.id);
+  }
+
+  /**
+   * Comptes d'espace client actifs correspondant à la cible. Une cible vide ou
+   * sans compte rattaché ne donne personne : ce n'est pas une erreur, tout client
+   * n'a pas encore ouvert son espace.
+   */
+  async userIdsClient(cible: CibleClient): Promise<string[]> {
+    const criteres: Prisma.UserWhereInput[] = [];
+    if (cible.prospectId) criteres.push({ clientProspectId: cible.prospectId });
+    if (cible.locataireId)
+      criteres.push({ clientLocataireId: cible.locataireId });
+    if (cible.proprietaireId)
+      criteres.push({ clientProprietaireId: cible.proprietaireId });
+    if (cible.email)
+      criteres.push({
+        clientProspect: { email: { equals: cible.email, mode: 'insensitive' } },
+      });
+    if (criteres.length === 0) return [];
+    const users = await this.prisma.user.findMany({
+      where: { isActive: true, OR: criteres },
+      select: { id: true },
+    });
+    return (users ?? []).map((user) => user.id);
+  }
+
+  /**
+   * Notifie le client dans son espace. `input.lien` est alors une route de
+   * l'espace client (ex. `/espace-client/dossiers`), pas du back-office. Ne
+   * lève jamais : l'opération métier qui l'a déclenchée est déjà faite.
+   */
+  async notifierClient(
+    cible: CibleClient,
+    input: NotifierInput,
+  ): Promise<number> {
+    try {
+      return await this.notifier(await this.userIdsClient(cible), input);
+    } catch (error) {
+      this.logger.error(
+        `Notification client « ${input.type} » non créée : ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      return 0;
+    }
   }
 
   /**
