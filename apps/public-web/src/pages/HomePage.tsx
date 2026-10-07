@@ -2,6 +2,7 @@ import { HeroSection } from '../components/home/HeroSection';
 import { QuickSearchSection } from '../components/home/QuickSearchSection';
 import { FeaturedTerrainsSection } from '../components/home/FeaturedTerrainsSection';
 import { FeaturedLocationsSection } from '../components/home/FeaturedLocationsSection';
+import { SoldReferencesSection } from '../components/home/SoldReferencesSection';
 import { UpcomingProjectsSection } from '../components/home/UpcomingProjectsSection';
 import { RealisationsPreviewSection } from '../components/home/RealisationsPreviewSection';
 import { ServicesSection } from '../components/home/ServicesSection';
@@ -44,6 +45,9 @@ export function HomePage() {
       </Reveal>
       <Reveal>
         <FeaturedLocationsSection />
+      </Reveal>
+      <Reveal>
+        <SoldReferencesSection />
       </Reveal>
       <Reveal>
         <ServicesSection />

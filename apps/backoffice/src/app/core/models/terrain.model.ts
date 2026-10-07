@@ -32,6 +32,8 @@ export interface TerrainListItem {
   prixPublic: NumericOrString;
   statutCommercial: string;
   misEnAvant: boolean;
+  /** Bien vendu affiché sur le site public comme référence (badge « Vendu », sans prix). */
+  referenceVendue?: boolean;
   medias?: TerrainMedia[];
   /** Renvoyé par la liste (sélection réduite) ; complet dans TerrainDetail. */
   proprietaire?: { id: string; firstName: string; lastName: string } | null;

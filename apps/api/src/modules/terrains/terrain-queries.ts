@@ -16,6 +16,7 @@ export const mediaOrderBy: Prisma.TerrainMediaOrderByWithRelationInput[] = [
  */
 export const publicTerrainSelect = {
   id: true,
+  statutCommercial: true,
   referenceInterne: true,
   nom: true,
   statutJuridique: true,
@@ -55,5 +56,21 @@ export const publicTerrainSelect = {
   documents: {
     where: { isPublic: true },
     orderBy: { createdAt: 'desc' as const },
+  },
+} as const;
+
+/**
+ * Projection d'un bien vendu affiché comme référence : la liste blanche
+ * ci-dessus, plus la date de la vente (le dossier soldé le plus récent). La
+ * réponse publique en masque ensuite le prix, la position exacte et les
+ * documents (voir `toPublicVendu`).
+ */
+export const publicVenduSelect = {
+  ...publicTerrainSelect,
+  dossiers: {
+    where: { statut: 'solde', dateVente: { not: null } },
+    orderBy: { dateVente: 'desc' as const },
+    take: 1,
+    select: { dateVente: true },
   },
 } as const;

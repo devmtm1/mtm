@@ -109,6 +109,7 @@ export class TerrainDetail implements OnInit, OnDestroy {
     this.session.hasPermission('terrains:consulter_financier') || this.session.hasRole('administrateur') || this.session.hasRole('direction');
 
   protected readonly published = computed(() => isPublished(this.terrain()?.statutCommercial));
+  protected readonly vendu = computed(() => this.terrain()?.statutCommercial === 'Vendu');
   protected readonly publicUrl = computed(() => {
     const terrain = this.terrain();
     return terrain && this.published() ? `${environment.publicWebUrl}/terrains/${terrain.id}` : null;
@@ -255,6 +256,15 @@ export class TerrainDetail implements OnInit, OnDestroy {
       },
       error: (error: unknown) => this.notify.error(error, 'Impossible de charger la liste des commerciaux'),
     });
+  }
+
+  protected toggleReferenceVendue(afficher: boolean): void {
+    const terrain = this.terrain();
+    if (!terrain) return;
+    this.run(
+      this.api.setReferenceVendue(terrain.id, afficher),
+      afficher ? 'Bien affiché sur le site comme référence vendue' : 'Bien retiré des références vendues du site',
+    );
   }
 
   protected toggleFeatured(misEnAvant: boolean): void {

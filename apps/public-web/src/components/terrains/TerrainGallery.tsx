@@ -12,13 +12,15 @@ interface TerrainGalleryProps {
   className?: string;
   /** Actions posées sur la photo, en haut à droite (favori…). */
   overlay?: ReactNode;
+  /** Pastille posée sur la photo, en haut à gauche (ex. le badge « Vendu »). */
+  badge?: ReactNode;
 }
 
 /**
  * Galerie de la fiche. Sur mobile : photo pleine largeur qui se feuillette au
  * doigt, avec compteur et points ; sur ordinateur : photo et vignettes.
  */
-export function TerrainGallery({ medias, alt, className = '', overlay }: TerrainGalleryProps) {
+export function TerrainGallery({ medias, alt, className = '', overlay, badge }: TerrainGalleryProps) {
   const photosAndVideos = medias.filter((media) => media.type !== 'plan');
   const [activeId, setActiveId] = useState(photosAndVideos[0]?.id);
   const touchStartX = useRef<number | null>(null);
@@ -89,6 +91,7 @@ export function TerrainGallery({ medias, alt, className = '', overlay }: Terrain
           </span>
         )}
 
+        {badge && <div className="pointer-events-none absolute left-3 top-3 z-10">{badge}</div>}
         {overlay && <div className="absolute right-3 top-3 z-10 flex gap-2">{overlay}</div>}
 
         {count > 1 && (

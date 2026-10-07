@@ -4,6 +4,8 @@ import type { Terrain } from '../types/terrain';
 
 const base: Terrain = {
   id: 't1',
+  statutCommercial: 'Disponible',
+  venduLe: null,
   referenceInterne: 'MTM-TH-001',
   nom: 'Parcelle',
   statutJuridique: 'Titre foncier',

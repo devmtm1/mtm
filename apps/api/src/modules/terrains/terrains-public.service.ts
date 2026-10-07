@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
@@ -8,12 +9,14 @@ import type {
   PublicTerrainResponse,
 } from './dto/public-terrain.dto';
 import { DEFAULT_TERRAIN_OPTIONS } from './terrains.service';
-import { publicTerrainSelect } from './terrain-queries';
+import { publicTerrainSelect, publicVenduSelect } from './terrain-queries';
 
 /**
- * Catalogue public des terrains (J1.2, sections 5-7 et 11 CDC). Seuls les
- * terrains « Disponible » sont exposés, uniquement via la projection
- * `publicTerrainSelect` : ce service est le seul point de sortie des données
+ * Catalogue public des terrains (J1.2, sections 5-7 et 11 CDC). Sont exposés les
+ * terrains « Disponible » et, à titre de référence, les biens « Vendu » que MTM
+ * a choisi d'afficher (fiche réduite : ni prix, ni position exacte, ni
+ * documents). Uniquement via les projections `publicTerrainSelect` et
+ * `publicVenduSelect` : ce service est le seul point de sortie des données
  * terrain vers le site vitrine.
  */
 @Injectable()
@@ -28,7 +31,8 @@ export class TerrainsPublicService {
     const page = query.page > 0 ? query.page : 1;
     const pageSize = Math.min(query.pageSize > 0 ? query.pageSize : 25, 200);
     const search = query.search?.trim();
-    const where = {
+    const vendu = query.statut === 'vendu';
+    const where: Prisma.TerrainWhereInput = {
       statutCommercial: 'Disponible',
       // Recherche libre du catalogue public : restreinte aux champs publics
       // (jamais parcelleMatricule ni notes internes).
@@ -86,18 +90,29 @@ export class TerrainsPublicService {
           }
         : {}),
     };
+    if (vendu) {
+      // Références vendues : seulement celles que MTM affiche, sans filtre de
+      // prix (il n'est pas public), les plus récemment modifiées d'abord.
+      where.statutCommercial = 'Vendu';
+      where.referenceVendue = true;
+      delete where.prixPublic;
+    }
     const [items, total] = await Promise.all([
       this.prisma.terrain.findMany({
         where,
-        select: publicTerrainSelect,
-        orderBy: { [query.sortBy]: query.sortOrder },
+        select: vendu ? publicVenduSelect : publicTerrainSelect,
+        orderBy: vendu
+          ? { updatedAt: 'desc' }
+          : { [query.sortBy]: query.sortOrder },
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
       this.prisma.terrain.count({ where }),
     ]);
     return {
-      items: items.map((item) => this.toPublic(item)),
+      items: items.map((item) =>
+        vendu ? this.toPublicVendu(item) : this.toPublic(item),
+      ),
       total,
       page,
       pageSize,
@@ -106,11 +121,19 @@ export class TerrainsPublicService {
 
   async findPublicOne(id: string) {
     const terrain = await this.prisma.terrain.findFirst({
-      where: { id, statutCommercial: 'Disponible' },
-      select: publicTerrainSelect,
+      where: {
+        id,
+        OR: [
+          { statutCommercial: 'Disponible' },
+          { statutCommercial: 'Vendu', referenceVendue: true },
+        ],
+      },
+      select: publicVenduSelect,
     });
     if (!terrain) throw new NotFoundException('Bien introuvable');
-    return this.toPublic(terrain);
+    return terrain.statutCommercial === 'Vendu'
+      ? this.toPublicVendu(terrain)
+      : this.toPublic(terrain);
   }
 
   /**
@@ -120,7 +143,7 @@ export class TerrainsPublicService {
    * proposés correspondent toujours aux données disponibles.
    */
   async getPublicFilterOptions() {
-    const [legal, pieces, published] = await Promise.all([
+    const [legal, pieces, published, vendus] = await Promise.all([
       this.settings.getRawValue('terrains.statutJuridique'),
       this.settings.getRawValue('terrains.nombrePieces'),
       this.prisma.terrain.findMany({
@@ -131,6 +154,9 @@ export class TerrainsPublicService {
           vocation: true,
           typeBien: true,
         },
+      }),
+      this.prisma.terrain.count({
+        where: { statutCommercial: 'Vendu', referenceVendue: true },
       }),
     ]);
 
@@ -161,12 +187,47 @@ export class TerrainsPublicService {
         pieces,
         DEFAULT_TERRAIN_OPTIONS.nombrePieces,
       ),
+      // Le site propose l'onglet « Vendus » seulement s'il y en a à montrer.
+      vendus,
+    };
+  }
+
+  /**
+   * Fiche réduite d'un bien vendu affiché comme référence : de quoi inspirer
+   * confiance (le bien, sa photo, sa zone, la date de vente), rien de ce qui
+   * révélerait la transaction ou permettrait de localiser le bien exactement
+   * (prix, GPS, adresse, documents).
+   */
+  toPublicVendu(terrain: Record<string, unknown>): PublicTerrainResponse {
+    const base = this.toPublic(terrain);
+    const dossiers = terrain.dossiers as
+      Array<{ dateVente: Date | string | null }> | undefined;
+    const date = dossiers?.[0]?.dateVente;
+    return {
+      ...base,
+      statutCommercial: 'Vendu',
+      venduLe: date ? new Date(date).toISOString() : null,
+      prixPublic: null,
+      latitude: null,
+      longitude: null,
+      localisationDetail: null,
+      dimensions: null,
+      description: null,
+      accesRoutier: null,
+      voisinage: null,
+      proximiteAxes: null,
+      pointsInteret: null,
+      misEnAvant: false,
+      documents: [],
+      // Photos seulement, et en nombre limité : une vitrine, pas la fiche complète.
+      medias: base.medias.filter((media) => media.type === 'photo').slice(0, 6),
     };
   }
 
   toPublic(terrain: Record<string, unknown>): PublicTerrainResponse {
     const source = terrain as {
       id: string;
+      statutCommercial?: string;
       referenceInterne: string;
       nom: string;
       statutJuridique: string;
@@ -255,6 +316,8 @@ export class TerrainsPublicService {
 
     return {
       id: source.id,
+      statutCommercial: source.statutCommercial ?? 'Disponible',
+      venduLe: null,
       referenceInterne: source.referenceInterne,
       nom: source.nom,
       statutJuridique: source.statutJuridique,

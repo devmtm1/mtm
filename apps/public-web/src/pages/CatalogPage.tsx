@@ -5,6 +5,8 @@ import { TerrainFilters } from '../components/terrains/TerrainFilters';
 import { ActiveFilterChips } from '../components/terrains/ActiveFilterChips';
 import { activeFilterChips, type FilterChip } from '../components/terrains/active-filter-chips';
 import { TerrainCard } from '../components/terrains/TerrainCard';
+import { CatalogTabs } from '../components/terrains/CatalogTabs';
+import { SoldReferencesView } from '../components/terrains/SoldReferencesView';
 import { TerrainsMap } from '../components/terrains/TerrainsMap';
 import { CATALOG_GRID } from '../components/terrains/terrain-grid';
 import { useTerrainsCatalog } from '../hooks/useTerrainsCatalog';
@@ -65,7 +67,13 @@ function criteriaKey(filters: TerrainFiltersValue): string {
   return JSON.stringify(rest);
 }
 
+/** Le catalogue : biens à vendre, ou références vendues (`?statut=vendu`). */
 export function CatalogPage() {
+  const [searchParams] = useSearchParams();
+  return searchParams.get('statut') === 'vendu' ? <SoldReferencesView /> : <AvailableCatalog />;
+}
+
+function AvailableCatalog() {
   const [searchParams, setSearchParams] = useSearchParams();
   const filters = useMemo(() => parseFilters(searchParams), [searchParams]);
   const [viewMode, setViewMode] = useState<'liste' | 'carte'>('liste');
@@ -202,6 +210,7 @@ export function CatalogPage() {
         title="Nos biens disponibles"
         description="Terrains, villas et appartements vérifiés : filtrez par type de bien, zone, superficie et budget."
       />
+      <CatalogTabs active="disponible" />
 
       {/* Mobile / tablette : recherche + bouton Filtres (critères en feuille).
           Les résultats sont visibles dès l'arrivée, sans traverser 7 champs. */}

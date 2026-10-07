@@ -27,6 +27,9 @@
           @if (t.misEnAvant) {
             <span class="status-pill status-pill--primary" matTooltip="Affiché en priorité sur la page d’accueil du site"><svg lucideStar aria-hidden="true"></svg>Mis en avant</span>
           }
+          @if (vendu() && t.referenceVendue) {
+            <span class="status-pill status-pill--success" matTooltip="Ce bien vendu est affiché sur le site avec le badge « Vendu », sans prix">Référence vendue visible</span>
+          }
         </div>
       </div>
       <div class="detail-header__actions">
@@ -231,6 +234,17 @@
               <dd>{{ t.commission | mtmMoney }}</dd>
             </div>
           </dl>
+        }
+
+        @if (vendu() && canModify) {
+          <div class="feature-toggle">
+            <mat-slide-toggle [checked]="!!t.referenceVendue" [disabled]="busy()" (change)="toggleReferenceVendue($event.checked)">
+              Afficher sur le site comme référence vendue
+            </mat-slide-toggle>
+            <small>
+              Badge rouge « Vendu » sur le site, sans prix ni position exacte, pour rassurer les visiteurs. Décochez pour le retirer à tout moment.
+            </small>
+          </div>
         }
 
         @if (canPublish && canModify) {

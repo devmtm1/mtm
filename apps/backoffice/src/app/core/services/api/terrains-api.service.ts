@@ -99,6 +99,11 @@ export class TerrainsApiService {
     return this.update(id, { misEnAvant });
   }
 
+  /** Affiche un bien vendu sur le site public comme référence, ou le retire. */
+  setReferenceVendue(id: string, afficher: boolean): Observable<TerrainDetail> {
+    return this.http.patch<TerrainDetail>(`${this.baseUrl}/${id}/reference-vendue`, { afficher });
+  }
+
   updateJuridicalStatus(id: string, value: string, justification?: string) {
     return this.updateStatus(id, 'juridical-status', value, justification);
   }

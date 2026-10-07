@@ -18,6 +18,9 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { DetailActionBar } from '../components/mobile/DetailActionBar';
+import { SoldBadge } from '../components/terrains/SoldBadge';
+import { LinkButton } from '../components/ui/LinkButton';
+import { estVendu, venduLabel } from '../utils/venteLabels';
 import { FavoriteButton } from '../components/mobile/FavoriteButton';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 import { formatMoney } from '../utils/format';
@@ -33,11 +36,13 @@ export function TerrainDetailPage() {
   const location = [terrain?.commune, terrain?.region].filter(Boolean).join(', ');
   const bati = terrain ? estBienBati(terrain) : false;
   const etatLabel = terrain ? etatBienLabel(terrain.etatBien) : null;
+  // Un bien vendu, affiché comme référence : fiche réduite, aucune demande possible.
+  const vendu = terrain ? estVendu(terrain) : false;
 
   // Titre dynamique : le nom du bien (et sa localisation) identifie la
   // fiche dans les onglets, l'historique et les résultats de recherche.
   usePageMetadata({
-    title: terrain ? [terrain.nom, location].filter(Boolean).join(' – ') : 'Fiche du bien',
+    title: terrain ? [vendu ? `${terrain.nom} (vendu)` : terrain.nom, location].filter(Boolean).join(' – ') : 'Fiche du bien',
     description: terrain?.description?.slice(0, 160) ?? undefined,
   });
 
@@ -80,10 +85,15 @@ export function TerrainDetailPage() {
               </p>
             )}
             {/* Mobile : le prix se lit tout de suite sous le nom, comme sur une carte d'annonce. */}
-            <p className="mt-2 font-display text-2xl font-bold text-mtm-primary lg:hidden">{formatMoney(terrain.prixPublic)}</p>
+            {vendu ? (
+              <p className="mt-2 font-display text-xl font-bold text-mtm-accent">{venduLabel(terrain.venduLe)}</p>
+            ) : (
+              <p className="mt-2 font-display text-2xl font-bold text-mtm-primary lg:hidden">{formatMoney(terrain.prixPublic)}</p>
+            )}
             <div className="mt-3 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] lg:flex-wrap lg:overflow-visible lg:pb-0 [&::-webkit-scrollbar]:hidden [&>*]:shrink-0">
               {/* La nature avant le statut juridique : le visiteur doit savoir
                   en un coup d'œil s'il regarde une parcelle ou une maison. */}
+              {vendu && <Badge tone="accent">Vendu</Badge>}
               <Badge tone="primary">{typeBienLabel(terrain.typeBien)}</Badge>
               {bati && terrain.nombrePieces && (
                 <Badge tone="primary">{terrain.nombrePieces}</Badge>
@@ -99,10 +109,11 @@ export function TerrainDetailPage() {
             medias={terrain.medias}
             alt={terrain.nom}
             className="order-1 -mx-4 sm:-mx-6 lg:mx-0 lg:order-2"
+            badge={vendu ? <SoldBadge /> : undefined}
             overlay={
               <>
                 <ShareButton title={terrain.nom} />
-                <FavoriteButton kind="terrain" id={terrain.id} label={terrain.nom} className="h-10 w-10" />
+                {!vendu && <FavoriteButton kind="terrain" id={terrain.id} label={terrain.nom} className="h-10 w-10" />}
               </>
             }
           />
@@ -167,56 +178,80 @@ export function TerrainDetailPage() {
           </div>
         </div>
 
-        <aside className="h-fit rounded-2xl border border-mtm-border bg-mtm-surface p-5 shadow-card lg:sticky lg:top-24 lg:rounded-lg lg:p-6">
-          <p className="hidden text-xs font-semibold uppercase tracking-wide text-mtm-muted lg:block">Prix public</p>
-          <p className="mt-1 hidden font-display text-3xl font-bold text-mtm-primary lg:block">
-            {formatMoney(terrain.prixPublic)}
-          </p>
-          <h2 className="font-display text-lg font-bold text-mtm-text lg:hidden">Intéressé par ce bien ?</h2>
-
-          <div className="mt-4 flex flex-col gap-3 lg:mt-6">
-            <Button onClick={() => setActiveModal('visite')}>
-              <CalendarCheck className="h-4 w-4" aria-hidden="true" />
-              Demander une visite
-            </Button>
-            <Button variant="secondary" onClick={() => setActiveModal('infos')}>
-              <MessageSquare className="h-4 w-4" aria-hidden="true" />
-              Demander des informations
-            </Button>
-            <Button variant="secondary" onClick={() => setActiveModal('reservation')}>
-              Réserver ce terrain
-            </Button>
-          </div>
-
-          {/* Réassurance : les trois engagements du cahier des charges qui
-              comptent au moment de cliquer (sections 6 et 7). */}
-          <ul className="mt-6 flex flex-col gap-2 border-t border-mtm-border pt-5 text-sm text-mtm-muted">
-            <li className="flex items-start gap-2">
-              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-mtm-success" aria-hidden="true" />
-              Terrain contrôlé par nos équipes avant publication
-            </li>
-            <li className="flex items-start gap-2">
-              <Globe2 className="mt-0.5 h-4 w-4 shrink-0 text-mtm-success" aria-hidden="true" />
-              Suivi à distance pour la diaspora
-            </li>
-            <li className="flex items-start gap-2">
-              <UserCheck className="mt-0.5 h-4 w-4 shrink-0 text-mtm-success" aria-hidden="true" />
-              Un interlocuteur dédié jusqu’à la signature
-            </li>
-          </ul>
-        </aside>
+        {vendu ? (
+          <aside className="h-fit rounded-2xl border border-mtm-border bg-mtm-surface p-5 shadow-card lg:sticky lg:top-24 lg:rounded-lg lg:p-6">
+            <SoldBadge />
+            <h2 className="mt-3 font-display text-lg font-bold text-mtm-text">Ce bien a trouvé son acquéreur</h2>
+            <p className="mt-1.5 text-sm leading-relaxed text-mtm-muted">
+              {venduLabel(terrain.venduLe)}. D’autres biens vérifiés sont disponibles{terrain.commune ? ` à ${terrain.commune} et ailleurs` : ''} :
+              notre équipe peut aussi vous alerter dès qu’un bien similaire est proposé.
+            </p>
+            <div className="mt-4 flex flex-col gap-3">
+              <LinkButton to={ROUTES.catalog}>Voir les biens disponibles</LinkButton>
+              <Button variant="secondary" onClick={() => setActiveModal('infos')}>
+                <MessageSquare className="h-4 w-4" aria-hidden="true" />
+                Être prévenu d’un bien similaire
+              </Button>
+            </div>
+          </aside>
+        ) : (
+          <aside className="h-fit rounded-2xl border border-mtm-border bg-mtm-surface p-5 shadow-card lg:sticky lg:top-24 lg:rounded-lg lg:p-6">
+            <p className="hidden text-xs font-semibold uppercase tracking-wide text-mtm-muted lg:block">Prix public</p>
+            <p className="mt-1 hidden font-display text-3xl font-bold text-mtm-primary lg:block">
+              {formatMoney(terrain.prixPublic)}
+            </p>
+            <h2 className="font-display text-lg font-bold text-mtm-text lg:hidden">Intéressé par ce bien ?</h2>
+  
+            <div className="mt-4 flex flex-col gap-3 lg:mt-6">
+              <Button onClick={() => setActiveModal('visite')}>
+                <CalendarCheck className="h-4 w-4" aria-hidden="true" />
+                Demander une visite
+              </Button>
+              <Button variant="secondary" onClick={() => setActiveModal('infos')}>
+                <MessageSquare className="h-4 w-4" aria-hidden="true" />
+                Demander des informations
+              </Button>
+              <Button variant="secondary" onClick={() => setActiveModal('reservation')}>
+                Réserver ce terrain
+              </Button>
+            </div>
+  
+            {/* Réassurance : les trois engagements du cahier des charges qui
+                comptent au moment de cliquer (sections 6 et 7). */}
+            <ul className="mt-6 flex flex-col gap-2 border-t border-mtm-border pt-5 text-sm text-mtm-muted">
+              <li className="flex items-start gap-2">
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-mtm-success" aria-hidden="true" />
+                Terrain contrôlé par nos équipes avant publication
+              </li>
+              <li className="flex items-start gap-2">
+                <Globe2 className="mt-0.5 h-4 w-4 shrink-0 text-mtm-success" aria-hidden="true" />
+                Suivi à distance pour la diaspora
+              </li>
+              <li className="flex items-start gap-2">
+                <UserCheck className="mt-0.5 h-4 w-4 shrink-0 text-mtm-success" aria-hidden="true" />
+                Un interlocuteur dédié jusqu’à la signature
+              </li>
+            </ul>
+          </aside>
+        )}
       </div>
 
       <SimilarTerrains terrain={terrain} />
 
       {/* Mobile : le prix et l'action principale restent sous le pouce, sans
           avoir à défiler jusqu'au panneau latéral. */}
-      <DetailActionBar label="Prix public" price={formatMoney(terrain.prixPublic)}>
-        <Button className="px-4" onClick={() => setActiveModal('visite')}>
-          <CalendarCheck className="h-4 w-4" aria-hidden="true" />
-          Visiter
-        </Button>
-      </DetailActionBar>
+      {vendu ? (
+        <DetailActionBar>
+          <LinkButton to={ROUTES.catalog}>Voir les biens disponibles</LinkButton>
+        </DetailActionBar>
+      ) : (
+        <DetailActionBar label="Prix public" price={formatMoney(terrain.prixPublic)}>
+          <Button className="px-4" onClick={() => setActiveModal('visite')}>
+            <CalendarCheck className="h-4 w-4" aria-hidden="true" />
+            Visiter
+          </Button>
+        </DetailActionBar>
+      )}
 
       {activeModal === 'visite' && (
         <ContactModal
@@ -229,9 +264,13 @@ export function TerrainDetailPage() {
       )}
       {activeModal === 'infos' && (
         <ContactModal
-          title="Demander des informations"
+          title={vendu ? 'Être prévenu d’un bien similaire' : 'Demander des informations'}
           terrainId={terrain.id}
-          initialSujet={`Informations sur le terrain ${terrain.referenceInterne}`}
+          initialSujet={
+            vendu
+              ? `Recherche d'un bien similaire à ${terrain.nom}`
+              : `Informations sur le terrain ${terrain.referenceInterne}`
+          }
           onClose={() => setActiveModal(null)}
         />
       )}

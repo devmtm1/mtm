@@ -142,4 +142,168 @@ describe('TerrainsPublicService', () => {
     expect(result.documents[0]).not.toHaveProperty('resourceType');
     expect(result.documents[0]).toHaveProperty('secureUrl');
   });
+
+  // --- Références vendues : affichées seulement si MTM les a cochées ---
+
+  describe('références vendues', () => {
+    const requete = {
+      statut: 'vendu' as const,
+      page: 1,
+      pageSize: 12,
+      sortBy: 'createdAt',
+      sortOrder: 'desc' as const,
+    };
+
+    const vendu = (extra: Record<string, unknown> = {}) => ({
+      id: 't9',
+      statutCommercial: 'Vendu',
+      referenceInterne: 'MTM-TH-009',
+      nom: 'Villa vendue à Saly',
+      statutJuridique: 'Titre foncier',
+      niveauVerification: 'Vérifié',
+      region: 'Thiès',
+      commune: 'Saly',
+      localisationDetail: 'Rue 12, derrière la mosquée',
+      latitude: 14.44,
+      longitude: -17.0,
+      typeBien: 'villa',
+      superficie: 400,
+      uniteSuperficie: 'm²',
+      prixPublic: 120_000_000,
+      description: 'Une description complète',
+      accesRoutier: 'Route goudronnée',
+      voisinage: 'Calme',
+      proximiteAxes: 'À 5 min',
+      pointsInteret: [{ nom: 'Plage', distanceKm: 1 }],
+      misEnAvant: true,
+      medias: [
+        {
+          id: 'm1',
+          type: 'photo',
+          title: null,
+          isPublic: true,
+          sortOrder: 0,
+          storageKey: 'k1',
+          resourceType: 'image',
+          capturedAt: null,
+          createdAt: 'x',
+        },
+        {
+          id: 'm2',
+          type: 'video',
+          title: null,
+          isPublic: true,
+          sortOrder: 1,
+          storageKey: 'k2',
+          resourceType: 'video',
+          capturedAt: null,
+          createdAt: 'x',
+        },
+      ],
+      documents: [
+        {
+          id: 'd1',
+          type: 'titre',
+          title: 'Titre',
+          isPublic: true,
+          version: 1,
+          storageKey: 'kd',
+          resourceType: 'raw',
+          createdAt: 'x',
+        },
+      ],
+      dossiers: [{ dateVente: new Date('2026-09-15T00:00:00Z') }],
+      createdAt: 'x',
+      updatedAt: 'x',
+      ...extra,
+    });
+
+    it('ne liste que les biens vendus que MTM a cochés, jamais ceux à vendre', async () => {
+      prismaMock.terrain.findMany.mockResolvedValue([]);
+      prismaMock.terrain.count.mockResolvedValue(0);
+
+      await publicCatalog.findPublic({
+        ...requete,
+        prixPublicMin: 1000,
+        prixPublicMax: 5000,
+      });
+
+      const appel = prismaMock.terrain.findMany.mock.calls[0][0];
+      expect(appel.where.statutCommercial).toBe('Vendu');
+      expect(appel.where.referenceVendue).toBe(true);
+      // Le prix n'est pas public : on ne filtre pas dessus.
+      expect(appel.where.prixPublic).toBeUndefined();
+    });
+
+    it('réduit la fiche : ni prix, ni position exacte, ni documents, mais la date de vente', async () => {
+      prismaMock.terrain.findMany.mockResolvedValue([vendu()]);
+      prismaMock.terrain.count.mockResolvedValue(1);
+
+      const { items } = await publicCatalog.findPublic(requete);
+
+      expect(items[0]).toMatchObject({
+        statutCommercial: 'Vendu',
+        venduLe: '2026-09-15T00:00:00.000Z',
+        nom: 'Villa vendue à Saly',
+        commune: 'Saly',
+        prixPublic: null,
+        latitude: null,
+        longitude: null,
+        localisationDetail: null,
+        description: null,
+        pointsInteret: null,
+        misEnAvant: false,
+        documents: [],
+      });
+      // Des photos seulement.
+      expect(items[0].medias.map((media) => media.type)).toEqual(['photo']);
+    });
+
+    it('une vente sans dossier soldé n’invente pas de date', async () => {
+      prismaMock.terrain.findMany.mockResolvedValue([vendu({ dossiers: [] })]);
+      prismaMock.terrain.count.mockResolvedValue(1);
+      const { items } = await publicCatalog.findPublic(requete);
+      expect(items[0].venduLe).toBeNull();
+    });
+
+    it('la fiche d’un bien vendu coché est réduite ; celle d’un bien disponible reste complète', async () => {
+      prismaMock.terrain.findFirst.mockResolvedValueOnce(vendu());
+      const reduit = await publicCatalog.findPublicOne('t9');
+      expect(reduit.statutCommercial).toBe('Vendu');
+      expect(reduit.prixPublic).toBeNull();
+      expect(prismaMock.terrain.findFirst.mock.calls[0][0].where).toEqual({
+        id: 't9',
+        OR: [
+          { statutCommercial: 'Disponible' },
+          { statutCommercial: 'Vendu', referenceVendue: true },
+        ],
+      });
+
+      prismaMock.terrain.findFirst.mockResolvedValueOnce(
+        vendu({ statutCommercial: 'Disponible', dossiers: [] }),
+      );
+      const complet = await publicCatalog.findPublicOne('t9');
+      expect(complet.statutCommercial).toBe('Disponible');
+      expect(complet.prixPublic).toBe(120_000_000);
+      expect(complet.documents).toHaveLength(1);
+    });
+
+    it('un bien vendu non coché reste introuvable', async () => {
+      prismaMock.terrain.findFirst.mockResolvedValue(null);
+      await expect(publicCatalog.findPublicOne('t9')).rejects.toThrow(
+        'Bien introuvable',
+      );
+    });
+
+    it('annonce combien de références vendues le site peut proposer', async () => {
+      prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+      prismaMock.terrain.findMany.mockResolvedValue([]);
+      prismaMock.terrain.count.mockResolvedValue(3);
+      const options = await publicCatalog.getPublicFilterOptions();
+      expect(options.vendus).toBe(3);
+      expect(prismaMock.terrain.count).toHaveBeenCalledWith({
+        where: { statutCommercial: 'Vendu', referenceVendue: true },
+      });
+    });
+  });
 });

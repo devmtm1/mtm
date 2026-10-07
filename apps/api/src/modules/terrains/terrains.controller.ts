@@ -30,6 +30,7 @@ import { UpdateTerrainStatusDto } from './dto/update-terrain-status.dto';
 import { CreateTerrainAssetDto } from './dto/create-terrain-asset.dto';
 import { TerrainsService } from './terrains.service';
 import { TerrainsPublicService } from './terrains-public.service';
+import { UpdateReferenceVendueDto } from './dto/update-reference-vendue.dto';
 import { TerrainsAssetsService } from './terrains-assets.service';
 
 @ApiTags('terrains')
@@ -158,6 +159,34 @@ export class TerrainsController {
       oldValue: avant,
       newValue: apres,
       justification: dto.justification,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    return terrain;
+  }
+
+  /** Affiche ou retire un bien vendu du site public (badge « Vendu »). */
+  @Patch(':id/reference-vendue')
+  @RequirePermissions('terrains:modifier')
+  async setReferenceVendue(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateReferenceVendueDto,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    const terrain = await this.terrains.setReferenceVendue(
+      id,
+      dto.afficher,
+      user,
+    );
+    await this.audit.record({
+      userId: user.id,
+      action: dto.afficher
+        ? 'terrain.reference_vendue.affichee'
+        : 'terrain.reference_vendue.retiree',
+      entityType: 'Terrain',
+      entityId: id,
+      newValue: { referenceVendue: dto.afficher },
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });

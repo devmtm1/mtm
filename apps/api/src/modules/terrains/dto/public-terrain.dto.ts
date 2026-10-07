@@ -29,6 +29,10 @@ export interface PublicTerrainDocument {
 
 export interface PublicTerrainResponse {
   id: string;
+  /** « Disponible », ou « Vendu » pour une référence vendue (fiche réduite, sans prix). */
+  statutCommercial: string;
+  /** Date de la vente d'une référence vendue, quand elle est connue. */
+  venduLe: string | null;
   referenceInterne: string;
   nom: string;
   statutJuridique: string;

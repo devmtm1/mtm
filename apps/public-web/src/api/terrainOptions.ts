@@ -14,6 +14,8 @@ export interface PublicTerrainFilterOptions {
   typeBien: string[];
   /** Typologies proposées à la recherche : F1 à F6, liste fermée. */
   nombrePieces: string[];
+  /** Références vendues que MTM affiche : l'onglet « Vendus » n'existe que s'il y en a. */
+  vendus: number;
 }
 
 export function fetchTerrainFilterOptions(): Promise<PublicTerrainFilterOptions> {

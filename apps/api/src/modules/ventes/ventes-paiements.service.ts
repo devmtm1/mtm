@@ -298,6 +298,7 @@ export class VentesPaiementsService {
                   data: {
                     statutCommercial:
                       nouveauStatut === 'en_cours' ? 'Disponible' : 'Réservé',
+                    referenceVendue: false,
                   },
                 });
               } else if (nouveauStatut === 'en_cours') {
@@ -439,7 +440,9 @@ export class VentesPaiementsService {
                 id: dossier.terrainId,
                 statutCommercial: { in: ['Réservé', 'Disponible'] },
               },
-              data: { statutCommercial: 'Vendu' },
+              // Une nouvelle vente demande un nouveau choix : la référence
+              // vendue n'est affichée que si MTM la coche à nouveau.
+              data: { statutCommercial: 'Vendu', referenceVendue: false },
             });
             await transaction.dossierVente.update({
               where: { id },

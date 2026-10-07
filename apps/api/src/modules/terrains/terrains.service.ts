@@ -332,6 +332,12 @@ export class TerrainsService {
     );
     const terrainData = { ...dto } as Record<string, unknown>;
     delete terrainData['justification'];
+    if (
+      dto.statutCommercial !== undefined &&
+      dto.statutCommercial !== 'Vendu'
+    ) {
+      terrainData['referenceVendue'] = false;
+    }
 
     // Les montants internes sont masqués en lecture pour qui n'y a pas droit :
     // la fiche les lui renvoie à `null`, et son formulaire les réexpédierait
@@ -377,6 +383,35 @@ export class TerrainsService {
     return this.toInternal(terrain, user);
   }
 
+  /**
+   * Affiche un bien vendu sur le site public comme référence (badge « Vendu »),
+   * ou le retire. Seul un bien « Vendu » peut l'être : un bien encore à vendre
+   * est déjà visible, et un bien retiré du marché n'a rien à prouver.
+   */
+  async setReferenceVendue(
+    id: string,
+    afficher: boolean,
+    user: { roles: string[]; permissions: string[] },
+  ) {
+    await this.access.ensureAccessible(id, user);
+    const terrain = await this.prisma.terrain.findUnique({
+      where: { id },
+      select: { statutCommercial: true },
+    });
+    if (!terrain) throw new NotFoundException('Bien introuvable');
+    if (afficher && terrain.statutCommercial !== 'Vendu') {
+      throw new BadRequestException(
+        'Seul un bien vendu peut être affiché comme référence vendue',
+      );
+    }
+    const mis = await this.prisma.terrain.update({
+      where: { id },
+      data: { referenceVendue: afficher },
+      include: terrainInclude,
+    });
+    return this.toInternal(mis, user);
+  }
+
   async updateStatus(
     id: string,
     field: 'statutJuridique' | 'niveauVerification' | 'statutCommercial',
@@ -393,7 +428,13 @@ export class TerrainsService {
     }
     const terrain = await this.prisma.terrain.update({
       where: { id },
-      data: { [field]: value },
+      data: {
+        [field]: value,
+        // Un bien qui n'est plus « Vendu » n'est plus une référence vendue.
+        ...(field === 'statutCommercial' && value !== 'Vendu'
+          ? { referenceVendue: false }
+          : {}),
+      },
       include: terrainInclude,
     });
     return this.toInternal(terrain, user);

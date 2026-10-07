@@ -188,6 +188,12 @@ model Terrain {
   commission              Decimal?              @db.Decimal(15, 2)
   statutCommercial        String
   misEnAvant              Boolean               @default(false)
+  /**
+   * Un bien vendu s'affiche sur le site public (badge « Vendu », sans prix)
+   * seulement si MTM l'a choisi : réversible à tout moment. Remis à faux quand
+   * le bien est vendu à nouveau ou quitte le statut « Vendu ».
+   */
+  referenceVendue         Boolean               @default(false)
   description             String? // descriptif commercial public du terrain (section 7 CDC)
   accesRoutier            String?
   eauDisponible           Boolean?

@@ -711,7 +711,7 @@ export class VentesService {
       if (dto.statut === 'solde' && dossier.terrainId) {
         await transaction.terrain.updateMany({
           where: { id: dossier.terrainId },
-          data: { statutCommercial: 'Vendu' },
+          data: { statutCommercial: 'Vendu', referenceVendue: false },
         });
         await transaction.dossierVente.update({
           where: { id },

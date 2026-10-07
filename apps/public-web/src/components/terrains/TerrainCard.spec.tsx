@@ -6,6 +6,8 @@ import type { Terrain } from '../../types/terrain';
 
 const baseTerrain: Terrain = {
   id: 'terrain-1',
+  statutCommercial: 'Disponible',
+  venduLe: null,
   referenceInterne: 'MTM-TH-024',
   nom: 'Belle parcelle à Thiès',
   statutJuridique: 'Titre foncier',

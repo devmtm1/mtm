@@ -365,4 +365,64 @@ describe('TerrainsService', () => {
       service.update('t1', { surfaceHabitable: 90 }, internalUser),
     ).rejects.toThrow(/ne s’appliquent pas à un bien de type/);
   });
+
+  describe('référence vendue', () => {
+    const user = {
+      roles: ['manager'],
+      permissions: ['terrains:modifier', 'terrains:administrer'],
+    };
+
+    it('affiche un bien vendu sur le site, et le retire à la demande', async () => {
+      prismaMock.terrain.findFirst.mockResolvedValue({ id: 't1' });
+      prismaMock.terrain.findUnique.mockResolvedValue({
+        statutCommercial: 'Vendu',
+      });
+      prismaMock.terrain.update.mockResolvedValue({
+        id: 't1',
+        referenceVendue: true,
+      });
+
+      await service.setReferenceVendue('t1', true, user);
+      expect(prismaMock.terrain.update).toHaveBeenLastCalledWith(
+        expect.objectContaining({ data: { referenceVendue: true } }),
+      );
+
+      await service.setReferenceVendue('t1', false, user);
+      expect(prismaMock.terrain.update).toHaveBeenLastCalledWith(
+        expect.objectContaining({ data: { referenceVendue: false } }),
+      );
+    });
+
+    it('refuse d’afficher comme vendu un bien qui ne l’est pas', async () => {
+      prismaMock.terrain.findFirst.mockResolvedValue({ id: 't1' });
+      prismaMock.terrain.findUnique.mockResolvedValue({
+        statutCommercial: 'Disponible',
+      });
+      await expect(
+        service.setReferenceVendue('t1', true, user),
+      ).rejects.toThrow(
+        'Seul un bien vendu peut être affiché comme référence vendue',
+      );
+      expect(prismaMock.terrain.update).not.toHaveBeenCalled();
+    });
+
+    it('un bien qui quitte le statut « Vendu » cesse d’être une référence', async () => {
+      prismaMock.terrain.findFirst.mockResolvedValue({ id: 't1' });
+      prismaMock.terrain.update.mockResolvedValue({ id: 't1' });
+
+      await service.updateStatus(
+        't1',
+        'statutCommercial',
+        'Disponible',
+        undefined,
+        user,
+      );
+
+      expect(prismaMock.terrain.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { statutCommercial: 'Disponible', referenceVendue: false },
+        }),
+      );
+    });
+  });
 });
