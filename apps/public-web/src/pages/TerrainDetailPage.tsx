@@ -4,7 +4,7 @@ import { ArrowLeft, CalendarCheck, Download, FileText, Globe2, MapPin, MessageSq
 import { ROUTES } from '../routes';
 import { useTerrain } from '../hooks/useTerrain';
 import { TerrainGallery } from '../components/terrains/TerrainGallery';
-import { TerrainCaracteristiques, TerrainEssentiel } from '../components/terrains/TerrainFacts';
+import { TerrainCaracteristiques, TerrainEssentiel, TerrainStatutJuridique } from '../components/terrains/TerrainFacts';
 import { SimilarTerrains } from '../components/terrains/SimilarTerrains';
 import { ClientRow } from '../components/client/shell/ClientUi';
 import { ExpandableText } from '../components/ui/ExpandableText';
@@ -98,7 +98,6 @@ export function TerrainDetailPage() {
               {bati && terrain.nombrePieces && (
                 <Badge tone="primary">{terrain.nombrePieces}</Badge>
               )}
-              <Badge tone="primary">{terrain.statutJuridique}</Badge>
               <Badge tone="success">{terrain.niveauVerification}</Badge>
               {etatLabel && <Badge tone="neutral">{etatLabel}</Badge>}
               {terrain.vocation && <Badge tone="neutral">{vocationLabel(terrain.vocation)}</Badge>}
@@ -119,6 +118,7 @@ export function TerrainDetailPage() {
           />
 
           <div className="order-3 flex flex-col gap-6 lg:gap-8">
+          <TerrainStatutJuridique terrain={terrain} />
           <TerrainEssentiel terrain={terrain} />
 
           {terrain.description && (

@@ -82,7 +82,6 @@ export function faitsEssentiels(terrain: Terrain): Fait[] {
       terrain.superficie !== null
         ? { key: 'superficie', label: 'Superficie', value: formatSuperficie(terrain.superficie, terrain.uniteSuperficie), icone: 'surface' }
         : null,
-      { key: 'statut', label: 'Statut juridique', value: terrain.statutJuridique, icone: 'statut' },
       terrain.vocation ? { key: 'vocation', label: 'Usage', value: vocationLabel(terrain.vocation), icone: 'vocation' } : null,
       m2 !== null ? { key: 'prixM2', label: 'Prix au m²', value: formatMoney(m2), icone: 'prix' } : null,
     );

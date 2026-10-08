@@ -22,6 +22,8 @@ export function terrainCard(terrain: Terrain): AppPropertyCardData {
     badgeTone: 'primary',
     price: formatMoney(terrain.prixPublic),
     place: [terrain.commune, terrain.region].filter(Boolean).join(', '),
+    featured: terrain.misEnAvant ? 'Mis en avant' : undefined,
+    statutJuridique: terrain.statutJuridique || undefined,
   };
 }
 
@@ -37,6 +39,7 @@ export function locationCard(location: Location): AppPropertyCardData {
     price: formatLoyerMontant(location.loyerMensuel),
     priceSuffix: location.loyerMensuel === null ? undefined : '/ mois',
     place: locationPlace(location),
+    featured: location.misEnAvant ? 'À la une' : undefined,
   };
 }
 

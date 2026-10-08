@@ -73,9 +73,9 @@ describe('prixAuM2', () => {
 });
 
 describe('faitsEssentiels', () => {
-  it('pour une parcelle : surface, statut juridique, usage et prix au m²', () => {
+  it('pour une parcelle : surface, usage et prix au m² (le statut juridique a son encart)', () => {
     const faits = faitsEssentiels({ ...base, vocation: 'residentiel' });
-    expect(faits.map((fait) => fait.key)).toEqual(['superficie', 'statut', 'vocation', 'prixM2']);
+    expect(faits.map((fait) => fait.key)).toEqual(['superficie', 'vocation', 'prixM2']);
     expect(faits.find((fait) => fait.key === 'vocation')?.value).toBe('Résidentiel');
   });
 

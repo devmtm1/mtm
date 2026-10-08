@@ -83,4 +83,16 @@ describe('cartes de l’accueil mobile', () => {
     const terrains = Array.from({ length: 10 }, (_, i) => terrain(`t${i}`, `2026-10-${String(i + 1).padStart(2, '0')}T00:00:00Z`));
     expect(mergeRecent(terrains, [], 4)).toHaveLength(4);
   });
+
+  describe('badge « mis en avant »', () => {
+    it('une vente mise en avant le dit ; une vente ordinaire non', () => {
+      expect(terrainCard(terrain('t1', '2026-10-01T00:00:00Z', { misEnAvant: true })).featured).toBe('Mis en avant');
+      expect(terrainCard(terrain('t2', '2026-10-01T00:00:00Z', { misEnAvant: false })).featured).toBeUndefined();
+    });
+
+    it('une location mise en avant est « À la une »', () => {
+      expect(locationCard(location('l1', null, { misEnAvant: true })).featured).toBe('À la une');
+      expect(locationCard(location('l2', null, { misEnAvant: false })).featured).toBeUndefined();
+    });
+  });
 });

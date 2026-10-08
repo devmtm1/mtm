@@ -3,7 +3,7 @@ import { MapPin, Ruler, ShieldCheck } from 'lucide-react';
 import type { Terrain } from '../../types/terrain';
 import { formatMoney, formatSuperficie } from '../../utils/format';
 import { estBienBati, typeBienLabel } from '../../utils/bienLabels';
-import { Badge } from '../ui/Badge';
+import { StatutJuridiqueChip } from './StatutJuridiqueChip';
 import { MediaImage } from '../ui/MediaImage';
 import { FavoriteButton } from '../mobile/FavoriteButton';
 import { ROUTES } from '../../routes';
@@ -75,11 +75,7 @@ export function TerrainCard({ terrain, compact = false }: TerrainCardProps) {
             <span aria-hidden="true" className="text-mtm-border">·</span>
             <span className="text-mtm-muted">{terrain.referenceInterne}</span>
           </span>
-          {/* Statut juridique : critère de confiance n°1 pour un acheteur
-              foncier, exigé sur la carte par les sections 6 et 7 du CDC. */}
-          <Badge tone="primary" className={compact ? 'hidden sm:inline-flex' : undefined}>
-            {terrain.statutJuridique}
-          </Badge>
+
         </div>
         <h3 className={`line-clamp-2 font-display font-bold leading-snug text-mtm-text ${compact ? 'text-sm sm:text-[15px]' : 'text-[15px]'}`}>
           {terrain.nom}
@@ -90,6 +86,9 @@ export function TerrainCard({ terrain, compact = false }: TerrainCardProps) {
             <span className="truncate">{location}</span>
           </p>
         )}
+        {/* Statut juridique : critère de confiance n°1 pour un acheteur foncier
+            (sections 6 et 7 du CDC). Toujours visible, sur téléphone aussi. */}
+        <StatutJuridiqueChip statut={terrain.statutJuridique} className="mt-0.5 self-start" />
         <div
           className={`mt-auto border-t border-mtm-border pt-2 ${
             compact

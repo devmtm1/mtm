@@ -157,7 +157,7 @@ export function MobileHome() {
       <section className="mt-7" aria-labelledby="recents-title">
         <div className="flex items-center justify-between px-4">
           <h2 id="recents-title" className="font-display text-lg font-bold text-mtm-text">
-            Nos biens récents
+            Biens mis en avant
           </h2>
           <Link to={ROUTES.catalog} className="inline-flex items-center gap-0.5 text-[13px] font-semibold text-mtm-primary active:opacity-70">
             Voir tout
@@ -182,7 +182,7 @@ export function MobileHome() {
         {!loading && recents.length > 0 && (
           <ul
             className="mt-3 flex snap-x snap-mandatory scroll-pl-4 gap-3 overflow-x-auto overscroll-x-contain px-4 pb-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-            aria-label="Biens récents"
+            aria-label="Biens mis en avant"
           >
             {recents.map((card) => (
               <li key={`${card.kind}-${card.id}`} className="w-[62%] max-w-[15rem] shrink-0 snap-start">

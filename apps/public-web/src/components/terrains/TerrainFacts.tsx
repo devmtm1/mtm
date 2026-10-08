@@ -1,6 +1,7 @@
-import { Bath, BedDouble, Coins, Compass, LandPlot, Layers, Ruler, ShieldCheck, Check, X, type LucideIcon } from 'lucide-react';
+import { Bath, BedDouble, Coins, Compass, LandPlot, Layers, Ruler, ShieldCheck, TriangleAlert, Check, X, type LucideIcon } from 'lucide-react';
 import type { Terrain } from '../../types/terrain';
 import { caracteristiques, faitsEssentiels, type FaitIcone } from '../../utils/terrainFacts';
+import { niveauStatutJuridique } from '../../utils/statutJuridique';
 
 const ICONES: Record<FaitIcone, LucideIcon> = {
   surface: Ruler,
@@ -69,6 +70,39 @@ export function TerrainCaracteristiques({ terrain }: { terrain: Terrain }) {
             </dl>
           </div>
         ))}
+      </div>
+    </section>
+  );
+}
+
+const ENCART = {
+  solide: { fond: 'border-mtm-success/30 bg-mtm-success/5', icone: 'bg-mtm-success text-white', titre: 'text-mtm-success' },
+  standard: { fond: 'border-mtm-primary/25 bg-mtm-primary-subtle/60', icone: 'bg-mtm-primary text-white', titre: 'text-mtm-primary' },
+  attention: { fond: 'border-mtm-warning/30 bg-mtm-warning/5', icone: 'bg-mtm-warning text-white', titre: 'text-mtm-warning' },
+} as const;
+
+/**
+ * Le statut juridique en toutes lettres, tout en haut de la fiche : c'est
+ * l'information qui décide d'un achat foncier. Le niveau de vérification de
+ * MTM l'accompagne.
+ */
+export function TerrainStatutJuridique({ terrain }: { terrain: Terrain }) {
+  if (!terrain.statutJuridique) return null;
+  const niveau = niveauStatutJuridique(terrain.statutJuridique);
+  const style = ENCART[niveau];
+  const Icone = niveau === 'attention' ? TriangleAlert : ShieldCheck;
+
+  return (
+    <section aria-label="Statut juridique" className={`flex items-center gap-3.5 rounded-2xl border p-4 lg:rounded-xl ${style.fond}`}>
+      <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${style.icone}`}>
+        <Icone className="h-6 w-6" aria-hidden="true" />
+      </span>
+      <div className="min-w-0">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-mtm-muted">Statut juridique</p>
+        <p className={`font-display text-xl font-bold leading-tight ${style.titre}`}>{terrain.statutJuridique}</p>
+        {terrain.niveauVerification && (
+          <p className="mt-0.5 text-sm text-mtm-muted">Vérification MTM : {terrain.niveauVerification}</p>
+        )}
       </div>
     </section>
   );

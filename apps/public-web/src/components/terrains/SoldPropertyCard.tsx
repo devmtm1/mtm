@@ -6,6 +6,7 @@ import { typeBienLabel } from '../../utils/bienLabels';
 import { venduLabel } from '../../utils/venteLabels';
 import { MediaImage } from '../ui/MediaImage';
 import { SoldBadge } from './SoldBadge';
+import { StatutJuridiqueChip } from './StatutJuridiqueChip';
 
 /**
  * Carte d'un bien vendu, affiché comme référence : la photo légèrement
@@ -35,6 +36,7 @@ export function SoldPropertyCard({ terrain }: { terrain: Terrain }) {
       <div className="flex flex-1 flex-col gap-1 p-3">
         <p className="text-[11px] font-semibold uppercase tracking-wider text-mtm-muted">{typeBienLabel(terrain.typeBien)}</p>
         <h3 className="line-clamp-1 text-[14px] font-bold text-mtm-text">{terrain.nom}</h3>
+        <StatutJuridiqueChip statut={terrain.statutJuridique} className="self-start" />
         {lieu && (
           <p className="flex items-center gap-1 text-xs text-mtm-muted">
             <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
