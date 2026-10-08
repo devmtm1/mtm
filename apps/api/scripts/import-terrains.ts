@@ -1,26 +1,28 @@
 import 'dotenv/config';
 import { readFileSync, writeFileSync } from 'node:fs';
-import { PrismaClient, type Prisma } from '@prisma/client';
+import { basename } from 'node:path';
+import { PrismaClient } from '@prisma/client';
+import type { PrismaService } from '../src/database/prisma.service';
+import { lireTableur } from '../src/modules/terrains/import/lecture-tableur';
+import { preparerImport } from '../src/modules/terrains/import/terrain-import';
 import {
-  parserCsv,
-  preparerImport,
-  type BienImporte,
-} from '../src/modules/terrains/import/terrain-import';
-import { DEFAULT_TERRAIN_OPTIONS } from '../src/modules/terrains/terrains.service';
+  chargerOptionsImport,
+  ecrireBiens,
+  referencesExistantes,
+} from '../src/modules/terrains/import/terrain-import-persist';
 
 /**
- * Reprise du tableur « Bd terrains MTM IMMO » dans l'application.
+ * Reprise du tableur « Bd terrains MTM IMMO » en ligne de commande. Le même
+ * import est disponible dans le back-office (Biens → Importer) ; ce script
+ * sert aux reprises en masse et aux essais depuis un poste de développement.
  *
- *   npm run import:terrains -- <fichier.csv> [options]
+ *   npm run import:terrains -- <fichier.xlsx|.csv> [options]
  *
- * Export attendu : Google Sheets → Fichier → Télécharger → CSV, un onglet à la
- * fois (« BD officielle », puis « ARCHIVES » avec `--archives`).
- *
- * Par défaut c'est un **essai à blanc** : rien n'est écrit, le rapport dit ce
- * qui serait créé, écarté ou refusé. `--apply` écrit réellement.
+ * Par défaut c'est un **essai à blanc** : rien n'est écrit. `--apply` écrit.
  *
  * Options
  *   --apply                  écrit en base (sans elle : essai à blanc)
+ *   --feuille="BD officielle" onglet d'un classeur .xlsx (le premier par défaut)
  *   --archives               onglet ARCHIVES : les biens sont repris archivés
  *   --publier-disponibles    publie sur le site les lignes « Disponible »
  *                            (sinon tout est repris en « Brouillon »)
@@ -28,12 +30,13 @@ import { DEFAULT_TERRAIN_OPTIONS } from '../src/modules/terrains/terrains.servic
  *   --rapport=<fichier.json> écrit le rapport complet
  *
  * Idempotent : un bien dont la référence existe déjà n'est ni modifié ni
- * recréé, relancer le script après correction du fichier est sans danger.
- * Aucune donnée n'est inventée : une valeur illisible est écartée, rapportée,
- * et conservée telle quelle dans les notes internes du bien.
+ * recréé. Aucune donnée n'est inventée : une valeur illisible est écartée,
+ * rapportée, et conservée telle quelle dans les notes internes du bien.
  */
 
 const prisma = new PrismaClient();
+// Mêmes fonctions que l'API : PrismaService n'est qu'un PrismaClient géré par Nest.
+const client = prisma as unknown as PrismaService;
 
 function argument(nom: string): string | undefined {
   const prefixe = `--${nom}=`;
@@ -41,66 +44,31 @@ function argument(nom: string): string | undefined {
 }
 const drapeau = (nom: string) => process.argv.includes(`--${nom}`);
 
-async function liste(
-  cle: string,
-  defaut: readonly string[],
-): Promise<string[]> {
-  const reglage = await prisma.systemSetting.findUnique({
-    where: { key: cle },
-  });
-  const valeur = reglage?.value;
-  const lue = Array.isArray(valeur)
-    ? valeur.filter((v): v is string => typeof v === 'string')
-    : [];
-  return lue.length > 0 ? lue : [...defaut];
-}
-
 async function main(): Promise<void> {
   const fichier = process.argv.slice(2).find((a) => !a.startsWith('--'));
   if (!fichier) {
     console.error(
-      'Usage : npm run import:terrains -- <fichier.csv> [--apply] [--archives]',
+      'Usage : npm run import:terrains -- <fichier.xlsx|.csv> [--apply] [--archives]',
     );
     process.exit(1);
   }
   const appliquer = drapeau('apply');
   const archives = drapeau('archives');
-  const lignes = parserCsv(readFileSync(fichier, 'utf-8'));
 
-  const rapport = preparerImport(lignes, {
-    titresAutorises: await liste(
-      'terrains.statutJuridique',
-      DEFAULT_TERRAIN_OPTIONS.statutJuridique,
-    ),
-    modalitesAutorisees: await liste(
-      'terrains.modalitePaiement',
-      DEFAULT_TERRAIN_OPTIONS.modalitePaiement,
-    ),
-    statutsVisiteAutorises: await liste(
-      'terrains.statutVisite',
-      DEFAULT_TERRAIN_OPTIONS.statutVisite,
-    ),
-    publierDisponibles: drapeau('publier-disponibles'),
-    archives,
-  });
-
-  const existants = new Set(
-    (
-      await prisma.terrain.findMany({
-        where: {
-          referenceInterne: {
-            in: rapport.biens.map((b) => b.referenceInterne),
-          },
-        },
-        select: { referenceInterne: true },
-      })
-    ).map((t) => t.referenceInterne),
+  const tableur = await lireTableur(
+    { buffer: readFileSync(fichier), originalname: basename(fichier) },
+    argument('feuille'),
   );
+  const rapport = preparerImport(
+    tableur.lignes,
+    await chargerOptionsImport(client, {
+      publierDisponibles: drapeau('publier-disponibles'),
+      archives,
+    }),
+  );
+  const existantes = await referencesExistantes(client, rapport.biens);
   const aCreer = rapport.biens.filter(
-    (b) => !existants.has(b.referenceInterne),
-  );
-  const dejaPresents = rapport.biens.filter((b) =>
-    existants.has(b.referenceInterne),
+    (b) => !existantes.has(b.referenceInterne),
   );
 
   let responsableId: string | null = null;
@@ -112,11 +80,12 @@ async function main(): Promise<void> {
   }
 
   console.log(
-    `\nFichier : ${fichier}  (${appliquer ? 'ÉCRITURE' : 'essai à blanc'})`,
+    `\nFichier : ${fichier} · onglet « ${tableur.feuille} » (${appliquer ? 'ÉCRITURE' : 'essai à blanc'})`,
   );
-  console.log(`  lignes lues ............ ${lignes.length - 1}`);
   console.log(`  à créer ................ ${aCreer.length}`);
-  console.log(`  déjà présentes (ignorées) ${dejaPresents.length}`);
+  console.log(
+    `  déjà présentes (ignorées) ${rapport.biens.length - aCreer.length}`,
+  );
   console.log(`  refusées ............... ${rapport.refuses.length}`);
   console.log(`  avertissements ......... ${rapport.avertissements.length}`);
   console.log(`  lignes vides ........... ${rapport.ignorees}`);
@@ -131,15 +100,7 @@ async function main(): Promise<void> {
   if (chemin) {
     writeFileSync(
       chemin,
-      JSON.stringify(
-        {
-          ...rapport,
-          aCreer: aCreer.length,
-          dejaPresents: dejaPresents.length,
-        },
-        null,
-        2,
-      ),
+      JSON.stringify({ ...rapport, aCreer: aCreer.length }, null, 2),
     );
     console.log(`\nRapport écrit : ${chemin}`);
   }
@@ -151,67 +112,25 @@ async function main(): Promise<void> {
     return;
   }
 
-  const maintenant = new Date();
-  await prisma.$transaction(
-    async (tx) => {
-      for (const bien of aCreer) {
-        await tx.terrain.create({
-          data: versDonnees(bien, responsableId, maintenant),
-        });
-      }
-      await tx.auditLog.create({
-        data: {
-          action: 'terrain.imported',
-          entityType: 'Terrain',
-          newValue: {
-            fichier,
-            crees: aCreer.length,
-            refuses: rapport.refuses.length,
-            archives,
-          },
-          justification: 'Reprise du tableur « Bd terrains MTM IMMO »',
-        },
-      });
+  const crees = await ecrireBiens(client, aCreer, {
+    responsableId,
+    archiveParId: null,
+  });
+  await prisma.auditLog.create({
+    data: {
+      action: 'terrain.imported',
+      entityType: 'Terrain',
+      newValue: {
+        fichier: basename(fichier),
+        feuille: tableur.feuille,
+        crees,
+        refuses: rapport.refuses.length,
+        archives,
+      },
+      justification: 'Reprise du tableur « Bd terrains MTM IMMO »',
     },
-    { maxWait: 15_000, timeout: 120_000 },
-  );
-  console.log(`\n${aCreer.length} bien(s) créé(s).`);
-}
-
-function versDonnees(
-  bien: BienImporte,
-  responsableId: string | null,
-  maintenant: Date,
-): Prisma.TerrainUncheckedCreateInput {
-  return {
-    referenceInterne: bien.referenceInterne,
-    nom: bien.nom,
-    parcelleMatricule: bien.parcelleMatricule,
-    localisationDetail: bien.localisationDetail,
-    statutJuridique: bien.statutJuridique,
-    statutCommercial: bien.statutCommercial,
-    niveauVerification: bien.niveauVerification,
-    nombreLots: bien.nombreLots,
-    superficie: bien.superficie,
-    uniteSuperficie: bien.uniteSuperficie,
-    prixCession: bien.prixCession,
-    prixPublic: bien.prixPublic,
-    contactVendeurNom: bien.contactVendeurNom,
-    contactVendeurTelephone: bien.contactVendeurTelephone,
-    modalitePaiement: bien.modalitePaiement,
-    dateEntree: bien.dateEntree ? new Date(bien.dateEntree) : undefined,
-    produitDirect: bien.produitDirect,
-    protocoleAccord: bien.protocoleAccord,
-    statutVisite: bien.statutVisite,
-    notesInternes: bien.notesInternes,
-    commercialResponsableId: responsableId ?? undefined,
-    ...(bien.archive
-      ? {
-          archiveLe: maintenant,
-          motifArchivage: 'Repris de l’onglet ARCHIVES du tableur',
-        }
-      : {}),
-  };
+  });
+  console.log(`\n${crees} bien(s) créé(s).`);
 }
 
 main()

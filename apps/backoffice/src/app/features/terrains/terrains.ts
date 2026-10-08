@@ -18,6 +18,7 @@ import {
   LucideCircleCheck,
   LucideColumns3,
   LucideEye,
+  LucideFileSpreadsheet,
   LucideGrid2X2,
   LucideLandPlot,
   LucideList,
@@ -120,6 +121,7 @@ const OPTIONAL_COLUMNS: { colId: string; label: string }[] = [
     LucideCircleCheck,
     LucideColumns3,
     LucideEye,
+    LucideFileSpreadsheet,
     LucideGrid2X2,
     LucideLandPlot,
     LucideList,
@@ -384,6 +386,10 @@ export class Terrains implements OnInit {
 
   protected openCreate(): void {
     void this.router.navigate(['/terrains/nouveau']);
+  }
+
+  protected openImport(): void {
+    void this.router.navigate(['/terrains/import']);
   }
 
   protected openDetail(id: string): void {

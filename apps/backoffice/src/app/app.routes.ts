@@ -47,6 +47,14 @@ export const routes: Routes = [
           import('./features/users/users').then((m) => m.Users),
       },
       {
+        path: 'terrains/import',
+        canActivate: [permissionsGuard(['terrains:creer'])],
+        loadComponent: () =>
+          import('./features/terrains/terrain-import/terrain-import').then(
+            (m) => m.TerrainImport,
+          ),
+      },
+      {
         path: 'terrains/nouveau',
         canActivate: [permissionsGuard(['terrains:creer'])],
         loadComponent: () =>

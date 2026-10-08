@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import ExcelJS from 'exceljs';
 import { authenticator } from 'otplib';
 import request from 'supertest';
 import { createE2eApp, type E2eContext } from './helpers/e2e-app';
@@ -476,6 +477,272 @@ describeE2e('Parcours Terrains J1.1/J1.2 (e2e)', () => {
       expect(actions).toEqual(
         expect.arrayContaining(['terrain.archived', 'terrain.restored']),
       );
+    });
+  });
+
+  describe('import d’un tableur Excel depuis le back-office', () => {
+    const auth = () => ({ Authorization: `Bearer ${accessToken}` });
+    const ids = (corps: { items: Array<{ id: string }> }) =>
+      corps.items.map((t) => t.id);
+
+    const ENTETE = [
+      'N°',
+      'MATRICUL',
+      'LOCALITE',
+      'Nbre T',
+      'TITRE JURIDIQUE',
+      'PRIX',
+      'PROPRIETAIRE /MANDATAIRE',
+      'TELEPHONE',
+      'VENDU',
+      'SURFACE',
+      'MODALITE DE PAIEMENT',
+      'DATE ENTREE',
+    ];
+
+    async function classeur(
+      lignes: Array<Array<string | number>>,
+      onglet = 'BD officielle',
+    ): Promise<Buffer> {
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet(onglet);
+      // Lignes de titre avant l'en-tête, comme dans le tableur de MTM.
+      ws.addRow(['Bd terrains MTM IMMO - Officiel']);
+      ws.addRow([]);
+      ws.addRow(ENTETE);
+      lignes.forEach((l) => ws.addRow(l));
+      return Buffer.from(await wb.xlsx.writeBuffer());
+    }
+
+    const LIGNES = [
+      [
+        1,
+        'IMP-A',
+        'Thiès',
+        3,
+        'Bail',
+        8000000,
+        'Maty KHOULE',
+        '77 712 35 20',
+        'DISPONIBLE',
+        '150m²',
+        'cash',
+        '07/07/2026',
+      ],
+      [
+        2,
+        'IMP-B',
+        'Mbour',
+        1,
+        'Bail',
+        '2 million 700',
+        'Fama',
+        '33 601 10 81 77',
+        'A VISITER DISPONIBLE',
+        '7 Ha',
+        'moratoi',
+        '',
+      ],
+      [3, 'IMP-C', 'Diass', 1, 'DG', 3000000, '', '', '', '', '', ''],
+      [4, 'TER-E2E-001', 'Déjà là', 1, 'Bail', 1000000, '', '', '', '', '', ''],
+    ];
+
+    const envoyer = (
+      route: string,
+      buffer: Buffer,
+      champs: Record<string, string> = {},
+      nom = 'bd-terrains.xlsx',
+      token = accessToken,
+    ) => {
+      let req = request(app.getHttpServer())
+        .post(`/api/terrains/${route}`)
+        .set('Authorization', `Bearer ${token}`)
+        .attach('file', buffer, nom);
+      for (const [k, v] of Object.entries(champs)) req = req.field(k, v);
+      return req;
+    };
+
+    it('l’aperçu contrôle le fichier sans rien écrire', async () => {
+      const avant = await request(app.getHttpServer())
+        .get('/api/terrains?pageSize=200')
+        .set(auth());
+
+      const reponse = await envoyer('import/preview', await classeur(LIGNES));
+
+      expect(reponse.status).toBe(201);
+      expect(reponse.body).toMatchObject({
+        feuille: 'BD officielle',
+        aCreer: 2,
+        dejaPresents: 1,
+        refuses: 1,
+      });
+      expect(reponse.body.lignesRefusees[0].raison).toContain(
+        'titre juridique non reconnu « DG »',
+      );
+      // Numéros de ligne tels qu'affichés dans Excel : en-tête ligne 3.
+      expect(reponse.body.lignesRefusees[0].ligne).toBe(6);
+      expect(
+        reponse.body.apercu.map(
+          (b: { referenceInterne: string }) => b.referenceInterne,
+        ),
+      ).toEqual(['IMP-A', 'IMP-B']);
+
+      const apres = await request(app.getHttpServer())
+        .get('/api/terrains?pageSize=200')
+        .set(auth());
+      expect(apres.body.total).toBe(avant.body.total);
+    });
+
+    it('importe en Brouillon, sans rien publier, et rapporte le détail', async () => {
+      const reponse = await envoyer('import', await classeur(LIGNES));
+
+      expect(reponse.status).toBe(201);
+      expect(reponse.body).toMatchObject({
+        crees: 2,
+        refuses: 1,
+        dejaPresents: 1,
+      });
+
+      const liste = await request(app.getHttpServer())
+        .get('/api/terrains?search=IMP-')
+        .set(auth());
+      expect(liste.body.total).toBe(2);
+      const parRef = Object.fromEntries(
+        liste.body.items.map((t: { referenceInterne: string }) => [
+          t.referenceInterne,
+          t,
+        ]),
+      );
+      expect(parRef['IMP-A']).toMatchObject({
+        statutCommercial: 'Brouillon',
+        nombreLots: 3,
+        contactVendeurNom: 'Maty KHOULE',
+        modalitePaiement: 'Cash',
+      });
+      expect(parRef['IMP-A'].dateEntree).toContain('2026-07-07');
+      expect(Number(parRef['IMP-B'].prixPublic)).toBe(2_700_000);
+      expect(Number(parRef['IMP-B'].superficie)).toBe(70_000);
+      expect(parRef['IMP-B'].statutVisite).toBe('À visiter');
+
+      const catalogue = await request(app.getHttpServer()).get(
+        '/api/terrains/public',
+      );
+      expect(
+        catalogue.body.items.some((t: { referenceInterne: string }) =>
+          t.referenceInterne.startsWith('IMP-'),
+        ),
+      ).toBe(false);
+    });
+
+    it('réimporter le même fichier ne crée aucun doublon', async () => {
+      const reponse = await envoyer('import', await classeur(LIGNES));
+      expect(reponse.status).toBe(201);
+      expect(reponse.body).toMatchObject({ crees: 0, dejaPresents: 3 });
+    });
+
+    it('reprend l’onglet ARCHIVES déjà archivé', async () => {
+      const buffer = await classeur(
+        [
+          [
+            9,
+            'IMP-OLD',
+            'Ancien site',
+            1,
+            'Bail',
+            5000000,
+            '',
+            '',
+            'Vendu',
+            '',
+            '',
+            '',
+          ],
+        ],
+        'ARCHIVES',
+      );
+      const reponse = await envoyer('import', buffer, {
+        feuille: 'ARCHIVES',
+        archives: 'true',
+      });
+      expect(reponse.body.crees).toBe(1);
+
+      const archives = await request(app.getHttpServer())
+        .get('/api/terrains?archivage=archives')
+        .set(auth());
+      expect(
+        archives.body.items.map(
+          (t: { referenceInterne: string }) => t.referenceInterne,
+        ),
+      ).toContain('IMP-OLD');
+      const actifs = await request(app.getHttpServer())
+        .get('/api/terrains?search=IMP-OLD')
+        .set(auth());
+      expect(actifs.body.total).toBe(0);
+    });
+
+    it('publie les « Disponible » seulement sur demande explicite', async () => {
+      const buffer = await classeur([
+        [
+          10,
+          'IMP-PUB',
+          'Saly',
+          1,
+          'Bail',
+          9000000,
+          '',
+          '',
+          'DISPONIBLE',
+          '300m²',
+          '',
+          '',
+        ],
+      ]);
+      const reponse = await envoyer('import', buffer, {
+        publierDisponibles: 'true',
+      });
+      expect(reponse.body.crees).toBe(1);
+
+      const catalogue = await request(app.getHttpServer()).get(
+        '/api/terrains/public',
+      );
+      expect(
+        catalogue.body.items.some(
+          (t: { referenceInterne: string }) => t.referenceInterne === 'IMP-PUB',
+        ),
+      ).toBe(true);
+    });
+
+    it('trace l’import dans le journal d’audit', async () => {
+      const journal = await request(app.getHttpServer())
+        .get('/api/audit?action=terrain.imported')
+        .set(auth());
+      expect(journal.status).toBe(200);
+      expect(journal.body.items.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('refuse un utilisateur sans droit de création, un faux fichier et l’absence de fichier', async () => {
+      const buffer = await classeur(LIGNES);
+      const sansDroit = await envoyer(
+        'import/preview',
+        buffer,
+        {},
+        'a.xlsx',
+        commercialAccessToken,
+      );
+      expect(sansDroit.status).toBe(403);
+
+      const faux = await envoyer(
+        'import/preview',
+        Buffer.from('pas un classeur'),
+        {},
+        'a.xlsx',
+      );
+      expect(faux.status).toBe(400);
+
+      const vide = await request(app.getHttpServer())
+        .post('/api/terrains/import/preview')
+        .set(auth());
+      expect(vide.status).toBe(400);
     });
   });
 });

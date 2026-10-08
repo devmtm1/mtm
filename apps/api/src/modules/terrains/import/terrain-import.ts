@@ -319,6 +319,19 @@ export interface RapportImport {
   ignorees: number;
 }
 
+/** Lignes parcourues pour retrouver l'en-tête sous d'éventuelles lignes de titre. */
+const LIGNES_RECHERCHE_ENTETE = 30;
+
+/** Indice de la ligne d'en-tête (LOCALITE + TITRE JURIDIQUE), ou `null`. */
+export function trouverEntete(lignes: string[][]): number | null {
+  const limite = Math.min(lignes.length, LIGNES_RECHERCHE_ENTETE);
+  for (let i = 0; i < limite; i++) {
+    const carte = cartographierEntetes(lignes[i]);
+    if (carte.titre !== undefined && carte.localite !== undefined) return i;
+  }
+  return null;
+}
+
 const OUI = /^(oui|o|x|yes|1|true|ok)$/;
 
 /**
@@ -336,8 +349,11 @@ export function preparerImport(
     ignorees: 0,
   };
   if (lignes.length === 0) return rapport;
-  const carte = cartographierEntetes(lignes[0]);
-  if (carte.titre === undefined || carte.localite === undefined) {
+  // Dans le tableur de MTM l'en-tête n'est pas en première ligne : des lignes
+  // de titre le précèdent. On le cherche parmi les premières lignes.
+  const indexEntete = trouverEntete(lignes);
+  const carte = cartographierEntetes(lignes[indexEntete ?? 0]);
+  if (indexEntete === null) {
     rapport.refuses.push({
       ligne: 1,
       raison:
@@ -349,8 +365,10 @@ export function preparerImport(
     carte[champ] === undefined ? undefined : ligne[carte[champ]]?.trim();
 
   const refsPrises = new Set<string>();
-  lignes.slice(1).forEach((ligne, index) => {
-    const numeroLigne = index + 2;
+  lignes.forEach((ligne, index) => {
+    if (index <= indexEntete) return;
+    // Numéro de ligne tel qu'affiché dans Excel / Google Sheets.
+    const numeroLigne = index + 1;
     if (ligne.every((c) => !c.trim())) {
       rapport.ignorees++;
       return;

@@ -114,6 +114,44 @@ export interface TerrainDocument {
   version: number;
 }
 
+/** Réglages d'un import de tableur (onglet, archives, publication). */
+export interface TerrainImportOptions {
+  feuille?: string;
+  /** Onglet ARCHIVES : les biens sont repris déjà archivés. */
+  archives?: boolean;
+  /** Publie les biens « Disponible » ; sinon tout est repris en Brouillon. */
+  publierDisponibles?: boolean;
+}
+
+/** Réponse de l'aperçu : ce que l'import ferait, sans rien écrire. */
+export interface TerrainImportPreview {
+  feuilles: string[];
+  feuille: string;
+  aCreer: number;
+  dejaPresents: number;
+  refuses: number;
+  ignorees: number;
+  nombreAvertissements: number;
+  lignesRefusees: { ligne: number; raison: string }[];
+  avertissements: { ligne: number; message: string }[];
+  apercu: {
+    ligne: number;
+    referenceInterne: string;
+    nom: string;
+    statutJuridique: string;
+    statutCommercial: string;
+    nombreLots: number | null;
+    superficie: number | null;
+    prixPublic: number | null;
+    contact: string | null;
+    modalitePaiement: string | null;
+  }[];
+}
+
+export interface TerrainImportResult extends TerrainImportPreview {
+  crees: number;
+}
+
 export interface TerrainPage {
   items: TerrainListItem[];
   total: number;

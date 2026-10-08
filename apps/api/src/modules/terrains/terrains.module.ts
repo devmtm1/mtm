@@ -5,6 +5,7 @@ import { TerrainsService } from './terrains.service';
 import { TerrainsAccessService } from './terrains-access.service';
 import { TerrainsPublicService } from './terrains-public.service';
 import { TerrainsAssetsService } from './terrains-assets.service';
+import { TerrainsImportService } from './import/terrains-import.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import { SettingsModule } from '../settings/settings.module';
 
@@ -15,6 +16,7 @@ import { SettingsModule } from '../settings/settings.module';
     TerrainsAccessService,
     TerrainsPublicService,
     TerrainsAssetsService,
+    TerrainsImportService,
     TerrainsService,
     CloudinaryService,
   ],

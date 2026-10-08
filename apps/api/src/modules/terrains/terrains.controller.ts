@@ -34,6 +34,9 @@ import { ArchiveTerrainDto } from './dto/archive-terrain.dto';
 import { CreateTerrainNoteDto } from './dto/create-terrain-note.dto';
 import { UpdateReferenceVendueDto } from './dto/update-reference-vendue.dto';
 import { TerrainsAssetsService } from './terrains-assets.service';
+import { TerrainsImportService } from './import/terrains-import.service';
+import { ImportTerrainsDto } from './dto/import-terrains.dto';
+import { MAX_TAILLE_IMPORT } from './import/lecture-tableur';
 
 @ApiTags('terrains')
 @Controller('terrains')
@@ -42,6 +45,7 @@ export class TerrainsController {
     private readonly terrains: TerrainsService,
     private readonly publicCatalog: TerrainsPublicService,
     private readonly assets: TerrainsAssetsService,
+    private readonly importation: TerrainsImportService,
     private readonly audit: AuditService,
   ) {}
 
@@ -165,6 +169,54 @@ export class TerrainsController {
       userAgent: req.headers['user-agent'],
     });
     return terrain;
+  }
+
+  /**
+   * Import d'un tableur (.xlsx ou .csv) : l'aperçu contrôle le fichier sans
+   * rien écrire, l'import relit le même fichier et crée les biens.
+   */
+  @Post('import/preview')
+  @RequirePermissions('terrains:creer')
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_TAILLE_IMPORT } }),
+  )
+  apercuImport(
+    @Body() dto: ImportTerrainsDto,
+    @UploadedFile() file: Express.Multer.File | undefined,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.importation.apercu(file, dto, user);
+  }
+
+  @Post('import')
+  @RequirePermissions('terrains:creer')
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_TAILLE_IMPORT } }),
+  )
+  async importer(
+    @Body() dto: ImportTerrainsDto,
+    @UploadedFile() file: Express.Multer.File | undefined,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    const resultat = await this.importation.importer(file, dto, user);
+    await this.audit.record({
+      userId: user.id,
+      action: 'terrain.imported',
+      entityType: 'Terrain',
+      newValue: {
+        fichier: file?.originalname,
+        feuille: resultat.feuille,
+        crees: resultat.crees,
+        refuses: resultat.refuses,
+        archives: dto.archives ?? false,
+        publies: dto.publierDisponibles ?? false,
+      },
+      justification: 'Import d’un tableur de biens',
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    return resultat;
   }
 
   /**

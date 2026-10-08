@@ -10,6 +10,9 @@
     </div>
     <div class="page-header__actions">
       @if (canCreate()) {
+        <button mat-stroked-button type="button" (click)="openImport()" matTooltip="Créer plusieurs biens d’un coup à partir d’un fichier Excel">
+          <svg class="btn-icon" lucideFileSpreadsheet aria-hidden="true"></svg>Importer depuis Excel
+        </button>
         <button mat-flat-button color="primary" type="button" (click)="openCreate()">
           <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau bien
         </button>

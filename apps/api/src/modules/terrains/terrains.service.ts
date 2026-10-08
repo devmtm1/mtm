@@ -29,7 +29,9 @@ const terrainInclude = {
  * documents de chaque terrain alourdissait inutilement la réponse.
  */
 const terrainListInclude = {
-  proprietaire: { select: { id: true, firstName: true, lastName: true, phone: true } },
+  proprietaire: {
+    select: { id: true, firstName: true, lastName: true, phone: true },
+  },
   commercialResponsable: {
     select: { id: true, firstName: true, lastName: true },
   },

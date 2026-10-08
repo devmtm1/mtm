@@ -1,0 +1,196 @@
+<section class="import-page">
+  <a class="back-link" href="/terrains" (click)="$event.preventDefault(); goBack()">
+    <svg lucideArrowLeft aria-hidden="true"></svg>Retour à la liste des biens
+  </a>
+
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Cœur commercial</p>
+      <h1 class="page-header__title">Importer des biens depuis Excel</h1>
+      <p class="page-header__subtitle">
+        Déposez le tableur de suivi (.xlsx ou .csv) : les fiches sont créées d’un coup, sans saisie
+        une à une. Vous voyez d’abord ce qui sera créé ; rien n’est enregistré avant votre
+        confirmation.
+      </p>
+    </div>
+  </header>
+
+  @if (result(); as r) {
+    <!-- Résultat -->
+    <section class="page-card import-block import-done" aria-live="polite">
+      <svg lucideCircleCheck aria-hidden="true" class="import-done__icon"></svg>
+      <h2>{{ r.crees }} bien{{ r.crees > 1 ? 's' : '' }} importé{{ r.crees > 1 ? 's' : '' }}</h2>
+      <p>
+        {{ r.dejaPresents }} déjà présent{{ r.dejaPresents > 1 ? 's' : '' }} (non modifié{{ r.dejaPresents > 1 ? 's' : '' }}),
+        {{ r.refuses }} ligne{{ r.refuses > 1 ? 's' : '' }} refusée{{ r.refuses > 1 ? 's' : '' }}.
+      </p>
+      @if (!r.crees) {
+        <p class="import-hint">Aucun nouveau bien : ce fichier a sans doute déjà été importé.</p>
+      } @else if (!publierDisponibles()) {
+        <p class="import-hint">
+          Les biens sont en <strong>Brouillon</strong> : ils n’apparaissent pas sur le site tant que vous
+          ne passez pas leur statut à « Disponible » (après avoir ajouté photos et relu la fiche).
+        </p>
+      }
+      <div class="import-actions">
+        <button mat-flat-button color="primary" type="button" (click)="viewList()">Voir la liste des biens</button>
+        <button mat-stroked-button type="button" (click)="reset()">Importer un autre fichier</button>
+      </div>
+    </section>
+  } @else {
+    <!-- Dépôt du fichier -->
+    <section class="page-card import-block">
+      <div
+        class="dropzone"
+        [class.is-dragging]="dragging()"
+        (dragover)="onDragOver($event)"
+        (dragleave)="dragging.set(false)"
+        (drop)="onDrop($event)"
+      >
+        <svg lucideFileSpreadsheet aria-hidden="true"></svg>
+        @if (file(); as f) {
+          <strong>{{ f.name }}</strong>
+          <small>{{ (f.size / 1024).toFixed(0) }} Ko</small>
+        } @else {
+          <strong>Glissez le fichier ici</strong>
+          <small>ou choisissez-le sur votre poste · .xlsx ou .csv · 5 Mo maximum</small>
+        }
+        <label class="upload-button">
+          <svg lucideUpload aria-hidden="true"></svg>{{ file() ? 'Choisir un autre fichier' : 'Choisir un fichier' }}
+          <input type="file" accept=".xlsx,.csv" (change)="onFileInput($event)" [disabled]="loading() || importing()" />
+        </label>
+      </div>
+      <p class="import-hint">
+        Les colonnes sont reconnues par leur titre : MATRICUL, LOCALITE, Nbre T, TITRE JURIDIQUE, PRIX
+        DE CESSION, PRIX, PROPRIETAIRE/MANDATAIRE, TELEPHONE, VENDU, SURFACE, MODALITE DE PAIEMENT, DATE
+        ENTREE, DIRECT, PROTOCOLE D’ACCORD. Seules <strong>LOCALITE</strong> et
+        <strong>TITRE JURIDIQUE</strong> sont indispensables.
+      </p>
+    </section>
+
+    @if (loading() && !preview()) {
+      <section class="page-card import-block" aria-busy="true">
+        <div class="skeleton" style="height: 20px; width: 40%"></div>
+        <div class="skeleton" style="height: 120px"></div>
+      </section>
+    }
+
+    @if (preview(); as p) {
+      <!-- Réglages -->
+      <section class="page-card import-block">
+        <h2>Réglages de l’import</h2>
+        <div class="import-options">
+          @if (p.feuilles.length > 1) {
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Onglet à importer</mat-label>
+              <mat-select [value]="p.feuille" (selectionChange)="changeSheet($event.value)">
+                @for (nom of p.feuilles; track nom) {
+                  <mat-option [value]="nom">{{ nom }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          }
+          <div class="import-options__checks">
+            <mat-checkbox [checked]="archives()" (change)="toggleArchives($event.checked)">
+              Reprendre ces biens déjà archivés (onglet ARCHIVES)
+            </mat-checkbox>
+            @if (canPublish) {
+              <mat-checkbox [checked]="publierDisponibles()" (change)="togglePublier($event.checked)">
+                Publier sur le site les biens « Disponible »
+              </mat-checkbox>
+            }
+          </div>
+        </div>
+        @if (!publierDisponibles()) {
+          <p class="import-hint">
+            Par défaut tous les biens sont créés en <strong>Brouillon</strong> : aucun ne paraît sur le site
+            avant que vous l’ayez relu.
+          </p>
+        }
+      </section>
+
+      <!-- Aperçu -->
+      <section class="page-card import-block" [class.is-loading]="loading()" aria-live="polite">
+        <h2>Ce qui sera fait</h2>
+        <div class="import-kpis">
+          <div class="import-kpi import-kpi--ok"><strong>{{ p.aCreer }}</strong><span>à créer</span></div>
+          <div class="import-kpi"><strong>{{ p.dejaPresents }}</strong><span>déjà présents, ignorés</span></div>
+          <div class="import-kpi" [class.import-kpi--warn]="p.refuses > 0"><strong>{{ p.refuses }}</strong><span>refusés</span></div>
+          <div class="import-kpi" [class.import-kpi--warn]="p.nombreAvertissements > 0">
+            <strong>{{ p.nombreAvertissements }}</strong><span>avertissements</span>
+          </div>
+        </div>
+
+        @if (p.apercu.length) {
+          <h3>Aperçu des premiers biens</h3>
+          <div class="import-table-wrap">
+            <table class="import-table">
+              <thead>
+                <tr>
+                  <th>Ligne</th><th>Référence</th><th>Localité</th><th>Titre</th><th>Lots</th>
+                  <th>Surface</th><th>Prix</th><th>Vendeur</th><th>Paiement</th><th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (bien of p.apercu; track bien.ligne) {
+                  <tr>
+                    <td>{{ bien.ligne }}</td>
+                    <td>{{ bien.referenceInterne }}</td>
+                    <td>{{ bien.nom }}</td>
+                    <td>{{ bien.statutJuridique }}</td>
+                    <td>{{ bien.nombreLots ?? '—' }}</td>
+                    <td>{{ bien.superficie === null ? '—' : bien.superficie + ' m²' }}</td>
+                    <td>{{ bien.prixPublic | mtmMoney }}</td>
+                    <td>{{ bien.contact || '—' }}</td>
+                    <td>{{ bien.modalitePaiement || '—' }}</td>
+                    <td>{{ bien.statutCommercial }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          @if (p.aCreer > p.apercu.length) {
+            <p class="import-hint">… et {{ p.aCreer - p.apercu.length }} autre{{ p.aCreer - p.apercu.length > 1 ? 's' : '' }}.</p>
+          }
+        }
+
+        @if (p.lignesRefusees.length) {
+          <h3 class="import-title-warn"><svg lucideTriangleAlert aria-hidden="true"></svg>Lignes refusées (non importées)</h3>
+          <ul class="import-issues">
+            @for (ligne of p.lignesRefusees; track $index) {
+              <li><span class="import-issues__line">Ligne {{ ligne.ligne }}</span>{{ ligne.raison }}</li>
+            }
+          </ul>
+          @if (p.refuses > p.lignesRefusees.length) {
+            <p class="import-hint">{{ p.refuses - p.lignesRefusees.length }} autre(s) non affichée(s).</p>
+          }
+          <p class="import-hint">Corrigez ces lignes dans le fichier puis redéposez-le : les biens déjà créés ne seront pas dupliqués.</p>
+        }
+
+        @if (p.avertissements.length) {
+          <h3>Avertissements (importés, valeur écartée ou à vérifier)</h3>
+          <ul class="import-issues">
+            @for (a of p.avertissements; track $index) {
+              <li><span class="import-issues__line">Ligne {{ a.ligne }}</span>{{ a.message }}</li>
+            }
+          </ul>
+          @if (p.nombreAvertissements > p.avertissements.length) {
+            <p class="import-hint">{{ p.nombreAvertissements - p.avertissements.length }} autre(s) non affiché(s).</p>
+          }
+          <p class="import-hint">La saisie d’origine de chaque valeur écartée est conservée dans les notes internes du bien.</p>
+        }
+
+        <div class="import-actions">
+          <button mat-flat-button color="primary" type="button" (click)="confirm()" [disabled]="!peutImporter()">
+            @if (importing()) {
+              Import en cours…
+            } @else {
+              Importer {{ p.aCreer }} bien{{ p.aCreer > 1 ? 's' : '' }}
+            }
+          </button>
+          <button mat-stroked-button type="button" (click)="reset()" [disabled]="importing()">Annuler</button>
+        </div>
+      </section>
+    }
+  }
+</section>

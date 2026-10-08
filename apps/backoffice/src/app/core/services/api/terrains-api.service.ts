@@ -6,6 +6,9 @@ import { environment } from '../../../../environments/environment';
 import type {
   CreateTerrainPayload,
   ProprietaireSummary,
+  TerrainImportOptions,
+  TerrainImportPreview,
+  TerrainImportResult,
   TerrainCatalogueItem,
   TerrainDetail,
   TerrainOptions,
@@ -102,6 +105,25 @@ export class TerrainsApiService {
   /** Affiche un bien vendu sur le site public comme référence, ou le retire. */
   setReferenceVendue(id: string, afficher: boolean): Observable<TerrainDetail> {
     return this.http.patch<TerrainDetail>(`${this.baseUrl}/${id}/reference-vendue`, { afficher });
+  }
+
+  /** Contrôle un tableur (.xlsx / .csv) sans rien écrire. */
+  previewImport(file: File, options: TerrainImportOptions): Observable<TerrainImportPreview> {
+    return this.http.post<TerrainImportPreview>(`${this.baseUrl}/import/preview`, this.importForm(file, options));
+  }
+
+  /** Crée les biens du tableur ; le même fichier est renvoyé, le serveur ne garde rien. */
+  importTerrains(file: File, options: TerrainImportOptions): Observable<TerrainImportResult> {
+    return this.http.post<TerrainImportResult>(`${this.baseUrl}/import`, this.importForm(file, options));
+  }
+
+  private importForm(file: File, options: TerrainImportOptions): FormData {
+    const form = new FormData();
+    form.append('file', file);
+    if (options.feuille) form.append('feuille', options.feuille);
+    form.append('archives', String(!!options.archives));
+    form.append('publierDisponibles', String(!!options.publierDisponibles));
+    return form;
   }
 
   /** Retire le bien du portefeuille actif sans rien supprimer. */

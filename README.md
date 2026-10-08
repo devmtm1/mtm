@@ -329,8 +329,9 @@ conservés, et il se restaure à tout moment (`PATCH /api/terrains/:id/archive`
 et `/restore`). Une vente en cours bloque l'archivage ; un bien archivé ne se
 modifie plus avant restauration.
 
-La reprise des données existantes se fait par `npm run import:terrains` —
-voir `docs/IMPORT_TABLEUR.md`.
+Les biens du tableur de suivi se reprennent d'un coup depuis le back-office
+(**Biens → Importer depuis Excel**, fichier .xlsx ou .csv, aperçu avant
+confirmation) ou par `npm run import:terrains` — voir `docs/IMPORT_TABLEUR.md`.
 
 ## Phase actuelle
 
