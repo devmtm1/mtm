@@ -33,6 +33,8 @@ export class TerrainsPublicService {
     const search = query.search?.trim();
     const mode = query.statut ?? 'disponible';
     const base: Prisma.TerrainWhereInput = {
+      // Un bien archivé ne paraît jamais sur le site, quel que soit son statut.
+      archiveLe: null,
       // Recherche libre du catalogue public : restreinte aux champs publics
       // (jamais parcelleMatricule ni notes internes).
       ...(search
@@ -147,6 +149,7 @@ export class TerrainsPublicService {
     const terrain = await this.prisma.terrain.findFirst({
       where: {
         id,
+        archiveLe: null,
         OR: [
           { statutCommercial: 'Disponible' },
           { statutCommercial: 'Vendu', referenceVendue: true },
@@ -171,7 +174,7 @@ export class TerrainsPublicService {
       this.settings.getRawValue('terrains.statutJuridique'),
       this.settings.getRawValue('terrains.nombrePieces'),
       this.prisma.terrain.findMany({
-        where: { statutCommercial: 'Disponible' },
+        where: { statutCommercial: 'Disponible', archiveLe: null },
         select: {
           region: true,
           commune: true,
@@ -180,7 +183,11 @@ export class TerrainsPublicService {
         },
       }),
       this.prisma.terrain.count({
-        where: { statutCommercial: 'Vendu', referenceVendue: true },
+        where: {
+          statutCommercial: 'Vendu',
+          referenceVendue: true,
+          archiveLe: null,
+        },
       }),
     ]);
 

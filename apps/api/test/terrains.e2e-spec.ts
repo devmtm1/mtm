@@ -290,4 +290,192 @@ describeE2e('Parcours Terrains J1.1/J1.2 (e2e)', () => {
     expect(Number(priceUpdate.newValue.prixAcquisition)).toBe(5500000);
     expect(Number(priceUpdate.oldValue.prixAcquisition)).toBe(5000000);
   });
+
+  describe('suivi du portefeuille et archivage (reprise du tableur)', () => {
+    const auth = () => ({ Authorization: `Bearer ${accessToken}` });
+    const ids = (corps: { items: Array<{ id: string }> }) =>
+      corps.items.map((t) => t.id);
+
+    it('enregistre les champs du tableur et masque le prix de cession au commercial', async () => {
+      const response = await request(app.getHttpServer())
+        .patch(`/api/terrains/${terrainId}`)
+        .set(auth())
+        .send({
+          prixCession: 4500000,
+          justification: 'Prix de cession convenu avec le vendeur',
+          nombreLots: 6,
+          dateEntree: '2026-07-07',
+          modalitePaiement: 'Moratoire',
+          dureeMoratoireMois: 12,
+          produitDirect: true,
+          protocoleAccord: true,
+          statutVisite: 'À visiter',
+          contactVendeurNom: 'Maty KHOULE',
+          contactVendeurTelephone: '777123520',
+          referenceDocumentFoncier: 'DEL-2024-118',
+          dateDocumentFoncier: '2024-03-15',
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        nombreLots: 6,
+        modalitePaiement: 'Moratoire',
+        produitDirect: true,
+        protocoleAccord: true,
+        statutVisite: 'À visiter',
+        contactVendeurNom: 'Maty KHOULE',
+      });
+      expect(response.body.dateEntree).toContain('2026-07-07');
+
+      const commercial = await request(app.getHttpServer())
+        .get(`/api/terrains/${terrainId}`)
+        .set('Authorization', `Bearer ${commercialAccessToken}`);
+      expect(commercial.status).toBe(200);
+      expect(commercial.body.prixCession).toBeNull();
+      expect(commercial.body.nombreLots).toBe(6);
+    });
+
+    it('exige une justification pour changer le prix de cession', async () => {
+      const response = await request(app.getHttpServer())
+        .patch(`/api/terrains/${terrainId}`)
+        .set(auth())
+        .send({ prixCession: 4800000 });
+      expect(response.status).toBe(400);
+    });
+
+    it('retrouve un bien par le nom ou le téléphone du vendeur', async () => {
+      const parNom = await request(app.getHttpServer())
+        .get('/api/terrains?search=khoule')
+        .set(auth());
+      expect(ids(parNom.body)).toContain(terrainId);
+      const parTel = await request(app.getHttpServer())
+        .get('/api/terrains?search=77%20712%2035%2020')
+        .set(auth());
+      expect(ids(parTel.body)).toContain(terrainId);
+      const filtre = await request(app.getHttpServer())
+        .get('/api/terrains?modalitePaiement=Moratoire&produitDirect=true')
+        .set(auth());
+      expect(ids(filtre.body)).toEqual([terrainId]);
+    });
+
+    it('refuse une modalité de paiement hors paramétrage', async () => {
+      const response = await request(app.getHttpServer())
+        .patch(`/api/terrains/${terrainId}`)
+        .set(auth())
+        .send({ modalitePaiement: 'Troc' });
+      expect(response.status).toBe(400);
+    });
+
+    it('tient les notes de suivi du bien', async () => {
+      const cree = await request(app.getHttpServer())
+        .post(`/api/terrains/${terrainId}/notes`)
+        .set(auth())
+        .send({ texte: 'Vendeur rappelé, visite prévue samedi' });
+      expect(cree.status).toBe(201);
+      const liste = await request(app.getHttpServer())
+        .get(`/api/terrains/${terrainId}/notes`)
+        .set(auth());
+      expect(liste.status).toBe(200);
+      expect(liste.body[0]).toMatchObject({
+        texte: 'Vendeur rappelé, visite prévue samedi',
+        auteur: { lastName: 'MTM' },
+      });
+    });
+
+    it('exige un motif pour archiver, et un commercial ne le peut pas', async () => {
+      const sansMotif = await request(app.getHttpServer())
+        .patch(`/api/terrains/${terrainId}/archive`)
+        .set(auth())
+        .send({});
+      expect(sansMotif.status).toBe(400);
+      const commercial = await request(app.getHttpServer())
+        .patch(`/api/terrains/${terrainId}/archive`)
+        .set('Authorization', `Bearer ${commercialAccessToken}`)
+        .send({ motif: 'Test' });
+      expect(commercial.status).toBe(403);
+    });
+
+    it('archive : le bien quitte la liste et le site public, mais reste consultable', async () => {
+      const archive = await request(app.getHttpServer())
+        .patch(`/api/terrains/${terrainId}/archive`)
+        .set(auth())
+        .send({ motif: 'Doublon avec une autre fiche' });
+      expect(archive.status).toBe(200);
+      expect(archive.body.archiveLe).toBeTruthy();
+      expect(archive.body.motifArchivage).toBe('Doublon avec une autre fiche');
+
+      const liste = await request(app.getHttpServer())
+        .get('/api/terrains')
+        .set(auth());
+      expect(ids(liste.body)).not.toContain(terrainId);
+      const archives = await request(app.getHttpServer())
+        .get('/api/terrains?archivage=archives')
+        .set(auth());
+      expect(ids(archives.body)).toEqual([terrainId]);
+
+      const catalogue = await request(app.getHttpServer()).get(
+        '/api/terrains/public',
+      );
+      expect(ids(catalogue.body)).not.toContain(terrainId);
+      const fichePublique = await request(app.getHttpServer()).get(
+        `/api/terrains/public/${terrainId}`,
+      );
+      expect(fichePublique.status).toBe(404);
+
+      const fiche = await request(app.getHttpServer())
+        .get(`/api/terrains/${terrainId}`)
+        .set(auth());
+      expect(fiche.status).toBe(200);
+      expect(fiche.body.referenceInterne).toBe('TER-E2E-001');
+    });
+
+    it('un bien archivé ne se modifie plus avant restauration', async () => {
+      const response = await request(app.getHttpServer())
+        .patch(`/api/terrains/${terrainId}`)
+        .set(auth())
+        .send({ nom: 'Renommé' });
+      expect(response.status).toBe(409);
+    });
+
+    it('restaure : le bien reparaît partout, intact, sans fuite du suivi interne', async () => {
+      const restaure = await request(app.getHttpServer())
+        .patch(`/api/terrains/${terrainId}/restore`)
+        .set(auth());
+      expect(restaure.status).toBe(200);
+      expect(restaure.body.archiveLe).toBeNull();
+
+      const liste = await request(app.getHttpServer())
+        .get('/api/terrains')
+        .set(auth());
+      expect(ids(liste.body)).toContain(terrainId);
+      const fichePublique = await request(app.getHttpServer()).get(
+        `/api/terrains/public/${terrainId}`,
+      );
+      expect(fichePublique.status).toBe(200);
+      for (const interne of [
+        'prixCession',
+        'contactVendeurNom',
+        'contactVendeurTelephone',
+        'modalitePaiement',
+        'produitDirect',
+        'protocoleAccord',
+        'notesInternes',
+        'archiveLe',
+      ]) {
+        expect(fichePublique.body).not.toHaveProperty(interne);
+      }
+    });
+
+    it('trace l’archivage et la restauration dans le journal', async () => {
+      const response = await request(app.getHttpServer())
+        .get(`/api/terrains/${terrainId}/history`)
+        .set(auth());
+      const actions = response.body.items.map(
+        (i: { action: string }) => i.action,
+      );
+      expect(actions).toEqual(
+        expect.arrayContaining(['terrain.archived', 'terrain.restored']),
+      );
+    });
+  });
 });

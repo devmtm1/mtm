@@ -241,9 +241,13 @@ export class VentesService {
         nom: true,
         referenceInterne: true,
         statutCommercial: true,
+        archiveLe: true,
       },
     });
     if (!terrain) throw new NotFoundException('Bien introuvable');
+    if (terrain.archiveLe) {
+      throw new ConflictException('Ce terrain n’est plus disponible');
+    }
     // Liste blanche : seul un terrain explicitement « Disponible » accepte une
     // demande publique. Une liste noire laissait passer « Suspendu », « Brouillon »
     // et « Réservé », et testait un statut « Indisponible » qui n'existe pas.
@@ -374,7 +378,7 @@ export class VentesService {
       dto.terrainId
         ? this.prisma.terrain.findUnique({
             where: { id: dto.terrainId },
-            select: { id: true, statutCommercial: true },
+            select: { id: true, statutCommercial: true, archiveLe: true },
           })
         : null,
       dto.mandatId
@@ -389,6 +393,11 @@ export class VentesService {
       throw new NotFoundException('Bien introuvable');
     if (dto.mandatId && !mandat)
       throw new NotFoundException('Mandat introuvable');
+    if (terrain?.archiveLe) {
+      throw new ConflictException(
+        'Ce bien est archivé : restaurez-le avant de créer un dossier de vente',
+      );
+    }
     if (terrain && terrain.statutCommercial !== 'Disponible') {
       throw new ConflictException(
         'Seuls les terrains disponibles peuvent être ajoutés à un nouveau dossier',
@@ -459,9 +468,14 @@ export class VentesService {
     if (dto.terrainId && dto.terrainId !== dossier.terrainId) {
       const terrain = await this.prisma.terrain.findUnique({
         where: { id: dto.terrainId },
-        select: { id: true, statutCommercial: true },
+        select: { id: true, statutCommercial: true, archiveLe: true },
       });
       if (!terrain) throw new NotFoundException('Bien introuvable');
+      if (terrain.archiveLe) {
+        throw new BadRequestException(
+          'Ce bien est archivé : restaurez-le avant de le rattacher à un dossier',
+        );
+      }
       if (terrain.statutCommercial !== 'Disponible') {
         throw new BadRequestException(
           'Seul un terrain « Disponible » peut être rattaché à un dossier',

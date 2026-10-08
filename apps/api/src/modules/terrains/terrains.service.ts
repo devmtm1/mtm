@@ -13,6 +13,7 @@ import { CreateTerrainDto } from './dto/create-terrain.dto';
 import { QueryTerrainDto } from './dto/query-terrain.dto';
 import { UpdateTerrainDto } from './dto/update-terrain.dto';
 import { SettingsService } from '../settings/settings.service';
+import type { CreateTerrainNoteDto } from './dto/create-terrain-note.dto';
 
 const terrainInclude = {
   proprietaire: true,
@@ -28,7 +29,7 @@ const terrainInclude = {
  * documents de chaque terrain alourdissait inutilement la réponse.
  */
 const terrainListInclude = {
-  proprietaire: { select: { id: true, firstName: true, lastName: true } },
+  proprietaire: { select: { id: true, firstName: true, lastName: true, phone: true } },
   commercialResponsable: {
     select: { id: true, firstName: true, lastName: true },
   },
@@ -48,9 +49,16 @@ export const DEFAULT_TERRAIN_OPTIONS = {
     'Régularisation en cours',
     'Notification de bail',
     'Attribution',
+    'Bail individuel',
+    'Délibération double tampon',
+    'Délibération NICAD',
   ],
   niveauVerification: ['Non vérifié', 'En cours', 'Vérifié', 'À compléter'],
   statutCommercial: ['Brouillon', 'Disponible', 'Réservé', 'Vendu', 'Suspendu'],
+  /** Modalité de paiement proposée sur le bien (colonne du tableur historique). */
+  modalitePaiement: ['Cash', 'Moratoire', 'Autre'],
+  /** Suivi des visites, distinct de la disponibilité commerciale. */
+  statutVisite: ['À visiter', 'Visité'],
   /**
    * Nature du bien mis en vente. Même vocabulaire que la gestion locative
    * (`locatif.typesBien`) : deux listes divergentes pour désigner les mêmes
@@ -152,7 +160,73 @@ export class TerrainsService {
                 },
               },
               { commune: { contains: search, mode: 'insensitive' as const } },
+              { region: { contains: search, mode: 'insensitive' as const } },
+              {
+                localisationDetail: {
+                  contains: search,
+                  mode: 'insensitive' as const,
+                },
+              },
+              // Retrouver un bien par la personne qui le propose : c'est la
+              // première question posée au téléphone.
+              {
+                contactVendeurNom: {
+                  contains: search,
+                  mode: 'insensitive' as const,
+                },
+              },
+              {
+                contactVendeurTelephone: {
+                  contains: search.replace(/\s+/g, ''),
+                },
+              },
+              {
+                proprietaire: {
+                  OR: [
+                    {
+                      firstName: {
+                        contains: search,
+                        mode: 'insensitive' as const,
+                      },
+                    },
+                    {
+                      lastName: {
+                        contains: search,
+                        mode: 'insensitive' as const,
+                      },
+                    },
+                    { phone: { contains: search.replace(/\s+/g, '') } },
+                  ],
+                },
+              },
             ],
+          }
+        : {}),
+      ...(query.archivage === 'archives'
+        ? { archiveLe: { not: null } }
+        : query.archivage === 'tous'
+          ? {}
+          : { archiveLe: null }),
+      ...(query.modalitePaiement
+        ? { modalitePaiement: query.modalitePaiement }
+        : {}),
+      ...(query.statutVisite ? { statutVisite: query.statutVisite } : {}),
+      ...(query.produitDirect !== undefined
+        ? { produitDirect: query.produitDirect }
+        : {}),
+      ...(query.protocoleAccord !== undefined
+        ? { protocoleAccord: query.protocoleAccord }
+        : {}),
+      ...(query.dateEntreeMin || query.dateEntreeMax
+        ? {
+            dateEntree: {
+              ...(query.dateEntreeMin
+                ? { gte: new Date(query.dateEntreeMin) }
+                : {}),
+              ...(query.dateEntreeMax
+                ? { lte: new Date(query.dateEntreeMax) }
+                : {}),
+            },
           }
         : {}),
       ...(query.statutJuridique
@@ -225,6 +299,7 @@ export class TerrainsService {
     const items = await this.prisma.terrain.findMany({
       where: {
         statutCommercial: { not: 'Vendu' },
+        archiveLe: null,
         ...(terme
           ? {
               OR: [
@@ -290,7 +365,10 @@ export class TerrainsService {
       dto as unknown as Record<string, unknown>,
     );
 
-    const data = { ...dto } as unknown as Prisma.TerrainUncheckedCreateInput;
+    const data = {
+      ...dto,
+      ...this.convertirDates(dto),
+    } as unknown as Prisma.TerrainUncheckedCreateInput;
     // Sans rattachement, un commercial ne verrait plus le terrain qu'il
     // vient de créer (périmètre = ses terrains). Même règle que les
     // mandats, prospects et dossiers de vente.
@@ -319,6 +397,7 @@ export class TerrainsService {
     user: { id: string; roles: string[]; permissions: string[] },
   ) {
     await this.access.ensureAccessible(id, user);
+    await this.assertNonArchive(id);
     if (dto.commercialResponsableId !== undefined) {
       dto.commercialResponsableId = await this.access.resolveResponsable(
         dto.commercialResponsableId ?? undefined,
@@ -330,7 +409,10 @@ export class TerrainsService {
       dto as unknown as Record<string, unknown>,
       id,
     );
-    const terrainData = { ...dto } as Record<string, unknown>;
+    const terrainData = {
+      ...dto,
+      ...this.convertirDates(dto),
+    } as Record<string, unknown>;
     delete terrainData['justification'];
     if (
       dto.statutCommercial !== undefined &&
@@ -347,7 +429,12 @@ export class TerrainsService {
     // sinon à une baisse de prix, et réclameraient une justification pour une
     // modification que l'auteur n'a jamais demandée.
     if (!this.hasFinancialAccess(user)) {
-      for (const champ of ['prixAcquisition', 'marge', 'commission'] as const) {
+      for (const champ of [
+        'prixAcquisition',
+        'prixCession',
+        'marge',
+        'commission',
+      ] as const) {
         delete terrainData[champ];
       }
     }
@@ -394,6 +481,7 @@ export class TerrainsService {
     user: { roles: string[]; permissions: string[] },
   ) {
     await this.access.ensureAccessible(id, user);
+    await this.assertNonArchive(id);
     const terrain = await this.prisma.terrain.findUnique({
       where: { id },
       select: { statutCommercial: true },
@@ -420,6 +508,7 @@ export class TerrainsService {
     user: { roles: string[]; permissions: string[] },
   ) {
     await this.access.ensureAccessible(id, user);
+    await this.assertNonArchive(id);
     await this.validateStatuses({ [field]: value });
     if (field === 'statutJuridique' && !justification?.trim()) {
       throw new BadRequestException(
@@ -441,12 +530,135 @@ export class TerrainsService {
   }
 
   /**
+   * Un bien archivé n'est plus modifiable : il faut d'abord le restaurer, pour
+   * qu'aucune correction ne se glisse dans un dossier que MTM a clos.
+   */
+  private async assertNonArchive(id: string): Promise<void> {
+    const terrain = await this.prisma.terrain.findUnique({
+      where: { id },
+      select: { archiveLe: true },
+    });
+    if (terrain?.archiveLe) {
+      throw new ConflictException(
+        'Ce bien est archivé : restaurez-le avant de le modifier',
+      );
+    }
+  }
+
+  /** Les dates arrivent en texte AAAA-MM-JJ ; Prisma attend des `Date`. */
+  private convertirDates(
+    dto: Partial<Pick<CreateTerrainDto, 'dateEntree' | 'dateDocumentFoncier'>>,
+  ): Record<string, Date> {
+    const out: Record<string, Date> = {};
+    if (dto.dateEntree) out['dateEntree'] = new Date(dto.dateEntree);
+    if (dto.dateDocumentFoncier) {
+      out['dateDocumentFoncier'] = new Date(dto.dateDocumentFoncier);
+    }
+    return out;
+  }
+
+  /**
+   * Retire un bien du portefeuille actif sans rien détruire : fiche, photos,
+   * documents, historique et dossiers restent intacts et consultables. Refusé
+   * tant qu'une vente est en cours sur le bien — l'archiver la ferait
+   * disparaître des écrans de l'équipe.
+   */
+  async archive(
+    id: string,
+    motif: string,
+    user: { id: string; roles: string[]; permissions: string[] },
+  ) {
+    await this.access.ensureAccessible(id, user);
+    const terrain = await this.prisma.terrain.findUnique({
+      where: { id },
+      select: { archiveLe: true },
+    });
+    if (!terrain) throw new NotFoundException('Bien introuvable');
+    if (terrain.archiveLe) {
+      throw new ConflictException('Ce bien est déjà archivé');
+    }
+    const venteEnCours = await this.prisma.dossierVente.count({
+      where: { terrainId: id, statut: { notIn: ['solde', 'annule'] } },
+    });
+    if (venteEnCours > 0) {
+      throw new ConflictException(
+        'Une vente est en cours sur ce bien : concluez-la ou annulez-la avant de l’archiver',
+      );
+    }
+    const mis = await this.prisma.terrain.update({
+      where: { id },
+      data: {
+        archiveLe: new Date(),
+        archiveParId: user.id,
+        motifArchivage: motif.trim(),
+        // Un bien archivé ne se met plus en avant ni ne s'affiche en référence.
+        misEnAvant: false,
+        referenceVendue: false,
+      },
+      include: terrainInclude,
+    });
+    return this.toInternal(mis, user);
+  }
+
+  async restore(
+    id: string,
+    user: { id: string; roles: string[]; permissions: string[] },
+  ) {
+    await this.access.ensureAccessible(id, user);
+    const terrain = await this.prisma.terrain.findUnique({
+      where: { id },
+      select: { archiveLe: true },
+    });
+    if (!terrain) throw new NotFoundException('Bien introuvable');
+    if (!terrain.archiveLe) {
+      throw new ConflictException('Ce bien n’est pas archivé');
+    }
+    const mis = await this.prisma.terrain.update({
+      where: { id },
+      data: { archiveLe: null, archiveParId: null, motifArchivage: null },
+      include: terrainInclude,
+    });
+    return this.toInternal(mis, user);
+  }
+
+  async listNotes(id: string) {
+    return this.prisma.terrainNote.findMany({
+      where: { terrainId: id },
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+      include: {
+        auteur: { select: { id: true, firstName: true, lastName: true } },
+      },
+    });
+  }
+
+  async addNote(
+    id: string,
+    dto: CreateTerrainNoteDto,
+    user: { id: string; roles: string[]; permissions: string[] },
+  ) {
+    await this.access.ensureAccessible(id, user);
+    return this.prisma.terrainNote.create({
+      data: { terrainId: id, auteurId: user.id, texte: dto.texte.trim() },
+      include: {
+        auteur: { select: { id: true, firstName: true, lastName: true } },
+      },
+    });
+  }
+
+  /**
    * Synthèse du portefeuille pour l'écran liste : répartition par statut
    * commercial et points de vigilance (fiches sans GPS, sans photo publique,
    * non vérifiées), dans le périmètre de l'utilisateur.
    */
   async getStats(user: { id: string; roles: string[]; permissions: string[] }) {
-    const where = this.access.ownershipFilter(user);
+    const where = { ...this.access.ownershipFilter(user), archiveLe: null };
+    const archives = await this.prisma.terrain.count({
+      where: {
+        ...this.access.ownershipFilter(user),
+        archiveLe: { not: null },
+      },
+    });
     const [
       total,
       parStatut,
@@ -477,6 +689,7 @@ export class TerrainsService {
     ]);
     return {
       total,
+      archives,
       parStatut: parStatut.reduce<Record<string, number>>((acc, item) => {
         acc[item.statutCommercial] = item._count.statutCommercial;
         return acc;
@@ -489,16 +702,27 @@ export class TerrainsService {
   }
 
   async getOptions() {
-    const [legal, verification, commercial, types, pieces, etats, vocations] =
-      await Promise.all([
-        this.settings.getRawValue('terrains.statutJuridique'),
-        this.settings.getRawValue('terrains.niveauVerification'),
-        this.settings.getRawValue('terrains.statutCommercial'),
-        this.settings.getRawValue('terrains.typeBien'),
-        this.settings.getRawValue('terrains.nombrePieces'),
-        this.settings.getRawValue('terrains.etatBien'),
-        this.settings.getRawValue('terrains.vocation'),
-      ]);
+    const [
+      legal,
+      verification,
+      commercial,
+      types,
+      pieces,
+      etats,
+      vocations,
+      modalites,
+      visites,
+    ] = await Promise.all([
+      this.settings.getRawValue('terrains.statutJuridique'),
+      this.settings.getRawValue('terrains.niveauVerification'),
+      this.settings.getRawValue('terrains.statutCommercial'),
+      this.settings.getRawValue('terrains.typeBien'),
+      this.settings.getRawValue('terrains.nombrePieces'),
+      this.settings.getRawValue('terrains.etatBien'),
+      this.settings.getRawValue('terrains.vocation'),
+      this.settings.getRawValue('terrains.modalitePaiement'),
+      this.settings.getRawValue('terrains.statutVisite'),
+    ]);
     return {
       statutJuridique: SettingsService.asStringList(
         legal,
@@ -528,6 +752,14 @@ export class TerrainsService {
         vocations,
         DEFAULT_TERRAIN_OPTIONS.vocation,
       ),
+      modalitePaiement: SettingsService.asStringList(
+        modalites,
+        DEFAULT_TERRAIN_OPTIONS.modalitePaiement,
+      ),
+      statutVisite: SettingsService.asStringList(
+        visites,
+        DEFAULT_TERRAIN_OPTIONS.statutVisite,
+      ),
       /** Les écrans y lisent quels types ouvrent la section « bâti ». */
       typesBati: [...TYPES_BIEN_BATI],
     };
@@ -544,6 +776,8 @@ export class TerrainsService {
         | 'nombrePieces'
         | 'etatBien'
         | 'vocation'
+        | 'modalitePaiement'
+        | 'statutVisite'
       >
     >,
   ): Promise<void> {
@@ -555,6 +789,8 @@ export class TerrainsService {
       'nombrePieces',
       'etatBien',
       'vocation',
+      'modalitePaiement',
+      'statutVisite',
     ] as const;
 
     for (const field of fields) {
@@ -606,6 +842,7 @@ export class TerrainsService {
     'prixAcquisition',
     'marge',
     'commission',
+    'prixCession',
     'proprietaireId',
   ] as const;
 
@@ -635,6 +872,7 @@ export class TerrainsService {
         prixAcquisition: true,
         marge: true,
         commission: true,
+        prixCession: true,
         proprietaireId: true,
       },
     });
@@ -659,7 +897,7 @@ export class TerrainsService {
     // retirée avant l'écriture en base, ce n'est pas une colonne du terrain).
     if (!justification?.trim()) {
       throw new BadRequestException(
-        'Une justification est obligatoire pour modifier un champ sensible (prix d’acquisition, marge, commission, propriétaire)',
+        'Une justification est obligatoire pour modifier un champ sensible (prix d’acquisition, prix de cession, marge, commission, propriétaire)',
       );
     }
   }
@@ -696,6 +934,7 @@ export class TerrainsService {
       ...terrain,
       ...(!hasFinancialAccess && {
         prixAcquisition: null,
+        prixCession: null,
         marge: null,
         commission: null,
         notesInternes: null,

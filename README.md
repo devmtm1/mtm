@@ -315,6 +315,23 @@ administrations, qui s'étend au fil des localités.
 Côté périmètre : un collaborateur ne voit que les missions dont il est
 responsable ; le responsable des démarches et l'encadrement voient tout.
 
+## Suivi du portefeuille et reprise du tableur
+
+Les biens portent le suivi qu'utilisait MTM dans son Google Sheet : nombre de
+lots, date d'entrée, modalité de paiement (Cash, Moratoire…, paramétrable),
+prix de cession, produit direct, protocole d'accord, suivi de visite, vendeur
+ou mandataire du bien (avec boutons Appeler et WhatsApp), titre juridique
+structuré (référence, date, commentaire) et notes de suivi chronologiques.
+
+Un bien s'**archive** au lieu de se supprimer : il quitte la liste courante, le
+site public et les mises en avant, mais fiche, documents et historique sont
+conservés, et il se restaure à tout moment (`PATCH /api/terrains/:id/archive`
+et `/restore`). Une vente en cours bloque l'archivage ; un bien archivé ne se
+modifie plus avant restauration.
+
+La reprise des données existantes se fait par `npm run import:terrains` —
+voir `docs/IMPORT_TABLEUR.md`.
+
 ## Phase actuelle
 
 Voir `docs/PHASE_0.md` pour le détail du périmètre, des livrables et des

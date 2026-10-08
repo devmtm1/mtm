@@ -23,9 +23,14 @@ export class MandatsLotsService {
     await this.access.ensureAccessible(mandatId, user);
     const terrain = await this.prisma.terrain.findUnique({
       where: { id: dto.terrainId },
-      select: { id: true },
+      select: { id: true, archiveLe: true },
     });
     if (!terrain) throw new NotFoundException('Bien introuvable');
+    if (terrain.archiveLe) {
+      throw new ConflictException(
+        'Ce bien est archivé : restaurez-le avant de le confier à un mandat',
+      );
+    }
 
     const mandat = await this.prisma.mandat.findUnique({
       where: { id: mandatId },

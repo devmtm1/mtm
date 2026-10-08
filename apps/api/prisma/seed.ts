@@ -844,9 +844,34 @@ async function main(): Promise<void> {
         'Régularisation en cours',
         'Notification de bail',
         'Attribution',
+        'Bail individuel',
+        'Délibération double tampon',
+        'Délibération NICAD',
       ],
       description:
         'Liste des statuts juridiques configurables pour les terrains',
+      isSensitive: false,
+    },
+  });
+
+  // --- Modalités de paiement et suivi de visite (reprise du tableur) ---
+  await prisma.systemSetting.upsert({
+    where: { key: 'terrains.modalitePaiement' },
+    update: {},
+    create: {
+      key: 'terrains.modalitePaiement',
+      value: ['Cash', 'Moratoire', 'Autre'],
+      description: 'Modalités de paiement proposées sur un bien à vendre',
+      isSensitive: false,
+    },
+  });
+  await prisma.systemSetting.upsert({
+    where: { key: 'terrains.statutVisite' },
+    update: {},
+    create: {
+      key: 'terrains.statutVisite',
+      value: ['À visiter', 'Visité'],
+      description: 'Suivi des visites d’un bien, distinct de sa disponibilité',
       isSensitive: false,
     },
   });

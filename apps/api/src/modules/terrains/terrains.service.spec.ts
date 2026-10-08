@@ -425,4 +425,198 @@ describe('TerrainsService', () => {
       );
     });
   });
+
+  describe('archivage et suivi du portefeuille', () => {
+    const user = { id: 'u-adm', roles: ['administrateur'], permissions: [] };
+
+    beforeEach(() => {
+      prismaMock.terrain.findFirst.mockResolvedValue({ id: 't1' });
+    });
+
+    it('archive un bien sans rien supprimer, le retire de la mise en avant et trace le motif', async () => {
+      prismaMock.terrain.findUnique.mockResolvedValue({ archiveLe: null });
+      prismaMock.dossierVente.count.mockResolvedValue(0);
+      prismaMock.terrain.update.mockResolvedValue({ id: 't1' });
+
+      await service.archive('t1', '  Doublon  ', user);
+
+      const appel = prismaMock.terrain.update.mock.calls[0][0];
+      expect(prismaMock.terrain.delete).not.toHaveBeenCalled();
+      expect(appel.data).toMatchObject({
+        archiveParId: 'u-adm',
+        motifArchivage: 'Doublon',
+        misEnAvant: false,
+        referenceVendue: false,
+      });
+      expect(appel.data.archiveLe).toBeInstanceOf(Date);
+    });
+
+    it('refuse d’archiver tant qu’une vente est en cours', async () => {
+      prismaMock.terrain.findUnique.mockResolvedValue({ archiveLe: null });
+      prismaMock.dossierVente.count.mockResolvedValue(1);
+
+      await expect(
+        service.archive('t1', 'Vendu ailleurs', user),
+      ).rejects.toThrow(ConflictException);
+      expect(prismaMock.dossierVente.count).toHaveBeenCalledWith({
+        where: { terrainId: 't1', statut: { notIn: ['solde', 'annule'] } },
+      });
+      expect(prismaMock.terrain.update).not.toHaveBeenCalled();
+    });
+
+    it('refuse d’archiver deux fois, et de restaurer ce qui ne l’est pas', async () => {
+      prismaMock.terrain.findUnique.mockResolvedValueOnce({
+        archiveLe: new Date(),
+      });
+      await expect(service.archive('t1', 'Encore', user)).rejects.toThrow(
+        'déjà archivé',
+      );
+      prismaMock.terrain.findUnique.mockResolvedValueOnce({ archiveLe: null });
+      await expect(service.restore('t1', user)).rejects.toThrow(
+        'n’est pas archivé',
+      );
+    });
+
+    it('restaure un bien : tout redevient comme avant l’archivage', async () => {
+      prismaMock.terrain.findUnique.mockResolvedValue({
+        archiveLe: new Date(),
+      });
+      prismaMock.terrain.update.mockResolvedValue({ id: 't1' });
+
+      await service.restore('t1', user);
+
+      expect(prismaMock.terrain.update.mock.calls[0][0].data).toEqual({
+        archiveLe: null,
+        archiveParId: null,
+        motifArchivage: null,
+      });
+    });
+
+    it('interdit de modifier un bien archivé avant de l’avoir restauré', async () => {
+      prismaMock.terrain.findUnique.mockResolvedValue({
+        archiveLe: new Date(),
+      });
+
+      await expect(
+        service.update('t1', { nom: 'Nouveau' }, user),
+      ).rejects.toThrow('archivé');
+      await expect(
+        service.updateStatus(
+          't1',
+          'statutCommercial',
+          'Disponible',
+          undefined,
+          user,
+        ),
+      ).rejects.toThrow('archivé');
+      expect(prismaMock.terrain.update).not.toHaveBeenCalled();
+    });
+
+    it('masque les biens archivés par défaut, et ne montre qu’eux sur demande', async () => {
+      prismaMock.terrain.findMany.mockResolvedValue([]);
+      prismaMock.terrain.count.mockResolvedValue(0);
+      const requete = {
+        page: 1,
+        pageSize: 25,
+        sortBy: 'createdAt',
+        sortOrder: 'desc' as const,
+      };
+
+      await service.findAll({ ...requete }, user);
+      expect(
+        prismaMock.terrain.findMany.mock.calls[0][0].where.archiveLe,
+      ).toBeNull();
+
+      await service.findAll({ ...requete, archivage: 'archives' }, user);
+      expect(
+        prismaMock.terrain.findMany.mock.calls[1][0].where.archiveLe,
+      ).toEqual({
+        not: null,
+      });
+
+      await service.findAll({ ...requete, archivage: 'tous' }, user);
+      expect(
+        prismaMock.terrain.findMany.mock.calls[2][0].where,
+      ).not.toHaveProperty('archiveLe');
+    });
+
+    it('cherche aussi par propriétaire, mandataire et téléphone', async () => {
+      prismaMock.terrain.findMany.mockResolvedValue([]);
+      prismaMock.terrain.count.mockResolvedValue(0);
+
+      await service.findAll(
+        {
+          page: 1,
+          pageSize: 25,
+          sortBy: 'createdAt',
+          sortOrder: 'desc',
+          search: '77 712 35 20',
+        },
+        user,
+      );
+
+      const ou = JSON.stringify(
+        prismaMock.terrain.findMany.mock.calls[0][0].where.OR,
+      );
+      expect(ou).toContain('contactVendeurTelephone');
+      expect(ou).toContain('proprietaire');
+      expect(ou).toContain('777123520');
+    });
+
+    it('convertit la date d’entrée et masque le prix de cession sans accès financier', async () => {
+      prismaMock.terrain.findUnique.mockResolvedValue(null);
+      prismaMock.terrain.create.mockResolvedValue({
+        id: 't1',
+        prixCession: 7000000,
+      });
+
+      const sansAcces = { id: 'u-com', roles: ['commercial'], permissions: [] };
+      const fiche = await service.create(
+        {
+          referenceInterne: 'T-9',
+          nom: 'Test',
+          statutJuridique: 'Bail individuel',
+          niveauVerification: 'Non vérifié',
+          statutCommercial: 'Brouillon',
+          dateEntree: '2026-07-07',
+          modalitePaiement: 'Moratoire',
+        },
+        sansAcces,
+      );
+
+      const donnees = prismaMock.terrain.create.mock.calls[0][0].data;
+      expect(donnees.dateEntree).toEqual(new Date('2026-07-07'));
+      expect((fiche as { prixCession: unknown }).prixCession).toBeNull();
+    });
+
+    it('refuse une modalité de paiement absente du paramétrage', async () => {
+      prismaMock.terrain.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.create(
+          {
+            referenceInterne: 'T-9',
+            nom: 'Test',
+            statutJuridique: 'Bail',
+            niveauVerification: 'Non vérifié',
+            statutCommercial: 'Brouillon',
+            modalitePaiement: 'Troc',
+          },
+          user,
+        ),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('enregistre une note de suivi signée de son auteur', async () => {
+      prismaMock.terrainNote.create.mockResolvedValue({ id: 'n1' });
+
+      await service.addNote('t1', { texte: '  Appel : rappeler lundi ' }, user);
+
+      expect(prismaMock.terrainNote.create.mock.calls[0][0].data).toEqual({
+        terrainId: 't1',
+        auteurId: 'u-adm',
+        texte: 'Appel : rappeler lundi',
+      });
+    });
+  });
 });

@@ -98,6 +98,8 @@ model User {
   depensesChantierSaisies        DepenseChantier[]       @relation("DepenseChantierCreateur")
   depensesChantierValidees       DepenseChantier[]       @relation("DepenseChantierValidateur")
   documentsChantierCrees         DocumentChantier[]      @relation("DocumentChantierCreateur")
+  terrainsArchives               Terrain[]               @relation("TerrainArchivePar")
+  terrainNotes                   TerrainNote[]           @relation("TerrainNoteAuteur")
 
   @@map("users")
 }
@@ -126,21 +128,21 @@ model Proprietaire {
 }
 
 model Terrain {
-  id                      String                @id @default(uuid())
-  referenceInterne        String                @unique
-  nom                     String
-  parcelleMatricule       String?
-  informationsCadastrales Json?
-  proprietaireId          String?
-  proprietaire            Proprietaire?         @relation(fields: [proprietaireId], references: [id], onDelete: SetNull)
-  statutJuridique         String
-  typeDocumentFoncier     String?
-  niveauVerification      String
-  region                  String?
-  commune                 String?
-  localisationDetail      String?
-  latitude                Decimal?              @db.Decimal(10, 7)
-  longitude               Decimal?              @db.Decimal(10, 7)
+  id                       String                @id @default(uuid())
+  referenceInterne         String                @unique
+  nom                      String
+  parcelleMatricule        String?
+  informationsCadastrales  Json?
+  proprietaireId           String?
+  proprietaire             Proprietaire?         @relation(fields: [proprietaireId], references: [id], onDelete: SetNull)
+  statutJuridique          String
+  typeDocumentFoncier      String?
+  niveauVerification       String
+  region                   String?
+  commune                  String?
+  localisationDetail       String?
+  latitude                 Decimal?              @db.Decimal(10, 7)
+  longitude                Decimal?              @db.Decimal(10, 7)
   /**
    * Nature du bien mis en vente : terrain nu, villa, appartement…
    * MTM ne vend plus seulement du foncier. Le partage entre un terrain et une
@@ -149,74 +151,124 @@ model Terrain {
    * second modèle qui aurait dédoublé toute la chaîne commerciale.
    * Vocabulaire commun avec la gestion locative (`locatif.typesBien`).
    */
-  typeBien                String                @default("terrain")
+  typeBien                 String                @default("terrain")
   /**
    * Surface de la parcelle, pour un terrain comme pour une villa.
    */
-  superficie              Decimal?              @db.Decimal(14, 2)
-  uniteSuperficie         String?
-  dimensions              Json?
+  superficie               Decimal?              @db.Decimal(14, 2)
+  uniteSuperficie          String?
+  dimensions               Json?
   // --- Caractéristiques du bâti (villa, appartement, studio…) ---
   // Nulles sur un terrain nu. Elles ne décrivent pas la parcelle mais ce qui
   // est construit dessus, et n'apparaissent dans les écrans que si le type
   // du bien les rend pertinentes.
   /**
    * /**
+   * /**
    * Surface habitable, distincte de la parcelle. Les deux coexistent : une
    * villa de 120 m² habitables peut occuper une parcelle de 300 m², et les
    * confondre fausserait toute comparaison au catalogue.
    */
-  surfaceHabitable        Decimal?              @db.Decimal(10, 2)
+  surfaceHabitable         Decimal?              @db.Decimal(10, 2)
   /**
    * Typologie commerciale : F1 à F6.
    */
-  nombrePieces            String?
-  nombreChambres          Int?
-  nombreSallesEau         Int?
+  nombrePieces             String?
+  nombreChambres           Int?
+  nombreSallesEau          Int?
   /**
    * Nombre de niveaux, rez-de-chaussée compris.
    */
-  niveaux                 Int?
-  anneeConstruction       Int?
+  niveaux                  Int?
+  anneeConstruction        Int?
   /**
    * neuf | bon_etat | a_rafraichir | a_renover
    */
-  etatBien                String?
-  prixAcquisition         Decimal?              @db.Decimal(15, 2)
-  prixPublic              Decimal?              @db.Decimal(15, 2)
-  marge                   Decimal?              @db.Decimal(15, 2)
-  commission              Decimal?              @db.Decimal(15, 2)
-  statutCommercial        String
-  misEnAvant              Boolean               @default(false)
+  etatBien                 String?
+  /**
+   * Prix de cession : ce que le vendeur ou mandataire cède le bien à MTM
+   * (colonne « Prix de cession » du tableur historique). Interne, masqué
+   * comme le prix d'acquisition.
+   */
+  prixCession              Decimal?              @db.Decimal(15, 2)
+  prixAcquisition          Decimal?              @db.Decimal(15, 2)
+  prixPublic               Decimal?              @db.Decimal(15, 2)
+  marge                    Decimal?              @db.Decimal(15, 2)
+  commission               Decimal?              @db.Decimal(15, 2)
+  statutCommercial         String
+  misEnAvant               Boolean               @default(false)
   /**
    * Un bien vendu s'affiche sur le site public (badge « Vendu », sans prix)
    * seulement si MTM l'a choisi : réversible à tout moment. Remis à faux quand
    * le bien est vendu à nouveau ou quitte le statut « Vendu ».
    */
-  referenceVendue         Boolean               @default(false)
-  description             String? // descriptif commercial public du terrain (section 7 CDC)
-  accesRoutier            String?
-  eauDisponible           Boolean?
-  electriciteDisponible   Boolean?
-  voisinage               String?
-  vocation                String?
-  proximiteAxes           String?
-  pointsInteret           Json?
-  notesInternes           String?
-  contacts                Contact[]             @relation("TerrainContacts")
-  reservationRequests     ReservationRequest[]
-  commercialResponsableId String?
-  commercialResponsable   User?                 @relation("TerrainCommercial", fields: [commercialResponsableId], references: [id], onDelete: SetNull)
-  medias                  TerrainMedia[]
-  documents               TerrainDocument[]
-  mandatLots              MandatLot[]
-  dossiers                DossierVente[]
-  createdAt               DateTime              @default(now())
-  updatedAt               DateTime              @updatedAt
-  visitesProspect         VisiteProspect[]      @relation("TerrainVisitesProspect")
-  missions                MissionVerification[]
-  chantiers               ProjetConstruction[]
-  prospectsInteresses     Prospect[]            @relation("ProspectTerrainChoisi")
+  referenceVendue          Boolean               @default(false)
+  description              String? // descriptif commercial public du terrain (section 7 CDC)
+  accesRoutier             String?
+  eauDisponible            Boolean?
+  electriciteDisponible    Boolean?
+  voisinage                String?
+  vocation                 String?
+  proximiteAxes            String?
+  pointsInteret            Json?
+  notesInternes            String?
+  // --- Suivi du portefeuille (reprise du tableur « Bd terrains ») ---
+  /**
+   * /** Nombre de lots du bien : un lotissement compte plusieurs terrains.
+   */
+  nombreLots               Int?
+  /**
+   * Date à laquelle le bien est réellement entré dans le portefeuille MTM.
+   */
+  dateEntree               DateTime?             @db.Date
+  /**
+   * Liste configurable `terrains.modalitePaiement` : Cash, Moratoire…
+   */
+  modalitePaiement         String?
+  dureeMoratoireMois       Int?
+  acompteMontant           Decimal?              @db.Decimal(15, 2)
+  notesPaiement            String?
+  /**
+   * Produit détenu en direct par MTM, sans intermédiaire (colonne « Direct »).
+   */
+  produitDirect            Boolean               @default(false)
+  /**
+   * Un protocole d'accord est signé ; le document se dépose en GED.
+   */
+  protocoleAccord          Boolean               @default(false)
+  /**
+   * Suivi des visites, distinct de la disponibilité : `terrains.statutVisite`.
+   */
+  statutVisite             String?
+  /**
+   * Mandataire ou contact vendeur propre à ce bien, si différent du propriétaire.
+   */
+  contactVendeurNom        String?
+  contactVendeurTelephone  String?
+  // --- Titre juridique structuré ---
+  referenceDocumentFoncier String?
+  dateDocumentFoncier      DateTime?             @db.Date
+  commentaireAdministratif String?
+  // --- Archivage : jamais de suppression, tout reste consultable et restaurable ---
+  archiveLe                DateTime?
+  archiveParId             String?
+  archiveePar              User?                 @relation("TerrainArchivePar", fields: [archiveParId], references: [id], onDelete: SetNull)
+  motifArchivage           String?
+  notes                    TerrainNote[]
+  contacts                 Contact[]             @relation("TerrainContacts")
+  reservationRequests      ReservationRequest[]
+  commercialResponsableId  String?
+  commercialResponsable    User?                 @relation("TerrainCommercial", fields: [commercialResponsableId], references: [id], onDelete: SetNull)
+  medias                   TerrainMedia[]
+  documents                TerrainDocument[]
+  mandatLots               MandatLot[]
+  dossiers                 DossierVente[]
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime              @updatedAt
+  visitesProspect          VisiteProspect[]      @relation("TerrainVisitesProspect")
+  missions                 MissionVerification[]
+  chantiers                ProjetConstruction[]
+  prospectsInteresses      Prospect[]            @relation("ProspectTerrainChoisi")
 
   @@index([statutJuridique])
   @@index([niveauVerification])
@@ -227,7 +279,26 @@ model Terrain {
   @@index([superficie])
   @@index([prixPublic])
   @@index([typeBien])
+  @@index([archiveLe])
+  @@index([dateEntree])
   @@map("terrains")
+}
+
+/**
+ * Note de suivi d'un bien : appel passé, visite faite, relance du vendeur.
+ * Chronologique et non modifiable, à la différence de `notesInternes`.
+ */
+model TerrainNote {
+  id        String   @id @default(uuid())
+  terrainId String
+  terrain   Terrain  @relation(fields: [terrainId], references: [id], onDelete: Cascade)
+  auteurId  String?
+  auteur    User?    @relation("TerrainNoteAuteur", fields: [auteurId], references: [id], onDelete: SetNull)
+  texte     String
+  createdAt DateTime @default(now())
+
+  @@index([terrainId, createdAt])
+  @@map("terrain_notes")
 }
 
 model TerrainMedia {
@@ -573,6 +644,7 @@ model Prospect {
   // vivre dans une table à part, pour qu'une seule fiche porte le budget et
   // la zone du client — deux exemplaires finiraient par diverger.
   /**
+   * /**
    * /**
    * /** Vrai dès qu'un mandat de recherche est ouvert pour ce prospect.
    */
@@ -1180,6 +1252,7 @@ model BienLocatif {
   // --- Publication sur le site public (location) ---
   /**
    * /**
+   * /**
    * Visible sur le site tant que le bien est « disponible ». Réservé à la
    * permission locatif:publier ; exige un loyer et au moins une photo.
    */
@@ -1252,6 +1325,7 @@ model BailLocatif {
 
   // --- Sortie et cas particuliers (section 15) ---
   /**
+   * /**
    * /**
    * Cycle de vie du bail : actif | preavis | termine | resilie_sans_preavis.
    */

@@ -336,6 +336,7 @@ describe('TerrainsPublicService', () => {
       expect(reduit.prixPublic).toBeNull();
       expect(prismaMock.terrain.findFirst.mock.calls[0][0].where).toEqual({
         id: 't9',
+        archiveLe: null,
         OR: [
           { statutCommercial: 'Disponible' },
           { statutCommercial: 'Vendu', referenceVendue: true },
@@ -365,7 +366,11 @@ describe('TerrainsPublicService', () => {
       const options = await publicCatalog.getPublicFilterOptions();
       expect(options.vendus).toBe(3);
       expect(prismaMock.terrain.count).toHaveBeenCalledWith({
-        where: { statutCommercial: 'Vendu', referenceVendue: true },
+        where: {
+          statutCommercial: 'Vendu',
+          referenceVendue: true,
+          archiveLe: null,
+        },
       });
     });
   });

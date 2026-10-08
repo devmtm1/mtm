@@ -4,6 +4,7 @@ import {
   ArrayMaxSize,
   IsArray,
   IsBoolean,
+  IsDateString,
   IsInt,
   IsNumber,
   IsObject,
@@ -150,4 +151,81 @@ export class CreateTerrainDto {
   @IsOptional()
   @IsUUID()
   commercialResponsableId?: string;
+
+  // --- Suivi du portefeuille (reprise du tableur historique) ---
+  @ApiPropertyOptional({ description: 'Prix de cession (interne, sensible)' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  prixCession?: number;
+  @ApiPropertyOptional({ description: 'Nombre de lots du bien' })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(100000)
+  nombreLots?: number;
+  @ApiPropertyOptional({
+    description: 'Date d’entrée du bien dans le portefeuille (AAAA-MM-JJ)',
+  })
+  @IsOptional()
+  @IsDateString()
+  dateEntree?: string;
+  @ApiPropertyOptional({ description: 'Cash, Moratoire… (paramétrable)' })
+  @IsOptional()
+  @IsString()
+  modalitePaiement?: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(240)
+  dureeMoratoireMois?: number;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  acompteMontant?: number;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @Length(0, 2000)
+  notesPaiement?: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(versBooleen)
+  @IsBoolean()
+  produitDirect?: boolean;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(versBooleen)
+  @IsBoolean()
+  protocoleAccord?: boolean;
+  @ApiPropertyOptional({ description: 'À visiter, Visité… (paramétrable)' })
+  @IsOptional()
+  @IsString()
+  statutVisite?: string;
+  @ApiPropertyOptional({ description: 'Mandataire propre à ce bien' })
+  @IsOptional()
+  @IsString()
+  @Length(1, 150)
+  contactVendeurNom?: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @Length(3, 40)
+  contactVendeurTelephone?: string;
+  @ApiPropertyOptional({ description: 'Numéro du titre ou de la délibération' })
+  @IsOptional()
+  @IsString()
+  @Length(1, 150)
+  referenceDocumentFoncier?: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsDateString()
+  dateDocumentFoncier?: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @Length(0, 2000)
+  commentaireAdministratif?: string;
 }

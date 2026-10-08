@@ -30,6 +30,8 @@ import { UpdateTerrainStatusDto } from './dto/update-terrain-status.dto';
 import { CreateTerrainAssetDto } from './dto/create-terrain-asset.dto';
 import { TerrainsService } from './terrains.service';
 import { TerrainsPublicService } from './terrains-public.service';
+import { ArchiveTerrainDto } from './dto/archive-terrain.dto';
+import { CreateTerrainNoteDto } from './dto/create-terrain-note.dto';
 import { UpdateReferenceVendueDto } from './dto/update-reference-vendue.dto';
 import { TerrainsAssetsService } from './terrains-assets.service';
 
@@ -163,6 +165,75 @@ export class TerrainsController {
       userAgent: req.headers['user-agent'],
     });
     return terrain;
+  }
+
+  /**
+   * Archivage : le bien quitte le portefeuille actif et le site public, sans
+   * rien perdre. Réversible (`restore`), tracé avec son motif.
+   */
+  @Patch(':id/archive')
+  @RequirePermissions('terrains:modifier')
+  async archive(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ArchiveTerrainDto,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    const terrain = await this.terrains.archive(id, dto.motif, user);
+    await this.audit.record({
+      userId: user.id,
+      action: 'terrain.archived',
+      entityType: 'Terrain',
+      entityId: id,
+      oldValue: { archive: false },
+      newValue: { archive: true },
+      justification: dto.motif,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    return terrain;
+  }
+
+  @Patch(':id/restore')
+  @RequirePermissions('terrains:modifier')
+  async restore(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    const terrain = await this.terrains.restore(id, user);
+    await this.audit.record({
+      userId: user.id,
+      action: 'terrain.restored',
+      entityType: 'Terrain',
+      entityId: id,
+      oldValue: { archive: true },
+      newValue: { archive: false },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    return terrain;
+  }
+
+  /** Notes de suivi chronologiques d'un bien (appels, visites, relances). */
+  @Get(':id/notes')
+  @RequirePermissions('terrains:consulter')
+  async listNotes(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    await this.terrains.findOne(id, user);
+    return this.terrains.listNotes(id);
+  }
+
+  @Post(':id/notes')
+  @RequirePermissions('terrains:modifier')
+  addNote(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateTerrainNoteDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.terrains.addNote(id, dto, user);
   }
 
   /** Affiche ou retire un bien vendu du site public (badge « Vendu »). */

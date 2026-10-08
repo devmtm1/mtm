@@ -28,6 +28,7 @@
     "audit:purge": "./scripts/purge-audit-logs.sh",
     "documents:purge": "ts-node scripts/purge-documents.ts",
     "medias:check-orphans": "ts-node scripts/check-orphan-medias.ts",
+    "import:terrains": "ts-node scripts/import-terrains.ts",
     "demo:terrains": "ts-node scripts/seed-demo-terrains.ts",
     "demo:showcase": "ts-node scripts/seed-demo-showcase.ts",
     "demo:terrain-photos": "ts-node scripts/seed-demo-terrain-photos.ts",

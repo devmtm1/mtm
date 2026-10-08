@@ -1,6 +1,7 @@
 import { Type, Transform } from 'class-transformer';
 import {
   IsBoolean,
+  IsDateString,
   IsIn,
   IsInt,
   IsNumber,
@@ -37,6 +38,20 @@ export class QueryTerrainDto {
   /** Typologie d'un bien bâti : F1, F2… */
   @IsOptional() @IsString() nombrePieces?: string;
   @IsOptional() @IsUUID() proprietaireId?: string;
+  /**
+   * Liste de gestion : `actifs` (défaut) masque les biens archivés, `archives`
+   * ne montre qu'eux, `tous` les mêle. Sans effet sur le catalogue public, qui
+   * n'affiche jamais un bien archivé.
+   */
+  @IsOptional()
+  @IsIn(['actifs', 'archives', 'tous'])
+  archivage?: 'actifs' | 'archives' | 'tous';
+  @IsOptional() @IsString() modalitePaiement?: string;
+  @IsOptional() @IsString() statutVisite?: string;
+  @IsOptional() @Transform(versBooleen) @IsBoolean() produitDirect?: boolean;
+  @IsOptional() @Transform(versBooleen) @IsBoolean() protocoleAccord?: boolean;
+  @IsOptional() @IsDateString() dateEntreeMin?: string;
+  @IsOptional() @IsDateString() dateEntreeMax?: string;
   @IsOptional() @Type(() => Number) @IsNumber() @Min(0) superficieMin?: number;
   @IsOptional() @Type(() => Number) @IsNumber() @Min(0) superficieMax?: number;
   @IsOptional() @Type(() => Number) @IsNumber() @Min(0) prixPublicMin?: number;
@@ -52,6 +67,9 @@ export class QueryTerrainDto {
     'superficie',
     'surfaceHabitable',
     'prixPublic',
+    'prixCession',
+    'dateEntree',
+    'nombreLots',
   ])
   sortBy = 'createdAt';
   @IsOptional() @IsIn(['asc', 'desc']) sortOrder: 'asc' | 'desc' = 'desc';
