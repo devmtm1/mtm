@@ -18,10 +18,13 @@ export class QueryTerrainDto {
   @IsOptional() @IsString() niveauVerification?: string;
   @IsOptional() @IsString() statutCommercial?: string;
   /**
-   * Catalogue public : `vendu` liste les références vendues que MTM a choisi
-   * d'afficher ; par défaut, les biens disponibles.
+   * Catalogue public : `disponible` (défaut) liste les biens à vendre ; `vendu`
+   * les références vendues que MTM a choisi d'afficher ; `tous` les deux, les
+   * biens à vendre d'abord, puis les références vendues.
    */
-  @IsOptional() @IsIn(['disponible', 'vendu']) statut?: 'disponible' | 'vendu';
+  @IsOptional()
+  @IsIn(['disponible', 'vendu', 'tous'])
+  statut?: 'disponible' | 'vendu' | 'tous';
   @IsOptional() @Transform(versBooleen) @IsBoolean() misEnAvant?: boolean;
   @IsOptional() @IsString() region?: string;
   @IsOptional() @IsString() commune?: string;

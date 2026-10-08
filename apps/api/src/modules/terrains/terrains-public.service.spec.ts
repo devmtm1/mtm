@@ -218,6 +218,69 @@ describe('TerrainsPublicService', () => {
       ...extra,
     });
 
+    it('« tous » mêle les biens à vendre et les références vendues cochées, les biens à vendre d’abord', async () => {
+      prismaMock.terrain.findMany.mockResolvedValue([
+        vendu({ id: 't1', statutCommercial: 'Disponible', dossiers: [] }),
+        vendu(),
+      ]);
+      prismaMock.terrain.count.mockResolvedValue(2);
+
+      const { items } = await publicCatalog.findPublic({
+        ...requete,
+        statut: 'tous',
+      });
+
+      const appel = prismaMock.terrain.findMany.mock.calls[0][0];
+      expect(appel.where.OR).toEqual([
+        expect.objectContaining({ statutCommercial: 'Disponible' }),
+        expect.objectContaining({
+          statutCommercial: 'Vendu',
+          referenceVendue: true,
+        }),
+      ]);
+      expect(appel.orderBy[0]).toEqual({ statutCommercial: 'asc' });
+      // Chaque bien a la projection qui lui convient : complet, ou réduit.
+      expect(items[0]).toMatchObject({
+        statutCommercial: 'Disponible',
+        prixPublic: 120_000_000,
+      });
+      expect(items[1]).toMatchObject({
+        statutCommercial: 'Vendu',
+        prixPublic: null,
+      });
+    });
+
+    it('« tous » n’inclut pas les références vendues quand le visiteur filtre sur le prix', async () => {
+      prismaMock.terrain.findMany.mockResolvedValue([]);
+      prismaMock.terrain.count.mockResolvedValue(0);
+
+      await publicCatalog.findPublic({
+        ...requete,
+        statut: 'tous',
+        prixPublicMax: 30_000_000,
+      });
+
+      const appel = prismaMock.terrain.findMany.mock.calls[0][0];
+      expect(appel.where.statutCommercial).toBe('Disponible');
+      expect(appel.where.OR).toBeUndefined();
+    });
+
+    it('la recherche libre s’applique aux deux séries à la fois', async () => {
+      prismaMock.terrain.findMany.mockResolvedValue([]);
+      prismaMock.terrain.count.mockResolvedValue(0);
+
+      await publicCatalog.findPublic({
+        ...requete,
+        statut: 'tous',
+        search: 'Saly',
+      });
+
+      const [dispo, vend] =
+        prismaMock.terrain.findMany.mock.calls[0][0].where.OR;
+      expect(dispo.OR).toBeDefined();
+      expect(vend.OR).toBeDefined();
+    });
+
     it('ne liste que les biens vendus que MTM a cochés, jamais ceux à vendre', async () => {
       prismaMock.terrain.findMany.mockResolvedValue([]);
       prismaMock.terrain.count.mockResolvedValue(0);

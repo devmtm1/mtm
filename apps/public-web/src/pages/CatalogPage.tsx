@@ -5,8 +5,9 @@ import { TerrainFilters } from '../components/terrains/TerrainFilters';
 import { ActiveFilterChips } from '../components/terrains/ActiveFilterChips';
 import { activeFilterChips, type FilterChip } from '../components/terrains/active-filter-chips';
 import { TerrainCard } from '../components/terrains/TerrainCard';
-import { CatalogTabs } from '../components/terrains/CatalogTabs';
-import { SoldReferencesView } from '../components/terrains/SoldReferencesView';
+import { CatalogStatutSwitch, type CatalogStatut } from '../components/terrains/CatalogStatutSwitch';
+import { SoldPropertyCard } from '../components/terrains/SoldPropertyCard';
+import { estVendu } from '../utils/venteLabels';
 import { TerrainsMap } from '../components/terrains/TerrainsMap';
 import { CATALOG_GRID } from '../components/terrains/terrain-grid';
 import { useTerrainsCatalog } from '../hooks/useTerrainsCatalog';
@@ -55,6 +56,9 @@ function parseFilters(params: URLSearchParams): TerrainFiltersValue {
     if (value && !Number.isNaN(Number(value))) filters[key] = Number(value);
   }
 
+  const statut = params.get('statut');
+  if (statut === 'disponible' || statut === 'vendu') filters.statut = statut;
+
   filters.pageSize = PAGE_SIZE;
   return filters;
 }
@@ -67,13 +71,11 @@ function criteriaKey(filters: TerrainFiltersValue): string {
   return JSON.stringify(rest);
 }
 
-/** Le catalogue : biens à vendre, ou références vendues (`?statut=vendu`). */
+/**
+ * Le catalogue : les biens à vendre, puis les références vendues que MTM a
+ * choisi d'afficher (badge rouge « Vendu »), le tout dans la même liste.
+ */
 export function CatalogPage() {
-  const [searchParams] = useSearchParams();
-  return searchParams.get('statut') === 'vendu' ? <SoldReferencesView /> : <AvailableCatalog />;
-}
-
-function AvailableCatalog() {
   const [searchParams, setSearchParams] = useSearchParams();
   const filters = useMemo(() => parseFilters(searchParams), [searchParams]);
   const [viewMode, setViewMode] = useState<'liste' | 'carte'>('liste');
@@ -83,13 +85,17 @@ function AvailableCatalog() {
   // En vue carte, la pagination n'a pas de sens : on charge l'ensemble des
   // terrains correspondant aux filtres pour tous les situer d'un coup.
   const queryFilters = useMemo(
-    () => (viewMode === 'carte' ? { ...filters, page: 1, pageSize: 200 } : filters),
+    () => ({
+      ...(viewMode === 'carte' ? { ...filters, page: 1, pageSize: 200 } : filters),
+      // Sans choix, le catalogue mêle les biens à vendre et les références vendues.
+      statut: filters.statut ?? ('tous' as const),
+    }),
     [filters, viewMode],
   );
   const { data, loading, error } = useTerrainsCatalog(queryFilters);
 
   usePageMetadata({
-    title: 'Terrains et villas disponibles',
+    title: 'Terrains et villas à vendre',
     description:
       'Catalogue de terrains et de villas vérifiés à vendre au Sénégal : filtrez par type de bien, zone, commune, statut juridique, superficie et budget.',
   });
@@ -207,10 +213,13 @@ function AvailableCatalog() {
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
       <SectionHeading
         eyebrow="Catalogue"
-        title="Nos biens disponibles"
-        description="Terrains, villas et appartements vérifiés : filtrez par type de bien, zone, superficie et budget."
+        title="Nos biens"
+        description="Terrains, villas et appartements vérifiés à vendre, et nos références vendues : filtrez par type de bien, zone, superficie et budget."
       />
-      <CatalogTabs active="disponible" />
+      <CatalogStatutSwitch
+        value={(filters.statut ?? 'tous') as CatalogStatut}
+        onChange={(statut) => commitFilters({ ...filters, statut: statut === 'tous' ? undefined : statut, page: 1 })}
+      />
 
       {/* Mobile / tablette : recherche + bouton Filtres (critères en feuille).
           Les résultats sont visibles dès l'arrivée, sans traverser 7 champs. */}
@@ -288,9 +297,13 @@ function AvailableCatalog() {
           <>
             {viewMode === 'liste' ? (
               <div className={CATALOG_GRID}>
-                {listItems.map((terrain) => (
-                  <TerrainCard key={terrain.id} terrain={terrain} compact />
-                ))}
+                {listItems.map((terrain) =>
+                  estVendu(terrain) ? (
+                    <SoldPropertyCard key={terrain.id} terrain={terrain} />
+                  ) : (
+                    <TerrainCard key={terrain.id} terrain={terrain} compact />
+                  ),
+                )}
               </div>
             ) : (
               <TerrainsMap terrains={data.items} />

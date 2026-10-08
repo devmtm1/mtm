@@ -31,9 +31,8 @@ export class TerrainsPublicService {
     const page = query.page > 0 ? query.page : 1;
     const pageSize = Math.min(query.pageSize > 0 ? query.pageSize : 25, 200);
     const search = query.search?.trim();
-    const vendu = query.statut === 'vendu';
-    const where: Prisma.TerrainWhereInput = {
-      statutCommercial: 'Disponible',
+    const mode = query.statut ?? 'disponible';
+    const base: Prisma.TerrainWhereInput = {
       // Recherche libre du catalogue public : restreinte aux champs publics
       // (jamais parcelleMatricule ni notes internes).
       ...(search
@@ -90,20 +89,43 @@ export class TerrainsPublicService {
           }
         : {}),
     };
-    if (vendu) {
-      // Références vendues : seulement celles que MTM affiche, sans filtre de
-      // prix (il n'est pas public), les plus récemment modifiées d'abord.
-      where.statutCommercial = 'Vendu';
-      where.referenceVendue = true;
-      delete where.prixPublic;
-    }
+    const filtreParPrix =
+      query.prixPublicMin !== undefined || query.prixPublicMax !== undefined;
+    const disponible: Prisma.TerrainWhereInput = {
+      ...base,
+      statutCommercial: 'Disponible',
+    };
+    // Une référence vendue n'a pas de prix public : aucun filtre de prix ne
+    // s'applique à elle, et elle n'apparaît pas quand le visiteur filtre sur le prix.
+    const sansPrix = { ...base };
+    delete sansPrix.prixPublic;
+    const vendu: Prisma.TerrainWhereInput = {
+      ...sansPrix,
+      statutCommercial: 'Vendu',
+      referenceVendue: true,
+    };
+    const avecVendus = mode === 'vendu' || (mode === 'tous' && !filtreParPrix);
+    const where: Prisma.TerrainWhereInput =
+      mode === 'vendu'
+        ? vendu
+        : avecVendus
+          ? { OR: [disponible, vendu] }
+          : disponible;
+    const tri: Prisma.TerrainOrderByWithRelationInput = {
+      [query.sortBy]: query.sortOrder,
+    };
+    const orderBy: Prisma.TerrainOrderByWithRelationInput[] =
+      mode === 'vendu'
+        ? [{ updatedAt: 'desc' }]
+        : mode === 'tous' && avecVendus
+          ? // « Disponible » précède « Vendu » : les biens à vendre d'abord.
+            [{ statutCommercial: 'asc' }, tri]
+          : [tri];
     const [items, total] = await Promise.all([
       this.prisma.terrain.findMany({
         where,
-        select: vendu ? publicVenduSelect : publicTerrainSelect,
-        orderBy: vendu
-          ? { updatedAt: 'desc' }
-          : { [query.sortBy]: query.sortOrder },
+        select: avecVendus ? publicVenduSelect : publicTerrainSelect,
+        orderBy,
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
@@ -111,7 +133,9 @@ export class TerrainsPublicService {
     ]);
     return {
       items: items.map((item) =>
-        vendu ? this.toPublicVendu(item) : this.toPublic(item),
+        item.statutCommercial === 'Vendu'
+          ? this.toPublicVendu(item)
+          : this.toPublic(item),
       ),
       total,
       page,

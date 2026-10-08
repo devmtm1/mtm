@@ -63,8 +63,9 @@ export function MobileHome() {
   const [othersOpen, setOthersOpen] = useState(false);
   const closeOthers = useCallback(() => setOthersOpen(false), []);
 
-  const terrainsFilters = useMemo(() => ({ pageSize: 6 }), []);
-  const locationsFilters = useMemo(() => ({ pageSize: 6 }), []);
+  // Cette rangée ne montre que les biens mis en avant par MTM, ventes et locations.
+  const terrainsFilters = useMemo(() => ({ misEnAvant: true, pageSize: 6 }), []);
+  const locationsFilters = useMemo(() => ({ misEnAvant: true, pageSize: 6 }), []);
   const terrains = useTerrainsCatalog(terrainsFilters);
   const locations = useLocationsCatalog(locationsFilters);
 
@@ -193,7 +194,7 @@ export function MobileHome() {
 
         {!loading && recents.length === 0 && (
           <p className="mx-4 mt-3 rounded-2xl border border-dashed border-mtm-border bg-mtm-surface p-5 text-center text-sm text-mtm-muted">
-            Aucun bien publié pour le moment. Revenez bientôt, ou contactez-nous pour connaître nos prochaines offres.
+            Aucun bien mis en avant pour le moment. Découvrez tous nos biens, ou contactez-nous pour connaître nos prochaines offres.
           </p>
         )}
       </section>

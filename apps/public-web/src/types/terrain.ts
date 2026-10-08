@@ -100,8 +100,11 @@ export interface TerrainFilters {
   nombrePieces?: string;
   statutJuridique?: string;
   niveauVerification?: string;
-  /** `vendu` : les références vendues que MTM affiche ; par défaut, les biens disponibles. */
-  statut?: 'vendu';
+  /**
+   * `disponible` : les biens à vendre (par défaut pour l'API) ; `vendu` : les
+   * références vendues que MTM affiche ; `tous` : les deux, les biens à vendre d'abord.
+   */
+  statut?: 'disponible' | 'vendu' | 'tous';
   misEnAvant?: boolean;
   superficieMin?: number;
   superficieMax?: number;

@@ -137,6 +137,29 @@ describeE2e('Références vendues sur le site public (e2e)', () => {
     expect(bien.commune).toBe('Saly');
   });
 
+  it('« tous » mêle les biens à vendre et les références vendues, les biens à vendre d’abord', async () => {
+    const reponse = await request(app.getHttpServer()).get(
+      '/api/terrains/public?statut=tous',
+    );
+    expect(reponse.status).toBe(200);
+    expect(ids(reponse.body)).toEqual([disponibleId, venduCocheId]);
+    expect(reponse.body.items[0]).toMatchObject({
+      statutCommercial: 'Disponible',
+      prixPublic: '25000000',
+    });
+    expect(reponse.body.items[1]).toMatchObject({
+      statutCommercial: 'Vendu',
+      prixPublic: null,
+    });
+    expect(reponse.body.total).toBe(2);
+
+    // Un filtre de prix écarte les références vendues, qui n'ont pas de prix public.
+    const filtre = await request(app.getHttpServer()).get(
+      '/api/terrains/public?statut=tous&prixPublicMax=100000000',
+    );
+    expect(ids(filtre.body)).toEqual([disponibleId]);
+  });
+
   it('la fiche d’un bien vendu coché est réduite ; celle d’un vendu non coché est introuvable', async () => {
     const coche = await request(app.getHttpServer()).get(
       `/api/terrains/public/${venduCocheId}`,

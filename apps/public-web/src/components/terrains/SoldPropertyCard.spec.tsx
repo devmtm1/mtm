@@ -1,7 +1,7 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
-import { CatalogTabs } from './CatalogTabs';
+import { CatalogStatutSwitch } from './CatalogStatutSwitch';
 import { SoldPropertyCard } from './SoldPropertyCard';
 import type { Terrain } from '../../types/terrain';
 
@@ -49,27 +49,26 @@ describe('SoldPropertyCard', () => {
   });
 });
 
-describe('CatalogTabs', () => {
-  it('n’existent pas tant que MTM n’affiche aucune référence vendue', () => {
+describe('CatalogStatutSwitch', () => {
+  it('n’existe pas tant que MTM n’affiche aucune référence vendue', () => {
     options.vendus = 0;
-    const { container } = render(
-      <MemoryRouter>
-        <CatalogTabs active="disponible" />
-      </MemoryRouter>,
-    );
+    const { container } = render(<CatalogStatutSwitch value="tous" onChange={() => undefined} />);
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('proposent « À vendre » et « Vendus (n) », avec l’onglet courant marqué', () => {
+  it('propose Tous, À vendre et Vendus (n), avec le choix courant marqué', () => {
     options.vendus = 3;
-    render(
-      <MemoryRouter>
-        <CatalogTabs active="vendu" />
-      </MemoryRouter>,
-    );
-    expect(screen.getByRole('link', { name: 'À vendre' })).toHaveAttribute('href', '/terrains');
-    const onglet = screen.getByRole('link', { name: 'Vendus (3)' });
-    expect(onglet).toHaveAttribute('href', '/terrains?statut=vendu');
-    expect(onglet).toHaveAttribute('aria-current', 'page');
+    render(<CatalogStatutSwitch value="vendu" onChange={() => undefined} />);
+    expect(screen.getByRole('button', { name: 'Tous' })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: 'À vendre' })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: 'Vendus (3)' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('signale le choix du visiteur', () => {
+    options.vendus = 2;
+    const onChange = vi.fn();
+    render(<CatalogStatutSwitch value="tous" onChange={onChange} />);
+    fireEvent.click(screen.getByRole('button', { name: 'À vendre' }));
+    expect(onChange).toHaveBeenCalledWith('disponible');
   });
 });
