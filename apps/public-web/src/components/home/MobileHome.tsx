@@ -21,7 +21,6 @@ import { Skeleton } from '../ui/Skeleton';
 import { useHeroContent } from './hero-content';
 import { HeroBackdrop } from './HeroBackdrop';
 import { ServicesSection } from './ServicesSection';
-import { SoldReferencesSection } from './SoldReferencesSection';
 import { UpcomingProjectsSection } from './UpcomingProjectsSection';
 import { RealisationsPreviewSection } from './RealisationsPreviewSection';
 import { TestimonialsSection } from './TestimonialsSection';
@@ -200,9 +199,6 @@ export function MobileHome() {
       </section>
 
       <div className="mt-2">
-        <Reveal>
-          <SoldReferencesSection />
-        </Reveal>
         <Reveal>
           <ServicesSection />
         </Reveal>
