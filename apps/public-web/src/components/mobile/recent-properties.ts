@@ -18,8 +18,6 @@ export function terrainCard(terrain: Terrain): AppPropertyCardData {
     to: ROUTES.terrainDetail(terrain.id),
     title: terrain.nom,
     images: photosOf(terrain.medias),
-    badge: 'Vente',
-    badgeTone: 'primary',
     price: formatMoney(terrain.prixPublic),
     place: [terrain.commune, terrain.region].filter(Boolean).join(', '),
     featured: terrain.misEnAvant ? 'Mis en avant' : undefined,

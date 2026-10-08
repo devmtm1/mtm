@@ -13,8 +13,12 @@ export interface AppPropertyCardData {
   /** Photos candidates : la suivante prend le relais si une URL est morte. */
   images: string[];
   /** « Vente » ou « Location » : la nature de l'offre, lue avant le reste. */
-  badge: string;
-  badgeTone: 'primary' | 'success';
+  /**
+   * Nature de l'offre, seulement quand elle ne va pas de soi : une location porte « Location »,
+   * une vente n'a pas de badge (c'est le cas général, et le prix suffit à le dire).
+   */
+  badge?: string;
+  badgeTone?: 'primary' | 'success';
   price: string;
   /** Période du loyer (« / mois »), absente pour un prix de vente. */
   priceSuffix?: string;
@@ -51,7 +55,7 @@ export function AppPropertyCard({ card }: { card: AppPropertyCardData }) {
           sizes="240px"
           className="h-full w-full object-cover transition-transform duration-500 group-active:scale-105"
         />
-        {/* Les badges se rangent en colonne : « Mis en avant » en premier, puis la nature de l'offre. */}
+        {/* Peu de badges, pour ne pas surcharger la photo : « Mis en avant », puis « Location » pour un logement. */}
         <div className="absolute left-2.5 top-2.5 flex flex-col items-start gap-1.5">
           {card.featured && (
             <span className="inline-flex items-center gap-1 rounded-lg bg-mtm-accent px-2.5 py-1 text-[11px] font-bold text-white shadow-card">
@@ -59,9 +63,11 @@ export function AppPropertyCard({ card }: { card: AppPropertyCardData }) {
               {card.featured}
             </span>
           )}
-          <span className={`rounded-lg px-2.5 py-1 text-[11px] font-bold shadow-card ${BADGE_TONES[card.badgeTone]}`}>
-            {card.badge}
-          </span>
+          {card.badge && (
+            <span className={`rounded-lg px-2.5 py-1 text-[11px] font-bold shadow-card ${BADGE_TONES[card.badgeTone ?? 'primary']}`}>
+              {card.badge}
+            </span>
+          )}
         </div>
         <FavoriteButton kind={card.kind} id={card.id} label={card.title} className="absolute right-2.5 top-2.5" />
       </div>

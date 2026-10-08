@@ -29,12 +29,10 @@ const location = (id: string, publieLe: string | null, extra: Partial<Location> 
   }) as unknown as Location;
 
 describe('cartes de l’accueil mobile', () => {
-  it('une vente porte « Vente », son prix et sa photo', () => {
+  it('une vente n’a pas de badge d’offre, mais son prix et sa photo', () => {
     const card = terrainCard(terrain('t1', '2026-10-01T00:00:00Z'));
     expect(card).toMatchObject({
       kind: 'terrain',
-      badge: 'Vente',
-      badgeTone: 'primary',
       to: '/terrains/t1',
       place: 'Mbour, Thiès',
       images: ['https://img/t1.jpg'],

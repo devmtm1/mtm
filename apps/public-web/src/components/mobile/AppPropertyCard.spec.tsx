@@ -9,8 +9,6 @@ const carte: AppPropertyCardData = {
   to: '/terrains/t1',
   title: 'Grand terrain agricole',
   images: ['https://img/1.jpg'],
-  badge: 'Vente',
-  badgeTone: 'primary',
   price: '30 000 000 FCFA',
   place: 'Sébikotane, Dakar',
 };
@@ -23,18 +21,21 @@ const afficher = (extra: Partial<AppPropertyCardData> = {}) =>
   );
 
 describe('AppPropertyCard', () => {
-  it('un bien mis en avant porte le badge rouge, avec la nature de l’offre en dessous', () => {
+  it('une vente mise en avant ne porte que le badge rouge, sans badge « Vente »', () => {
     afficher({ featured: 'Mis en avant' });
     expect(screen.getByText('Mis en avant')).toHaveClass('bg-mtm-accent');
-    expect(screen.getByText('Vente')).toBeInTheDocument();
-    // Les deux badges sont dans la même colonne : aucun ne cache l'autre.
-    expect(screen.getByText('Mis en avant').parentElement).toBe(screen.getByText('Vente').parentElement);
+    expect(screen.queryByText('Vente')).not.toBeInTheDocument();
   });
 
-  it('sans mise en avant, seul le badge de l’offre s’affiche', () => {
+  it('une vente ordinaire n’a aucun badge sur la photo', () => {
     afficher();
-    expect(screen.getByText('Vente')).toBeInTheDocument();
+    expect(screen.queryByText('Vente')).not.toBeInTheDocument();
     expect(screen.queryByText('Mis en avant')).not.toBeInTheDocument();
+  });
+
+  it('une location mise à la une garde « Location » sous le badge rouge', () => {
+    afficher({ kind: 'location', badge: 'Location', badgeTone: 'success', featured: 'À la une' });
+    expect(screen.getByText('À la une').parentElement).toBe(screen.getByText('Location').parentElement);
   });
 
   it('une location à la une affiche « À la une »', () => {
