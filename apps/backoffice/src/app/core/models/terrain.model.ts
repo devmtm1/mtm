@@ -35,18 +35,41 @@ export interface TerrainListItem {
   /** Bien vendu affiché sur le site public comme référence (badge « Vendu », sans prix). */
   referenceVendue?: boolean;
   medias?: TerrainMedia[];
+  // --- Suivi du portefeuille (reprise du tableur historique) ---
+  /** Nombre de lots : un lotissement compte plusieurs terrains. */
+  nombreLots?: number | null;
+  /** Date d'entrée du bien dans le portefeuille (AAAA-MM-JJ…). */
+  dateEntree?: string | null;
+  modalitePaiement?: string | null;
+  statutVisite?: string | null;
+  produitDirect?: boolean;
+  protocoleAccord?: boolean;
+  /** Mandataire propre à ce bien ; à défaut, le propriétaire. */
+  contactVendeurNom?: string | null;
+  contactVendeurTelephone?: string | null;
+  localisationDetail?: string | null;
+  /** Renseignée seulement pour un bien archivé. */
+  archiveLe?: string | null;
   /** Renvoyé par la liste (sélection réduite) ; complet dans TerrainDetail. */
-  proprietaire?: { id: string; firstName: string; lastName: string } | null;
+  proprietaire?: { id: string; firstName: string; lastName: string; phone?: string | null } | null;
 }
 
 export interface TerrainDetail extends TerrainListItem {
-  localisationDetail: string | null;
   latitude: NumericOrString;
   longitude: NumericOrString;
   dimensions: unknown;
   prixAcquisition: NumericOrString;
   marge: NumericOrString;
   commission: NumericOrString;
+  /** Prix de cession : interne, masqué sans accès financier. */
+  prixCession: NumericOrString;
+  dureeMoratoireMois: number | null;
+  acompteMontant: NumericOrString;
+  notesPaiement: string | null;
+  referenceDocumentFoncier: string | null;
+  dateDocumentFoncier: string | null;
+  commentaireAdministratif: string | null;
+  motifArchivage: string | null;
   accesRoutier: string | null;
   eauDisponible: boolean | null;
   electriciteDisponible: boolean | null;
@@ -108,6 +131,20 @@ export interface TerrainQuery {
   typeBien?: string;
   nombrePieces?: string;
   proprietaireId?: string;
+  /** `actifs` (défaut), `archives` ou `tous`. */
+  archivage?: 'actifs' | 'archives' | 'tous';
+  modalitePaiement?: string;
+  statutVisite?: string;
+  produitDirect?: boolean;
+  protocoleAccord?: boolean;
+  dateEntreeMin?: string;
+  dateEntreeMax?: string;
+  superficieMin?: number;
+  superficieMax?: number;
+  prixPublicMin?: number;
+  prixPublicMax?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
   page?: number;
   pageSize?: number;
 }
@@ -123,6 +160,8 @@ export interface TerrainPointInteret {
 /** Synthèse du portefeuille (GET /terrains/stats). */
 export interface TerrainStats {
   total: number;
+  /** Biens archivés, hors du portefeuille actif. */
+  archives?: number;
   parStatut: Partial<Record<string, number>>;
   misEnAvant: number;
   sansGps: number;
@@ -139,6 +178,10 @@ export interface TerrainOptions {
   etatBien: string[];
   /** Usage prévu du sol, désormais contrôlé et non plus saisi librement. */
   vocation: string[];
+  /** Cash, Moratoire… (paramétrable). */
+  modalitePaiement: string[];
+  /** À visiter, Visité… (paramétrable). */
+  statutVisite: string[];
   /**
    * Types qui ouvrent la section « bâti » du formulaire. L'API en est la
    * source : les écrans n'ont pas à deviner qu'un studio est bâti et un
@@ -176,8 +219,23 @@ export interface CreateTerrainPayload {
   prixPublic?: number;
   marge?: number;
   commission?: number;
+  prixCession?: number;
+  nombreLots?: number;
+  dateEntree?: string;
+  modalitePaiement?: string;
+  dureeMoratoireMois?: number;
+  acompteMontant?: number;
+  notesPaiement?: string;
+  produitDirect?: boolean;
+  protocoleAccord?: boolean;
+  statutVisite?: string;
+  contactVendeurNom?: string;
+  contactVendeurTelephone?: string;
+  referenceDocumentFoncier?: string;
+  dateDocumentFoncier?: string;
+  commentaireAdministratif?: string;
   statutCommercial: string;
-   accesRoutier?: string;
+  accesRoutier?: string;
   misEnAvant?: boolean;
   eauDisponible?: boolean;
   electriciteDisponible?: boolean;

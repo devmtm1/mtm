@@ -119,7 +119,7 @@ export class TerrainForm implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly money = new MoneyPipe();
 
-  private original: { statutJuridique: string; niveauVerification: string; prixAcquisition: number | null; marge: number | null; commission: number | null; proprietaireId: string } | null = null;
+  private original: { statutJuridique: string; niveauVerification: string; prixAcquisition: number | null; prixCession: number | null; marge: number | null; commission: number | null; proprietaireId: string } | null = null;
 
   protected readonly steps = STEPS;
   protected readonly terrainId: string | null = this.route.snapshot.paramMap.get('id');
@@ -136,6 +136,8 @@ export class TerrainForm implements OnInit {
     etatBien: string[];
     typesBati: string[];
     vocation: string[];
+    modalitePaiement: string[];
+    statutVisite: string[];
   }>({
     statutJuridique: [],
     niveauVerification: [],
@@ -145,6 +147,8 @@ export class TerrainForm implements OnInit {
     etatBien: [],
     typesBati: [],
     vocation: [],
+    modalitePaiement: [],
+    statutVisite: [],
   });
   protected readonly proprietaires = signal<ProprietaireSummary[]>([]);
   /** Commerciaux affectables : réservé à l'encadrement (un commercial est rattaché d'office). */
@@ -164,6 +168,11 @@ export class TerrainForm implements OnInit {
     commercialResponsableId: [''],
     statutJuridique: ['Régularisation en cours', Validators.required],
     typeDocumentFoncier: [''],
+    referenceDocumentFoncier: [''],
+    dateDocumentFoncier: [''],
+    commentaireAdministratif: [''],
+    contactVendeurNom: [''],
+    contactVendeurTelephone: [''],
     niveauVerification: ['Non vérifié', Validators.required],
     region: [''],
     commune: [''],
@@ -184,6 +193,17 @@ export class TerrainForm implements OnInit {
     anneeConstruction: [null as number | null, [Validators.min(1900), Validators.max(2200)]],
     etatBien: [''],
     prixAcquisition: [null as number | null, Validators.min(0)],
+    prixCession: [null as number | null, Validators.min(0)],
+    // Suivi du portefeuille (reprise du tableur historique)
+    dateEntree: [''],
+    nombreLots: [null as number | null, [Validators.min(1), Validators.max(100000)]],
+    modalitePaiement: [''],
+    dureeMoratoireMois: [null as number | null, [Validators.min(1), Validators.max(240)]],
+    acompteMontant: [null as number | null, Validators.min(0)],
+    notesPaiement: [''],
+    produitDirect: [false],
+    protocoleAccord: [false],
+    statutVisite: [''],
     prixPublic: [null as number | null, Validators.min(0)],
     marge: [null as number | null],
     commission: [null as number | null, Validators.min(0)],
@@ -241,6 +261,7 @@ export class TerrainForm implements OnInit {
     const value = this.formValue();
     return (
       this.toNumber(value.prixAcquisition) !== this.original.prixAcquisition ||
+      this.toNumber(value.prixCession) !== this.original.prixCession ||
       this.toNumber(value.marge) !== this.original.marge ||
       this.toNumber(value.commission) !== this.original.commission ||
       (value.proprietaireId ?? '') !== this.original.proprietaireId
@@ -275,6 +296,11 @@ export class TerrainForm implements OnInit {
       published: value.statutCommercial === 'Disponible',
     };
   });
+
+  /** La durée de moratoire n'a de sens que pour une modalité à échéances. */
+  protected readonly moratoire = computed(() =>
+    (this.formValue().modalitePaiement ?? '').toLowerCase().startsWith('morato'),
+  );
 
   protected readonly commercialStatus = COMMERCIAL_STATUS;
   protected readonly legalStatus = LEGAL_STATUS;
@@ -490,6 +516,7 @@ export class TerrainForm implements OnInit {
       statutJuridique: terrain.statutJuridique,
       niveauVerification: terrain.niveauVerification,
       prixAcquisition: this.toNumber(terrain.prixAcquisition),
+      prixCession: this.toNumber(terrain.prixCession),
       marge: this.toNumber(terrain.marge),
       commission: this.toNumber(terrain.commission),
       proprietaireId: terrain.proprietaire?.id ?? '',
@@ -502,6 +529,11 @@ export class TerrainForm implements OnInit {
       commercialResponsableId: terrain.commercialResponsable?.id ?? '',
       statutJuridique: terrain.statutJuridique,
       typeDocumentFoncier: terrain.typeDocumentFoncier ?? '',
+      referenceDocumentFoncier: terrain.referenceDocumentFoncier ?? '',
+      dateDocumentFoncier: terrain.dateDocumentFoncier?.slice(0, 10) ?? '',
+      commentaireAdministratif: terrain.commentaireAdministratif ?? '',
+      contactVendeurNom: terrain.contactVendeurNom ?? '',
+      contactVendeurTelephone: terrain.contactVendeurTelephone ?? '',
       niveauVerification: terrain.niveauVerification,
       region: terrain.region ?? '',
       commune: terrain.commune ?? '',
@@ -519,6 +551,16 @@ export class TerrainForm implements OnInit {
       etatBien: terrain.etatBien ?? '',
       dimensions: typeof terrain.dimensions === 'string' ? terrain.dimensions : terrain.dimensions ? JSON.stringify(terrain.dimensions) : '',
       prixAcquisition: this.toNumber(terrain.prixAcquisition),
+      prixCession: this.toNumber(terrain.prixCession),
+      dateEntree: terrain.dateEntree?.slice(0, 10) ?? '',
+      nombreLots: terrain.nombreLots ?? null,
+      modalitePaiement: terrain.modalitePaiement ?? '',
+      dureeMoratoireMois: terrain.dureeMoratoireMois,
+      acompteMontant: this.toNumber(terrain.acompteMontant),
+      notesPaiement: terrain.notesPaiement ?? '',
+      produitDirect: !!terrain.produitDirect,
+      protocoleAccord: !!terrain.protocoleAccord,
+      statutVisite: terrain.statutVisite ?? '',
       prixPublic: this.toNumber(terrain.prixPublic),
       marge: this.toNumber(terrain.marge),
       commission: this.toNumber(terrain.commission),
@@ -570,10 +612,12 @@ export class TerrainForm implements OnInit {
     // les réexpédier effacerait les vrais. L'API les ignore aussi de son
     // côté, mais autant ne pas les envoyer du tout.
     if (!this.canViewFinancials) {
-      for (const champ of ['prixAcquisition', 'marge', 'commission']) {
+      for (const champ of ['prixAcquisition', 'prixCession', 'marge', 'commission']) {
         delete cleaned[champ];
       }
     }
+    // Une durée de moratoire n'accompagne pas une autre modalité de paiement.
+    if (!this.moratoire()) delete cleaned['dureeMoratoireMois'];
     // Un commercial ne choisit pas le responsable : l'API le rattache lui-même.
     if (!this.canAssign) delete cleaned['commercialResponsableId'];
     return cleaned as unknown as CreateTerrainPayload;

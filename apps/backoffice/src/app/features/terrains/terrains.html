@@ -50,6 +50,14 @@
           <span>Vendus</span>
         </span>
       </button>
+      <button type="button" class="kpi kpi--muted" (click)="filterArchives()">
+        <span class="kpi__icon"><svg lucideArchive aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ s.archives ?? 0 }}</strong>
+          <span>Archivés</span>
+          <small>Hors portefeuille actif</small>
+        </span>
+      </button>
       <div class="kpi kpi--attention" [class.kpi--muted]="toComplete() === 0">
         <span class="kpi__icon"><svg lucideAlertTriangle aria-hidden="true"></svg></span>
         <span class="kpi__body">
@@ -95,7 +103,7 @@
         <mat-form-field appearance="outline" class="list-filters__search" subscriptSizing="dynamic">
           <mat-label>Rechercher</mat-label>
           <svg matPrefix class="list-filters__icon" lucideSearch aria-hidden="true"></svg>
-          <input matInput formControlName="search" placeholder="Référence, nom, parcelle…" autocomplete="off" />
+          <input matInput formControlName="search" placeholder="Référence, matricule, localité, vendeur, téléphone…" autocomplete="off" />
         </mat-form-field>
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Nature du bien</mat-label>
@@ -146,6 +154,38 @@
             }
           </mat-select>
         </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Portefeuille</mat-label>
+          <mat-select formControlName="archivage">
+            <mat-option value="">Biens actifs</mat-option>
+            <mat-option value="archives">Archives</mat-option>
+            <mat-option value="tous">Tous</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <button
+          mat-stroked-button
+          type="button"
+          (click)="showAdvanced.set(!showAdvanced())"
+          [attr.aria-expanded]="showAdvanced()"
+        >
+          <svg class="btn-icon" lucideSlidersHorizontal aria-hidden="true"></svg>Plus de filtres
+        </button>
+        @if (viewMode() === 'table') {
+          <button mat-stroked-button type="button" [matMenuTriggerFor]="columnsMenu" aria-label="Choisir les colonnes">
+            <svg class="btn-icon" lucideColumns3 aria-hidden="true"></svg>Colonnes
+          </button>
+          <mat-menu #columnsMenu="matMenu">
+            @for (column of optionalColumns; track column.colId) {
+              <div class="columns-menu__item" role="presentation" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+                <mat-checkbox
+                  [checked]="visibleOptional().includes(column.colId)"
+                  (change)="toggleColumn(column.colId, $event.checked)"
+                  >{{ column.label }}</mat-checkbox
+                >
+              </div>
+            }
+          </mat-menu>
+        }
         @if (hasActiveFilters()) {
           <button mat-button type="button" class="list-filters__reset" (click)="resetFilters()">
             <svg class="btn-icon" lucideX aria-hidden="true"></svg>Effacer
@@ -171,6 +211,68 @@
             <svg lucideGrid2X2 aria-hidden="true"></svg>
           </button>
         </div>
+        @if (showAdvanced()) {
+          <div class="list-filters__advanced">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Modalité de paiement</mat-label>
+              <mat-select formControlName="modalitePaiement">
+                <mat-option value="">Toutes</mat-option>
+                @for (option of options().modalitePaiement; track option) {
+                  <mat-option [value]="option">{{ option }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Visite</mat-label>
+              <mat-select formControlName="statutVisite">
+                <mat-option value="">Toutes</mat-option>
+                @for (option of options().statutVisite; track option) {
+                  <mat-option [value]="option">{{ option }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Produit direct</mat-label>
+              <mat-select formControlName="produitDirect">
+                <mat-option value="">Indifférent</mat-option>
+                <mat-option value="true">Oui</mat-option>
+                <mat-option value="false">Non</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Protocole d’accord</mat-label>
+              <mat-select formControlName="protocoleAccord">
+                <mat-option value="">Indifférent</mat-option>
+                <mat-option value="true">Signé</mat-option>
+                <mat-option value="false">Non signé</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Entré à partir du</mat-label>
+              <input matInput type="date" formControlName="dateEntreeMin" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Entré jusqu’au</mat-label>
+              <input matInput type="date" formControlName="dateEntreeMax" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Surface min. (m²)</mat-label>
+              <input matInput type="number" min="0" inputmode="numeric" formControlName="superficieMin" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Surface max. (m²)</mat-label>
+              <input matInput type="number" min="0" inputmode="numeric" formControlName="superficieMax" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Prix min. (FCFA)</mat-label>
+              <input matInput type="number" min="0" inputmode="numeric" formControlName="prixPublicMin" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Prix max. (FCFA)</mat-label>
+              <input matInput type="number" min="0" inputmode="numeric" formControlName="prixPublicMax" />
+            </mat-form-field>
+          </div>
+        }
       </form>
     </div>
 
@@ -206,6 +308,7 @@
         [paginationPageSize]="20"
         [rowHeight]="52"
         [suppressCellFocus]="true"
+        (gridReady)="onGridReady($event)"
         (rowClicked)="$event.data && openDetail($event.data.id)"
       />
     } @else {
@@ -237,10 +340,17 @@
                   <span [class]="pillClass(typeBienMeanings, terrain.typeBien)">
                     {{ typeBienLabel(terrain.typeBien) }}
                   </span>
-                  <span [class]="pillClass(commercialStatus, terrain.statutCommercial)">{{ terrain.statutCommercial }}</span>
+                  @if (terrain.archiveLe) {
+                    <span class="status-pill">Archivé</span>
+                  } @else {
+                    <span [class]="pillClass(commercialStatus, terrain.statutCommercial)">{{ terrain.statutCommercial }}</span>
+                  }
                 </div>
                 <h3>{{ terrain.nom }}</h3>
                 <p class="terrain-card__location">{{ formatLocation(terrain) }}</p>
+                @if (vendeurNom(terrain); as vendeur) {
+                  <p class="terrain-card__vendeur">{{ vendeur }}</p>
+                }
                 <dl class="terrain-card__facts">
                   <div>
                     <dt>{{ estBati(terrain) ? 'Parcelle' : 'Superficie' }}</dt>
@@ -264,8 +374,31 @@
                     <dt>Prix public</dt>
                     <dd>{{ terrain.prixPublic | mtmMoney }}</dd>
                   </div>
+                  @if (terrain.nombreLots && terrain.nombreLots > 1) {
+                    <div>
+                      <dt>Lots</dt>
+                      <dd>{{ terrain.nombreLots }}</dd>
+                    </div>
+                  }
+                  @if (terrain.modalitePaiement) {
+                    <div>
+                      <dt>Paiement</dt>
+                      <dd>{{ terrain.modalitePaiement }}</dd>
+                    </div>
+                  }
                 </dl>
                 <div class="terrain-card__actions">
+                  <!-- Appeler le vendeur sans ouvrir la fiche : l'usage premier sur le terrain. -->
+                  @if (tel(terrain); as lienTel) {
+                    <a mat-button [href]="lienTel" (click)="$event.stopPropagation()" aria-label="Appeler le vendeur">
+                      <svg class="btn-icon" lucidePhone aria-hidden="true"></svg>Appeler
+                    </a>
+                  }
+                  @if (whatsapp(terrain); as lienWhatsapp) {
+                    <a mat-button [href]="lienWhatsapp" target="_blank" rel="noopener" (click)="$event.stopPropagation()" aria-label="Écrire au vendeur sur WhatsApp">
+                      <svg class="btn-icon" lucideMessageCircle aria-hidden="true"></svg>WhatsApp
+                    </a>
+                  }
                   <button mat-button type="button" (click)="openDetail(terrain.id); $event.stopPropagation()">
                     <svg class="btn-icon" lucideEye aria-hidden="true"></svg>Fiche
                   </button>

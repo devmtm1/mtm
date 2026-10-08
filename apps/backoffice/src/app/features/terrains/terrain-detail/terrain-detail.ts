@@ -7,6 +7,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
+  LucideArchive,
+  LucideArchiveRestore,
   LucideArrowLeft,
   LucideCamera,
   LucideChevronDown,
@@ -17,8 +19,11 @@ import {
   LucideFileText,
   LucideGlobe,
   LucideMapPin,
+  LucideMessageCircle,
   LucidePencil,
+  LucidePhone,
   LucidePlus,
+  LucideSend,
   LucideStar,
   LucideTrash2,
   LucideUpload,
@@ -26,7 +31,9 @@ import {
 } from '@lucide/angular';
 import * as L from 'leaflet';
 import { installBaseLayers } from '../../../shared/maps/map-layers';
-import { TerrainsApiService } from '../../../core/services/api/terrains-api.service';
+import { TerrainsApiService, type TerrainNote } from '../../../core/services/api/terrains-api.service';
+import { JustificationDialog } from '../../../shared/dialogs/justification-dialog';
+import { telLink, whatsappLink } from '../../crm/crm-status';
 import { CrmApiService } from '../../../core/services/api/crm-api.service';
 import type { CommercialSummary } from '../../../core/models/prospect.model';
 import { StatusChoiceDialog } from '../../../shared/dialogs/status-choice-dialog';
@@ -65,6 +72,8 @@ import {
     MatMenuModule,
     MatSlideToggleModule,
     MatTooltipModule,
+    LucideArchive,
+    LucideArchiveRestore,
     LucideArrowLeft,
     LucideCamera,
     LucideChevronDown,
@@ -75,8 +84,11 @@ import {
     LucideFileText,
     LucideGlobe,
     LucideMapPin,
+    LucideMessageCircle,
     LucidePencil,
+    LucidePhone,
     LucidePlus,
+    LucideSend,
     LucideStar,
     LucideTrash2,
     LucideUpload,
@@ -99,6 +111,23 @@ export class TerrainDetail implements OnInit, OnDestroy {
   protected readonly busy = signal(false);
   protected readonly options = signal<TerrainOptions | null>(null);
   protected readonly activeMedia = signal<string | null>(null);
+  protected readonly notes = signal<TerrainNote[]>([]);
+  protected readonly noteDraft = signal('');
+  /** Un bien archivé se consulte mais ne se modifie plus avant restauration. */
+  protected readonly archived = computed(() => !!this.terrain()?.archiveLe);
+  /** Contact à appeler pour ce bien : le mandataire du bien, à défaut le propriétaire. */
+  protected readonly contactNom = computed(() => {
+    const t = this.terrain();
+    if (!t) return '';
+    if (t.contactVendeurNom) return t.contactVendeurNom;
+    return t.proprietaire ? `${t.proprietaire.firstName} ${t.proprietaire.lastName}`.trim() : '';
+  });
+  protected readonly contactTelephone = computed(() => {
+    const t = this.terrain();
+    return t?.contactVendeurTelephone || t?.proprietaire?.phone || '';
+  });
+  protected readonly telHref = computed(() => telLink(this.contactTelephone()));
+  protected readonly whatsappHref = computed(() => whatsappLink(this.contactTelephone()));
 
   protected readonly canModify = this.session.hasPermission('terrains:modifier');
   /** Affecter le terrain à un commercial : encadrement uniquement. */
@@ -158,6 +187,7 @@ export class TerrainDetail implements OnInit, OnDestroy {
       next: (terrain) => {
         this.terrain.set(terrain);
         this.loading.set(false);
+        this.loadNotes();
         setTimeout(() => this.renderMap(), 0);
       },
       error: (error: unknown) => {
@@ -271,6 +301,53 @@ export class TerrainDetail implements OnInit, OnDestroy {
     const terrain = this.terrain();
     if (!terrain) return;
     this.run(this.api.setFeatured(terrain.id, misEnAvant), misEnAvant ? 'Terrain mis en avant sur la page d’accueil' : 'Terrain retiré de la page d’accueil');
+  }
+
+  /** Retire le bien du portefeuille actif et du site, sans rien supprimer. */
+  protected archive(): void {
+    const terrain = this.terrain();
+    if (!terrain) return;
+    JustificationDialog.ask(this.dialog, {
+      title: 'Archiver ce bien',
+      description:
+        'Le bien quitte la liste courante, le site public et les mises en avant. Fiche, photos, documents et historique sont conservés, et vous pourrez le restaurer à tout moment. Indiquez pourquoi il est archivé.',
+      confirmLabel: 'Archiver',
+    }).subscribe((motif) => {
+      if (!motif) return;
+      this.run(this.api.archive(terrain.id, motif), 'Bien archivé');
+    });
+  }
+
+  protected restore(): void {
+    const terrain = this.terrain();
+    if (!terrain) return;
+    this.run(this.api.restore(terrain.id), 'Bien restauré dans le portefeuille');
+  }
+
+  protected onNoteInput(event: Event): void {
+    this.noteDraft.set((event.target as HTMLTextAreaElement).value);
+  }
+
+  protected addNote(): void {
+    const terrain = this.terrain();
+    const texte = this.noteDraft().trim();
+    if (!terrain || !texte) return;
+    this.api.addNote(terrain.id, texte).subscribe({
+      next: () => {
+        this.noteDraft.set('');
+        this.loadNotes();
+      },
+      error: (error: unknown) => this.notify.error(error, 'Impossible d’enregistrer la note'),
+    });
+  }
+
+  private loadNotes(): void {
+    const terrain = this.terrain();
+    if (!terrain) return;
+    this.api.listNotes(terrain.id).subscribe({
+      next: (notes) => this.notes.set(notes),
+      error: () => this.notes.set([]),
+    });
   }
 
   protected openHistory(): void {

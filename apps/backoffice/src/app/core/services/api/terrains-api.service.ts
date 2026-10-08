@@ -104,6 +104,23 @@ export class TerrainsApiService {
     return this.http.patch<TerrainDetail>(`${this.baseUrl}/${id}/reference-vendue`, { afficher });
   }
 
+  /** Retire le bien du portefeuille actif sans rien supprimer. */
+  archive(id: string, motif: string): Observable<TerrainDetail> {
+    return this.http.patch<TerrainDetail>(`${this.baseUrl}/${id}/archive`, { motif });
+  }
+
+  restore(id: string): Observable<TerrainDetail> {
+    return this.http.patch<TerrainDetail>(`${this.baseUrl}/${id}/restore`, {});
+  }
+
+  listNotes(id: string): Observable<TerrainNote[]> {
+    return this.http.get<TerrainNote[]>(`${this.baseUrl}/${id}/notes`);
+  }
+
+  addNote(id: string, texte: string): Observable<TerrainNote> {
+    return this.http.post<TerrainNote>(`${this.baseUrl}/${id}/notes`, { texte });
+  }
+
   updateJuridicalStatus(id: string, value: string, justification?: string) {
     return this.updateStatus(id, 'juridical-status', value, justification);
   }
@@ -146,6 +163,13 @@ export class TerrainsApiService {
   removeDocument(id: string, documentId: string): Observable<{ success: boolean }> {
     return this.http.delete<{ success: boolean }>(`${this.baseUrl}/${id}/documents/${documentId}`);
   }
+}
+
+export interface TerrainNote {
+  id: string;
+  texte: string;
+  createdAt: string;
+  auteur: { id: string; firstName: string; lastName: string } | null;
 }
 
 export interface AuditHistoryItem {

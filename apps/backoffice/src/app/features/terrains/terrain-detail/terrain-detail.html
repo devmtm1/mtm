@@ -24,6 +24,12 @@
           <span [class]="pill(commercialStatus, t.statutCommercial)" [matTooltip]="help(commercialStatus, t.statutCommercial)">{{ t.statutCommercial }}</span>
           <span [class]="pill(legalStatus, t.statutJuridique)" [matTooltip]="help(legalStatus, t.statutJuridique)">{{ t.statutJuridique }}</span>
           <span [class]="pill(verificationStatus, t.niveauVerification)" [matTooltip]="help(verificationStatus, t.niveauVerification)">{{ t.niveauVerification }}</span>
+          @if (t.archiveLe) {
+            <span class="status-pill" matTooltip="Hors du portefeuille actif et du site public"><svg lucideArchive aria-hidden="true"></svg>Archivé</span>
+          }
+          @if (t.statutVisite) {
+            <span class="status-pill status-pill--info">{{ t.statutVisite }}</span>
+          }
           @if (t.misEnAvant) {
             <span class="status-pill status-pill--primary" matTooltip="Affiché en priorité sur la page d’accueil du site"><svg lucideStar aria-hidden="true"></svg>Mis en avant</span>
           }
@@ -33,12 +39,28 @@
         </div>
       </div>
       <div class="detail-header__actions">
+        <!-- Appeler le vendeur sans quitter la fiche : l'usage premier d'un commercial sur le terrain. -->
+        @if (telHref(); as href) {
+          <a mat-stroked-button [href]="href" [matTooltip]="'Appeler ' + contactNom()">
+            <svg class="btn-icon" lucidePhone aria-hidden="true"></svg>Appeler
+          </a>
+        }
+        @if (whatsappHref(); as href) {
+          <a mat-stroked-button [href]="href" target="_blank" rel="noopener" [matTooltip]="'Écrire à ' + contactNom() + ' sur WhatsApp'">
+            <svg class="btn-icon" lucideMessageCircle aria-hidden="true"></svg>WhatsApp
+          </a>
+        }
         @if (publicUrl(); as url) {
           <a mat-stroked-button [href]="url" target="_blank" rel="noopener" matTooltip="Ouvrir la fiche telle que la voient les visiteurs">
             <svg class="btn-icon" lucideGlobe aria-hidden="true"></svg>Voir sur le site
           </a>
         }
-        @if (canModify) {
+        @if (canModify && archived()) {
+          <button mat-flat-button color="primary" type="button" (click)="restore()" [disabled]="busy()">
+            <svg class="btn-icon" lucideArchiveRestore aria-hidden="true"></svg>Restaurer
+          </button>
+        }
+        @if (canModify && !archived()) {
           <button mat-stroked-button type="button" [matMenuTriggerFor]="statusMenu">
             Changer un statut<svg class="btn-icon btn-icon--after" lucideChevronDown aria-hidden="true"></svg>
           </button>
@@ -63,12 +85,27 @@
           <button mat-flat-button color="primary" type="button" (click)="edit()">
             <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Modifier la fiche
           </button>
+          <button mat-stroked-button type="button" (click)="archive()" [disabled]="busy()" matTooltip="Retirer du portefeuille actif sans rien supprimer">
+            <svg class="btn-icon" lucideArchive aria-hidden="true"></svg>Archiver
+          </button>
         }
       </div>
     </header>
 
+    @if (t.archiveLe) {
+      <aside class="todo-banner" aria-label="Bien archivé">
+        <strong>Ce bien est archivé depuis le {{ t.archiveLe | date: 'dd/MM/yyyy' }}.</strong>
+        <ul>
+          <li>
+            <span>{{ t.motifArchivage || 'Aucun motif enregistré' }}</span>
+            <small>Il n’apparaît plus sur le site ni dans la liste courante. Restaurez-le pour le modifier.</small>
+          </li>
+        </ul>
+      </aside>
+    }
+
     <!-- Bandeau : ce qu'il reste à faire pour une fiche prête à être publiée -->
-    @if (canModify && todo().length) {
+    @if (canModify && !archived() && todo().length) {
       <aside class="todo-banner" aria-label="Fiche à compléter">
         <strong>Pour une fiche complète, il reste {{ todo().length }} point{{ todo().length > 1 ? 's' : '' }} :</strong>
         <ul>
@@ -193,6 +230,17 @@
             <dt>Vocation</dt>
             <dd>{{ t.vocation || '—' }}</dd>
           </div>
+          @if (t.contactVendeurNom || t.contactVendeurTelephone) {
+            <div>
+              <dt>Vendeur / mandataire</dt>
+              <dd>
+                {{ t.contactVendeurNom || '—' }}
+                @if (t.contactVendeurTelephone) {
+                  <small>{{ t.contactVendeurTelephone }}</small>
+                }
+              </dd>
+            </div>
+          }
           <div>
             <dt>Propriétaire</dt>
             <dd>
@@ -221,6 +269,10 @@
         @if (canViewFinancials) {
           <h3>Données internes <span class="status-pill">jamais publiées</span></h3>
           <dl class="fact-list fact-list--compact">
+            <div>
+              <dt>Prix de cession</dt>
+              <dd>{{ t.prixCession | mtmMoney }}</dd>
+            </div>
             <div>
               <dt>Prix d’acquisition</dt>
               <dd>{{ t.prixAcquisition | mtmMoney }}</dd>
@@ -276,6 +328,11 @@
           <div><dt>Référence interne</dt><dd>{{ t.referenceInterne }}</dd></div>
           <div><dt>Parcelle / matricule</dt><dd>{{ t.parcelleMatricule || '—' }}</dd></div>
           <div><dt>Document foncier</dt><dd>{{ t.typeDocumentFoncier || '—' }}</dd></div>
+          <div><dt>Référence du document</dt><dd>{{ t.referenceDocumentFoncier || '—' }}</dd></div>
+          <div>
+            <dt>Date du document</dt>
+            <dd>{{ t.dateDocumentFoncier ? (t.dateDocumentFoncier | date: 'dd/MM/yyyy' : 'UTC') : '—' }}</dd>
+          </div>
           <div>
             <dt>Statut juridique</dt>
             <dd><span [class]="pill(legalStatus, t.statutJuridique)">{{ t.statutJuridique }}</span><small>{{ help(legalStatus, t.statutJuridique) }}</small></dd>
@@ -285,6 +342,38 @@
             <dd><span [class]="pill(verificationStatus, t.niveauVerification)">{{ t.niveauVerification }}</span><small>{{ help(verificationStatus, t.niveauVerification) }}</small></dd>
           </div>
           <div><dt>Dimensions</dt><dd>{{ dimensionsText(t) }}</dd></div>
+          @if (t.commentaireAdministratif) {
+            <div><dt>Commentaire administratif</dt><dd>{{ t.commentaireAdministratif }}</dd></div>
+          }
+        </dl>
+      </section>
+
+      <section class="page-card detail-section">
+        <h2>Commercialisation et paiement</h2>
+        <dl class="info-list">
+          <div>
+            <dt>Date d’entrée</dt>
+            <dd>{{ t.dateEntree ? (t.dateEntree | date: 'dd/MM/yyyy' : 'UTC') : '—' }}</dd>
+          </div>
+          <div><dt>Nombre de lots</dt><dd>{{ t.nombreLots ?? '—' }}</dd></div>
+          <div>
+            <dt>Modalité de paiement</dt>
+            <dd>
+              {{ t.modalitePaiement || '—' }}
+              @if (t.dureeMoratoireMois) {
+                <small>Moratoire de {{ t.dureeMoratoireMois }} mois</small>
+              }
+            </dd>
+          </div>
+          @if (canViewFinancials && t.acompteMontant !== null) {
+            <div><dt>Acompte demandé</dt><dd>{{ t.acompteMontant | mtmMoney }}</dd></div>
+          }
+          @if (t.notesPaiement) {
+            <div><dt>Précisions sur le paiement</dt><dd>{{ t.notesPaiement }}</dd></div>
+          }
+          <div><dt>Produit direct</dt><dd>{{ t.produitDirect ? 'Oui' : 'Non' }}</dd></div>
+          <div><dt>Protocole d’accord</dt><dd>{{ t.protocoleAccord ? 'Signé' : 'Non' }}</dd></div>
+          <div><dt>Visite</dt><dd>{{ t.statutVisite || '—' }}</dd></div>
         </dl>
       </section>
 
@@ -377,6 +466,40 @@
         <button mat-stroked-button type="button" (click)="openHistory()">
           <svg class="btn-icon" lucideClock aria-hidden="true"></svg>Voir l’historique des modifications
         </button>
+      </section>
+
+      <section class="page-card detail-section detail-section--wide">
+        <h2>Notes de suivi</h2>
+        @if (canModify) {
+          <div class="note-form">
+            <textarea
+              rows="2"
+              maxlength="2000"
+              placeholder="Appel passé, visite faite, relance du vendeur…"
+              aria-label="Nouvelle note de suivi"
+              [value]="noteDraft()"
+              (input)="onNoteInput($event)"
+            ></textarea>
+            <button mat-flat-button color="primary" type="button" (click)="addNote()" [disabled]="!noteDraft().trim()">
+              <svg class="btn-icon" lucideSend aria-hidden="true"></svg>Ajouter
+            </button>
+          </div>
+        }
+        @if (notes().length) {
+          <ul class="note-list">
+            @for (note of notes(); track note.id) {
+              <li>
+                <p>{{ note.texte }}</p>
+                <small>
+                  {{ note.auteur ? note.auteur.firstName + ' ' + note.auteur.lastName : 'Utilisateur supprimé' }}
+                  · {{ note.createdAt | date: 'dd/MM/yyyy à HH:mm' }}
+                </small>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="detail-section__text">Aucune note pour l’instant. Gardez ici la trace de chaque échange avec le vendeur.</p>
+        }
       </section>
     </section>
   </section>

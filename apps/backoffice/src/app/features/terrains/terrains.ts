@@ -7,28 +7,42 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { AgGridAngular } from 'ag-grid-angular';
-import type { ColDef, ICellRendererParams } from 'ag-grid-community';
+import type { ColDef, GridApi, GridReadyEvent, ICellRendererParams } from 'ag-grid-community';
 import {
   LucideAlertTriangle,
+  LucideArchive,
   LucideCamera,
   LucideCircleCheck,
+  LucideColumns3,
   LucideEye,
   LucideGrid2X2,
   LucideLandPlot,
   LucideList,
   LucideMapPinOff,
+  LucideMessageCircle,
   LucidePencil,
+  LucidePhone,
   LucidePlus,
   LucideSearch,
+  LucideSlidersHorizontal,
   LucideStar,
   LucideX,
 } from '@lucide/angular';
+import { forkJoin } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { telLink, whatsappLink } from '../crm/crm-status';
 import { mtmGridTheme } from '../../core/ag-grid.config';
 import { SessionService } from '../../core/services/session.service';
 import { TerrainsApiService } from '../../core/services/api/terrains-api.service';
-import type { TerrainListItem, TerrainOptions, TerrainStats } from '../../core/models/terrain.model';
+import type {
+  TerrainListItem,
+  TerrainOptions,
+  TerrainQuery,
+  TerrainStats,
+} from '../../core/models/terrain.model';
 import { NotificationService } from '../../shared/services/notification.service';
 import { MoneyPipe } from '../../shared/pipes/money.pipe';
 import {
@@ -51,7 +65,36 @@ const EMPTY_FILTERS = {
   statutCommercial: '',
   statutJuridique: '',
   niveauVerification: '',
+  // Portefeuille : les biens archivés n'encombrent jamais la liste courante.
+  archivage: '',
+  // Suivi repris du tableur historique.
+  modalitePaiement: '',
+  statutVisite: '',
+  produitDirect: '',
+  protocoleAccord: '',
+  dateEntreeMin: '',
+  dateEntreeMax: '',
+  superficieMin: '',
+  superficieMax: '',
+  prixPublicMin: '',
+  prixPublicMax: '',
 };
+
+/**
+ * Colonnes facultatives du tableau : masquées par défaut pour ne pas
+ * surcharger l'écran, activables à la demande (choix mémorisé par poste).
+ */
+const OPTIONAL_COLUMNS: { colId: string; label: string }[] = [
+  { colId: 'parcelleMatricule', label: 'Matricule' },
+  { colId: 'nombreLots', label: 'Nombre de lots' },
+  { colId: 'dateEntree', label: 'Date d’entrée' },
+  { colId: 'modalitePaiement', label: 'Modalité de paiement' },
+  { colId: 'vendeur', label: 'Vendeur / mandataire' },
+  { colId: 'telephone', label: 'Téléphone' },
+  { colId: 'statutVisite', label: 'Visite' },
+  { colId: 'produitDirect', label: 'Produit direct' },
+  { colId: 'protocoleAccord', label: 'Protocole d’accord' },
+];
 
 /**
  * Liste des terrains (J1.1). L'écran répond à trois questions : combien de
@@ -69,17 +112,24 @@ const EMPTY_FILTERS = {
     MatInputModule,
     MatSelectModule,
     MatTooltipModule,
+    MatMenuModule,
+    MatCheckboxModule,
     LucideAlertTriangle,
+    LucideArchive,
     LucideCamera,
     LucideCircleCheck,
+    LucideColumns3,
     LucideEye,
     LucideGrid2X2,
     LucideLandPlot,
     LucideList,
     LucideMapPinOff,
+    LucideMessageCircle,
     LucidePencil,
+    LucidePhone,
     LucidePlus,
     LucideSearch,
+    LucideSlidersHorizontal,
     LucideStar,
     LucideX,
   ],
@@ -109,12 +159,19 @@ export class Terrains implements OnInit {
     etatBien: [],
     typesBati: [],
     vocation: [],
+    modalitePaiement: [],
+    statutVisite: [],
   });
   protected readonly viewMode = signal<'table' | 'grid'>(this.restoreViewMode());
   protected readonly canCreate = computed(() => this.sessionService.hasPermission('terrains:creer'));
   protected readonly canModify = computed(() => this.sessionService.hasPermission('terrains:modifier'));
   protected readonly filters = this.formBuilder.nonNullable.group(EMPTY_FILTERS);
   protected readonly hasActiveFilters = signal(false);
+  /** Filtres avancés repliés par défaut : sur téléphone, la recherche passe d'abord. */
+  protected readonly showAdvanced = signal(false);
+  protected readonly optionalColumns = OPTIONAL_COLUMNS;
+  protected readonly visibleOptional = signal<string[]>(this.restoreColumns());
+  private gridApi?: GridApi<TerrainListItem>;
 
   /** Nombre de fiches à compléter (GPS, photo publique ou vérification manquante). */
   protected readonly toComplete = computed(() => {
@@ -125,6 +182,37 @@ export class Terrains implements OnInit {
   protected readonly columnDefs: ColDef<TerrainListItem>[] = [
     { field: 'referenceInterne', headerName: 'Réf.', flex: 0.6, minWidth: 84, sortable: true, cellClass: 'cell-strong' },
     { field: 'nom', headerName: 'Bien', flex: 1.6, minWidth: 170, sortable: true, tooltipField: 'nom' },
+    { colId: 'parcelleMatricule', field: 'parcelleMatricule', headerName: 'Matricule', minWidth: 110, sortable: true, hide: true },
+    { colId: 'nombreLots', field: 'nombreLots', headerName: 'Lots', minWidth: 80, type: 'rightAligned', sortable: true, hide: true, valueFormatter: (p) => (p.value == null ? '—' : String(p.value)) },
+    {
+      colId: 'dateEntree',
+      field: 'dateEntree',
+      headerName: 'Date d’entrée',
+      minWidth: 124,
+      sortable: true,
+      hide: true,
+      valueFormatter: (p) => (p.value ? new Date(p.value as string).toLocaleDateString('fr-FR') : '—'),
+    },
+    { colId: 'modalitePaiement', field: 'modalitePaiement', headerName: 'Paiement', minWidth: 110, sortable: true, hide: true, valueFormatter: (p) => (p.value as string) || '—' },
+    {
+      colId: 'vendeur',
+      headerName: 'Vendeur / mandataire',
+      minWidth: 170,
+      hide: true,
+      valueGetter: (p) => (p.data ? this.vendeurNom(p.data) : ''),
+      valueFormatter: (p) => (p.value as string) || '—',
+    },
+    {
+      colId: 'telephone',
+      headerName: 'Téléphone',
+      minWidth: 130,
+      hide: true,
+      valueGetter: (p) => (p.data ? this.telephoneVendeur(p.data) : ''),
+      valueFormatter: (p) => (p.value as string) || '—',
+    },
+    { colId: 'statutVisite', field: 'statutVisite', headerName: 'Visite', minWidth: 110, sortable: true, hide: true, valueFormatter: (p) => (p.value as string) || '—' },
+    { colId: 'produitDirect', field: 'produitDirect', headerName: 'Direct', minWidth: 90, hide: true, valueFormatter: (p) => (p.value ? 'Oui' : '—') },
+    { colId: 'protocoleAccord', field: 'protocoleAccord', headerName: 'Protocole', minWidth: 100, hide: true, valueFormatter: (p) => (p.value ? 'Oui' : '—') },
     {
       // Sans cette colonne, rien ne distingue une villa d'une parcelle dans
       // le tableau : la vue en cartes le montre, celle-ci l'ignorait.
@@ -184,7 +272,10 @@ export class Terrains implements OnInit {
       flex: 0.9,
       minWidth: 118,
       sortable: true,
-      cellRenderer: (p: ICellRendererParams<TerrainListItem>) => this.pill(COMMERCIAL_STATUS, p.value as string),
+      cellRenderer: (p: ICellRendererParams<TerrainListItem>) =>
+        p.data?.archiveLe
+          ? this.pill({ Archivé: { tone: 'neutral', help: 'Bien archivé : hors du portefeuille actif et du site public.' } }, 'Archivé')
+          : this.pill(COMMERCIAL_STATUS, p.value as string),
     },
     {
       field: 'statutJuridique',
@@ -233,6 +324,64 @@ export class Terrains implements OnInit {
       .subscribe(() => this.load());
   }
 
+  protected onGridReady(event: GridReadyEvent<TerrainListItem>): void {
+    this.gridApi = event.api;
+    this.applyColumns();
+  }
+
+  protected toggleColumn(colId: string, visible: boolean): void {
+    const next = visible
+      ? [...new Set([...this.visibleOptional(), colId])]
+      : this.visibleOptional().filter((id) => id !== colId);
+    this.visibleOptional.set(next);
+    try {
+      localStorage.setItem('mtm.terrains.columns', JSON.stringify(next));
+    } catch {
+      /* stockage indisponible : le choix ne sera simplement pas mémorisé */
+    }
+    this.applyColumns();
+  }
+
+  private applyColumns(): void {
+    const visibles = new Set(this.visibleOptional());
+    this.gridApi?.setColumnsVisible(
+      OPTIONAL_COLUMNS.map((c) => c.colId).filter((id) => visibles.has(id)),
+      true,
+    );
+    this.gridApi?.setColumnsVisible(
+      OPTIONAL_COLUMNS.map((c) => c.colId).filter((id) => !visibles.has(id)),
+      false,
+    );
+  }
+
+  private restoreColumns(): string[] {
+    try {
+      const stored: unknown = JSON.parse(localStorage.getItem('mtm.terrains.columns') ?? '[]');
+      return Array.isArray(stored) ? stored.filter((v): v is string => typeof v === 'string') : [];
+    } catch {
+      return [];
+    }
+  }
+
+  /** Mandataire propre au bien, à défaut le propriétaire. */
+  protected vendeurNom(terrain: TerrainListItem): string {
+    if (terrain.contactVendeurNom) return terrain.contactVendeurNom;
+    const p = terrain.proprietaire;
+    return p ? `${p.firstName} ${p.lastName}`.trim() : '';
+  }
+
+  protected telephoneVendeur(terrain: TerrainListItem): string {
+    return terrain.contactVendeurTelephone || terrain.proprietaire?.phone || '';
+  }
+
+  protected tel(terrain: TerrainListItem): string | null {
+    return telLink(this.telephoneVendeur(terrain));
+  }
+
+  protected whatsapp(terrain: TerrainListItem): string | null {
+    return whatsappLink(this.telephoneVendeur(terrain));
+  }
+
   protected openCreate(): void {
     void this.router.navigate(['/terrains/nouveau']);
   }
@@ -264,7 +413,11 @@ export class Terrains implements OnInit {
   }
 
   protected formatLocation(terrain: TerrainListItem): string {
-    return [terrain.commune, terrain.region].filter((value): value is string => Boolean(value)).join(', ') || 'Localisation non renseignée';
+    return (
+      [terrain.commune, terrain.region].filter((value): value is string => Boolean(value)).join(', ') ||
+      terrain.localisationDetail ||
+      'Localisation non renseignée'
+    );
   }
 
   protected thumbnail(terrain: TerrainListItem): string | null {
@@ -310,11 +463,31 @@ export class Terrains implements OnInit {
     this.loading.set(true);
     const value = this.filters.getRawValue();
     this.hasActiveFilters.set(Object.values(value).some((item) => item !== ''));
-    this.terrainsApi.findAll({ ...value, pageSize: 200 }).subscribe({
+    const query = { ...value, pageSize: 200 } as unknown as TerrainQuery;
+    this.terrainsApi.findAll(query).subscribe({
       next: (page) => {
-        this.rowData.set(page.items);
         this.total.set(page.total);
-        this.loading.set(false);
+        const pages = Math.ceil(page.total / page.pageSize);
+        if (pages <= 1) {
+          this.rowData.set(page.items);
+          this.loading.set(false);
+          return;
+        }
+        // L'API plafonne une page à 200 biens : le portefeuille repris du
+        // tableur en compte davantage, la liste se complète donc page par page
+        // plutôt que de s'arrêter silencieusement à 200.
+        forkJoin(
+          Array.from({ length: pages - 1 }, (_, i) => this.terrainsApi.findAll({ ...query, page: i + 2 })),
+        ).subscribe({
+          next: (suite) => {
+            this.rowData.set([...page.items, ...suite.flatMap((p) => p.items)]);
+            this.loading.set(false);
+          },
+          error: (error: unknown) => {
+            this.loading.set(false);
+            this.notify.error(error, 'Erreur lors du chargement des terrains');
+          },
+        });
       },
       error: (error: unknown) => {
         this.loading.set(false);
@@ -384,9 +557,16 @@ export class Terrains implements OnInit {
 
   private restoreViewMode(): 'table' | 'grid' {
     try {
-      return localStorage.getItem('mtm.terrains.view') === 'grid' ? 'grid' : 'table';
+      const saved = localStorage.getItem('mtm.terrains.view');
+      if (saved) return saved === 'grid' ? 'grid' : 'table';
+      // Sur téléphone, un tableau de dix colonnes est illisible : cartes d'office.
+      return typeof window !== 'undefined' && window.innerWidth < 768 ? 'grid' : 'table';
     } catch {
       return 'table';
     }
+  }
+
+  protected filterArchives(): void {
+    this.filters.patchValue({ ...EMPTY_FILTERS, archivage: 'archives' });
   }
 }

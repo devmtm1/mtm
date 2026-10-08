@@ -4,6 +4,40 @@
   gap: 20px;
 }
 
+.list-filters__advanced {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
+  flex-basis: 100%;
+  width: 100%;
+}
+
+.columns-menu__item {
+  padding: 0 12px;
+}
+
+.terrain-card__vendeur {
+  margin: 0;
+  color: var(--mtm-text);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.terrain-card__actions {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 767px) {
+  .terrain-cards {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 12px;
+  }
+
+  .list-filters__advanced {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .terrain-row-actions {
   display: inline-flex;
   gap: 4px;

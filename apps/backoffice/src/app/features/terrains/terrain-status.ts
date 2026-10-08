@@ -26,6 +26,9 @@ export const LEGAL_STATUS: Record<string, StatusMeaning> = {
   'Régularisation en cours': { tone: 'warning', help: 'Situation juridique en cours de régularisation.' },
   'Notification de bail': { tone: 'info', help: 'Bail notifié à l’occupant : à confirmer par l’acte définitif.' },
   Attribution: { tone: 'info', help: 'Terrain attribué : vérifier l’acte d’attribution et les conditions de mise en valeur.' },
+  'Bail individuel': { tone: 'info', help: 'Bail accordé à un titulaire unique : vérifier l’acte et le cessionnaire.' },
+  'Délibération double tampon': { tone: 'info', help: 'Délibération revêtue du double visa : à transformer en bail ou titre.' },
+  'Délibération NICAD': { tone: 'info', help: 'Délibération assortie d’un levé NICAD : parcelle identifiée au cadastre.' },
 };
 
 export const VERIFICATION_STATUS: Record<string, StatusMeaning> = {

@@ -105,6 +105,16 @@
           </div>
           <div class="form-grid">
             <mat-form-field appearance="outline">
+              <mat-label>Vendeur / mandataire du bien</mat-label>
+              <input matInput formControlName="contactVendeurNom" placeholder="Si différent du propriétaire" autocomplete="off" />
+              <mat-hint>La personne à appeler pour ce bien précis.</mat-hint>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Téléphone du vendeur</mat-label>
+              <input matInput type="tel" inputmode="tel" formControlName="contactVendeurTelephone" placeholder="77 123 45 67" autocomplete="off" />
+              <mat-hint>Active les boutons Appeler et WhatsApp sur la fiche.</mat-hint>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
               <mat-label>Propriétaire</mat-label>
               <mat-select formControlName="proprietaireId">
                 <mat-option value="">Non renseigné pour l’instant</mat-option>
@@ -169,6 +179,19 @@
               <mat-label>Document foncier</mat-label>
               <input matInput formControlName="typeDocumentFoncier" placeholder="Ex. Titre foncier n° 12345" />
               <mat-hint>Pièce en votre possession (à joindre à l’étape 4).</mat-hint>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Référence du document</mat-label>
+              <input matInput formControlName="referenceDocumentFoncier" placeholder="N° de délibération, de bail ou de titre" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Date du document</mat-label>
+              <input matInput type="date" formControlName="dateDocumentFoncier" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="wide">
+              <mat-label>Commentaire administratif</mat-label>
+              <textarea matInput rows="2" formControlName="commentaireAdministratif" placeholder="Ex. Double tampon obtenu, NICAD en cours"></textarea>
+              <mat-hint>Interne : observations sur la régularité du titre.</mat-hint>
             </mat-form-field>
           </div>
           @if (isEdit) {
@@ -399,6 +422,11 @@
                 </mat-form-field>
                 @if (canViewFinancials) {
                   <mat-form-field appearance="outline">
+                    <mat-label>Prix de cession (FCFA)</mat-label>
+                    <input matInput type="number" min="0" step="1000" formControlName="prixCession" />
+                    <mat-hint>Interne. Prix auquel le vendeur cède le bien à MTM.</mat-hint>
+                  </mat-form-field>
+                  <mat-form-field appearance="outline">
                     <mat-label>Prix d’acquisition (FCFA)</mat-label>
                     <input matInput type="number" min="0" step="1000" formControlName="prixAcquisition" />
                     <mat-hint>Interne. Ce que MTM ou le propriétaire a payé.</mat-hint>
@@ -418,6 +446,62 @@
                     <mat-hint>Interne. Rémunération prévue sur la vente.</mat-hint>
                   </mat-form-field>
                 }
+              </div>
+            </section>
+
+            <section class="page-card form-block">
+              <div class="form-block__head">
+                <h2>Commercialisation et paiement</h2>
+                <p>Repris du suivi historique de MTM. Informations internes, jamais publiées.</p>
+              </div>
+              <div class="form-grid">
+                <mat-form-field appearance="outline">
+                  <mat-label>Date d’entrée</mat-label>
+                  <input matInput type="date" formControlName="dateEntree" />
+                  <mat-hint>Jour où le {{ motBien() }} est entré dans le portefeuille.</mat-hint>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Nombre de lots</mat-label>
+                  <input matInput type="number" min="1" step="1" formControlName="nombreLots" />
+                  <mat-hint>Pour un lotissement : combien de terrains.</mat-hint>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Modalité de paiement</mat-label>
+                  <mat-select formControlName="modalitePaiement">
+                    <mat-option value="">Non précisée</mat-option>
+                    @for (option of options().modalitePaiement; track option) {
+                      <mat-option [value]="option">{{ option }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                @if (moratoire()) {
+                  <mat-form-field appearance="outline">
+                    <mat-label>Durée du moratoire (mois)</mat-label>
+                    <input matInput type="number" min="1" max="240" step="1" formControlName="dureeMoratoireMois" />
+                  </mat-form-field>
+                }
+                <mat-form-field appearance="outline">
+                  <mat-label>Acompte demandé (FCFA)</mat-label>
+                  <input matInput type="number" min="0" step="1000" formControlName="acompteMontant" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Visite</mat-label>
+                  <mat-select formControlName="statutVisite">
+                    <mat-option value="">Non précisé</mat-option>
+                    @for (option of options().statutVisite; track option) {
+                      <mat-option [value]="option">{{ option }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <div class="form-grid__side">
+                  <mat-checkbox formControlName="produitDirect">Produit direct (sans intermédiaire)</mat-checkbox>
+                  <mat-checkbox formControlName="protocoleAccord">Protocole d’accord signé</mat-checkbox>
+                  <small>Le protocole signé se dépose comme document à l’étape 4.</small>
+                </div>
+                <mat-form-field appearance="outline" class="wide">
+                  <mat-label>Précisions sur le paiement</mat-label>
+                  <textarea matInput rows="2" formControlName="notesPaiement" placeholder="Échéances, conditions négociées…"></textarea>
+                </mat-form-field>
               </div>
             </section>
 
