@@ -236,16 +236,21 @@
           </dl>
         }
 
-        @if (vendu() && canModify) {
-          <div class="feature-toggle">
-            <mat-slide-toggle [checked]="!!t.referenceVendue" [disabled]="busy()" (change)="toggleReferenceVendue($event.checked)">
-              Afficher sur le site comme référence vendue
-            </mat-slide-toggle>
-            <small>
+        <!-- Toujours visible : un interrupteur qui disparaît sans explication laisse croire que la fonction n'existe pas. -->
+        <div class="feature-toggle">
+          <mat-slide-toggle [checked]="!!t.referenceVendue" [disabled]="busy() || !vendu() || !canModify" (change)="toggleReferenceVendue($event.checked)">
+            Afficher sur le site comme référence vendue
+          </mat-slide-toggle>
+          <small>
+            @if (!vendu()) {
+              Disponible uniquement pour un bien au statut « Vendu » (statut actuel : {{ t.statutCommercial }}). Changez d’abord son statut commercial.
+            } @else if (!canModify) {
+              Vous n’avez pas le droit de modifier les biens : demandez à un responsable d’activer cet affichage.
+            } @else {
               Badge rouge « Vendu » sur le site, sans prix ni position exacte, pour rassurer les visiteurs. Décochez pour le retirer à tout moment.
-            </small>
-          </div>
-        }
+            }
+          </small>
+        </div>
 
         @if (canPublish && canModify) {
           <div class="feature-toggle">
