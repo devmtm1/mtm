@@ -145,19 +145,40 @@ function PhotoDeGroupe({ groupe }: { groupe: TeamGroup }) {
   );
 }
 
-function CarteMembre({ membre }: { membre: TeamPerson }) {
+/** Une teinte par poste, en alternance : lisible d'un coup d'œil sans rien coder en dur par métier. */
+const TEINTES = [
+  'bg-sky-50 text-sky-800 ring-sky-200',
+  'bg-emerald-50 text-emerald-800 ring-emerald-200',
+  'bg-violet-50 text-violet-800 ring-violet-200',
+  'bg-orange-50 text-orange-800 ring-orange-200',
+  'bg-pink-50 text-pink-800 ring-pink-200',
+  'bg-slate-100 text-slate-700 ring-slate-200',
+];
+
+/**
+ * Carte d'un collaborateur : photo ronde, nom en gras, poste dans une pastille
+ * colorée. Ni téléphone ni e-mail : ce sont des numéros personnels, la
+ * personne à joindre est l'agence.
+ */
+function CarteMembre({ membre, index }: { membre: TeamPerson; index: number }) {
   return (
-    <li className="group">
+    <li className="group flex flex-col items-center rounded-2xl border border-mtm-border/70 bg-mtm-surface px-3 pb-5 pt-5 text-center shadow-card transition-all duration-200 sm:px-4 sm:pt-6 lg:hover:-translate-y-1 lg:hover:shadow-card-hover">
       <Portrait
         src={membre.imageUrl}
         nom={membre.nom}
-        sizes="(min-width: 1024px) 240px, (min-width: 640px) 33vw, 50vw"
-        className="aspect-square w-full rounded-2xl shadow-card transition-all duration-200 group-hover:-translate-y-1 group-hover:shadow-card-hover sm:aspect-[4/5]"
+        sizes="(min-width: 1024px) 144px, 112px"
+        className="aspect-square w-24 rounded-full shadow-card ring-4 ring-mtm-surface sm:w-28 lg:w-32"
       />
-      <p className="mt-3 font-display text-sm font-bold leading-snug text-mtm-text sm:text-base">
+      <p className="mt-3.5 font-display text-sm font-bold leading-snug text-mtm-text sm:text-base">
         {membre.nom}
       </p>
-      {membre.poste && <p className="mt-0.5 text-xs text-mtm-muted sm:text-sm">{membre.poste}</p>}
+      {membre.poste && (
+        <span
+          className={`mt-2 inline-block max-w-full rounded-full px-3 py-1 text-[11px] font-semibold leading-snug ring-1 sm:text-xs ${TEINTES[index % TEINTES.length]}`}
+        >
+          {membre.poste}
+        </span>
+      )}
     </li>
   );
 }
@@ -179,18 +200,19 @@ export function TeamSection({ team }: { team: TeamPage | null }) {
       {(groupe || membres.length > 0) && (
         <section aria-labelledby="notre-equipe" className="mx-auto max-w-5xl px-4 py-14 sm:px-6">
           <div className="text-center">
-            <span className="text-xs font-bold uppercase tracking-wider text-mtm-primary">
-              Les visages de MTM
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-mtm-primary">
+              MTM <span className="text-mtm-primary-medium">Immobilier</span>
             </span>
             <h2
               id="notre-equipe"
-              className="mt-2 font-display text-2xl font-bold text-mtm-text sm:text-3xl"
+              className="mt-2 font-display text-3xl font-extrabold text-mtm-text sm:text-4xl"
             >
-              Notre équipe
+              Notre <span className="text-mtm-primary-medium">équipe</span>
             </h2>
-            <p className="mx-auto mt-3 max-w-2xl text-sm text-mtm-muted sm:text-base">
-              Des professionnels à votre écoute, au Sénégal comme à distance, pour vous accompagner
-              à chaque étape de votre projet.
+            <span aria-hidden="true" className="mx-auto mt-3 block h-1 w-12 rounded-full bg-mtm-primary-medium" />
+            <p className="mx-auto mt-4 max-w-2xl text-sm text-mtm-muted sm:text-base">
+              Une équipe de professionnels passionnés, engagés à vous accompagner dans tous vos
+              projets immobiliers.
             </p>
           </div>
 
@@ -201,12 +223,18 @@ export function TeamSection({ team }: { team: TeamPage | null }) {
           )}
 
           {membres.length > 0 && (
-            <ul className="mt-10 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-6">
-              {membres.map((membre) => (
-                <CarteMembre key={membre.id} membre={membre} />
+            <ul className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
+              {membres.map((membre, index) => (
+                <CarteMembre key={membre.id} membre={membre} index={index} />
               ))}
             </ul>
           )}
+
+          <p className="mt-10 flex items-center justify-center gap-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-mtm-muted sm:text-xs">
+            <span aria-hidden="true" className="h-px w-8 bg-mtm-border sm:w-14" />
+            MTM Immobilier · Ensemble pour vos projets
+            <span aria-hidden="true" className="h-px w-8 bg-mtm-border sm:w-14" />
+          </p>
         </section>
       )}
     </div>
