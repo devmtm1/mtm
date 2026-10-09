@@ -38,7 +38,7 @@ describe('AboutPage', () => {
     })) as unknown as typeof window.matchMedia;
   });
 
-  it('présente MTM : accroche, histoire, valeurs, métiers, méthode et contact', () => {
+  it('présente MTM : accroche, histoire, valeurs, méthode — sans répéter le contact', () => {
     donnees.blocs = null;
     donnees.equipe = null;
     rendre();
@@ -48,13 +48,12 @@ describe('AboutPage', () => {
     for (const titre of [
       'Une agence qui vous accompagne de bout en bout',
       'Nos valeurs',
-      'Nos métiers',
       'Notre méthode',
-      'Nous trouver',
     ]) {
       expect(screen.getByRole('heading', { name: titre })).toBeInTheDocument();
     }
-    expect(screen.getAllByRole('listitem').length).toBeGreaterThan(15);
+    // Le contact vit dans le bandeau final et le pied de page, pas en double ici.
+    expect(screen.queryByRole('heading', { name: 'Nous trouver' })).not.toBeInTheDocument();
   });
 
   it('chaque métier mène à sa page', () => {
@@ -78,14 +77,6 @@ describe('AboutPage', () => {
     expect(screen.getByText('Notre accroche')).toBeInTheDocument();
     expect(screen.getByText('Premier paragraphe.')).toBeInTheDocument();
     expect(screen.getByText('Second paragraphe.')).toBeInTheDocument();
-  });
-
-  it('propose les moyens de joindre l’agence', () => {
-    donnees.blocs = null;
-    rendre();
-    expect(screen.getByRole('link', { name: /Appeler/ })).toHaveAttribute('href', expect.stringMatching(/^tel:/));
-    expect(screen.getByRole('link', { name: /WhatsApp/ })).toHaveAttribute('href', expect.stringContaining('wa.me/'));
-    expect(screen.getByRole('link', { name: /E-mail/ })).toHaveAttribute('href', expect.stringMatching(/^mailto:/));
   });
 
   it('affiche l’équipe quand elle est publiée, et rien sinon', () => {

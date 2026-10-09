@@ -58,7 +58,7 @@ function MotDuDirecteur({ directeur }: { directeur: TeamPerson }) {
   return (
     <section aria-labelledby="mot-directeur" className="bg-mtm-primary-subtle">
       <div className="mx-auto grid max-w-5xl gap-8 px-4 py-14 sm:px-6 md:grid-cols-[minmax(0,280px)_1fr] md:items-center lg:gap-14 lg:py-16">
-        <figure className="mx-auto w-full max-w-[280px] md:mx-0">
+        <figure className="mx-auto w-full max-w-[210px] sm:max-w-[280px] md:mx-0">
           <div className="relative">
             <span
               aria-hidden="true"
@@ -125,13 +125,13 @@ function PhotoDeGroupe({ groupe }: { groupe: TeamGroup }) {
           loading="lazy"
           decoding="async"
           onError={() => setEchec(true)}
-          className="aspect-[4/3] w-full object-cover sm:aspect-[16/9] lg:aspect-[2/1]"
+          className="aspect-[16/10] w-full object-cover sm:aspect-[16/9] lg:aspect-[2/1]"
         />
       ) : (
         <div
           role="img"
           aria-label={groupe.legende}
-          className="flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-br from-mtm-primary via-mtm-primary-medium to-mtm-primary-dark sm:aspect-[16/9] lg:aspect-[2/1]"
+          className="flex aspect-[16/10] w-full items-center justify-center bg-gradient-to-br from-mtm-primary via-mtm-primary-medium to-mtm-primary-dark sm:aspect-[16/9] lg:aspect-[2/1]"
         >
           <Users className="h-16 w-16 text-white/30" aria-hidden="true" />
         </div>
@@ -152,7 +152,7 @@ function CarteMembre({ membre }: { membre: TeamPerson }) {
         src={membre.imageUrl}
         nom={membre.nom}
         sizes="(min-width: 1024px) 240px, (min-width: 640px) 33vw, 50vw"
-        className="aspect-[4/5] w-full rounded-2xl shadow-card transition-all duration-200 group-hover:-translate-y-1 group-hover:shadow-card-hover"
+        className="aspect-square w-full rounded-2xl shadow-card transition-all duration-200 group-hover:-translate-y-1 group-hover:shadow-card-hover sm:aspect-[4/5]"
       />
       <p className="mt-3 font-display text-sm font-bold leading-snug text-mtm-text sm:text-base">
         {membre.nom}
