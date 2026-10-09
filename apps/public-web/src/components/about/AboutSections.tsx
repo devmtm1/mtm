@@ -5,21 +5,18 @@ import { LinkButton } from '../ui/LinkButton';
 import { Reveal } from '../ui/Reveal';
 import { SectionHeading } from '../ui/SectionHeading';
 
-const VALEURS: { icon: LucideIcon; titre: string; texte: string }[] = [
+const VALEURS: { icon: LucideIcon; titre: string }[] = [
   {
     icon: ShieldCheck,
     titre: 'Transparence',
-    texte: 'Chaque bien est vérifié avant commercialisation ; les documents sont accessibles à nos clients.',
   },
   {
     icon: HeartHandshake,
-    titre: 'Proximité, même à distance',
-    texte: 'Un interlocuteur dédié et un suivi régulier, pensés pour la diaspora.',
+    titre: 'Proximité',
   },
   {
     icon: Handshake,
     titre: 'Engagement',
-    texte: 'De l’acquisition à la construction, nous vous accompagnons à chaque étape.',
   },
 ];
 
@@ -43,11 +40,11 @@ export function AboutStory({ texte }: { texte: string }) {
     .filter(Boolean);
 
   return (
-    <section aria-labelledby="qui-sommes-nous" className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:py-20">
-      <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-14">
+    <section aria-labelledby="qui-sommes-nous" className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:py-20">
+      <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:gap-14">
         <Reveal>
           <span className="text-xs font-bold uppercase tracking-wider text-mtm-primary">Qui sommes-nous</span>
-          <h2 id="qui-sommes-nous" className="mt-2 font-display text-2xl font-bold text-mtm-text sm:text-3xl">
+          <h2 id="qui-sommes-nous" className="mt-2 font-display text-xl font-bold text-mtm-text sm:text-3xl">
             Une agence qui vous accompagne de bout en bout
           </h2>
           <div className="mt-5 space-y-4 text-[15px] leading-relaxed text-mtm-muted sm:text-base">
@@ -71,18 +68,15 @@ export function AboutStory({ texte }: { texte: string }) {
         </Reveal>
 
         <Reveal delay={100}>
-          <div className="rounded-2xl border border-mtm-border/70 border-t-4 border-t-mtm-primary bg-mtm-surface p-6 shadow-card lg:rounded-lg lg:p-7">
+          <div className="rounded-2xl border border-mtm-border/70 border-t-4 border-t-mtm-primary bg-mtm-surface p-5 shadow-card lg:rounded-lg lg:p-7">
             <h3 className="font-display text-base font-bold text-mtm-text">Nos valeurs</h3>
-            <ul className="mt-5 space-y-5">
-              {VALEURS.map(({ icon: Icon, titre, texte }) => (
-                <li key={titre} className="flex items-start gap-3.5">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-mtm-primary-subtle text-mtm-primary lg:rounded-md">
+            <ul className="mt-4 grid grid-cols-3 gap-2 lg:grid-cols-1 lg:gap-4" aria-label="Nos valeurs">
+              {VALEURS.map(({ icon: Icon, titre }) => (
+                <li key={titre} className="flex flex-col items-center gap-2 text-center lg:flex-row lg:gap-3.5 lg:text-left">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-mtm-primary-subtle text-mtm-primary lg:rounded-md">
                     <Icon className="h-5 w-5" aria-hidden="true" />
                   </span>
-                  <span className="min-w-0">
-                    <span className="block font-display text-[15px] font-bold text-mtm-text">{titre}</span>
-                    <span className="mt-0.5 block text-sm leading-relaxed text-mtm-muted">{texte}</span>
-                  </span>
+                  <span className="font-display text-[13px] font-bold leading-tight text-mtm-text sm:text-sm lg:text-[15px]">{titre}</span>
                 </li>
               ))}
             </ul>
@@ -94,10 +88,10 @@ export function AboutStory({ texte }: { texte: string }) {
 }
 
 const ETAPES = [
-  { titre: 'Nous vous écoutons', texte: 'Votre projet, votre budget, vos délais : nous cernons vos besoins avant de proposer quoi que ce soit.' },
-  { titre: 'Nous sélectionnons et vérifions', texte: 'Nous ne vous présentons que des biens contrôlés : situation juridique, documents, environnement.' },
-  { titre: 'Nous vous accompagnons', texte: 'Visites, démarches administratives, négociation et signature : un interlocuteur dédié à chaque étape.' },
-  { titre: 'Nous restons à vos côtés', texte: 'Votre espace client garde vos dossiers et documents à jour, bien après la remise des clés.' },
+  { titre: 'Nous vous écoutons', texte: 'Votre projet, votre budget, vos délais.' },
+  { titre: 'Nous sélectionnons et vérifions', texte: 'Seuls des biens contrôlés vous sont présentés.' },
+  { titre: 'Nous vous accompagnons', texte: 'Visites, démarches et signature, avec un interlocuteur dédié.' },
+  { titre: 'Nous restons à vos côtés', texte: 'Votre espace client garde vos dossiers à jour.' },
 ];
 
 export function AboutProcess() {

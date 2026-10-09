@@ -32,8 +32,8 @@ export function AboutPage() {
     <div>
       <AboutHero accroche={tagline} />
       <AboutStory texte={text} />
-      <AboutProcess />
       <TeamSection team={team} />
+      <AboutProcess />
       <CtaBand title="Envie de travailler avec nous ?" />
     </div>
   );

@@ -47,11 +47,11 @@ describe('AboutPage', () => {
     expect(screen.getByText('Une présence locale, une vision ouverte.')).toBeInTheDocument();
     for (const titre of [
       'Une agence qui vous accompagne de bout en bout',
-      'Nos valeurs',
       'Notre méthode',
     ]) {
       expect(screen.getByRole('heading', { name: titre })).toBeInTheDocument();
     }
+    expect(screen.getByRole('list', { name: 'Nos valeurs' })).toBeInTheDocument();
     // Le contact vit dans le bandeau final et le pied de page, pas en double ici.
     expect(screen.queryByRole('heading', { name: 'Nous trouver' })).not.toBeInTheDocument();
   });
