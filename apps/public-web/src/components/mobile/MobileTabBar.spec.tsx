@@ -1,13 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { MobileTabBar } from './MobileTabBar';
-
-const auth = vi.hoisted(() => ({ user: null as null | { firstName: string; roles: string[] } }));
-
-vi.mock('../../contexts/auth-context-store', () => ({
-  useAuth: () => ({ user: auth.user }),
-}));
 
 function renderBar(path = '/') {
   return render(
@@ -18,11 +12,7 @@ function renderBar(path = '/') {
 }
 
 describe('MobileTabBar', () => {
-  beforeEach(() => {
-    auth.user = null;
-  });
-
-  it('reprend les activités de MTM : accueil, biens, locations, services, espace client', () => {
+  it('reprend les activités de MTM : accueil, biens, locations, services, à propos', () => {
     renderBar();
     const barre = screen.getByRole('navigation', { name: /application/i });
     const onglets = Array.from(barre.querySelectorAll('li > a, li > button'));
@@ -31,7 +21,7 @@ describe('MobileTabBar', () => {
       'Biens',
       'Locations',
       'Services',
-      'Mon espace',
+      'À propos',
     ]);
   });
 
@@ -40,16 +30,13 @@ describe('MobileTabBar', () => {
     expect(screen.getByRole('link', { name: 'Accueil' })).toHaveAttribute('href', '/');
     expect(screen.getByRole('link', { name: 'Biens' })).toHaveAttribute('href', '/terrains');
     expect(screen.getByRole('link', { name: 'Locations' })).toHaveAttribute('href', '/locations');
+    expect(screen.getByRole('link', { name: 'À propos' })).toHaveAttribute('href', '/a-propos');
   });
 
-  it('un visiteur est conduit à la connexion, un client connecté à son espace', () => {
-    const { unmount } = renderBar();
-    expect(screen.getByRole('link', { name: 'Mon espace' })).toHaveAttribute('href', '/espace-client/connexion');
-    unmount();
-
-    auth.user = { firstName: 'Awa', roles: ['client'] };
-    renderBar();
-    expect(screen.getByRole('link', { name: 'Mon espace' })).toHaveAttribute('href', '/espace-client');
+  it('l’onglet À propos est actif sur sa page, et seulement là', () => {
+    renderBar('/a-propos');
+    expect(screen.getByRole('link', { name: 'À propos' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'Accueil' })).not.toHaveAttribute('aria-current');
   });
 
   it('marque l’onglet de l’écran courant, fiches de détail comprises', () => {

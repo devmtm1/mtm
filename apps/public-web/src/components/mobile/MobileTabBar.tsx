@@ -1,8 +1,7 @@
 import { useCallback, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Building2, Home, KeyRound, LayoutGrid, UserRound, type LucideIcon } from 'lucide-react';
+import { Building2, Home, Info, KeyRound, LayoutGrid, type LucideIcon } from 'lucide-react';
 import { ROUTES } from '../../routes';
-import { useAuth } from '../../contexts/auth-context-store';
 import { ServicesSheet } from './ServicesSheet';
 import { isServiceRoute } from './services-links';
 
@@ -44,11 +43,12 @@ function TabContent({ icon: Icon, label, active }: { icon: LucideIcon; label: st
 /**
  * Barre d'onglets de l'application mobile, composée de ce que MTM propose :
  * l'accueil, les biens à vendre, les locations, les services (gestion locative,
- * construction, démarches) et l'espace client. Pour joindre l'équipe, le
- * bouton d'actions rapides est toujours à portée de pouce.
+ * construction, démarches) et la présentation de MTM (À propos, avec son
+ * équipe). L'espace client reste à un geste, via l'icône du compte dans la
+ * barre du haut et le menu ; pour joindre l'équipe, le bouton d'actions
+ * rapides est toujours à portée de pouce.
  */
 export function MobileTabBar() {
-  const { user } = useAuth();
   const { pathname } = useLocation();
   const [servicesOpen, setServicesOpen] = useState(false);
   const closeServices = useCallback(() => setServicesOpen(false), []);
@@ -58,12 +58,7 @@ export function MobileTabBar() {
     { to: ROUTES.catalog, label: 'Biens', icon: Building2 },
     { to: ROUTES.locations, label: 'Locations', icon: KeyRound },
   ];
-  // Un client connecté retrouve son espace ; un visiteur, la page de connexion.
-  const espace: LinkTab = {
-    to: user ? ROUTES.clientPortal : ROUTES.clientLogin,
-    label: 'Mon espace',
-    icon: UserRound,
-  };
+  const apropos: LinkTab = { to: ROUTES.about, label: 'À propos', icon: Info };
   const servicesActive = servicesOpen || isServiceRoute(pathname);
 
   return (
@@ -92,8 +87,8 @@ export function MobileTabBar() {
             </button>
           </li>
           <li>
-            <NavLink to={espace.to} className={({ isActive }) => tabClass(isActive)}>
-              {({ isActive }) => <TabContent icon={espace.icon} label={espace.label} active={isActive} />}
+            <NavLink to={apropos.to} className={({ isActive }) => tabClass(isActive)}>
+              {({ isActive }) => <TabContent icon={apropos.icon} label={apropos.label} active={isActive} />}
             </NavLink>
           </li>
         </ul>
