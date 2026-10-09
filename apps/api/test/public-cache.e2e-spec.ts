@@ -24,6 +24,7 @@ describeE2e('Cache des lectures publiques (e2e)', () => {
     '/api/terrains/public/options',
     '/api/content',
     '/api/showcase',
+    '/api/team',
   ];
 
   it.each(routesPubliques)('%s est mise en cache une minute', async (route) => {

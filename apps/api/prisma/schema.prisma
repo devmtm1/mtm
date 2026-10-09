@@ -165,6 +165,7 @@ model Terrain {
   /**
    * /**
    * /**
+   * /**
    * Surface habitable, distincte de la parcelle. Les deux coexistent : une
    * villa de 120 m² habitables peut occuper une parcelle de 300 m², et les
    * confondre fausserait toute comparaison au catalogue.
@@ -214,6 +215,7 @@ model Terrain {
   notesInternes            String?
   // --- Suivi du portefeuille (reprise du tableur « Bd terrains ») ---
   /**
+   * /**
    * /** Nombre de lots du bien : un lotissement compte plusieurs terrains.
    */
   nombreLots               Int?
@@ -646,6 +648,7 @@ model Prospect {
   /**
    * /**
    * /**
+   * /**
    * /** Vrai dès qu'un mandat de recherche est ouvert pour ce prospect.
    */
   rechercheActive               Boolean   @default(false)
@@ -1022,6 +1025,32 @@ model ObjectifCommercial {
   @@map("objectifs_commerciaux")
 }
 
+/**
+ * Page « Notre équipe » du site public : mot du directeur, photo de groupe et
+ * membres. Une seule table, distinguée par `kind` : `directeur` et `groupe`
+ * n'existent qu'une fois, `membre` autant que nécessaire. Pour la photo de
+ * groupe, `nom` sert de légende. La photo est facultative : le site affiche
+ * les initiales à sa place.
+ */
+model TeamMember {
+  id           String   @id @default(uuid())
+  kind         String // "directeur" | "groupe" | "membre"
+  nom          String
+  poste        String?
+  message      String? // mot du directeur
+  storageKey   String? // image Cloudinary
+  resourceType String   @default("image")
+  ordre        Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([kind])
+  @@index([isActive])
+  @@index([ordre])
+  @@map("team_members")
+}
+
 model ShowcaseItem {
   id           String    @id @default(uuid())
   category     String // "realisation" | "projet_a_venir"
@@ -1253,6 +1282,7 @@ model BienLocatif {
   /**
    * /**
    * /**
+   * /**
    * Visible sur le site tant que le bien est « disponible ». Réservé à la
    * permission locatif:publier ; exige un loyer et au moins une photo.
    */
@@ -1325,6 +1355,7 @@ model BailLocatif {
 
   // --- Sortie et cas particuliers (section 15) ---
   /**
+   * /**
    * /**
    * /**
    * Cycle de vie du bail : actif | preavis | termine | resilie_sans_preavis.

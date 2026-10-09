@@ -1,0 +1,164 @@
+<div class="team-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Contenu</p>
+      <h1 class="page-header__title">Équipe</h1>
+      <p class="page-header__subtitle">
+        La section « Notre équipe » de la page À propos du site : le mot du directeur, une photo de groupe et un
+        portrait par collaborateur. Chaque contenu n’apparaît qu’une fois publié.
+      </p>
+    </div>
+  </header>
+
+  @if (!loading() && withoutImage().length > 0 && canModify) {
+    <aside class="alert-banner" role="status">
+      <div class="alert-banner__head">
+        <svg lucideImageOff aria-hidden="true"></svg>
+        <strong>{{ withoutImage().length }} contenu{{ withoutImage().length > 1 ? 's' : '' }} sans photo</strong>
+      </div>
+      <p>
+        Le site affiche les initiales à la place. Ajoutez les vraies photos avec le bouton « Photo » de chaque carte
+        (portraits cadrés de la même façon, idéalement 4:5 ; photo de groupe en paysage).
+      </p>
+    </aside>
+  }
+  @if (!loading() && unpublished().length > 0 && canPublish) {
+    <aside class="alert-banner alert-banner--info" role="status">
+      <p>{{ unpublished().length }} contenu{{ unpublished().length > 1 ? 's' : '' }} non publié{{ unpublished().length > 1 ? 's' : '' }} : invisible{{ unpublished().length > 1 ? 's' : '' }} pour les visiteurs.</p>
+    </aside>
+  }
+
+  <!-- Une carte, trois usages : directeur, photo de groupe, membre. -->
+  <ng-template #carte let-m let-ratio="ratio">
+    <article class="card" [class.is-hidden]="!m.isActive" [class.is-busy]="busyId() === m.id">
+      <div class="card__media" [style.aspect-ratio]="ratio">
+        @if (m.imageUrl) {
+          <img [src]="m.imageUrl" [alt]="m.nom" loading="lazy" />
+        } @else {
+          <div class="card__placeholder" aria-hidden="true">
+            @if (m.kind === 'groupe') {
+              <svg lucideUsers></svg>
+            } @else {
+              <span class="card__initials">{{ initiales(m.nom) }}</span>
+            }
+            <small>Aucune photo</small>
+          </div>
+        }
+        <span class="status-pill card__state" [class.status-pill--success]="m.isActive" [class.status-pill--warning]="!m.isActive">{{ m.isActive ? 'Publié' : 'Non publié' }}</span>
+        @if (m.kind === 'membre') {
+          <span class="card__order" matTooltip="Ordre d’affichage sur le site">#{{ m.ordre }}</span>
+        }
+      </div>
+      <div class="card__body">
+        <h3>{{ m.nom }}</h3>
+        @if (m.poste) {
+          <p class="card__meta">{{ m.poste }}</p>
+        }
+        @if (m.message) {
+          <p class="card__text">{{ m.message }}</p>
+        }
+      </div>
+      <div class="card__actions">
+        @if (canModify) {
+          <label class="upload-button" [matTooltip]="m.imageUrl ? 'Remplacer la photo' : 'Ajouter une photo'">
+            <svg lucideUpload aria-hidden="true"></svg>Photo
+            <input type="file" accept="image/*" (change)="selectImage($event, m)" />
+          </label>
+          <button mat-stroked-button type="button" (click)="openEditor(m.kind, m)">
+            <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Modifier
+          </button>
+        }
+        <span class="card__spacer"></span>
+        @if (canPublish) {
+          <button mat-icon-button type="button" (click)="togglePublish(m)" [matTooltip]="m.isActive ? 'Retirer du site' : 'Publier sur le site'" [attr.aria-label]="m.isActive ? 'Retirer du site' : 'Publier'">
+            @if (m.isActive) {
+              <svg lucideEyeOff aria-hidden="true"></svg>
+            } @else {
+              <svg lucideEye aria-hidden="true"></svg>
+            }
+          </button>
+        }
+        @if (canDelete) {
+          <button mat-icon-button type="button" class="card__delete" (click)="remove(m)" matTooltip="Supprimer" aria-label="Supprimer">
+            <svg lucideTrash2 aria-hidden="true"></svg>
+          </button>
+        }
+      </div>
+    </article>
+  </ng-template>
+
+  @if (loading()) {
+    <div class="skeleton" style="height: 320px"></div>
+  } @else {
+    <section class="page-card detail-section" aria-labelledby="t-directeur">
+      <div class="detail-section__head">
+        <div>
+          <h2 id="t-directeur">Mot du directeur</h2>
+          <p class="detail-section__hint">Sa photo, son nom, son titre et son message, affichés en tête de la section.</p>
+        </div>
+      </div>
+      @if (directeur(); as d) {
+        <div class="single single--portrait">
+          <ng-container [ngTemplateOutlet]="carte" [ngTemplateOutletContext]="{ $implicit: d, ratio: '4 / 5' }" />
+        </div>
+      } @else {
+        <div class="empty-state">
+          <h3>Pas encore de mot du directeur</h3>
+          <p>Le bloc n’apparaît pas sur le site tant qu’il n’est pas créé et publié.</p>
+          @if (canCreate) {
+            <button mat-flat-button color="primary" type="button" (click)="openEditor('directeur')">Ajouter</button>
+          }
+        </div>
+      }
+    </section>
+
+    <section class="page-card detail-section" aria-labelledby="t-groupe">
+      <div class="detail-section__head">
+        <div>
+          <h2 id="t-groupe">Photo de groupe</h2>
+          <p class="detail-section__hint">Une photo paysage de toute l’équipe, avec sa légende.</p>
+        </div>
+      </div>
+      @if (groupe(); as g) {
+        <div class="single single--wide">
+          <ng-container [ngTemplateOutlet]="carte" [ngTemplateOutletContext]="{ $implicit: g, ratio: '16 / 9' }" />
+        </div>
+      } @else {
+        <div class="empty-state">
+          <h3>Pas encore de photo de groupe</h3>
+          @if (canCreate) {
+            <button mat-flat-button color="primary" type="button" (click)="openEditor('groupe')">Ajouter</button>
+          }
+        </div>
+      }
+    </section>
+
+    <section class="page-card detail-section" aria-labelledby="t-membres">
+      <div class="detail-section__head">
+        <div>
+          <h2 id="t-membres">Membres de l’équipe <span class="count">{{ membres().length }}</span></h2>
+          <p class="detail-section__hint">Un portrait par collaborateur, classés selon leur numéro d’ordre.</p>
+        </div>
+        @if (canCreate) {
+          <button mat-stroked-button type="button" (click)="openEditor('membre')">
+            <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Ajouter
+          </button>
+        }
+      </div>
+      @if (membres().length === 0) {
+        <div class="empty-state">
+          <h3>Aucun membre</h3>
+          <p>Ajoutez les collaborateurs : nom, poste et photo.</p>
+        </div>
+      } @else {
+        <ul class="cards">
+          @for (m of membres(); track m.id) {
+            <li>
+              <ng-container [ngTemplateOutlet]="carte" [ngTemplateOutletContext]="{ $implicit: m, ratio: '4 / 5' }" />
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+</div>

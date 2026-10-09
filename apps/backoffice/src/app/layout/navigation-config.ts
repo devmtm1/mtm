@@ -153,6 +153,12 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         icon: LucideImages,
         permission: 'content:consulter',
       },
+      {
+        label: 'Équipe',
+        route: '/content/equipe',
+        icon: LucideUsers,
+        permission: 'content:consulter',
+      },
     ],
   },
   

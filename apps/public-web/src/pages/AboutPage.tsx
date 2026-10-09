@@ -1,6 +1,8 @@
 import { Handshake, ShieldCheck, Users } from 'lucide-react';
 import { PageIntro } from '../components/layout/PageIntro';
 import { useContentBlocks } from '../hooks/useContentBlocks';
+import { useTeam } from '../hooks/useTeam';
+import { TeamSection } from '../components/about/TeamSection';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 import { CtaBand } from '../components/ui/CtaBand';
 
@@ -30,6 +32,7 @@ const DEFAULT_TEXT =
 
 export function AboutPage() {
   const { data } = useContentBlocks();
+  const { data: team } = useTeam();
   usePageMetadata({
     title: 'À propos',
     description:
@@ -60,6 +63,7 @@ export function AboutPage() {
           ))}
         </div>
       </section>
+      <TeamSection team={team} />
       <CtaBand title="Envie de travailler avec nous ?" />
     </div>
   );

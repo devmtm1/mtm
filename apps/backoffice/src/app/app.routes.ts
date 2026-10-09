@@ -123,6 +123,12 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'content/equipe',
+        canActivate: [permissionsGuard(['content:consulter'])],
+        loadComponent: () =>
+          import('./features/content/team/team').then((m) => m.Team),
+      },
+      {
         path: 'mandats/nouveau',
         canActivate: [permissionsGuard(['mandats:creer'])],
         loadComponent: () =>
