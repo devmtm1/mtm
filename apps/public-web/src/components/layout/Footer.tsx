@@ -73,7 +73,8 @@ export function Footer() {
               <img src="/logomtm.jpeg" alt="MTM Immobilier" className="h-10 w-10 rounded-full object-cover sm:h-11 sm:w-11" />
               <span className="font-display text-lg font-bold"><span className="text-mtm-info">MTM</span> Immobilier</span>
             </div>
-            <p className="mt-3 max-w-sm text-sm text-white/75 sm:mt-4">
+            {/* Mobile : le logo suffit ; la phrase de présentation reprend ce que dit la page. */}
+            <p className="mt-3 hidden max-w-sm text-sm text-white/75 sm:mt-4 sm:block">
               Terrains et villas vérifiés, gestion locative, construction et démarches
               foncières — un accompagnement fiable et transparent, y compris à distance.
             </p>
@@ -143,10 +144,11 @@ export function Footer() {
             )}
           </div>
 
-          <nav aria-label="Services" className="lg:col-start-2 lg:row-start-1">
+          {/* Mobile : ces liens sont dans la barre d'onglets et le menu, inutile de les répéter ici. */}
+          <nav aria-label="Services" className="hidden sm:block lg:col-start-2 lg:row-start-1">
             <LinkColumn title="Services" links={SERVICE_LINKS} />
           </nav>
-          <nav aria-label="Liens rapides" className="-mt-6 sm:mt-0 lg:col-start-3 lg:row-start-1">
+          <nav aria-label="Liens rapides" className="hidden sm:block lg:col-start-3 lg:row-start-1">
             <LinkColumn title="Explorer" links={EXPLORE_LINKS} />
           </nav>
         </div>
