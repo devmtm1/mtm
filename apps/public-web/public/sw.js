@@ -7,7 +7,7 @@
  *  - une page ouverte sans réseau affiche /offline.html au lieu d'une erreur.
  * Changer VERSION purge les anciens caches à l'activation.
  */
-const VERSION = 'mtm-v1';
+const VERSION = 'mtm-v2';
 const SHELL = ['/offline.html', '/icons/icon-192.png', '/logomtm.jpeg'];
 
 self.addEventListener('install', (event) => {
