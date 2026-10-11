@@ -2,8 +2,9 @@
  * Générateur PDF minimal, sans dépendance : pages A4, rectangles, traits,
  * texte Helvetica / Helvetica-Bold (polices standard, encodage WinAnsi pour
  * les accents), largeur de texte pour aligner à droite ou centrer, retour à
- * la ligne automatique. Suffisant pour les documents de vente (factures,
- * reçus, bons de réservation, contrats) sans embarquer une bibliothèque.
+ * la ligne automatique, images JPEG (annexe photo d'un rapport). Suffisant pour
+ * les documents de vente (factures, reçus, bons de réservation, contrats) sans
+ * embarquer une bibliothèque.
  */
 
 export type PdfFont = 'regular' | 'bold';
@@ -20,6 +21,63 @@ export interface TextOptions {
 }
 
 export const A4 = { width: 595.28, height: 841.89 } as const;
+
+/** Image JPEG prête à être placée : le flux est inséré tel quel (filtre DCT). */
+export interface PdfJpeg {
+  data: Buffer;
+  width: number;
+  height: number;
+  /** 1 = niveaux de gris, 3 = couleurs. */
+  components: 1 | 3;
+}
+
+/**
+ * Lit les dimensions d'un JPEG (marqueur SOF). Renvoie `null` si le fichier
+ * n'est pas un JPEG exploitable — autre format, CMJN, fichier tronqué : l'appelant
+ * saute alors la photo au lieu de produire un PDF illisible.
+ */
+export function parseJpeg(data: Buffer): PdfJpeg | null {
+  if (data.length < 4 || data[0] !== 0xff || data[1] !== 0xd8) return null;
+  let offset = 2;
+  while (offset + 4 <= data.length) {
+    if (data[offset] !== 0xff) return null;
+    const marker = data[offset + 1];
+    if (marker === 0xff) {
+      offset += 1;
+      continue;
+    }
+    // Marqueurs sans longueur.
+    if (
+      marker === 0xd8 ||
+      (marker >= 0xd0 && marker <= 0xd7) ||
+      marker === 0x01
+    ) {
+      offset += 2;
+      continue;
+    }
+    const length = data.readUInt16BE(offset + 2);
+    const estSof =
+      marker >= 0xc0 &&
+      marker <= 0xcf &&
+      marker !== 0xc4 &&
+      marker !== 0xc8 &&
+      marker !== 0xcc;
+    if (estSof) {
+      // Progressif (0xc2) accepté ; arithmétique et sans perte, non.
+      if (marker > 0xc2) return null;
+      if (offset + 10 > data.length) return null;
+      const height = data.readUInt16BE(offset + 5);
+      const width = data.readUInt16BE(offset + 7);
+      const components = data[offset + 9];
+      if (!width || !height || (components !== 1 && components !== 3)) {
+        return null;
+      }
+      return { data, width, height, components };
+    }
+    offset += 2 + length;
+  }
+  return null;
+}
 
 /* Largeurs des glyphes Helvetica / Helvetica-Bold (AFM, pour 1000 unités), codes 32 à 126. */
 const HELVETICA_WIDTHS = [
@@ -148,6 +206,29 @@ export function wrapText(
 
 class PdfPage {
   private readonly ops: Buffer[] = [];
+  readonly images: PdfJpeg[] = [];
+
+  /**
+   * Place une image dans le rectangle donné (repère haut-gauche), sans la
+   * déformer : elle est centrée et ajustée au plus grand côté qui tient.
+   */
+  image(
+    jpeg: PdfJpeg,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+  ): void {
+    const echelle = Math.min(width / jpeg.width, height / jpeg.height);
+    const w = jpeg.width * echelle;
+    const h = jpeg.height * echelle;
+    const left = x + (width - w) / 2;
+    const top = y + (height - h) / 2;
+    this.images.push(jpeg);
+    this.push(
+      `q ${n(w)} 0 0 ${n(h)} ${n(left)} ${n(A4.height - top - h)} cm /Im${this.images.length - 1} Do Q`,
+    );
+  }
 
   /** Rectangle plein ; `y` est la coordonnée du bord supérieur (repère haut-gauche). */
   rect(
@@ -267,10 +348,29 @@ export class PdfDocument {
     const fontBold = add(
       '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>',
     );
-    const pagesId = objects.length + 1 + this.pages.length * 2;
+    const totalImages = this.pages.reduce(
+      (somme, page) => somme + page.images.length,
+      0,
+    );
+    const pagesId = objects.length + 1 + this.pages.length * 2 + totalImages;
     const pageIds: number[] = [];
     for (const page of this.pages) {
       const content = page.content();
+      const imageIds = page.images.map((jpeg) =>
+        add(
+          Buffer.concat([
+            Buffer.from(
+              `<< /Type /XObject /Subtype /Image /Width ${jpeg.width} /Height ${jpeg.height} /ColorSpace /${jpeg.components === 1 ? 'DeviceGray' : 'DeviceRGB'} /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.data.length} >>\nstream\n`,
+              'latin1',
+            ),
+            jpeg.data,
+            Buffer.from('\nendstream', 'latin1'),
+          ]),
+        ),
+      );
+      const xobjects = imageIds.length
+        ? ` /XObject << ${imageIds.map((id, index) => `/Im${index} ${id} 0 R`).join(' ')} >>`
+        : '';
       const contentId = add(
         Buffer.concat([
           Buffer.from(`<< /Length ${content.length} >>\nstream\n`, 'latin1'),
@@ -279,7 +379,7 @@ export class PdfDocument {
         ]),
       );
       const pageId = add(
-        `<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 ${A4.width} ${A4.height}] /Contents ${contentId} 0 R /Resources << /Font << /F1 ${fontRegular} 0 R /F2 ${fontBold} 0 R >> >> >>`,
+        `<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 ${A4.width} ${A4.height}] /Contents ${contentId} 0 R /Resources << /Font << /F1 ${fontRegular} 0 R /F2 ${fontBold} 0 R >>${xobjects} >> >>`,
       );
       pageIds.push(pageId);
     }

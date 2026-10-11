@@ -68,6 +68,33 @@ export const SETTING_GROUPS: SettingGroup[] = [
     ],
   },
   {
+    id: 'missions',
+    title: 'Missions, factures & références',
+    help: 'Numérotation des dossiers de mission et de leurs factures.',
+    slots: [
+      {
+        key: 'demarches.referenceFormat',
+        label: 'Format de la référence d’une mission',
+        help: 'Jetons : {code} (famille de prestation), {annee} (année) et {seq:3} (rang dans l’année, sur 3 chiffres). Exemple : MTM-{code}-{seq:3}/{annee} donne MTM-VF-001/2026. Ne change pas les références déjà attribuées.',
+        kind: 'text',
+        warning: 'Le format doit contenir {seq}. Un format sans rang est refusé.',
+      },
+      {
+        key: 'demarches.factureFormat',
+        label: 'Format du numéro de facture',
+        help: 'Mêmes jetons que la référence de mission. Exemple : MTM-FAC-{code}-{seq:3}/{annee} donne MTM-FAC-VF-001/2026.',
+        kind: 'text',
+        warning: 'Le format doit contenir {seq}. Un format sans rang est refusé.',
+      },
+      {
+        key: 'demarches.codesFamille',
+        label: 'Codes des familles de prestation',
+        help: 'Le code mis à la place de {code} : VF pour une vérification, DA pour une démarche administrative, PT pour une prestation technique. 6 lettres ou chiffres au plus.',
+        kind: 'json',
+      },
+    ],
+  },
+  {
     id: 'ventes',
     title: 'Ventes, réservations & paiements',
     help: 'Règles du parcours de vente. Les valeurs techniques (en_cours, reserve…) sont traduites à l’écran par l’application.',

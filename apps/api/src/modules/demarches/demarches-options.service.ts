@@ -1,5 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { SettingsService } from '../settings/settings.service';
+import {
+  CODES_FAMILLE_DEFAUT,
+  FORMAT_FACTURE_DEFAUT,
+  FORMAT_MISSION_DEFAUT,
+  REFERENCE_SETTING_KEYS,
+  formatReferenceValide,
+} from './mission-reference';
 
 /**
  * Référentiels des missions de vérification foncière (section 14 du cahier
@@ -90,6 +97,7 @@ export const DEMARCHES_DEFAULTS = {
     'constat',
     'piece_administrative',
     'rapport',
+    'facture',
     'autre',
   ],
   modesPaiement: ['especes', 'virement', 'mobile_money', 'cheque', 'autre'],
@@ -392,6 +400,34 @@ export class DemarchesOptionsService {
       }
     }
     return table;
+  }
+
+  /**
+   * Format de numérotation d'une mission ou d'une facture. Un format mal formé
+   * (sans rang, jeton inconnu) est ignoré : mieux vaut le format d'origine
+   * qu'une numérotation qui produirait deux fois la même référence.
+   */
+  async getFormatReference(sorte: 'mission' | 'facture'): Promise<string> {
+    const valeur = await this.settings.getRawValue(
+      REFERENCE_SETTING_KEYS[sorte],
+    );
+    if (formatReferenceValide(valeur)) return valeur.trim();
+    return sorte === 'mission' ? FORMAT_MISSION_DEFAUT : FORMAT_FACTURE_DEFAUT;
+  }
+
+  /** Code de la famille de prestation d'un type (VF pour une vérification foncière). */
+  async getCodeDuType(type: string | null | undefined): Promise<string> {
+    const famille = await this.familleDuType(type);
+    const valeur = await this.settings.getRawValue(
+      REFERENCE_SETTING_KEYS.codes,
+    );
+    if (valeur && typeof valeur === 'object' && !Array.isArray(valeur)) {
+      const code = (valeur as Record<string, unknown>)[famille];
+      if (typeof code === 'string' && /^[A-Za-z0-9]{1,6}$/.test(code.trim())) {
+        return code.trim().toUpperCase();
+      }
+    }
+    return CODES_FAMILLE_DEFAUT[famille] ?? 'M';
   }
 
   /**

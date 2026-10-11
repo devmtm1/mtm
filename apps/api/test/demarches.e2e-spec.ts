@@ -97,7 +97,8 @@ describeE2e('Parcours Démarches J2.2 (e2e)', () => {
       });
 
     expect(response.status).toBe(201);
-    expect(response.body.referenceInterne).toMatch(/^V-\d{4}-\d{4}$/);
+    // Numérotation du DG : MTM-VF-001/2026 (famille VF, rang dans l'année).
+    expect(response.body.referenceInterne).toMatch(/^MTM-VF-\d{3}\/\d{4}$/);
     expect(response.body.statut).toBe('demande');
     missionId = response.body.id;
   });
@@ -119,12 +120,115 @@ describeE2e('Parcours Démarches J2.2 (e2e)', () => {
         faisabiliteConclusion: 'favorable',
         montantDevis: 150000,
         fraisEtude: 25000,
-        montantPaye: 150000,
-        modePaiement: 'virement',
       });
 
     expect(response.status).toBe(200);
     expect(Number(response.body.montantDevis)).toBe(150000);
+  });
+
+  it('refuse de saisir à la main le total réglé : il vient des règlements', async () => {
+    const response = await request(app.getHttpServer())
+      .patch(`/api/demarches/missions/${missionId}`)
+      .set('Authorization', `Bearer ${jetonAgent}`)
+      .send({ montantPaye: 150000 });
+
+    expect(response.status).toBe(400);
+  });
+
+  it('règlements — deux transferts Wave, avec frais, donnent le solde', async () => {
+    const premier = await request(app.getHttpServer())
+      .post(`/api/demarches/missions/${missionId}/paiements`)
+      .set('Authorization', `Bearer ${jetonAgent}`)
+      .send({
+        datePaiement: '2026-10-02T17:08:00Z',
+        montantEnvoye: 100000,
+        frais: 990,
+        mode: 'mobile_money',
+        reference: 'T_EEYDM5J7P7OEM-S2T',
+      });
+    expect(premier.status).toBe(201);
+    expect(Number(premier.body.montantNet)).toBe(99010);
+
+    const second = await request(app.getHttpServer())
+      .post(`/api/demarches/missions/${missionId}/paiements`)
+      .set('Authorization', `Bearer ${jetonAgent}`)
+      .send({
+        datePaiement: '2026-10-03T19:36:00Z',
+        montantEnvoye: 30000,
+        frais: 300,
+        mode: 'mobile_money',
+        reference: 'T_TLEMB7J7OH35ZGZX',
+      });
+    expect(second.status).toBe(201);
+
+    const liste = await request(app.getHttpServer())
+      .get(`/api/demarches/missions/${missionId}/paiements`)
+      .set('Authorization', `Bearer ${jetonAgent}`);
+    expect(liste.status).toBe(200);
+    expect(liste.body.paiements).toHaveLength(2);
+    expect(liste.body.synthese).toMatchObject({
+      montantConvenu: 150000,
+      totalEnvoye: 130000,
+      totalFrais: 1290,
+      totalNet: 128710,
+      solde: 20000,
+      statut: 'partiel',
+    });
+
+    // Le total réglé de la mission suit les règlements.
+    const mission = await request(app.getHttpServer())
+      .get(`/api/demarches/missions/${missionId}`)
+      .set('Authorization', `Bearer ${jetonAgent}`);
+    expect(Number(mission.body.montantPaye)).toBe(130000);
+  });
+
+  it('refuse deux fois la même transaction', async () => {
+    const response = await request(app.getHttpServer())
+      .post(`/api/demarches/missions/${missionId}/paiements`)
+      .set('Authorization', `Bearer ${jetonAgent}`)
+      .send({
+        montantEnvoye: 20000,
+        mode: 'mobile_money',
+        reference: 't_eeydm5j7p7oem-s2t',
+      });
+
+    expect(response.status).toBe(409);
+  });
+
+  it('facture — numéro MTM-FAC-VF-001/année, conservé à la régénération', async () => {
+    const premiere = await request(app.getHttpServer())
+      .post(`/api/demarches/missions/${missionId}/facture`)
+      .set('Authorization', `Bearer ${jetonAgent}`);
+    expect(premiere.status).toBe(201);
+    expect(premiere.body.type).toBe('facture');
+    expect(premiere.body.title).toMatch(/^Facture MTM-FAC-VF-\d{3}\/\d{4}$/);
+    // Jamais publiée d'office : le client ne la voit que si MTM le décide.
+    expect(premiere.body.isPublic).toBe(false);
+
+    const seconde = await request(app.getHttpServer())
+      .post(`/api/demarches/missions/${missionId}/facture`)
+      .set('Authorization', `Bearer ${jetonAgent}`);
+    expect(seconde.status).toBe(201);
+    expect(seconde.body.title).toBe(premiere.body.title);
+    expect(seconde.body.version).toBe(2);
+
+    const mission = await request(app.getHttpServer())
+      .get(`/api/demarches/missions/${missionId}`)
+      .set('Authorization', `Bearer ${jetonAgent}`);
+    expect(mission.body.factureReference).toMatch(/^MTM-FAC-VF-\d{3}\/\d{4}$/);
+  });
+
+  it('règlement du solde — la mission est soldée', async () => {
+    const response = await request(app.getHttpServer())
+      .post(`/api/demarches/missions/${missionId}/paiements`)
+      .set('Authorization', `Bearer ${jetonAgent}`)
+      .send({ montantEnvoye: 20000, mode: 'especes' });
+    expect(response.status).toBe(201);
+
+    const liste = await request(app.getHttpServer())
+      .get(`/api/demarches/missions/${missionId}/paiements`)
+      .set('Authorization', `Bearer ${jetonAgent}`);
+    expect(liste.body.synthese).toMatchObject({ solde: 0, statut: 'solde' });
   });
 
   it('refuse de rédiger le rapport tant qu’aucune vérification n’est faite', async () => {

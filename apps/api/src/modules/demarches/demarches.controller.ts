@@ -28,6 +28,7 @@ import { DemarchesOptionsService } from './demarches-options.service';
 import { DemarchesEtapesService } from './demarches-etapes.service';
 import { DemarchesDocumentsService } from './demarches-documents.service';
 import { DemarchesClientService } from './demarches-client.service';
+import { DemarchesPaiementsService } from './demarches-paiements.service';
 import {
   CreateClientMissionDto,
   CreateMissionDto,
@@ -35,6 +36,10 @@ import {
   TransitionMissionDto,
   UpdateMissionDto,
 } from './dto/mission.dto';
+import {
+  CreatePaiementMissionDto,
+  UpdatePaiementMissionDto,
+} from './dto/paiement-mission.dto';
 import {
   CreateDocumentMissionDto,
   CreateEtapeMissionDto,
@@ -57,6 +62,7 @@ export class DemarchesController {
     private readonly etapes: DemarchesEtapesService,
     private readonly documents: DemarchesDocumentsService,
     private readonly client: DemarchesClientService,
+    private readonly paiements: DemarchesPaiementsService,
     private readonly audit: AuditService,
   ) {}
 
@@ -335,6 +341,112 @@ export class DemarchesController {
       userAgent: req.headers['user-agent'],
     });
     return { success: true };
+  }
+
+  // --- Règlements : acomptes, soldes, frais de transfert ---
+
+  @Get(':id/paiements')
+  @RequirePermissions('demarches:consulter')
+  findPaiements(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.paiements.findAll(id, user);
+  }
+
+  @Post(':id/paiements')
+  @RequirePermissions('demarches:modifier')
+  async addPaiement(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreatePaiementMissionDto,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    const paiement = await this.paiements.create(id, dto, user);
+    await this.audit.record({
+      userId: user.id,
+      action: 'mission.paiement.enregistre',
+      entityType: 'PaiementMission',
+      entityId: paiement.id,
+      newValue: {
+        missionId: id,
+        montantEnvoye: dto.montantEnvoye,
+        frais: dto.frais ?? 0,
+        mode: dto.mode,
+        reference: dto.reference ?? null,
+      },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    return paiement;
+  }
+
+  @Patch(':id/paiements/:paiementId')
+  @RequirePermissions('demarches:modifier')
+  async updatePaiement(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('paiementId', ParseUUIDPipe) paiementId: string,
+    @Body() dto: UpdatePaiementMissionDto,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    const paiement = await this.paiements.update(id, paiementId, dto, user);
+    await this.audit.record({
+      userId: user.id,
+      action: 'mission.paiement.modifie',
+      entityType: 'PaiementMission',
+      entityId: paiementId,
+      newValue: { missionId: id, ...dto },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    return paiement;
+  }
+
+  @Delete(':id/paiements/:paiementId')
+  @RequirePermissions('demarches:valider')
+  async removePaiement(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('paiementId', ParseUUIDPipe) paiementId: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    const supprime = await this.paiements.remove(id, paiementId, user);
+    await this.audit.record({
+      userId: user.id,
+      action: 'mission.paiement.supprime',
+      entityType: 'PaiementMission',
+      entityId: paiementId,
+      oldValue: {
+        missionId: id,
+        montantEnvoye: Number(supprime.montantEnvoye),
+        reference: supprime.reference,
+      },
+      justification: 'Suppression d’un règlement de mission',
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    return { success: true };
+  }
+
+  @Post(':id/facture')
+  @RequirePermissions('demarches:valider')
+  async generateFacture(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    const document = await this.documents.generateFacture(id, user);
+    await this.audit.record({
+      userId: user.id,
+      action: 'mission.facture.generee',
+      entityType: 'DocumentMission',
+      entityId: document.id,
+      newValue: { missionId: id, version: document.version },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    return document;
   }
 
   // --- Pièces et rapport ---

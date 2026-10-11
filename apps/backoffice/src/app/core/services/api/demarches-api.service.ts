@@ -14,6 +14,9 @@ import type {
   MissionPage,
   MissionQuery,
   MissionStats,
+  PaiementMission,
+  PaiementMissionPayload,
+  ReglementsMission,
   UpdateMissionPayload,
 } from '../../models/mission.model';
 
@@ -99,6 +102,33 @@ export class DemarchesApiService {
 
   removeEtape(id: string, etapeId: string): Observable<{ success: boolean }> {
     return this.http.delete<{ success: boolean }>(`${this.baseUrl}/${id}/etapes/${etapeId}`);
+  }
+
+  // --- Règlements et facture ---
+
+  getPaiements(id: string): Observable<ReglementsMission> {
+    return this.http.get<ReglementsMission>(`${this.baseUrl}/${id}/paiements`);
+  }
+
+  addPaiement(id: string, payload: PaiementMissionPayload): Observable<PaiementMission> {
+    return this.http.post<PaiementMission>(`${this.baseUrl}/${id}/paiements`, payload);
+  }
+
+  updatePaiement(
+    id: string,
+    paiementId: string,
+    payload: Partial<PaiementMissionPayload>,
+  ): Observable<PaiementMission> {
+    return this.http.patch<PaiementMission>(`${this.baseUrl}/${id}/paiements/${paiementId}`, payload);
+  }
+
+  removePaiement(id: string, paiementId: string): Observable<{ success: boolean }> {
+    return this.http.delete<{ success: boolean }>(`${this.baseUrl}/${id}/paiements/${paiementId}`);
+  }
+
+  /** Génère (ou régénère) la facture : même numéro, situation à jour. */
+  generateFacture(id: string): Observable<DocumentMission> {
+    return this.http.post<DocumentMission>(`${this.baseUrl}/${id}/facture`, {});
   }
 
   // --- Pièces et rapport ---

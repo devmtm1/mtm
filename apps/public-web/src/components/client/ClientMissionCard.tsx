@@ -126,6 +126,16 @@ export function ClientMissionCard({ mission, defaultOpen = false }: { mission: C
                 </dd>
               </div>
             )}
+            {mission.montantPaye !== null && mission.montantDevis > mission.montantPaye && (
+              <div className="col-span-2 rounded-xl bg-mtm-warning/10 px-3 py-2">
+                <dt className="text-xs font-semibold uppercase tracking-wider text-mtm-warning">
+                  Reste à régler
+                </dt>
+                <dd className="mt-0.5 font-semibold text-mtm-text">
+                  {formatMoney(mission.montantDevis - mission.montantPaye)}
+                </dd>
+              </div>
+            )}
           </dl>
         )}
 

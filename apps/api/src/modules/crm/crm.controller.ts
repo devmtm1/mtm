@@ -30,6 +30,7 @@ import { CreateDocumentCrmDto } from './dto/create-document-crm.dto';
 import { TransitionPipelineDto } from './dto/transition-pipeline.dto';
 import { ConvertContactDto } from './dto/convert-contact.dto';
 import { CrmService } from './crm.service';
+import { masquerIdentite, retirerIdentite } from './crm-identite';
 import { CrmOptionsService } from './crm-options.service';
 import { CrmActivitesService } from './crm-activites.service';
 import { CrmVisitesService } from './crm-visites.service';
@@ -57,7 +58,9 @@ export class CrmController {
     @Query() query: QueryProspectDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.crm.findAll(query, user);
+    return this.crm
+      .findAll(query, user)
+      .then((resultat) => masquerIdentite(resultat, user));
   }
 
   @Get('options') @RequirePermissions('crm:consulter') getOptions() {
@@ -148,13 +151,13 @@ export class CrmController {
       action: 'prospect.pipeline.transition',
       entityType: 'Prospect',
       entityId: id,
-      oldValue: result.before,
-      newValue: result.prospect,
+      oldValue: retirerIdentite(result.before),
+      newValue: retirerIdentite(result.prospect),
       justification: dto.justification,
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });
-    return result.prospect;
+    return masquerIdentite(result.prospect, user);
   }
 
   @Post('contacts/:contactId/convert')
@@ -179,7 +182,7 @@ export class CrmController {
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });
-    return prospect;
+    return masquerIdentite(prospect, user);
   }
 
   @Patch(':id/assign-commercial')
@@ -200,26 +203,30 @@ export class CrmController {
       action: 'prospect.commercial.assigned',
       entityType: 'Prospect',
       entityId: id,
-      oldValue: result.before,
-      newValue: result.prospect,
+      oldValue: retirerIdentite(result.before),
+      newValue: retirerIdentite(result.prospect),
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });
-    return result.prospect;
+    return masquerIdentite(result.prospect, user);
   }
 
   @Get(':id') @RequirePermissions('crm:consulter') findOne(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.crm.findOne(id, user);
+    return this.crm
+      .findOne(id, user)
+      .then((prospect) => masquerIdentite(prospect, user));
   }
 
   @Get(':id/360') @RequirePermissions('crm:consulter') find360(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.crm.findOne360(id, user);
+    return this.crm
+      .findOne360(id, user)
+      .then((fiche) => masquerIdentite(fiche, user));
   }
 
   @Get(':id/history') @RequirePermissions('crm:consulter') getHistory(
@@ -240,11 +247,11 @@ export class CrmController {
       action: 'prospect.created',
       entityType: 'Prospect',
       entityId: prospect.id,
-      newValue: prospect,
+      newValue: retirerIdentite(prospect),
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });
-    return prospect;
+    return masquerIdentite(prospect, user);
   }
 
   @Patch(':id') @RequirePermissions('crm:modifier') async update(
@@ -260,13 +267,13 @@ export class CrmController {
       action: 'prospect.updated',
       entityType: 'Prospect',
       entityId: id,
-      oldValue: before,
-      newValue: prospect,
+      oldValue: retirerIdentite(before),
+      newValue: retirerIdentite(prospect),
       justification: dto.justification,
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });
-    return prospect;
+    return masquerIdentite(prospect, user);
   }
 
   @Delete(':id') @RequirePermissions('crm:supprimer') async remove(
@@ -281,7 +288,7 @@ export class CrmController {
       action: 'prospect.deleted',
       entityType: 'Prospect',
       entityId: id,
-      oldValue: before,
+      oldValue: retirerIdentite(before),
       justification: 'Suppression du prospect',
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],

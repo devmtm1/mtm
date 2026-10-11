@@ -4,6 +4,7 @@ import {
   IsBoolean,
   IsDateString,
   IsEmail,
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
@@ -12,6 +13,7 @@ import {
   Min,
 } from 'class-validator';
 import { versBooleen } from '../../../common/utils/booleen.transform';
+import { TYPES_PIECE_IDENTITE } from '../../demarches/identite-client';
 
 /**
  * Fiche prospect de MTM (fiche de suivi « client potentiel »). Seuls le nom
@@ -50,6 +52,27 @@ export class CreateProspectDto {
   @IsString()
   @Length(0, 120)
   paysResidence?: string;
+
+  // --- Identité (permission crm:identite) ---
+  @ApiPropertyOptional({ example: '1974-11-03' })
+  @IsOptional()
+  @IsDateString()
+  dateNaissance?: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @Length(0, 120)
+  lieuNaissance?: string;
+  @ApiPropertyOptional({ enum: TYPES_PIECE_IDENTITE })
+  @IsOptional()
+  @IsIn([...TYPES_PIECE_IDENTITE])
+  typePieceIdentite?: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @Length(0, 60)
+  numeroPieceIdentite?: string;
+
   @ApiPropertyOptional({ example: 'facebook' })
   @IsOptional()
   @IsString()

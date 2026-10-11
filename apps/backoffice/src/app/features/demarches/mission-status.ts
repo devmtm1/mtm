@@ -260,6 +260,7 @@ export const TYPES_DOCUMENT: Record<string, StatusMeaning> = {
     help: 'Document obtenu auprès d’une administration.',
   },
   rapport: { tone: 'success', label: 'Rapport de vérification', help: 'Le livrable remis au client.' },
+  facture: { tone: 'primary', label: 'Facture', help: 'Prix, règlements reçus et solde, généré par MTM.' },
   autre: { tone: 'neutral', label: 'Autre', help: 'Autre pièce du dossier.' },
 };
 

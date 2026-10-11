@@ -74,6 +74,7 @@ model User {
   missionsCreees           MissionVerification[] @relation("MissionCreatedBy")
   etapesMissionRealisees   EtapeMission[]        @relation("EtapeMissionRealisee")
   documentsMissionCrees    DocumentMission[]     @relation("DocumentMissionCreator")
+  paiementsMissionCrees    PaiementMission[]     @relation("PaiementMissionCreator")
 
   // --- Gestion locative (J2.1) : espaces propriétaire et locataire ---
   clientProprietaireId      String?            @unique
@@ -166,6 +167,7 @@ model Terrain {
    * /**
    * /**
    * /**
+   * /**
    * Surface habitable, distincte de la parcelle. Les deux coexistent : une
    * villa de 120 m² habitables peut occuper une parcelle de 300 m², et les
    * confondre fausserait toute comparaison au catalogue.
@@ -215,6 +217,7 @@ model Terrain {
   notesInternes            String?
   // --- Suivi du portefeuille (reprise du tableur « Bd terrains ») ---
   /**
+   * /**
    * /**
    * /** Nombre de lots du bien : un lotissement compte plusieurs terrains.
    */
@@ -629,6 +632,14 @@ model Prospect {
   whatsapp                      Boolean   @default(false)
   villeResidence                String?
   paysResidence                 String?
+  // --- Identité (facture, rapport, mandat) : donnée sensible, réservée à la permission crm:identite ---
+  dateNaissance                 DateTime? @db.Date
+  lieuNaissance                 String?
+  /**
+   * cni_cedeao | passeport | permis | autre
+   */
+  typePieceIdentite             String?
+  numeroPieceIdentite           String?
   sourceAcquisition             String?
   niveauInteret                 String?
   besoins                       String?
@@ -646,6 +657,7 @@ model Prospect {
   // vivre dans une table à part, pour qu'une seule fiche porte le budget et
   // la zone du client — deux exemplaires finiraient par diverger.
   /**
+   * /**
    * /**
    * /**
    * /**
@@ -1115,11 +1127,26 @@ model MissionVerification {
   // --- Étape 2 : étude de faisabilité et facturation ---
   faisabiliteConclusion String?
   faisabiliteNotes      String?
-  montantDevis          Decimal? @db.Decimal(15, 2)
-  fraisEtude            Decimal? @db.Decimal(15, 2)
-  montantPaye           Decimal? @db.Decimal(15, 2)
+  montantDevis          Decimal?  @db.Decimal(15, 2)
+  fraisEtude            Decimal?  @db.Decimal(15, 2)
+  /**
+   * Total des règlements enregistrés (somme de `paiements.montantEnvoye`),
+   * recalculé à chaque règlement : les statistiques et l'espace client le lisent
+   * sans jointure. Ne se saisit plus à la main.
+   */
+  montantPaye           Decimal?  @db.Decimal(15, 2)
+  /**
+   * Hérités de l'ancienne saisie à paiement unique ; les règlements vivent dans `paiements`.
+   */
   modePaiement          String?
   referencePaiement     String?
+  /**
+   * Numéro de la facture (MTM-FAC-VF-001/2026), attribué à la première
+   * émission et conservé aux suivantes : une facture régénérée après un
+   * règlement garde son numéro.
+   */
+  factureReference      String?   @unique
+  factureEmiseLe        DateTime?
 
   // --- Étape 5 : conclusion ---
   decision       String?
@@ -1143,6 +1170,7 @@ model MissionVerification {
 
   etapes    EtapeMission[]
   documents DocumentMission[]
+  paiements PaiementMission[]
 
   @@index([prospectId])
   @@index([terrainId])
@@ -1179,6 +1207,11 @@ model EtapeMission {
   accesDescription    String?
   environnement       String?
   conformiteApparente String?
+  /**
+   * Personnes présentes sur le site (négociateur, promoteur, propriétaire…),
+   * avec leur qualité : le rapport de visite les nomme.
+   */
+  personnesPresentes  String?
 
   // --- Vérification administrative ---
   administration String?
@@ -1195,6 +1228,44 @@ model EtapeMission {
 
   @@index([missionId, type])
   @@map("etapes_mission")
+}
+
+/**
+ * Règlement reçu pour une mission. Un client paie souvent en plusieurs fois
+ * (acompte puis solde), et par Wave ou Orange Money le transfert coûte des
+ * frais : on garde donc le montant envoyé par le client (ce qui s'impute sur
+ * la prestation), les frais du transfert et le net réellement reçu.
+ */
+model PaiementMission {
+  id            String              @id @default(uuid())
+  missionId     String
+  mission       MissionVerification @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  datePaiement  DateTime
+  /**
+   * Montant envoyé par le client : c'est lui qui vient en déduction du prix de la mission.
+   */
+  montantEnvoye Decimal             @db.Decimal(15, 2)
+  /**
+   * Frais de transfert (Wave, Orange Money, banque), non imputés à la prestation.
+   */
+  frais         Decimal             @default(0) @db.Decimal(15, 2)
+  /**
+   * Net encaissé par MTM : montantEnvoye - frais.
+   */
+  montantNet    Decimal             @db.Decimal(15, 2)
+  mode          String
+  /**
+   * Identifiant de la transaction (ID Wave, numéro de virement, de chèque).
+   */
+  reference     String?
+  note          String?
+  createdById   String?
+  createdBy     User?               @relation("PaiementMissionCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@index([missionId, datePaiement])
+  @@map("paiements_mission")
 }
 
 /**
@@ -1283,6 +1354,7 @@ model BienLocatif {
    * /**
    * /**
    * /**
+   * /**
    * Visible sur le site tant que le bien est « disponible ». Réservé à la
    * permission locatif:publier ; exige un loyer et au moins une photo.
    */
@@ -1355,6 +1427,7 @@ model BailLocatif {
 
   // --- Sortie et cas particuliers (section 15) ---
   /**
+   * /**
    * /**
    * /**
    * /**

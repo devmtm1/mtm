@@ -62,3 +62,6 @@ pdf_text.txt
 apps/api/scripts/*.js
 apps/api/scripts/*.d.ts
 apps/api/scripts/*.js.map
+
+# Données réelles de clients (factures, rapports, photos) : jamais dans le dépôt
+test reel/

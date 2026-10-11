@@ -193,6 +193,9 @@ export class DemarchesEtapesService {
       ...(dto.conformiteApparente !== undefined
         ? { conformiteApparente: dto.conformiteApparente }
         : {}),
+      ...(dto.personnesPresentes !== undefined
+        ? { personnesPresentes: dto.personnesPresentes }
+        : {}),
       ...(dto.administration !== undefined
         ? { administration: dto.administration }
         : {}),

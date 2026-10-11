@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -17,6 +16,7 @@ import {
   DemarchesOptionsService,
   MISSION_STATUTS_TERMINES,
 } from './demarches-options.service';
+import { MissionReferencesService } from './mission-references.service';
 import {
   CreateMissionDto,
   QueryMissionDto,
@@ -73,6 +73,7 @@ export class DemarchesService {
     private readonly access: DemarchesAccessService,
     private readonly options: DemarchesOptionsService,
     private readonly cloudinary: CloudinaryService,
+    private readonly references: MissionReferencesService,
   ) {}
 
   /**
@@ -195,7 +196,10 @@ export class DemarchesService {
 
     const mission = await this.prisma.missionVerification.create({
       data: {
-        referenceInterne: await this.nextReference(),
+        referenceInterne: await this.references.prochaine(
+          'mission',
+          dto.typeVerification,
+        ),
         prospectId: dto.prospectId,
         terrainId: dto.terrainId ?? null,
         typeVerification: dto.typeVerification,
@@ -239,7 +243,6 @@ export class DemarchesService {
       this.options.assertUrgence(dto.urgence),
       this.options.assertConclusionFaisabilite(dto.faisabiliteConclusion),
       this.options.assertDecision(dto.decision),
-      this.options.assertModePaiement(dto.modePaiement),
     ]);
     const responsableId =
       dto.responsableId === undefined
@@ -286,15 +289,6 @@ export class DemarchesService {
           ? { montantDevis: dto.montantDevis }
           : {}),
         ...(dto.fraisEtude !== undefined ? { fraisEtude: dto.fraisEtude } : {}),
-        ...(dto.montantPaye !== undefined
-          ? { montantPaye: dto.montantPaye }
-          : {}),
-        ...(dto.modePaiement !== undefined
-          ? { modePaiement: dto.modePaiement }
-          : {}),
-        ...(dto.referencePaiement !== undefined
-          ? { referencePaiement: dto.referencePaiement }
-          : {}),
         ...(dto.decision !== undefined ? { decision: dto.decision } : {}),
         ...(dto.conclusion !== undefined ? { conclusion: dto.conclusion } : {}),
         ...(dto.reserves !== undefined ? { reserves: dto.reserves } : {}),
@@ -572,30 +566,6 @@ export class DemarchesService {
         terminees > 0 ? Math.round((cloturees / terminees) * 100) : 0,
       parEtape,
     };
-  }
-
-  /**
-   * Référence lisible d'une mission : `V-2026-0007`. Même principe que les
-   * prospects — le rang repart du nombre de références émises dans l'année
-   * et avance tant que la référence est prise.
-   */
-  private async nextReference(): Promise<string> {
-    const annee = new Date().getFullYear();
-    const prefixe = `V-${annee}-`;
-    const emises = await this.prisma.missionVerification.count({
-      where: { referenceInterne: { startsWith: prefixe } },
-    });
-    for (let rang = emises + 1; rang <= emises + 20; rang += 1) {
-      const candidate = `${prefixe}${String(rang).padStart(4, '0')}`;
-      const prise = await this.prisma.missionVerification.findUnique({
-        where: { referenceInterne: candidate },
-        select: { id: true },
-      });
-      if (!prise) return candidate;
-    }
-    throw new ConflictException(
-      'Impossible d’attribuer une référence de mission, réessayez',
-    );
   }
 
   /**

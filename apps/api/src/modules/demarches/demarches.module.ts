@@ -9,6 +9,8 @@ import { DemarchesOptionsService } from './demarches-options.service';
 import { DemarchesEtapesService } from './demarches-etapes.service';
 import { DemarchesDocumentsService } from './demarches-documents.service';
 import { DemarchesClientService } from './demarches-client.service';
+import { DemarchesPaiementsService } from './demarches-paiements.service';
+import { MissionReferencesService } from './mission-references.service';
 
 /** Démarches administratives et vérification foncière (J2.2, section 14 CDC). */
 @Module({
@@ -20,6 +22,8 @@ import { DemarchesClientService } from './demarches-client.service';
     DemarchesService,
     DemarchesEtapesService,
     DemarchesDocumentsService,
+    DemarchesPaiementsService,
+    MissionReferencesService,
     DemarchesClientService,
     CloudinaryService,
   ],

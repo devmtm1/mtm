@@ -37,8 +37,13 @@ describe('DemarchesService', () => {
 
   it('attribue une référence lisible à la mission créée', async () => {
     prismaMock.prospect.findUnique.mockResolvedValue({ id: 'p1' });
-    prismaMock.missionVerification.count.mockResolvedValue(6);
-    prismaMock.missionVerification.findUnique.mockResolvedValue(null);
+    const annee = new Date().getFullYear();
+    // Deux missions déjà numérotées cette année : la suivante prend le rang 3.
+    prismaMock.missionVerification.findMany.mockResolvedValue([
+      { referenceInterne: `MTM-VF-001/${annee}`, factureReference: null },
+      { referenceInterne: `MTM-VF-002/${annee}`, factureReference: null },
+    ]);
+    prismaMock.missionVerification.findFirst.mockResolvedValue(null);
     prismaMock.missionVerification.create.mockResolvedValue({
       id: 'm1',
       documents: [],
@@ -54,7 +59,7 @@ describe('DemarchesService', () => {
     );
 
     const data = prismaMock.missionVerification.create.mock.calls[0][0].data;
-    expect(data.referenceInterne).toBe(`V-${new Date().getFullYear()}-0007`);
+    expect(data.referenceInterne).toBe(`MTM-VF-003/${annee}`);
     // Le demandeur devient responsable par défaut : une mission sans porteur
     // est une mission que personne ne fait.
     expect(data.responsableId).toBe('u-dem');

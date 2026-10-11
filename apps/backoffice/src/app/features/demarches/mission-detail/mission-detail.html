@@ -224,8 +224,9 @@
             @if (estOuverte('faisabilite')) {
               <div class="etape__corps">
                 <p class="detail-section__hint">
-                  Ce qu’il est possible de vérifier, à quel prix, et ce qui a été réglé. Les frais
-                  d’étude restent dus même lorsque la conclusion est défavorable.
+                  Ce qu’il est possible de vérifier et à quel prix. Les règlements reçus et la facture
+                  se gèrent plus bas, dans « Règlements et facture ». Les frais d’étude restent dus
+                  même lorsque la conclusion est défavorable.
                 </p>
                 <form [formGroup]="faisabilite" class="form-grid" (ngSubmit)="enregistrerFaisabilite()">
                   <mat-form-field appearance="outline">
@@ -246,26 +247,6 @@
                   <mat-form-field appearance="outline">
                     <mat-label>Frais d’étude</mat-label>
                     <input matInput type="number" min="0" formControlName="fraisEtude" />
-                  </mat-form-field>
-
-                  <mat-form-field appearance="outline">
-                    <mat-label>Montant réglé</mat-label>
-                    <input matInput type="number" min="0" formControlName="montantPaye" />
-                  </mat-form-field>
-
-                  <mat-form-field appearance="outline">
-                    <mat-label>Mode de paiement</mat-label>
-                    <mat-select formControlName="modePaiement">
-                      <mat-option value="">Non renseigné</mat-option>
-                      @for (mode of options().modesPaiement ?? []; track mode) {
-                        <mat-option [value]="mode">{{ modePaiementLabel(mode) }}</mat-option>
-                      }
-                    </mat-select>
-                  </mat-form-field>
-
-                  <mat-form-field appearance="outline">
-                    <mat-label>Référence du paiement</mat-label>
-                    <input matInput formControlName="referencePaiement" />
                   </mat-form-field>
 
                   <mat-form-field appearance="outline" class="wide">
@@ -371,6 +352,9 @@
                           }
                           @if (constat.accesDescription) {
                             <div><dt>Accès</dt><dd>{{ constat.accesDescription }}</dd></div>
+                          }
+                          @if (constat.personnesPresentes) {
+                            <div><dt>Présents</dt><dd>{{ constat.personnesPresentes }}</dd></div>
                           }
                           @if (constat.environnement) {
                             <div><dt>Environnement</dt><dd>{{ constat.environnement }}</dd></div>
@@ -933,6 +917,15 @@
         </section>
       </aside>
     </div>
+
+    <!-- Prix convenu, règlements reçus (avec les frais de transfert), solde et facture -->
+    <app-reglements-mission
+      [mission]="m"
+      [modes]="options().modesPaiement ?? []"
+      [canModify]="canModify() && !estTerminee()"
+      [canValidate]="canValidate()"
+      (changed)="recharger()"
+    />
 
     <!-- Toutes les pièces du dossier, quelle que soit l'étape qui les a produites -->
     <section class="page-card detail-section">

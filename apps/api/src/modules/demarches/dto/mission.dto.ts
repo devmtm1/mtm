@@ -73,14 +73,11 @@ export class UpdateMissionDto {
   @IsOptional() @IsDateString() dateEcheance?: string;
   @IsOptional() @IsUUID() responsableId?: string;
 
-  // --- Étape 2 : étude de faisabilité et facturation ---
+  // --- Étape 2 : étude de faisabilité et prix (les règlements ont leur propre écran) ---
   @IsOptional() @IsString() @MaxLength(40) faisabiliteConclusion?: string;
   @IsOptional() @IsString() @MaxLength(4000) faisabiliteNotes?: string;
   @IsOptional() @Type(() => Number) @IsNumber() @Min(0) montantDevis?: number;
   @IsOptional() @Type(() => Number) @IsNumber() @Min(0) fraisEtude?: number;
-  @IsOptional() @Type(() => Number) @IsNumber() @Min(0) montantPaye?: number;
-  @IsOptional() @IsString() @MaxLength(40) modePaiement?: string;
-  @IsOptional() @IsString() @MaxLength(120) referencePaiement?: string;
 
   // --- Étape 5 : conclusion du rapport ---
   @IsOptional() @IsString() @MaxLength(40) decision?: string;

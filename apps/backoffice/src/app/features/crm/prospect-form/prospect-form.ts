@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
@@ -83,6 +83,14 @@ export class ProspectForm implements OnInit {
 
   protected readonly prospectId: string | null = this.route.snapshot.paramMap.get('id');
   protected readonly isEdit = this.prospectId !== null;
+  /** Identité du client (naissance, pièce) : réservée à la permission crm:identite. */
+  protected readonly peutSaisirIdentite = computed(() => this.session.hasPermission('crm:identite'));
+  protected readonly typesPieceIdentite = [
+    { value: 'cni_cedeao', label: 'Carte d’identité CEDEAO' },
+    { value: 'passeport', label: 'Passeport' },
+    { value: 'permis', label: 'Permis de conduire' },
+    { value: 'autre', label: 'Autre pièce' },
+  ];
   protected readonly loading = signal(this.isEdit);
   protected readonly saving = signal(false);
   protected readonly commercials = signal<CommercialSummary[]>([]);
@@ -137,6 +145,10 @@ export class ProspectForm implements OnInit {
       email: ['', [Validators.email, Validators.maxLength(200)]],
       villeResidence: [''],
       paysResidence: ['Sénégal'],
+      dateNaissance: [''],
+      lieuNaissance: [''],
+      typePieceIdentite: [''],
+      numeroPieceIdentite: [''],
       sourceAcquisition: [''],
       niveauInteret: [''],
       // Premier contact
@@ -258,6 +270,10 @@ export class ProspectForm implements OnInit {
       email: prospect.email ?? '',
       villeResidence: prospect.villeResidence ?? '',
       paysResidence: prospect.paysResidence ?? '',
+      dateNaissance: prospect.dateNaissance ? prospect.dateNaissance.slice(0, 10) : '',
+      lieuNaissance: prospect.lieuNaissance ?? '',
+      typePieceIdentite: prospect.typePieceIdentite ?? '',
+      numeroPieceIdentite: prospect.numeroPieceIdentite ?? '',
       sourceAcquisition: prospect.sourceAcquisition ?? '',
       niveauInteret: prospect.niveauInteret ?? '',
       premierContactLe: prospect.premierContactLe ? new Date(prospect.premierContactLe) : null,
@@ -306,6 +322,15 @@ export class ProspectForm implements OnInit {
       email: text(value.email),
       villeResidence: text(value.villeResidence),
       paysResidence: text(value.paysResidence),
+      // Sans la permission, l'API refuse ces champs : on ne les envoie donc pas.
+      ...(this.peutSaisirIdentite()
+        ? {
+            dateNaissance: text(value.dateNaissance),
+            lieuNaissance: text(value.lieuNaissance),
+            typePieceIdentite: text(value.typePieceIdentite),
+            numeroPieceIdentite: text(value.numeroPieceIdentite),
+          }
+        : {}),
       sourceAcquisition: text(value.sourceAcquisition),
       niveauInteret: text(value.niveauInteret),
       premierContactLe: day(value.premierContactLe),

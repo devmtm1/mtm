@@ -187,6 +187,45 @@ export class CloudinaryService {
     });
   }
 
+  /**
+   * Octets d'une photo en JPEG réduit (1 200 px, qualité 80), pour l'embarquer
+   * dans un PDF. Cloudinary fait la conversion : une photo WebP, PNG ou HEIC
+   * arrive en JPEG, seul format que le générateur PDF sait insérer. Renvoie
+   * `null` — jamais d'erreur — quand le stockage n'est pas configuré ou que la
+   * photo est introuvable : un rapport vaut mieux sans une photo que pas de rapport.
+   */
+  async downloadJpeg(
+    publicId: string,
+    isPublic: boolean,
+  ): Promise<Buffer | null> {
+    if (!this.isConfigured()) return null;
+    try {
+      const lien = cloudinary.url(publicId, {
+        secure: true,
+        resource_type: 'image',
+        type: isPublic ? 'upload' : 'authenticated',
+        sign_url: !isPublic,
+        format: 'jpg',
+        transformation: [{ width: 1200, crop: 'limit', quality: 80 }],
+      });
+      const reponse = await fetch(lien, {
+        signal: AbortSignal.timeout(15_000),
+      });
+      if (!reponse.ok) {
+        this.logger.warn(
+          `Photo non récupérée pour le PDF : ${publicId} (HTTP ${reponse.status})`,
+        );
+        return null;
+      }
+      return Buffer.from(await reponse.arrayBuffer());
+    } catch (error) {
+      this.logger.warn(
+        `Photo non récupérée pour le PDF : ${publicId} (${String(error)})`,
+      );
+      return null;
+    }
+  }
+
   isConfigured(): boolean {
     return Boolean(
       this.config.get('CLOUDINARY_CLOUD_NAME') &&

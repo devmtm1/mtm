@@ -163,6 +163,13 @@ async function main(): Promise<void> {
       action: 'exporter',
       description: 'Exporter la liste des prospects (export tracé)',
     },
+    {
+      name: 'crm:identite',
+      resource: 'crm',
+      action: 'identite',
+      description:
+        'Voir et saisir l’identité d’un client (naissance, pièce d’identité)',
+    },
   ];
   for (const permission of crmPermissions) {
     await prisma.permission.upsert({
@@ -254,6 +261,7 @@ async function main(): Promise<void> {
     'crm:modifier',
     'crm:supprimer',
     'crm:exporter',
+    'crm:identite',
   ];
   const commercialPermissionNames = [
     'crm:consulter',
@@ -315,6 +323,8 @@ async function main(): Promise<void> {
       'demarches:exporter',
       'terrains:consulter',
       'crm:consulter',
+      // Les factures et rapports de mission portent l'identité du client.
+      'crm:identite',
     ],
     commercial: [
       'demarches:consulter',
@@ -1126,6 +1136,35 @@ async function main(): Promise<void> {
       isSensitive: false,
     },
   });
+
+  // --- Démarches : numérotation des missions et des factures ---
+  // MTM-VF-001/2026 : {code} = famille de prestation, {seq:3} = rang dans
+  // l'année pour ce code, {annee} = année. Modifiable en back-office.
+  for (const parametre of [
+    {
+      key: 'demarches.referenceFormat',
+      value: 'MTM-{code}-{seq:3}/{annee}',
+      description:
+        'Format de la référence d’une mission : {code}, {annee} et {seq:N} (rang sur N chiffres)',
+    },
+    {
+      key: 'demarches.factureFormat',
+      value: 'MTM-FAC-{code}-{seq:3}/{annee}',
+      description: 'Format du numéro de facture d’une mission',
+    },
+    {
+      key: 'demarches.codesFamille',
+      value: { verification: 'VF', demarche: 'DA', technique: 'PT' },
+      description:
+        'Code de chaque famille de prestation dans les références (vérification, démarche, prestation technique)',
+    },
+  ]) {
+    await prisma.systemSetting.upsert({
+      where: { key: parametre.key },
+      update: {},
+      create: { ...parametre, isSensitive: false },
+    });
+  }
 
   // --- Démarches : tarifs indicatifs, jamais figés dans le code ---
   await prisma.systemSetting.upsert({

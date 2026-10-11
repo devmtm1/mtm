@@ -34,6 +34,8 @@ export interface EtapeMission {
   accesDescription: string | null;
   environnement: string | null;
   conformiteApparente: string | null;
+  /** Négociateur, promoteur… présents sur le site, avec leur qualité. */
+  personnesPresentes: string | null;
   administration: string | null;
   interlocuteur: string | null;
   resultat: string | null;
@@ -98,6 +100,9 @@ export interface MissionDetail extends MissionListItem {
   fraisEtude: number | string | null;
   modePaiement: string | null;
   referencePaiement: string | null;
+  /** Numéro de la facture (MTM-FAC-VF-001/2026), une fois émise. */
+  factureReference: string | null;
+  factureEmiseLe: string | null;
   conclusion: string | null;
   reserves: string | null;
   recommandation: string | null;
@@ -187,9 +192,6 @@ export type UpdateMissionPayload = Partial<
   faisabiliteNotes?: string;
   montantDevis?: number;
   fraisEtude?: number;
-  montantPaye?: number;
-  modePaiement?: string;
-  referencePaiement?: string;
   decision?: string;
   conclusion?: string;
   reserves?: string;
@@ -207,8 +209,50 @@ export interface EtapeMissionPayload {
   accesDescription?: string;
   environnement?: string;
   conformiteApparente?: string;
+  personnesPresentes?: string;
   administration?: string;
   interlocuteur?: string;
   resultat?: string;
   realiseeLe?: string;
+}
+
+/** Règlement reçu pour une mission (acompte, solde, transfert Wave…). */
+export interface PaiementMission {
+  id: string;
+  datePaiement: string;
+  /** Montant envoyé par le client : c'est lui qui s'impute sur le prix. */
+  montantEnvoye: number | string;
+  /** Frais de transfert, distincts du prix de la prestation. */
+  frais: number | string;
+  montantNet: number | string;
+  mode: string;
+  reference: string | null;
+  note: string | null;
+  createdBy: MissionPersonne | null;
+}
+
+export type StatutReglement = 'a_facturer' | 'non_regle' | 'partiel' | 'solde' | 'trop_percu';
+
+export interface SyntheseReglement {
+  montantConvenu: number | null;
+  totalEnvoye: number;
+  totalFrais: number;
+  totalNet: number;
+  solde: number | null;
+  excedent: number;
+  statut: StatutReglement;
+}
+
+export interface ReglementsMission {
+  paiements: PaiementMission[];
+  synthese: SyntheseReglement;
+}
+
+export interface PaiementMissionPayload {
+  datePaiement?: string;
+  montantEnvoye: number;
+  frais?: number;
+  mode: string;
+  reference?: string;
+  note?: string;
 }

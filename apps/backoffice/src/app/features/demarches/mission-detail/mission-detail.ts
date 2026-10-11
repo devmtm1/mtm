@@ -34,10 +34,10 @@ import { NotificationService } from '../../../shared/services/notification.servi
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { JustificationDialog } from '../../../shared/dialogs/justification-dialog';
 import { ConstatDialog } from './constat-dialog';
+import { ReglementsMissionComponent } from './reglements-mission';
 import { estImageCloudinary, vignetteCloudinary } from '../../../shared/utils/cloudinary';
 import {
   ADMINISTRATIONS,
-  MODES_PAIEMENT,
   CONFORMITES,
   DECISIONS,
   ETAPES_TERMINALES,
@@ -86,6 +86,7 @@ const PARCOURS_VERIFICATION = [
     MatMenuModule,
     MatSelectModule,
     MatTooltipModule,
+    ReglementsMissionComponent,
     LucideArrowLeft,
     LucideChevronDown,
     LucideFileText,
@@ -275,9 +276,6 @@ export class MissionDetail implements OnInit {
     faisabiliteNotes: [''],
     montantDevis: [null as number | null],
     fraisEtude: [null as number | null],
-    montantPaye: [null as number | null],
-    modePaiement: [''],
-    referencePaiement: [''],
   });
 
   /** Conclusion du rapport (étape 5). */
@@ -364,10 +362,6 @@ export class MissionDetail implements OnInit {
 
   protected documentLabel(type: string): string {
     return label(TYPES_DOCUMENT, type);
-  }
-
-  protected modePaiementLabel(mode: string): string {
-    return label(MODES_PAIEMENT, mode);
   }
 
   protected personne(
@@ -542,9 +536,6 @@ export class MissionDetail implements OnInit {
         faisabiliteNotes: texte(valeur.faisabiliteNotes),
         montantDevis: valeur.montantDevis ?? undefined,
         fraisEtude: valeur.fraisEtude ?? undefined,
-        montantPaye: valeur.montantPaye ?? undefined,
-        modePaiement: valeur.modePaiement || undefined,
-        referencePaiement: texte(valeur.referencePaiement),
       }),
       'Étude de faisabilité enregistrée',
     );
@@ -645,6 +636,11 @@ export class MissionDetail implements OnInit {
     );
   }
 
+  /** Relit la fiche après une action du bloc « Règlements et facture ». */
+  protected recharger(): void {
+    this.charger();
+  }
+
   private charger(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return;
@@ -682,9 +678,6 @@ export class MissionDetail implements OnInit {
       faisabiliteNotes: mission.faisabiliteNotes ?? '',
       montantDevis: nombre(mission.montantDevis),
       fraisEtude: nombre(mission.fraisEtude),
-      montantPaye: nombre(mission.montantPaye),
-      modePaiement: mission.modePaiement ?? '',
-      referencePaiement: mission.referencePaiement ?? '',
     });
     this.conclusion.patchValue({
       decision: mission.decision ?? '',

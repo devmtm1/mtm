@@ -6,6 +6,10 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateSettingDto } from './dto/create-setting.dto';
+import {
+  REFERENCE_SETTING_KEYS,
+  formatReferenceValide,
+} from '../demarches/mission-reference';
 
 export interface SafeSetting {
   id: string;
@@ -111,6 +115,38 @@ export class SettingsService {
     }
   }
 
+  /**
+   * Paramètres dont une valeur erronée casserait un parcours (numérotation des
+   * missions) : on les refuse à l'enregistrement plutôt que de les ignorer en
+   * silence à l'usage.
+   */
+  static assertValeurValide(key: string, value: unknown): void {
+    if (
+      key === REFERENCE_SETTING_KEYS.mission ||
+      key === REFERENCE_SETTING_KEYS.facture
+    ) {
+      if (!formatReferenceValide(value)) {
+        throw new BadRequestException(
+          'Format de numérotation invalide : il doit contenir un rang {seq} (ex. {seq:3}) et seulement les jetons {code}, {annee} et {seq}, par exemple MTM-{code}-{seq:3}/{annee}',
+        );
+      }
+    }
+    if (key === REFERENCE_SETTING_KEYS.codes) {
+      const valide =
+        value !== null &&
+        typeof value === 'object' &&
+        !Array.isArray(value) &&
+        Object.values(value as Record<string, unknown>).every(
+          (code) => typeof code === 'string' && /^[A-Za-z0-9]{1,6}$/.test(code),
+        );
+      if (!valide) {
+        throw new BadRequestException(
+          'Les codes de famille doivent être des lettres ou chiffres (6 au plus), par exemple {"verification":"VF","demarche":"DA","technique":"PT"}',
+        );
+      }
+    }
+  }
+
   static asStringList(value: unknown, fallback: readonly string[]): string[] {
     return Array.isArray(value) &&
       value.every((item): item is string => typeof item === 'string')
@@ -125,6 +161,7 @@ export class SettingsService {
     if (existing) {
       throw new ConflictException('Un paramètre avec cette clé existe déjà');
     }
+    SettingsService.assertValeurValide(dto.key, dto.value);
 
     return this.prisma.systemSetting.create({
       data: {
@@ -149,6 +186,7 @@ export class SettingsService {
     if (!existing) {
       throw new NotFoundException('Paramètre introuvable');
     }
+    SettingsService.assertValeurValide(key, value);
 
     return this.prisma.systemSetting.update({
       where: { key },

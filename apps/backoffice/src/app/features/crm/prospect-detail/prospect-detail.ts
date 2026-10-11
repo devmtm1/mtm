@@ -95,6 +95,9 @@ const FIELD_LABELS: Record<string, string> = {
   sourceAcquisition: 'Source',
   whatsapp: 'WhatsApp',
   villeResidence: 'Ville',
+  dateNaissance: 'Date de naissance',
+  lieuNaissance: 'Lieu de naissance',
+  typePieceIdentite: 'Type de pièce d’identité',
   niveauInteret: 'Niveau d’intérêt',
   zoneRecherchee: 'Zone recherchée',
   surfaceSouhaitee: 'Surface souhaitée',
@@ -288,6 +291,14 @@ export class ProspectDetail implements OnInit {
   /** « Dakar, Sénégal » — ce qui est renseigné, sans virgule orpheline. */
   protected residence(prospect: ProspectDetailModel): string {
     return [prospect.villeResidence, prospect.paysResidence].filter(Boolean).join(', ') || '—';
+  }
+
+  protected pieceLabel(type: string): string {
+    return (
+      ({ cni_cedeao: 'Carte d’identité CEDEAO', passeport: 'Passeport', permis: 'Permis de conduire' } as Record<string, string>)[
+        type
+      ] ?? 'Pièce d’identité'
+    );
   }
 
   protected interestLabel(niveau: string | null | undefined): string {

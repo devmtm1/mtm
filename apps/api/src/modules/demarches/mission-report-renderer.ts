@@ -1,4 +1,23 @@
-import { A4, PdfDocument, type PdfFont } from '../../common/pdf/pdf-document';
+import { A4, PdfDocument, type PdfJpeg } from '../../common/pdf/pdf-document';
+import type { SyntheseReglement } from './mission-paiements';
+import {
+  ACCENT,
+  BORDER,
+  CONTENT_WIDTH,
+  MARGIN,
+  MUTED,
+  NAVY_DARK,
+  NAVY_SUBTLE,
+  SUCCESS,
+  WARNING,
+  drawEntete,
+  drawPied,
+  drawTable,
+  paragraphe,
+  sectionTitle,
+  type Cursor,
+  type Page,
+} from './mission-pdf-kit';
 import { formatDate, formatMoney } from '../ventes/vente-document-renderer';
 
 /** Données nécessaires au rapport de vérification remis au client. */
@@ -32,7 +51,26 @@ export interface MissionReportData {
     faisabiliteConclusion: string | null;
     faisabiliteNotes: string | null;
   };
-  client: { nom: string; email: string | null; telephone: string | null };
+  client: {
+    nom: string;
+    email: string | null;
+    telephone: string | null;
+    dateNaissance: Date | null;
+    lieuNaissance: string | null;
+    /** « Carte d'identité CEDEAO n° … » : sans le numéro tant qu'il n'est pas saisi. */
+    pieceIdentite: string | null;
+  };
+  /** Règlements reçus et situation du solde ; `null` tant qu'aucun prix n'est fixé. */
+  reglement: {
+    synthese: SyntheseReglement;
+    paiements: Array<{
+      datePaiement: Date;
+      montantEnvoye: number;
+      frais: number;
+    }>;
+  } | null;
+  /** Photos de la visite, déjà converties en JPEG : l'annexe du rapport. */
+  photos: Array<{ titre: string | null; jpeg: PdfJpeg }>;
   terrain: {
     nom: string;
     referenceInterne: string | null;
@@ -52,30 +90,13 @@ export interface MissionReportData {
     accesDescription: string | null;
     environnement: string | null;
     conformiteApparente: string | null;
+    personnesPresentes: string | null;
     administration: string | null;
     interlocuteur: string | null;
     resultat: string | null;
     realiseePar: string | null;
     realiseeLe: Date;
   }>;
-}
-
-const NAVY = '#1A4974';
-const NAVY_DARK = '#233D5B';
-const NAVY_SUBTLE = '#EAF1F7';
-const ACCENT = '#B52C36';
-const TEXT = '#1F2937';
-const MUTED = '#6B7280';
-const BORDER = '#E5E7EB';
-const SUCCESS = '#047857';
-const WARNING = '#B7791F';
-
-const MARGIN = 48;
-const CONTENT_WIDTH = A4.width - MARGIN * 2;
-
-type Page = ReturnType<PdfDocument['addPage']>;
-interface Cursor {
-  y: number;
 }
 
 const LIBELLES: Record<string, string> = {
@@ -201,10 +222,11 @@ export function renderMissionReport(data: MissionReportData): Buffer {
   if (
     data.mission.montantDevis !== null ||
     data.mission.fraisEtude !== null ||
-    data.mission.montantPaye !== null
+    data.reglement
   ) {
-    page = assurerPlace(pdf, page, cursor, 110, data);
+    page = assurerPlace(pdf, page, cursor, 130, data);
     sectionTitle(page, cursor, 'Facturation de la mission');
+    const synthese = data.reglement?.synthese;
     drawTable(
       page,
       cursor,
@@ -225,7 +247,10 @@ export function renderMissionReport(data: MissionReportData): Buffer {
               ],
             ]
           : []),
-        ['Montant réglé', formatMoney(data.mission.montantPaye)],
+        ['Montant réglé', formatMoney(synthese?.totalEnvoye ?? 0)],
+        ...(synthese && synthese.solde
+          ? [['Solde restant à régler', formatMoney(synthese.solde)]]
+          : []),
       ],
       { totalRows: 1 },
     );
@@ -234,6 +259,7 @@ export function renderMissionReport(data: MissionReportData): Buffer {
   page = assurerPlace(pdf, page, cursor, 90, data);
   drawSignature(page, data, cursor);
   drawFooter(page, data);
+  if (data.photos.length) drawAnnexePhotos(pdf, data);
   return pdf.build();
 }
 
@@ -254,30 +280,7 @@ function assurerPlace(
 }
 
 function drawHeader(page: Page, data: MissionReportData): void {
-  page.rect(0, 0, A4.width, 92, NAVY);
-  page.rect(0, 92, A4.width, 4, ACCENT);
-  page.text(data.company.name.toUpperCase(), MARGIN, 44, {
-    font: 'bold',
-    size: 20,
-    color: '#FFFFFF',
-  });
-  page.text(data.company.tagline, MARGIN, 62, { size: 9, color: '#CFE0EE' });
-  const droite = A4.width - MARGIN;
-  page.text(data.company.adresse, droite, 40, {
-    size: 9,
-    color: '#FFFFFF',
-    align: 'right',
-  });
-  page.text(data.company.telephone, droite, 54, {
-    size: 9,
-    color: '#FFFFFF',
-    align: 'right',
-  });
-  page.text(data.company.email, droite, 68, {
-    size: 9,
-    color: '#FFFFFF',
-    align: 'right',
-  });
+  drawEntete(page, data.company);
 }
 
 function drawTitre(page: Page, data: MissionReportData, cursor: Cursor): void {
@@ -353,6 +356,21 @@ function drawParties(
   if (contact) {
     page.text(contact, MARGIN, depart + 30, { size: 9, color: MUTED });
   }
+  const identite = [
+    data.client.dateNaissance
+      ? `Né(e) le ${formatDate(data.client.dateNaissance)}${data.client.lieuNaissance ? ` à ${data.client.lieuNaissance}` : ''}`
+      : null,
+    data.client.pieceIdentite,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  if (identite) {
+    page.text(identite, MARGIN, depart + 43, {
+      size: 9,
+      color: MUTED,
+      width: colonne,
+    });
+  }
 
   const droite = MARGIN + colonne + 20;
   page.text('MISSION CONFIÉE LE', droite, depart, {
@@ -376,7 +394,7 @@ function drawParties(
       },
     );
   }
-  cursor.y = depart + 54;
+  cursor.y = depart + (identite ? 68 : 54);
 }
 
 function drawObjet(page: Page, data: MissionReportData, cursor: Cursor): void {
@@ -455,6 +473,16 @@ function drawConstatPhysique(
       { font: 'bold', size: 9.5 },
     );
   }
+  if (etape.personnesPresentes) {
+    paragraphe(
+      page,
+      cursor,
+      `Personnes présentes : ${etape.personnesPresentes}`,
+      {
+        size: 9,
+      },
+    );
+  }
   if (etape.accesDescription) {
     paragraphe(page, cursor, `Accès : ${etape.accesDescription}`, { size: 9 });
   }
@@ -526,107 +554,79 @@ function drawSignature(
   });
 }
 
-function sectionTitle(page: Page, cursor: Cursor, titre: string): void {
-  page.text(titre, MARGIN, cursor.y + 10, {
-    font: 'bold',
-    size: 11,
-    color: NAVY,
-  });
-  page.line(
-    MARGIN,
-    cursor.y + 16,
-    MARGIN + CONTENT_WIDTH,
-    cursor.y + 16,
-    BORDER,
+function drawFooter(page: Page, data: MissionReportData): void {
+  drawPied(
+    page,
+    data.company,
+    `Rapport de vérification ${data.reference} — généré le ${formatDate(data.issuedAt)}`,
   );
-  cursor.y += 30;
 }
 
-function paragraphe(
-  page: Page,
-  cursor: Cursor,
-  texte: string,
-  options: { size?: number; color?: string; font?: PdfFont } = {},
-): void {
-  const hauteur = page.text(texte, MARGIN, cursor.y + 10, {
-    size: options.size ?? 9.5,
-    color: options.color ?? TEXT,
-    font: options.font,
-    width: CONTENT_WIDTH,
-    lineHeight: (options.size ?? 9.5) * 1.5,
-  });
-  cursor.y += hauteur + 12;
-}
+const PHOTOS_PAR_PAGE = 6;
+const PHOTO_LARGEUR = (CONTENT_WIDTH - 16) / 2;
+const PHOTO_HAUTEUR = 132;
+const PHOTO_PAS = PHOTO_HAUTEUR + 40;
 
-interface TableColumn {
-  label: string;
-  width: number;
-  align?: 'left' | 'right';
-}
+/**
+ * Annexe photographique : deux photos par rangée, légendées et numérotées.
+ * Elle illustre le constat sans le remplacer, ce que la note finale rappelle
+ * au lecteur (une photo n'établit ni les limites ni la propriété du terrain).
+ */
+function drawAnnexePhotos(pdf: PdfDocument, data: MissionReportData): void {
+  let page = pdf.addPage();
+  const cursor: Cursor = { y: 120 };
+  drawHeader(page, data);
+  sectionTitle(page, cursor, 'Annexe — Reportage photographique du site');
+  paragraphe(
+    page,
+    cursor,
+    'Les photographies ci-dessous ont été prises lors de la visite physique du site. Elles sont annexées au présent rapport à titre de constat visuel de l’environnement et de l’état apparent du site au moment de la visite.',
+    { size: 8.5, color: MUTED },
+  );
 
-function drawTable(
-  page: Page,
-  cursor: Cursor,
-  colonnes: TableColumn[],
-  lignes: string[][],
-  options: { totalRows?: number } = {},
-): void {
-  let y = cursor.y;
-  const hauteurLigne = 22;
-  page.rect(MARGIN, y, CONTENT_WIDTH, hauteurLigne, NAVY);
-  let x = MARGIN;
-  for (const colonne of colonnes) {
-    const textX = colonne.align === 'right' ? x + colonne.width - 10 : x + 10;
-    page.text(colonne.label, textX, y + 15, {
+  data.photos.forEach((photo, index) => {
+    const rang = index % PHOTOS_PAR_PAGE;
+    if (index > 0 && rang === 0) {
+      drawFooter(page, data);
+      page = pdf.addPage();
+      drawHeader(page, data);
+      cursor.y = 120;
+    }
+    const colonne = rang % 2;
+    const ligne = Math.floor(rang / 2);
+    const x = MARGIN + colonne * (PHOTO_LARGEUR + 16);
+    const y = cursor.y + ligne * PHOTO_PAS;
+    page.rect(x, y, PHOTO_LARGEUR, PHOTO_HAUTEUR, '#F3F4F6');
+    page.image(photo.jpeg, x, y, PHOTO_LARGEUR, PHOTO_HAUTEUR);
+    page.stroke(x, y, PHOTO_LARGEUR, PHOTO_HAUTEUR, BORDER);
+    page.text(`Photo ${index + 1}`, x, y + PHOTO_HAUTEUR + 13, {
       font: 'bold',
       size: 8.5,
-      color: '#FFFFFF',
-      align: colonne.align === 'right' ? 'right' : 'left',
+      color: NAVY_DARK,
     });
-    x += colonne.width;
-  }
-  y += hauteurLigne;
-  const totalRows = options.totalRows ?? 0;
-  lignes.forEach((ligne, index) => {
-    const estTotal = index >= lignes.length - totalRows;
-    if (estTotal)
-      page.rect(MARGIN, y, CONTENT_WIDTH, hauteurLigne, NAVY_SUBTLE);
-    else if (index % 2 === 1)
-      page.rect(MARGIN, y, CONTENT_WIDTH, hauteurLigne, '#F7F8FA');
-    let cellX = MARGIN;
-    ligne.forEach((cellule, indexColonne) => {
-      const colonne = colonnes[indexColonne];
-      const textX =
-        colonne.align === 'right' ? cellX + colonne.width - 10 : cellX + 10;
-      page.text(cellule, textX, y + 15, {
-        font: estTotal ? 'bold' : 'regular',
-        size: 9.5,
-        color: estTotal ? NAVY : TEXT,
-        align: colonne.align === 'right' ? 'right' : 'left',
-        width: colonne.width - 20,
+    if (photo.titre) {
+      page.text(photo.titre, x, y + PHOTO_HAUTEUR + 25, {
+        size: 8,
+        color: MUTED,
+        width: PHOTO_LARGEUR,
+        lineHeight: 10,
       });
-      cellX += colonne.width;
-    });
-    y += hauteurLigne;
+    }
   });
-  page.line(MARGIN, y, MARGIN + CONTENT_WIDTH, y, BORDER);
-  cursor.y = y + 18;
-}
 
-function drawFooter(page: Page, data: MissionReportData): void {
-  const y = A4.height - 48;
-  page.line(MARGIN, y - 14, MARGIN + CONTENT_WIDTH, y - 14, BORDER);
-  page.text(
-    `${data.company.name} · ${data.company.adresse} · ${data.company.telephone} · ${data.company.email}`,
-    A4.width / 2,
-    y,
-    { size: 8, color: MUTED, align: 'center' },
+  const dernierRang = (data.photos.length - 1) % PHOTOS_PAR_PAGE;
+  cursor.y += (Math.floor(dernierRang / 2) + 1) * PHOTO_PAS + 6;
+  if (cursor.y + 50 > A4.height - 90) {
+    drawFooter(page, data);
+    page = pdf.addPage();
+    drawHeader(page, data);
+    cursor.y = 120;
+  }
+  paragraphe(
+    page,
+    cursor,
+    'Nota : les photographies constituent des éléments d’illustration du constat physique. Elles ne permettent pas, à elles seules, d’établir les limites cadastrales, la propriété juridique ou la régularité administrative du terrain.',
+    { size: 8, color: MUTED },
   );
-  page.text(
-    `Rapport de vérification ${data.reference} — généré le ${formatDate(data.issuedAt)}`,
-    A4.width / 2,
-    y + 12,
-    { size: 7.5, color: MUTED, align: 'center' },
-  );
-  page.rect(0, A4.height - 6, A4.width, 6, NAVY_DARK);
+  drawFooter(page, data);
 }

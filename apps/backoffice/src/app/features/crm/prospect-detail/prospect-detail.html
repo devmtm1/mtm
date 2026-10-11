@@ -340,6 +340,25 @@
           <div><dt>Document attendu</dt><dd>{{ p.typeDocumentSouhaite || '—' }}</dd></div>
           <div><dt>Objectif</dt><dd>{{ p.objectifAchat ? goalLabel(p.objectifAchat) : '—' }}</dd></div>
           <div><dt>Réside à</dt><dd>{{ residence(p) }}</dd></div>
+          @if (p.dateNaissance || p.lieuNaissance) {
+            <div>
+              <dt>Né(e)</dt>
+              <dd>
+                @if (p.dateNaissance) {
+                  le {{ p.dateNaissance | date: 'dd/MM/yyyy' }}
+                }
+                @if (p.lieuNaissance) {
+                  à {{ p.lieuNaissance }}
+                }
+              </dd>
+            </div>
+          }
+          @if (p.typePieceIdentite) {
+            <div>
+              <dt>Pièce d’identité</dt>
+              <dd>{{ pieceLabel(p.typePieceIdentite) }}@if (p.numeroPieceIdentite) { · {{ p.numeroPieceIdentite }} }</dd>
+            </div>
+          }
           <div><dt>Source</dt><dd>{{ p.sourceAcquisition ? sourceLabel(p.sourceAcquisition) : '—' }}</dd></div>
           <div>
             <dt>Premier contact</dt>

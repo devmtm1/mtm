@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -9,6 +10,7 @@ import { PrismaService } from '../../database/prisma.service';
 import { nextProspectReference } from './prospect-reference';
 import { nextRechercheReference } from './recherche-reference';
 import { CrmAccessService, type CrmUser } from './crm-access.service';
+import { CHAMPS_IDENTITE, peutVoirIdentite } from './crm-identite';
 import {
   CrmOptionsService,
   isActiveStage,
@@ -552,6 +554,7 @@ export class CrmService {
   }
 
   async create(dto: CreateProspectDto, user: CrmUser) {
+    this.assertDroitIdentite(dto, user);
     await this.options.assertPipelineStage(dto.statutPipeline);
     await this.options.assertSource(dto.sourceAcquisition);
     await this.options.assertNiveauInteret(dto.niveauInteret);
@@ -575,7 +578,8 @@ export class CrmService {
       : (dto.commercialResponsableId ?? user.id);
     this.options.assertRecherche(dto);
     this.assertCoherenceRecherche(dto);
-    const { premierContactLe, prochaineRelanceLe, ...rest } = dto;
+    const { premierContactLe, prochaineRelanceLe, dateNaissance, ...rest } =
+      dto;
     const prospect = await this.prisma.prospect.create({
       data: {
         ...(rest as unknown as Prisma.ProspectUncheckedCreateInput),
@@ -594,6 +598,7 @@ export class CrmService {
         ...(prochaineRelanceLe
           ? { prochaineRelanceLe: new Date(prochaineRelanceLe) }
           : {}),
+        ...(dateNaissance ? { dateNaissance: new Date(dateNaissance) } : {}),
         commercialResponsableId,
       },
       include: prospectInclude,
@@ -601,7 +606,24 @@ export class CrmService {
     return prospect;
   }
 
+  /**
+   * L'identité d'un client (naissance, pièce) ne se saisit qu'avec la
+   * permission `crm:identite` : sans elle, on ne la voit pas non plus.
+   */
+  private assertDroitIdentite(
+    dto: Partial<Record<(typeof CHAMPS_IDENTITE)[number], unknown>>,
+    user: CrmUser,
+  ): void {
+    const touche = CHAMPS_IDENTITE.some((champ) => dto[champ] !== undefined);
+    if (touche && !peutVoirIdentite(user)) {
+      throw new ForbiddenException(
+        'La saisie de l’identité d’un client requiert la permission crm:identite',
+      );
+    }
+  }
+
   async update(id: string, dto: UpdateProspectDto, user: CrmUser) {
+    this.assertDroitIdentite(dto, user);
     await this.access.assertOwnership(id, user);
     await this.options.assertPipelineStage(dto.statutPipeline);
     await this.options.assertSource(dto.sourceAcquisition);
@@ -658,6 +680,18 @@ export class CrmService {
       }),
       ...(dto.paysResidence !== undefined && {
         paysResidence: dto.paysResidence,
+      }),
+      ...(dto.dateNaissance !== undefined && {
+        dateNaissance: dto.dateNaissance ? new Date(dto.dateNaissance) : null,
+      }),
+      ...(dto.lieuNaissance !== undefined && {
+        lieuNaissance: dto.lieuNaissance || null,
+      }),
+      ...(dto.typePieceIdentite !== undefined && {
+        typePieceIdentite: dto.typePieceIdentite || null,
+      }),
+      ...(dto.numeroPieceIdentite !== undefined && {
+        numeroPieceIdentite: dto.numeroPieceIdentite || null,
       }),
       ...(dto.sourceAcquisition !== undefined && {
         sourceAcquisition: dto.sourceAcquisition,

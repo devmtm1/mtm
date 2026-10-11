@@ -123,7 +123,10 @@ describe('lireTableur', () => {
 
   it('refuse un faux .xlsx, l’ancien .xls et un format inconnu', async () => {
     await expect(
-      lireTableur({ buffer: Buffer.from('pas un zip'), originalname: 'a.xlsx' }),
+      lireTableur({
+        buffer: Buffer.from('pas un zip'),
+        originalname: 'a.xlsx',
+      }),
     ).rejects.toThrow('pas un classeur Excel valide');
     await expect(
       lireTableur({ buffer: Buffer.from('x'), originalname: 'a.xls' }),

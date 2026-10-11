@@ -173,6 +173,7 @@ export const MISSION_TYPES: Record<string, string> = {
 
 export const MISSION_DOCUMENT_TYPES: Record<string, string> = {
   rapport: 'Rapport de vérification',
+  facture: 'Facture',
   piece_fournie: 'Pièce fournie',
   photo_visite: 'Photo de la visite',
   constat: 'Constat',

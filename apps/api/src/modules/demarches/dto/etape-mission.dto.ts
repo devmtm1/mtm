@@ -38,6 +38,8 @@ export class CreateEtapeMissionDto {
   @IsOptional() @IsString() @MaxLength(1000) accesDescription?: string;
   @IsOptional() @IsString() @MaxLength(1000) environnement?: string;
   @IsOptional() @IsString() @MaxLength(40) conformiteApparente?: string;
+  /** Négociateur, promoteur, propriétaire… présents sur le site, avec leur qualité. */
+  @IsOptional() @IsString() @MaxLength(1000) personnesPresentes?: string;
 
   // --- Vérification administrative (étape 4) ---
   @IsOptional() @IsString() @MaxLength(60) administration?: string;
@@ -66,6 +68,8 @@ export class UpdateEtapeMissionDto {
   @IsOptional() @IsString() @MaxLength(1000) accesDescription?: string;
   @IsOptional() @IsString() @MaxLength(1000) environnement?: string;
   @IsOptional() @IsString() @MaxLength(40) conformiteApparente?: string;
+  /** Négociateur, promoteur, propriétaire… présents sur le site, avec leur qualité. */
+  @IsOptional() @IsString() @MaxLength(1000) personnesPresentes?: string;
   @IsOptional() @IsString() @MaxLength(60) administration?: string;
   @IsOptional() @IsString() @MaxLength(200) interlocuteur?: string;
   @IsOptional() @IsString() @MaxLength(40) resultat?: string;

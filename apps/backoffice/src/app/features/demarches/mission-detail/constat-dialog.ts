@@ -88,6 +88,16 @@ export interface ConstatDialogData {
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="constat__wide">
+            <mat-label>Personnes présentes sur le site</mat-label>
+            <input
+              matInput
+              formControlName="personnesPresentes"
+              placeholder="Négociateur, promoteur du site, propriétaire…"
+            />
+            <mat-hint>Nom et qualité : le rapport les mentionne.</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="constat__wide">
             <mat-label>Environnement</mat-label>
             <input
               matInput
@@ -181,6 +191,7 @@ export class ConstatDialog {
     longitude: [this.nombre(this.data.constat?.longitude)],
     accesDescription: [this.data.constat?.accesDescription ?? ''],
     environnement: [this.data.constat?.environnement ?? ''],
+    personnesPresentes: [this.data.constat?.personnesPresentes ?? ''],
     conformiteApparente: [this.data.constat?.conformiteApparente ?? ''],
     administration: [
       this.data.constat?.administration ??
@@ -268,6 +279,7 @@ export class ConstatDialog {
             longitude: valeur.longitude ?? undefined,
             accesDescription: texte(valeur.accesDescription),
             environnement: texte(valeur.environnement),
+            personnesPresentes: texte(valeur.personnesPresentes),
             conformiteApparente: valeur.conformiteApparente || undefined,
           }
         : {

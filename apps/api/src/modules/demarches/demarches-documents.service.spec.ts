@@ -37,7 +37,21 @@ describe('DemarchesDocumentsService — rapport de vérification', () => {
       prenom: 'Awa',
       email: 'awa@example.com',
       telephone: '+221771112233',
+      dateNaissance: new Date('1974-11-03'),
+      lieuNaissance: 'Pikine',
+      typePieceIdentite: 'cni_cedeao',
     },
+    paiements: [
+      {
+        datePaiement: new Date('2026-10-02T17:08:00Z'),
+        montantEnvoye: 100000,
+        frais: 990,
+        montantNet: 99010,
+        mode: 'mobile_money',
+        reference: 'T_AAA',
+      },
+    ],
+    documents: [],
     terrain: null,
     responsable: { firstName: 'Moussa', lastName: 'Fall' },
     etapes: [
@@ -51,6 +65,7 @@ describe('DemarchesDocumentsService — rapport de vérification', () => {
         accesDescription: 'Piste latéritique praticable',
         environnement: 'Zone résidentielle en construction',
         conformiteApparente: 'conforme',
+        personnesPresentes: 'Négociateur et promoteur du site',
         administration: null,
         interlocuteur: null,
         resultat: null,
@@ -67,6 +82,7 @@ describe('DemarchesDocumentsService — rapport de vérification', () => {
         accesDescription: null,
         environnement: null,
         conformiteApparente: null,
+        personnesPresentes: null,
         administration: 'service_domaines',
         interlocuteur: 'M. Sarr',
         resultat: 'confirme',
@@ -124,6 +140,44 @@ describe('DemarchesDocumentsService — rapport de vérification', () => {
     const contenu = envoi.buffer.toString('latin1');
     expect(envoi.buffer.subarray(0, 4).toString()).toBe('%PDF');
     expect(contenu).toContain('FAVORABLE');
+  });
+
+  it('annexe les photos de la visite et indique le solde', async () => {
+    // JPEG minimal : en-tête SOI + SOF0 (400 × 300, 3 composantes) + EOI.
+    const jpeg = Buffer.from([
+      0xff, 0xd8, 0xff, 0xc0, 0x00, 0x11, 0x08, 0x01, 0x2c, 0x01, 0x90, 0x03,
+      0x01, 0x11, 0x00, 0x02, 0x11, 0x00, 0x03, 0x11, 0x00, 0xff, 0xd9,
+    ]);
+    prismaMock.missionVerification.findUnique.mockResolvedValue({
+      ...missionComplete,
+      documents: [
+        { storageKey: 'p1', title: 'Vue générale du site', isPublic: false },
+        { storageKey: 'p2', title: 'Photo introuvable', isPublic: false },
+      ],
+    });
+    prismaMock.documentMission.count.mockResolvedValue(0);
+    prismaMock.documentMission.create.mockResolvedValue({ id: 'd1' });
+    prismaMock.missionVerification.update.mockResolvedValue({ id: 'm1' });
+    const stockage = (
+      documents as unknown as { cloudinary: { downloadJpeg: jest.Mock } }
+    ).cloudinary;
+    // La seconde photo est introuvable : le rapport se génère sans elle.
+    stockage.downloadJpeg
+      .mockResolvedValueOnce(jpeg)
+      .mockResolvedValueOnce(null);
+
+    await documents.generateReport('m1', responsable);
+
+    const envoi = (
+      documents as unknown as { cloudinary: { upload: jest.Mock } }
+    ).cloudinary.upload.mock.calls[0][0] as { buffer: Buffer };
+    const contenu = envoi.buffer.toString('latin1');
+    expect(contenu).toContain('/Filter /DCTDecode');
+    expect(contenu.match(/\/Subtype \/Image/g)).toHaveLength(1);
+    expect(contenu).toContain('Reportage photographique');
+    expect(contenu).toContain('Personnes pr');
+    // 150 000 convenus, 100 000 envoyés : il reste 50 000.
+    expect(contenu).toContain('Solde restant');
   });
 
   it('refuse de générer un rapport sans décision', async () => {

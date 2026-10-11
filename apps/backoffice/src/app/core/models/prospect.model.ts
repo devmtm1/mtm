@@ -122,6 +122,11 @@ export interface ProspectDetail extends ProspectListItem {
   accepteOpportunitesSimilaires: boolean | null;
   villeResidence: string | null;
   paysResidence: string | null;
+  /** Identité : renvoyée par l'API seulement avec la permission crm:identite. */
+  dateNaissance?: string | null;
+  lieuNaissance?: string | null;
+  typePieceIdentite?: string | null;
+  numeroPieceIdentite?: string | null;
   besoins: string | null;
   preferences: string | null;
   surfaceSouhaitee: number | null;
@@ -279,6 +284,10 @@ export interface CreateProspectPayload {
   whatsapp?: boolean;
   villeResidence?: string;
   paysResidence?: string;
+  dateNaissance?: string;
+  lieuNaissance?: string;
+  typePieceIdentite?: string;
+  numeroPieceIdentite?: string;
   sourceAcquisition?: string;
   niveauInteret?: string;
   besoins?: string;
