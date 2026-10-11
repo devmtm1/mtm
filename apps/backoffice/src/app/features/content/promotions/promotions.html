@@ -1,0 +1,119 @@
+<div class="promo-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Contenu</p>
+      <h1 class="page-header__title">Publicités du bandeau</h1>
+      <p class="page-header__subtitle">
+        Affiches, vidéos de publicité et promotions de MTM. Tant qu’au moins une est en ligne, elle prend la place de la
+        vidéo du bandeau d’accueil du site ; s’il n’y en a plus, la vidéo habituelle revient d’elle-même.
+      </p>
+    </div>
+    @if (canCreate) {
+      <button mat-flat-button color="primary" type="button" (click)="openEditor()">
+        <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouvelle publicité
+      </button>
+    }
+  </header>
+
+  @if (!loading()) {
+    <aside class="alert-banner" [class.alert-banner--info]="enLigne().length === 0" role="status">
+      <div class="alert-banner__head">
+        <svg lucideMegaphone aria-hidden="true"></svg>
+        <strong>
+          @if (enLigne().length === 0) {
+            Aucune publicité en ligne : le bandeau montre la vidéo habituelle.
+          } @else {
+            {{ enLigne().length }} publicité{{ enLigne().length > 1 ? 's' : '' }} en ligne : {{ enLigne().length > 1 ? 'elles défilent' : 'elle est affichée' }} à la place de la vidéo.
+          }
+        </strong>
+      </div>
+      <p>
+        Les modifications apparaissent sur le site en une minute environ. Une vidéo se joue en entier avant de passer à la
+        suivante ; une affiche reste quelques secondes.
+      </p>
+    </aside>
+  }
+
+  @if (loading()) {
+    <div class="skeleton" style="height: 280px"></div>
+  } @else if (items().length === 0) {
+    <section class="page-card detail-section">
+      <div class="empty-state">
+        <h3>Aucune publicité pour l’instant</h3>
+        <p>Ajoutez une affiche ou une vidéo de promotion : elle s’affichera en tête de la page d’accueil.</p>
+        @if (canCreate) {
+          <button mat-flat-button color="primary" type="button" (click)="openEditor()">Ajouter une publicité</button>
+        }
+      </div>
+    </section>
+  } @else {
+    <ul class="cards">
+      @for (promotion of items(); track promotion.id) {
+        <li>
+          <article class="card" [class.is-hidden]="promotion.statut !== 'en_ligne'" [class.is-busy]="busyId() === promotion.id">
+            <div class="card__media">
+              @if (promotion.mediaUrl) {
+                @if (promotion.resourceType === 'video') {
+                  @if (promotion.posterUrl) {
+                    <img [src]="promotion.posterUrl" [alt]="promotion.titre" loading="lazy" />
+                  } @else {
+                    <div class="card__placeholder" aria-hidden="true"><svg lucideVideo></svg></div>
+                  }
+                  <span class="card__kind"><svg lucideVideo aria-hidden="true"></svg>Vidéo</span>
+                } @else {
+                  <img [src]="promotion.mediaUrl" [alt]="promotion.titre" loading="lazy" />
+                }
+              } @else {
+                <div class="card__placeholder" aria-hidden="true">
+                  <svg lucideMegaphone></svg>
+                  <small>Aucun média</small>
+                </div>
+              }
+              <span class="status-pill card__state" [class]="statuts[promotion.statut].pill" [matTooltip]="statuts[promotion.statut].help">{{ statuts[promotion.statut].label }}</span>
+              <span class="card__order" matTooltip="Ordre d’affichage sur le bandeau">#{{ promotion.ordre }}</span>
+            </div>
+            <div class="card__body">
+              <h3>{{ promotion.titre }}</h3>
+              @if (promotion.description) {
+                <p class="card__text">{{ promotion.description }}</p>
+              }
+              <p class="card__meta">{{ periode(promotion) }}</p>
+              @if (promotion.lienUrl) {
+                <p class="card__meta">Lien : {{ promotion.lienUrl }}</p>
+              }
+            </div>
+            <div class="card__actions">
+              @if (canModify) {
+                <button mat-stroked-button type="button" (click)="openEditor(promotion)">
+                  <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Modifier
+                </button>
+              }
+              <span class="card__spacer"></span>
+              @if (canPublish) {
+                <button
+                  mat-icon-button
+                  type="button"
+                  (click)="togglePublish(promotion)"
+                  [disabled]="!promotion.isActive && !promotion.mediaUrl"
+                  [matTooltip]="promotion.isActive ? 'Retirer du bandeau' : promotion.mediaUrl ? 'Publier sur le bandeau' : 'Ajoutez d’abord l’image ou la vidéo'"
+                  [attr.aria-label]="promotion.isActive ? 'Retirer du bandeau' : 'Publier'"
+                >
+                  @if (promotion.isActive) {
+                    <svg lucideEyeOff aria-hidden="true"></svg>
+                  } @else {
+                    <svg lucideEye aria-hidden="true"></svg>
+                  }
+                </button>
+              }
+              @if (canDelete) {
+                <button mat-icon-button type="button" class="card__delete" (click)="remove(promotion)" matTooltip="Supprimer" aria-label="Supprimer">
+                  <svg lucideTrash2 aria-hidden="true"></svg>
+                </button>
+              }
+            </div>
+          </article>
+        </li>
+      }
+    </ul>
+  }
+</div>

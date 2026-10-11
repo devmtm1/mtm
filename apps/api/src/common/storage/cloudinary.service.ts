@@ -188,6 +188,22 @@ export class CloudinaryService {
   }
 
   /**
+   * Image fixe tirée de la première seconde d'une vidéo publique : affichée
+   * avant la lecture et quand la vidéo est écartée (économie de données).
+   * Vide si Cloudinary n'est pas configuré.
+   */
+  videoPosterUrl(publicId: string): string {
+    if (!this.config.get('CLOUDINARY_CLOUD_NAME')) return '';
+    return cloudinary.url(publicId, {
+      secure: true,
+      resource_type: 'video',
+      type: 'upload',
+      format: 'jpg',
+      transformation: [{ start_offset: 0, width: 1280, crop: 'limit' }],
+    });
+  }
+
+  /**
    * Octets d'une photo en JPEG réduit (1 200 px, qualité 80), pour l'embarquer
    * dans un PDF. Cloudinary fait la conversion : une photo WebP, PNG ou HEIC
    * arrive en JPEG, seul format que le générateur PDF sait insérer. Renvoie

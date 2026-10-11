@@ -1,6 +1,7 @@
 import type { LucideIcon } from '@lucide/angular';
 import {
   LucideLayoutDashboard,
+  LucideMegaphone,
   LucideLock,
   LucideUsers,
   LucideSettings,
@@ -151,6 +152,12 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         label: 'Réalisations & projets',
         route: '/content/showcase',
         icon: LucideImages,
+        permission: 'content:consulter',
+      },
+      {
+        label: 'Publicités du bandeau',
+        route: '/content/promotions',
+        icon: LucideMegaphone,
         permission: 'content:consulter',
       },
       {

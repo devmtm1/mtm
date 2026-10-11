@@ -123,6 +123,12 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'content/promotions',
+        canActivate: [permissionsGuard(['content:consulter'])],
+        loadComponent: () =>
+          import('./features/content/promotions/promotions').then((m) => m.Promotions),
+      },
+      {
         path: 'content/equipe',
         canActivate: [permissionsGuard(['content:consulter'])],
         loadComponent: () =>

@@ -9,5 +9,8 @@ export function createCloudinaryMock(publicId: string, resourceType = 'raw') {
     url: jest.fn((id: string) => `https://cloudinary.test/${id}`),
     destroy: jest.fn(),
     downloadJpeg: jest.fn().mockResolvedValue(null),
+    videoPosterUrl: jest.fn(
+      (id: string) => `https://cloudinary.test/${id}.jpg`,
+    ),
   };
 }

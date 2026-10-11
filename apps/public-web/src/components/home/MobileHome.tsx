@@ -20,6 +20,8 @@ import { mergeRecent } from '../mobile/recent-properties';
 import { Skeleton } from '../ui/Skeleton';
 import { useHeroContent } from './hero-content';
 import { HeroBackdrop } from './HeroBackdrop';
+import { PromoBanner } from './PromoBanner';
+import { useHeroPromotions } from '../../hooks/useHeroPromotions';
 import { ServicesSection } from './ServicesSection';
 import { UpcomingProjectsSection } from './UpcomingProjectsSection';
 import { RealisationsPreviewSection } from './RealisationsPreviewSection';
@@ -58,6 +60,7 @@ const CATEGORIES: Category[] = [
 export function MobileHome() {
   const navigate = useNavigate();
   const { title } = useHeroContent();
+  const { promotions, loading: promotionsLoading } = useHeroPromotions();
   const [query, setQuery] = useState('');
   const [othersOpen, setOthersOpen] = useState(false);
   const closeOthers = useCallback(() => setOthersOpen(false), []);
@@ -89,13 +92,24 @@ export function MobileHome() {
           {/* Carte plus basse et moins chargée : la vidéo de MTM reste visible. Seul
               le bas est assombri, juste assez pour lire le titre. */}
           <div className="relative h-[12.5rem] overflow-hidden rounded-3xl bg-mtm-primary-dark shadow-card">
-            <HeroBackdrop />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
-            <div className="absolute inset-x-0 bottom-0 px-5 pb-9">
-              <h1 className="line-clamp-2 whitespace-pre-line font-display text-[1.3rem] font-bold leading-tight text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.55)]">
-                {title}
-              </h1>
-            </div>
+            {promotions.length > 0 ? (
+              // Publicités en ligne : elles remplacent la vidéo et le titre, qui
+              // masqueraient les affiches (le titre reste lisible par les lecteurs d'écran).
+              <>
+                <h1 className="sr-only">{title}</h1>
+                <PromoBanner promotions={promotions} variant="card" />
+              </>
+            ) : (
+              <>
+                <HeroBackdrop lecture={!promotionsLoading} />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
+                <div className="absolute inset-x-0 bottom-0 px-5 pb-9">
+                  <h1 className="line-clamp-2 whitespace-pre-line font-display text-[1.3rem] font-bold leading-tight text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.55)]">
+                    {title}
+                  </h1>
+                </div>
+              </>
+            )}
           </div>
 
           <form

@@ -66,8 +66,8 @@ function useShouldPlayBackgroundVideo(): boolean {
  * quand les réserves ci-dessus le permettent. Partagé par le hero ordinateur et
  * la carte d'accueil mobile : les deux montrent la même vidéo.
  */
-export function HeroBackdrop() {
-  const playVideo = useShouldPlayBackgroundVideo();
+export function HeroBackdrop({ lecture = true }: { lecture?: boolean }) {
+  const playVideo = useShouldPlayBackgroundVideo() && lecture;
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // `autoPlay` seul ne suffit pas : plusieurs navigateurs mobiles ignorent

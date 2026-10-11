@@ -3,12 +3,30 @@ import { LinkButton } from '../ui/LinkButton';
 import { useHeroContent } from './hero-content';
 import { HeroQuickSearch } from './HeroQuickSearch';
 import { HeroBackdrop } from './HeroBackdrop';
+import { PromoBanner } from './PromoBanner';
+import { useHeroPromotions } from '../../hooks/useHeroPromotions';
 
 export function HeroSection() {
   const { title, subtitle, ctaLabel } = useHeroContent();
+  const { promotions, loading } = useHeroPromotions();
+
+  // Des publicités ou promotions sont en ligne : elles prennent la place de la
+  // vidéo (et du texte du bandeau, qui masquerait les affiches). Le titre reste
+  // dans la page pour les lecteurs d'écran et le référencement.
+  if (promotions.length > 0) {
+    return (
+      <section className="relative">
+        <h1 className="sr-only">{title}</h1>
+        <PromoBanner promotions={promotions} variant="hero" />
+      </section>
+    );
+  }
+
   return (
     <section className="relative overflow-hidden bg-mtm-primary-dark">
-      <HeroBackdrop />
+      {/* Tant que l'on ignore s'il y a des publicités, la vidéo n'est pas lancée :
+          elle ne se lirait que pour être remplacée aussitôt. */}
+      <HeroBackdrop lecture={!loading} />
       {/* Voile sombre neutre : il garantit le contraste du texte blanc sans
           teinter l'image. Une couche de marque très légère par-dessus
           conserve l'identité MTM — un aplat rouge opaque, lui, délavait

@@ -168,6 +168,7 @@ model Terrain {
    * /**
    * /**
    * /**
+   * /**
    * Surface habitable, distincte de la parcelle. Les deux coexistent : une
    * villa de 120 m² habitables peut occuper une parcelle de 300 m², et les
    * confondre fausserait toute comparaison au catalogue.
@@ -217,6 +218,7 @@ model Terrain {
   notesInternes            String?
   // --- Suivi du portefeuille (reprise du tableur « Bd terrains ») ---
   /**
+   * /**
    * /**
    * /**
    * /** Nombre de lots du bien : un lotissement compte plusieurs terrains.
@@ -661,6 +663,7 @@ model Prospect {
    * /**
    * /**
    * /**
+   * /**
    * /** Vrai dès qu'un mandat de recherche est ouvert pour ce prospect.
    */
   rechercheActive               Boolean   @default(false)
@@ -1044,6 +1047,36 @@ model ObjectifCommercial {
  * groupe, `nom` sert de légende. La photo est facultative : le site affiche
  * les initiales à sa place.
  */
+/**
+ * Publicité ou promotion du bandeau d'accueil du site public : une affiche
+ * (image) ou une vidéo que MTM met en avant. Tant qu'au moins une est en ligne,
+ * elle prend la place de la vidéo habituelle du bandeau ; sans aucune, le site
+ * retrouve sa vidéo. Une diffusion peut être programmée (début, fin).
+ */
+model Promotion {
+  id           String    @id @default(uuid())
+  titre        String
+  /// Courte légende affichée sur le bandeau (« -10 % jusqu'au 30 octobre »).
+  description  String?
+  /// Média Cloudinary : une image (affiche) ou une vidéo.
+  storageKey   String?
+  resourceType String    @default("image")
+  /// Chemin du site (/terrains) ou adresse https complète.
+  lienUrl      String?
+  libelleLien  String?
+  /// Première et dernière journée de diffusion ; vides = sans limite.
+  dateDebut    DateTime?
+  dateFin      DateTime?
+  ordre        Int       @default(0)
+  isActive     Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([isActive])
+  @@index([ordre])
+  @@map("promotions")
+}
+
 model TeamMember {
   id           String   @id @default(uuid())
   kind         String // "directeur" | "groupe" | "membre"
@@ -1355,6 +1388,7 @@ model BienLocatif {
    * /**
    * /**
    * /**
+   * /**
    * Visible sur le site tant que le bien est « disponible ». Réservé à la
    * permission locatif:publier ; exige un loyer et au moins une photo.
    */
@@ -1427,6 +1461,7 @@ model BailLocatif {
 
   // --- Sortie et cas particuliers (section 15) ---
   /**
+   * /**
    * /**
    * /**
    * /**
