@@ -36,6 +36,7 @@ import {
   TransitionMissionDto,
   UpdateMissionDto,
 } from './dto/mission.dto';
+import { GenererRapportDto } from './dto/rapport-mission.dto';
 import {
   CreatePaiementMissionDto,
   UpdatePaiementMissionDto,
@@ -494,16 +495,25 @@ export class DemarchesController {
   @RequirePermissions('demarches:valider')
   async generateReport(
     @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: GenererRapportDto,
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    const document = await this.documents.generateReport(id, user);
+    const document = await this.documents.generateReport(
+      id,
+      user,
+      dto.avecPhotos ?? true,
+    );
     await this.audit.record({
       userId: user.id,
       action: 'mission.rapport.genere',
       entityType: 'DocumentMission',
       entityId: document.id,
-      newValue: { missionId: id, version: document.version },
+      newValue: {
+        missionId: id,
+        version: document.version,
+        avecPhotos: dto.avecPhotos ?? true,
+      },
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });

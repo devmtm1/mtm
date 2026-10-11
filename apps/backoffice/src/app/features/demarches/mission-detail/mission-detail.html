@@ -611,6 +611,13 @@
                       <button mat-stroked-button type="submit" [disabled]="saving()">
                         Enregistrer la conclusion
                       </button>
+                      <mat-checkbox
+                        [checked]="avecPhotos()"
+                        (change)="avecPhotos.set($event.checked)"
+                        matTooltip="Ajoute en fin de rapport les photos de la visite, avec leur légende"
+                      >
+                        Joindre les photos de la visite
+                      </mat-checkbox>
                       <button
                         mat-flat-button
                         color="primary"

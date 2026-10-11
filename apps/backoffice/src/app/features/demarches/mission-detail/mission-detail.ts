@@ -3,6 +3,7 @@ import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -81,6 +82,7 @@ const PARCOURS_VERIFICATION = [
     MoneyPipe,
     ReactiveFormsModule,
     MatButtonModule,
+    MatCheckboxModule,
     MatFormFieldModule,
     MatInputModule,
     MatMenuModule,
@@ -114,6 +116,8 @@ export class MissionDetail implements OnInit {
   protected readonly terrains = signal<TerrainCatalogueItem[]>([]);
   protected readonly loading = signal(true);
   protected readonly saving = signal(false);
+  /** Joindre l'annexe photo au rapport : au choix, à chaque génération. */
+  protected readonly avecPhotos = signal(true);
 
   protected readonly canModify = computed(() =>
     this.sessionService.hasPermission('demarches:modifier'),
@@ -598,7 +602,7 @@ export class MissionDetail implements OnInit {
     const mission = this.mission();
     if (!mission) return;
     this.executer(
-      this.api.generateReport(mission.id),
+      this.api.generateReport(mission.id, this.avecPhotos()),
       'Rapport généré et publié dans l’espace client',
     );
   }

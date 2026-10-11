@@ -153,8 +153,8 @@ export class DemarchesApiService {
   }
 
   /** Génère le rapport de vérification et le publie dans l'espace client. */
-  generateReport(id: string): Observable<DocumentMission> {
-    return this.http.post<DocumentMission>(`${this.baseUrl}/${id}/rapport`, {});
+  generateReport(id: string, avecPhotos = true): Observable<DocumentMission> {
+    return this.http.post<DocumentMission>(`${this.baseUrl}/${id}/rapport`, { avecPhotos });
   }
 
   setDocumentVisibility(

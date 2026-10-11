@@ -180,6 +180,33 @@ describe('DemarchesDocumentsService — rapport de vérification', () => {
     expect(contenu).toContain('Solde restant');
   });
 
+  it('génère le rapport sans photos quand on les décline', async () => {
+    prismaMock.missionVerification.findUnique.mockResolvedValue({
+      ...missionComplete,
+      documents: undefined,
+    });
+    prismaMock.documentMission.count.mockResolvedValue(0);
+    prismaMock.documentMission.create.mockResolvedValue({ id: 'd1' });
+    prismaMock.missionVerification.update.mockResolvedValue({ id: 'm1' });
+
+    await documents.generateReport('m1', responsable, false);
+
+    // La requête ne réclame pas les photos et rien n'est téléchargé.
+    expect(
+      prismaMock.missionVerification.findUnique.mock.calls[0][0].include,
+    ).not.toHaveProperty('documents');
+    const stockage = (
+      documents as unknown as { cloudinary: { downloadJpeg: jest.Mock } }
+    ).cloudinary;
+    expect(stockage.downloadJpeg).not.toHaveBeenCalled();
+    const envoi = (
+      documents as unknown as { cloudinary: { upload: jest.Mock } }
+    ).cloudinary.upload.mock.calls[0][0] as { buffer: Buffer };
+    expect(envoi.buffer.toString('latin1')).not.toContain(
+      'Reportage photographique',
+    );
+  });
+
   it('refuse de générer un rapport sans décision', async () => {
     prismaMock.missionVerification.findUnique.mockResolvedValue({
       ...missionComplete,

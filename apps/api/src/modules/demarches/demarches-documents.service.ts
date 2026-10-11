@@ -129,7 +129,11 @@ export class DemarchesDocumentsService {
    * Génère le rapport de vérification (étape 5) et l'archive. Le rapport est
    * la seule pièce publiée d'office : c'est ce que le client a commandé.
    */
-  async generateReport(missionId: string, user: DemarchesUser) {
+  async generateReport(
+    missionId: string,
+    user: DemarchesUser,
+    avecPhotos = true,
+  ) {
     await this.access.ensureAccessible(missionId, user);
     const mission = await this.prisma.missionVerification.findUnique({
       where: { id: missionId },
@@ -157,12 +161,17 @@ export class DemarchesDocumentsService {
         },
         responsable: { select: { firstName: true, lastName: true } },
         paiements: { orderBy: { datePaiement: 'asc' } },
-        documents: {
-          where: { type: 'photo_visite', resourceType: 'image' },
-          orderBy: { createdAt: 'asc' },
-          take: MAX_PHOTOS_RAPPORT,
-          select: { storageKey: true, title: true, isPublic: true },
-        },
+        // Les photos sont facultatives : sans elles, on ne lit même pas la table.
+        ...(avecPhotos
+          ? {
+              documents: {
+                where: { type: 'photo_visite', resourceType: 'image' },
+                orderBy: { createdAt: 'asc' as const },
+                take: MAX_PHOTOS_RAPPORT,
+                select: { storageKey: true, title: true, isPublic: true },
+              },
+            }
+          : {}),
         etapes: {
           orderBy: { realiseeLe: 'asc' },
           include: {
@@ -183,7 +192,9 @@ export class DemarchesDocumentsService {
       );
     }
 
-    const photos = await this.chargerPhotos(mission.documents);
+    const photos = await this.chargerPhotos(
+      avecPhotos && 'documents' in mission ? (mission.documents ?? []) : [],
+    );
 
     const data: MissionReportData = {
       reference: mission.referenceInterne ?? mission.id.slice(0, 8),
