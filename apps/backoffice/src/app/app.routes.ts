@@ -111,6 +111,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/finances/tableau-financier').then((m) => m.TableauFinancierPage),
       },
       {
+        path: 'rapports',
+        canActivate: [permissionsGuard(['rapports:consulter'])],
+        loadComponent: () => import('./features/rapports/rapports').then((m) => m.Rapports),
+      },
+      {
         path: 'agenda',
         canActivate: [permissionsGuard(['agenda:consulter'])],
         loadComponent: () => import('./features/agenda/agenda').then((m) => m.Agenda),

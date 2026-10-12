@@ -26,6 +26,6 @@ import { PeriodesFinancieresService } from './periodes.service';
     ExportFinancesService,
     PeriodesFinancieresService,
   ],
-  exports: [PeriodesFinancieresService],
+  exports: [PeriodesFinancieresService, FinancesService, FluxFinanciersService],
 })
 export class FinancesModule {}

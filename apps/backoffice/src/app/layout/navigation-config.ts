@@ -21,6 +21,7 @@ import {
   LucideBellRing,
   LucideWorkflow,
   LucideWallet,
+  LucideChartColumn,
 } from '@lucide/angular';
 
 /**
@@ -94,6 +95,12 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         route: '/taches',
         icon: LucideListChecks,
         permission: 'taches:consulter',
+      },
+      {
+        label: 'Rapports',
+        route: '/rapports',
+        icon: LucideChartColumn,
+        permission: 'rapports:consulter',
       },
       // Un groupe n'a pas de permission propre : il s'affiche dès qu'un de ses
       // enfants est autorisé, et `route` pointe vers le premier enfant.

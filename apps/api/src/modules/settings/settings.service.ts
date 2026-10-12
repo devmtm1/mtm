@@ -7,6 +7,11 @@ import {
 import { PrismaService } from '../../database/prisma.service';
 import { CreateSettingDto } from './dto/create-setting.dto';
 import {
+  CLE_ENVOI_AUTOMATIQUE,
+  MESSAGE_ENVOI_INVALIDE,
+  envoiValide,
+} from '../pilotage/envoi-automatique';
+import {
   REFERENCE_SETTING_KEYS,
   formatReferenceValide,
 } from '../demarches/mission-reference';
@@ -137,6 +142,29 @@ export class SettingsService {
    */
   static assertValeurValide(key: string, value: unknown): void {
     SettingsService.assertCleModifiable(key);
+    if (key === CLE_ENVOI_AUTOMATIQUE && !envoiValide(value)) {
+      throw new BadRequestException(MESSAGE_ENVOI_INVALIDE);
+    }
+    if (key === 'pilotage.seuilsBlocage') {
+      const types = ['vente', 'mission', 'chantier', 'prospect', 'tache'];
+      const valide =
+        value !== null &&
+        typeof value === 'object' &&
+        !Array.isArray(value) &&
+        Object.entries(value as Record<string, unknown>).every(
+          ([cle, jours]) =>
+            types.includes(cle) &&
+            typeof jours === 'number' &&
+            Number.isInteger(jours) &&
+            jours >= 1 &&
+            jours <= 365,
+        );
+      if (!valide) {
+        throw new BadRequestException(
+          'Les délais de blocage sont des nombres de jours entiers (1 à 365) pour : vente, mission, chantier, prospect, tache. Exemple : {"vente":15,"mission":10,"chantier":7,"prospect":14,"tache":3}',
+        );
+      }
+    }
     if (
       key === REFERENCE_SETTING_KEYS.mission ||
       key === REFERENCE_SETTING_KEYS.facture

@@ -37,6 +37,7 @@ considérée comme terminée sans critère d'acceptation validé ».
 | J2.4 | Agenda, tâches, workflows, notifications, messagerie | oui (canaux SMS/WhatsApp : passerelle à brancher) | à signer |
 | J2.5 | Applications mobiles | reporté (décision MTM) : le site s'installe comme application (PWA) | — |
 | J3.1 | Comptabilité et finances | oui | à signer |
+| J3.2 | Tableaux de bord et reporting | oui | à signer |
 
 Réserve générale (tous jalons) : le **paiement en ligne** par un prestataire
 (Wave, Orange Money, carte) n'est pas implémenté ; il est reporté à une décision
@@ -349,6 +350,37 @@ export CSV et Excel tracé, clôture mensuelle qui fige les totaux et bloque les
 **Anomalies et réserves** : la TVA n’est pas gérée ; les paiements d’un client sur un chantier se saisissent
 comme recettes ; le format d’export est celui du journal (colonnes décrites dans `docs/FINANCES.md`), à adapter
 si le cabinet comptable impose un format d’import précis.
+
+---
+
+## J3.2 — Tableaux de bord et reporting
+
+**Critères** : direction et managers pilotent l’activité par des tableaux de bord fiables, alimentés par des
+données réelles ; tableau direction (chiffre d’affaires, ventes, locations, performances, alertes,
+tendances), manager (équipe, objectifs, activité, dossiers bloqués), commercial (prospects, pipeline, visites,
+ventes, commissions, tâches) ; rapports exportables en PDF et Excel (ventes par période et par zone,
+performance commerciale, terrains, loyers et impayés, rentabilité, démarches).
+
+**Preuves** : `test/pilotage.e2e-spec.ts` (27 scénarios : droits de chaque tableau, chiffres exacts de la
+direction avec comparaison à la période précédente, classement des commerciaux, occupation et recouvrement,
+objectifs et totaux d’équipe, dossiers bloqués et délais réglables, tableau du commercial et cloisonnement,
+les sept rapports chiffrés, export PDF et Excel tracé, rapport de plusieurs pages), `pilotage.calculs.spec.ts`,
+`rapports-utils.spec.ts`, `test/pilotage-envoi.e2e-spec.ts` (envoi automatique : jour prévu, période écoulée, pièces PDF/Excel, pas de doublon, nouvel essai si le courrier échoue), `envoi-automatique.spec.ts`. Mode d’emploi et définitions : `docs/PILOTAGE.md`.
+
+| Recette MTM | Fait | Date |
+| --- | --- | --- |
+| La direction ouvre son tableau de bord : les chiffres du mois correspondent à ce qu’elle sait de l’activité | ☐ | |
+| Les délais de « dossier bloqué » (15, 10, 7, 14, 3 jours) sont validés ou ajustés ; la liste des dossiers bloqués est juste | ☐ | |
+| Le manager lit l’activité de son équipe et ouvre le tableau d’un commercial | ☐ | |
+| Un commercial retrouve ses relances, visites, objectif et commissions du jour | ☐ | |
+| Rapport « Ventes par période » exporté en PDF : mise en page, logo et mentions de MTM conformes | ☐ | |
+| Rapport « Loyers et impayés » exporté en Excel : exploitable par la gérance | ☐ | |
+| Envoi automatique activé (`pilotage.envoiAutomatique`, SMTP configuré) : la direction reçoit les rapports du lundi / du 1er du mois en pièces jointes | ☐ | |
+| Les sept rapports ont été regardés par la direction ; ceux qui ne servent pas sont signalés | ☐ | |
+
+**Anomalies et réserves** : pas de prévisions (hors périmètre) ; l’envoi automatique est désactivé tant que des destinataires ne sont pas renseignés.
+Un rapport est limité à 500 lignes de détail. Les chiffres d’équipe portent sur les rôles « commercial » et
+« responsable commercial ».
 
 ---
 

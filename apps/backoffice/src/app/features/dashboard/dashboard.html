@@ -13,6 +13,26 @@
     </div>
   </header>
 
+  @if (vues().length > 1) {
+    <nav class="vues" aria-label="Vue du tableau de bord">
+      @for (v of vues(); track v.code) {
+        <button type="button" [class.is-actif]="vue() === v.code" (click)="choisirVue(v.code)">{{ v.label }}</button>
+      }
+    </nav>
+  }
+
+  @switch (vue()) {
+    @case ('direction') {
+      <app-vue-direction />
+    }
+    @case ('equipe') {
+      <app-vue-manager (ouvrir)="ouvrirCommercial($event)" />
+    }
+    @case ('moi') {
+      <app-vue-commercial [commercialId]="commercialId()" />
+    }
+    @default {
+
   <!-- À traiter aujourd'hui -->
   @if (hasAnyModule) {
     <section class="page-card todo-section" aria-labelledby="todo-title">
@@ -337,4 +357,6 @@
       </section>
     }
   </section>
+    }
+  }
 </div>

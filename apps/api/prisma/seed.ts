@@ -39,6 +39,7 @@ const PHASE_1_RESOURCES = [
   'messages',
   'notifications',
   'finances',
+  'rapports',
 ] as const;
 
 // Rôles initiaux recommandés par la section 24 du CDC.
@@ -905,6 +906,40 @@ async function main(): Promise<void> {
   }
   console.log('  Permissions finances attribuées');
 
+  // --- Tableaux de bord et rapports (J3.2) ---
+  // Le manager et le responsable commercial consultent l'activité de l'équipe ;
+  // la direction a aussi son propre tableau ; la comptabilité lit les rapports
+  // financiers ; l'export des rapports est tracé et réservé à ceux qui en
+  // répondent.
+  const permissionsRapports: Record<string, string[]> = {
+    direction: [
+      'rapports:consulter',
+      'rapports:exporter',
+      'rapports:administrer',
+    ],
+    manager: ['rapports:consulter', 'rapports:exporter'],
+    responsable_commercial: ['rapports:consulter'],
+    comptable: ['rapports:consulter', 'rapports:exporter'],
+  };
+  for (const [roleName, noms] of Object.entries(permissionsRapports)) {
+    const role = await prisma.role.findUniqueOrThrow({
+      where: { name: roleName },
+    });
+    for (const nom of noms) {
+      const permission = await prisma.permission.findUniqueOrThrow({
+        where: { name: nom },
+      });
+      await prisma.rolePermission.upsert({
+        where: {
+          roleId_permissionId: { roleId: role.id, permissionId: permission.id },
+        },
+        update: {},
+        create: { roleId: role.id, permissionId: permission.id },
+      });
+    }
+  }
+  console.log('  Permissions tableaux de bord et rapports attribuées');
+
   // --- Utilisateur administrateur par défaut ---
   const adminUser = await prisma.user.upsert({
     where: { email: adminEmail },
@@ -1321,6 +1356,88 @@ async function main(): Promise<void> {
       isSensitive: false,
     },
   });
+
+  // --- Réglages des finances, du pilotage et des alertes (J3.1, J3.2, J2.4) ---
+  // Créés ici : la page Paramètres n'accepte que des clés en minuscules, elle
+  // ne pourrait pas les créer à la main.
+  const reglagesPilotage: Array<{
+    key: string;
+    value:
+      | string[]
+      | number
+      | boolean
+      | Record<string, number | boolean | string | string[]>;
+    description: string;
+  }> = [
+    {
+      key: 'finances.tauxGestionDefaut',
+      value: 10,
+      description:
+        'Commission de gestion de MTM, en % des loyers encaissés, pour un bien sans taux propre',
+    },
+    {
+      key: 'finances.doubleValidation',
+      value: true,
+      description:
+        'Une saisie financière doit être validée par une autre personne que son auteur',
+    },
+    {
+      key: 'finances.categoriesDepenses',
+      value: [
+        'salaires',
+        'loyer_bureaux',
+        'electricite_internet',
+        'transport',
+        'fournitures',
+        'communication',
+        'honoraires_externes',
+        'impots_taxes',
+        'autre_depense',
+      ],
+      description: 'Catégories des dépenses saisies à la main',
+    },
+    {
+      key: 'finances.categoriesRecettes',
+      value: [
+        'recette_chantier',
+        'honoraires_divers',
+        'subvention',
+        'autre_recette',
+      ],
+      description: 'Catégories des recettes saisies à la main',
+    },
+    {
+      key: 'pilotage.seuilsBlocage',
+      value: { vente: 15, mission: 10, chantier: 7, prospect: 14, tache: 3 },
+      description:
+        'Jours sans mouvement au-delà desquels un dossier est dit bloqué (tableau de bord manager)',
+    },
+    {
+      key: 'pilotage.envoiAutomatique',
+      value: {
+        actif: false,
+        frequence: 'hebdomadaire',
+        rapports: ['rentabilite_activite', 'ventes_periode'],
+        formats: ['pdf'],
+        destinataires: [],
+      },
+      description:
+        'Envoi automatique de rapports par e-mail (lundi pour hebdomadaire, le 1er du mois pour mensuel) : activer et renseigner les destinataires',
+    },
+    {
+      key: 'notifications.documentManquantJours',
+      value: 7,
+      description:
+        'Jours après lesquels un dossier de vente réservé sans contrat déclenche une alerte',
+    },
+  ];
+  for (const reglage of reglagesPilotage) {
+    await prisma.systemSetting.upsert({
+      where: { key: reglage.key },
+      update: {},
+      create: { ...reglage, isSensitive: false },
+    });
+  }
 
   // --- Statuts d'activités CRM configurables (J1.5) ---
   await prisma.systemSetting.upsert({

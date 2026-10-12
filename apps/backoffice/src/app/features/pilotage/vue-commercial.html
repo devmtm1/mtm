@@ -1,0 +1,128 @@
+@if (loading()) {
+  <div class="skeleton" style="height: 280px"></div>
+} @else if (donnees(); as d) {
+  <div class="vue">
+    <section class="kpis" aria-label="Mes chiffres">
+      <article class="kpi-pil">
+        <span class="kpi-pil__titre">Prospects actifs</span>
+        <strong>{{ d.prospectsActifs }}</strong>
+        <span class="kpi-pil__aide">dans mon pipeline</span>
+      </article>
+      <article class="kpi-pil" [class.kpi-pil--alerte]="d.relances.enRetard > 0">
+        <span class="kpi-pil__titre">Relances</span>
+        <strong>{{ d.relances.enRetard + d.relances.aujourdhui }}</strong>
+        <span class="kpi-pil__aide">{{ d.relances.enRetard }} en retard · {{ d.relances.aujourdhui }} aujourd’hui</span>
+      </article>
+      <article class="kpi-pil">
+        <span class="kpi-pil__titre">Ventes ce mois</span>
+        <strong>{{ d.ventes.soldeesCeMois }}</strong>
+        <span class="kpi-pil__aide">{{ fcfa(d.ventes.chiffreAffairesCeMois) }}</span>
+      </article>
+      <article class="kpi-pil" [class.kpi-pil--alerte]="d.taches.enRetard > 0">
+        <span class="kpi-pil__titre">Mes tâches</span>
+        <strong>{{ d.taches.ouvertes }}</strong>
+        <span class="kpi-pil__aide">{{ d.taches.enRetard }} en retard · {{ d.taches.aujourdhui }} pour aujourd’hui</span>
+      </article>
+    </section>
+
+    <div class="deux">
+      <section class="page-card">
+        <h2>Mon objectif de {{ d.objectif.periode }}</h2>
+        @if (d.objectif.cibles) {
+          <ul class="objectifs">
+            @if (d.objectif.cibles.cibleVentes) {
+              <li>
+                <div class="objectif__ligne">
+                  <span>Ventes</span>
+                  <strong>{{ d.objectif.realise.ventes }} / {{ d.objectif.cibles.cibleVentes }}</strong>
+                </div>
+                <div class="barre" role="progressbar" [attr.aria-valuenow]="d.objectif.taux.ventes ?? 0" aria-valuemin="0" aria-valuemax="100">
+                  <span [style.width.%]="barre(d.objectif.taux.ventes)"></span>
+                </div>
+              </li>
+            }
+            @if (d.objectif.cibles.cibleChiffreAffaires) {
+              <li>
+                <div class="objectif__ligne">
+                  <span>Chiffre d’affaires encaissé</span>
+                  <strong>{{ fcfa(d.objectif.realise.chiffreAffaires) }} / {{ fcfa(d.objectif.cibles.cibleChiffreAffaires) }}</strong>
+                </div>
+                <div class="barre" role="progressbar" [attr.aria-valuenow]="d.objectif.taux.chiffreAffaires ?? 0" aria-valuemin="0" aria-valuemax="100">
+                  <span [style.width.%]="barre(d.objectif.taux.chiffreAffaires)"></span>
+                </div>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="vide">Aucun objectif fixé pour ce mois. Votre responsable peut le définir dans « Objectifs ».</p>
+        }
+        <h3 class="sous-titre">Mes commissions</h3>
+        <dl class="chiffres">
+          <div><dt>Estimées</dt><dd>{{ fcfa(d.commissions.estimees) }}</dd></div>
+          <div><dt>Validées, à payer</dt><dd>{{ fcfa(d.commissions.aPayer) }}</dd></div>
+          <div><dt>Payées cette année</dt><dd>{{ fcfa(d.commissions.payeesCetteAnnee) }}</dd></div>
+        </dl>
+      </section>
+
+      <section class="page-card">
+        <h2>Mon pipeline</h2>
+        @if (graphiquePipeline(); as options) {
+          <div echarts [options]="options" class="graphique graphique--anneau" role="img" aria-label="Mes prospects par étape"></div>
+        } @else {
+          <p class="vide">Aucun prospect pour l’instant.</p>
+        }
+      </section>
+    </div>
+
+    <div class="deux">
+      <section class="page-card">
+        <h2>À relancer</h2>
+        @if (d.relances.prochaines.length === 0) {
+          <p class="vide">Aucune relance en retard ni prévue aujourd’hui.</p>
+        } @else {
+          <ul class="liste">
+            @for (r of d.relances.prochaines; track r.id) {
+              <li [class.est-retard]="r.enRetard">
+                <a [routerLink]="route(r.lien)">{{ r.titre }}</a>
+                <span>{{ r.prospect }} · {{ r.enRetard ? 'en retard' : 'aujourd’hui' }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <section class="page-card">
+        <h2>Visites à venir</h2>
+        <p class="aide">{{ d.visites.effectueesCeMois }} visite{{ d.visites.effectueesCeMois > 1 ? 's' : '' }} effectuée{{ d.visites.effectueesCeMois > 1 ? 's' : '' }} ce mois.</p>
+        @if (d.visites.aVenir.length === 0) {
+          <p class="vide">Aucune visite programmée.</p>
+        } @else {
+          <ul class="liste">
+            @for (v of d.visites.aVenir; track v.id) {
+              <li>
+                <a [routerLink]="route(v.lien)">{{ v.bien }}</a>
+                <span>{{ v.prospect }} · {{ jour(v.date) }}{{ v.heure ? ' à ' + v.heure : '' }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    </div>
+
+    <section class="page-card">
+      <h2>Mon agenda aujourd’hui</h2>
+      @if (d.agenda.length === 0) {
+        <p class="vide">Rien d’inscrit à l’agenda aujourd’hui. <a routerLink="/agenda">Ouvrir l’agenda</a></p>
+      } @else {
+        <ul class="liste">
+          @for (e of d.agenda; track e.id) {
+            <li>
+              <a routerLink="/agenda" [queryParams]="{ evenement: e.id }">{{ e.titre }}</a>
+              <span>{{ e.journeeEntiere ? 'Toute la journée' : heure(e.debut) }}{{ e.lieu ? ' · ' + e.lieu : '' }}</span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  </div>
+}

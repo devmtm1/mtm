@@ -35,6 +35,7 @@ import { AgendaModule } from './modules/agenda/agenda.module';
 import { MessagesModule } from './modules/messages/messages.module';
 import { WorkflowsModule } from './modules/workflows/workflows.module';
 import { FinancesModule } from './modules/finances/finances.module';
+import { PilotageModule } from './modules/pilotage/pilotage.module';
 
 @Module({
   imports: [
@@ -78,6 +79,7 @@ import { FinancesModule } from './modules/finances/finances.module';
     MessagesModule,
     WorkflowsModule,
     FinancesModule,
+    PilotageModule,
     GedModule,
     CronModule,
     HealthModule,

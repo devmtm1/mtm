@@ -37,6 +37,10 @@ import { currentPeriode, type ObjectifProgress } from '../../core/models/objecti
 import { MoneyPipe } from '../../shared/pipes/money.pipe';
 import { donutChart, monthlyBarChart } from '../../shared/charts/mtm-charts';
 import { DOSSIER_STATUS, label as venteLabel, pillClass as ventePill } from '../ventes/ventes-status';
+import { ActivatedRoute } from '@angular/router';
+import { VueCommercial } from '../pilotage/vue-commercial';
+import { VueDirection } from '../pilotage/vue-direction';
+import { VueManager } from '../pilotage/vue-manager';
 
 export interface CommercialPerformance {
   commercialId: string;
@@ -53,9 +57,14 @@ const MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet'
  * module selon les droits, l'évolution de l'activité commerciale et la
  * performance personnelle du commercial connecté.
  */
+type Vue = 'direction' | 'equipe' | 'moi' | 'general';
+
 @Component({
   selector: 'app-dashboard',
   imports: [
+    VueCommercial,
+    VueDirection,
+    VueManager,
     MoneyPipe,
     DatePipe,
     MatButtonModule,
@@ -87,7 +96,26 @@ export class Dashboard implements OnInit {
   private readonly locatifApi = inject(LocatifApiService);
   private readonly constructionApi = inject(ConstructionApiService);
 
+  private readonly route = inject(ActivatedRoute);
+
   protected readonly user = this.session.user;
+
+  /**
+   * Vues du tableau de bord selon les permissions : direction, équipe,
+   * « mon activité » et « général » (l'état de chaque module). On ouvre la plus
+   * haute dont on dispose ; le dernier choix est gardé sur l'appareil.
+   */
+  protected readonly vues = computed(() => {
+    const liste: { code: Vue; label: string }[] = [];
+    if (this.session.hasPermission('rapports:administrer')) liste.push({ code: 'direction', label: 'Direction' });
+    if (this.session.hasPermission('rapports:consulter')) liste.push({ code: 'equipe', label: 'Équipe' });
+    if (this.session.hasPermission('crm:consulter')) liste.push({ code: 'moi', label: 'Mon activité' });
+    liste.push({ code: 'general', label: 'Vue générale' });
+    return liste;
+  });
+  protected readonly vue = signal<Vue>('general');
+  /** Tableau d'un autre commercial, ouvert depuis la vue Équipe. */
+  protected readonly commercialId = signal<string | undefined>(undefined);
   protected readonly canViewVentes = this.session.hasPermission('ventes:consulter');
   protected readonly canViewMandats = this.session.hasPermission('mandats:consulter');
   protected readonly canViewTerrains = this.session.hasPermission('terrains:consulter');
@@ -156,6 +184,13 @@ export class Dashboard implements OnInit {
   });
 
   ngOnInit(): void {
+    const demande = this.route.snapshot.queryParamMap.get('commercial');
+    if (demande && this.session.hasPermission('rapports:consulter')) {
+      this.commercialId.set(demande);
+      this.vue.set('moi');
+    } else {
+      this.vue.set(this.vueInitiale());
+    }
     this.feed
       .load()
       .pipe(catchError(() => of([] as FeedItem[])))
@@ -209,5 +244,31 @@ export class Dashboard implements OnInit {
   protected greeting(): string {
     const hour = this.today.getHours();
     return hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir';
+  }
+
+  protected ouvrirCommercial(id: string): void {
+    this.commercialId.set(id);
+    this.vue.set('moi');
+  }
+
+  protected choisirVue(vue: Vue): void {
+    this.vue.set(vue);
+    this.commercialId.set(undefined);
+    try {
+      localStorage.setItem('mtm.dashboard.vue', vue);
+    } catch {
+      /* stockage indisponible : le choix n'est simplement pas retenu */
+    }
+  }
+
+  private vueInitiale(): Vue {
+    const disponibles = this.vues().map((v) => v.code);
+    try {
+      const retenue = localStorage.getItem('mtm.dashboard.vue') as Vue | null;
+      if (retenue && disponibles.includes(retenue)) return retenue;
+    } catch {
+      /* stockage indisponible */
+    }
+    return disponibles[0];
   }
 }

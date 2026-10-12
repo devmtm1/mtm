@@ -1,0 +1,174 @@
+<div class="vue">
+  <nav class="periodes" aria-label="Période affichée">
+    @for (periode of periodes; track periode.code) {
+      <button type="button" [class.is-actif]="choix().code === periode.code" (click)="choisir(periode)">
+        {{ periode.label }}
+      </button>
+    }
+  </nav>
+
+  @if (loading() && !donnees()) {
+    <div class="skeleton" style="height: 320px"></div>
+  } @else if (donnees(); as d) {
+    <section class="kpis" aria-label="Chiffres clés de la période">
+      <article class="kpi-pil">
+        <span class="kpi-pil__titre">Encaissements</span>
+        <strong>{{ fcfa(d.finances.totaux.encaissements) }}</strong>
+        <small [class]="'tendance tendance--' + tendance(d.finances.totaux.encaissements, d.finances.precedent.encaissements)">
+          {{ variation(d.finances.totaux.encaissements, d.finances.precedent.encaissements) }} vs période précédente
+        </small>
+      </article>
+      <article class="kpi-pil kpi-pil--principal">
+        <span class="kpi-pil__titre">Revenu de MTM</span>
+        <strong>{{ fcfa(d.finances.totaux.revenu) }}</strong>
+        <small [class]="'tendance tendance--' + tendance(d.finances.totaux.revenu, d.finances.precedent.revenu)">
+          {{ variation(d.finances.totaux.revenu, d.finances.precedent.revenu) }} vs période précédente
+        </small>
+      </article>
+      <article class="kpi-pil">
+        <span class="kpi-pil__titre">Ventes conclues</span>
+        <strong>{{ d.ventes.soldees }}</strong>
+        <small [class]="'tendance tendance--' + tendance(d.ventes.soldees, d.ventes.soldeesPrecedent)">
+          {{ fcfa(d.ventes.chiffreAffaires) }} · {{ variation(d.ventes.soldees, d.ventes.soldeesPrecedent) }}
+        </small>
+      </article>
+      <article class="kpi-pil" [class.kpi-pil--alerte]="d.finances.totaux.resultat < 0">
+        <span class="kpi-pil__titre">Résultat</span>
+        <strong>{{ fcfa(d.finances.totaux.resultat) }}</strong>
+        <small [class]="'tendance tendance--' + tendance(d.finances.totaux.resultat, d.finances.precedent.resultat)">
+          {{ variation(d.finances.totaux.resultat, d.finances.precedent.resultat) }} vs période précédente
+        </small>
+      </article>
+    </section>
+
+    <section aria-label="Alertes">
+      <h2>À surveiller</h2>
+      <div class="alertes">
+        @for (a of alertes(); track a.titre) {
+          <a [routerLink]="a.lien" [class.est-alerte]="a.n > 0">
+            <strong>{{ a.n }}</strong>
+            <span>{{ a.titre }}</span>
+            <span>{{ a.aide }}</span>
+          </a>
+        }
+      </div>
+    </section>
+
+    <div class="deux">
+      <section class="page-card">
+        <h2>Revenu et dépenses sur 12 mois</h2>
+        @if (graphiqueFinances(); as options) {
+          <div echarts [options]="options" class="graphique" role="img" aria-label="Revenu et dépenses par mois"></div>
+        } @else {
+          <p class="vide">Aucun mouvement sur les douze derniers mois.</p>
+        }
+      </section>
+      <section class="page-card">
+        <h2>Ventes conclues par mois</h2>
+        @if (graphiqueVentes(); as options) {
+          <div echarts [options]="options" class="graphique" role="img" aria-label="Ventes conclues par mois"></div>
+        } @else {
+          <p class="vide">Aucune vente conclue sur les douze derniers mois.</p>
+        }
+      </section>
+    </div>
+
+    <div class="deux">
+      <section class="page-card">
+        <h2>Activité commerciale</h2>
+        <dl class="chiffres">
+          <div><dt>Dossiers en cours</dt><dd>{{ d.ventes.enCours }}</dd></div>
+          <div><dt>Réservations actives</dt><dd>{{ d.ventes.reservationsActives }}</dd></div>
+          <div>
+            <dt>Prospects créés</dt>
+            <dd>{{ d.ventes.prospectsCrees }} <small [class]="'tendance tendance--' + tendance(d.ventes.prospectsCrees, d.ventes.prospectsCreesPrecedent)">{{ variation(d.ventes.prospectsCrees, d.ventes.prospectsCreesPrecedent) }}</small></dd>
+          </div>
+        </dl>
+        <p class="aide">Taux de conversion (ventes ÷ prospects créés) : <strong>{{ pct(d.ventes.tauxConversion) }}</strong></p>
+        @if (graphiquePipeline(); as options) {
+          <div echarts [options]="options" class="graphique graphique--anneau" role="img" aria-label="Prospects par étape du pipeline"></div>
+        }
+      </section>
+
+      <section class="page-card">
+        <h2>Revenu par activité</h2>
+        @if (graphiqueRepartition(); as options) {
+          <div echarts [options]="options" class="graphique graphique--anneau" role="img" aria-label="Répartition du revenu par activité"></div>
+        } @else {
+          <p class="vide">Aucun revenu sur cette période.</p>
+        }
+        <p class="note"><a routerLink="/finances">Détail des finances</a></p>
+      </section>
+    </div>
+
+    <div class="deux">
+      <section class="page-card">
+        <h2>Locations</h2>
+        <dl class="chiffres">
+          <div><dt>Taux d’occupation</dt><dd>{{ pct(d.locatif.tauxOccupation) }}</dd></div>
+          <div><dt>Biens loués</dt><dd>{{ d.locatif.loues }} / {{ d.locatif.biens }}</dd></div>
+          <div><dt>Impayés prolongés</dt><dd [class.negatif]="d.locatif.impayesProlonges > 0">{{ d.locatif.impayesProlonges }}</dd></div>
+        </dl>
+        <h3 class="sous-titre">Recouvrement des loyers</h3>
+        <div class="objectif__ligne">
+          <span>{{ fcfa(d.locatif.loyersEncaisses) }} encaissés sur {{ fcfa(d.locatif.loyersAttendus) }}</span>
+          <strong>{{ pct(d.locatif.tauxRecouvrement) }}</strong>
+        </div>
+        <div class="barre" role="progressbar" [attr.aria-valuenow]="d.locatif.tauxRecouvrement ?? 0" aria-valuemin="0" aria-valuemax="100">
+          <span [style.width.%]="barre(d.locatif.tauxRecouvrement)"></span>
+        </div>
+        <p class="note">
+          Séjours : {{ d.locatif.sejours.nombre }} arrivée(s), {{ d.locatif.sejours.nuits }} nuit(s), {{ fcfa(d.locatif.sejours.montant) }}.
+        </p>
+      </section>
+
+      <section class="page-card">
+        <h2>Démarches et chantiers</h2>
+        <dl class="chiffres">
+          <div>
+            <dt>Missions ouvertes</dt>
+            <dd>{{ d.demarches.ouvertes }} <small [class]="'tendance tendance--' + tendance(d.demarches.ouvertes, d.demarches.ouvertesPrecedent)">{{ variation(d.demarches.ouvertes, d.demarches.ouvertesPrecedent) }}</small></dd>
+          </div>
+          <div><dt>En cours</dt><dd>{{ d.demarches.actives }}</dd></div>
+          <div><dt>Rapports rendus</dt><dd>{{ d.demarches.rapportsRendus }}</dd></div>
+        </dl>
+        <h3 class="sous-titre">Chantiers</h3>
+        <dl class="chiffres">
+          <div><dt>Actifs</dt><dd>{{ d.construction.actifs }}</dd></div>
+          <div><dt>En alerte</dt><dd [class.negatif]="d.construction.enAlerte > 0">{{ d.construction.enAlerte }}</dd></div>
+          <div><dt>Avancement moyen</dt><dd>{{ d.construction.avancementMoyen === null ? '—' : d.construction.avancementMoyen + ' %' }}</dd></div>
+        </dl>
+      </section>
+    </div>
+
+    <section class="page-card" aria-label="Performances">
+      <h2>Meilleurs commerciaux de la période</h2>
+      @if (d.performances.length === 0) {
+        <p class="vide">Aucune vente conclue sur cette période.</p>
+      } @else {
+        <div class="tableau-scroll">
+          <table class="tableau">
+            <thead>
+              <tr>
+                <th scope="col">Rang</th>
+                <th scope="col">Commercial</th>
+                <th scope="col" class="num">Ventes</th>
+                <th scope="col" class="num">Chiffre d’affaires</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of d.performances; track p.id) {
+                <tr>
+                  <td>{{ p.rang }}</td>
+                  <th scope="row">{{ p.nom }}</th>
+                  <td class="num">{{ p.ventes }}</td>
+                  <td class="num">{{ fcfa(p.ca) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  }
+</div>

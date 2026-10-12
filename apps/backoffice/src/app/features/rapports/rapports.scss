@@ -1,0 +1,162 @@
+.rapports-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.catalogue {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.carte {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  padding: 14px 16px;
+  border: 1px solid var(--mtm-border);
+  border-radius: var(--mtm-radius-md);
+  background: var(--mtm-card-bg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  span {
+    font-size: 0.82rem;
+    color: var(--mtm-text-muted);
+  }
+
+  &.is-actif {
+    border-color: var(--mtm-primary, #1a4974);
+    box-shadow: 0 0 0 1px var(--mtm-primary, #1a4974) inset;
+  }
+}
+
+.filtres {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+
+  @media (max-width: 1000px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 560px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.filtres__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  grid-column: 1 / -1;
+}
+
+.rapport {
+  display: grid;
+  gap: 14px;
+
+  &.is-chargement {
+    opacity: 0.6;
+  }
+}
+
+.rapport__tete {
+  h2 {
+    margin: 0 0 2px;
+    font-size: 1.15rem;
+  }
+
+  p {
+    margin: 0;
+    color: var(--mtm-text-muted);
+    font-size: 0.9rem;
+  }
+}
+
+.resume {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+
+  div {
+    display: grid;
+    gap: 2px;
+    padding: 12px 14px;
+    border: 1px solid var(--mtm-border);
+    border-radius: var(--mtm-radius-md);
+    background: var(--mtm-card-bg);
+  }
+
+  dt {
+    font-size: 0.78rem;
+    color: var(--mtm-text-muted);
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.section h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+
+.tableau-scroll {
+  overflow-x: auto;
+}
+
+.tableau {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+
+  th,
+  td {
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--mtm-border);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  thead th {
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--mtm-text-muted);
+    white-space: nowrap;
+  }
+
+  tfoot td {
+    border-bottom: 0;
+    font-weight: 700;
+  }
+
+  .num {
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.vide,
+.note {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--mtm-text-muted);
+}
+
+.note {
+  margin-top: 10px;
+}

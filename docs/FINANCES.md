@@ -38,6 +38,8 @@ Finances › Journal › « Exporter pour la comptabilité » (permission `finan
 
 ## Réglages (page Paramètres)
 
+Ces réglages sont créés par le seed (la page Paramètres n'accepte que des clés en minuscules : elle ne pourrait pas créer `tauxGestionDefaut` à la main).
+
 | Clé | Rôle | Défaut |
 | --- | --- | --- |
 | `finances.tauxGestionDefaut` | commission de gestion quand le bien n'a pas de taux, en % | 10 |
