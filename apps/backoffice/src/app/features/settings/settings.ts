@@ -9,6 +9,7 @@ import type { SettingListItem } from '../../core/models/setting.model';
 import { NotificationService } from '../../shared/services/notification.service';
 import { SettingFormDialog } from './setting-form-dialog';
 import { SETTING_GROUPS, inferKind, settingSlotByKey, type SettingSlot } from './settings-catalog';
+import { ConfirmService } from '../../shared/dialogs/confirm-dialog';
 
 /**
  * Paramètres de l'application (Phase 0), présentés par module avec un
@@ -24,6 +25,7 @@ import { SETTING_GROUPS, inferKind, settingSlotByKey, type SettingSlot } from '.
   styleUrl: './settings.scss',
 })
 export class Settings implements OnInit {
+  private readonly confirmer = inject(ConfirmService);
   private readonly settingsApi = inject(SettingsApiService);
   private readonly dialog = inject(MatDialog);
   private readonly notify = inject(NotificationService);
@@ -142,13 +144,16 @@ export class Settings implements OnInit {
   }
 
   protected remove(setting: SettingListItem): void {
-    if (!this.canDelete || !confirm(`Supprimer le paramètre « ${setting.key} » ? L’application reviendra à sa valeur par défaut. Cette action est tracée.`)) return;
-    this.settingsApi.remove(setting.key).subscribe({
-      next: () => {
-        this.notify.success('Paramètre supprimé');
-        this.load();
-      },
-      error: (error: unknown) => this.notify.error(error, 'Suppression impossible'),
+    if (!this.canDelete) return;
+    this.confirmer.ask(`Supprimer le paramètre « ${setting.key} » ? L’application reviendra à sa valeur par défaut. Cette action est tracée.`).subscribe((confirme) => {
+      if (!confirme) return;
+      this.settingsApi.remove(setting.key).subscribe({
+        next: () => {
+          this.notify.success('Paramètre supprimé');
+          this.load();
+        },
+        error: (error: unknown) => this.notify.error(error, 'Suppression impossible'),
+      });
     });
   }
 

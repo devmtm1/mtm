@@ -17,6 +17,7 @@ import type { AnnoncePayload, BienDetail } from '../../../core/models/locatif.mo
 import { NotificationService } from '../../../shared/services/notification.service';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { AnnonceDialog } from './annonce-dialog';
+import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 
 /** Mêmes types que l'API : au-delà, l'envoi serait refusé après coup. */
 const TYPES_ACCEPTES = 'image/jpeg,image/png,image/webp,video/mp4,video/quicktime';
@@ -47,6 +48,7 @@ const TAILLE_MAX = 10 * 1024 * 1024;
   styleUrl: './bien-annonce.scss',
 })
 export class BienAnnonceCard {
+  private readonly confirmer = inject(ConfirmService);
   private readonly api = inject(LocatifApiService);
   private readonly dialog = inject(MatDialog);
   private readonly notify = inject(NotificationService);
@@ -103,8 +105,12 @@ export class BienAnnonceCard {
       this.notify.info(`Pour publier : ${this.manques().join(', ').toLowerCase()}.`);
       return;
     }
-    if (!publie && !confirm('Retirer cette annonce du site ? Les visiteurs ne la verront plus.')) return;
-    this.enregistrer({ publie }, publie ? 'Annonce publiée sur le site' : 'Annonce retirée du site');
+    const appliquer = () => this.enregistrer({ publie }, publie ? 'Annonce publiée sur le site' : 'Annonce retirée du site');
+    if (publie) {
+      appliquer();
+      return;
+    }
+    this.confirmer.ask('Retirer cette annonce du site ? Les visiteurs ne la verront plus.').subscribe((confirme) => confirme && appliquer());
   }
 
   protected deposer(event: Event): void {
@@ -162,18 +168,20 @@ export class BienAnnonceCard {
   }
 
   protected supprimer(mediaId: string): void {
-    if (!confirm('Supprimer cette photo ?')) return;
-    this.busy.set(true);
-    this.api.removeBienMedia(this.bien().id, mediaId).subscribe({
-      next: () => {
-        this.busy.set(false);
-        this.notify.success('Photo supprimée');
-        this.changed.emit();
-      },
-      error: (error: unknown) => {
-        this.busy.set(false);
-        this.notify.error(error, 'Suppression impossible');
-      },
+    this.confirmer.ask('Supprimer cette photo ?').subscribe((confirme) => {
+      if (!confirme) return;
+      this.busy.set(true);
+      this.api.removeBienMedia(this.bien().id, mediaId).subscribe({
+        next: () => {
+          this.busy.set(false);
+          this.notify.success('Photo supprimée');
+          this.changed.emit();
+        },
+        error: (error: unknown) => {
+          this.busy.set(false);
+          this.notify.error(error, 'Suppression impossible');
+        },
+      });
     });
   }
 

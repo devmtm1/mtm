@@ -55,6 +55,7 @@ import {
   statusHelp,
   typeBienLabel,
 } from '../terrain-status';
+import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 
 /**
  * Fiche terrain (J1.1 / J1.3). Tout ce qu'un commercial doit savoir sur une
@@ -98,6 +99,7 @@ import {
   styleUrl: './terrain-detail.scss',
 })
 export class TerrainDetail implements OnInit, OnDestroy {
+  private readonly confirmer = inject(ConfirmService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly api = inject(TerrainsApiService);
@@ -391,15 +393,21 @@ export class TerrainDetail implements OnInit, OnDestroy {
 
   protected removeMedia(mediaId: string): void {
     const terrain = this.terrain();
-    if (!terrain || !confirm('Supprimer cette photo ? Elle disparaîtra aussi du site public.')) return;
-    if (this.activeMedia()) this.activeMedia.set(null);
-    this.run(this.api.removeMedia(terrain.id, mediaId), 'Photo supprimée');
+    if (!terrain) return;
+    this.confirmer.ask('Supprimer cette photo ? Elle disparaîtra aussi du site public.').subscribe((confirme) => {
+      if (!confirme) return;
+      if (this.activeMedia()) this.activeMedia.set(null);
+      this.run(this.api.removeMedia(terrain.id, mediaId), 'Photo supprimée');
+    });
   }
 
   protected removeDocument(documentId: string): void {
     const terrain = this.terrain();
-    if (!terrain || !confirm('Supprimer ce document ?')) return;
-    this.run(this.api.removeDocument(terrain.id, documentId), 'Document supprimé');
+    if (!terrain) return;
+    this.confirmer.ask('Supprimer ce document ?').subscribe((confirme) => {
+      if (!confirme) return;
+      this.run(this.api.removeDocument(terrain.id, documentId), 'Document supprimé');
+    });
   }
 
   private run(request$: { subscribe: (observer: { next: () => void; error: (error: unknown) => void }) => unknown }, successMessage: string): void {

@@ -29,6 +29,7 @@ import {
   nomBien,
   nomVoyageur,
 } from '../sejour-status';
+import { ConfirmService } from '../../../../shared/dialogs/confirm-dialog';
 
 const TAILLE_MAX_PHOTO = 10 * 1024 * 1024;
 
@@ -44,6 +45,7 @@ const TAILLE_MAX_PHOTO = 10 * 1024 * 1024;
   styleUrl: './sejour-detail.scss',
 })
 export class SejourDetailPage implements OnInit {
+  private readonly confirmer = inject(ConfirmService);
   private readonly api = inject(SejoursApiService);
   private readonly locatifApi = inject(LocatifApiService);
   private readonly route = inject(ActivatedRoute);
@@ -135,8 +137,11 @@ export class SejourDetailPage implements OnInit {
 
   protected supprimerPaiement(id: string): void {
     const sejour = this.sejour();
-    if (!sejour || !confirm('Supprimer ce règlement ? Le reste à payer sera recalculé. Cette action est tracée.')) return;
-    this.executer(this.api.removePaiement(sejour.id, id), 'Règlement supprimé');
+    if (!sejour) return;
+    this.confirmer.ask('Supprimer ce règlement ? Le reste à payer sera recalculé. Cette action est tracée.').subscribe((confirme) => {
+      if (!confirme) return;
+      this.executer(this.api.removePaiement(sejour.id, id), 'Règlement supprimé');
+    });
   }
 
   // --- Caution ---
@@ -198,14 +203,16 @@ export class SejourDetailPage implements OnInit {
   }
 
   protected retirerPhoto(etat: EtatDesLieuxVue, photoId: string): void {
-    if (!confirm('Supprimer cette photo ?')) return;
-    this.busy.set(true);
-    this.api.removePhotoEtat(etat.id, photoId).subscribe({
-      next: (resultat) => this.apresEtat(resultat, 'Photo supprimée'),
-      error: (error: unknown) => {
-        this.busy.set(false);
-        this.notify.error(error, 'Suppression impossible');
-      },
+    this.confirmer.ask('Supprimer cette photo ?').subscribe((confirme) => {
+      if (!confirme) return;
+      this.busy.set(true);
+      this.api.removePhotoEtat(etat.id, photoId).subscribe({
+        next: (resultat) => this.apresEtat(resultat, 'Photo supprimée'),
+        error: (error: unknown) => {
+          this.busy.set(false);
+          this.notify.error(error, 'Suppression impossible');
+        },
+      });
     });
   }
 

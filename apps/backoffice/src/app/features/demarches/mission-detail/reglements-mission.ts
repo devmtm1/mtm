@@ -16,6 +16,7 @@ import { NotificationService } from '../../../shared/services/notification.servi
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { MODES_PAIEMENT, label } from '../mission-status';
 import { PaiementDialog } from './paiement-dialog';
+import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 
 const STATUTS: Record<StatutReglement, { libelle: string; pill: string }> = {
   a_facturer: { libelle: 'Prix à fixer', pill: 'status-pill' },
@@ -173,6 +174,7 @@ const STATUTS: Record<StatutReglement, { libelle: string; pill: string }> = {
   `,
 })
 export class ReglementsMissionComponent {
+  private readonly confirmer = inject(ConfirmService);
   private readonly api = inject(DemarchesApiService);
   private readonly dialog = inject(MatDialog);
   private readonly notify = inject(NotificationService);
@@ -225,10 +227,10 @@ export class ReglementsMissionComponent {
 
   protected supprimer(paiement: PaiementMission): void {
     const reference = paiement.reference ? ` (${paiement.reference})` : '';
-    if (!confirm(`Supprimer ce règlement${reference} ? Le solde de la mission sera recalculé. Cette action est tracée.`)) {
-      return;
-    }
-    this.executer(this.api.removePaiement(this.mission().id, paiement.id), 'Règlement supprimé');
+    this.confirmer.ask(`Supprimer ce règlement${reference} ? Le solde de la mission sera recalculé. Cette action est tracée.`).subscribe((confirme) => {
+      if (!confirme) return;
+      this.executer(this.api.removePaiement(this.mission().id, paiement.id), 'Règlement supprimé');
+    });
   }
 
   protected genererFacture(): void {

@@ -30,6 +30,7 @@ import type {
   JalonChantier,
   LigneBudget,
 } from '../../../core/models/chantier.model';
+import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { JustificationDialog } from '../../../shared/dialogs/justification-dialog';
 import { StatusChoiceDialog } from '../../../shared/dialogs/status-choice-dialog';
@@ -90,6 +91,7 @@ const PIECES_VISIBLES = 4;
   styleUrl: './chantier-detail.scss',
 })
 export class ChantierDetailPage implements OnInit {
+  private readonly confirmer = inject(ConfirmService);
   private readonly api = inject(ConstructionApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -408,21 +410,19 @@ export class ChantierDetailPage implements OnInit {
 
   protected supprimerJournee(entree: EntreeJournal): void {
     const quand = this.dateCourte(entree.date);
-    if (
-      !confirm(
-        `Supprimer la journée du ${quand} ? L’avancement du chantier sera recalculé.`,
-      )
-    ) {
-      return;
-    }
-    this.api.removeEntree(this.chantierId, entree.id).subscribe({
-      next: () => {
-        this.notify.success('Journée supprimée');
-        this.charger();
-      },
-      error: (error: unknown) =>
-        this.notify.error(error, 'Suppression impossible'),
-    });
+    this.confirmer
+      .ask(`Supprimer la journée du ${quand} ? L’avancement du chantier sera recalculé.`)
+      .subscribe((confirme) => {
+        if (!confirme) return;
+        this.api.removeEntree(this.chantierId, entree.id).subscribe({
+          next: () => {
+            this.notify.success('Journée supprimée');
+            this.charger();
+          },
+          error: (error: unknown) =>
+            this.notify.error(error, 'Suppression impossible'),
+        });
+      });
   }
 
   protected basculerProblemes(): void {
@@ -480,21 +480,21 @@ export class ChantierDetailPage implements OnInit {
     // Retirer efface l'étape ; « annulée » la conserve dans l'historique
     // sans qu'elle compte dans l'avancement. On le dit plutôt que de
     // laisser choisir à l'aveugle.
-    if (
-      !confirm(
+    this.confirmer
+      .ask(
         `Retirer « ${jalon.libelle} » du planning ? Pour la conserver dans l’historique, passez-la plutôt en « annulée ».`,
       )
-    ) {
-      return;
-    }
-    this.api.removeJalon(this.chantierId, jalon.id).subscribe({
-      next: () => {
-        this.notify.success('Étape retirée');
-        this.charger();
-      },
-      error: (error: unknown) =>
-        this.notify.error(error, 'Suppression impossible'),
-    });
+      .subscribe((confirme) => {
+        if (!confirme) return;
+        this.api.removeJalon(this.chantierId, jalon.id).subscribe({
+          next: () => {
+            this.notify.success('Étape retirée');
+            this.charger();
+          },
+          error: (error: unknown) =>
+            this.notify.error(error, 'Suppression impossible'),
+        });
+      });
   }
 
   // --- Actions : prestataires ---

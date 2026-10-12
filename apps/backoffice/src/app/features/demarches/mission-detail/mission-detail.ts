@@ -53,6 +53,7 @@ import {
   nomPersonne,
   pillClass,
 } from '../mission-status';
+import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 
 /**
 /**
@@ -101,6 +102,7 @@ const PARCOURS_VERIFICATION = [
   styleUrl: './mission-detail.scss',
 })
 export class MissionDetail implements OnInit {
+  private readonly confirmer = inject(ConfirmService);
   private readonly api = inject(DemarchesApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -473,17 +475,12 @@ export class MissionDetail implements OnInit {
   protected supprimerConstat(constat: EtapeMission): void {
     const mission = this.mission();
     if (!mission) return;
-    if (
-      !confirm(
-        `Supprimer le constat « ${constat.titre} » ? Il disparaîtra du rapport remis au client.`,
-      )
-    ) {
-      return;
-    }
-    this.executer(
-      this.api.removeEtape(mission.id, constat.id),
-      'Constat supprimé',
-    );
+    this.confirmer
+      .ask(`Supprimer le constat « ${constat.titre} » ? Il disparaîtra du rapport remis au client.`)
+      .subscribe((confirme) => {
+        if (!confirme) return;
+        this.executer(this.api.removeEtape(mission.id, constat.id), 'Constat supprimé');
+      });
   }
 
   protected enregistrerDemande(): void {
@@ -513,20 +510,18 @@ export class MissionDetail implements OnInit {
   protected supprimerMission(): void {
     const mission = this.mission();
     if (!mission) return;
-    if (
-      !confirm(
-        `Supprimer définitivement la mission ${mission.referenceInterne ?? ''} ? Constats et pièces seront perdus. Cette action est tracée.`,
-      )
-    ) {
-      return;
-    }
-    this.api.remove(mission.id).subscribe({
-      next: () => {
-        this.notify.success('Mission supprimée');
-        this.retour();
-      },
-      error: (error: unknown) => this.notify.error(error, 'Suppression impossible'),
-    });
+    this.confirmer
+      .ask(`Supprimer définitivement la mission ${mission.referenceInterne ?? ''} ? Constats et pièces seront perdus. Cette action est tracée.`)
+      .subscribe((confirme) => {
+        if (!confirme) return;
+        this.api.remove(mission.id).subscribe({
+          next: () => {
+            this.notify.success('Mission supprimée');
+            this.retour();
+          },
+          error: (error: unknown) => this.notify.error(error, 'Suppression impossible'),
+        });
+      });
   }
 
   protected enregistrerFaisabilite(): void {
@@ -633,11 +628,13 @@ export class MissionDetail implements OnInit {
   protected supprimerDocument(document: DocumentMission): void {
     const mission = this.mission();
     if (!mission) return;
-    if (!confirm('Supprimer cette pièce du dossier ?')) return;
-    this.executer(
-      this.api.removeDocument(mission.id, document.id),
-      'Pièce supprimée',
-    );
+    this.confirmer.ask('Supprimer cette pièce du dossier ?').subscribe((confirme) => {
+      if (!confirme) return;
+      this.executer(
+        this.api.removeDocument(mission.id, document.id),
+        'Pièce supprimée',
+      );
+    });
   }
 
   /** Relit la fiche après une action du bloc « Règlements et facture ». */

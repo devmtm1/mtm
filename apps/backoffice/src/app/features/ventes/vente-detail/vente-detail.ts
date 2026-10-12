@@ -24,6 +24,7 @@ import { CrmApiService } from '../../../core/services/api/crm-api.service';
 import { VentesApiService } from '../../../core/services/api/ventes-api.service';
 import { SessionService } from '../../../core/services/session.service';
 import type { VenteCommission, VenteDetail, VenteEcheance, VenteOptions, VentePaiement, VenteReservation } from '../../../core/models/vente.model';
+import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { LabelPipe } from '../../../shared/pipes/label.pipe';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
@@ -86,6 +87,7 @@ import {
   styleUrl: './vente-detail.scss',
 })
 export class VenteDetailPage implements OnInit {
+  private readonly confirmer = inject(ConfirmService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly api = inject(VentesApiService);
@@ -364,7 +366,10 @@ export class VenteDetailPage implements OnInit {
 
   protected payCommission(commission: VenteCommission): void {
     const dossier = this.dossier();
-    if (dossier && confirm('Marquer cette commission comme payée au commercial ?')) this.run(this.api.payCommission(dossier.id, commission.id), 'Commission payée');
+    if (!dossier) return;
+    this.confirmer
+      .ask({ message: 'Marquer cette commission comme payée au commercial ?', confirmLabel: 'Marquer payée', danger: false })
+      .subscribe((confirme) => confirme && this.run(this.api.payCommission(dossier.id, commission.id), 'Commission payée'));
   }
 
   protected openDocumentDialog(mode: 'generate' | 'upload'): void {
@@ -392,7 +397,10 @@ export class VenteDetailPage implements OnInit {
 
   protected removeDocument(documentId: string): void {
     const dossier = this.dossier();
-    if (dossier && confirm('Supprimer ce document ?')) this.run(this.api.removeDocument(dossier.id, documentId), 'Document supprimé');
+    if (!dossier) return;
+    this.confirmer
+      .ask('Supprimer ce document ?')
+      .subscribe((confirme) => confirme && this.run(this.api.removeDocument(dossier.id, documentId), 'Document supprimé'));
   }
 
   // --- Interne ----------------------------------------------------------------

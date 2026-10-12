@@ -12,6 +12,7 @@ import {
 } from '../../core/services/api/entreprise-api.service';
 import { SessionService } from '../../core/services/session.service';
 import { NotificationService } from '../../shared/services/notification.service';
+import { ConfirmService } from '../../shared/dialogs/confirm-dialog';
 
 /** Poids maximal du logo : il est lu à chaque génération de document. */
 export const TAILLE_MAX_LOGO = 2 * 1024 * 1024;
@@ -36,6 +37,7 @@ export function problemeLogo(file: Pick<File, 'type' | 'size'>): string | null {
   styleUrl: './entreprise.scss',
 })
 export class Entreprise implements OnInit {
+  private readonly confirmer = inject(ConfirmService);
   private readonly api = inject(EntrepriseApiService);
   private readonly notify = inject(NotificationService);
   private readonly session = inject(SessionService);
@@ -102,18 +104,21 @@ export class Entreprise implements OnInit {
   }
 
   protected retirerLogo(): void {
-    if (!this.canModify || !confirm('Retirer le logo ? Les documents reprendront le logo MTM par défaut.')) return;
-    this.busyLogo.set(true);
-    this.api.retirerLogo().subscribe({
-      next: (profil) => {
-        this.profil.set(profil);
-        this.busyLogo.set(false);
-        this.notify.success('Logo par défaut rétabli');
-      },
-      error: (error: unknown) => {
-        this.busyLogo.set(false);
-        this.notify.error(error, 'Impossible de retirer le logo');
-      },
+    if (!this.canModify) return;
+    this.confirmer.ask('Retirer le logo ? Les documents reprendront le logo MTM par défaut.').subscribe((confirme) => {
+      if (!confirme) return;
+      this.busyLogo.set(true);
+      this.api.retirerLogo().subscribe({
+        next: (profil) => {
+          this.profil.set(profil);
+          this.busyLogo.set(false);
+          this.notify.success('Logo par défaut rétabli');
+        },
+        error: (error: unknown) => {
+          this.busyLogo.set(false);
+          this.notify.error(error, 'Impossible de retirer le logo');
+        },
+      });
     });
   }
 

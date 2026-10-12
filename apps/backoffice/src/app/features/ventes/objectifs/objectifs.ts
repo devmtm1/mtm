@@ -17,6 +17,7 @@ import { currentPeriode, type ObjectifCommercial, type ObjectifProgress, type Up
 import { NotificationService } from '../../../shared/services/notification.service';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { ObjectifDialog, type ObjectifDialogData } from './objectif-dialog';
+import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 
 /** Une ligne : un commercial, son objectif du mois (ou aucun) et sa progression. */
 interface ObjectifRow {
@@ -53,6 +54,7 @@ export function shiftPeriode(periode: string, delta: number): string {
   styleUrl: './objectifs.scss',
 })
 export class Objectifs implements OnInit {
+  private readonly confirmer = inject(ConfirmService);
   private readonly objectifsApi = inject(ObjectifsApiService);
   private readonly crmApi = inject(CrmApiService);
   private readonly session = inject(SessionService);
@@ -217,17 +219,21 @@ export class Objectifs implements OnInit {
   }
 
   protected remove(row: ObjectifRow): void {
-    if (!row.objectif || !confirm(`Supprimer l’objectif de ${row.commercial.firstName} ${row.commercial.lastName} pour ${this.periodeLabel()} ?`)) return;
-    this.busy.set(true);
-    this.objectifsApi.remove(row.objectif.id).subscribe({
-      next: () => {
-        this.notify.success('Objectif supprimé');
-        this.load();
-      },
-      error: (error: unknown) => {
-        this.busy.set(false);
-        this.notify.error(error, 'Impossible de supprimer l’objectif');
-      },
+    const objectif = row.objectif;
+    if (!objectif) return;
+    this.confirmer.ask(`Supprimer l’objectif de ${row.commercial.firstName} ${row.commercial.lastName} pour ${this.periodeLabel()} ?`).subscribe((confirme) => {
+      if (!confirme) return;
+      this.busy.set(true);
+      this.objectifsApi.remove(objectif.id).subscribe({
+        next: () => {
+          this.notify.success('Objectif supprimé');
+          this.load();
+        },
+        error: (error: unknown) => {
+          this.busy.set(false);
+          this.notify.error(error, 'Impossible de supprimer l’objectif');
+        },
+      });
     });
   }
 

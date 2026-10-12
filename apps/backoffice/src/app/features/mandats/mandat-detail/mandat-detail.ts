@@ -44,6 +44,7 @@ import {
   statusChoices,
   statusHelp,
 } from '../mandat-status';
+import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 
 /**
  * Fiche mandat (J1.4) : le contrat avec le propriétaire, les lots confiés
@@ -80,6 +81,7 @@ import {
   styleUrl: './mandat-detail.scss',
 })
 export class MandatDetail implements OnInit {
+  private readonly confirmer = inject(ConfirmService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly api = inject(MandatsApiService);
@@ -222,8 +224,11 @@ export class MandatDetail implements OnInit {
 
   protected removeLot(lot: MandatLotItem): void {
     const mandat = this.mandat();
-    if (!mandat || !confirm(`Retirer le terrain ${lot.terrain.referenceInterne} de ce mandat ?`)) return;
-    this.run(this.api.removeLot(mandat.id, lot.id), 'Bien retiré du mandat');
+    if (!mandat) return;
+    this.confirmer.ask(`Retirer le terrain ${lot.terrain.referenceInterne} de ce mandat ?`).subscribe((confirme) => {
+      if (!confirme) return;
+      this.run(this.api.removeLot(mandat.id, lot.id), 'Bien retiré du mandat');
+    });
   }
 
   protected addDocument(): void {
@@ -239,23 +244,29 @@ export class MandatDetail implements OnInit {
 
   protected removeDocument(documentId: string): void {
     const mandat = this.mandat();
-    if (!mandat || !confirm('Supprimer ce document ?')) return;
-    this.run(this.api.removeDocument(mandat.id, documentId), 'Document supprimé');
+    if (!mandat) return;
+    this.confirmer.ask('Supprimer ce document ?').subscribe((confirme) => {
+      if (!confirme) return;
+      this.run(this.api.removeDocument(mandat.id, documentId), 'Document supprimé');
+    });
   }
 
   protected removeMandat(): void {
     const mandat = this.mandat();
-    if (!mandat || !confirm(`Supprimer définitivement le mandat ${mandat.referenceInterne} ? Cette action est tracée.`)) return;
-    this.busy.set(true);
-    this.api.remove(mandat.id).subscribe({
-      next: () => {
-        this.notify.success('Mandat supprimé');
-        this.goBack();
-      },
-      error: (error: unknown) => {
-        this.busy.set(false);
-        this.notify.error(error, 'Impossible de supprimer le mandat');
-      },
+    if (!mandat) return;
+    this.confirmer.ask(`Supprimer définitivement le mandat ${mandat.referenceInterne} ? Cette action est tracée.`).subscribe((confirme) => {
+      if (!confirme) return;
+      this.busy.set(true);
+      this.api.remove(mandat.id).subscribe({
+        next: () => {
+          this.notify.success('Mandat supprimé');
+          this.goBack();
+        },
+        error: (error: unknown) => {
+          this.busy.set(false);
+          this.notify.error(error, 'Impossible de supprimer le mandat');
+        },
+      });
     });
   }
 

@@ -8,6 +8,7 @@ import { TeamApiService, type TeamKind, type TeamMember } from '../../../core/se
 import { SessionService } from '../../../core/services/session.service';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { TeamEditorDialog } from './team-editor-dialog';
+import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 
 /**
  * Page « Notre équipe » du site public : mot du directeur, photo de groupe et
@@ -22,6 +23,7 @@ import { TeamEditorDialog } from './team-editor-dialog';
   styleUrl: './team.scss',
 })
 export class Team implements OnInit {
+  private readonly confirmer = inject(ConfirmService);
   private readonly api = inject(TeamApiService);
   private readonly dialog = inject(MatDialog);
   private readonly notify = inject(NotificationService);
@@ -94,17 +96,20 @@ export class Team implements OnInit {
   }
 
   protected remove(member: TeamMember): void {
-    if (!this.canDelete || !confirm(`Supprimer « ${member.nom} » de la page Équipe ? Sa photo sera perdue.`)) return;
-    this.busyId.set(member.id);
-    this.api.remove(member.id).subscribe({
-      next: () => {
-        this.notify.success('Supprimé');
-        this.load();
-      },
-      error: (error: unknown) => {
-        this.busyId.set(null);
-        this.notify.error(error, 'Impossible de supprimer');
-      },
+    if (!this.canDelete) return;
+    this.confirmer.ask(`Supprimer « ${member.nom} » de la page Équipe ? Sa photo sera perdue.`).subscribe((confirme) => {
+      if (!confirme) return;
+      this.busyId.set(member.id);
+      this.api.remove(member.id).subscribe({
+        next: () => {
+          this.notify.success('Supprimé');
+          this.load();
+        },
+        error: (error: unknown) => {
+          this.busyId.set(null);
+          this.notify.error(error, 'Impossible de supprimer');
+        },
+      });
     });
   }
 

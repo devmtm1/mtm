@@ -11,6 +11,9 @@ import {
   formatReferenceValide,
 } from '../demarches/mission-reference';
 
+/** Clés réservées à la page « Identité de l'entreprise ». */
+const PREFIXE_ENTREPRISE = 'entreprise.';
+
 export interface SafeSetting {
   id: string;
   key: string;
@@ -39,6 +42,7 @@ export class SettingsService {
 
   async findAll(canViewSensitive: boolean): Promise<SafeSetting[]> {
     const settings = await this.prisma.systemSetting.findMany({
+      where: { NOT: { key: { startsWith: PREFIXE_ENTREPRISE } } },
       orderBy: { key: 'asc' },
     });
     return settings.map((s: RawSetting) =>
@@ -121,6 +125,7 @@ export class SettingsService {
    * silence à l'usage.
    */
   static assertValeurValide(key: string, value: unknown): void {
+    SettingsService.assertCleModifiable(key);
     if (
       key === REFERENCE_SETTING_KEYS.mission ||
       key === REFERENCE_SETTING_KEYS.facture
@@ -144,6 +149,18 @@ export class SettingsService {
           'Les codes de famille doivent être des lettres ou chiffres (6 au plus), par exemple {"verification":"VF","demarche":"DA","technique":"PT"}',
         );
       }
+    }
+  }
+
+  /**
+   * L'identité de l'entreprise (logo, NINEA, RCCM…) a sa propre page, qui valide
+   * les champs et gère le logo : on ne la modifie pas à la main ici.
+   */
+  static assertCleModifiable(key: string): void {
+    if (key.startsWith(PREFIXE_ENTREPRISE)) {
+      throw new BadRequestException(
+        'Ce paramètre se modifie dans Administration › Identité de l’entreprise',
+      );
     }
   }
 
@@ -199,6 +216,7 @@ export class SettingsService {
   }
 
   async remove(key: string): Promise<void> {
+    SettingsService.assertCleModifiable(key);
     const existing = await this.prisma.systemSetting.findUnique({
       where: { key },
     });

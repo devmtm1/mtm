@@ -68,6 +68,7 @@ import {
   telLink,
   whatsappLink,
 } from '../crm-status';
+import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 
 const ACTION_LABELS: Record<string, string> = {
   'prospect.created': 'Création du prospect',
@@ -162,6 +163,7 @@ const FIELD_LABELS: Record<string, string> = {
   styleUrl: './prospect-detail.scss',
 })
 export class ProspectDetail implements OnInit {
+  private readonly confirmer = inject(ConfirmService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly api = inject(CrmApiService);
@@ -478,8 +480,11 @@ export class ProspectDetail implements OnInit {
 
   protected removeVisite(visite: VisiteProspectItem): void {
     const prospect = this.prospect();
-    if (!prospect || !confirm(`Retirer la proposition « ${visite.terrain.referenceInterne} · ${visite.terrain.nom} » ?`)) return;
-    this.run(this.api.removeVisite(prospect.id, visite.id), 'Proposition retirée');
+    if (!prospect) return;
+    this.confirmer.ask(`Retirer la proposition « ${visite.terrain.referenceInterne} · ${visite.terrain.nom} » ?`).subscribe((confirme) => {
+      if (!confirme) return;
+      this.run(this.api.removeVisite(prospect.id, visite.id), 'Proposition retirée');
+    });
   }
 
   protected assignCommercial(): void {
@@ -521,8 +526,11 @@ export class ProspectDetail implements OnInit {
 
   protected removeActivity(activite: ActiviteCrmItem): void {
     const prospect = this.prospect();
-    if (!prospect || !confirm(`Supprimer l’action « ${activite.titre} » ?`)) return;
-    this.run(this.api.removeActivite(prospect.id, activite.id), 'Action supprimée');
+    if (!prospect) return;
+    this.confirmer.ask(`Supprimer l’action « ${activite.titre} » ?`).subscribe((confirme) => {
+      if (!confirme) return;
+      this.run(this.api.removeActivite(prospect.id, activite.id), 'Action supprimée');
+    });
   }
 
   /**
@@ -590,23 +598,29 @@ export class ProspectDetail implements OnInit {
 
   protected removeDocument(documentId: string): void {
     const prospect = this.prospect();
-    if (!prospect || !confirm('Supprimer ce document ?')) return;
-    this.run(this.api.removeDocument(prospect.id, documentId), 'Document supprimé');
+    if (!prospect) return;
+    this.confirmer.ask('Supprimer ce document ?').subscribe((confirme) => {
+      if (!confirme) return;
+      this.run(this.api.removeDocument(prospect.id, documentId), 'Document supprimé');
+    });
   }
 
   protected removeProspect(): void {
     const prospect = this.prospect();
-    if (!prospect || !confirm(`Supprimer définitivement ${this.name()} ? Cette action est tracée.`)) return;
-    this.busy.set(true);
-    this.api.remove(prospect.id).subscribe({
-      next: () => {
-        this.notify.success('Prospect supprimé');
-        this.goBack();
-      },
-      error: (error: unknown) => {
-        this.busy.set(false);
-        this.notify.error(error, 'Impossible de supprimer ce prospect');
-      },
+    if (!prospect) return;
+    this.confirmer.ask(`Supprimer définitivement ${this.name()} ? Cette action est tracée.`).subscribe((confirme) => {
+      if (!confirme) return;
+      this.busy.set(true);
+      this.api.remove(prospect.id).subscribe({
+        next: () => {
+          this.notify.success('Prospect supprimé');
+          this.goBack();
+        },
+        error: (error: unknown) => {
+          this.busy.set(false);
+          this.notify.error(error, 'Impossible de supprimer ce prospect');
+        },
+      });
     });
   }
 

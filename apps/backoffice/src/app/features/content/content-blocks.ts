@@ -8,6 +8,7 @@ import { SessionService } from '../../core/services/session.service';
 import { NotificationService } from '../../shared/services/notification.service';
 import { ContentEditorDialog } from './content-editor-dialog';
 import { NEWS_KEY_PATTERN, SITE_CONTENT_SECTIONS, TESTIMONIAL_TYPE, slotByKey, type ContentSlot } from './site-content-catalog';
+import { ConfirmService } from '../../shared/dialogs/confirm-dialog';
 
 interface NewsGroup {
   index: number;
@@ -31,6 +32,7 @@ interface NewsGroup {
   styleUrl: './content-blocks.scss',
 })
 export class ContentBlocks implements OnInit {
+  private readonly confirmer = inject(ConfirmService);
   private readonly api = inject(ContentBlockApiService);
   private readonly dialog = inject(MatDialog);
   private readonly notify = inject(NotificationService);
@@ -153,41 +155,47 @@ export class ContentBlocks implements OnInit {
   }
 
   protected remove(block: ContentBlock, label: string): void {
-    if (!this.canDelete || !confirm(`Supprimer « ${label} » ? Le site reviendra à son affichage par défaut.`)) return;
-    this.busyKey.set(block.key);
-    this.api.remove(block.key).subscribe({
-      next: () => {
-        this.notify.success('Contenu supprimé');
-        this.load();
-      },
-      error: (error: unknown) => {
-        this.busyKey.set(null);
-        this.notify.error(error, 'Impossible de supprimer ce contenu');
-      },
+    if (!this.canDelete) return;
+    this.confirmer.ask(`Supprimer « ${label} » ? Le site reviendra à son affichage par défaut.`).subscribe((confirme) => {
+      if (!confirme) return;
+      this.busyKey.set(block.key);
+      this.api.remove(block.key).subscribe({
+        next: () => {
+          this.notify.success('Contenu supprimé');
+          this.load();
+        },
+        error: (error: unknown) => {
+          this.busyKey.set(null);
+          this.notify.error(error, 'Impossible de supprimer ce contenu');
+        },
+      });
     });
   }
 
   protected removeNews(group: NewsGroup): void {
-    if (!this.canDelete || !confirm(`Supprimer l’actualité « ${group.title?.content ?? group.index} » ?`)) return;
-    const targets = [group.title, group.tag, group.excerpt].filter((block): block is ContentBlock => !!block);
-    this.busyKey.set(`news.${group.index}`);
-    const next = (remaining: ContentBlock[]): void => {
-      const [first, ...rest] = remaining;
-      if (!first) {
-        this.notify.success('Actualité supprimée');
-        this.load();
-        return;
-      }
-      this.api.remove(first.key).subscribe({
-        next: () => next(rest),
-        error: (error: unknown) => {
-          this.busyKey.set(null);
-          this.notify.error(error, 'Impossible de supprimer cette actualité');
+    if (!this.canDelete) return;
+    this.confirmer.ask(`Supprimer l’actualité « ${group.title?.content ?? group.index} » ?`).subscribe((confirme) => {
+      if (!confirme) return;
+      const targets = [group.title, group.tag, group.excerpt].filter((block): block is ContentBlock => !!block);
+      this.busyKey.set(`news.${group.index}`);
+      const next = (remaining: ContentBlock[]): void => {
+        const [first, ...rest] = remaining;
+        if (!first) {
+          this.notify.success('Actualité supprimée');
           this.load();
-        },
-      });
-    };
-    next(targets);
+          return;
+        }
+        this.api.remove(first.key).subscribe({
+          next: () => next(rest),
+          error: (error: unknown) => {
+            this.busyKey.set(null);
+            this.notify.error(error, 'Impossible de supprimer cette actualité');
+            this.load();
+          },
+        });
+      };
+      next(targets);
+    });
   }
 
   private load(): void {

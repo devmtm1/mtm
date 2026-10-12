@@ -8,6 +8,7 @@ import { SessionService } from '../../../core/services/session.service';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { PromotionDialog } from './promotion-dialog';
 import { STATUTS_DIFFUSION, periodeDiffusion } from './promotion-status';
+import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 
 /**
  * Publicités et promotions du bandeau d'accueil. Tant qu'au moins une est en
@@ -22,6 +23,7 @@ import { STATUTS_DIFFUSION, periodeDiffusion } from './promotion-status';
   styleUrl: './promotions.scss',
 })
 export class Promotions implements OnInit {
+  private readonly confirmer = inject(ConfirmService);
   private readonly api = inject(PromotionsApiService);
   private readonly dialog = inject(MatDialog);
   private readonly notify = inject(NotificationService);
@@ -66,17 +68,20 @@ export class Promotions implements OnInit {
   }
 
   protected remove(promotion: Promotion): void {
-    if (!this.canDelete || !confirm(`Supprimer « ${promotion.titre} » ? L’image ou la vidéo sera perdue.`)) return;
-    this.busyId.set(promotion.id);
-    this.api.remove(promotion.id).subscribe({
-      next: () => {
-        this.notify.success('Supprimée');
-        this.load();
-      },
-      error: (error: unknown) => {
-        this.busyId.set(null);
-        this.notify.error(error, 'Impossible de supprimer');
-      },
+    if (!this.canDelete) return;
+    this.confirmer.ask(`Supprimer « ${promotion.titre} » ? L’image ou la vidéo sera perdue.`).subscribe((confirme) => {
+      if (!confirme) return;
+      this.busyId.set(promotion.id);
+      this.api.remove(promotion.id).subscribe({
+        next: () => {
+          this.notify.success('Supprimée');
+          this.load();
+        },
+        error: (error: unknown) => {
+          this.busyId.set(null);
+          this.notify.error(error, 'Impossible de supprimer');
+        },
+      });
     });
   }
 

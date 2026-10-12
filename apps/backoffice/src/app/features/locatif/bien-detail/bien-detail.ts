@@ -88,6 +88,7 @@ import { PaiementDialog } from './paiement-dialog';
 import { PreavisDialog } from './preavis-dialog';
 import { SignalementDialog } from './signalement-dialog';
 import { SortieDialog } from './sortie-dialog';
+import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 
 /**
  * Fiche d'un bien locatif : ses informations, le bail en cours (ou son
@@ -124,6 +125,7 @@ import { SortieDialog } from './sortie-dialog';
   styleUrl: './bien-detail.scss',
 })
 export class BienDetailPage implements OnInit {
+  private readonly confirmer = inject(ConfirmService);
   private readonly api = inject(LocatifApiService);
   private readonly sejoursApi = inject(SejoursApiService);
   private readonly route = inject(ActivatedRoute);
@@ -371,13 +373,15 @@ export class BienDetailPage implements OnInit {
   protected supprimerBien(): void {
     const bien = this.bien();
     if (!bien) return;
-    if (!confirm(`Supprimer définitivement le bien ${bien.referenceInterne} ?`)) return;
-    this.api.removeBien(bien.id).subscribe({
-      next: () => {
-        this.notify.success('Bien supprimé');
-        this.retour();
-      },
-      error: (error: unknown) => this.notify.error(error, 'Suppression impossible'),
+    this.confirmer.ask(`Supprimer définitivement le bien ${bien.referenceInterne} ?`).subscribe((confirme) => {
+      if (!confirme) return;
+      this.api.removeBien(bien.id).subscribe({
+        next: () => {
+          this.notify.success('Bien supprimé');
+          this.retour();
+        },
+        error: (error: unknown) => this.notify.error(error, 'Suppression impossible'),
+      });
     });
   }
 
@@ -686,8 +690,10 @@ export class BienDetailPage implements OnInit {
   protected supprimerDocument(document: DocumentLocatif): void {
     const bail = this.bailActuel();
     if (!bail) return;
-    if (!confirm('Supprimer cette pièce ?')) return;
-    this.executer(this.api.removeDocument(bail.id, document.id), 'Pièce supprimée');
+    this.confirmer.ask('Supprimer cette pièce ?').subscribe((confirme) => {
+      if (!confirme) return;
+      this.executer(this.api.removeDocument(bail.id, document.id), 'Pièce supprimée');
+    });
   }
 
   // --- Chargement ---

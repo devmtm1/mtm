@@ -217,6 +217,18 @@ interne exposée, filtres, bien loué masqué, demande), `annonce.helper.spec.ts
 | Demande de visite faite depuis l’annonce : réception par les gestionnaires (cloche et e-mail) | ☐ | |
 | Création d’un bail : l’annonce disparaît du site | ☐ | |
 
+**Location à la nuit** (ajout) : séjours de courte durée avec prix par nuit, caution, date de
+réservation, durée, règlements, états des lieux d’arrivée et de départ avec photos, et demandes de
+résiliation depuis l’espace locataire. Preuves : `test/sejours-resiliation.e2e-spec.ts` (conflits de dates,
+demandes simultanées, droits), `src/modules/locatif/sejour*.spec.ts`, `etats-des-lieux*.spec.ts`,
+`resiliations*.spec.ts`. Mode d’emploi : `docs/LOCATION_COURTE_DUREE.md`.
+
+| Recette MTM | Fait | Date |
+| --- | --- | --- |
+| Un séjour réel : réservation, caution, règlement, état des lieux d’arrivée et de départ | ☐ | |
+| Deux demandes pour les mêmes dates : la seconde est refusée avec un message clair | ☐ | |
+| Demande de résiliation d’un locataire : réception et traitement par le gestionnaire | ☐ | |
+
 **Anomalies et réserves** : aucune connue.
 
 ---
@@ -232,6 +244,18 @@ client ; tarifs configurables ; traçabilité des vérifications.
 | --- | --- | --- |
 | Une mission réelle de vérification, rapport PDF consulté par le client | ☐ | |
 | Tarifs de vérification validés par la direction | ☐ | |
+
+**Saisie d’un dossier réel** (ajout) : règlements multiples avec frais d’opérateur, facture de mission
+en PDF (numérotation configurable, ex. MTM-FAC-VF-001/2026), rapport avec annexe photo facultative,
+identité du client réservée à la permission `crm:identite`. Preuves : `test/demarches.e2e-spec.ts`,
+`mission-paiements.spec.ts`, `demarches-facture-paiements.spec.ts`, `mission-reference.spec.ts`,
+`demarches-documents.service.spec.ts`. Mode d’emploi : `docs/SAISIE_DOSSIER_MISSION.md`.
+
+| Recette MTM | Fait | Date |
+| --- | --- | --- |
+| Le dossier réel de test saisi de bout en bout au back-office, comparé aux documents d’origine | ☐ | |
+| Facture et rapport PDF : logo, NINEA et mentions légales corrects | ☐ | |
+| Format de numérotation validé par la direction | ☐ | |
 
 **Anomalies et réserves** : aucune connue.
 
@@ -252,6 +276,21 @@ notification d'alerte de chantier (cloche et e-mail).
 
 **Anomalies et réserves** : vue de type Gantt non réalisée (« si possible »
 dans le cahier des charges).
+
+---
+
+## Fonctions ajoutées hors planning (à valider par écrit — §33)
+
+Ces fonctions ne figurent pas au planning d’exécution ; elles sont livrées à la demande de MTM et
+doivent être validées avant d’être considérées comme acceptées.
+
+| Fonction | Preuves | Recette MTM | Fait |
+| --- | --- | --- | --- |
+| Publicités et promotions du bandeau d’accueil (affiche ou vidéo, période de diffusion) | `test/promotions.e2e-spec.ts`, `promotion-status.spec.ts` | Publier une promotion réelle et la voir sur téléphone | ☐ |
+| Page « Notre équipe » et contenus du site administrables | `content-block.service.spec.ts` | Saisie des vrais membres | ☐ |
+| Import des biens depuis un tableur | `lecture-tableur.spec.ts`, `docs/IMPORT_TABLEUR.md` | Import d’un vrai fichier | ☐ |
+| Identité de l’entreprise sur tous les PDF (logo, NINEA, RCCM, capital, banque) | `test/entreprise.e2e-spec.ts`, `societe.spec.ts` | Saisie des vraies mentions, aperçu PDF contrôlé, logo téléversé | ☐ |
+| Boîtes de confirmation communes du back-office | `confirm-dialog.spec.ts` | Suppression d’une pièce : message clair, bouton nommé | ☐ |
 
 ---
 

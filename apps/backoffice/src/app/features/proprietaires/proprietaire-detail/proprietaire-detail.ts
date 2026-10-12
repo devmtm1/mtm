@@ -28,6 +28,7 @@ import { NotificationService } from '../../../shared/services/notification.servi
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { COMMERCIAL_STATUS, pillClass as terrainPill, statusHelp as terrainHelp } from '../../terrains/terrain-status';
 import { MANDAT_STATUS, echeanceInfo, pillClass as mandatPill, statusHelp as mandatHelp } from '../../mandats/mandat-status';
+import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 
 /**
  * Fiche propriétaire (J1.4) : coordonnées, puis tout ce qu'il a confié à
@@ -56,6 +57,7 @@ import { MANDAT_STATUS, echeanceInfo, pillClass as mandatPill, statusHelp as man
   styleUrl: './proprietaire-detail.scss',
 })
 export class ProprietaireDetail implements OnInit {
+  private readonly confirmer = inject(ConfirmService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly api = inject(ProprietairesApiService);
@@ -179,14 +181,17 @@ export class ProprietaireDetail implements OnInit {
 
   protected remove(): void {
     const current = this.proprietaire();
-    if (!this.id || !current) return;
-    if (!confirm(`Supprimer ${current.firstName} ${current.lastName} ? Impossible s’il a encore un mandat.`)) return;
-    this.api.remove(this.id).subscribe({
-      next: () => {
-        this.notify.success('Propriétaire supprimé');
-        this.goBack();
-      },
-      error: (error: unknown) => this.notify.error(error, 'Impossible de supprimer : des mandats y sont encore rattachés'),
+    const id = this.id;
+    if (!id || !current) return;
+    this.confirmer.ask(`Supprimer ${current.firstName} ${current.lastName} ? Impossible s’il a encore un mandat.`).subscribe((confirme) => {
+      if (!confirme) return;
+      this.api.remove(id).subscribe({
+        next: () => {
+          this.notify.success('Propriétaire supprimé');
+          this.goBack();
+        },
+        error: (error: unknown) => this.notify.error(error, 'Impossible de supprimer : des mandats y sont encore rattachés'),
+      });
     });
   }
 

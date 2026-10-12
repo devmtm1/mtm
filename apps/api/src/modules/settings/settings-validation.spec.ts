@@ -38,3 +38,18 @@ describe('SettingsService.assertValeurValide', () => {
     ).not.toThrow();
   });
 });
+
+describe('clés réservées à l’identité de l’entreprise', () => {
+  it('refuse de créer, modifier ou supprimer une clé « entreprise.* » depuis Paramètres', async () => {
+    const { SettingsService } = await import('./settings.service');
+    expect(() =>
+      SettingsService.assertValeurValide('entreprise.logo', 'x'),
+    ).toThrow(/Identité de l’entreprise/);
+    expect(() =>
+      SettingsService.assertValeurValide('entreprise.ninea', '123'),
+    ).toThrow(/Identité de l’entreprise/);
+    expect(() =>
+      SettingsService.assertValeurValide('ventes.documentTypes', ['a']),
+    ).not.toThrow();
+  });
+});

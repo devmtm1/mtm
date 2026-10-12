@@ -10,6 +10,7 @@ import { NotificationService } from '../../shared/services/notification.service'
 import { permissionActionLabel, resourceLabel, roleHelp, roleLabel, SENSITIVE_ROLES } from '../admin/admin-labels';
 import { RoleFormDialog } from './role-form-dialog';
 import { AssignPermissionsDialog } from './assign-permissions-dialog';
+import { ConfirmService } from '../../shared/dialogs/confirm-dialog';
 
 interface ModuleSummary {
   resource: string;
@@ -34,6 +35,7 @@ const RESOURCE_ORDER = ['terrains', 'proprietaires', 'mandats', 'crm', 'ventes',
   styleUrl: './roles.scss',
 })
 export class Roles implements OnInit {
+  private readonly confirmer = inject(ConfirmService);
   private readonly rolesApi = inject(RolesApiService);
   private readonly dialog = inject(MatDialog);
   private readonly notify = inject(NotificationService);
@@ -113,13 +115,15 @@ export class Roles implements OnInit {
       this.notify.error(null, `Impossible : ${users} compte${users > 1 ? 's ont' : ' a'} encore ce rôle. Changez leur rôle d’abord.`);
       return;
     }
-    if (!confirm(`Supprimer le rôle « ${roleLabel(role.name)} » ? Cette action est tracée.`)) return;
-    this.rolesApi.remove(role.id).subscribe({
-      next: () => {
-        this.notify.success('Rôle supprimé');
-        this.load();
-      },
-      error: (error: unknown) => this.notify.error(error, 'Suppression impossible'),
+    this.confirmer.ask(`Supprimer le rôle « ${roleLabel(role.name)} » ? Cette action est tracée.`).subscribe((confirme) => {
+      if (!confirme) return;
+      this.rolesApi.remove(role.id).subscribe({
+        next: () => {
+          this.notify.success('Rôle supprimé');
+          this.load();
+        },
+        error: (error: unknown) => this.notify.error(error, 'Suppression impossible'),
+      });
     });
   }
 

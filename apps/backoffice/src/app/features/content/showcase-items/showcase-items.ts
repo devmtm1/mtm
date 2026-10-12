@@ -8,6 +8,7 @@ import { ShowcaseApiService, type ShowcaseItem } from '../../../core/services/ap
 import { SessionService } from '../../../core/services/session.service';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { ShowcaseEditorDialog } from './showcase-editor-dialog';
+import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 
 export type ShowcaseCategory = 'realisation' | 'projet_a_venir';
 
@@ -30,6 +31,7 @@ export const SHOWCASE_CATEGORIES: { value: ShowcaseCategory; label: string; help
   styleUrl: './showcase-items.scss',
 })
 export class ShowcaseItems implements OnInit {
+  private readonly confirmer = inject(ConfirmService);
   private readonly api = inject(ShowcaseApiService);
   private readonly dialog = inject(MatDialog);
   private readonly notify = inject(NotificationService);
@@ -112,17 +114,20 @@ export class ShowcaseItems implements OnInit {
   }
 
   protected remove(item: ShowcaseItem): void {
-    if (!this.canDelete || !confirm(`Supprimer « ${item.title} » du portfolio ? Sa photo sera perdue.`)) return;
-    this.busyId.set(item.id);
-    this.api.remove(item.id).subscribe({
-      next: () => {
-        this.notify.success('Élément supprimé');
-        this.load();
-      },
-      error: (error: unknown) => {
-        this.busyId.set(null);
-        this.notify.error(error, 'Impossible de supprimer cet élément');
-      },
+    if (!this.canDelete) return;
+    this.confirmer.ask(`Supprimer « ${item.title} » du portfolio ? Sa photo sera perdue.`).subscribe((confirme) => {
+      if (!confirme) return;
+      this.busyId.set(item.id);
+      this.api.remove(item.id).subscribe({
+        next: () => {
+          this.notify.success('Élément supprimé');
+          this.load();
+        },
+        error: (error: unknown) => {
+          this.busyId.set(null);
+          this.notify.error(error, 'Impossible de supprimer cet élément');
+        },
+      });
     });
   }
 
