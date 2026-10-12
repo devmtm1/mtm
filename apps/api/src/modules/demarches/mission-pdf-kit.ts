@@ -129,55 +129,6 @@ export function drawTable(
   cursor.y = y + 18;
 }
 
-/** Coordonnées de MTM Immobilier, imprimées en tête et en pied de chaque document. */
-export interface Societe {
-  name: string;
-  tagline: string;
-  adresse: string;
-  telephone: string;
-  email: string;
-}
-
-export function drawEntete(page: Page, company: Societe): void {
-  page.rect(0, 0, A4.width, 92, NAVY);
-  page.rect(0, 92, A4.width, 4, ACCENT);
-  page.text(company.name.toUpperCase(), MARGIN, 44, {
-    font: 'bold',
-    size: 20,
-    color: '#FFFFFF',
-  });
-  page.text(company.tagline, MARGIN, 62, { size: 9, color: '#CFE0EE' });
-  const droite = A4.width - MARGIN;
-  page.text(company.adresse, droite, 40, {
-    size: 9,
-    color: '#FFFFFF',
-    align: 'right',
-  });
-  page.text(company.telephone, droite, 54, {
-    size: 9,
-    color: '#FFFFFF',
-    align: 'right',
-  });
-  page.text(company.email, droite, 68, {
-    size: 9,
-    color: '#FFFFFF',
-    align: 'right',
-  });
-}
-
-export function drawPied(page: Page, company: Societe, ligne: string): void {
-  const y = A4.height - 48;
-  page.line(MARGIN, y - 14, MARGIN + CONTENT_WIDTH, y - 14, BORDER);
-  page.text(
-    `${company.name} · ${company.adresse} · ${company.telephone} · ${company.email}`,
-    A4.width / 2,
-    y,
-    { size: 8, color: MUTED, align: 'center' },
-  );
-  page.text(ligne, A4.width / 2, y + 12, {
-    size: 7.5,
-    color: MUTED,
-    align: 'center',
-  });
-  page.rect(0, A4.height - 6, A4.width, 6, NAVY_DARK);
-}
+// L'en-tête (logo, coordonnées) et le pied de page (mentions légales) sont communs
+// à tous les documents : ils vivent dans common/pdf/societe.ts.
+export { drawEntete, drawPied, type Societe } from '../../common/pdf/societe';

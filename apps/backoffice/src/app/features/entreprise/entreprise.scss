@@ -1,0 +1,114 @@
+.entreprise-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+}
+
+h2 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.aide {
+  margin: 0 0 12px;
+  color: var(--mtm-muted, #6b7280);
+  font-size: 0.875rem;
+}
+
+.logo-section {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px;
+
+  &__image {
+    display: grid;
+    place-items: center;
+    flex: 0 0 120px;
+    width: 120px;
+    height: 120px;
+    overflow: hidden;
+    border: 1px solid var(--mtm-border);
+    border-radius: 50%;
+    background: var(--mtm-card-bg);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__defaut {
+    padding: 8px;
+    color: var(--mtm-muted, #6b7280);
+    font-size: 0.75rem;
+    text-align: center;
+  }
+
+  &__texte {
+    flex: 1 1 280px;
+
+    p {
+      margin: 0 0 12px;
+      color: var(--mtm-muted, #6b7280);
+      font-size: 0.875rem;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+.upload-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--mtm-border);
+  border-radius: var(--mtm-radius-md);
+  cursor: pointer;
+  font-size: 0.875rem;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  input {
+    display: none;
+  }
+
+  &.is-busy {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
+.erreur {
+  color: #b91c1c;
+}
+
+.grille {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 16px;
+  margin-bottom: 16px;
+
+  .plein {
+    grid-column: 1 / -1;
+  }
+
+  @media (max-width: 720px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}

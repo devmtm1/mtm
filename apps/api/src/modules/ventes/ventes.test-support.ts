@@ -8,6 +8,7 @@ import { VentesService } from './ventes.service';
 import { VentesAccessService } from './ventes-access.service';
 import { VentesWorkflowService } from './ventes-workflow.service';
 import { VentesDocumentsService } from './ventes-documents.service';
+import { CompanyProfileService } from '../company/company-profile.service';
 import { VentesPaiementsService } from './ventes-paiements.service';
 import { VentesCommissionsService } from './ventes-commissions.service';
 
@@ -56,6 +57,12 @@ export function createVentesTestContext() {
       notifierMock as unknown as NotificationsService,
     ),
     commissions: new VentesCommissionsService(prisma, access, workflow),
-    documents: new VentesDocumentsService(prisma, cloudinary, access, settings),
+    documents: new VentesDocumentsService(
+      prisma,
+      cloudinary,
+      access,
+      settings,
+      new CompanyProfileService(prisma, cloudinary),
+    ),
   };
 }

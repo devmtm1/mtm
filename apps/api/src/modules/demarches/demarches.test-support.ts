@@ -8,6 +8,7 @@ import { DemarchesOptionsService } from './demarches-options.service';
 import { DemarchesService } from './demarches.service';
 import { DemarchesEtapesService } from './demarches-etapes.service';
 import { DemarchesDocumentsService } from './demarches-documents.service';
+import { CompanyProfileService } from '../company/company-profile.service';
 import { DemarchesClientService } from './demarches-client.service';
 import { DemarchesPaiementsService } from './demarches-paiements.service';
 import { MissionReferencesService } from './mission-references.service';
@@ -48,6 +49,7 @@ export function createDemarchesTestContext() {
       access,
       options,
       references,
+      new CompanyProfileService(prisma, cloudinary),
     ),
     client: new DemarchesClientService(prisma, cloudinary, options),
     references,

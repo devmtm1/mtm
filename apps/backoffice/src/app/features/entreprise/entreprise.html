@@ -1,0 +1,129 @@
+<div class="entreprise-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Administration</p>
+      <h1 class="page-header__title">Identité de l’entreprise</h1>
+      <p class="page-header__subtitle">
+        Le logo et les mentions légales (NINEA, RCCM, capital…) s’impriment en en-tête et en pied de page de tous les
+        documents générés : factures, rapports, contrats, quittances.
+      </p>
+    </div>
+    <button mat-stroked-button type="button" (click)="voirApercu()">
+      <svg class="btn-icon" lucideFileText aria-hidden="true"></svg>Voir un aperçu PDF
+    </button>
+  </header>
+
+  @if (loading()) {
+    <div class="skeleton" style="height: 320px"></div>
+  } @else {
+    <section class="page-card detail-section logo-section">
+      <div class="logo-section__image">
+        @if (profil()?.logoUrl; as url) {
+          <img [src]="url" alt="Logo de l’entreprise" />
+        } @else {
+          <span class="logo-section__defaut">Logo MTM par défaut</span>
+        }
+      </div>
+      <div class="logo-section__texte">
+        <h2>Logo</h2>
+        <p>
+          Image carrée de préférence (JPG, PNG ou WebP, 2 Mo maximum). Il est affiché dans un rond sur l’en-tête, et en
+          petit dans le pied de page.
+        </p>
+        @if (canModify) {
+          <div class="logo-section__actions">
+            <label class="upload-button" [class.is-busy]="busyLogo()">
+              <svg lucideUpload aria-hidden="true"></svg>
+              {{ profil()?.logoPersonnalise ? 'Remplacer le logo' : 'Téléverser un logo' }}
+              <input type="file" accept="image/jpeg,image/png,image/webp" (change)="choisirLogo($event)" [disabled]="busyLogo()" />
+            </label>
+            @if (profil()?.logoPersonnalise) {
+              <button mat-button type="button" (click)="retirerLogo()" [disabled]="busyLogo()">
+                <svg class="btn-icon" lucideTrash2 aria-hidden="true"></svg>Rétablir le logo par défaut
+              </button>
+            }
+          </div>
+        }
+        @if (erreurLogo()) {
+          <p class="erreur" role="alert">{{ erreurLogo() }}</p>
+        }
+      </div>
+    </section>
+
+    <form class="page-card detail-section" [formGroup]="form" (ngSubmit)="enregistrer()">
+      <h2>Mentions légales</h2>
+      <div class="grille">
+        <mat-form-field appearance="outline" class="plein">
+          <mat-label>Dénomination légale</mat-label>
+          <input matInput formControlName="raisonSociale" maxlength="200" autocomplete="off" />
+          <mat-hint>Ex. « MTM Immobilier SARL », imprimée dans le pied de page.</mat-hint>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Forme juridique</mat-label>
+          <input matInput formControlName="formeJuridique" maxlength="80" autocomplete="off" />
+          <mat-hint>SARL, SA, SUARL…</mat-hint>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Capital social</mat-label>
+          <input matInput formControlName="capital" maxlength="80" autocomplete="off" />
+          <mat-hint>Ex. 1 000 000 FCFA</mat-hint>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>NINEA</mat-label>
+          <input matInput formControlName="ninea" maxlength="80" autocomplete="off" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>RCCM</mat-label>
+          <input matInput formControlName="rccm" maxlength="80" autocomplete="off" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="plein">
+          <mat-label>Banque / coordonnées bancaires</mat-label>
+          <input matInput formControlName="banque" maxlength="300" autocomplete="off" />
+          <mat-hint>Facultatif — utile pour les factures.</mat-hint>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="plein">
+          <mat-label>Mention complémentaire de pied de page</mat-label>
+          <input matInput formControlName="mentionPied" maxlength="300" autocomplete="off" />
+          <mat-hint>Facultatif. Ex. « TVA non applicable ».</mat-hint>
+        </mat-form-field>
+      </div>
+
+      <h2>En-tête et coordonnées</h2>
+      <p class="aide">Laissés vides, ces champs reprennent les valeurs du site public.</p>
+      <div class="grille">
+        <mat-form-field appearance="outline">
+          <mat-label>Nom commercial</mat-label>
+          <input matInput formControlName="nomCommercial" maxlength="120" autocomplete="off" [placeholder]="defaut('nomCommercial')" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Slogan</mat-label>
+          <input matInput formControlName="slogan" maxlength="200" autocomplete="off" [placeholder]="defaut('slogan')" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="plein">
+          <mat-label>Adresse</mat-label>
+          <input matInput formControlName="adresse" maxlength="300" autocomplete="off" [placeholder]="defaut('adresse')" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Téléphone</mat-label>
+          <input matInput formControlName="telephone" maxlength="80" autocomplete="off" [placeholder]="defaut('telephone')" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>E-mail</mat-label>
+          <input matInput formControlName="email" maxlength="160" autocomplete="off" [placeholder]="defaut('email')" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Site web</mat-label>
+          <input matInput formControlName="siteWeb" maxlength="160" autocomplete="off" />
+        </mat-form-field>
+      </div>
+
+      @if (canModify) {
+        <div class="actions">
+          <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+            {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+          </button>
+        </div>
+      }
+    </form>
+  }
+</div>

@@ -97,6 +97,7 @@ describe('DemarchesDocumentsService — rapport de vérification', () => {
     prismaMock.systemSetting.findUnique.mockResolvedValue(null);
     prismaMock.missionVerification.findFirst.mockResolvedValue({ id: 'm1' });
     prismaMock.contentBlock.findMany.mockResolvedValue([]);
+    prismaMock.systemSetting.findMany.mockResolvedValue([]);
   });
 
   it('génère un rapport PDF publié et daté', async () => {
@@ -173,7 +174,8 @@ describe('DemarchesDocumentsService — rapport de vérification', () => {
     ).cloudinary.upload.mock.calls[0][0] as { buffer: Buffer };
     const contenu = envoi.buffer.toString('latin1');
     expect(contenu).toContain('/Filter /DCTDecode');
-    expect(contenu.match(/\/Subtype \/Image/g)).toHaveLength(1);
+    // Une photo + le logo, écrit une seule fois malgré l'en-tête et le pied de chaque page.
+    expect(contenu.match(/\/Subtype \/Image/g)).toHaveLength(2);
     expect(contenu).toContain('Reportage photographique');
     expect(contenu).toContain('Personnes pr');
     // 150 000 convenus, 100 000 envoyés : il reste 50 000.

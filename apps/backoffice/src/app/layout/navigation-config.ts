@@ -189,6 +189,12 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         ],
       },
       {
+        label: 'Identité de l’entreprise',
+        route: '/entreprise',
+        icon: LucideBuilding2,
+        permission: 'settings:consulter',
+      },
+      {
         label: 'Paramètres',
         route: '/settings',
         icon: LucideSettings,

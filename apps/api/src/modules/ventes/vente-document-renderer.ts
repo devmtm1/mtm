@@ -1,4 +1,5 @@
 import { A4, PdfDocument, type PdfFont } from '../../common/pdf/pdf-document';
+import { drawEntete, drawPied, type Societe } from '../../common/pdf/societe';
 
 /** Données d'un dossier nécessaires aux documents générés. */
 export interface VenteDocumentData {
@@ -6,13 +7,7 @@ export interface VenteDocumentData {
   title: string;
   reference: string;
   issuedAt: Date;
-  company: {
-    name: string;
-    tagline: string;
-    adresse: string;
-    telephone: string;
-    email: string;
-  };
+  company: Societe;
   dossier: {
     referenceInterne: string | null;
     statut: string;
@@ -53,9 +48,7 @@ export interface VenteDocumentData {
 }
 
 const NAVY = '#1A4974';
-const NAVY_DARK = '#233D5B';
 const NAVY_SUBTLE = '#EAF1F7';
-const ACCENT = '#B52C36';
 const TEXT = '#1F2937';
 const MUTED = '#6B7280';
 const BORDER = '#E5E7EB';
@@ -222,30 +215,7 @@ export function renderVenteDocument(data: VenteDocumentData): Buffer {
 type Page = ReturnType<PdfDocument['addPage']>;
 
 function drawHeader(page: Page, data: VenteDocumentData): void {
-  page.rect(0, 0, A4.width, 92, NAVY);
-  page.rect(0, 92, A4.width, 4, ACCENT);
-  page.text(data.company.name.toUpperCase(), MARGIN, 44, {
-    font: 'bold',
-    size: 20,
-    color: '#FFFFFF',
-  });
-  page.text(data.company.tagline, MARGIN, 62, { size: 9, color: '#CFE0EE' });
-  const right = A4.width - MARGIN;
-  page.text(data.company.adresse, right, 40, {
-    size: 9,
-    color: '#FFFFFF',
-    align: 'right',
-  });
-  page.text(data.company.telephone, right, 54, {
-    size: 9,
-    color: '#FFFFFF',
-    align: 'right',
-  });
-  page.text(data.company.email, right, 68, {
-    size: 9,
-    color: '#FFFFFF',
-    align: 'right',
-  });
+  drawEntete(page, data.company);
 }
 
 function drawTitle(page: Page, data: VenteDocumentData, cursor: Cursor): void {
@@ -785,19 +755,9 @@ function drawSignatures(
 }
 
 function drawFooter(page: Page, data: VenteDocumentData): void {
-  const y = A4.height - 48;
-  page.line(MARGIN, y - 14, MARGIN + CONTENT_WIDTH, y - 14, BORDER);
-  page.text(
-    `${data.company.name} · ${data.company.adresse} · ${data.company.telephone} · ${data.company.email}`,
-    A4.width / 2,
-    y,
-    { size: 8, color: MUTED, align: 'center' },
-  );
-  page.text(
+  drawPied(
+    page,
+    data.company,
     `${data.title} ${data.reference} — document généré le ${formatDate(data.issuedAt)}`,
-    A4.width / 2,
-    y + 12,
-    { size: 7.5, color: MUTED, align: 'center' },
   );
-  page.rect(0, A4.height - 6, A4.width, 6, NAVY_DARK);
 }

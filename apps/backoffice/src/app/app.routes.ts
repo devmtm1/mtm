@@ -91,6 +91,12 @@ export const routes: Routes = [
           import('./features/roles/roles').then((m) => m.Roles),
       },
       {
+        path: 'entreprise',
+        canActivate: [permissionsGuard(['settings:consulter'])],
+        loadComponent: () =>
+          import('./features/entreprise/entreprise').then((m) => m.Entreprise),
+      },
+      {
         path: 'settings',
         canActivate: [permissionsGuard(['settings:consulter'])],
         loadComponent: () =>

@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { CompanyProfileService } from '../company/company-profile.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import { validateUploadedAsset } from '../../common/storage/asset-validation';
 import { parseJpeg, type PdfJpeg } from '../../common/pdf/pdf-document';
@@ -65,6 +66,7 @@ export class DemarchesDocumentsService {
     private readonly access: DemarchesAccessService,
     private readonly options: DemarchesOptionsService,
     private readonly references: MissionReferencesService,
+    private readonly company: CompanyProfileService,
   ) {}
 
   async findAll(missionId: string, user: DemarchesUser) {
@@ -492,23 +494,7 @@ export class DemarchesDocumentsService {
     await this.prisma.documentMission.delete({ where: { id: documentId } });
   }
 
-  /** Coordonnées affichées sur le rapport : celles publiées sur le site. */
-  private async companyInfo(): Promise<MissionReportData['company']> {
-    const blocs = await this.prisma.contentBlock.findMany({
-      where: {
-        key: { in: ['contact.adresse', 'contact.telephone', 'contact.email'] },
-        isActive: true,
-      },
-      select: { key: true, content: true },
-    });
-    const valeur = (cle: string, defaut: string): string =>
-      blocs.find((bloc) => bloc.key === cle)?.content?.trim() || defaut;
-    return {
-      name: 'MTM Immobilier',
-      tagline: 'Achat · Vente · Gérance immobilière & BTP',
-      adresse: valeur('contact.adresse', 'Dakar, Sénégal'),
-      telephone: valeur('contact.telephone', ''),
-      email: valeur('contact.email', ''),
-    };
+  private companyInfo() {
+    return this.company.getSociete();
   }
 }

@@ -1,4 +1,5 @@
 import { A4, PdfDocument } from '../../common/pdf/pdf-document';
+import { drawEntete, drawPied, type Societe } from '../../common/pdf/societe';
 import {
   amountInWords,
   formatDate,
@@ -9,13 +10,7 @@ import {
 export interface QuittanceData {
   reference: string;
   issuedAt: Date;
-  company: {
-    name: string;
-    tagline: string;
-    adresse: string;
-    telephone: string;
-    email: string;
-  };
+  company: Societe;
   bien: { referenceInterne: string; adresse: string; commune: string | null };
   locataire: { nom: string; email: string | null; telephone: string | null };
   periode: Date;
@@ -26,7 +21,6 @@ export interface QuittanceData {
 }
 
 const NAVY = '#1A4974';
-const NAVY_DARK = '#233D5B';
 const NAVY_SUBTLE = '#EAF1F7';
 const ACCENT = '#B52C36';
 const TEXT = '#1F2937';
@@ -58,30 +52,7 @@ export function renderQuittance(data: QuittanceData): Buffer {
   const pdf = new PdfDocument(`Quittance de loyer ${data.reference}`);
   const page = pdf.addPage();
 
-  page.rect(0, 0, A4.width, 92, NAVY);
-  page.rect(0, 92, A4.width, 4, ACCENT);
-  page.text(data.company.name.toUpperCase(), MARGIN, 44, {
-    font: 'bold',
-    size: 20,
-    color: '#FFFFFF',
-  });
-  page.text(data.company.tagline, MARGIN, 62, { size: 9, color: '#CFE0EE' });
-  const right = A4.width - MARGIN;
-  page.text(data.company.adresse, right, 40, {
-    size: 9,
-    color: '#FFFFFF',
-    align: 'right',
-  });
-  page.text(data.company.telephone, right, 54, {
-    size: 9,
-    color: '#FFFFFF',
-    align: 'right',
-  });
-  page.text(data.company.email, right, 68, {
-    size: 9,
-    color: '#FFFFFF',
-    align: 'right',
-  });
+  drawEntete(page, data.company);
 
   const top = 128;
   page.text('QUITTANCE DE LOYER', MARGIN, top + 12, {
@@ -209,21 +180,11 @@ export function renderQuittance(data: QuittanceData): Buffer {
     });
   });
 
-  const footerY = A4.height - 48;
-  page.line(MARGIN, footerY - 14, MARGIN + CONTENT_WIDTH, footerY - 14, BORDER);
-  page.text(
-    `${data.company.name} · ${data.company.adresse} · ${data.company.telephone} · ${data.company.email}`,
-    A4.width / 2,
-    footerY,
-    { size: 8, color: MUTED, align: 'center' },
-  );
-  page.text(
+  drawPied(
+    page,
+    data.company,
     `Quittance ${data.reference} — document généré le ${formatDate(data.issuedAt)}`,
-    A4.width / 2,
-    footerY + 12,
-    { size: 7.5, color: MUTED, align: 'center' },
   );
-  page.rect(0, A4.height - 6, A4.width, 6, NAVY_DARK);
 
   return pdf.build();
 }
@@ -236,7 +197,7 @@ export function renderQuittance(data: QuittanceData): Buffer {
 export interface ReleveGestionData {
   reference: string;
   issuedAt: Date;
-  company: QuittanceData['company'];
+  company: Societe;
   proprietaire: { nom: string; email: string | null };
   bien: {
     referenceInterne: string;
@@ -269,30 +230,7 @@ export function renderReleveGestion(data: ReleveGestionData): Buffer {
   const pdf = new PdfDocument(`Relevé de gestion ${data.reference}`);
   const page = pdf.addPage();
 
-  page.rect(0, 0, A4.width, 92, NAVY);
-  page.rect(0, 92, A4.width, 4, ACCENT);
-  page.text(data.company.name.toUpperCase(), MARGIN, 44, {
-    font: 'bold',
-    size: 20,
-    color: '#FFFFFF',
-  });
-  page.text(data.company.tagline, MARGIN, 62, { size: 9, color: '#CFE0EE' });
-  const right = A4.width - MARGIN;
-  page.text(data.company.adresse, right, 40, {
-    size: 9,
-    color: '#FFFFFF',
-    align: 'right',
-  });
-  page.text(data.company.telephone, right, 54, {
-    size: 9,
-    color: '#FFFFFF',
-    align: 'right',
-  });
-  page.text(data.company.email, right, 68, {
-    size: 9,
-    color: '#FFFFFF',
-    align: 'right',
-  });
+  drawEntete(page, data.company);
 
   const top = 128;
   page.text('RELEVÉ DE GESTION LOCATIVE', MARGIN, top + 12, {
@@ -456,21 +394,11 @@ export function renderReleveGestion(data: ReleveGestionData): Buffer {
     { size: 8.5, color: MUTED, width: CONTENT_WIDTH, lineHeight: 12 },
   );
 
-  const footerY = A4.height - 48;
-  page.line(MARGIN, footerY - 14, MARGIN + CONTENT_WIDTH, footerY - 14, BORDER);
-  page.text(
-    `${data.company.name} · ${data.company.adresse} · ${data.company.telephone} · ${data.company.email}`,
-    A4.width / 2,
-    footerY,
-    { size: 8, color: MUTED, align: 'center' },
-  );
-  page.text(
+  drawPied(
+    page,
+    data.company,
     `Relevé ${data.reference} — document généré le ${formatDate(data.issuedAt)}`,
-    A4.width / 2,
-    footerY + 12,
-    { size: 7.5, color: MUTED, align: 'center' },
   );
-  page.rect(0, A4.height - 6, A4.width, 6, NAVY_DARK);
 
   return pdf.build();
 }

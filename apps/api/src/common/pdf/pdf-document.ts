@@ -204,13 +204,17 @@ export function wrapText(
   return lines;
 }
 
-class PdfPage {
+export class PdfPage {
   private readonly ops: Buffer[] = [];
   readonly images: PdfJpeg[] = [];
 
   /**
    * Place une image dans le rectangle donné (repère haut-gauche), sans la
    * déformer : elle est centrée et ajustée au plus grand côté qui tient.
+   *
+   * Avec `rond`, l'image remplit un cercle inscrit dans le rectangle et déborde
+   * pas de son contour : c'est ainsi que le logo, rond sur fond blanc, se pose
+   * sur une bande colorée sans laisser un carré blanc autour.
    */
   image(
     jpeg: PdfJpeg,
@@ -218,15 +222,36 @@ class PdfPage {
     y: number,
     width: number,
     height: number,
+    options: { rond?: boolean } = {},
   ): void {
-    const echelle = Math.min(width / jpeg.width, height / jpeg.height);
+    const rond = options.rond === true;
+    // Rond : l'image couvre tout le cercle ; sinon elle tient entière dans le cadre.
+    const echelle = rond
+      ? Math.max(width / jpeg.width, height / jpeg.height)
+      : Math.min(width / jpeg.width, height / jpeg.height);
     const w = jpeg.width * echelle;
     const h = jpeg.height * echelle;
     const left = x + (width - w) / 2;
     const top = y + (height - h) / 2;
-    this.images.push(jpeg);
+    // Une même image (le logo, en-tête et pied) n'est référencée qu'une fois par page.
+    let indice = this.images.indexOf(jpeg);
+    if (indice < 0) indice = this.images.push(jpeg) - 1;
+    const dessin = `${n(w)} 0 0 ${n(h)} ${n(left)} ${n(A4.height - top - h)} cm /Im${indice} Do`;
+    if (!rond) {
+      this.push(`q ${dessin} Q`);
+      return;
+    }
+    const rayon = Math.min(width, height) / 2;
+    const cx = x + width / 2;
+    const cy = A4.height - (y + height / 2);
+    const k = rayon * 0.5523;
     this.push(
-      `q ${n(w)} 0 0 ${n(h)} ${n(left)} ${n(A4.height - top - h)} cm /Im${this.images.length - 1} Do Q`,
+      `q ${n(cx + rayon)} ${n(cy)} m ` +
+        `${n(cx + rayon)} ${n(cy + k)} ${n(cx + k)} ${n(cy + rayon)} ${n(cx)} ${n(cy + rayon)} c ` +
+        `${n(cx - k)} ${n(cy + rayon)} ${n(cx - rayon)} ${n(cy + k)} ${n(cx - rayon)} ${n(cy)} c ` +
+        `${n(cx - rayon)} ${n(cy - k)} ${n(cx - k)} ${n(cy - rayon)} ${n(cx)} ${n(cy - rayon)} c ` +
+        `${n(cx + k)} ${n(cy - rayon)} ${n(cx + rayon)} ${n(cy - k)} ${n(cx + rayon)} ${n(cy)} c ` +
+        `W n ${dessin} Q`,
     );
   }
 
@@ -348,16 +373,17 @@ export class PdfDocument {
     const fontBold = add(
       '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>',
     );
-    const totalImages = this.pages.reduce(
-      (somme, page) => somme + page.images.length,
-      0,
-    );
+    // Chaque image n'est écrite qu'une fois dans le fichier, même si plusieurs pages l'utilisent.
+    const totalImages = new Set(this.pages.flatMap((page) => page.images)).size;
+    const objetsImage = new Map<PdfJpeg, number>();
     const pagesId = objects.length + 1 + this.pages.length * 2 + totalImages;
     const pageIds: number[] = [];
     for (const page of this.pages) {
       const content = page.content();
-      const imageIds = page.images.map((jpeg) =>
-        add(
+      const imageIds = page.images.map((jpeg) => {
+        const connu = objetsImage.get(jpeg);
+        if (connu !== undefined) return connu;
+        const id = add(
           Buffer.concat([
             Buffer.from(
               `<< /Type /XObject /Subtype /Image /Width ${jpeg.width} /Height ${jpeg.height} /ColorSpace /${jpeg.components === 1 ? 'DeviceGray' : 'DeviceRGB'} /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.data.length} >>\nstream\n`,
@@ -366,8 +392,10 @@ export class PdfDocument {
             jpeg.data,
             Buffer.from('\nendstream', 'latin1'),
           ]),
-        ),
-      );
+        );
+        objetsImage.set(jpeg, id);
+        return id;
+      });
       const xobjects = imageIds.length
         ? ` /XObject << ${imageIds.map((id, index) => `/Im${index} ${id} 0 R`).join(' ')} >>`
         : '';

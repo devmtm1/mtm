@@ -1,4 +1,5 @@
 import { A4, PdfDocument, type PdfFont } from '../../common/pdf/pdf-document';
+import { ligneLegale, logoDe, type Societe } from '../../common/pdf/societe';
 import { formatDate, formatMoney } from '../ventes/vente-document-renderer';
 
 /**
@@ -13,13 +14,7 @@ import { formatDate, formatMoney } from '../ventes/vente-document-renderer';
 export interface ChantierReportData {
   reference: string;
   issuedAt: Date;
-  company: {
-    name: string;
-    tagline: string;
-    adresse: string;
-    telephone: string;
-    email: string;
-  };
+  company: Societe;
   projet: {
     intitule: string;
     typeProjet: string;
@@ -104,12 +99,19 @@ type Page = ReturnType<PdfDocument['addPage']>;
 
 function drawHeader(page: Page, data: ChantierReportData): void {
   page.rect(0, 0, A4.width, 96, '#0B3B36');
-  page.text(data.company.name, MARGE, 40, {
+  const logo = logoDe(data.company);
+  if (logo) page.image(logo, MARGE, 14, 68, 68, { rond: true });
+  const xTexte = logo ? MARGE + 82 : MARGE;
+  page.text(data.company.name, xTexte, 40, {
     font: 'bold',
     size: 17,
     color: '#FFFFFF',
   });
-  page.text(data.company.tagline, MARGE, 58, { size: 9, color: '#9EC9C3' });
+  page.text(data.company.tagline, xTexte, 58, {
+    size: 9,
+    color: '#9EC9C3',
+    width: 230,
+  });
   page.text('RAPPORT D’AVANCEMENT', A4.width - MARGE, 40, {
     font: 'bold',
     size: 12,
@@ -414,6 +416,15 @@ function drawPiedDePage(
     { size: 8, color: GRIS, width: LARGEUR },
   );
   cursor.y += 14;
+  const legale = ligneLegale(data.company);
+  if (legale) {
+    cursor.y +=
+      page.text(legale, MARGE, cursor.y, {
+        size: 8,
+        color: GRIS,
+        width: LARGEUR,
+      }) + 4;
+  }
   page.text(
     'Ce rapport présente l’avancement constaté à la date d’établissement. Il ne vaut pas procès-verbal de réception.',
     MARGE,

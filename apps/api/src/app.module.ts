@@ -29,6 +29,7 @@ import { ConstructionModule } from './modules/construction/construction.module';
 import { CronModule } from './modules/cron/cron.module';
 import { GedModule } from './modules/ged/ged.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { CompanyModule } from './modules/company/company.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     LocatifModule,
     ConstructionModule,
     NotificationsModule,
+    CompanyModule,
     GedModule,
     CronModule,
     HealthModule,

@@ -30,6 +30,7 @@ describe('VentesDocumentsService', () => {
       _max: { version: 2 },
     });
     prismaMock.contentBlock.findMany.mockResolvedValue([]);
+    prismaMock.systemSetting.findMany.mockResolvedValue([]);
     prismaMock.systemSetting.findUnique.mockResolvedValue({
       value: [
         'bon_reservation',

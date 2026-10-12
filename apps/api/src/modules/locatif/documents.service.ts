@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../../database/prisma.service';
+import { CompanyProfileService } from '../company/company-profile.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import { validateUploadedAsset } from '../../common/storage/asset-validation';
 import {
@@ -44,6 +45,7 @@ export class DocumentsLocatifService {
     private readonly access: LocatifAccessService,
     private readonly options: LocatifOptionsService,
     private readonly notifications: NotificationsService,
+    private readonly company: CompanyProfileService,
   ) {}
 
   async findAll(bailLocatifId: string, user: LocatifUser) {
@@ -437,22 +439,7 @@ export class DocumentsLocatifService {
     } as Express.Multer.File;
   }
 
-  private async companyInfo(): Promise<QuittanceData['company']> {
-    const blocs = await this.prisma.contentBlock.findMany({
-      where: {
-        key: { in: ['contact.adresse', 'contact.telephone', 'contact.email'] },
-        isActive: true,
-      },
-      select: { key: true, content: true },
-    });
-    const valeur = (cle: string, defaut: string): string =>
-      blocs.find((bloc) => bloc.key === cle)?.content?.trim() || defaut;
-    return {
-      name: 'MTM Immobilier',
-      tagline: 'Achat · Vente · Gérance immobilière & BTP',
-      adresse: valeur('contact.adresse', 'Dakar, Sénégal'),
-      telephone: valeur('contact.telephone', ''),
-      email: valeur('contact.email', ''),
-    };
+  private companyInfo() {
+    return this.company.getSociete();
   }
 }

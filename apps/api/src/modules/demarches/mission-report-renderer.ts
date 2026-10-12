@@ -1,5 +1,6 @@
 import { A4, PdfDocument, type PdfJpeg } from '../../common/pdf/pdf-document';
 import type { SyntheseReglement } from './mission-paiements';
+import type { Societe } from '../../common/pdf/societe';
 import {
   ACCENT,
   BORDER,
@@ -24,13 +25,7 @@ import { formatDate, formatMoney } from '../ventes/vente-document-renderer';
 export interface MissionReportData {
   reference: string;
   issuedAt: Date;
-  company: {
-    name: string;
-    tagline: string;
-    adresse: string;
-    telephone: string;
-    email: string;
-  };
+  company: Societe;
   mission: {
     typeVerification: string;
     objectif: string | null;

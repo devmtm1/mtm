@@ -12,6 +12,7 @@ import { PaiementsLoyerService } from './paiements.service';
 import { CautionService } from './caution.service';
 import { IncidentsLocatifService } from './incidents.service';
 import { DocumentsLocatifService } from './documents.service';
+import { CompanyProfileService } from '../company/company-profile.service';
 import { RelancesLoyerService } from './relances.service';
 import { LocatifSchedulerService } from './locatif-scheduler.service';
 import { LocatairesService } from './locataires.service';
@@ -77,6 +78,7 @@ export function createLocatifTestContext() {
       access,
       options,
       notificationsMock as never,
+      new CompanyProfileService(prisma, cloudinary),
     ),
     relances,
     scheduler: new LocatifSchedulerService(

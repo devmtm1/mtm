@@ -73,6 +73,7 @@ describe('DemarchesDocumentsService — facture de mission', () => {
     ctx.prismaMock.missionVerification.findMany.mockResolvedValue([]);
     ctx.prismaMock.missionVerification.update.mockResolvedValue({ id: 'm1' });
     ctx.prismaMock.contentBlock.findMany.mockResolvedValue([]);
+    ctx.prismaMock.systemSetting.findMany.mockResolvedValue([]);
     ctx.prismaMock.documentMission.count.mockResolvedValue(0);
     ctx.prismaMock.documentMission.create.mockResolvedValue({
       id: 'd1',
