@@ -38,6 +38,7 @@ const PHASE_1_RESOURCES = [
   'agenda',
   'messages',
   'notifications',
+  'finances',
 ] as const;
 
 // Rôles initiaux recommandés par la section 24 du CDC.
@@ -862,6 +863,47 @@ async function main(): Promise<void> {
     }
   }
   console.log('  Permissions agenda, tâches et messages attribuées');
+
+  // --- Finances (J3.1) ---
+  // La comptabilité saisit, valide (par une autre personne que l'auteur) et
+  // exporte ; la direction a la main complète, y compris la clôture des mois ;
+  // le manager consulte.
+  const permissionsFinances: Record<string, string[]> = {
+    comptable: [
+      'finances:consulter',
+      'finances:creer',
+      'finances:modifier',
+      'finances:valider',
+      'finances:exporter',
+    ],
+    direction: [
+      'finances:consulter',
+      'finances:creer',
+      'finances:modifier',
+      'finances:valider',
+      'finances:exporter',
+      'finances:administrer',
+    ],
+    manager: ['finances:consulter'],
+  };
+  for (const [roleName, noms] of Object.entries(permissionsFinances)) {
+    const role = await prisma.role.findUniqueOrThrow({
+      where: { name: roleName },
+    });
+    for (const nom of noms) {
+      const permission = await prisma.permission.findUniqueOrThrow({
+        where: { name: nom },
+      });
+      await prisma.rolePermission.upsert({
+        where: {
+          roleId_permissionId: { roleId: role.id, permissionId: permission.id },
+        },
+        update: {},
+        create: { roleId: role.id, permissionId: permission.id },
+      });
+    }
+  }
+  console.log('  Permissions finances attribuées');
 
   // --- Utilisateur administrateur par défaut ---
   const adminUser = await prisma.user.upsert({

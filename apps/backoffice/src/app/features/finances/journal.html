@@ -1,0 +1,120 @@
+<div class="journal-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Finances</p>
+      <h1 class="page-header__title">Journal financier</h1>
+      <p class="page-header__subtitle">
+        Chaque mouvement d’argent des ventes, de la gestion locative, des démarches et des chantiers, repris tel quel,
+        avec les saisies validées. Rien n’est ressaisi.
+      </p>
+    </div>
+    @if (peutExporter) {
+      <button mat-flat-button color="primary" type="button" (click)="exporter()">Exporter pour la comptabilité</button>
+    }
+  </header>
+
+  <section class="page-card filtres" aria-label="Filtres">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Du</mat-label>
+      <input matInput type="date" [formControl]="du" (change)="recharger()" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Au</mat-label>
+      <input matInput type="date" [formControl]="au" (change)="recharger()" />
+    </mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Raccourci</mat-label>
+      <mat-select (selectionChange)="appliquerPreset($event.value)" placeholder="Choisir une période">
+        @for (p of periodes; track p.code) {
+          <mat-option [value]="p.code">{{ p.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Activité</mat-label>
+      <mat-select [value]="activite()" (selectionChange)="filtrer('activite', $event.value)">
+        <mat-option value="">Toutes</mat-option>
+        @for (a of activites; track a.code) {
+          <mat-option [value]="a.code">{{ a.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Sens</mat-label>
+      <mat-select [value]="sens()" (selectionChange)="filtrer('sens', $event.value)">
+        <mat-option value="">Entrées et sorties</mat-option>
+        <mat-option value="entree">Entrées</mat-option>
+        <mat-option value="sortie">Sorties</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="filtres__recherche">
+      <mat-label>Rechercher (libellé, tiers, référence)</mat-label>
+      <input matInput [formControl]="recherche" autocomplete="off" />
+    </mat-form-field>
+  </section>
+
+  @if (journal(); as j) {
+    <section class="totaux" aria-label="Totaux de la sélection">
+      <div><span>Entrées</span><strong>{{ fcfa(j.totaux.encaissements) }}</strong></div>
+      <div><span>Dont revenu MTM</span><strong>{{ fcfa(j.totaux.revenu) }}</strong></div>
+      <div><span>Sorties</span><strong>{{ fcfa(j.totaux.depenses) }}</strong></div>
+      <div><span>Mouvements</span><strong>{{ j.total }}</strong></div>
+    </section>
+  }
+
+  @if (loading() && !journal()) {
+    <div class="skeleton" style="height: 240px"></div>
+  } @else if (journal(); as j) {
+    @if (j.items.length === 0) {
+      <section class="page-card">
+        <div class="empty-state">
+          <h3>Aucun mouvement</h3>
+          <p>Rien ne correspond à cette période et à ces filtres.</p>
+        </div>
+      </section>
+    } @else {
+      <section class="page-card tableau-scroll" [class.is-chargement]="loading()">
+        <table class="tableau">
+          <thead>
+            <tr>
+              <th scope="col">Date</th>
+              <th scope="col">Libellé</th>
+              <th scope="col">Activité</th>
+              <th scope="col">Tiers</th>
+              <th scope="col" class="num">Entrée</th>
+              <th scope="col" class="num">Sortie</th>
+              <th scope="col" class="num">Revenu MTM</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (ligne of j.items; track ligne.id) {
+              <tr>
+                <td>{{ date(ligne.date) }}</td>
+                <td>
+                  @if (route(ligne); as lien) {
+                    <a [routerLink]="lien">{{ ligne.libelle }}</a>
+                  } @else {
+                    {{ ligne.libelle }}
+                  }
+                  <small>{{ nature(ligne.nature) }}{{ ligne.reference ? ' · ' + ligne.reference : '' }}</small>
+                </td>
+                <td>{{ libelleActivite(ligne.activite) }}</td>
+                <td>{{ ligne.tiers }}</td>
+                <td class="num">{{ ligne.sens === 'entree' ? fcfa(ligne.montant) : '' }}</td>
+                <td class="num sortie">{{ ligne.sens === 'sortie' ? fcfa(ligne.montant) : '' }}</td>
+                <td class="num">{{ ligne.sens === 'entree' && ligne.revenu ? fcfa(ligne.revenu) : '' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </section>
+      @if (pages() > 1) {
+        <nav class="pagination" aria-label="Pages du journal">
+          <button mat-stroked-button type="button" (click)="aller(page() - 1)" [disabled]="page() <= 1">Précédentes</button>
+          <span>Page {{ page() }} sur {{ pages() }}</span>
+          <button mat-stroked-button type="button" (click)="aller(page() + 1)" [disabled]="page() >= pages()">Suivantes</button>
+        </nav>
+      }
+    }
+  }
+</div>

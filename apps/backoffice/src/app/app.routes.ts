@@ -91,6 +91,26 @@ export const routes: Routes = [
           import('./features/roles/roles').then((m) => m.Roles),
       },
       {
+        path: 'finances/journal',
+        canActivate: [permissionsGuard(['finances:consulter'])],
+        loadComponent: () => import('./features/finances/journal').then((m) => m.JournalFinancier),
+      },
+      {
+        path: 'finances/operations',
+        canActivate: [permissionsGuard(['finances:consulter'])],
+        loadComponent: () => import('./features/finances/operations').then((m) => m.OperationsFinancieres),
+      },
+      {
+        path: 'finances/clotures',
+        canActivate: [permissionsGuard(['finances:consulter'])],
+        loadComponent: () => import('./features/finances/clotures').then((m) => m.CloturesFinancieres),
+      },
+      {
+        path: 'finances',
+        canActivate: [permissionsGuard(['finances:consulter'])],
+        loadComponent: () => import('./features/finances/tableau-financier').then((m) => m.TableauFinancierPage),
+      },
+      {
         path: 'agenda',
         canActivate: [permissionsGuard(['agenda:consulter'])],
         loadComponent: () => import('./features/agenda/agenda').then((m) => m.Agenda),

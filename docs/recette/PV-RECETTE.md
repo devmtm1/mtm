@@ -35,6 +35,8 @@ considérée comme terminée sans critère d'acceptation validé ».
 | J2.2 | Démarches et vérification foncière | oui | à signer |
 | J2.3 | Construction et suivi de chantier | oui | à signer |
 | J2.4 | Agenda, tâches, workflows, notifications, messagerie | oui (canaux SMS/WhatsApp : passerelle à brancher) | à signer |
+| J2.5 | Applications mobiles | reporté (décision MTM) : le site s'installe comme application (PWA) | — |
+| J3.1 | Comptabilité et finances | oui | à signer |
 
 Réserve générale (tous jalons) : le **paiement en ligne** par un prestataire
 (Wave, Orange Money, carte) n'est pas implémenté ; il est reporté à une décision
@@ -319,6 +321,34 @@ Mode d’emploi : `docs/AGENDA_TACHES_MESSAGES.md`.
 **Anomalies et réserves** : SMS et WhatsApp inactifs tant que MTM n’a pas choisi de prestataire (la
 couche d’envoi et son journal sont prêts). Les workflows configurables couvrent les ventes, le pipeline
 commercial et les chantiers ; les parcours des missions et des séjours restent définis par leur référentiel.
+
+---
+
+## J3.1 — Comptabilité et finances
+
+**Critères** : recettes, dépenses, commissions, loyers et frais de démarches suivis ; recettes ventilées par
+activité ; tableaux de bord financiers (chiffre d’affaires, encaissements, dépenses, marge, impayés,
+échéances) ; exports pour l’exploitation comptable externe.
+
+**Preuves** : `test/finances.e2e-spec.ts` (27 scénarios : droits, journal repris des quatre modules sans
+les mouvements en attente ou annulés, revenu par activité chiffré à l’unité — marge au prorata, commission de
+gestion par bien et par défaut, frais de transfert —, saisies validées par une autre personne, rejets, justificatif,
+export CSV et Excel tracé, clôture mensuelle qui fige les totaux et bloque les modules, réouverture motivée),
+`finances.calculs.spec.ts` (calculs, périodes, CSV), `finances-utils.spec.ts`. Mode d’emploi et définitions :
+`docs/FINANCES.md`.
+
+| Recette MTM | Fait | Date |
+| --- | --- | --- |
+| La direction valide les définitions : encaissements, revenu (marge des ventes, commission de gestion, prestations) | ☐ | |
+| Marge renseignée sur les biens vendus ; le revenu de ventes réelles est conforme au calcul de la direction | ☐ | |
+| Commission de gestion fixée pour les biens en gérance (taux par bien ou défaut) ; revenu locatif conforme | ☐ | |
+| Saisie d’un loyer de bureaux par la comptabilité, validation par la direction, présence dans les totaux | ☐ | |
+| Export Excel du mois remis au cabinet comptable : il le reconnaît et l’exploite | ☐ | |
+| Clôture d’un mois réel ; une correction à la date d’un mois clôturé est refusée | ☐ | |
+
+**Anomalies et réserves** : la TVA n’est pas gérée ; les paiements d’un client sur un chantier se saisissent
+comme recettes ; le format d’export est celui du journal (colonnes décrites dans `docs/FINANCES.md`), à adapter
+si le cabinet comptable impose un format d’import précis.
 
 ---
 

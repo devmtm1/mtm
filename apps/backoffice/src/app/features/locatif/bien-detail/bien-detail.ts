@@ -239,6 +239,7 @@ export class BienDetailPage implements OnInit {
     commune: [''],
     region: [''],
     superficie: [null as number | null],
+    tauxGestion: [null as number | null],
     notes: [''],
     responsableId: [''],
   });
@@ -363,6 +364,7 @@ export class BienDetailPage implements OnInit {
         commune: texte(valeur.commune),
         region: texte(valeur.region),
         superficie: valeur.superficie ?? undefined,
+        tauxGestion: valeur.tauxGestion,
         notes: texte(valeur.notes),
         responsableId: valeur.responsableId || undefined,
       }),
@@ -711,6 +713,7 @@ export class BienDetailPage implements OnInit {
           commune: bien.commune ?? '',
           region: bien.region ?? '',
           superficie: bien.superficie === null ? null : Number(bien.superficie),
+          tauxGestion: bien.tauxGestion === null || bien.tauxGestion === undefined ? null : Number(bien.tauxGestion),
           notes: bien.notes ?? '',
           responsableId: bien.responsable?.id ?? '',
         });

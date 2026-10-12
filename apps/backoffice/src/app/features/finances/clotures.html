@@ -1,0 +1,59 @@
+<div class="clotures-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Finances</p>
+      <h1 class="page-header__title">Clôtures mensuelles</h1>
+      <p class="page-header__subtitle">
+        Un mois clôturé garde ses chiffres : plus aucun paiement, dépense ou saisie de ce mois ne peut les changer. Une
+        correction se fait alors à la date du jour. Clôturez après avoir validé toutes les saisies du mois et exporté le
+        journal pour la comptabilité.
+      </p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="skeleton" style="height: 260px"></div>
+  } @else {
+    <ul class="mois">
+      @for (m of mois(); track m.periode) {
+        <li class="page-card ligne" [class.is-cloture]="m.cloture">
+          <div class="ligne__titre">
+            <strong>{{ libelle(m.periode) }}</strong>
+            @if (m.cloture) {
+              <span class="status-pill status-pill--success">Clôturé</span>
+            } @else if (m.peutEtreCloture) {
+              <span class="status-pill status-pill--warning">Ouvert</span>
+            } @else {
+              <span class="status-pill">En cours</span>
+            }
+          </div>
+
+          @if (m.cloture && m.resume) {
+            <dl class="ligne__chiffres">
+              <div><dt>Encaissements</dt><dd>{{ fcfa(m.resume.totaux.encaissements) }}</dd></div>
+              <div><dt>Revenu MTM</dt><dd>{{ fcfa(m.resume.totaux.revenu) }}</dd></div>
+              <div><dt>Dépenses</dt><dd>{{ fcfa(m.resume.totaux.depenses) }}</dd></div>
+              <div><dt>Résultat</dt><dd [class.negatif]="m.resume.totaux.resultat < 0">{{ fcfa(m.resume.totaux.resultat) }}</dd></div>
+            </dl>
+            <p class="ligne__meta">
+              Clôturé le {{ date(m.clotureLe) }}{{ m.par ? ' par ' + m.par.firstName + ' ' + m.par.lastName : '' }} ·
+              {{ m.resume.mouvements }} mouvement{{ m.resume.mouvements > 1 ? 's' : '' }}
+            </p>
+          }
+
+          @if (peutAdministrer) {
+            <div class="ligne__actions">
+              @if (m.cloture) {
+                <button mat-stroked-button type="button" (click)="rouvrir(m)" [disabled]="occupe() === m.periode">Rouvrir</button>
+              } @else if (m.peutEtreCloture) {
+                <button mat-flat-button color="primary" type="button" (click)="cloturer(m)" [disabled]="occupe() === m.periode">
+                  Clôturer ce mois
+                </button>
+              }
+            </div>
+          }
+        </li>
+      }
+    </ul>
+  }
+</div>

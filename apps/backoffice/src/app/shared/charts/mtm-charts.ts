@@ -102,3 +102,71 @@ export function donutChart(distribution: Partial<Record<string, number>>): EChar
     ],
   };
 }
+
+export interface PointRevenuDepenses {
+  periode: string;
+  revenu: number;
+  depenses: number;
+}
+
+/** Revenu et dépenses mois par mois, côte à côte (pilotage financier). */
+export function revenuDepensesChart(points: PointRevenuDepenses[]): EChartsCoreOption {
+  const format = (value: number) => `${Math.round(value).toLocaleString('fr-FR')} FCFA`;
+  return {
+    color: ['#1A4974', '#B52C36'],
+    textStyle: { fontFamily: FONT },
+    grid: { left: 8, right: 8, top: 32, bottom: 8, containLabel: true },
+    legend: { top: 0, right: 0, icon: 'circle', textStyle: { color: TEXT_COLOR, fontSize: 11 } },
+    tooltip: {
+      trigger: 'axis',
+      formatter: (params: unknown) => {
+        const lignes = (Array.isArray(params) ? params : [params]) as { dataIndex: number; seriesName: string; value: number }[];
+        const point = points[lignes[0]?.dataIndex ?? 0];
+        const corps = lignes.map((ligne) => `${ligne.seriesName} : <strong>${format(ligne.value)}</strong>`).join('<br/>');
+        return `${point ? periodeLabel(point.periode) : ''}<br/>${corps}`;
+      },
+    },
+    xAxis: {
+      type: 'category',
+      data: points.map((point, index) => axisLabel(point.periode, index === 0)),
+      axisTick: { show: false },
+      axisLine: { lineStyle: { color: GRID_LINE } },
+      axisLabel: { color: TEXT_COLOR, fontSize: 11, interval: 0 },
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: { lineStyle: { color: GRID_LINE, type: 'dashed' } },
+      axisLabel: { color: TEXT_COLOR, fontSize: 11, formatter: (value: number) => compactNumber(value) },
+    },
+    series: [
+      { name: 'Revenu MTM', type: 'bar', data: points.map((p) => p.revenu), barMaxWidth: 28, itemStyle: { borderRadius: [6, 6, 0, 0] } },
+      { name: 'Dépenses', type: 'bar', data: points.map((p) => p.depenses), barMaxWidth: 28, itemStyle: { borderRadius: [6, 6, 0, 0] } },
+    ],
+  };
+}
+
+/** Anneau à partir de libellés déjà écrits en clair (et non de codes à traduire). */
+export function donutLibelles(items: { label: string; valeur: number }[]): EChartsCoreOption {
+  return {
+    color: SERIES_COLORS,
+    textStyle: { fontFamily: FONT },
+    tooltip: {
+      trigger: 'item',
+      formatter: (params: unknown) => {
+        const p = params as { name: string; value: number; percent: number };
+        return `${p.name}<br/><strong>${Math.round(p.value).toLocaleString('fr-FR')} FCFA</strong> (${p.percent} %)`;
+      },
+    },
+    legend: { bottom: 0, left: 'center', icon: 'circle', textStyle: { color: TEXT_COLOR, fontSize: 11 }, itemWidth: 10, itemHeight: 10 },
+    series: [
+      {
+        type: 'pie',
+        radius: ['52%', '76%'],
+        center: ['50%', '42%'],
+        label: { show: false },
+        itemStyle: { borderColor: '#FFFFFF', borderWidth: 2 },
+        data: items.map((item) => ({ name: item.label, value: item.valeur })),
+      },
+    ],
+  };
+}

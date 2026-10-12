@@ -184,6 +184,7 @@ export class BiensService {
         commune: dto.commune,
         region: dto.region,
         superficie: dto.superficie,
+        tauxGestion: dto.tauxGestion,
         notes: dto.notes,
         // Un bien se crée toujours non publié : la publication exige des
         // photos, qui ne peuvent être ajoutées qu'une fois la fiche créée.
@@ -234,6 +235,9 @@ export class BiensService {
         ...(dto.commune !== undefined ? { commune: dto.commune } : {}),
         ...(dto.region !== undefined ? { region: dto.region } : {}),
         ...(dto.superficie !== undefined ? { superficie: dto.superficie } : {}),
+        ...(dto.tauxGestion !== undefined
+          ? { tauxGestion: dto.tauxGestion }
+          : {}),
         ...(dto.statut !== undefined ? { statut: dto.statut } : {}),
         ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
         ...(responsableId !== undefined ? { responsableId } : {}),

@@ -1,0 +1,191 @@
+<div class="finances-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Finances</p>
+      <h1 class="page-header__title">Tableau de bord financier</h1>
+      <p class="page-header__subtitle">
+        Ce que MTM a encaissé, ce qu’elle a réellement gagné, ce qu’elle a dépensé et ce qu’il lui reste à encaisser,
+        par activité.
+      </p>
+    </div>
+    <div class="page-header__actions">
+      <a mat-stroked-button routerLink="/finances/journal">Voir le journal</a>
+      <a mat-flat-button color="primary" routerLink="/finances/operations">Saisies</a>
+    </div>
+  </header>
+
+  <nav class="periodes" aria-label="Période affichée">
+    @for (periode of periodes; track periode.code) {
+      <button type="button" [class.is-actif]="choix().code === periode.code" (click)="choisir(periode)">
+        {{ periode.label }}
+      </button>
+    }
+  </nav>
+
+  @if (loading()) {
+    <div class="skeleton" style="height: 260px"></div>
+  } @else if (donnees(); as d) {
+    @if (d.operationsEnAttente > 0 && canValidate) {
+      <aside class="alert-banner" role="status">
+        <div class="alert-banner__head">
+          <strong>{{ d.operationsEnAttente }} opération{{ d.operationsEnAttente > 1 ? 's' : '' }} à valider</strong>
+        </div>
+        <p>Tant qu’elles ne sont pas validées, elles ne comptent pas dans les totaux. <a routerLink="/finances/operations">Les traiter</a>.</p>
+      </aside>
+    }
+
+    <section class="kpis" aria-label="Chiffres de la période">
+      <article class="kpi-fin">
+        <span class="kpi-fin__titre">Encaissements</span>
+        <strong>{{ fcfa(d.totaux.encaissements) }}</strong>
+        <small [class]="'tendance tendance--' + tendance(d.totaux.encaissements, d.precedent.encaissements)">
+          {{ variation(d.totaux.encaissements, d.precedent.encaissements) }} vs période précédente
+        </small>
+        <span class="kpi-fin__aide">Argent reçu, loyers et prix de vente compris</span>
+      </article>
+      <article class="kpi-fin kpi-fin--principal">
+        <span class="kpi-fin__titre">Revenu de MTM</span>
+        <strong>{{ fcfa(d.totaux.revenu) }}</strong>
+        <small [class]="'tendance tendance--' + tendance(d.totaux.revenu, d.precedent.revenu)">
+          {{ variation(d.totaux.revenu, d.precedent.revenu) }} vs période précédente
+        </small>
+        <span class="kpi-fin__aide">Marges, commissions de gestion, prestations</span>
+      </article>
+      <article class="kpi-fin">
+        <span class="kpi-fin__titre">Dépenses</span>
+        <strong>{{ fcfa(d.totaux.depenses) }}</strong>
+        <small [class]="'tendance tendance--' + (tendance(d.totaux.depenses, d.precedent.depenses) === 'hausse' ? 'baisse' : tendance(d.totaux.depenses, d.precedent.depenses) === 'baisse' ? 'hausse' : 'stable')">
+          {{ variation(d.totaux.depenses, d.precedent.depenses) }} vs période précédente
+        </small>
+        <span class="kpi-fin__aide">Commissions, chantiers, frais, saisies</span>
+      </article>
+      <article class="kpi-fin" [class.kpi-fin--negatif]="d.totaux.resultat < 0">
+        <span class="kpi-fin__titre">Résultat</span>
+        <strong>{{ fcfa(d.totaux.resultat) }}</strong>
+        <small [class]="'tendance tendance--' + tendance(d.totaux.resultat, d.precedent.resultat)">
+          {{ variation(d.totaux.resultat, d.precedent.resultat) }} vs période précédente
+        </small>
+        <span class="kpi-fin__aide">Revenu moins dépenses</span>
+      </article>
+    </section>
+
+    @if (d.margesInconnues > 0) {
+      <aside class="alert-banner alert-banner--info" role="status">
+        <div class="alert-banner__head">
+          <strong>{{ d.margesInconnues }} paiement{{ d.margesInconnues > 1 ? 's' : '' }} de vente sans marge connue</strong>
+        </div>
+        <p>
+          Le revenu de ces ventes est compté à zéro tant que la marge du bien n’est pas renseignée dans sa fiche
+          (prix d’acquisition et prix public).
+        </p>
+      </aside>
+    }
+
+    <div class="graphiques">
+      <section class="page-card">
+        <h2>Revenu et dépenses par mois</h2>
+        @if (graphiqueMensuel(); as options) {
+          <div echarts [options]="options" class="graphique" role="img" aria-label="Revenu et dépenses par mois"></div>
+        } @else {
+          <p class="vide">Aucun mouvement sur cette période.</p>
+        }
+      </section>
+      <section class="page-card">
+        <h2>D’où vient le revenu</h2>
+        @if (graphiqueRepartition(); as options) {
+          <div echarts [options]="options" class="graphique graphique--anneau" role="img" aria-label="Répartition du revenu par activité"></div>
+        } @else {
+          <p class="vide">Aucun revenu sur cette période.</p>
+        }
+      </section>
+    </div>
+
+    <section class="page-card" aria-label="Résultat par activité">
+      <h2>Par activité</h2>
+      <div class="tableau-scroll">
+        <table class="tableau">
+          <thead>
+            <tr>
+              <th scope="col">Activité</th>
+              <th scope="col" class="num">Encaissements</th>
+              <th scope="col" class="num">Revenu MTM</th>
+              <th scope="col" class="num">Dépenses</th>
+              <th scope="col" class="num">Résultat</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (a of d.parActivite; track a.activite) {
+              <tr>
+                <th scope="row">{{ a.libelle }}</th>
+                <td class="num">{{ fcfa(a.encaissements) }}</td>
+                <td class="num">{{ fcfa(a.revenu) }}</td>
+                <td class="num">{{ fcfa(a.depenses) }}</td>
+                <td class="num" [class.negatif]="a.resultat < 0">{{ fcfa(a.resultat) }}</td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr>
+              <th scope="row">Total</th>
+              <td class="num">{{ fcfa(d.totaux.encaissements) }}</td>
+              <td class="num">{{ fcfa(d.totaux.revenu) }}</td>
+              <td class="num">{{ fcfa(d.totaux.depenses) }}</td>
+              <td class="num" [class.negatif]="d.totaux.resultat < 0">{{ fcfa(d.totaux.resultat) }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <p class="note">
+        Gestion locative : le revenu est la commission de gestion ({{ d.tauxGestionDefaut }} % par défaut, réglable bien
+        par bien) ; le reste des loyers revient aux propriétaires. Construction : enregistrez les paiements du client
+        comme recettes de chantier pour voir la marge.
+      </p>
+    </section>
+
+    <section class="a-encaisser" aria-label="À encaisser">
+      <h2>À encaisser</h2>
+      <div class="a-encaisser__grille">
+        @for (b of blocsDus(); track b.titre) {
+          <article class="page-card du">
+            <header>
+              <h3>{{ b.titre }}</h3>
+              <strong [class.negatif]="b.bloc.total > 0">{{ fcfa(b.bloc.total) }}</strong>
+            </header>
+            @if (b.bloc.nombre === 0) {
+              <p class="vide">Rien en attente.</p>
+            } @else {
+              <ul>
+                @for (ligne of b.bloc.lignes; track ligne.id) {
+                  <li>
+                    <a [routerLink]="ligne.lien">{{ ligne.libelle }}</a>
+                    <span>{{ ligne.tiers }}{{ ligne.echeance ? ' · échue le ' + date(ligne.echeance) : '' }}</span>
+                    <strong>{{ fcfa(ligne.reste) }}</strong>
+                  </li>
+                }
+              </ul>
+              @if (b.bloc.nombre > b.bloc.lignes.length) {
+                <p class="note">et {{ b.bloc.nombre - b.bloc.lignes.length }} autre(s)</p>
+              }
+            }
+          </article>
+        }
+        <article class="page-card du">
+          <header>
+            <h3>Commissions de commerciaux à payer</h3>
+            <strong>{{ fcfa(d.aEncaisser.commissionsAPayer.total) }}</strong>
+          </header>
+          <p class="vide">{{ d.aEncaisser.commissionsAPayer.nombre }} commission(s) validée(s) en attente de paiement.</p>
+        </article>
+        <article class="page-card du">
+          <header>
+            <h3>À venir dans 30 jours</h3>
+            <strong>{{ fcfa(d.aEncaisser.avenir30Jours.ventes + d.aEncaisser.avenir30Jours.loyers) }}</strong>
+          </header>
+          <p class="vide">
+            Ventes : {{ fcfa(d.aEncaisser.avenir30Jours.ventes) }} · Loyers : {{ fcfa(d.aEncaisser.avenir30Jours.loyers) }}
+          </p>
+        </article>
+      </div>
+    </section>
+  }
+</div>

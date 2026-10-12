@@ -3,6 +3,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import {
@@ -23,6 +24,7 @@ import {
   UpdatePaiementMissionDto,
 } from './dto/paiement-mission.dto';
 import { syntheseReglement } from './mission-paiements';
+import { PeriodesFinancieresService } from '../finances/periodes.service';
 
 const paiementInclude = {
   createdBy: { select: { id: true, firstName: true, lastName: true } },
@@ -59,6 +61,7 @@ export class DemarchesPaiementsService {
     private readonly access: DemarchesAccessService,
     private readonly options: DemarchesOptionsService,
     private readonly notifications: NotificationsService,
+    @Optional() private readonly periodes?: PeriodesFinancieresService,
   ) {}
 
   /** Règlements, du plus ancien au plus récent, avec la situation d'ensemble. */
@@ -95,6 +98,9 @@ export class DemarchesPaiementsService {
     const frais = dto.frais ?? 0;
     this.assertFrais(dto.montantEnvoye, frais);
     await this.assertReferenceLibre(missionId, dto.reference);
+    await this.periodes?.assertOuverte(
+      dto.datePaiement ? new Date(dto.datePaiement) : new Date(),
+    );
 
     const paiement = await this.prisma.$transaction(async (tx) => {
       const cree = await tx.paiementMission.create({
@@ -163,6 +169,7 @@ export class DemarchesPaiementsService {
   async remove(missionId: string, paiementId: string, user: DemarchesUser) {
     await this.access.ensureAccessible(missionId, user);
     const existant = await this.trouver(missionId, paiementId);
+    await this.periodes?.assertOuverte(existant.datePaiement);
     await this.prisma.$transaction(async (tx) => {
       await tx.paiementMission.delete({ where: { id: paiementId } });
       await this.recalculer(tx, missionId);

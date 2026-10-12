@@ -20,6 +20,7 @@ import {
   LucideBell,
   LucideBellRing,
   LucideWorkflow,
+  LucideWallet,
 } from '@lucide/angular';
 
 /**
@@ -148,6 +149,22 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         label: 'Documents',
         route: '/documents',
         icon: LucideFolderOpen,
+      },
+    ],
+  },
+  {
+    title: 'Finances',
+    items: [
+      {
+        label: 'Finances',
+        route: '/finances',
+        icon: LucideWallet,
+        children: [
+          { label: 'Tableau de bord', route: '/finances', permission: 'finances:consulter', exact: true },
+          { label: 'Journal', route: '/finances/journal', permission: 'finances:consulter' },
+          { label: 'Saisies', route: '/finances/operations', permission: 'finances:consulter' },
+          { label: 'Clôtures', route: '/finances/clotures', permission: 'finances:consulter' },
+        ],
       },
     ],
   },

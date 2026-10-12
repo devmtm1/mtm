@@ -60,6 +60,7 @@ export class BienForm implements OnInit, OnDestroy {
     commune: [''],
     region: [''],
     superficie: [null as number | null, [Validators.min(0)]],
+    tauxGestion: [null as number | null, [Validators.min(0), Validators.max(100)]],
     notes: [''],
     responsableId: [''],
     // Ce que le bien rapporte : repris ensuite comme valeurs par défaut du bail.
@@ -187,6 +188,7 @@ export class BienForm implements OnInit, OnDestroy {
       commune: texte(valeur.commune),
       region: texte(valeur.region),
       superficie: nombreOuUndefined(valeur.superficie),
+      tauxGestion: nombreOuUndefined(valeur.tauxGestion),
       notes: texte(valeur.notes),
       responsableId: valeur.responsableId || undefined,
       modeLocation: valeur.modeLocation,

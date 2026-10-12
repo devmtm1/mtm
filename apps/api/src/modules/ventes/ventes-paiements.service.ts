@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
@@ -20,6 +21,7 @@ import {
   NotificationsService,
   formaterMontant,
 } from '../notifications/notifications.service';
+import { PeriodesFinancieresService } from '../finances/periodes.service';
 
 /**
  * Paiements d'un dossier de vente (section 12 CDC) : enregistrement,
@@ -43,6 +45,7 @@ export class VentesPaiementsService {
     private readonly access: VentesAccessService,
     private readonly workflow: VentesWorkflowService,
     private readonly notifications: NotificationsService,
+    @Optional() private readonly periodes?: PeriodesFinancieresService,
   ) {}
 
   async createPaiement(id: string, dto: CreatePaiementDto, user: MandatUser) {
@@ -208,6 +211,8 @@ export class VentesPaiementsService {
           });
           if (!payment)
             throw new NotFoundException('Paiement validé introuvable');
+          // Contre-passer un paiement d'un mois clôturé changerait des totaux figés.
+          await this.periodes?.assertOuverte(payment.datePaiement);
           const dossier = await transaction.dossierVente.findUnique({
             where: { id },
             select: {
@@ -349,6 +354,7 @@ export class VentesPaiementsService {
           });
           if (!payment)
             throw new NotFoundException('Paiement en attente introuvable');
+          await this.periodes?.assertOuverte(payment.datePaiement);
           if (
             payment.recordedById === user.id &&
             (await this.workflow.isValidationParUnAutreRequise())

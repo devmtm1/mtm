@@ -21,6 +21,7 @@ export const DESTINATAIRES: { permission: string; label: string }[] = [
   { permission: 'demarches:valider', label: 'Responsables des démarches' },
   { permission: 'construction:administrer', label: 'Responsables de la construction' },
   { permission: 'contact:modifier', label: 'Traitement des demandes du site' },
+  { permission: 'finances:valider', label: 'Valideurs des finances' },
 ];
 
 /** État modifiable d'un événement dans l'écran. */

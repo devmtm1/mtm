@@ -3,8 +3,10 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { PeriodesFinancieresService } from '../finances/periodes.service';
 import {
   PrismaService,
   type PrismaTransaction,
@@ -101,6 +103,7 @@ export class SejoursService {
     private readonly options: LocatifOptionsService,
     private readonly etats: EtatsDesLieuxService,
     private readonly notifications: NotificationsService,
+    @Optional() private readonly periodes?: PeriodesFinancieresService,
   ) {}
 
   // --- Lecture ---
@@ -432,6 +435,9 @@ export class SejoursService {
       this.options.assertModePaiement(dto.mode),
       this.options.assertTypePaiementSejour(dto.type),
     ]);
+    await this.periodes?.assertOuverte(
+      dto.datePaiement ? new Date(dto.datePaiement) : new Date(),
+    );
     const regle = await this.prisma.paiementSejour.aggregate({
       where: { sejourId: id },
       _sum: { montant: true },
@@ -469,9 +475,10 @@ export class SejoursService {
     await this.charger(id, user);
     const paiement = await this.prisma.paiementSejour.findFirst({
       where: { id: paiementId, sejourId: id },
-      select: { id: true },
+      select: { id: true, datePaiement: true },
     });
     if (!paiement) throw new NotFoundException('Règlement introuvable');
+    await this.periodes?.assertOuverte(paiement.datePaiement);
     await this.prisma.paiementSejour.delete({ where: { id: paiementId } });
     return this.findOne(id, user);
   }

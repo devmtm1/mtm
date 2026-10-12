@@ -195,6 +195,24 @@ export const EVENEMENTS_NOTIFICATION: EvenementNotification[] = [
     emailParDefaut: false,
   },
   {
+    cle: 'operation_a_valider',
+    famille: 'Finances',
+    libelle: 'Opération financière à valider',
+    description: 'Une recette ou une dépense saisie attend sa validation.',
+    destinataire: 'permission',
+    permission: 'finances:valider',
+    emailParDefaut: false,
+  },
+  {
+    cle: 'operation_rejetee',
+    famille: 'Finances',
+    libelle: 'Opération financière rejetée',
+    description:
+      'Une opération que vous avez saisie est rejetée, avec le motif.',
+    destinataire: 'personne',
+    emailParDefaut: false,
+  },
+  {
     cle: 'message_dossier',
     famille: 'Messages',
     libelle: 'Nouveau message sur un dossier',

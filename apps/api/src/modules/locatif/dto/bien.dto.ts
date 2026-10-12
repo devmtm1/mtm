@@ -22,6 +22,13 @@ export class CreateBienDto extends AnnonceBienFields {
   @IsOptional() @Type(() => Number) @IsNumber() @Min(0) superficie?: number;
   @IsOptional() @IsString() @MaxLength(2000) notes?: string;
   @IsOptional() @IsUUID() responsableId?: string;
+  /** Commission de gestion de MTM, en % des loyers encaissés (0 à 100). */
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  tauxGestion?: number;
 }
 
 export class UpdateBienDto extends AnnonceBienFields {
@@ -34,6 +41,9 @@ export class UpdateBienDto extends AnnonceBienFields {
   @IsOptional() @IsString() @MaxLength(40) statut?: string;
   @IsOptional() @IsString() @MaxLength(2000) notes?: string;
   @IsOptional() @IsUUID() responsableId?: string;
+  /** `null` : revenir au taux par défaut. */
+  @IsOptional() @Type(() => Number) @IsNumber() @Min(0) @Max(100) tauxGestion?:
+    number | null;
 }
 
 export class QueryBienDto {
