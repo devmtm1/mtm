@@ -5,9 +5,9 @@ Monorepo du projet MTM Immobilier : backend API (NestJS), back-office
 
 > **État actuel : Phase 2 en cours.** Phase 0 (socle) et Phase 1 (cœur commercial,
 > J1.1 à J1.6) sont implémentées ; la gestion locative (J2.1), les démarches de
-> vérification foncière (J2.2) et le suivi de chantier (J2.3) le sont aussi. Restent :
-> agenda, tâches et notifications (J2.4), application mobile (J2.5), puis les
-> Phases 3 et 4. Voir `docs/PHASE_0.md` pour le rapport de clôture de la Phase 0 et
+> vérification foncière (J2.2) et le suivi de chantier (J2.3), puis l'agenda, les tâches, les notifications et la
+> messagerie par dossier (J2.4) le sont aussi. Restent : application mobile
+> (J2.5), puis les Phases 3 et 4. Voir `docs/PHASE_0.md` pour le rapport de clôture de la Phase 0 et
 > `docs/AUDIT_2026-10-05.md` pour le dernier audit et l'état des corrections.
 
 ## Structure du monorepo

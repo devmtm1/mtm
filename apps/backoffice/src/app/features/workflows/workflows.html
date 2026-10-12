@@ -1,0 +1,101 @@
+<div class="workflows-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Administration</p>
+      <h1 class="page-header__title">Parcours des dossiers</h1>
+      <p class="page-header__subtitle">
+        Les étapes que suit chaque type de dossier. Vous pouvez ajouter des étapes propres à MTM, les remettre dans
+        l’ordre voulu et autoriser de nouveaux passages. Les étapes d’origine (cadenas) ne se retirent pas : le système
+        s’en sert pour calculer les soldes, conclure une vente ou réceptionner un chantier.
+      </p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="skeleton" style="height: 320px"></div>
+  } @else {
+    @for (p of parcours(); track p.base.module) {
+      <section class="page-card parcours">
+        <div class="parcours__tete">
+          <div>
+            <h2>{{ p.base.libelle }}</h2>
+            <p>{{ p.base.description }}</p>
+          </div>
+          @if (canModify && p.modifie) {
+            <div class="parcours__actions">
+              <button mat-stroked-button type="button" (click)="annuler(p)" [disabled]="p.enregistrement">Annuler les changements</button>
+              <button mat-flat-button color="primary" type="button" (click)="enregistrer(p)" [disabled]="p.enregistrement">
+                {{ p.enregistrement ? 'Enregistrement…' : 'Enregistrer' }}
+              </button>
+            </div>
+          }
+        </div>
+
+        <ol class="etapes">
+          @for (code of p.statuts; track code; let i = $index; let premiere = $first; let derniere = $last) {
+            <li class="etape">
+              <span class="etape__rang">{{ i + 1 }}</span>
+              <div class="etape__nom">
+                <strong>{{ libelle(p, code) }}</strong>
+                <small>
+                  @if (protegee(p, code)) {
+                    <svg lucideLock aria-hidden="true" class="etape__cadenas"></svg> Étape d’origine
+                  } @else {
+                    Ajoutée par MTM
+                  }
+                  · {{ dossiers(p, code) }} dossier{{ dossiers(p, code) > 1 ? 's' : '' }}
+                </small>
+              </div>
+
+              @if (p.base.transitions) {
+                <mat-select
+                  class="etape__passages"
+                  multiple
+                  placeholder="Peut passer à…"
+                  [value]="passages(p, code)"
+                  (selectionChange)="changerPassages(p, code, $event.value)"
+                  [disabled]="!canModify"
+                  [attr.aria-label]="'Étapes accessibles depuis ' + libelle(p, code)"
+                >
+                  @for (cible of p.statuts; track cible) {
+                    @if (cible !== code) {
+                      <mat-option [value]="cible" [disabled]="passageProtege(p, code, cible)">
+                        {{ libelle(p, cible) }}{{ passageProtege(p, code, cible) ? ' (d’origine)' : '' }}
+                      </mat-option>
+                    }
+                  }
+                </mat-select>
+              }
+
+              @if (canModify) {
+                <span class="etape__boutons">
+                  <button type="button" (click)="deplacer(p, i, -1)" [disabled]="premiere" [attr.aria-label]="'Monter ' + libelle(p, code)">
+                    <svg lucideArrowUp aria-hidden="true"></svg>
+                  </button>
+                  <button type="button" (click)="deplacer(p, i, 1)" [disabled]="derniere" [attr.aria-label]="'Descendre ' + libelle(p, code)">
+                    <svg lucideArrowDown aria-hidden="true"></svg>
+                  </button>
+                  @if (retirable(p, code)) {
+                    <button type="button" (click)="retirer(p, code)" [attr.aria-label]="'Retirer ' + libelle(p, code)">
+                      <svg lucideX aria-hidden="true"></svg>
+                    </button>
+                  }
+                </span>
+              }
+            </li>
+          }
+        </ol>
+
+        @if (canModify) {
+          <div class="ajout">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Nouvelle étape</mat-label>
+              <input matInput [formControl]="p.nouveau" maxlength="60" autocomplete="off" (keydown.enter)="ajouter(p)" placeholder="Ex. Attente du notaire" />
+            </mat-form-field>
+            <button mat-stroked-button type="button" (click)="ajouter(p)" [disabled]="!p.nouveau.value.trim()">Ajouter l’étape</button>
+          </div>
+        }
+      </section>
+    }
+  }
+</div>

@@ -15,6 +15,11 @@ import {
   LucideUserSearch,
   LucideClipboardCheck,
   LucideBuilding2,
+  LucideCalendarDays,
+  LucideListChecks,
+  LucideBell,
+  LucideBellRing,
+  LucideWorkflow,
 } from '@lucide/angular';
 
 /**
@@ -76,6 +81,18 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         label: 'Tableau de bord',
         route: '/dashboard',
         icon: LucideLayoutDashboard,
+      },
+      {
+        label: 'Agenda',
+        route: '/agenda',
+        icon: LucideCalendarDays,
+        permission: 'agenda:consulter',
+      },
+      {
+        label: 'Tâches',
+        route: '/taches',
+        icon: LucideListChecks,
+        permission: 'taches:consulter',
       },
       // Un groupe n'a pas de permission propre : il s'affiche dès qu'un de ses
       // enfants est autorisé, et `route` pointe vers le premier enfant.
@@ -187,6 +204,24 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
           { label: 'Utilisateurs', route: '/users', permission: 'users:consulter' },
           { label: 'Rôles & permissions', route: '/roles', permission: 'roles:consulter' },
         ],
+      },
+      {
+        label: 'Mes notifications',
+        route: '/notifications',
+        icon: LucideBell,
+        exact: true,
+      },
+      {
+        label: 'Règles de notification',
+        route: '/notifications/regles',
+        icon: LucideBellRing,
+        permission: 'notifications:administrer',
+      },
+      {
+        label: 'Parcours des dossiers',
+        route: '/workflows',
+        icon: LucideWorkflow,
+        permission: 'settings:consulter',
       },
       {
         label: 'Identité de l’entreprise',

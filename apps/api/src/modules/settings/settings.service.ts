@@ -14,6 +14,17 @@ import {
 /** Clés réservées à la page « Identité de l'entreprise ». */
 const PREFIXE_ENTREPRISE = 'entreprise.';
 
+/**
+ * Parcours réglés depuis « Parcours des dossiers » (qui contrôle la saisie).
+ * Doit rester égal à CLES_WORKFLOW : un test le vérifie.
+ */
+export const CLES_PARCOURS = [
+  'ventes.statuts',
+  'ventes.transitions',
+  'crm.pipelineStages',
+  'construction.statuts',
+];
+
 export interface SafeSetting {
   id: string;
   key: string;
@@ -160,6 +171,11 @@ export class SettingsService {
     if (key.startsWith(PREFIXE_ENTREPRISE)) {
       throw new BadRequestException(
         'Ce paramètre se modifie dans Administration › Identité de l’entreprise',
+      );
+    }
+    if (CLES_PARCOURS.includes(key)) {
+      throw new BadRequestException(
+        'Ce paramètre se modifie dans Administration › Parcours des dossiers',
       );
     }
   }

@@ -31,6 +31,11 @@ export const envValidationSchema = Joi.object({
   ACCOUNT_LOCK_DURATION_MINUTES: Joi.number().default(15),
 
   TWO_FACTOR_APP_NAME: Joi.string().default('MTM Immobilier'),
+  // Passerelles SMS et WhatsApp (facultatives) : un POST JSON { canal, to, text }.
+  SMS_WEBHOOK_URL: Joi.string().uri().optional(),
+  SMS_WEBHOOK_TOKEN: Joi.string().optional(),
+  WHATSAPP_WEBHOOK_URL: Joi.string().uri().optional(),
+  WHATSAPP_WEBHOOK_TOKEN: Joi.string().optional(),
   CLOUDINARY_CLOUD_NAME: Joi.string().optional(),
   CLOUDINARY_API_KEY: Joi.string().optional(),
   CLOUDINARY_API_SECRET: Joi.string().optional(),

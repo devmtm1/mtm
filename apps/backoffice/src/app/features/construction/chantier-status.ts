@@ -2,6 +2,7 @@ import type {
   StatusChoice,
   StatusTone,
 } from '../../shared/dialogs/status-choice-dialog';
+import { humaniserCode } from '../../shared/utils/humaniser';
 
 export interface StatusMeaning {
   tone: StatusTone;
@@ -297,7 +298,7 @@ export function label(
   map: Record<string, StatusMeaning>,
   value: string | null | undefined,
 ): string {
-  return (value && map[value]?.label) || (value ?? '—');
+  return (value && (map[value]?.label ?? humaniserCode(value))) || '—';
 }
 
 export function help(

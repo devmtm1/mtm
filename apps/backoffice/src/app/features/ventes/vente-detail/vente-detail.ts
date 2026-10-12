@@ -53,6 +53,8 @@ import {
   progression,
   statusChoices,
 } from '../ventes-status';
+import { FilDiscussion } from '../../../shared/components/fil-discussion/fil-discussion';
+import { TachesDossier } from '../../../shared/components/taches-dossier/taches-dossier';
 
 /**
  * Dossier de vente (J1.6) : de la réservation au solde. Tout ce qui
@@ -63,6 +65,8 @@ import {
   selector: 'app-vente-detail',
   standalone: true,
   imports: [
+    FilDiscussion,
+    TachesDossier,
     LabelPipe,
     MoneyPipe,
     DatePipe,

@@ -54,6 +54,8 @@ import {
   pillClass,
 } from '../mission-status';
 import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
+import { FilDiscussion } from '../../../shared/components/fil-discussion/fil-discussion';
+import { TachesDossier } from '../../../shared/components/taches-dossier/taches-dossier';
 
 /**
 /**
@@ -79,6 +81,8 @@ const PARCOURS_VERIFICATION = [
 @Component({
   selector: 'app-mission-detail',
   imports: [
+    FilDiscussion,
+    TachesDossier,
     DatePipe,
     MoneyPipe,
     ReactiveFormsModule,

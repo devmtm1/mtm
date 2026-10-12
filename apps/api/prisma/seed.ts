@@ -34,6 +34,10 @@ const PHASE_1_RESOURCES = [
   'demarches',
   'locatif',
   'construction',
+  'taches',
+  'agenda',
+  'messages',
+  'notifications',
 ] as const;
 
 // Rôles initiaux recommandés par la section 24 du CDC.
@@ -800,6 +804,64 @@ async function main(): Promise<void> {
     });
   }
   console.log('  Permissions journal d’audit attribuées à la direction');
+
+  // --- Agenda, tâches et fils de discussion (J2.4) ---
+  // Tout collaborateur interne tient ses tâches et son agenda et écrit sur les
+  // dossiers qu'il peut ouvrir ; l'encadrement voit et assigne pour toute
+  // l'équipe ; la direction règle les notifications.
+  const collaborateurs = [
+    'direction',
+    'manager',
+    'responsable_commercial',
+    'commercial',
+    'comptable',
+    'responsable_gestion_locative',
+    'responsable_demarches',
+    'responsable_construction',
+    'rh',
+  ];
+  const permissionsJ24: Record<string, string[]> = Object.fromEntries(
+    collaborateurs.map((role) => [
+      role,
+      [
+        'taches:consulter',
+        'taches:creer',
+        'taches:modifier',
+        'agenda:consulter',
+        'agenda:creer',
+        'agenda:modifier',
+        'messages:consulter',
+        'messages:creer',
+      ],
+    ]),
+  );
+  for (const role of ['direction', 'manager', 'responsable_commercial']) {
+    permissionsJ24[role].push(
+      'taches:administrer',
+      'taches:supprimer',
+      'agenda:administrer',
+      'agenda:supprimer',
+    );
+  }
+  permissionsJ24['direction'].push('notifications:administrer');
+  for (const [roleName, noms] of Object.entries(permissionsJ24)) {
+    const role = await prisma.role.findUniqueOrThrow({
+      where: { name: roleName },
+    });
+    for (const nom of noms) {
+      const permission = await prisma.permission.findUniqueOrThrow({
+        where: { name: nom },
+      });
+      await prisma.rolePermission.upsert({
+        where: {
+          roleId_permissionId: { roleId: role.id, permissionId: permission.id },
+        },
+        update: {},
+        create: { roleId: role.id, permissionId: permission.id },
+      });
+    }
+  }
+  console.log('  Permissions agenda, tâches et messages attribuées');
 
   // --- Utilisateur administrateur par défaut ---
   const adminUser = await prisma.user.upsert({

@@ -91,6 +91,32 @@ export const routes: Routes = [
           import('./features/roles/roles').then((m) => m.Roles),
       },
       {
+        path: 'agenda',
+        canActivate: [permissionsGuard(['agenda:consulter'])],
+        loadComponent: () => import('./features/agenda/agenda').then((m) => m.Agenda),
+      },
+      {
+        path: 'taches',
+        canActivate: [permissionsGuard(['taches:consulter'])],
+        loadComponent: () => import('./features/taches/taches').then((m) => m.Taches),
+      },
+      {
+        path: 'notifications/regles',
+        canActivate: [permissionsGuard(['notifications:administrer'])],
+        loadComponent: () =>
+          import('./features/notifications/regles-notification').then((m) => m.ReglesNotification),
+      },
+      {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./features/notifications/mes-notifications').then((m) => m.MesNotifications),
+      },
+      {
+        path: 'workflows',
+        canActivate: [permissionsGuard(['settings:consulter'])],
+        loadComponent: () => import('./features/workflows/workflows').then((m) => m.Workflows),
+      },
+      {
         path: 'entreprise',
         canActivate: [permissionsGuard(['settings:consulter'])],
         loadComponent: () =>

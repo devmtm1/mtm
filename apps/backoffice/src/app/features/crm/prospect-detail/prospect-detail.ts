@@ -69,6 +69,8 @@ import {
   whatsappLink,
 } from '../crm-status';
 import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
+import { FilDiscussion } from '../../../shared/components/fil-discussion/fil-discussion';
+import { TachesDossier } from '../../../shared/components/taches-dossier/taches-dossier';
 
 const ACTION_LABELS: Record<string, string> = {
   'prospect.created': 'Création du prospect',
@@ -135,6 +137,8 @@ const FIELD_LABELS: Record<string, string> = {
 @Component({
   selector: 'app-prospect-detail',
   imports: [
+    FilDiscussion,
+    TachesDossier,
     LabelPipe,
     MoneyPipe,
     DatePipe,

@@ -9,6 +9,7 @@ import { ShowMoreButton } from '../../components/client/shell/Disclosure';
 import { CommentRegler } from '../../components/client/CommentRegler';
 import { etatPaiementIcone } from '../../components/client/shell/etat-paiement';
 import { NewIncidentModal } from '../../components/client/NewIncidentModal';
+import { ClientEchanges } from '../../components/client/ClientEchanges';
 import { ResiliationCard } from '../../components/client/ResiliationCard';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
@@ -287,6 +288,11 @@ export function ClientLocatairePage() {
         preavisJours={resiliations.data?.preavisJours ?? 30}
         onChanged={() => resiliations.refetch({ silent: true })}
       />
+
+      {/* Messages de MTM sur le bail, avec réponse possible. */}
+      <ClientCard>
+        <ClientEchanges type="bail" dossierId={bailActif.id} titre="Messages sur mon bail" chargerDirectement />
+      </ClientCard>
 
       {/* Incidents et demandes : un seul fil, chacun étiqueté. */}
       <ClientCard title="Mes échanges avec MTM">

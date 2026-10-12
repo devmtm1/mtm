@@ -31,7 +31,7 @@ export const GENERATED_DOCUMENT_TYPES = [
   'etat_paiement',
 ];
 
-const VENTES_DEFAULTS = {
+export const VENTES_DEFAULTS = {
   statuts: [
     'en_cours',
     'pre_reserve',

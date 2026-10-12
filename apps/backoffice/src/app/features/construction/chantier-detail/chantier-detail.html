@@ -816,6 +816,8 @@
         <p class="detail-note"><strong>Notes internes :</strong> {{ c.notes }}</p>
       }
     </details>
+    <app-taches-dossier type="chantier" [dossierId]="c.id" [libelleDossier]="c.referenceInterne" />
+    <app-fil-discussion type="chantier" [dossierId]="c.id" />
   </div>
 } @else {
   <p class="detail-note">Chantier introuvable.</p>

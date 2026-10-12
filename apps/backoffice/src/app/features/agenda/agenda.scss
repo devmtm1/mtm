@@ -1,0 +1,295 @@
+.agenda-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.barre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+}
+
+.barre__nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.barre__titre {
+  margin: 0 0 0 8px;
+  font-size: 1.1rem;
+}
+
+.barre__reglages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.barre__familles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  width: 100%;
+}
+
+.segment {
+  display: inline-flex;
+  border: 1px solid var(--mtm-border);
+  border-radius: 8px;
+  overflow: hidden;
+
+  button {
+    padding: 7px 12px;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 0.88rem;
+    cursor: pointer;
+
+    &.is-actif {
+      background: var(--mtm-primary, #1a4974);
+      color: #fff;
+    }
+  }
+}
+
+.corps {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
+  align-items: start;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.mois {
+  display: grid;
+  gap: 1px;
+  overflow-x: auto;
+}
+
+.mois__entete,
+.mois__semaine {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(92px, 1fr));
+  gap: 1px;
+}
+
+.mois__entete span {
+  padding: 6px 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--mtm-text-muted);
+}
+
+.case {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  min-height: 104px;
+  padding: 4px;
+  border: 1px solid var(--mtm-border);
+  background: var(--mtm-card-bg);
+  cursor: pointer;
+
+  &--hors {
+    opacity: 0.55;
+  }
+
+  &--aujourdhui .case__numero {
+    background: var(--mtm-primary, #1a4974);
+    color: #fff;
+  }
+
+  &--choisie {
+    outline: 2px solid var(--mtm-primary, #1a4974);
+    outline-offset: -2px;
+  }
+}
+
+.case__numero {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.case__plus {
+  padding: 0 4px;
+  font-size: 0.72rem;
+  color: var(--mtm-text-muted);
+}
+
+.element {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 1px 4px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  font: inherit;
+  font-size: 0.74rem;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background: rgba(26, 73, 116, 0.1);
+  }
+}
+
+.element__texte {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.puce {
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #64748b;
+
+  &--rendez_vous {
+    background: #1a4974;
+  }
+  &--visite {
+    background: #0f766e;
+  }
+  &--appel {
+    background: #7c3aed;
+  }
+  &--verification {
+    background: #b45309;
+  }
+  &--reunion {
+    background: #be185d;
+  }
+  &--tache {
+    background: #2563eb;
+  }
+  &--echeance {
+    background: #dc2626;
+  }
+}
+
+.semaine {
+  display: grid;
+  gap: 12px;
+}
+
+.semaine__jour {
+  display: grid;
+  gap: 4px;
+
+  h3 {
+    margin: 8px 0 2px;
+    font-size: 0.92rem;
+  }
+
+  &--aujourdhui h3 {
+    color: var(--mtm-primary, #1a4974);
+  }
+}
+
+.ligne {
+  display: grid;
+  grid-template-columns: 10px 110px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font: inherit;
+  font-size: 0.88rem;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background: rgba(26, 73, 116, 0.08);
+  }
+}
+
+.ligne__heure {
+  color: var(--mtm-text-muted);
+  font-size: 0.8rem;
+}
+
+.ligne__titre {
+  overflow-wrap: anywhere;
+}
+
+.vide {
+  margin: 0;
+  color: var(--mtm-text-muted);
+  font-size: 0.85rem;
+}
+
+.panneau {
+  display: grid;
+  gap: 10px;
+  position: sticky;
+  top: 12px;
+}
+
+.panneau__titre {
+  margin: 0;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.panneau__infos {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.88rem;
+
+  li {
+    display: grid;
+    gap: 2px;
+  }
+
+  span {
+    color: var(--mtm-text-muted);
+    font-size: 0.78rem;
+  }
+}
+
+.panneau__texte {
+  margin: 0;
+  white-space: pre-line;
+  font-size: 0.88rem;
+}
+
+.panneau__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.panneau__ajout {
+  justify-self: start;
+}

@@ -78,6 +78,17 @@ export class ContactService {
       ],
     );
 
+    // La cloche de l'équipe : tout nouveau message du site, quel qu'en soit le sujet.
+    void this.notificationsInternes.alerter('contact:modifier', {
+      type: 'nouveau_contact',
+      titre: `Nouveau message du site : ${sujet || 'sans sujet'}`,
+      message: `${dto.nom}${dto.telephone ? ` · ${dto.telephone}` : ''}`,
+      lien: '/contacts',
+      entityType: 'Contact',
+      entityId: contact.id,
+      dedupeKey: `nouveau-contact:${contact.id}`,
+    });
+
     // Les gestionnaires locatifs la voient dans leur cloche : une demande de
     // location attend un rappel rapide, avant qu'un autre bien ne soit choisi.
     if (dto.bienLocatifId) {

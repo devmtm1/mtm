@@ -30,6 +30,10 @@ import { CronModule } from './modules/cron/cron.module';
 import { GedModule } from './modules/ged/ged.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { CompanyModule } from './modules/company/company.module';
+import { TachesModule } from './modules/taches/taches.module';
+import { AgendaModule } from './modules/agenda/agenda.module';
+import { MessagesModule } from './modules/messages/messages.module';
+import { WorkflowsModule } from './modules/workflows/workflows.module';
 
 @Module({
   imports: [
@@ -68,6 +72,10 @@ import { CompanyModule } from './modules/company/company.module';
     ConstructionModule,
     NotificationsModule,
     CompanyModule,
+    TachesModule,
+    AgendaModule,
+    MessagesModule,
+    WorkflowsModule,
     GedModule,
     CronModule,
     HealthModule,

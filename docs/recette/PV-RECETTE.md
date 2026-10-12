@@ -34,7 +34,7 @@ considérée comme terminée sans critère d'acceptation validé ».
 | J2.1 | Gestion locative | oui | à signer |
 | J2.2 | Démarches et vérification foncière | oui | à signer |
 | J2.3 | Construction et suivi de chantier | oui | à signer |
-| J2.4 | Agenda, tâches, notifications | partielle (notifications, GED) | à signer quand le jalon est terminé |
+| J2.4 | Agenda, tâches, workflows, notifications, messagerie | oui (canaux SMS/WhatsApp : passerelle à brancher) | à signer |
 
 Réserve générale (tous jalons) : le **paiement en ligne** par un prestataire
 (Wave, Orange Money, carte) n'est pas implémenté ; il est reporté à une décision
@@ -288,6 +288,37 @@ d’audit), `chantier-fichiers.spec.ts`.
 
 **Anomalies et réserves** : aucune connue. La vue de type Gantt (« si possible » au cahier des charges)
 est réalisée dans la fiche du chantier.
+
+---
+
+## J2.4 — Agenda, tâches, workflows, notifications, messagerie
+
+**Critères** : les équipes reçoivent des alertes automatiques et gèrent leurs tâches dans l’outil ;
+agenda partagé et individuel ; workflows configurables ; notifications in-app et e-mail (SMS et WhatsApp
+selon l’intégration) ; fil de discussion par dossier.
+
+**Preuves** : `test/agenda-taches-messages.e2e-spec.ts` (35 scénarios : tâches confiées, vue d’équipe,
+périmètre des dossiers, retard et rappel dédoublonnés, événements privés et partagés, échéances des autres
+modules, fils interne et client, limite d’envoi, règles de notification, préférences, parcours),
+`notifications-regles.spec.ts` (règles, canaux externes, passerelle), `workflows.service.spec.ts`,
+`agenda-utils.spec.ts`, `taches-status.spec.ts`, `regles-notification.spec.ts`, `ClientEchanges.spec.tsx`.
+Mode d’emploi : `docs/AGENDA_TACHES_MESSAGES.md`.
+
+| Recette MTM | Fait | Date |
+| --- | --- | --- |
+| Un manager confie une tâche à un commercial : celui-ci est prévenu, la termine, l’historique le garde | ☐ | |
+| Une tâche en retard prévient le responsable et celui qui l’a confiée, une seule fois par jour | ☐ | |
+| Un rendez-vous d’équipe avec participants et rappel ; un événement privé reste invisible des autres | ☐ | |
+| L’agenda montre les échéances réelles (mandat, loyer, jalon de chantier, visite) de son périmètre | ☐ | |
+| Un message au client sur un dossier : visible dans son espace, il répond, l’équipe est prévenue | ☐ | |
+| Une note interne n’apparaît jamais dans l’espace client | ☐ | |
+| La direction désactive une alerte et change ses destinataires sans développeur | ☐ | |
+| Ajout d’une étape « Attente du notaire » au parcours des ventes ; les étapes d’origine restent protégées | ☐ | |
+| SMS / WhatsApp : passerelle du prestataire retenu branchée, envoi réel à un numéro de test | ☐ | |
+
+**Anomalies et réserves** : SMS et WhatsApp inactifs tant que MTM n’a pas choisi de prestataire (la
+couche d’envoi et son journal sont prêts). Les workflows configurables couvrent les ventes, le pipeline
+commercial et les chantiers ; les parcours des missions et des séjours restent définis par leur référentiel.
 
 ---
 

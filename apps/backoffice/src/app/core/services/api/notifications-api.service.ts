@@ -20,6 +20,46 @@ export interface NotificationsPage {
   nonLues: number;
 }
 
+export interface PreferencesNotification {
+  email: boolean;
+  sms: boolean;
+  whatsapp: boolean;
+  telephone: string;
+  /** Canaux dont la passerelle est branchée côté serveur. */
+  canaux: { sms: boolean; whatsapp: boolean };
+}
+
+export interface RegleNotification {
+  actif?: boolean;
+  permission?: string;
+  email?: boolean;
+  sms?: boolean;
+  whatsapp?: boolean;
+}
+
+export interface EvenementNotification {
+  cle: string;
+  famille: string;
+  libelle: string;
+  description: string;
+  destinataire: 'permission' | 'personne' | 'client';
+  permission?: string;
+  emailParDefaut: boolean;
+  regle: RegleNotification;
+  effectif: {
+    actif: boolean;
+    permission: string | null;
+    email: boolean;
+    sms: boolean;
+    whatsapp: boolean;
+  };
+}
+
+export interface CatalogueNotifications {
+  canaux: { email: boolean; sms: boolean; whatsapp: boolean };
+  evenements: EvenementNotification[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class NotificationsApiService {
   private readonly http = inject(HttpClient);
@@ -38,5 +78,23 @@ export class NotificationsApiService {
 
   markAllRead(): Observable<{ marquees: number }> {
     return this.http.post<{ marquees: number }>(`${this.baseUrl}/read-all`, {});
+  }
+
+  preferences(): Observable<PreferencesNotification> {
+    return this.http.get<PreferencesNotification>(`${this.baseUrl}/preferences`);
+  }
+
+  savePreferences(
+    valeurs: Partial<Pick<PreferencesNotification, 'email' | 'sms' | 'whatsapp' | 'telephone'>>,
+  ): Observable<PreferencesNotification> {
+    return this.http.put<PreferencesNotification>(`${this.baseUrl}/preferences`, valeurs);
+  }
+
+  catalogue(): Observable<CatalogueNotifications> {
+    return this.http.get<CatalogueNotifications>(`${this.baseUrl}/regles`);
+  }
+
+  saveRegles(regles: Record<string, RegleNotification>): Observable<CatalogueNotifications> {
+    return this.http.put<CatalogueNotifications>(`${this.baseUrl}/regles`, { regles });
   }
 }

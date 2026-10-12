@@ -1,0 +1,133 @@
+<div class="taches-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Organisation</p>
+      <h1 class="page-header__title">Tâches</h1>
+      <p class="page-header__subtitle">
+        Ce qu’il y a à faire, par qui et pour quand. Une tâche peut être rattachée à un dossier ; la personne à qui vous
+        la confiez est prévenue, et vous l’êtes si elle prend du retard.
+      </p>
+    </div>
+    @if (canCreate) {
+      <button mat-flat-button color="primary" type="button" (click)="nouvelle()">
+        <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouvelle tâche
+      </button>
+    }
+  </header>
+
+  @if (resume(); as r) {
+    <section class="compteurs" aria-label="Vos tâches en un coup d’œil">
+      <button type="button" class="compteur compteur--danger" [class.is-vide]="r.enRetard === 0" (click)="changerVue('mes'); filtrer('echeance', 'retard')">
+        <strong>{{ r.enRetard }}</strong><span>en retard</span>
+      </button>
+      <button type="button" class="compteur" (click)="changerVue('mes'); filtrer('echeance', 'aujourdhui')">
+        <strong>{{ r.aujourdhui }}</strong><span>pour aujourd’hui</span>
+      </button>
+      <button type="button" class="compteur" (click)="changerVue('mes'); filtrer('echeance', '')">
+        <strong>{{ r.aFaire }}</strong><span>à faire au total</span>
+      </button>
+    </section>
+  }
+
+  <nav class="onglets" aria-label="Quelles tâches afficher">
+    <button type="button" [class.is-actif]="vue() === 'mes'" (click)="changerVue('mes')">Mes tâches</button>
+    <button type="button" [class.is-actif]="vue() === 'creees'" (click)="changerVue('creees')">Confiées par moi</button>
+    @if (canAdmin) {
+      <button type="button" [class.is-actif]="vue() === 'equipe'" (click)="changerVue('equipe')">Toute l’équipe</button>
+    }
+  </nav>
+
+  <section class="filtres page-card" aria-label="Filtres">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Statut</mat-label>
+      <mat-select [value]="statut()" (selectionChange)="filtrer('statut', $event.value)">
+        @for (filtre of filtresStatut; track filtre.valeur) {
+          <mat-option [value]="filtre.valeur">{{ filtre.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Échéance</mat-label>
+      <mat-select [value]="echeance()" (selectionChange)="filtrer('echeance', $event.value)">
+        @for (filtre of filtresEcheance; track filtre.valeur) {
+          <mat-option [value]="filtre.valeur">{{ filtre.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Priorité</mat-label>
+      <mat-select [value]="priorite()" (selectionChange)="filtrer('priorite', $event.value)">
+        <mat-option value="">Toutes</mat-option>
+        @for (code of priorites; track code) {
+          <mat-option [value]="code">{{ libellePriorite(code) }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="filtres__recherche">
+      <mat-label>Rechercher</mat-label>
+      <input matInput [formControl]="recherche" autocomplete="off" />
+    </mat-form-field>
+  </section>
+
+  @if (loading()) {
+    <div class="skeleton" style="height: 240px"></div>
+  } @else if (items().length === 0) {
+    <section class="page-card">
+      <div class="empty-state">
+        <h3>Rien à afficher</h3>
+        <p>
+          @if (statut() === 'a_faire,en_cours' && !echeance() && !priorite() && !recherche.value) {
+            Aucune tâche en cours dans cette vue.
+          } @else {
+            Aucune tâche ne correspond à ces filtres.
+          }
+        </p>
+        @if (canCreate) {
+          <button mat-flat-button color="primary" type="button" (click)="nouvelle()">Créer une tâche</button>
+        }
+      </div>
+    </section>
+  } @else {
+    <ul class="liste">
+      @for (tache of items(); track tache.id) {
+        <li class="ligne" [class.is-retard]="tache.enRetard" [class.is-fermee]="!ouvrable(tache)">
+          @if (ouvrable(tache) && tache.peutModifier) {
+            <button type="button" class="ligne__coche" (click)="terminer(tache, $event)" [attr.aria-label]="'Terminer la tâche ' + tache.titre">
+              <svg lucideCheck aria-hidden="true"></svg>
+            </button>
+          } @else {
+            <span class="ligne__coche ligne__coche--vide" aria-hidden="true"></span>
+          }
+          <button type="button" class="ligne__corps" (click)="ouvrir(tache)">
+            <strong class="ligne__titre">{{ tache.titre }}</strong>
+            <span class="ligne__meta">
+              <span [class.is-retard-texte]="tache.enRetard">{{ echeanceDite(tache.dateLimite) }}</span>
+              @if (tache.entityLabel) {
+                <span>· {{ typeDossier(tache.entityType) }} {{ tache.entityLabel }}</span>
+              }
+              @if (vue() !== 'mes' || tache.responsableId !== moi) {
+                <span>· {{ nom(tache.responsable) }}</span>
+              }
+            </span>
+          </button>
+          <span class="ligne__pastilles">
+            <span [class]="pastillePriorite(tache.priorite)">{{ libellePriorite(tache.priorite) }}</span>
+            @if (!ouvrable(tache) || tache.statut === 'en_cours') {
+              <span [class]="pastilleStatut(tache.statut)">{{ libelleStatut(tache.statut) }}</span>
+            }
+          </span>
+          @if (routeDossier(tache); as lien) {
+            <a class="ligne__dossier" [routerLink]="lien">Ouvrir le dossier</a>
+          }
+        </li>
+      }
+    </ul>
+    @if (pages() > 1) {
+      <nav class="pagination" aria-label="Pages de tâches">
+        <button mat-stroked-button type="button" (click)="aller(page() - 1)" [disabled]="page() <= 1">Précédentes</button>
+        <span>Page {{ page() }} sur {{ pages() }} · {{ total() }} tâche{{ total() > 1 ? 's' : '' }}</span>
+        <button mat-stroked-button type="button" (click)="aller(page() + 1)" [disabled]="page() >= pages()">Suivantes</button>
+      </nav>
+    }
+  }
+</div>

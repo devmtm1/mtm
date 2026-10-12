@@ -4,9 +4,11 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import {
   ConstructionAccessService,
@@ -90,6 +92,7 @@ export class ProjetsConstructionService {
     private readonly access: ConstructionAccessService,
     private readonly options: ConstructionOptionsService,
     private readonly cloudinary: CloudinaryService,
+    @Optional() private readonly alertes?: NotificationsService,
   ) {}
 
   async findAll(query: QueryProjetDto, user: ConstructionUser) {
@@ -324,6 +327,17 @@ export class ProjetsConstructionService {
       },
       include: projetInclude,
     });
+    void this.alertes?.alerter(
+      'construction:administrer',
+      {
+        type: 'nouveau_chantier',
+        titre: `Nouveau chantier ${projet.referenceInterne}`,
+        lien: `/construction/chantiers/${projet.id}`,
+        entityType: 'ProjetConstruction',
+        entityId: projet.id,
+      },
+      user.id,
+    );
     return this.avecLiens(projet);
   }
 

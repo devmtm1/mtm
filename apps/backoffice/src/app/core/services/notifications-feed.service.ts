@@ -9,6 +9,8 @@ import { NotificationsApiService } from './api/notifications-api.service';
 import { MandatsApiService } from './api/mandats-api.service';
 import { VentesApiService } from './api/ventes-api.service';
 import { SessionService } from './session.service';
+import { AgendaApiService } from './api/agenda-api.service';
+import { TachesApiService } from './api/taches-api.service';
 
 export type FeedSeverity = 'info' | 'warning' | 'danger';
 
@@ -28,7 +30,13 @@ export interface FeedItem {
  * fil (mandats qui expirent, loyers à relancer, chantiers en alerte) : les
  * afficher deux fois serait du bruit. Ils partent quand même par e-mail.
  */
-const TYPES_DEJA_AU_FIL = new Set(['mandat_echeance', 'loyer_relances', 'chantier_alerte']);
+const TYPES_DEJA_AU_FIL = new Set([
+  'mandat_echeance',
+  'loyer_relances',
+  'chantier_alerte',
+  'tache_en_retard',
+  'tache_echeance',
+]);
 
 const MANDAT_ALERT_DAYS = 30;
 const MAX_ITEMS_PER_SOURCE = 5;
@@ -39,6 +47,23 @@ const MAX_ITEMS_PER_SOURCE = 5;
  * colorer une ligne, un défaut suffit.
  */
 const IMPAYE_PROLONGE_JOURS = 30;
+
+/** « /taches?tache=abc » → route Angular + paramètres de requête. */
+export function routeDeLien(lien?: string | null): {
+  route: string[];
+  queryParams?: Record<string, string>;
+} {
+  if (!lien) return { route: ['/'] };
+  const [chemin, requete] = lien.split('?');
+  const route = chemin
+    .split('/')
+    .filter(Boolean)
+    .map((part, index) => (index === 0 ? `/${part}` : part));
+  const queryParams = requete
+    ? Object.fromEntries(new URLSearchParams(requete).entries())
+    : undefined;
+  return { route: route.length ? route : ['/'], ...(queryParams ? { queryParams } : {}) };
+}
 
 /** Ce qui dérape sur un chantier, dit en trois mots (section 16). */
 function alerteTitre(situation: string): string {
@@ -65,6 +90,8 @@ export class NotificationsFeedService {
   private readonly constructionApi = inject(ConstructionApiService);
   private readonly locatifApi = inject(LocatifApiService);
   private readonly notificationsApi = inject(NotificationsApiService);
+  private readonly tachesApi = inject(TachesApiService);
+  private readonly agendaApi = inject(AgendaApiService);
 
   load(): Observable<FeedItem[]> {
     const sources: Observable<FeedItem[]>[] = [];
@@ -201,6 +228,67 @@ export class NotificationsFeedService {
       );
     }
 
+    // Mes tâches : ce qui est en retard et ce qui est dû aujourd'hui.
+    if (this.session.hasPermission('taches:consulter')) {
+      sources.push(
+        this.tachesApi.resume().pipe(
+          map((resume) => {
+            const items: FeedItem[] = [];
+            if (resume.enRetard > 0) {
+              items.push({
+                id: 'taches-retard',
+                severity: 'danger',
+                title: `${resume.enRetard} tâche${resume.enRetard > 1 ? 's' : ''} en retard`,
+                detail: 'Ouvrez vos tâches pour les terminer ou les replanifier.',
+                route: ['/taches'],
+              });
+            }
+            if (resume.aujourdhui > 0) {
+              items.push({
+                id: 'taches-aujourdhui',
+                severity: 'warning',
+                title: `${resume.aujourdhui} tâche${resume.aujourdhui > 1 ? 's' : ''} pour aujourd’hui`,
+                detail: 'À rendre avant ce soir.',
+                route: ['/taches'],
+              });
+            }
+            return items;
+          }),
+          catchError(() => of([])),
+        ),
+      );
+    }
+
+    // Mon agenda du jour.
+    if (this.session.hasPermission('agenda:consulter')) {
+      const debut = new Date(today);
+      debut.setHours(0, 0, 0, 0);
+      const fin = new Date(debut.getTime() + 24 * 3600 * 1000);
+      sources.push(
+        this.agendaApi.flux(debut, fin, 'moi').pipe(
+          map((items) => {
+            // Les échéances d'autres modules ont déjà leur propre signal : on ne compte que les rendez-vous.
+            const rendezVous = items.filter((item) => item.source === 'evenement' || item.source === 'visite');
+            return rendezVous.length > 0
+              ? [
+                  {
+                    id: 'agenda-aujourdhui',
+                    severity: 'info' as const,
+                    title: `${rendezVous.length} rendez-vous aujourd’hui`,
+                    detail: rendezVous
+                      .slice(0, 2)
+                      .map((item) => item.titre)
+                      .join(' · '),
+                    route: ['/agenda'],
+                  },
+                ]
+              : [];
+          }),
+          catchError(() => of([])),
+        ),
+      );
+    }
+
     // Événements à traiter, avec état lu / non lu : ouverts par tout utilisateur.
     sources.push(
       this.notificationsApi.list({ nonLues: true, limite: 20 }).pipe(
@@ -214,12 +302,7 @@ export class NotificationsFeedService {
               severity: item.niveau === 'alerte' ? ('danger' as const) : ('info' as const),
               title: item.titre,
               detail: item.message ?? '',
-              route: item.lien
-                ? item.lien
-                    .split('/')
-                    .filter(Boolean)
-                    .map((part, index) => (index === 0 ? `/${part}` : part))
-                : ['/'],
+              ...routeDeLien(item.lien),
             })),
         ),
         catchError(() => of([])),

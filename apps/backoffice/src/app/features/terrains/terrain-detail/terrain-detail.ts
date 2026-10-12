@@ -56,6 +56,8 @@ import {
   typeBienLabel,
 } from '../terrain-status';
 import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
+import { FilDiscussion } from '../../../shared/components/fil-discussion/fil-discussion';
+import { TachesDossier } from '../../../shared/components/taches-dossier/taches-dossier';
 
 /**
  * Fiche terrain (J1.1 / J1.3). Tout ce qu'un commercial doit savoir sur une
@@ -65,6 +67,8 @@ import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 @Component({
   selector: 'app-terrain-detail',
   imports: [
+    FilDiscussion,
+    TachesDossier,
     MoneyPipe,
     LabelPipe,
     DatePipe,

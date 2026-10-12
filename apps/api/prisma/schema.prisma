@@ -51,30 +51,41 @@ model User {
   roles                    UserRole[]
   refreshTokens            RefreshToken[]
   passwordResetTokens      PasswordResetToken[]
-  notifications            Notification[]        @relation("UserNotifications")
-  auditLogs                AuditLog[]            @relation("AuditLogUser")
-  settingsEdits            SystemSetting[]       @relation("SystemSettingEditor")
-  contentEdits             ContentBlock[]        @relation("ContentBlockEditor")
-  showcaseItemsCrees       ShowcaseItem[]        @relation("ShowcaseItemCreator")
-  assignedTerrains         Terrain[]             @relation("TerrainCommercial")
-  mandatsResponsable       Mandat[]              @relation("MandatCommercial")
-  prospectsCommercial      Prospect[]            @relation("ProspectCommercial")
-  clientProspectId         String?               @unique
-  clientProspect           Prospect?             @relation("ProspectClientUser", fields: [clientProspectId], references: [id], onDelete: SetNull)
-  dossiersVenteResponsable DossierVente[]        @relation("DossierVenteCommercial")
-  reservationsCreees       Reservation[]         @relation("ReservationCreator")
-  paiementsEnregistres     Paiement[]            @relation("PaiementRecorder")
-  commissionsVente         CommissionVente[]     @relation("CommissionCommercial")
-  objectifsCommerciaux     ObjectifCommercial[]  @relation("ObjectifCommercial")
-  objectifsDefinis         ObjectifCommercial[]  @relation("ObjectifCreator")
-  documentsVenteCrees      DocumentVente[]       @relation("DocumentVenteCreator")
-  visitesAccompagnees      VisiteProspect[]      @relation("VisiteAccompagnateur")
-  visitesCreees            VisiteProspect[]      @relation("VisiteCreatedBy")
-  missionsResponsable      MissionVerification[] @relation("MissionResponsable")
-  missionsCreees           MissionVerification[] @relation("MissionCreatedBy")
-  etapesMissionRealisees   EtapeMission[]        @relation("EtapeMissionRealisee")
-  documentsMissionCrees    DocumentMission[]     @relation("DocumentMissionCreator")
-  paiementsMissionCrees    PaiementMission[]     @relation("PaiementMissionCreator")
+  notifications            Notification[]         @relation("UserNotifications")
+  /// Préférences de notification : e-mail activé par défaut, SMS et WhatsApp à l'initiative de l'utilisateur.
+  notificationsEmail       Boolean                @default(true)
+  notificationsSms         Boolean                @default(false)
+  notificationsWhatsapp    Boolean                @default(false)
+  telephone                String?
+  tachesResponsable        Tache[]                @relation("TacheResponsable")
+  tachesCreees             Tache[]                @relation("TacheCreePar")
+  tachesHistorique         TacheHistorique[]      @relation("TacheHistoriqueAuteur")
+  evenementsCrees          EvenementAgenda[]      @relation("EvenementCreateur")
+  evenementsParticipant    EvenementParticipant[] @relation("EvenementParticipantUser")
+  messagesDossier          MessageDossier[]       @relation("MessageDossierAuteur")
+  auditLogs                AuditLog[]             @relation("AuditLogUser")
+  settingsEdits            SystemSetting[]        @relation("SystemSettingEditor")
+  contentEdits             ContentBlock[]         @relation("ContentBlockEditor")
+  showcaseItemsCrees       ShowcaseItem[]         @relation("ShowcaseItemCreator")
+  assignedTerrains         Terrain[]              @relation("TerrainCommercial")
+  mandatsResponsable       Mandat[]               @relation("MandatCommercial")
+  prospectsCommercial      Prospect[]             @relation("ProspectCommercial")
+  clientProspectId         String?                @unique
+  clientProspect           Prospect?              @relation("ProspectClientUser", fields: [clientProspectId], references: [id], onDelete: SetNull)
+  dossiersVenteResponsable DossierVente[]         @relation("DossierVenteCommercial")
+  reservationsCreees       Reservation[]          @relation("ReservationCreator")
+  paiementsEnregistres     Paiement[]             @relation("PaiementRecorder")
+  commissionsVente         CommissionVente[]      @relation("CommissionCommercial")
+  objectifsCommerciaux     ObjectifCommercial[]   @relation("ObjectifCommercial")
+  objectifsDefinis         ObjectifCommercial[]   @relation("ObjectifCreator")
+  documentsVenteCrees      DocumentVente[]        @relation("DocumentVenteCreator")
+  visitesAccompagnees      VisiteProspect[]       @relation("VisiteAccompagnateur")
+  visitesCreees            VisiteProspect[]       @relation("VisiteCreatedBy")
+  missionsResponsable      MissionVerification[]  @relation("MissionResponsable")
+  missionsCreees           MissionVerification[]  @relation("MissionCreatedBy")
+  etapesMissionRealisees   EtapeMission[]         @relation("EtapeMissionRealisee")
+  documentsMissionCrees    DocumentMission[]      @relation("DocumentMissionCreator")
+  paiementsMissionCrees    PaiementMission[]      @relation("PaiementMissionCreator")
 
   // --- Gestion locative (J2.1) : espaces propriétaire et locataire ---
   clientProprietaireId      String?            @unique
@@ -170,6 +181,7 @@ model Terrain {
    * /**
    * /**
    * /**
+   * /**
    * Surface habitable, distincte de la parcelle. Les deux coexistent : une
    * villa de 120 m² habitables peut occuper une parcelle de 300 m², et les
    * confondre fausserait toute comparaison au catalogue.
@@ -219,6 +231,7 @@ model Terrain {
   notesInternes            String?
   // --- Suivi du portefeuille (reprise du tableur « Bd terrains ») ---
   /**
+   * /**
    * /**
    * /**
    * /**
@@ -661,6 +674,7 @@ model Prospect {
   // vivre dans une table à part, pour qu'une seule fiche porte le budget et
   // la zone du client — deux exemplaires finiraient par diverger.
   /**
+   * /**
    * /**
    * /**
    * /**
@@ -1394,6 +1408,7 @@ model BienLocatif {
    * /**
    * /**
    * /**
+   * /**
    * Visible sur le site tant que le bien est « disponible ». Réservé à la
    * permission locatif:publier ; exige un loyer et au moins une photo.
    */
@@ -1419,6 +1434,7 @@ model BienLocatif {
 
   // --- Courte durée (type Airbnb) ---
   /**
+   * /**
    * /**
    * longue_duree : bail et loyer mensuel ; courte_duree : séjours à la nuit.
    */
@@ -1489,6 +1505,7 @@ model BailLocatif {
 
   // --- Sortie et cas particuliers (section 15) ---
   /**
+   * /**
    * /**
    * /**
    * /**
@@ -2378,4 +2395,133 @@ model BienLocatifMedia {
 
   @@index([bienLocatifId, sortOrder])
   @@map("biens_locatifs_medias")
+}
+
+// ============================================================
+// Agenda, tâches, messagerie par dossier (J2.4, sections 21 et 22 CDC)
+// ============================================================
+
+/// Tâche assignable : rattachable à n'importe quel dossier (prospect, vente, mandat, mission, bail, chantier…).
+model Tache {
+  id            String    @id @default(uuid())
+  titre         String
+  description   String?
+  /// basse | moyenne | haute | urgente
+  priorite      String    @default("moyenne")
+  /// a_faire | en_cours | terminee | annulee
+  statut        String    @default("a_faire")
+  dateLimite    DateTime?
+  termineeLe    DateTime?
+  responsableId String
+  responsable   User      @relation("TacheResponsable", fields: [responsableId], references: [id], onDelete: Restrict)
+  creeParId     String
+  creePar       User      @relation("TacheCreePar", fields: [creeParId], references: [id], onDelete: Restrict)
+  /// Dossier concerné : type (prospect, vente, mandat, mission, bail, chantier, terrain), identifiant et libellé affiché.
+  entityType    String?
+  entityId      String?
+  entityLabel   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  historique TacheHistorique[]
+
+  @@index([responsableId, statut])
+  @@index([dateLimite])
+  @@index([entityType, entityId])
+  @@map("taches")
+}
+
+/// Historique d'une tâche : création, assignation, changement de statut, de priorité ou d'échéance, commentaire.
+model TacheHistorique {
+  id        String   @id @default(uuid())
+  tacheId   String
+  tache     Tache    @relation(fields: [tacheId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?    @relation("TacheHistoriqueAuteur", fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  detail    String?
+  createdAt DateTime @default(now())
+
+  @@index([tacheId, createdAt])
+  @@map("taches_historique")
+}
+
+/// Événement de l'agenda : visite, rendez-vous, appel, vérification, échéance, réunion.
+model EvenementAgenda {
+  id             String    @id @default(uuid())
+  /// visite | rendez_vous | appel | verification | echeance | reunion | autre
+  type           String
+  titre          String
+  description    String?
+  lieu           String?
+  debut          DateTime
+  fin            DateTime?
+  journeeEntiere Boolean   @default(false)
+  /// prevu | realise | annule
+  statut         String    @default("prevu")
+  /// equipe : visible de tous ceux qui consultent l'agenda ; prive : créateur et participants seulement.
+  visibilite     String    @default("equipe")
+  createurId     String
+  createur       User      @relation("EvenementCreateur", fields: [createurId], references: [id], onDelete: Restrict)
+  entityType     String?
+  entityId       String?
+  entityLabel    String?
+  /// Rappel envoyé aux participants N minutes avant le début.
+  rappelMinutes  Int?
+  rappelEnvoyeLe DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  participants EvenementParticipant[]
+
+  @@index([debut])
+  @@index([createurId])
+  @@index([entityType, entityId])
+  @@map("evenements_agenda")
+}
+
+model EvenementParticipant {
+  evenementId String
+  evenement   EvenementAgenda @relation(fields: [evenementId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User            @relation("EvenementParticipantUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([evenementId, userId])
+  @@index([userId])
+  @@map("evenements_participants")
+}
+
+/// Fil de discussion d'un dossier. `visibleClient` : le message est lisible dans l'espace client ; sinon note interne.
+model MessageDossier {
+  id            String   @id @default(uuid())
+  /// prospect | vente | mandat | mission | bail | chantier | terrain
+  entityType    String
+  entityId      String
+  entityLabel   String?
+  auteurId      String
+  auteur        User     @relation("MessageDossierAuteur", fields: [auteurId], references: [id], onDelete: Restrict)
+  /// Vrai quand l'auteur est le client lui-même (compte d'espace client).
+  deClient      Boolean  @default(false)
+  corps         String
+  visibleClient Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  @@index([entityType, entityId, createdAt])
+  @@index([auteurId])
+  @@map("messages_dossier")
+}
+
+/// Journal des envois par un canal externe (SMS, WhatsApp) : preuve d'envoi ou raison de l'échec.
+model EnvoiCanal {
+  id             String   @id @default(uuid())
+  canal          String
+  destinataire   String
+  notificationId String?
+  /// envoye | echec
+  statut         String
+  erreur         String?
+  createdAt      DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("envois_canal")
 }

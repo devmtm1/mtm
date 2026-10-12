@@ -586,5 +586,7 @@
         </div>
       </section>
     </section>
+    <app-taches-dossier type="prospect" [dossierId]="p.id" [libelleDossier]="p.prenom ? p.prenom + ' ' + p.nom : p.nom" />
+    <app-fil-discussion type="prospect" [dossierId]="p.id" />
   </section>
 }

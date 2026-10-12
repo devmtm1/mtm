@@ -359,5 +359,7 @@
         </dl>
       </section>
     </section>
+    <app-taches-dossier type="vente" [dossierId]="d.id" [libelleDossier]="d.referenceInterne ?? 'Dossier de vente'" />
+    <app-fil-discussion type="vente" [dossierId]="d.id" />
   </section>
 }

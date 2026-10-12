@@ -1,0 +1,87 @@
+:host {
+  display: block;
+}
+
+.taches-dossier {
+  display: grid;
+  gap: 12px;
+}
+
+.taches-dossier__tete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+
+  h2 {
+    margin: 0 0 2px;
+    font-size: 1rem;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--mtm-text-muted);
+  }
+}
+
+.taches-dossier__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.taches-dossier__vide {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--mtm-text-muted);
+}
+
+.taches-dossier__liste {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border: 1px solid var(--mtm-border);
+    border-radius: 8px;
+
+    &.is-retard {
+      border-left: 4px solid #dc2626;
+    }
+
+    &.is-fermee {
+      opacity: 0.65;
+
+      strong {
+        text-decoration: line-through;
+      }
+    }
+  }
+}
+
+.tache {
+  display: grid;
+  flex: 1 1 200px;
+  gap: 2px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  span {
+    font-size: 0.8rem;
+    color: var(--mtm-text-muted);
+  }
+}

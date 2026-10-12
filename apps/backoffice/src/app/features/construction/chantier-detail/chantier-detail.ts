@@ -60,6 +60,8 @@ import { PieceDialog } from './piece-dialog';
 import { PrestataireDialog } from './prestataire-dialog';
 import { DepenseDialog } from './depense-dialog';
 import { LigneBudgetDialog } from './ligne-budget-dialog';
+import { FilDiscussion } from '../../../shared/components/fil-discussion/fil-discussion';
+import { TachesDossier } from '../../../shared/components/taches-dossier/taches-dossier';
 
 /** Nombre de journées affichées avant de devoir déplier le journal. */
 const JOURNEES_VISIBLES = 6;
@@ -79,6 +81,8 @@ const PIECES_VISIBLES = 4;
 @Component({
   selector: 'app-chantier-detail',
   imports: [
+    FilDiscussion,
+    TachesDossier,
     MoneyPipe,
     MatButtonModule,
     MatMenuModule,

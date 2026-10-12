@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { Prisma } from '@prisma/client';
@@ -11,6 +12,7 @@ import { UpdateVenteStatusDto } from './dto/update-vente-status.dto';
 import { InternalNotificationService } from '../../common/mail/internal-notification.service';
 import { nextProspectReference } from '../crm/prospect-reference';
 import { PrismaService } from '../../database/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { applyPaymentToEcheances } from './echeances.helper';
 import { VentesWorkflowService } from './ventes-workflow.service';
 import { VentesAccessService, type MandatUser } from './ventes-access.service';
@@ -37,6 +39,7 @@ export class VentesService {
     private readonly access: VentesAccessService,
     private readonly notifications: InternalNotificationService,
     private readonly workflow: VentesWorkflowService,
+    @Optional() private readonly alertes?: NotificationsService,
   ) {}
 
   private async assertMandatExclusivity(
@@ -445,6 +448,18 @@ export class VentesService {
       });
     }
 
+    void this.alertes?.alerter(
+      'ventes:valider',
+      {
+        type: 'nouveau_dossier_vente',
+        titre:
+          `Nouveau dossier de vente ${dossier.referenceInterne ?? ''}`.trim(),
+        lien: `/ventes/${dossier.id}`,
+        entityType: 'DossierVente',
+        entityId: dossier.id,
+      },
+      user.id,
+    );
     return this.findOne(dossier.id, user);
   }
 

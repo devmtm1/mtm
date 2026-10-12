@@ -66,10 +66,10 @@ describe('libellés du suivi de chantier', () => {
     expect(pillClass(STATUTS_DEPENSE, 'rejete')).toContain('danger');
   });
 
-  it('affiche tel quel un code ajouté dans les Paramètres', () => {
+  it('lit comme du texte un code ajouté dans les Paramètres', () => {
     // La section 25 permet d'étendre les référentiels sans développement :
-    // un code inconnu doit s'afficher, pas casser l'écran.
-    expect(label(STATUTS_CHANTIER, 'gros_oeuvre_seul')).toBe('gros_oeuvre_seul');
+    // un code inconnu doit s'afficher lisiblement, pas casser l'écran.
+    expect(label(STATUTS_CHANTIER, 'gros_oeuvre_seul')).toBe('Gros oeuvre seul');
     expect(pillClass(STATUTS_CHANTIER, 'gros_oeuvre_seul')).toBe('status-pill');
   });
 
