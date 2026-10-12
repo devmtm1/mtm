@@ -49,22 +49,60 @@ const nombre = (valeur: number | string | null): number | undefined => {
         <textarea matInput rows="5" formControlName="description" maxlength="4000"></textarea>
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Loyer mensuel (FCFA)</mat-label>
-        <input matInput type="number" min="0" step="5000" formControlName="loyerMensuel" />
-        @if (form.controls.loyerMensuel.hasError('min')) {
-          <mat-error>Le loyer ne peut pas être négatif.</mat-error>
-        }
-      </mat-form-field>
-      <mat-form-field appearance="outline">
-        <mat-label>Charges mensuelles (FCFA)</mat-label>
-        <input matInput type="number" min="0" step="1000" formControlName="charges" />
-      </mat-form-field>
+      @if (courteDuree) {
+        <mat-form-field appearance="outline">
+          <mat-label>Prix de la nuit (FCFA)</mat-label>
+          <input matInput type="number" min="0" step="1000" formControlName="prixNuit" />
+          @if (form.controls.prixNuit.hasError('min')) {
+            <mat-error>Le prix ne peut pas être négatif.</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Frais de ménage (FCFA)</mat-label>
+          <input matInput type="number" min="0" step="1000" formControlName="fraisMenage" />
+        </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Caution (mois de loyer)</mat-label>
-        <input matInput type="number" min="0" max="12" formControlName="moisCaution" />
-      </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Caution (FCFA)</mat-label>
+          <input matInput type="number" min="0" step="5000" formControlName="cautionSejour" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Durée minimale (nuits)</mat-label>
+          <input matInput type="number" min="1" max="90" formControlName="nuitsMinimum" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Capacité (voyageurs)</mat-label>
+          <input matInput type="number" min="1" max="50" formControlName="capaciteVoyageurs" />
+        </mat-form-field>
+        <div class="annonce-heures">
+          <mat-form-field appearance="outline">
+            <mat-label>Arrivée</mat-label>
+            <input matInput type="time" formControlName="heureArrivee" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Départ</mat-label>
+            <input matInput type="time" formControlName="heureDepart" />
+          </mat-form-field>
+        </div>
+      } @else {
+        <mat-form-field appearance="outline">
+          <mat-label>Loyer mensuel (FCFA)</mat-label>
+          <input matInput type="number" min="0" step="5000" formControlName="loyerMensuel" />
+          @if (form.controls.loyerMensuel.hasError('min')) {
+            <mat-error>Le loyer ne peut pas être négatif.</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Charges mensuelles (FCFA)</mat-label>
+          <input matInput type="number" min="0" step="1000" formControlName="charges" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Caution (mois de loyer)</mat-label>
+          <input matInput type="number" min="0" max="12" formControlName="moisCaution" />
+        </mat-form-field>
+      }
       <mat-form-field appearance="outline">
         <mat-label>Disponible à partir du</mat-label>
         <input matInput type="date" formControlName="disponibleLe" />
@@ -129,6 +167,7 @@ const nombre = (valeur: number | string | null): number | undefined => {
   styles: `
     .annonce-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; min-width: min(640px, calc(100vw - 96px)); }
     .annonce-wide { grid-column: 1 / -1; }
+    .annonce-heures { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .annonce-hint { margin: 0 0 4px; color: var(--mtm-text-muted); font-size: 0.84rem; line-height: 1.5; }
     @media (max-width: 640px) { .annonce-grid { grid-template-columns: 1fr; } }
   `,
@@ -144,6 +183,13 @@ export class AnnonceDialog {
     loyerMensuel: [nombre(this.data.bien.loyerMensuel) ?? (null as number | null), [Validators.min(0)]],
     charges: [nombre(this.data.bien.charges) ?? (null as number | null), [Validators.min(0)]],
     moisCaution: [this.data.bien.moisCaution as number | null, [Validators.min(0), Validators.max(12)]],
+    prixNuit: [nombre(this.data.bien.prixNuit) ?? (null as number | null), [Validators.min(0)]],
+    fraisMenage: [nombre(this.data.bien.fraisMenage) ?? (null as number | null), [Validators.min(0)]],
+    cautionSejour: [nombre(this.data.bien.cautionSejour) ?? (null as number | null), [Validators.min(0)]],
+    nuitsMinimum: [this.data.bien.nuitsMinimum as number | null, [Validators.min(1), Validators.max(90)]],
+    capaciteVoyageurs: [this.data.bien.capaciteVoyageurs as number | null, [Validators.min(1), Validators.max(50)]],
+    heureArrivee: [this.data.bien.heureArrivee ?? ''],
+    heureDepart: [this.data.bien.heureDepart ?? ''],
     disponibleLe: [this.data.bien.disponibleLe ? this.data.bien.disponibleLe.slice(0, 10) : ''],
     nombrePieces: [this.data.bien.nombrePieces as number | null, [Validators.min(0)]],
     nombreChambres: [this.data.bien.nombreChambres as number | null, [Validators.min(0)]],
@@ -154,6 +200,11 @@ export class AnnonceDialog {
     longitude: [nombre(this.data.bien.longitude) ?? (null as number | null)],
     misEnAvant: [this.data.bien.misEnAvant],
   });
+
+  /** Bien loué à la nuit : le tarif de séjour remplace le loyer mensuel. */
+  protected get courteDuree(): boolean {
+    return this.data.bien.modeLocation === 'courte_duree';
+  }
 
   protected confirm(): void {
     if (this.form.invalid) {
@@ -175,9 +226,19 @@ export class AnnonceDialog {
     const ajouter = <K extends keyof AnnoncePayload>(cle: K, valeurChamp: AnnoncePayload[K] | undefined) => {
       if (valeurChamp !== undefined) payload[cle] = valeurChamp;
     };
-    ajouter('loyerMensuel', nombre(valeur.loyerMensuel));
-    ajouter('charges', nombre(valeur.charges));
-    ajouter('moisCaution', nombre(valeur.moisCaution));
+    if (this.courteDuree) {
+      ajouter('prixNuit', nombre(valeur.prixNuit));
+      ajouter('fraisMenage', nombre(valeur.fraisMenage));
+      ajouter('cautionSejour', nombre(valeur.cautionSejour));
+      ajouter('nuitsMinimum', nombre(valeur.nuitsMinimum));
+      ajouter('capaciteVoyageurs', nombre(valeur.capaciteVoyageurs));
+      if (valeur.heureArrivee) payload.heureArrivee = valeur.heureArrivee;
+      if (valeur.heureDepart) payload.heureDepart = valeur.heureDepart;
+    } else {
+      ajouter('loyerMensuel', nombre(valeur.loyerMensuel));
+      ajouter('charges', nombre(valeur.charges));
+      ajouter('moisCaution', nombre(valeur.moisCaution));
+    }
     ajouter('nombrePieces', nombre(valeur.nombrePieces));
     ajouter('nombreChambres', nombre(valeur.nombreChambres));
     ajouter('nombreSallesEau', nombre(valeur.nombreSallesEau));

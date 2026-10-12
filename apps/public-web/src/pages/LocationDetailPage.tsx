@@ -10,6 +10,7 @@ import {
   Globe2,
   MapPin,
   MessageSquare,
+  Moon,
   Ruler,
   ShieldCheck,
   Sofa,
@@ -18,6 +19,7 @@ import {
 import { ROUTES } from '../routes';
 import { useLocation } from '../hooks/useLocations';
 import { LocationGallery } from '../components/locations/LocationGallery';
+import { SejourBooking } from '../components/locations/SejourBooking';
 import { TerrainMap } from '../components/terrains/TerrainMap';
 import { ContactModal } from '../components/contact/ContactModal';
 import { DemandeWhatsAppCta } from '../components/contact/DemandeWhatsAppCta';
@@ -35,8 +37,10 @@ import { formatSuperficie } from '../utils/format';
 import {
   chambresLabel,
   disponibiliteLabel,
+  estCourteDuree,
   formatLoyerMontant,
   locationPlace,
+  prixAffiche,
   locationTitle,
   sallesEauLabel,
 } from '../utils/locationFormat';
@@ -71,11 +75,13 @@ export function LocationDetailPage() {
     );
   }
 
+  const courte = estCourteDuree(location);
+  const prix = prixAffiche(location);
   const chambres = chambresLabel(location.nombreChambres);
   const sallesEau = sallesEauLabel(location.nombreSallesEau);
   const libre = disponibiliteLabel(location.disponibleLe);
   const premierVersement =
-    location.loyerMensuel !== null && location.montantCaution !== null
+    !courte && location.loyerMensuel !== null && location.montantCaution !== null
       ? location.loyerMensuel + location.montantCaution
       : null;
 
@@ -94,7 +100,9 @@ export function LocationDetailPage() {
     },
   ].filter((fait): fait is { icon: typeof BedDouble; label: string; value: string } => Boolean(fait));
 
-  const message = `Bonjour, je suis intéressé(e) par la location « ${titre} » (réf. ${location.referenceInterne}).`;
+  const message = courte
+    ? `Bonjour, je souhaite séjourner dans « ${titre} » (réf. ${location.referenceInterne}).`
+    : `Bonjour, je suis intéressé(e) par la location « ${titre} » (réf. ${location.referenceInterne}).`;
   const demandeSujet = (verbe: string) => `${verbe} — ${location.referenceInterne}`;
 
   return (
@@ -121,8 +129,8 @@ export function LocationDetailPage() {
               </p>
             )}
             <p className="mt-2 font-display text-2xl font-bold text-mtm-primary lg:hidden">
-              {formatLoyerMontant(location.loyerMensuel)}
-              <span className="ml-1 text-sm font-semibold text-mtm-muted">/ mois</span>
+              {prix.montant}
+              <span className="ml-1 text-sm font-semibold text-mtm-muted">{prix.suffixe}</span>
             </p>
             <div className="mt-3 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] lg:flex-wrap lg:overflow-visible lg:pb-0 [&::-webkit-scrollbar]:hidden [&>*]:shrink-0">
               <Badge tone="primary">{typeLabel}</Badge>
@@ -132,7 +140,7 @@ export function LocationDetailPage() {
                   Meublé
                 </Badge>
               )}
-              <Badge tone="success">{libre}</Badge>
+              {courte ? <Badge tone="success"><Moon className="mr-1 h-3.5 w-3.5" aria-hidden="true" />À la nuit</Badge> : <Badge tone="success">{libre}</Badge>}
               {location.misEnAvant && <Badge tone="accent">À la une</Badge>}
             </div>
           </div>
@@ -201,14 +209,23 @@ export function LocationDetailPage() {
         </div>
 
         <aside className="h-fit rounded-2xl border border-mtm-border bg-mtm-surface p-5 shadow-card lg:sticky lg:top-24 lg:rounded-xl lg:p-6">
-          <p className="hidden text-xs font-semibold uppercase tracking-wide text-mtm-muted lg:block">Loyer mensuel</p>
+          <p className="hidden text-xs font-semibold uppercase tracking-wide text-mtm-muted lg:block">
+            {courte ? 'Prix de la nuit' : 'Loyer mensuel'}
+          </p>
           <p className="mt-1 hidden font-display text-3xl font-bold text-mtm-primary lg:block">
-            {formatLoyerMontant(location.loyerMensuel)}
+            {prix.montant}
+            {courte && <span className="ml-1 text-base font-semibold text-mtm-muted">/ nuit</span>}
           </p>
           <h2 className="font-display text-lg font-bold text-mtm-text lg:hidden">Conditions de location</h2>
 
           <dl className="mt-3 flex flex-col gap-2 border-t border-mtm-border pt-4 text-sm lg:mt-4">
-            {location.charges !== null && location.charges > 0 && (
+            {courte && location.fraisMenage !== null && location.fraisMenage > 0 && (
+              <div className="flex justify-between gap-4">
+                <dt className="text-mtm-muted">Frais de ménage</dt>
+                <dd className="font-semibold text-mtm-text">{formatLoyerMontant(location.fraisMenage)} par séjour</dd>
+              </div>
+            )}
+            {!courte && location.charges !== null && location.charges > 0 && (
               <div className="flex justify-between gap-4">
                 <dt className="text-mtm-muted">Charges</dt>
                 <dd className="font-semibold text-mtm-text">{formatLoyerMontant(location.charges)} / mois</dd>
@@ -218,7 +235,7 @@ export function LocationDetailPage() {
               <div className="flex justify-between gap-4">
                 <dt className="text-mtm-muted">
                   Caution
-                  {location.moisCaution !== null && ` (${location.moisCaution} mois)`}
+                  {!courte && location.moisCaution !== null && ` (${location.moisCaution} mois)`}
                 </dt>
                 <dd className="font-semibold text-mtm-text">{formatLoyerMontant(location.montantCaution)}</dd>
               </div>
@@ -234,16 +251,26 @@ export function LocationDetailPage() {
             <p className="mt-2 text-xs text-mtm-muted">Premier loyer et caution. Les modalités sont confirmées au bail.</p>
           )}
 
-          <div className="mt-6 flex flex-col gap-3">
-            <Button onClick={() => setActiveModal('visite')}>
-              <CalendarCheck className="h-4 w-4" aria-hidden="true" />
-              Demander une visite
-            </Button>
-            <Button variant="secondary" onClick={() => setActiveModal('infos')}>
-              <MessageSquare className="h-4 w-4" aria-hidden="true" />
-              Poser une question
-            </Button>
-          </div>
+          {courte ? (
+            <div className="mt-6 flex flex-col gap-5 border-t border-mtm-border pt-5">
+              <SejourBooking location={location} />
+              <Button variant="secondary" onClick={() => setActiveModal('infos')}>
+                <MessageSquare className="h-4 w-4" aria-hidden="true" />
+                Poser une question
+              </Button>
+            </div>
+          ) : (
+            <div className="mt-6 flex flex-col gap-3">
+              <Button onClick={() => setActiveModal('visite')}>
+                <CalendarCheck className="h-4 w-4" aria-hidden="true" />
+                Demander une visite
+              </Button>
+              <Button variant="secondary" onClick={() => setActiveModal('infos')}>
+                <MessageSquare className="h-4 w-4" aria-hidden="true" />
+                Poser une question
+              </Button>
+            </div>
+          )}
 
           <ul className="mt-6 flex flex-col gap-2 border-t border-mtm-border pt-5 text-sm text-mtm-muted">
             <li className="flex items-start gap-2">
@@ -263,11 +290,21 @@ export function LocationDetailPage() {
       </div>
 
       {/* Mobile : le loyer et l'action principale restent sous le pouce. */}
-      <DetailActionBar label="Loyer / mois" price={formatLoyerMontant(location.loyerMensuel)}>
-        <Button className="px-4" onClick={() => setActiveModal('visite')}>
-          <CalendarCheck className="h-4 w-4" aria-hidden="true" />
-          Visiter
-        </Button>
+      <DetailActionBar label={courte ? 'Prix / nuit' : 'Loyer / mois'} price={prix.montant}>
+        {courte ? (
+          <Button
+            className="px-4"
+            onClick={() => document.getElementById('reserver')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+          >
+            <CalendarCheck className="h-4 w-4" aria-hidden="true" />
+            Réserver
+          </Button>
+        ) : (
+          <Button className="px-4" onClick={() => setActiveModal('visite')}>
+            <CalendarCheck className="h-4 w-4" aria-hidden="true" />
+            Visiter
+          </Button>
+        )}
       </DetailActionBar>
 
       {activeModal === 'visite' && (

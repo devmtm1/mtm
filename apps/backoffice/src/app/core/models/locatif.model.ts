@@ -47,6 +47,8 @@ export interface BienListItem {
   /** Annonce visible sur le site public (tant que le bien est disponible). */
   publie: boolean;
   misEnAvant: boolean;
+  /** longue_duree (bail au mois) ou courte_duree (séjours à la nuit, type Airbnb). */
+  modeLocation: string;
   /** Nombre de photos et vidéos d'annonce. */
   _count?: { medias: number };
   createdAt: string;
@@ -78,6 +80,14 @@ export interface BienAnnonce {
   longitude: number | string | null;
   disponibleLe: string | null;
   publieLe: string | null;
+  // --- Courte durée ---
+  prixNuit: number | string | null;
+  cautionSejour: number | string | null;
+  fraisMenage: number | string | null;
+  nuitsMinimum: number;
+  capaciteVoyageurs: number | null;
+  heureArrivee: string | null;
+  heureDepart: string | null;
 }
 
 export interface BienDetail extends BienListItem, BienAnnonce {
@@ -100,6 +110,14 @@ export interface AnnoncePayload {
   latitude?: number;
   longitude?: number;
   disponibleLe?: string;
+  modeLocation?: string;
+  prixNuit?: number;
+  cautionSejour?: number;
+  fraisMenage?: number;
+  nuitsMinimum?: number;
+  capaciteVoyageurs?: number;
+  heureArrivee?: string;
+  heureDepart?: string;
   publie?: boolean;
   misEnAvant?: boolean;
 }
@@ -317,6 +335,8 @@ export interface BienQuery {
   search?: string;
   statut?: string;
   type?: string;
+  /** « courte_duree » : seuls les biens loués à la nuit. */
+  modeLocation?: string;
   proprietaireId?: string;
   responsableId?: string;
   vue?: string;
@@ -352,6 +372,16 @@ export interface LocatifOptions {
   impayeProlongeJours: number;
   horizonEcheancesMois: number;
   relanceModeles: ModeleRelance[];
+  modesLocation: string[];
+  statutsSejour: string[];
+  sourcesSejour: string[];
+  typesPaiementSejour: string[];
+  statutsCautionSejour: string[];
+  motifsResiliation: string[];
+  canauxResiliation: string[];
+  statutsResiliation: string[];
+  /** Préavis minimal d'un locataire qui part, en jours. */
+  preavisJours: number;
 }
 
 export interface LocatifStats {

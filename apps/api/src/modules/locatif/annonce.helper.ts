@@ -18,6 +18,14 @@ export type AnnonceData = Partial<
     | 'latitude'
     | 'longitude'
     | 'disponibleLe'
+    | 'modeLocation'
+    | 'prixNuit'
+    | 'cautionSejour'
+    | 'fraisMenage'
+    | 'nuitsMinimum'
+    | 'capaciteVoyageurs'
+    | 'heureArrivee'
+    | 'heureDepart'
   >
 >;
 
@@ -60,12 +68,33 @@ export function annonceData(dto: AnnonceBienFields): AnnonceData {
     ...(dto.disponibleLe !== undefined
       ? { disponibleLe: dto.disponibleLe ? new Date(dto.disponibleLe) : null }
       : {}),
+    ...(dto.modeLocation !== undefined
+      ? { modeLocation: dto.modeLocation }
+      : {}),
+    ...(dto.prixNuit !== undefined ? { prixNuit: dto.prixNuit } : {}),
+    ...(dto.cautionSejour !== undefined
+      ? { cautionSejour: dto.cautionSejour }
+      : {}),
+    ...(dto.fraisMenage !== undefined ? { fraisMenage: dto.fraisMenage } : {}),
+    ...(dto.nuitsMinimum !== undefined
+      ? { nuitsMinimum: dto.nuitsMinimum }
+      : {}),
+    ...(dto.capaciteVoyageurs !== undefined
+      ? { capaciteVoyageurs: dto.capaciteVoyageurs }
+      : {}),
+    ...(dto.heureArrivee !== undefined
+      ? { heureArrivee: dto.heureArrivee }
+      : {}),
+    ...(dto.heureDepart !== undefined ? { heureDepart: dto.heureDepart } : {}),
   };
 }
 
 /** Ce que le bien doit avoir pour être montré sur le site. */
 export interface ConditionsPublication {
+  /** « courte_duree » : le prix de la nuit remplace le loyer mensuel. */
+  modeLocation?: string;
   loyerMensuel: number | null;
+  prixNuit?: number | null;
   nombrePhotos: number;
 }
 
@@ -75,7 +104,13 @@ export interface ConditionsPublication {
  * demande. La règle porte sur l'état après modification.
  */
 export function verifierPublication(conditions: ConditionsPublication): void {
-  if (!(Number(conditions.loyerMensuel ?? 0) > 0)) {
+  if (conditions.modeLocation === 'courte_duree') {
+    if (!(Number(conditions.prixNuit ?? 0) > 0)) {
+      throw new BadRequestException(
+        'Renseignez le prix de la nuit avant de publier ce bien.',
+      );
+    }
+  } else if (!(Number(conditions.loyerMensuel ?? 0) > 0)) {
     throw new BadRequestException(
       'Renseignez le loyer mensuel avant de publier ce bien.',
     );

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
@@ -14,6 +15,8 @@ import type { AuthenticatedUser } from '../auth/auth.types';
 import { ProprietairePortalService } from './proprietaire-portal.service';
 import { LocatairePortalService } from './locataire-portal.service';
 import { CreateIncidentDto } from './dto/incident.dto';
+import { ResiliationsService } from './resiliations.service';
+import { DemandeResiliationDto } from './dto/resiliation.dto';
 import { AuditService } from '../audit/audit.service';
 import { Authenticated } from '../auth/decorators/authenticated.decorator';
 
@@ -29,6 +32,7 @@ export class LocatifPortailController {
   constructor(
     private readonly proprietaire: ProprietairePortalService,
     private readonly locataire: LocatairePortalService,
+    private readonly resiliations: ResiliationsService,
     private readonly audit: AuditService,
   ) {}
 
@@ -102,5 +106,64 @@ export class LocatifPortailController {
       },
     });
     return incident;
+  }
+
+  /** Demandes de résiliation du locataire, avec le préavis qui s'applique. */
+  @Authenticated()
+  @Get('locataire/resiliations')
+  getResiliationsLocataire(@CurrentUser() user: AuthenticatedUser) {
+    return this.resiliations.pourLocataire(user.id);
+  }
+
+  /** Le locataire demande la résiliation de son bail : MTM l'étudie, puis répond. */
+  @Authenticated()
+  @Post('locataire/baux/:id/resiliation')
+  @Throttle({
+    default: {
+      limit: Number.parseInt(process.env.RESERVATION_RATE_LIMIT_MAX ?? '5', 10),
+      ttl:
+        Number.parseInt(process.env.RESERVATION_RATE_LIMIT_TTL ?? '60', 10) *
+        1000,
+    },
+  })
+  async demanderResiliation(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: DemandeResiliationDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const demande = await this.resiliations.creerPourLocataire(
+      user.id,
+      id,
+      dto,
+    );
+    await this.audit.record({
+      userId: user.id,
+      action: 'locataire.resiliation.demandee',
+      entityType: 'DemandeResiliation',
+      entityId: demande.id,
+      newValue: {
+        bailLocatifId: id,
+        dateDepartSouhaitee: dto.dateDepartSouhaitee,
+        motif: dto.motif,
+      },
+    });
+    return demande;
+  }
+
+  /** Le locataire retire sa demande tant qu'elle n'est pas traitée. */
+  @Authenticated()
+  @Delete('locataire/resiliations/:id')
+  async annulerResiliation(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const demande = await this.resiliations.annulerParLocataire(user.id, id);
+    await this.audit.record({
+      userId: user.id,
+      action: 'locataire.resiliation.annulee',
+      entityType: 'DemandeResiliation',
+      entityId: id,
+    });
+    return demande;
   }
 }

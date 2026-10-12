@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { BedDouble, Bath, Camera, CalendarCheck, MapPin, Ruler, Sofa } from 'lucide-react';
+import { BedDouble, Bath, Camera, CalendarCheck, MapPin, Moon, Ruler, Sofa } from 'lucide-react';
 import type { Location } from '../../types/location';
 import { ROUTES } from '../../routes';
 import { typeBienLabel } from '../../utils/bienLabels';
@@ -7,7 +7,8 @@ import { formatSuperficie } from '../../utils/format';
 import {
   chambresLabel,
   disponibiliteLabel,
-  formatLoyerMontant,
+  estCourteDuree,
+  prixAffiche,
   locationPlace,
   locationTitle,
   sallesEauLabel,
@@ -35,6 +36,8 @@ export function LocationCard({ location, compact = false }: LocationCardProps) {
   const chambres = chambresLabel(location.nombreChambres);
   const sallesEau = sallesEauLabel(location.nombreSallesEau);
   const libre = disponibiliteLabel(location.disponibleLe);
+  const courte = estCourteDuree(location);
+  const prix = prixAffiche(location);
 
   return (
     <Link
@@ -65,7 +68,16 @@ export function LocationCard({ location, compact = false }: LocationCardProps) {
               À la une
             </span>
           )}
-          {location.meuble && (
+          {courte && (
+            <span
+              className={`inline-flex items-center gap-1 rounded-full bg-mtm-primary font-semibold text-white shadow-card ${
+                compact ? 'px-2 py-0.5 text-[11px] sm:text-xs' : 'px-2.5 py-0.5 text-xs'
+              }`}
+            >
+              <Moon className="h-3 w-3" aria-hidden="true" />À la nuit
+            </span>
+          )}
+          {location.meuble && !courte && (
             <span
               className={`inline-flex items-center gap-1 rounded-full bg-white/95 font-semibold text-mtm-primary shadow-card ${
                 compact ? 'px-2 py-0.5 text-[11px] sm:text-xs' : 'px-2.5 py-0.5 text-xs'
@@ -88,9 +100,9 @@ export function LocationCard({ location, compact = false }: LocationCardProps) {
           <span
             className={`font-display font-bold drop-shadow ${compact ? 'text-base sm:text-xl' : 'text-xl'}`}
           >
-            {formatLoyerMontant(location.loyerMensuel)}
+            {prix.montant}
           </span>
-          <span className="ml-1 text-xs font-medium text-white/85">/ mois</span>
+          <span className="ml-1 text-xs font-medium text-white/85">{prix.suffixe}</span>
         </p>
       </div>
 
@@ -148,7 +160,7 @@ export function LocationCard({ location, compact = false }: LocationCardProps) {
           }`}
         >
           <CalendarCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          {libre}
+          {courte ? `${location.nuitsMinimum} nuit${location.nuitsMinimum > 1 ? 's' : ''} minimum` : libre}
         </p>
       </div>
     </Link>

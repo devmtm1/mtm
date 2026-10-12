@@ -31,7 +31,11 @@
 
       @if (canModify()) {
         <div class="detail-header__actions">
-          @if (bailActuel()) {
+          @if (courte()) {
+            <button mat-flat-button color="primary" type="button" (click)="nouveauSejour()">
+              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau séjour
+            </button>
+          } @else if (bailActuel()) {
             <button mat-flat-button color="primary" type="button" (click)="enregistrerPaiement()">
               <svg class="btn-icon" lucideBanknote aria-hidden="true"></svg>Encaisser un loyer
             </button>
@@ -60,6 +64,26 @@
                 <span class="menu-line">
                   <strong>Incident ou demande</strong>
                   <small>Constat de visite, demande reçue du locataire</small>
+                </span>
+              </button>
+              @if (bail.statut === 'actif') {
+                <button mat-menu-item type="button" (click)="enregistrerResiliation()">
+                  <span class="menu-line">
+                    <strong>Demande de résiliation</strong>
+                    <small>Reçue par téléphone, WhatsApp ou courrier</small>
+                  </span>
+                </button>
+              }
+              <button mat-menu-item type="button" (click)="etatDesLieuxBail('entree')">
+                <span class="menu-line">
+                  <strong>État des lieux d’entrée</strong>
+                  <small>Pièce par pièce, compteurs et clés</small>
+                </span>
+              </button>
+              <button mat-menu-item type="button" (click)="etatDesLieuxBail('sortie')">
+                <span class="menu-line">
+                  <strong>État des lieux de sortie</strong>
+                  <small>Comparé à l’entrée pour justifier une retenue</small>
                 </span>
               </button>
               @if (bail.statut === 'actif') {
@@ -167,6 +191,55 @@
       [canPublish]="canPublish()"
       (changed)="rafraichirBien()"
     />
+
+    @if (courte()) {
+      <section class="page-card detail-section" aria-labelledby="sejours-bien">
+        <div class="detail-section__head">
+          <div>
+            <h2 id="sejours-bien">Séjours</h2>
+            <p class="detail-section__hint">
+              Ce bien se loue à la nuit : chaque réservation est un séjour, avec son prix figé, sa caution et ses états
+              des lieux.
+            </p>
+          </div>
+          @if (canModify()) {
+            <button mat-stroked-button type="button" (click)="nouveauSejour()">
+              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau séjour
+            </button>
+          }
+        </div>
+        @if (sejours().length) {
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Séjour</th>
+                  <th>Voyageur</th>
+                  <th>Dates</th>
+                  <th class="is-right">Total</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (sejour of sejours(); track sejour.id) {
+                  <tr class="is-clickable" tabindex="0" (click)="ouvrirSejour(sejour.id)" (keydown.enter)="ouvrirSejour(sejour.id)">
+                    <td><strong>{{ sejour.referenceInterne }}</strong></td>
+                    <td>{{ voyageurSejour(sejour.locataire) }}</td>
+                    <td>{{ periodeSejour(sejour) }}<br /><small>{{ jourSejour(sejour.dateArrivee) }} → {{ jourSejour(sejour.dateDepart) }}</small></td>
+                    <td class="is-right">{{ sejour.montantTotal | mtmMoney }}</td>
+                    <td>
+                      <span [class]="statutsSejour[sejour.statut].pill">{{ statutsSejour[sejour.statut].label }}</span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="detail-note">Aucun séjour pour l’instant.</p>
+        }
+      </section>
+    }
 
     @if (bailActuel(); as bail) {
       <div class="bien-detail__layout">
@@ -640,7 +713,7 @@
           </section>
         </aside>
       </div>
-    } @else {
+    } @else if (!courte()) {
       <section class="page-card detail-section">
         <div class="detail-section__head">
           <h2>Bail en cours</h2>

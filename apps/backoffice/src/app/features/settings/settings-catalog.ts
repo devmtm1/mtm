@@ -95,6 +95,34 @@ export const SETTING_GROUPS: SettingGroup[] = [
     ],
   },
   {
+    id: 'locatif',
+    title: 'Gestion locative : séjours et résiliations',
+    help: 'Location à la nuit (type Airbnb) et demandes de résiliation des locataires.',
+    slots: [
+      {
+        key: 'locatif.preavisJours',
+        label: 'Préavis de départ d’un locataire',
+        help: 'Nombre de jours entre la demande de résiliation et le départ. Proposé à MTM quand il accepte une demande ; il peut accorder une date plus proche.',
+        kind: 'number',
+        unit: 'jours',
+      },
+      {
+        key: 'locatif.motifsResiliation',
+        label: 'Motifs de résiliation',
+        help: 'Proposés au locataire dans sa demande. Une valeur par ligne.',
+        kind: 'list',
+        warning: LIST_WARNING,
+      },
+      {
+        key: 'locatif.sourcesSejour',
+        label: 'Sources de réservation d’un séjour',
+        help: 'direct, site, airbnb, booking, whatsapp… Sert à mesurer ce que rapporte chaque canal. Une valeur par ligne.',
+        kind: 'list',
+        warning: LIST_WARNING,
+      },
+    ],
+  },
+  {
     id: 'ventes',
     title: 'Ventes, réservations & paiements',
     help: 'Règles du parcours de vente. Les valeurs techniques (en_cours, reserve…) sont traduites à l’écran par l’application.',

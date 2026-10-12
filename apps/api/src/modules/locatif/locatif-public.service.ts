@@ -30,6 +30,14 @@ const publicSelect = {
   latitude: true,
   longitude: true,
   disponibleLe: true,
+  modeLocation: true,
+  prixNuit: true,
+  cautionSejour: true,
+  fraisMenage: true,
+  nuitsMinimum: true,
+  capaciteVoyageurs: true,
+  heureArrivee: true,
+  heureDepart: true,
   misEnAvant: true,
   publieLe: true,
   createdAt: true,
@@ -93,14 +101,28 @@ export class LocatifPublicService {
       ...(query.superficieMin !== undefined
         ? { superficie: { gte: query.superficieMin } }
         : {}),
-      ...(query.loyerMin !== undefined || query.loyerMax !== undefined
-        ? {
-            loyerMensuel: {
-              ...(query.loyerMin !== undefined ? { gte: query.loyerMin } : {}),
-              ...(query.loyerMax !== undefined ? { lte: query.loyerMax } : {}),
-            },
-          }
+      ...(query.mode ? { modeLocation: query.mode } : {}),
+      ...(query.voyageurs !== undefined
+        ? { capaciteVoyageurs: { gte: query.voyageurs } }
         : {}),
+      // Les prix de la nuit et le loyer mensuel ne se comparent pas : chaque
+      // filtre ne vise que son mode de location.
+      ...(query.mode === 'courte_duree'
+        ? query.prixNuitMax !== undefined
+          ? { prixNuit: { lte: query.prixNuitMax } }
+          : {}
+        : query.loyerMin !== undefined || query.loyerMax !== undefined
+          ? {
+              loyerMensuel: {
+                ...(query.loyerMin !== undefined
+                  ? { gte: query.loyerMin }
+                  : {}),
+                ...(query.loyerMax !== undefined
+                  ? { lte: query.loyerMax }
+                  : {}),
+              },
+            }
+          : {}),
       // Recherche libre limitée aux champs publics : jamais l'adresse exacte.
       ...(search
         ? {
@@ -161,6 +183,8 @@ export class LocatifPublicService {
         commune: true,
         loyerMensuel: true,
         nombreChambres: true,
+        modeLocation: true,
+        prixNuit: true,
       },
     });
     const distinct = (valeurs: (string | null)[]): string[] =>
@@ -171,6 +195,7 @@ export class LocatifPublicService {
       ].sort((a, b) => a.localeCompare(b, 'fr'));
 
     const loyers = visibles
+      .filter((bien) => bien.modeLocation !== 'courte_duree')
       .map((bien) =>
         bien.loyerMensuel === null ? null : Number(bien.loyerMensuel),
       )
@@ -183,7 +208,19 @@ export class LocatifPublicService {
       ),
     ].sort((a, b) => a - b);
 
+    const prixNuits = visibles
+      .map((bien) => (bien.prixNuit === null ? null : Number(bien.prixNuit)))
+      .filter((prix): prix is number => prix !== null);
+    const sejours = visibles.filter(
+      (bien) => bien.modeLocation === 'courte_duree',
+    ).length;
+
     return {
+      // Le site n'affiche le sélecteur « À la nuit » que s'il y a de quoi montrer.
+      sejours,
+      longueDuree: visibles.length - sejours,
+      prixNuitMin: prixNuits.length ? Math.min(...prixNuits) : null,
+      prixNuitMax: prixNuits.length ? Math.max(...prixNuits) : null,
       type: distinct(visibles.map((bien) => bien.type)),
       region: distinct(visibles.map((bien) => bien.region)),
       commune: distinct(visibles.map((bien) => bien.commune)),
@@ -219,6 +256,9 @@ export class LocatifPublicService {
   private toPublic(bien: BienPublic) {
     const loyer = bien.loyerMensuel === null ? null : Number(bien.loyerMensuel);
     const charges = bien.charges === null ? null : Number(bien.charges);
+    const courte = bien.modeLocation === 'courte_duree';
+    const nombre = (valeur: Prisma.Decimal | null): number | null =>
+      valeur === null ? null : Number(valeur);
     return {
       id: bien.id,
       referenceInterne: bien.referenceInterne,
@@ -232,10 +272,18 @@ export class LocatifPublicService {
       charges,
       moisCaution: bien.moisCaution,
       // Montant de la caution : lu par le visiteur avant de contacter.
-      montantCaution:
-        loyer !== null && bien.moisCaution !== null
+      montantCaution: courte
+        ? nombre(bien.cautionSejour)
+        : loyer !== null && bien.moisCaution !== null
           ? loyer * bien.moisCaution
           : null,
+      modeLocation: bien.modeLocation,
+      prixNuit: nombre(bien.prixNuit),
+      fraisMenage: nombre(bien.fraisMenage),
+      nuitsMinimum: bien.nuitsMinimum,
+      capaciteVoyageurs: bien.capaciteVoyageurs,
+      heureArrivee: bien.heureArrivee,
+      heureDepart: bien.heureDepart,
       nombrePieces: bien.nombrePieces,
       nombreChambres: bien.nombreChambres,
       nombreSallesEau: bien.nombreSallesEau,

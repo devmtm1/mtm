@@ -257,6 +257,23 @@ export const BAIL_STATUS: Record<string, StatusLabel> = {
   resilie_sans_preavis: { label: 'Résilié', tone: 'accent', help: 'Ce bail a été résilié.' },
 };
 
+/** Pourquoi un locataire demande la résiliation de son bail. */
+export const MOTIFS_RESILIATION: Record<string, string> = {
+  demenagement: 'Déménagement',
+  changement_travail: 'Changement de travail',
+  achat: 'Achat d’un logement',
+  difficultes_financieres: 'Difficultés financières',
+  fin_de_besoin: 'Plus besoin du logement',
+  autre: 'Autre motif',
+};
+
+export const RESILIATION_STATUS: Record<string, StatusLabel> = {
+  en_attente: { label: 'En cours d’étude', tone: 'warning', help: 'MTM étudie votre demande.' },
+  acceptee: { label: 'Acceptée', tone: 'success', help: 'Votre préavis est ouvert.' },
+  refusee: { label: 'Refusée', tone: 'accent', help: 'MTM vous explique pourquoi.' },
+  annulee: { label: 'Retirée', tone: 'neutral', help: 'Vous avez retiré votre demande.' },
+};
+
 export const INCIDENT_STATUS: Record<string, StatusLabel> = {
   signale: { label: 'Signalé', tone: 'warning', help: 'En attente de prise en charge.' },
   en_cours: { label: 'En cours', tone: 'info', help: 'Intervention en cours.' },
@@ -337,6 +354,14 @@ export function loyerEcheanceStatus(code: string): StatusLabel {
 
 export function bailStatus(code: string): StatusLabel {
   return BAIL_STATUS[code] ?? { ...FALLBACK, label: humanize(code) };
+}
+
+export function resiliationStatus(code: string): StatusLabel {
+  return RESILIATION_STATUS[code] ?? { ...FALLBACK, label: humanize(code) };
+}
+
+export function motifResiliation(code: string): string {
+  return MOTIFS_RESILIATION[code] ?? humanize(code);
 }
 
 export function incidentStatus(code: string): StatusLabel {

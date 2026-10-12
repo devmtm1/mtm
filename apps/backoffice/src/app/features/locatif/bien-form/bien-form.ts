@@ -13,6 +13,7 @@ import type { CreateBienPayload, LocatifOptions, LocatifPersonne } from '../../.
 import type { ProprietaireSummary } from '../../../core/models/terrain.model';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { TYPES_BIEN, nomPersonne, simpleLabel } from '../locatif-status';
+import { MODES_LOCATION } from '../sejours/sejour-status';
 import { TYPES_PHOTOS, nombreOuUndefined, trierFichiers } from '../locatif-form';
 
 /** Fiche bien locatif (section 15 du cahier des charges, étape 1 de J2.1). */
@@ -69,7 +70,24 @@ export class BienForm implements OnInit, OnDestroy {
     nombreChambres: [null as number | null, [Validators.min(0), Validators.max(30)]],
     nombreSallesEau: [null as number | null, [Validators.min(0), Validators.max(30)]],
     meuble: [false],
+    // Location à la nuit (type Airbnb) : le prix de la nuit remplace le loyer mensuel.
+    modeLocation: ['longue_duree'],
+    prixNuit: [null as number | null, [Validators.min(0)]],
+    fraisMenage: [null as number | null, [Validators.min(0)]],
+    cautionSejour: [null as number | null, [Validators.min(0)]],
+    nuitsMinimum: [1 as number | null, [Validators.min(1), Validators.max(90)]],
+    capaciteVoyageurs: [null as number | null, [Validators.min(1), Validators.max(50)]],
+    heureArrivee: [''],
+    heureDepart: [''],
   });
+
+  protected readonly modes = MODES_LOCATION;
+  protected readonly modesProposes = computed(() => this.options().modesLocation ?? Object.keys(MODES_LOCATION));
+
+  /** Bien loué à la nuit : on demande son tarif de séjour au lieu du loyer mensuel. */
+  protected get courteDuree(): boolean {
+    return this.form.controls.modeLocation.value === 'courte_duree';
+  }
 
   ngOnInit(): void {
     this.api.getOptions().subscribe({
@@ -171,9 +189,22 @@ export class BienForm implements OnInit, OnDestroy {
       superficie: nombreOuUndefined(valeur.superficie),
       notes: texte(valeur.notes),
       responsableId: valeur.responsableId || undefined,
-      loyerMensuel: nombreOuUndefined(valeur.loyerMensuel),
-      charges: nombreOuUndefined(valeur.charges),
-      moisCaution: nombreOuUndefined(valeur.moisCaution),
+      modeLocation: valeur.modeLocation,
+      ...(valeur.modeLocation === 'courte_duree'
+        ? {
+            prixNuit: nombreOuUndefined(valeur.prixNuit),
+            fraisMenage: nombreOuUndefined(valeur.fraisMenage),
+            cautionSejour: nombreOuUndefined(valeur.cautionSejour),
+            nuitsMinimum: nombreOuUndefined(valeur.nuitsMinimum),
+            capaciteVoyageurs: nombreOuUndefined(valeur.capaciteVoyageurs),
+            heureArrivee: texte(valeur.heureArrivee),
+            heureDepart: texte(valeur.heureDepart),
+          }
+        : {
+            loyerMensuel: nombreOuUndefined(valeur.loyerMensuel),
+            charges: nombreOuUndefined(valeur.charges),
+            moisCaution: nombreOuUndefined(valeur.moisCaution),
+          }),
       nombrePieces: nombreOuUndefined(valeur.nombrePieces),
       nombreChambres: nombreOuUndefined(valeur.nombreChambres),
       nombreSallesEau: nombreOuUndefined(valeur.nombreSallesEau),

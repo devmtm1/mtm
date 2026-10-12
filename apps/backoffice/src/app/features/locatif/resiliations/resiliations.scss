@@ -1,0 +1,71 @@
+.resiliations-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.quick-views {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 14px 20px 14px;
+}
+
+.quick-view {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--mtm-border);
+  background: var(--mtm-surface);
+  color: var(--mtm-text-muted);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--mtm-primary);
+    color: var(--mtm-primary);
+  }
+
+  &.is-active {
+    background: var(--mtm-primary);
+    border-color: var(--mtm-primary);
+    color: #fff;
+  }
+
+  &__count {
+    min-width: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--mtm-accent);
+    color: #fff;
+    font-size: 0.72rem;
+    text-align: center;
+  }
+}
+
+.resiliations-table {
+  td strong {
+    display: block;
+  }
+
+  td small {
+    display: block;
+    color: var(--mtm-text-muted);
+    font-size: 0.78rem;
+  }
+
+  &__detail td {
+    padding-top: 0;
+    background: var(--mtm-bg-surface);
+    font-size: 0.86rem;
+
+    p {
+      margin: 4px 0;
+      white-space: pre-line;
+    }
+  }
+}

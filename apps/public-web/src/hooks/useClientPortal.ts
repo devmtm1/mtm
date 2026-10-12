@@ -5,6 +5,7 @@ import {
   fetchClientPortal,
   fetchLocataireBaux,
   fetchLocataireIncidents,
+  fetchLocataireResiliations,
   fetchLocatairePaiements,
   fetchProprietaireBiens,
   fetchProprietaireDocuments,
@@ -68,6 +69,14 @@ export function useLocatairePaiements(token: string | null) {
   return useAsyncData(() => {
     if (!token) return Promise.reject(new Error('Session absente'));
     return fetchLocatairePaiements(token);
+  }, [token]);
+}
+
+/** Demandes de résiliation du locataire et préavis habituel. */
+export function useLocataireResiliations(token: string | null) {
+  return useAsyncData(() => {
+    if (!token) return Promise.reject(new Error('Session absente'));
+    return fetchLocataireResiliations(token);
   }, [token]);
 }
 

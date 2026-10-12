@@ -27,6 +27,13 @@ const base: Location = {
   disponibleLe: null,
   misEnAvant: true,
   publieLe: null,
+  modeLocation: 'longue_duree',
+  prixNuit: null,
+  fraisMenage: null,
+  nuitsMinimum: 1,
+  capaciteVoyageurs: null,
+  heureArrivee: null,
+  heureDepart: null,
   medias: [
     { id: 'm1', type: 'photo', title: null, secureUrl: 'https://img.test/1.jpg' },
     { id: 'm2', type: 'photo', title: null, secureUrl: 'https://img.test/2.jpg' },
@@ -80,5 +87,15 @@ describe('LocationCard', () => {
     expect(screen.getByText('Loyer sur demande')).toBeInTheDocument();
     expect(screen.queryByText('À la une')).not.toBeInTheDocument();
     expect(screen.queryByText('Meublé')).not.toBeInTheDocument();
+  });
+
+  it('un bien à la nuit affiche le prix de la nuit et la durée minimale', () => {
+    renderCard({ ...base, modeLocation: 'courte_duree', prixNuit: 45000, nuitsMinimum: 2, loyerMensuel: null });
+    expect(screen.getByText(/45\s000 FCFA/)).toBeInTheDocument();
+    expect(screen.getByText('/ nuit')).toBeInTheDocument();
+    expect(screen.queryByText('/ mois')).not.toBeInTheDocument();
+    expect(screen.getByText('À la nuit')).toBeInTheDocument();
+    expect(screen.getByText('2 nuits minimum')).toBeInTheDocument();
+    expect(screen.queryByText('Disponible immédiatement')).not.toBeInTheDocument();
   });
 });

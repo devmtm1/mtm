@@ -7,6 +7,9 @@ import type {
   ClientDocumentLocatif,
   ClientIncidentLocatif,
   ClientPaiementLoyer,
+  ClientResiliation,
+  ClientResiliationPayload,
+  ClientResiliations,
   ClientSyntheseProprietaire,
 } from '../types/locatif';
 import type {
@@ -138,6 +141,26 @@ export function fetchLocataireIncidents(token: string): Promise<ClientIncidentLo
   return ouNonApplicable(
     apiClient.get<ClientIncidentLocatif[]>('/locatif/locataire/incidents', undefined, { token }),
   );
+}
+
+/** Demandes de résiliation du locataire et préavis qui s'applique. */
+export function fetchLocataireResiliations(token: string): Promise<ClientResiliations | null> {
+  return ouNonApplicable(
+    apiClient.get<ClientResiliations>('/locatif/locataire/resiliations', undefined, { token }),
+  );
+}
+
+export function createLocataireResiliation(
+  token: string,
+  bailId: string,
+  payload: ClientResiliationPayload,
+): Promise<ClientResiliation> {
+  return apiClient.post(`/locatif/locataire/baux/${bailId}/resiliation`, payload, { token });
+}
+
+/** Le locataire retire sa demande tant que MTM ne l'a pas traitée. */
+export function cancelLocataireResiliation(token: string, id: string): Promise<ClientResiliation> {
+  return apiClient.delete(`/locatif/locataire/resiliations/${id}`, { token });
 }
 
 export interface ClientIncidentPayload {

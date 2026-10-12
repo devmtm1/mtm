@@ -1,0 +1,209 @@
+.sejour-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.back {
+  margin-left: -12px;
+}
+
+.page-header__title .status-pill {
+  margin-left: 10px;
+  vertical-align: middle;
+  font-size: 0.78rem;
+}
+
+.danger {
+  color: var(--mtm-accent);
+}
+
+.sejour-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.sejour-etats {
+  grid-column: 1 / -1;
+}
+
+.sejour-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.sejour-prix {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 14px;
+
+  > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 0.92rem;
+  }
+
+  dt,
+  dd {
+    margin: 0;
+  }
+
+  &__total {
+    padding-top: 8px;
+    border-top: 1px solid var(--mtm-border);
+    font-weight: 700;
+  }
+
+  &__reste {
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--mtm-bg-surface);
+    font-weight: 700;
+    color: var(--mtm-primary);
+  }
+}
+
+.etats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.etat {
+  padding: 14px 16px;
+  border: 1px solid var(--mtm-border);
+  border-radius: var(--mtm-radius-md);
+
+  h3 {
+    margin: 0 0 4px;
+    font-family: var(--mtm-font-display);
+    font-size: 1rem;
+  }
+
+  &__meta {
+    margin: 0 0 8px;
+    color: var(--mtm-text-muted);
+    font-size: 0.82rem;
+  }
+
+  &__note {
+    margin: 8px 0;
+    font-size: 0.88rem;
+    white-space: pre-line;
+  }
+
+  &__vide {
+    margin: 6px 0 10px;
+    color: var(--mtm-text-muted);
+    font-size: 0.88rem;
+  }
+
+  &__pieces {
+    display: grid;
+    gap: 4px;
+    margin: 0 0 8px;
+    padding: 0;
+    list-style: none;
+
+    li {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 4px 10px;
+      font-size: 0.9rem;
+    }
+
+    small {
+      flex-basis: 100%;
+      color: var(--mtm-text-muted);
+    }
+  }
+
+  &__photos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 8px;
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+      position: relative;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    small {
+      display: block;
+      margin-top: 2px;
+      font-size: 0.74rem;
+      color: var(--mtm-text-muted);
+    }
+  }
+
+  &__photo-suppr {
+    position: absolute !important;
+    top: 2px;
+    right: 2px;
+    background: rgba(255, 255, 255, 0.85) !important;
+  }
+}
+
+.etat-pastille {
+  font-style: normal;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  background: #e8f5ee;
+  color: #1e7a4c;
+
+  &--usage {
+    background: #eef3f8;
+    color: #1a4974;
+  }
+
+  &--degrade {
+    background: #fdecec;
+    color: #b52c36;
+  }
+
+  &--hors_service {
+    background: #b52c36;
+    color: #fff;
+  }
+}
+
+.comparaison {
+  margin-top: 20px;
+
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 8px;
+    font-size: 1rem;
+  }
+
+  .is-degradee {
+    background: rgba(181, 44, 54, 0.06);
+  }
+}
+
+@media (max-width: 960px) {
+  .sejour-grid,
+  .etats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -1,0 +1,87 @@
+.sejours-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.quick-views {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 14px 20px 0;
+  margin-bottom: 14px;
+}
+
+.quick-view {
+  border: 1px solid var(--mtm-border);
+  background: var(--mtm-surface);
+  color: var(--mtm-text-muted);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    background-color 0.15s;
+
+  &:hover {
+    border-color: var(--mtm-primary);
+    color: var(--mtm-primary);
+  }
+
+  &.is-active {
+    background: var(--mtm-primary);
+    border-color: var(--mtm-primary);
+    color: #fff;
+  }
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 0 20px 14px;
+
+  &__search {
+    flex: 1 1 280px;
+  }
+
+  &__statut {
+    flex: 0 1 200px;
+  }
+}
+
+.sejours-table {
+  tbody tr.is-clickable {
+    cursor: pointer;
+  }
+
+  td strong {
+    display: block;
+  }
+
+  td small {
+    display: block;
+    color: var(--mtm-text-muted);
+    font-size: 0.78rem;
+  }
+
+  &__alerte {
+    margin-top: 4px;
+    color: var(--mtm-accent) !important;
+    font-weight: 600;
+  }
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  color: var(--mtm-text-muted);
+  font-size: 0.86rem;
+}

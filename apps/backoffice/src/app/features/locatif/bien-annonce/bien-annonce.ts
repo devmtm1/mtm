@@ -60,12 +60,17 @@ export class BienAnnonceCard {
   protected readonly busy = signal(false);
   protected readonly accept = TYPES_ACCEPTES;
 
-  protected readonly hasLoyer = computed(() => Number(this.bien().loyerMensuel ?? 0) > 0);
+  /** Bien loué à la nuit : son tarif est le prix de la nuit, pas un loyer mensuel. */
+  protected readonly courte = computed(() => this.bien().modeLocation === 'courte_duree');
+  /** Le tarif d'annonce est renseigné (prix de la nuit ou loyer mensuel selon le mode). */
+  protected readonly hasLoyer = computed(() =>
+    Number((this.courte() ? this.bien().prixNuit : this.bien().loyerMensuel) ?? 0) > 0,
+  );
   protected readonly hasPhoto = computed(() => this.bien().medias.length > 0);
   /** Ce qui manque pour publier : affiché tel quel à l'utilisateur. */
   protected readonly manques = computed(() => {
     const manques: string[] = [];
-    if (!this.hasLoyer()) manques.push('Renseigner le loyer mensuel');
+    if (!this.hasLoyer()) manques.push(this.courte() ? 'Renseigner le prix de la nuit' : 'Renseigner le loyer mensuel');
     if (!this.hasPhoto()) manques.push('Ajouter au moins une photo');
     return manques;
   });

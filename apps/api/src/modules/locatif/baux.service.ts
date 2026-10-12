@@ -113,9 +113,14 @@ export class BauxService {
   ) {
     const bien = await transaction.bienLocatif.findUnique({
       where: { id: bienLocatifId },
-      select: { id: true },
+      select: { id: true, modeLocation: true },
     });
     if (!bien) throw new NotFoundException('Bien locatif introuvable');
+    if (bien.modeLocation === 'courte_duree') {
+      throw new BadRequestException(
+        'Ce bien se loue à la nuit : enregistrez un séjour, pas un bail.',
+      );
+    }
     const bailActif = await transaction.bailLocatif.findFirst({
       where: { bienLocatifId, statut: { in: ['actif', 'preavis'] } },
       select: { id: true },

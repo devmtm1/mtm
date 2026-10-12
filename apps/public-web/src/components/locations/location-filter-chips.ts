@@ -18,6 +18,9 @@ function range(min: number | undefined, max: number | undefined, fmt: (n: number
 /** Puces lisibles des filtres actifs, dans l'ordre du formulaire. */
 export function activeLocationChips(filters: LocationFilters): LocationChip[] {
   const chips: LocationChip[] = [];
+  if (filters.mode) {
+    chips.push({ key: 'mode', label: filters.mode === 'courte_duree' ? 'À la nuit' : 'Au mois', clears: ['mode'] });
+  }
   if (filters.type) chips.push({ key: 'type', label: typeBienLabel(filters.type), clears: ['type'] });
   if (filters.region) chips.push({ key: 'region', label: filters.region, clears: ['region'] });
   if (filters.commune) chips.push({ key: 'commune', label: filters.commune, clears: ['commune'] });

@@ -139,3 +139,31 @@ export interface ClientIncidentLocatif {
   resolvedAt: string | null;
   bailLocatif?: { id: string; referenceInterne: string | null };
 }
+
+/** Demande de résiliation de bail déposée par le locataire. */
+export interface ClientResiliation {
+  id: string;
+  bailLocatifId: string;
+  dateDemande: string;
+  dateDepartSouhaitee: string;
+  motif: string | null;
+  message: string | null;
+  /** en_attente | acceptee | refusee | annulee */
+  statut: string;
+  /** Départ confirmé par MTM une fois la demande acceptée. */
+  dateDepartRetenue: string | null;
+  reponse: string | null;
+  traiteeLe: string | null;
+}
+
+export interface ClientResiliations {
+  demandes: ClientResiliation[];
+  /** Préavis habituel, en jours. */
+  preavisJours: number;
+}
+
+export interface ClientResiliationPayload {
+  dateDepartSouhaitee: string;
+  motif?: string;
+  message?: string;
+}

@@ -1,0 +1,100 @@
+<div class="resiliations-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Gestion locative</p>
+      <h1 class="page-header__title">Demandes de résiliation</h1>
+      <p class="page-header__subtitle">
+        Les locataires demandent depuis leur espace à quitter leur logement. Acceptez pour ouvrir le préavis du bail, ou
+        refusez en expliquant pourquoi : le locataire est prévenu dans les deux cas.
+        @if (stats(); as s) {
+          Préavis habituel : {{ s.preavisJours }} jours.
+        }
+      </p>
+    </div>
+  </header>
+
+  <section class="page-card">
+    <div class="quick-views" role="tablist" aria-label="Filtre">
+      @for (o of onglets; track o.value) {
+        <button type="button" class="quick-view" role="tab" [class.is-active]="onglet() === o.value" [attr.aria-selected]="onglet() === o.value" (click)="choisir(o.value)">
+          {{ o.label }}
+          @if (o.value === 'en_attente' && stats(); as s) {
+            <span class="quick-view__count">{{ s.enAttente }}</span>
+          }
+        </button>
+      }
+    </div>
+
+    @if (loading()) {
+      <div class="skeleton" style="height: 180px"></div>
+    } @else if (items().length === 0) {
+      <div class="empty-state">
+        <h3>{{ onglet() === 'en_attente' ? 'Aucune demande à traiter' : 'Aucune demande' }}</h3>
+        <p>Les demandes déposées par les locataires apparaissent ici dès leur réception.</p>
+      </div>
+    } @else {
+      <div class="table-scroll">
+        <table class="data-table resiliations-table">
+          <thead>
+            <tr>
+              <th>Locataire</th>
+              <th>Bail</th>
+              <th>Demandée le</th>
+              <th>Départ souhaité</th>
+              <th>Motif</th>
+              <th>Statut</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (demande of items(); track demande.id) {
+              <tr>
+                <td>
+                  <strong>{{ locataire(demande.bailLocatif.locataire) }}</strong>
+                  <small>{{ demande.bailLocatif.locataire.phone || '—' }}</small>
+                </td>
+                <td>
+                  <a class="inline-link" [routerLink]="['/locatif/biens', demande.bailLocatif.bienLocatif.id]">
+                    {{ demande.bailLocatif.bienLocatif.titre || demande.bailLocatif.bienLocatif.type + ' · ' + (demande.bailLocatif.bienLocatif.commune || '') }}
+                  </a>
+                  <small>{{ demande.bailLocatif.referenceInterne }}</small>
+                </td>
+                <td>
+                  <strong>{{ demande.dateDemande | date: 'dd/MM/yyyy' }}</strong>
+                  <small>{{ libelle(canaux, demande.canal) }}</small>
+                </td>
+                <td>
+                  <strong>{{ jour(demande.dateDepartSouhaitee) }}</strong>
+                  @if (demande.dateDepartRetenue) {
+                    <small>retenu : {{ jour(demande.dateDepartRetenue) }}</small>
+                  }
+                </td>
+                <td>{{ demande.motif ? libelle(motifs, demande.motif) : '—' }}</td>
+                <td>
+                  <span [class]="statuts[demande.statut].pill">{{ statuts[demande.statut].label }}</span>
+                </td>
+                <td class="is-right">
+                  @if (demande.statut === 'en_attente' && canModify()) {
+                    <button mat-flat-button color="primary" type="button" (click)="traiter(demande)">Traiter</button>
+                  }
+                </td>
+              </tr>
+              @if (demande.message || demande.reponse) {
+                <tr class="resiliations-table__detail">
+                  <td colspan="7">
+                    @if (demande.message) {
+                      <p><strong>Message :</strong> {{ demande.message }}</p>
+                    }
+                    @if (demande.reponse) {
+                      <p><strong>Réponse de MTM :</strong> {{ demande.reponse }}</p>
+                    }
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</div>

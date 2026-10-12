@@ -63,6 +63,32 @@ export const LOCATIF_DEFAULTS = {
     'rapport',
     'autre',
   ],
+  /** longue_duree : bail et loyer mensuel ; courte_duree : séjours à la nuit (type Airbnb). */
+  modesLocation: ['longue_duree', 'courte_duree'],
+  /** Cycle d'un séjour de courte durée. */
+  statutsSejour: ['demande', 'confirmee', 'en_cours', 'terminee', 'annulee'],
+  /** D'où vient la réservation : utile pour mesurer ce que rapporte chaque canal. */
+  sourcesSejour: ['direct', 'site', 'airbnb', 'booking', 'whatsapp', 'autre'],
+  typesPaiementSejour: ['acompte', 'solde'],
+  statutsCautionSejour: [
+    'non_versee',
+    'versee',
+    'restituee',
+    'partiellement_retenue',
+    'retenue_totale',
+  ],
+  /** Pourquoi un locataire demande la résiliation de son bail. */
+  motifsResiliation: [
+    'demenagement',
+    'changement_travail',
+    'achat',
+    'difficultes_financieres',
+    'fin_de_besoin',
+    'autre',
+  ],
+  /** Par où la demande est arrivée : le portail, ou saisie par MTM après un échange. */
+  canauxResiliation: ['portail', 'telephone', 'whatsapp', 'courrier', 'agence'],
+  statutsResiliation: ['en_attente', 'acceptee', 'refusee', 'annulee'],
 } as const;
 
 /** Statuts après lesquels un bail ne bouge plus. */
@@ -70,6 +96,9 @@ export const BAIL_STATUTS_TERMINES = [
   'termine',
   'resilie_sans_preavis',
 ] as const;
+
+/** Préavis de départ d'un locataire, en jours, si MTM n'en décide pas autrement. */
+const PREAVIS_JOURS_DEFAUT = 30;
 
 /** Nombre de jours de retard avant la première relance, si MTM n'en décide pas autrement. */
 const RELANCE_SEUIL_JOURS_DEFAUT = 5;
@@ -147,6 +176,15 @@ export class LocatifOptionsService {
       impayeProlongeJours,
       horizonEcheancesMois,
       relanceModeles,
+      modesLocation,
+      statutsSejour,
+      sourcesSejour,
+      typesPaiementSejour,
+      statutsCautionSejour,
+      motifsResiliation,
+      canauxResiliation,
+      statutsResiliation,
+      preavisJours,
     ] = await Promise.all([
       this.liste('locatif.typesBien', LOCATIF_DEFAULTS.typesBien),
       this.liste('locatif.statutsBien', LOCATIF_DEFAULTS.statutsBien),
@@ -172,6 +210,30 @@ export class LocatifOptionsService {
       this.getImpayeProlongeJours(),
       this.getHorizonEcheancesMois(),
       this.getRelanceModeles(),
+      this.liste('locatif.modesLocation', LOCATIF_DEFAULTS.modesLocation),
+      this.liste('locatif.statutsSejour', LOCATIF_DEFAULTS.statutsSejour),
+      this.liste('locatif.sourcesSejour', LOCATIF_DEFAULTS.sourcesSejour),
+      this.liste(
+        'locatif.typesPaiementSejour',
+        LOCATIF_DEFAULTS.typesPaiementSejour,
+      ),
+      this.liste(
+        'locatif.statutsCautionSejour',
+        LOCATIF_DEFAULTS.statutsCautionSejour,
+      ),
+      this.liste(
+        'locatif.motifsResiliation',
+        LOCATIF_DEFAULTS.motifsResiliation,
+      ),
+      this.liste(
+        'locatif.canauxResiliation',
+        LOCATIF_DEFAULTS.canauxResiliation,
+      ),
+      this.liste(
+        'locatif.statutsResiliation',
+        LOCATIF_DEFAULTS.statutsResiliation,
+      ),
+      this.getPreavisJours(),
     ]);
 
     return {
@@ -193,7 +255,24 @@ export class LocatifOptionsService {
       impayeProlongeJours,
       horizonEcheancesMois,
       relanceModeles,
+      modesLocation,
+      statutsSejour,
+      sourcesSejour,
+      typesPaiementSejour,
+      statutsCautionSejour,
+      motifsResiliation,
+      canauxResiliation,
+      statutsResiliation,
+      preavisJours,
     };
+  }
+
+  /** Préavis minimal d'un locataire qui part, en jours (modifiable en paramètres). */
+  getPreavisJours(): Promise<number> {
+    return this.settings.getPositiveNumber(
+      'locatif.preavisJours',
+      PREAVIS_JOURS_DEFAUT,
+    );
   }
 
   /**
@@ -324,6 +403,51 @@ export class LocatifOptionsService {
       LOCATIF_DEFAULTS.typesDocument,
       type,
       'Type de document invalide',
+    );
+  }
+
+  assertModeLocation(mode?: string): Promise<void> {
+    return this.settings.assertInList(
+      'locatif.modesLocation',
+      LOCATIF_DEFAULTS.modesLocation,
+      mode,
+      'Mode de location invalide',
+    );
+  }
+
+  assertSourceSejour(source?: string): Promise<void> {
+    return this.settings.assertInList(
+      'locatif.sourcesSejour',
+      LOCATIF_DEFAULTS.sourcesSejour,
+      source,
+      'Source de réservation invalide',
+    );
+  }
+
+  assertTypePaiementSejour(type?: string): Promise<void> {
+    return this.settings.assertInList(
+      'locatif.typesPaiementSejour',
+      LOCATIF_DEFAULTS.typesPaiementSejour,
+      type,
+      'Type de règlement de séjour invalide',
+    );
+  }
+
+  assertMotifResiliation(motif?: string): Promise<void> {
+    return this.settings.assertInList(
+      'locatif.motifsResiliation',
+      LOCATIF_DEFAULTS.motifsResiliation,
+      motif,
+      'Motif de résiliation invalide',
+    );
+  }
+
+  assertCanalResiliation(canal?: string): Promise<void> {
+    return this.settings.assertInList(
+      'locatif.canauxResiliation',
+      LOCATIF_DEFAULTS.canauxResiliation,
+      canal,
+      'Canal de la demande invalide',
     );
   }
 

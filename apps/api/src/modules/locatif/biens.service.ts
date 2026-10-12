@@ -72,6 +72,7 @@ export class BiensService {
       ...this.access.ownershipFilter(user),
       ...(query.statut ? { statut: query.statut } : {}),
       ...(query.type ? { type: query.type } : {}),
+      ...(query.modeLocation ? { modeLocation: query.modeLocation } : {}),
       ...(query.proprietaireId ? { proprietaireId: query.proprietaireId } : {}),
       ...(query.responsableId ? { responsableId: query.responsableId } : {}),
       ...(search
@@ -165,7 +166,10 @@ export class BiensService {
     });
     if (!proprietaire)
       throw new BadRequestException('Propriétaire introuvable');
-    await this.options.assertTypeBien(dto.type);
+    await Promise.all([
+      this.options.assertTypeBien(dto.type),
+      this.options.assertModeLocation(dto.modeLocation),
+    ]);
     const responsableId = await this.access.resolveResponsable(
       dto.responsableId,
       user,
@@ -197,7 +201,11 @@ export class BiensService {
     await Promise.all([
       this.options.assertTypeBien(dto.type),
       this.options.assertStatutBien(dto.statut),
+      this.options.assertModeLocation(dto.modeLocation),
     ]);
+    if (dto.modeLocation !== undefined) {
+      await this.assertChangementModePossible(id, dto.modeLocation);
+    }
     if (dto.proprietaireId) {
       const proprietaire = await this.prisma.proprietaire.findUnique({
         where: { id: dto.proprietaireId },
@@ -253,18 +261,62 @@ export class BiensService {
       where: { id },
       select: {
         loyerMensuel: true,
+        modeLocation: true,
+        prixNuit: true,
         publieLe: true,
         _count: { select: { medias: true } },
       },
     });
     if (!actuel) throw new NotFoundException('Bien locatif introuvable');
     verifierPublication({
+      modeLocation: dto.modeLocation ?? actuel.modeLocation,
       loyerMensuel:
         dto.loyerMensuel ??
         (actuel.loyerMensuel === null ? null : Number(actuel.loyerMensuel)),
+      prixNuit:
+        dto.prixNuit ??
+        (actuel.prixNuit === null ? null : Number(actuel.prixNuit)),
       nombrePhotos: actuel._count.medias,
     });
     return { ...data, publie: true, publieLe: actuel.publieLe ?? new Date() };
+  }
+
+  /**
+   * Passer un bien de la longue à la courte durée (ou l'inverse) alors qu'un
+   * bail ou un séjour est en cours laisserait des données incohérentes : on
+   * demande de les clore ou de les annuler d'abord.
+   */
+  private async assertChangementModePossible(
+    id: string,
+    nouveauMode: string,
+  ): Promise<void> {
+    const actuel = await this.prisma.bienLocatif.findUnique({
+      where: { id },
+      select: { modeLocation: true },
+    });
+    if (!actuel || actuel.modeLocation === nouveauMode) return;
+    if (nouveauMode === 'courte_duree') {
+      const baux = await this.prisma.bailLocatif.count({
+        where: { bienLocatifId: id, statut: { in: ['actif', 'preavis'] } },
+      });
+      if (baux > 0) {
+        throw new ConflictException(
+          'Ce bien a un bail en cours : clôturez-le avant de le passer en location à la nuit.',
+        );
+      }
+      return;
+    }
+    const sejours = await this.prisma.sejourLocatif.count({
+      where: {
+        bienLocatifId: id,
+        statut: { in: ['demande', 'confirmee', 'en_cours'] },
+      },
+    });
+    if (sejours > 0) {
+      throw new ConflictException(
+        'Ce bien a des séjours à venir ou en cours : terminez-les ou annulez-les avant de le passer en location longue durée.',
+      );
+    }
   }
 
   async remove(id: string, user: LocatifUser) {

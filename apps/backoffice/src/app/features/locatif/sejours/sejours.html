@@ -1,0 +1,162 @@
+<div class="sejours-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Gestion locative</p>
+      <h1 class="page-header__title">Séjours</h1>
+      <p class="page-header__subtitle">
+        Les locations à la nuit (type Airbnb) : demandes reçues du site, réservations, voyageurs sur place et cautions à
+        rendre. Un bien se met en location à la nuit depuis sa fiche.
+      </p>
+    </div>
+    <div class="page-header__actions">
+      @if (canCreate()) {
+        <button mat-flat-button color="primary" type="button" (click)="nouveau()">
+          <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau séjour
+        </button>
+      }
+    </div>
+  </header>
+
+  @if (stats(); as s) {
+    <section class="kpi-row" aria-label="Ce qui attend la gestion locative">
+      <button type="button" class="kpi" [class.kpi--danger]="s.aTraiter > 0" [class.kpi--muted]="s.aTraiter === 0" (click)="choisirVue('a_traiter')">
+        <span class="kpi__icon"><svg lucideInbox aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ s.aTraiter }}</strong>
+          <span>Demande{{ s.aTraiter > 1 ? 's' : '' }} à traiter</span>
+          <small>{{ s.aTraiter > 0 ? 'Voyageurs qui attendent une réponse' : 'Rien en attente' }}</small>
+        </span>
+      </button>
+      <button type="button" class="kpi" (click)="choisirVue('a_venir')">
+        <span class="kpi__icon"><svg lucideCalendarCheck aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ s.arriveesProches }}</strong>
+          <span>Arrivée{{ s.arriveesProches > 1 ? 's' : '' }} sous 7 jours</span>
+          <small>Séjours confirmés</small>
+        </span>
+      </button>
+      <button type="button" class="kpi" (click)="choisirVue('en_cours')">
+        <span class="kpi__icon"><svg lucideBedDouble aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ s.enCours }}</strong>
+          <span>Séjour{{ s.enCours > 1 ? 's' : '' }} en cours</span>
+          <small>Voyageurs sur place</small>
+        </span>
+      </button>
+      <button
+        type="button"
+        class="kpi"
+        [class.kpi--danger]="s.cautionsARegler > 0"
+        [class.kpi--muted]="s.cautionsARegler === 0"
+        (click)="choisirVue('caution_a_regler')"
+      >
+        <span class="kpi__icon"><svg lucideShieldAlert aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ s.cautionsARegler }}</strong>
+          <span>Caution{{ s.cautionsARegler > 1 ? 's' : '' }} à rendre</span>
+          <small>Séjours terminés</small>
+        </span>
+      </button>
+    </section>
+  }
+
+  <section class="page-card">
+    <div class="quick-views" role="tablist" aria-label="Vues rapides">
+      @for (v of vues; track v.value) {
+        <button type="button" class="quick-view" role="tab" [class.is-active]="vue() === v.value" [attr.aria-selected]="vue() === v.value" (click)="choisirVue(v.value)">
+          {{ v.label }}
+        </button>
+      }
+    </div>
+
+    <div class="filters">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="filters__search">
+        <mat-label>Rechercher</mat-label>
+        <input matInput [formControl]="search" placeholder="Référence, voyageur, téléphone, bien…" />
+        <svg matSuffix lucideSearch aria-hidden="true"></svg>
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="filters__statut">
+        <mat-label>Statut</mat-label>
+        <mat-select [formControl]="statut">
+          <mat-option value="">Tous</mat-option>
+          @for (cle of statutsListe; track cle) {
+            <mat-option [value]="cle">{{ statuts[cle].label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    @if (loading()) {
+      <div class="skeleton" style="height: 220px"></div>
+    } @else if (items().length === 0) {
+      <div class="empty-state">
+        <h3>Aucun séjour</h3>
+        <p>
+          Aucun séjour ne correspond à ces critères. Les demandes déposées sur le site apparaissent ici dès leur
+          réception.
+        </p>
+      </div>
+    } @else {
+      <div class="table-scroll">
+        <table class="data-table sejours-table">
+          <thead>
+            <tr>
+              <th>Séjour</th>
+              <th>Voyageur</th>
+              <th>Bien</th>
+              <th>Dates</th>
+              <th class="is-right">Total</th>
+              <th>Règlement</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (sejour of items(); track sejour.id) {
+              <tr class="is-clickable" tabindex="0" (click)="ouvrir(sejour)" (keydown.enter)="ouvrir(sejour)">
+                <td>
+                  <strong>{{ sejour.referenceInterne }}</strong>
+                  <small>{{ libelle(sources, sejour.source) }} · réservé le {{ sejour.dateReservation | date: 'dd/MM/yyyy' }}</small>
+                </td>
+                <td>
+                  <strong>{{ voyageur(sejour.locataire) }}</strong>
+                  <small>{{ sejour.nombreVoyageurs }} voyageur{{ sejour.nombreVoyageurs > 1 ? 's' : '' }}</small>
+                </td>
+                <td>
+                  <strong>{{ bien(sejour.bienLocatif) }}</strong>
+                  <small>{{ sejour.bienLocatif.referenceInterne }}</small>
+                </td>
+                <td>
+                  <strong>{{ periode(sejour) }}</strong>
+                  <small>{{ jour(sejour.dateArrivee) }} → {{ jour(sejour.dateDepart) }}</small>
+                </td>
+                <td class="is-right">
+                  <strong>{{ sejour.montantTotal | mtmMoney }}</strong>
+                  @if (sejour.synthese.reste > 0 && sejour.synthese.totalRegle > 0) {
+                    <small>reste {{ sejour.synthese.reste | mtmMoney }}</small>
+                  }
+                </td>
+                <td>
+                  <span [class]="reglements[sejour.synthese.statut].pill">{{ reglements[sejour.synthese.statut].label }}</span>
+                </td>
+                <td>
+                  <span [class]="statuts[sejour.statut].pill">{{ statuts[sejour.statut].label }}</span>
+                  @if (sejour.cautionStatut === 'versee' && (sejour.statut === 'terminee' || sejour.statut === 'annulee')) {
+                    <small class="sejours-table__alerte">Caution à rendre</small>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (pages() > 1) {
+        <nav class="pager" aria-label="Pages">
+          <button mat-stroked-button type="button" (click)="pagePrecedente()" [disabled]="page() === 1">Précédent</button>
+          <span>Page {{ page() }} sur {{ pages() }} · {{ total() }} séjours</span>
+          <button mat-stroked-button type="button" (click)="pageSuivante()" [disabled]="page() === pages()">Suivant</button>
+        </nav>
+      }
+    }
+  </section>
+</div>

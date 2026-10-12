@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { AlertTriangle, MessageSquarePlus, Receipt } from 'lucide-react';
 import { useClientData } from '../../contexts/client-data-store';
+import { useAuth } from '../../contexts/auth-context-store';
+import { useLocataireResiliations } from '../../hooks/useClientPortal';
 import { usePageMetadata } from '../../hooks/usePageMetadata';
 import { ClientCard, ClientPageHeader, ClientRow, IconBadge, ProgressBar } from '../../components/client/shell/ClientUi';
 import { ShowMoreButton } from '../../components/client/shell/Disclosure';
 import { CommentRegler } from '../../components/client/CommentRegler';
 import { etatPaiementIcone } from '../../components/client/shell/etat-paiement';
 import { NewIncidentModal } from '../../components/client/NewIncidentModal';
+import { ResiliationCard } from '../../components/client/ResiliationCard';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -52,6 +55,8 @@ export function ClientLocatairePage() {
     refetchLocataireIncidents,
   } = useClientData();
   usePageMetadata({ title: 'Ma location' });
+  const { accessToken } = useAuth();
+  const resiliations = useLocataireResiliations(accessToken);
   const [toutesEcheances, setToutesEcheances] = useState(false);
   const [tousReglements, setTousReglements] = useState(false);
   const [signalement, setSignalement] = useState<{ bailId: string; nature: string } | null>(null);
@@ -274,6 +279,14 @@ export function ClientLocatairePage() {
           />
         </ClientCard>
       )}
+
+      {/* Quitter le logement : demande de résiliation, avec la réponse de MTM. */}
+      <ResiliationCard
+        bail={bailActif}
+        demandes={resiliations.data?.demandes ?? []}
+        preavisJours={resiliations.data?.preavisJours ?? 30}
+        onChanged={() => resiliations.refetch({ silent: true })}
+      />
 
       {/* Incidents et demandes : un seul fil, chacun étiqueté. */}
       <ClientCard title="Mes échanges avec MTM">

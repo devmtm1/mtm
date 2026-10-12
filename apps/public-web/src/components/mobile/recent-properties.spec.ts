@@ -73,6 +73,17 @@ describe('cartes de l’accueil mobile', () => {
     expect(card.priceSuffix).toBeUndefined();
   });
 
+  it('une location à la nuit affiche le prix de la nuit, pas un loyer mensuel', () => {
+    const card = locationCard(
+      location('l9', null, { modeLocation: 'courte_duree', prixNuit: 45000, loyerMensuel: null }),
+    );
+    expect(card.price.replace(/\s/g, ' ')).toBe('45 000 FCFA');
+    expect(card.priceSuffix).toBe('/ nuit');
+    expect(
+      locationCard(location('l10', null, { modeLocation: 'courte_duree', prixNuit: null })).priceSuffix,
+    ).toBeUndefined();
+  });
+
   it('une location porte « Location », son loyer mensuel et un titre de repli', () => {
     const card = locationCard(location('l1', null));
     expect(card).toMatchObject({

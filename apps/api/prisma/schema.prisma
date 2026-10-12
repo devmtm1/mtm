@@ -169,6 +169,7 @@ model Terrain {
    * /**
    * /**
    * /**
+   * /**
    * Surface habitable, distincte de la parcelle. Les deux coexistent : une
    * villa de 120 m² habitables peut occuper une parcelle de 300 m², et les
    * confondre fausserait toute comparaison au catalogue.
@@ -218,6 +219,7 @@ model Terrain {
   notesInternes            String?
   // --- Suivi du portefeuille (reprise du tableur « Bd terrains ») ---
   /**
+   * /**
    * /**
    * /**
    * /**
@@ -659,6 +661,7 @@ model Prospect {
   // vivre dans une table à part, pour qu'une seule fiche porte le budget et
   // la zone du client — deux exemplaires finiraient par diverger.
   /**
+   * /**
    * /**
    * /**
    * /**
@@ -1350,7 +1353,8 @@ model Locataire {
   updatedAt DateTime @updatedAt
 
   baux       BailLocatif[]
-  clientUser User?         @relation("LocataireClientUser")
+  sejours    SejourLocatif[]
+  clientUser User?           @relation("LocataireClientUser")
 
   @@index([lastName, firstName])
   @@map("locataires")
@@ -1389,6 +1393,7 @@ model BienLocatif {
    * /**
    * /**
    * /**
+   * /**
    * Visible sur le site tant que le bien est « disponible ». Réservé à la
    * permission locatif:publier ; exige un loyer et au moins une photo.
    */
@@ -1412,16 +1417,39 @@ model BienLocatif {
   longitude       Decimal?  @db.Decimal(9, 6)
   disponibleLe    DateTime?
 
+  // --- Courte durée (type Airbnb) ---
+  /**
+   * /**
+   * longue_duree : bail et loyer mensuel ; courte_duree : séjours à la nuit.
+   */
+  modeLocation      String   @default("longue_duree")
+  /**
+   * Tarif de la nuit, caution et frais de ménage demandés au voyageur, durée
+   * minimale d'un séjour et capacité d'accueil.
+   */
+  prixNuit          Decimal? @db.Decimal(15, 2)
+  cautionSejour     Decimal? @db.Decimal(15, 2)
+  fraisMenage       Decimal? @db.Decimal(15, 2)
+  nuitsMinimum      Int      @default(1)
+  capaciteVoyageurs Int?
+  /**
+   * Heures d'arrivée et de départ (HH:MM), communiquées au voyageur.
+   */
+  heureArrivee      String?
+  heureDepart       String?
+
   createdById String?
   createdBy   User?    @relation("BienLocatifCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   baux     BailLocatif[]
+  sejours  SejourLocatif[]
   medias   BienLocatifMedia[]
   contacts Contact[]          @relation("BienLocatifContacts")
 
   @@index([proprietaireId])
+  @@index([modeLocation])
   @@index([responsableId])
   @@index([statut])
   @@index([publie, statut])
@@ -1466,6 +1494,7 @@ model BailLocatif {
    * /**
    * /**
    * /**
+   * /**
    * Cycle de vie du bail : actif | preavis | termine | resilie_sans_preavis.
    */
   statut                String    @default("actif")
@@ -1491,12 +1520,14 @@ model BailLocatif {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  echeances         EcheanceLoyer[]
-  paiements         PaiementLoyer[]
-  incidents         IncidentLocatif[]
-  documents         DocumentLocatif[]
-  mouvementsCaution MouvementCaution[]
-  relances          RelanceLoyer[]
+  echeances           EcheanceLoyer[]
+  paiements           PaiementLoyer[]
+  incidents           IncidentLocatif[]
+  documents           DocumentLocatif[]
+  mouvementsCaution   MouvementCaution[]
+  relances            RelanceLoyer[]
+  demandesResiliation DemandeResiliation[]
+  etatsDesLieux       EtatDesLieux[]
 
   @@index([bienLocatifId])
   @@index([locataireId])
@@ -1651,6 +1682,207 @@ model RelanceLoyer {
  * signalé → en cours → résolu et ne diffèrent que par leur nature et leur
  * référentiel de types.
  */
+/**
+ * Séjour de courte durée dans un bien « courte_duree » (location type Airbnb) :
+ * un voyageur, des dates d'arrivée et de départ, un prix à la nuit, une caution
+ * et un état des lieux à l'arrivée et au départ. Contrairement à un bail, il
+ * n'a ni loyer mensuel ni échéances : le séjour se règle en une ou deux fois.
+ */
+model SejourLocatif {
+  id               String      @id @default(uuid())
+  /**
+   * Référence lisible : SJ-2026-0007.
+   */
+  referenceInterne String      @unique
+  bienLocatifId    String
+  bienLocatif      BienLocatif @relation(fields: [bienLocatifId], references: [id], onDelete: Restrict)
+  /**
+   * Le voyageur : une fiche locataire, comme pour un bail.
+   */
+  locataireId      String
+  locataire        Locataire   @relation(fields: [locataireId], references: [id], onDelete: Restrict)
+
+  /**
+   * Quand la réservation a été faite (différent de la date d'arrivée).
+   */
+  dateReservation DateTime @default(now())
+  dateArrivee     DateTime @db.Date
+  dateDepart      DateTime @db.Date
+  /**
+   * Nombre de nuits : dateDepart - dateArrivee.
+   */
+  nuits           Int
+  nombreVoyageurs Int      @default(1)
+
+  // --- Prix : figé à la réservation, une modification du tarif du bien n'y touche pas ---
+  prixNuit     Decimal @db.Decimal(15, 2)
+  fraisMenage  Decimal @default(0) @db.Decimal(15, 2)
+  /**
+   * Geste commercial retiré du total.
+   */
+  remise       Decimal @default(0) @db.Decimal(15, 2)
+  /**
+   * nuits x prixNuit + fraisMenage - remise.
+   */
+  montantTotal Decimal @db.Decimal(15, 2)
+
+  /**
+   * demande | confirmee | en_cours | terminee | annulee
+   */
+  statut String  @default("demande")
+  /**
+   * direct | site | airbnb | booking | whatsapp | autre
+   */
+  source String  @default("direct")
+  notes  String?
+
+  // --- Caution ---
+  cautionMontant       Decimal?  @db.Decimal(15, 2)
+  /**
+   * non_versee | versee | restituee | partiellement_retenue | retenue_totale
+   */
+  cautionStatut        String    @default("non_versee")
+  cautionVerseeLe      DateTime?
+  cautionRetenue       Decimal?  @db.Decimal(15, 2)
+  cautionJustification String?
+  cautionRestitueeLe   DateTime?
+
+  annuleLe        DateTime?
+  motifAnnulation String?
+
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  paiements     PaiementSejour[]
+  etatsDesLieux EtatDesLieux[]
+
+  @@index([bienLocatifId, dateArrivee])
+  @@index([locataireId])
+  @@index([statut])
+  @@map("sejours_locatifs")
+}
+
+/**
+ * Règlement d'un séjour : acompte à la réservation, solde à l'arrivée.
+ */
+model PaiementSejour {
+  id           String        @id @default(uuid())
+  sejourId     String
+  sejour       SejourLocatif @relation(fields: [sejourId], references: [id], onDelete: Cascade)
+  datePaiement DateTime
+  montant      Decimal       @db.Decimal(15, 2)
+  /**
+   * acompte | solde
+   */
+  type         String        @default("acompte")
+  mode         String
+  reference    String?
+  note         String?
+  createdById  String?
+  createdAt    DateTime      @default(now())
+
+  @@index([sejourId, datePaiement])
+  @@map("paiements_sejour")
+}
+
+/**
+ * État des lieux d'entrée ou de sortie, d'un séjour ou d'un bail. Structuré :
+ * l'état de chaque pièce, les relevés de compteurs, les clés remises et des
+ * photos. Comparer l'entrée et la sortie montre les dégradations et justifie
+ * une retenue sur caution.
+ */
+model EtatDesLieux {
+  id            String         @id @default(uuid())
+  /**
+   * entree | sortie
+   */
+  type          String
+  sejourId      String?
+  sejour        SejourLocatif? @relation(fields: [sejourId], references: [id], onDelete: Cascade)
+  bailLocatifId String?
+  bailLocatif   BailLocatif?   @relation(fields: [bailLocatifId], references: [id], onDelete: Cascade)
+
+  dateEtat          DateTime
+  /**
+   * Liste de { piece, etat, observation } ; etat : bon | usage | degrade | hors_service.
+   */
+  pieces            Json     @default("[]")
+  releveEau         String?
+  releveElectricite String?
+  nombreCles        Int?
+  observations      String?
+  /**
+   * Personne présente avec MTM (voyageur, locataire) : nom tel qu'il signe.
+   */
+  signataire        String?
+  realiseParId      String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  photos EtatDesLieuxPhoto[]
+
+  @@unique([sejourId, type])
+  @@unique([bailLocatifId, type])
+  @@map("etats_des_lieux")
+}
+
+model EtatDesLieuxPhoto {
+  id           String       @id @default(uuid())
+  etatId       String
+  etat         EtatDesLieux @relation(fields: [etatId], references: [id], onDelete: Cascade)
+  storageKey   String
+  resourceType String       @default("image")
+  /**
+   * Pièce ou élément photographié.
+   */
+  legende      String?
+  createdAt    DateTime     @default(now())
+
+  @@index([etatId])
+  @@map("etats_des_lieux_photos")
+}
+
+/**
+ * Demande de résiliation d'un bail, déposée par le locataire (espace client)
+ * ou enregistrée par MTM (appel, WhatsApp, courrier). Acceptée, elle ouvre le
+ * préavis du bail à la date de départ retenue ; refusée, elle garde la réponse.
+ */
+model DemandeResiliation {
+  id            String      @id @default(uuid())
+  bailLocatifId String
+  bailLocatif   BailLocatif @relation(fields: [bailLocatifId], references: [id], onDelete: Cascade)
+
+  /**
+   * portail | telephone | whatsapp | courrier | agence
+   */
+  canal               String   @default("portail")
+  dateDemande         DateTime @default(now())
+  dateDepartSouhaitee DateTime @db.Date
+  motif               String?
+  message             String?
+
+  /**
+   * en_attente | acceptee | refusee | annulee
+   */
+  statut            String    @default("en_attente")
+  dateDepartRetenue DateTime? @db.Date
+  reponse           String?
+  traiteeLe         DateTime?
+  traiteeParId      String?
+  /**
+   * Compte à l'origine de la demande (locataire connecté), absent pour une saisie par MTM.
+   */
+  demandeParId      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([bailLocatifId, statut])
+  @@index([statut])
+  @@map("demandes_resiliation")
+}
+
 model IncidentLocatif {
   id            String      @id @default(uuid())
   bailLocatifId String

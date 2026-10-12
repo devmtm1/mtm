@@ -1,5 +1,4 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -18,7 +17,7 @@ import { STATUTS_DIFFUSION, periodeDiffusion } from './promotion-status';
 @Component({
   selector: 'app-promotions',
   standalone: true,
-  imports: [DatePipe, MatButtonModule, MatTooltipModule, LucideEye, LucideEyeOff, LucideMegaphone, LucidePencil, LucidePlus, LucideTrash2, LucideVideo],
+  imports: [MatButtonModule, MatTooltipModule, LucideEye, LucideEyeOff, LucideMegaphone, LucidePencil, LucidePlus, LucideTrash2, LucideVideo],
   templateUrl: './promotions.html',
   styleUrl: './promotions.scss',
 })

@@ -26,6 +26,8 @@ import { forkJoin, of } from 'rxjs';
 import type { Observable } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { LocatifApiService } from '../../../core/services/api/locatif-api.service';
+import { SejoursApiService } from '../../../core/services/api/sejours-api.service';
+import type { SejourListItem } from '../../../core/models/sejour.model';
 import type {
   BailDetail,
   BienDetail,
@@ -69,6 +71,16 @@ import {
   typeSignalementLabel,
 } from '../locatif-status';
 import { BienAnnonceCard } from '../bien-annonce/bien-annonce';
+import { SejourDialog } from '../sejours/sejour-dialog';
+import { EtatDesLieuxDialog } from '../sejours/sejour-dialogs';
+import { DemandeResiliationDialog } from '../resiliations/resiliation-dialogs';
+import {
+  STATUTS_REGLEMENT,
+  STATUTS_SEJOUR,
+  formatJour,
+  nomVoyageur,
+  periodeSejour,
+} from '../sejours/sejour-status';
 import { BailDialog } from './bail-dialog';
 import { CautionDialog } from './caution-dialog';
 import { ChangementLocataireDialog } from './changement-locataire-dialog';
@@ -113,6 +125,7 @@ import { SortieDialog } from './sortie-dialog';
 })
 export class BienDetailPage implements OnInit {
   private readonly api = inject(LocatifApiService);
+  private readonly sejoursApi = inject(SejoursApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
@@ -123,6 +136,14 @@ export class BienDetailPage implements OnInit {
   protected readonly bien = signal<BienDetail | null>(null);
   protected readonly bauxHistorique = signal<BailDetail[]>([]);
   protected readonly bailActuel = signal<BailDetail | null>(null);
+  /** Bien loué à la nuit : on y réserve des séjours au lieu d'y signer un bail. */
+  protected readonly courte = computed(() => this.bien()?.modeLocation === 'courte_duree');
+  protected readonly sejours = signal<SejourListItem[]>([]);
+  protected readonly statutsSejour = STATUTS_SEJOUR;
+  protected readonly reglementsSejour = STATUTS_REGLEMENT;
+  protected readonly jourSejour = formatJour;
+  protected readonly periodeSejour = periodeSejour;
+  protected readonly voyageurSejour = nomVoyageur;
   protected readonly locataires = signal<Locataire[]>([]);
   protected readonly collaborateurs = signal<LocatifPersonne[]>([]);
   protected readonly options = signal<Partial<LocatifOptions>>({});
@@ -408,6 +429,62 @@ export class BienDetailPage implements OnInit {
     });
   }
 
+  // --- Séjours (location à la nuit) ---
+
+  protected nouveauSejour(): void {
+    const bien = this.bien();
+    if (!bien) return;
+    SejourDialog.open(this.dialog, { bienLocatifId: bien.id }).subscribe((sejour) => {
+      if (!sejour) return;
+      this.notify.success(`Séjour ${sejour.referenceInterne} enregistré`);
+      void this.router.navigate(['/locatif/sejours', sejour.id]);
+    });
+  }
+
+  protected ouvrirSejour(id: string): void {
+    void this.router.navigate(['/locatif/sejours', id]);
+  }
+
+  private chargerSejours(bienId: string): void {
+    this.sejoursApi.findAll({ bienLocatifId: bienId, pageSize: 50 }).subscribe({
+      next: (page) => this.sejours.set(page.items),
+      error: () => this.sejours.set([]),
+    });
+  }
+
+  // --- Résiliation et états des lieux du bail ---
+
+  /** Demande reçue par téléphone, WhatsApp ou courrier : MTM la consigne pour la traiter. */
+  protected enregistrerResiliation(): void {
+    const bail = this.bailActuel();
+    if (!bail) return;
+    DemandeResiliationDialog.open(this.dialog, {
+      bailId: bail.id,
+      libelle: `${this.personne(bail.locataire)} — bail ${bail.referenceInterne}`,
+    }).subscribe((demande) => {
+      if (demande) this.notify.success('Demande enregistrée : elle est dans « Demandes de résiliation »');
+    });
+  }
+
+  protected etatDesLieuxBail(type: 'entree' | 'sortie'): void {
+    const bail = this.bailActuel();
+    if (!bail) return;
+    this.sejoursApi.getEtats('baux', bail.id).subscribe({
+      next: (etats) => {
+        EtatDesLieuxDialog.open(this.dialog, {
+          cible: 'baux',
+          id: bail.id,
+          type,
+          existant: type === 'entree' ? etats.entree : etats.sortie,
+          entree: etats.entree,
+        }).subscribe((resultat) => {
+          if (resultat) this.notify.success(type === 'entree' ? 'État des lieux d’entrée enregistré' : 'État des lieux de sortie enregistré');
+        });
+      },
+      error: (error: unknown) => this.notify.error(error, 'Impossible de charger l’état des lieux'),
+    });
+  }
+
   protected donnerPreavis(): void {
     const bail = this.bailActuel();
     if (!bail) return;
@@ -632,6 +709,7 @@ export class BienDetailPage implements OnInit {
           responsableId: bien.responsable?.id ?? '',
         });
         this.chargerBaux(bien.id);
+        if (bien.modeLocation === 'courte_duree') this.chargerSejours(bien.id);
       },
       error: (error: unknown) => {
         this.loading.set(false);

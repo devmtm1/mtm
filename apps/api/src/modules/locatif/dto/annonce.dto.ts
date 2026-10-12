@@ -11,6 +11,7 @@ import {
   IsString,
   IsUUID,
   Max,
+  Matches,
   MaxLength,
   Min,
 } from 'class-validator';
@@ -71,6 +72,38 @@ export class AnnonceBienFields {
   @Max(180)
   longitude?: number;
   @IsOptional() @IsDateString() disponibleLe?: string;
+
+  // --- Courte durée (type Airbnb) ---
+  /** « longue_duree » (bail, loyer mensuel) ou « courte_duree » (séjours à la nuit). */
+  @IsOptional() @IsString() @MaxLength(30) modeLocation?: string;
+  @IsOptional() @Type(() => Number) @IsNumber() @Min(0) prixNuit?: number;
+  /** Caution demandée au voyageur, en FCFA. */
+  @IsOptional() @Type(() => Number) @IsNumber() @Min(0) cautionSejour?: number;
+  @IsOptional() @Type(() => Number) @IsNumber() @Min(0) fraisMenage?: number;
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(90)
+  nuitsMinimum?: number;
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(50)
+  capaciteVoyageurs?: number;
+  @IsOptional()
+  @IsString()
+  @Matches(/^([01]\d|2[0-3]):[0-5]\d$/, {
+    message: 'Heure attendue au format HH:MM',
+  })
+  heureArrivee?: string;
+  @IsOptional()
+  @IsString()
+  @Matches(/^([01]\d|2[0-3]):[0-5]\d$/, {
+    message: 'Heure attendue au format HH:MM',
+  })
+  heureDepart?: string;
   /** Réservés à la permission locatif:publier (contrôlée par le contrôleur). */
   @IsOptional() @Transform(versBooleen) @IsBoolean() publie?: boolean;
   @IsOptional() @Transform(versBooleen) @IsBoolean() misEnAvant?: boolean;
@@ -97,6 +130,11 @@ export class QueryLocationPublicDto {
   @IsOptional() @IsString() @MaxLength(120) commune?: string;
   @IsOptional() @Type(() => Number) @IsNumber() @Min(0) loyerMin?: number;
   @IsOptional() @Type(() => Number) @IsNumber() @Min(0) loyerMax?: number;
+  /** Mode de location : « courte_duree » (séjours à la nuit) ou « longue_duree ». */
+  @IsOptional() @IsIn(['longue_duree', 'courte_duree']) mode?: string;
+  /** Prix de la nuit : ne s'applique qu'aux séjours de courte durée. */
+  @IsOptional() @Type(() => Number) @IsNumber() @Min(0) prixNuitMax?: number;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) voyageurs?: number;
   @IsOptional() @Type(() => Number) @IsInt() @Min(0) chambresMin?: number;
   @IsOptional() @Type(() => Number) @IsNumber() @Min(0) superficieMin?: number;
   @IsOptional() @Transform(versBooleen) @IsBoolean() meuble?: boolean;
@@ -104,7 +142,7 @@ export class QueryLocationPublicDto {
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) page = 1;
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100) pageSize = 12;
   @IsOptional()
-  @IsIn(['createdAt', 'loyerMensuel', 'superficie'])
+  @IsIn(['createdAt', 'loyerMensuel', 'prixNuit', 'superficie'])
   sortBy = 'createdAt';
   @IsOptional() @IsIn(['asc', 'desc']) sortOrder: 'asc' | 'desc' = 'desc';
 }

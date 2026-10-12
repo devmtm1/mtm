@@ -285,6 +285,28 @@ export const routes: Routes = [
           import('./features/locatif/biens/biens').then((m) => m.Biens),
       },
       {
+        path: 'locatif/sejours/:id',
+        canActivate: [permissionsGuard(['locatif:consulter'])],
+        loadComponent: () =>
+          import('./features/locatif/sejours/sejour-detail/sejour-detail').then(
+            (m) => m.SejourDetailPage,
+          ),
+      },
+      {
+        path: 'locatif/sejours',
+        canActivate: [permissionsGuard(['locatif:consulter'])],
+        loadComponent: () =>
+          import('./features/locatif/sejours/sejours').then((m) => m.Sejours),
+      },
+      {
+        path: 'locatif/resiliations',
+        canActivate: [permissionsGuard(['locatif:consulter'])],
+        loadComponent: () =>
+          import('./features/locatif/resiliations/resiliations').then(
+            (m) => m.Resiliations,
+          ),
+      },
+      {
         path: 'locatif/relances',
         canActivate: [permissionsGuard(['locatif:consulter'])],
         loadComponent: () =>

@@ -12,7 +12,7 @@ import { Button } from '../components/ui/Button';
 import { LinkButton } from '../components/ui/LinkButton';
 import { Modal } from '../components/ui/Modal';
 import { fieldInputClass } from '../components/ui/FormField';
-import { useLocationsCatalog } from '../hooks/useLocations';
+import { useLocationFilterOptions, useLocationsCatalog } from '../hooks/useLocations';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 import { ROUTES } from '../routes';
 import { LOCATION_SORTS, sortKeyFrom, sortParams } from '../utils/locationFormat';
@@ -20,7 +20,7 @@ import type { Location, LocationFilters as LocationFiltersValue, LocationSortKey
 
 // Relus depuis l'URL : un filtre absent d'ici serait écrit dans l'adresse sans
 // jamais être rechargé, et disparaîtrait au premier aller-retour.
-const TEXT_FILTERS = ['search', 'type', 'region', 'commune'] as const;
+const TEXT_FILTERS = ['search', 'type', 'region', 'commune', 'mode'] as const;
 const NUMBER_FILTERS = ['loyerMin', 'loyerMax', 'chambresMin', 'superficieMin', 'page'] as const;
 /** Champs saisis au clavier : appliqués après une courte pause. */
 const TYPED_FILTERS = ['search', 'loyerMin', 'loyerMax', 'superficieMin'] as const;
@@ -41,7 +41,7 @@ function parseFilters(params: URLSearchParams): LocationFiltersValue {
   if (meuble === 'true' || meuble === 'false') filters.meuble = meuble === 'true';
 
   const tri = params.get('tri') as LocationSortKey | null;
-  if (tri && LOCATION_SORTS.some((sort) => sort.key === tri)) Object.assign(filters, sortParams(tri));
+  if (tri && LOCATION_SORTS.some((sort) => sort.key === tri)) Object.assign(filters, sortParams(tri, filters.mode));
 
   filters.pageSize = PAGE_SIZE;
   return filters;
@@ -67,6 +67,9 @@ export function LocationsPage() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetDraft, setSheetDraft] = useState<LocationFiltersValue>(filters);
   const { data, loading, error } = useLocationsCatalog(filters);
+  const { data: options } = useLocationFilterOptions();
+  // Le choix « Au mois / À la nuit » n'a de sens que s'il y a des annonces des deux sortes.
+  const proposerModes = (options?.sejours ?? 0) > 0 && (options?.longueDuree ?? 0) > 0;
 
   usePageMetadata({
     title: 'Locations disponibles',
@@ -249,6 +252,28 @@ export function LocationsPage() {
             )}
           </button>
         </div>
+
+        {proposerModes && (
+          <div role="group" aria-label="Type de location" className="mt-3 inline-flex rounded-full border border-mtm-border bg-mtm-surface p-1 lg:mt-0 lg:mb-4">
+            {[
+              { value: undefined, label: 'Toutes' },
+              { value: 'longue_duree', label: 'Au mois' },
+              { value: 'courte_duree', label: 'À la nuit' },
+            ].map(({ value, label }) => (
+              <button
+                key={label}
+                type="button"
+                aria-pressed={filters.mode === value}
+                onClick={() => commitFilters({ ...filters, mode: value, page: 1, ...(value === 'courte_duree' ? { loyerMin: undefined, loyerMax: undefined } : {}) })}
+                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
+                  filters.mode === value ? 'bg-mtm-primary text-white' : 'text-mtm-muted hover:text-mtm-primary'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="hidden lg:block">
           <LocationFilters value={draft} onChange={handleFiltersChange} onSubmit={() => commitFilters(draft)} />

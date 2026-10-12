@@ -8,6 +8,9 @@ import { BauxController } from './baux.controller';
 import { LocatairesController } from './locataires.controller';
 import { RelancesController } from './relances.controller';
 import { LocatifPortailController } from './locatif-portail.controller';
+import { SejoursController } from './sejours.controller';
+import { EtatsDesLieuxController } from './etats-des-lieux.controller';
+import { ResiliationsController } from './resiliations.controller';
 import { LocatifAccessService } from './locatif-access.service';
 import { LocatifOptionsService } from './locatif-options.service';
 import { LocatairesService } from './locataires.service';
@@ -24,6 +27,9 @@ import { RelancesLoyerService } from './relances.service';
 import { LocatifSchedulerService } from './locatif-scheduler.service';
 import { ProprietairePortalService } from './proprietaire-portal.service';
 import { LocatairePortalService } from './locataire-portal.service';
+import { SejoursService } from './sejours.service';
+import { EtatsDesLieuxService } from './etats-des-lieux.service';
+import { ResiliationsService } from './resiliations.service';
 
 /** Gestion locative (J2.1, section 15 du cahier des charges). */
 @Module({
@@ -35,6 +41,9 @@ import { LocatairePortalService } from './locataire-portal.service';
     RelancesController,
     LocatifPortailController,
     LocatifPublicController,
+    SejoursController,
+    EtatsDesLieuxController,
+    ResiliationsController,
   ],
   providers: [
     LocatifAccessService,
@@ -52,6 +61,9 @@ import { LocatairePortalService } from './locataire-portal.service';
     LocatifSchedulerService,
     ProprietairePortalService,
     LocatairePortalService,
+    SejoursService,
+    EtatsDesLieuxService,
+    ResiliationsService,
     CloudinaryService,
   ],
   exports: [

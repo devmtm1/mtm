@@ -1,4 +1,4 @@
-import { AlertTriangle, FileText, MessageSquare, Receipt, Wallet, Bell, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, FileText, MessageSquare, Receipt, Wallet, Bell, DoorOpen, type LucideIcon } from 'lucide-react';
 import type { ClientNotification } from '../types/notification';
 import { formatDate } from './format';
 
@@ -44,6 +44,7 @@ export function iconeNotification(type: string, niveau: string): { icon: LucideI
   if (type === 'reglement_valide') return { icon: Receipt, tone: 'success' };
   if (type === 'reponse_demande' || type === 'incident_maj') return { icon: MessageSquare, tone: 'primary' };
   if (type === 'document_disponible') return { icon: FileText, tone: 'primary' };
+  if (type === 'resiliation_traitee') return { icon: DoorOpen, tone: 'primary' };
   return { icon: Bell, tone: 'primary' };
 }
 

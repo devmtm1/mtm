@@ -3,7 +3,7 @@ import type { Location } from '../../types/location';
 import { ROUTES } from '../../routes';
 import { formatMoney, formatSuperficie } from '../../utils/format';
 import { typeBienLabel } from '../../utils/bienLabels';
-import { formatLoyerMontant, locationPlace, locationTitle } from '../../utils/locationFormat';
+import { locationPlace, locationTitle, prixAffiche } from '../../utils/locationFormat';
 import type { AppPropertyCardData, AppPropertyFact } from './AppPropertyCard';
 
 /**
@@ -58,8 +58,8 @@ export function locationCard(location: Location): AppPropertyCardData {
     images: photosOf(location.medias),
     badge: 'Location',
     badgeTone: 'success',
-    price: formatLoyerMontant(location.loyerMensuel),
-    priceSuffix: location.loyerMensuel === null ? undefined : '/ mois',
+    price: prixAffiche(location).montant,
+    priceSuffix: (location.modeLocation === 'courte_duree' ? location.prixNuit : location.loyerMensuel) === null ? undefined : prixAffiche(location).suffixe,
     place: locationPlace(location),
     featured: location.misEnAvant ? 'À la une' : undefined,
     facts: facts({

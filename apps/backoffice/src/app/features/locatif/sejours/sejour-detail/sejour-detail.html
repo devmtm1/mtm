@@ -1,0 +1,381 @@
+<div class="sejour-page">
+  @if (loading()) {
+    <div class="skeleton" style="height: 320px"></div>
+  } @else if (sejour(); as s) {
+    <header class="page-header">
+      <div>
+        <button mat-button type="button" class="back" (click)="retour()">
+          <svg class="btn-icon" lucideArrowLeft aria-hidden="true"></svg>Séjours
+        </button>
+        <p class="eyebrow">Séjour de courte durée</p>
+        <h1 class="page-header__title">
+          {{ s.referenceInterne }}
+          <span [class]="statuts[s.statut].pill" [matTooltip]="statuts[s.statut].help">{{ statuts[s.statut].label }}</span>
+        </h1>
+        <p class="page-header__subtitle">
+          {{ voyageur(s.locataire) }} · {{ s.nuits }} nuit{{ s.nuits > 1 ? 's' : '' }} du {{ jour(s.dateArrivee) }} au
+          {{ jour(s.dateDepart) }}
+        </p>
+      </div>
+      <div class="page-header__actions">
+        @if (canModify() && !termine()) {
+          @if (s.statut === 'demande') {
+            <button mat-flat-button color="primary" type="button" [disabled]="busy()" (click)="avancer('confirmee', 'Séjour confirmé : les nuits sont réservées')">
+              Confirmer la réservation
+            </button>
+          }
+          @if (s.statut === 'confirmee') {
+            <button mat-flat-button color="primary" type="button" [disabled]="busy()" (click)="avancer('en_cours', 'Voyageur arrivé')">
+              Le voyageur est arrivé
+            </button>
+          }
+          @if (s.statut === 'en_cours') {
+            <button mat-flat-button color="primary" type="button" [disabled]="busy()" (click)="avancer('terminee', 'Séjour terminé')">
+              Le voyageur est parti
+            </button>
+          }
+          @if (modifiable()) {
+            <button mat-stroked-button type="button" (click)="modifier()">
+              <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Modifier
+            </button>
+            <button mat-stroked-button type="button" class="danger" [disabled]="busy()" (click)="annuler()">Annuler le séjour</button>
+          }
+        }
+      </div>
+    </header>
+
+    @if (s.statut === 'demande') {
+      <aside class="alert-banner" role="status">
+        <p>
+          Demande reçue {{ s.source === 'site' ? 'du site' : '' }} : elle n’occupe pas encore le calendrier. Confirmez-la
+          après avoir contacté le voyageur{{ s.locataire.phone ? ' (' + s.locataire.phone + ')' : '' }}.
+        </p>
+      </aside>
+    }
+    @if (s.statut === 'annulee') {
+      <aside class="alert-banner" role="status">
+        <p>
+          Séjour annulé le {{ s.annuleLe | date: 'dd/MM/yyyy' }}@if (s.motifAnnulation) { — {{ s.motifAnnulation }}}.
+        </p>
+      </aside>
+    }
+    @if (termine() && cautionDetenue()) {
+      <aside class="alert-banner" role="status">
+        <p>La caution de {{ cautionMontant() | mtmMoney }} est encore détenue : restituez-la ou retenez-la ci-dessous.</p>
+      </aside>
+    }
+
+    <div class="sejour-grid">
+      <!-- Le séjour -->
+      <section class="page-card detail-section">
+        <div class="detail-section__head"><h2>Le séjour</h2></div>
+        <dl class="info-list">
+          <div>
+            <dt>Voyageur</dt>
+            <dd>{{ voyageur(s.locataire) }}</dd>
+          </div>
+          @if (s.locataire.phone) {
+            <div>
+              <dt>Téléphone</dt>
+              <dd><a class="inline-link" [href]="'tel:' + s.locataire.phone">{{ s.locataire.phone }}</a></dd>
+            </div>
+          }
+          @if (s.locataire.email) {
+            <div>
+              <dt>E-mail</dt>
+              <dd><a class="inline-link" [href]="'mailto:' + s.locataire.email">{{ s.locataire.email }}</a></dd>
+            </div>
+          }
+          <div>
+            <dt>Bien</dt>
+            <dd>
+              <a class="inline-link" [routerLink]="['/locatif/biens', s.bienLocatif.id]">{{ bien(s.bienLocatif) }}</a>
+              <small>{{ s.bienLocatif.referenceInterne }}</small>
+            </dd>
+          </div>
+          <div>
+            <dt>Réservé le</dt>
+            <dd>{{ s.dateReservation | date: 'dd/MM/yyyy' }} · {{ libelle(sources, s.source) }}</dd>
+          </div>
+          <div>
+            <dt>Arrivée</dt>
+            <dd>{{ jour(s.dateArrivee) }}{{ s.bienLocatif.heureArrivee ? ' à partir de ' + s.bienLocatif.heureArrivee : '' }}</dd>
+          </div>
+          <div>
+            <dt>Départ</dt>
+            <dd>{{ jour(s.dateDepart) }}{{ s.bienLocatif.heureDepart ? ' avant ' + s.bienLocatif.heureDepart : '' }}</dd>
+          </div>
+          <div>
+            <dt>Durée</dt>
+            <dd>{{ s.nuits }} nuit{{ s.nuits > 1 ? 's' : '' }} · {{ s.nombreVoyageurs }} voyageur{{ s.nombreVoyageurs > 1 ? 's' : '' }}</dd>
+          </div>
+          @if (s.notes) {
+            <div class="is-wide">
+              <dt>Notes</dt>
+              <dd class="is-text">{{ s.notes }}</dd>
+            </div>
+          }
+        </dl>
+      </section>
+
+      <!-- L'argent -->
+      <section class="page-card detail-section">
+        <div class="detail-section__head">
+          <h2>Prix et règlements</h2>
+          <span [class]="reglements[s.synthese.statut].pill">{{ reglements[s.synthese.statut].label }}</span>
+        </div>
+        <dl class="sejour-prix">
+          <div>
+            <dt>{{ s.nuits }} nuit{{ s.nuits > 1 ? 's' : '' }} × {{ s.prixNuit | mtmMoney }}</dt>
+            <dd>{{ s.nuits * montant(s.prixNuit) | mtmMoney }}</dd>
+          </div>
+          @if (montant(s.fraisMenage) > 0) {
+            <div>
+              <dt>Frais de ménage</dt>
+              <dd>{{ s.fraisMenage | mtmMoney }}</dd>
+            </div>
+          }
+          @if (montant(s.remise) > 0) {
+            <div>
+              <dt>Remise</dt>
+              <dd>− {{ s.remise | mtmMoney }}</dd>
+            </div>
+          }
+          <div class="sejour-prix__total">
+            <dt>Total du séjour</dt>
+            <dd>{{ s.montantTotal | mtmMoney }}</dd>
+          </div>
+          <div>
+            <dt>Déjà réglé</dt>
+            <dd>{{ s.synthese.totalRegle | mtmMoney }}</dd>
+          </div>
+          <div class="sejour-prix__reste">
+            <dt>{{ s.synthese.excedent > 0 ? 'Trop-perçu' : 'Reste à payer' }}</dt>
+            <dd>{{ (s.synthese.excedent > 0 ? s.synthese.excedent : s.synthese.reste) | mtmMoney }}</dd>
+          </div>
+        </dl>
+
+        @if (s.paiements.length) {
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Mode</th>
+                  <th>Référence</th>
+                  <th class="is-right">Montant</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (paiement of s.paiements; track paiement.id) {
+                  <tr>
+                    <td>{{ paiement.datePaiement | date: 'dd/MM/yyyy HH:mm' }}</td>
+                    <td>{{ libelle(typesPaiement, paiement.type) }}</td>
+                    <td>{{ libelle(modes, paiement.mode) }}</td>
+                    <td>{{ paiement.reference || '—' }}</td>
+                    <td class="is-right"><strong>{{ paiement.montant | mtmMoney }}</strong></td>
+                    <td class="is-right">
+                      @if (canValidate()) {
+                        <button mat-icon-button type="button" (click)="supprimerPaiement(paiement.id)" aria-label="Supprimer ce règlement">
+                          <svg lucideTrash2 aria-hidden="true"></svg>
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="detail-note">Aucun règlement enregistré.</div>
+        }
+        @if (canPay() && s.statut !== 'annulee' && s.synthese.reste > 0) {
+          <div class="sejour-actions">
+            <button mat-stroked-button type="button" [disabled]="busy()" (click)="ajouterPaiement()">
+              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Enregistrer un règlement
+            </button>
+          </div>
+        }
+      </section>
+
+      <!-- La caution -->
+      <section class="page-card detail-section">
+        <div class="detail-section__head">
+          <h2>Caution</h2>
+          <span [class]="cautions[s.cautionStatut].pill">{{ cautions[s.cautionStatut].label }}</span>
+        </div>
+        @if (cautionMontant() > 0) {
+          <dl class="info-list">
+            <div>
+              <dt>Montant demandé</dt>
+              <dd>{{ s.cautionMontant | mtmMoney }}</dd>
+            </div>
+            @if (s.cautionVerseeLe) {
+              <div>
+                <dt>Reçue le</dt>
+                <dd>{{ s.cautionVerseeLe | date: 'dd/MM/yyyy' }}</dd>
+              </div>
+            }
+            @if (s.cautionRestitueeLe) {
+              <div>
+                <dt>Restituée le</dt>
+                <dd>{{ s.cautionRestitueeLe | date: 'dd/MM/yyyy' }}</dd>
+              </div>
+              <div>
+                <dt>Retenue</dt>
+                <dd>{{ s.cautionRetenue | mtmMoney }}</dd>
+              </div>
+              <div>
+                <dt>Rendue au voyageur</dt>
+                <dd>{{ cautionMontant() - montant(s.cautionRetenue) | mtmMoney }}</dd>
+              </div>
+            }
+            @if (s.cautionJustification) {
+              <div class="is-wide">
+                <dt>Motif de la retenue</dt>
+                <dd class="is-text">{{ s.cautionJustification }}</dd>
+              </div>
+            }
+          </dl>
+        } @else {
+          <div class="detail-note">Ce séjour ne prévoit pas de caution.</div>
+        }
+        <div class="sejour-actions">
+          @if (canPay() && s.cautionStatut === 'non_versee' && cautionMontant() > 0 && s.statut !== 'annulee') {
+            <button mat-stroked-button type="button" [disabled]="busy()" (click)="verserCaution()">Caution reçue</button>
+          }
+          @if (canPay() && cautionDetenue()) {
+            <button mat-flat-button color="primary" type="button" [disabled]="busy()" (click)="restituerCaution()">
+              Restituer la caution
+            </button>
+          }
+        </div>
+      </section>
+
+      <!-- Les états des lieux -->
+      <section class="page-card detail-section sejour-etats">
+        <div class="detail-section__head">
+          <div>
+            <h2>États des lieux</h2>
+            <p class="detail-section__hint">
+              À l’arrivée et au départ, pièce par pièce. La comparaison montre ce qui s’est dégradé : c’est le
+              justificatif d’une retenue sur la caution.
+            </p>
+          </div>
+        </div>
+
+        <div class="etats">
+          @for (type of ['entree', 'sortie']; track type) {
+            @let etat = type === 'entree' ? s.etatsDesLieux.entree : s.etatsDesLieux.sortie;
+            <article class="etat">
+              <h3>{{ type === 'entree' ? 'Entrée' : 'Sortie' }}</h3>
+              @if (etat) {
+                <p class="etat__meta">
+                  {{ etat.dateEtat | date: 'dd/MM/yyyy HH:mm' }}
+                  @if (etat.signataire) { · avec {{ etat.signataire }} }
+                </p>
+                <ul class="etat__pieces">
+                  @for (piece of etat.pieces; track piece.piece) {
+                    <li>
+                      <span>{{ piece.piece }}</span>
+                      <em class="etat-pastille etat-pastille--{{ piece.etat }}">{{ etatsPiece[piece.etat].label }}</em>
+                      @if (piece.observation) {
+                        <small>{{ piece.observation }}</small>
+                      }
+                    </li>
+                  }
+                </ul>
+                @if (etat.nombreCles !== null || etat.releveEau || etat.releveElectricite) {
+                  <p class="etat__meta">
+                    @if (etat.nombreCles !== null) { {{ etat.nombreCles }} clé{{ etat.nombreCles > 1 ? 's' : '' }} · }
+                    @if (etat.releveEau) { eau {{ etat.releveEau }} · }
+                    @if (etat.releveElectricite) { électricité {{ etat.releveElectricite }} }
+                  </p>
+                }
+                @if (etat.observations) {
+                  <p class="etat__note">{{ etat.observations }}</p>
+                }
+                @if (etat.photos.length) {
+                  <ul class="etat__photos">
+                    @for (photo of etat.photos; track photo.id) {
+                      <li>
+                        <a [href]="photo.url" target="_blank" rel="noopener"><img [src]="photo.url" [alt]="photo.legende || 'Photo de l’état des lieux'" loading="lazy" /></a>
+                        @if (photo.legende) { <small>{{ photo.legende }}</small> }
+                        @if (canModify()) {
+                          <button mat-icon-button type="button" class="etat__photo-suppr" (click)="retirerPhoto(etat, photo.id)" aria-label="Supprimer la photo">
+                            <svg lucideTrash2 aria-hidden="true"></svg>
+                          </button>
+                        }
+                      </li>
+                    }
+                  </ul>
+                }
+                @if (canModify()) {
+                  <div class="sejour-actions">
+                    <label class="upload-button">
+                      <svg lucideCamera aria-hidden="true"></svg>Ajouter une photo
+                      <input type="file" accept="image/*" (change)="ajouterPhoto($event, etat)" />
+                    </label>
+                    <button mat-stroked-button type="button" (click)="faireEtat($any(type))">
+                      <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Corriger
+                    </button>
+                  </div>
+                }
+              } @else {
+                <p class="etat__vide">
+                  {{ type === 'entree' ? 'Pas encore d’état des lieux d’arrivée.' : 'Pas encore d’état des lieux de départ.' }}
+                </p>
+                @if (canModify() && (type === 'entree' ? ['confirmee', 'en_cours', 'terminee'].includes(s.statut) : ['en_cours', 'terminee'].includes(s.statut))) {
+                  <button mat-flat-button color="primary" type="button" (click)="faireEtat($any(type))">
+                    <svg class="btn-icon" lucideClipboardCheck aria-hidden="true"></svg>Faire l’état des lieux
+                  </button>
+                } @else if (type === 'sortie') {
+                  <p class="etat__vide">Disponible une fois le voyageur arrivé.</p>
+                }
+              }
+            </article>
+          }
+        </div>
+
+        @if (s.etatsDesLieux.entree && s.etatsDesLieux.sortie) {
+          <div class="comparaison">
+            <h3>
+              Entrée → sortie
+              @if (s.etatsDesLieux.degradations > 0) {
+                <span class="status-pill status-pill--danger">{{ s.etatsDesLieux.degradations }} pièce{{ s.etatsDesLieux.degradations > 1 ? 's' : '' }} dégradée{{ s.etatsDesLieux.degradations > 1 ? 's' : '' }}</span>
+              } @else {
+                <span class="status-pill status-pill--success">Aucune dégradation</span>
+              }
+            </h3>
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Pièce</th>
+                    <th>À l’entrée</th>
+                    <th>À la sortie</th>
+                    <th>Observation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (ligne of s.etatsDesLieux.comparaison; track ligne.piece) {
+                    <tr [class.is-degradee]="ligne.degradation">
+                      <td><strong>{{ ligne.piece }}</strong></td>
+                      <td>{{ ligne.avant ? etatsPiece[ligne.avant].label : '—' }}</td>
+                      <td>
+                        <em class="etat-pastille etat-pastille--{{ ligne.apres }}">{{ etatsPiece[ligne.apres].label }}</em>
+                      </td>
+                      <td>{{ ligne.observation || '—' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+      </section>
+    </div>
+  }
+</div>

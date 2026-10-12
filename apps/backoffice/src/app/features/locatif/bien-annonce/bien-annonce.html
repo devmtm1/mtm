@@ -4,24 +4,44 @@
       <h2 id="annonce-title">Annonce sur le site</h2>
       <p class="detail-section__hint">
         Les visiteurs voient ce bien sur la page « Locations » tant qu’il est publié <strong>et</strong> disponible.
-        Dès qu’un bail est créé, il disparaît tout seul du site.
+        @if (courte()) {
+          Un bien loué à la nuit reste en ligne entre deux séjours : les nuits déjà prises sont montrées comme
+          indisponibles, et les visiteurs envoient une demande de séjour.
+        } @else {
+          Dès qu’un bail est créé, il disparaît tout seul du site.
+        }
       </p>
     </div>
     <span [class]="statutClass()">{{ statutLabel() }}</span>
   </div>
 
   <div class="annonce__summary">
-    <div>
-      <span>Loyer affiché</span>
-      <strong>{{ hasLoyer() ? (bien().loyerMensuel | mtmMoney) : 'Non renseigné' }}</strong>
-      @if (bien().charges) {
-        <small>+ {{ bien().charges | mtmMoney }} de charges</small>
-      }
-    </div>
-    <div>
-      <span>Caution</span>
-      <strong>{{ bien().moisCaution !== null ? bien().moisCaution + ' mois' : '—' }}</strong>
-    </div>
+    @if (courte()) {
+      <div>
+        <span>Prix de la nuit</span>
+        <strong>{{ hasLoyer() ? (bien().prixNuit | mtmMoney) : 'Non renseigné' }}</strong>
+        @if (bien().fraisMenage) {
+          <small>+ {{ bien().fraisMenage | mtmMoney }} de ménage</small>
+        }
+      </div>
+      <div>
+        <span>Caution</span>
+        <strong>{{ bien().cautionSejour ? (bien().cautionSejour | mtmMoney) : '—' }}</strong>
+        <small>{{ bien().nuitsMinimum }} nuit{{ bien().nuitsMinimum > 1 ? 's' : '' }} minimum</small>
+      </div>
+    } @else {
+      <div>
+        <span>Loyer affiché</span>
+        <strong>{{ hasLoyer() ? (bien().loyerMensuel | mtmMoney) : 'Non renseigné' }}</strong>
+        @if (bien().charges) {
+          <small>+ {{ bien().charges | mtmMoney }} de charges</small>
+        }
+      </div>
+      <div>
+        <span>Caution</span>
+        <strong>{{ bien().moisCaution !== null ? bien().moisCaution + ' mois' : '—' }}</strong>
+      </div>
+    }
     <div>
       <span>Chambres</span>
       <strong>{{ bien().nombreChambres ?? '—' }}</strong>
@@ -44,7 +64,7 @@
         } @else {
           <svg lucideCircle aria-hidden="true"></svg>
         }
-        Loyer mensuel renseigné
+        {{ courte() ? 'Prix de la nuit renseigné' : 'Loyer mensuel renseigné' }}
       </li>
       <li [class.is-done]="hasPhoto()">
         @if (hasPhoto()) {
