@@ -18,7 +18,7 @@ export function FeaturedTerrainsSection() {
       <div className="flex items-end justify-between gap-4">
         <SectionHeading
           eyebrow="Sélection MTM"
-          title="Biens mis en avant"
+          title="Biens en vedette"
           description="Une sélection d'opportunités vérifiées, prêtes à la commercialisation."
         />
         <LinkButton to={ROUTES.catalog} variant="secondary" className="hidden shrink-0 sm:inline-flex">
@@ -30,12 +30,12 @@ export function FeaturedTerrainsSection() {
         {loading && <CardGridSkeleton count={6} gridClassName={FEATURED_GRID} compact />}
         {error && <EmptyState title="Impossible de charger les biens" description={error} />}
         {!loading && !error && data && data.items.length === 0 && (
-          <EmptyState title="Aucun bien mis en avant pour le moment" />
+          <EmptyState title="Aucun bien en vedette pour le moment" />
         )}
         {!loading && !error && data && data.items.length > 0 && (
           <>
             {/* Mobile : rangée à faire défiler (1,3 carte visible) ; grille dès lg. */}
-            <Carousel ariaLabel="Biens mis en avant" itemClassName="w-[72%] sm:w-[46%] lg:w-auto" lgClassName="lg:grid lg:grid-cols-3 lg:gap-6">
+            <Carousel ariaLabel="Biens en vedette" itemClassName="w-[72%] sm:w-[46%] lg:w-auto" lgClassName="lg:grid lg:grid-cols-3 lg:gap-6">
               {data.items.map((terrain) => (
                 <TerrainCard key={terrain.id} terrain={terrain} compact />
               ))}

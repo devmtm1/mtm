@@ -51,9 +51,9 @@ describe('PromoBanner', () => {
     vi.useRealTimers();
   });
 
-  it('montre l’affiche en entier, avec son texte alternatif', () => {
+  it('montre l’affiche en plein cadre, avec son texte alternatif', () => {
     rendre([affiche('a')]);
-    expect(screen.getByRole('img', { name: 'Affiche a' })).toHaveClass('object-contain');
+    expect(screen.getByRole('img', { name: 'Affiche a' })).toHaveClass('object-cover');
     // Une seule publicité : ni points, ni flèches, ni pause.
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });

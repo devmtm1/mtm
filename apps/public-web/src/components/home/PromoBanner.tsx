@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import type { Promotion } from '../../types/promotion';
 
 /** Une affiche reste à l'écran ce temps-là ; une vidéo se joue jusqu'au bout. */
@@ -53,9 +53,9 @@ interface MediaProps {
 }
 
 /**
- * Le média d'une diapositive. Une affiche est montrée en entier (`contain`)
- * devant une copie floutée d'elle-même, pour qu'un visuel au format portrait ou
- * carré ne soit jamais rogné dans un bandeau large. Une vidéo remplit le cadre.
+ * Le média d'une diapositive. L'image ou la vidéo remplit tout le cadre, comme
+ * une affiche : MTM prépare ses visuels au format paysage 16/9, un visuel d'un
+ * autre format est recadré plutôt que d'être entouré de bandes.
  */
 function Media({ promotion, lectureVideo, seule, onTermine }: MediaProps) {
   if (promotion.type === 'video' && lectureVideo && promotion.mediaUrl) {
@@ -79,16 +79,13 @@ function Media({ promotion, lectureVideo, seule, onTermine }: MediaProps) {
   const source = promotion.type === 'video' ? promotion.posterUrl : promotion.mediaUrl;
   if (!source) return null;
   return (
-    <>
-      <img src={source} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-2xl" />
-      <img
-        key={promotion.id}
-        src={source}
-        alt={promotion.titre}
-        className="absolute inset-0 h-full w-full object-contain motion-safe:animate-fade-in"
-        fetchPriority="high"
-      />
-    </>
+    <img
+      key={promotion.id}
+      src={source}
+      alt={promotion.titre}
+      className="absolute inset-0 h-full w-full object-cover motion-safe:animate-fade-in"
+      fetchPriority="high"
+    />
   );
 }
 
@@ -151,24 +148,29 @@ export function PromoBanner({ promotions, variant = 'hero' }: PromoBannerProps) 
         <Media promotion={courante} lectureVideo={lectureVideo} seule={total === 1} onTermine={suivante} />
         {aLeLegende && (
           <>
-            <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/75 to-transparent" aria-hidden="true" />
+            <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/80 via-black/35 to-transparent" aria-hidden="true" />
             <div
-              className={`absolute inset-x-0 bottom-0 flex flex-wrap items-end gap-3 ${
-                variant === 'hero' ? 'mx-auto max-w-6xl px-6 pb-24' : 'px-4 pb-16'
+              className={`absolute inset-x-0 bottom-0 flex flex-col items-start gap-2.5 ${
+                variant === 'hero' ? 'mx-auto max-w-6xl px-6 pb-24' : 'px-5 pb-9'
               }`}
             >
               {courante.description && (
                 <p
-                  className={`font-display font-bold text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.6)] ${
-                    variant === 'hero' ? 'max-w-2xl text-2xl sm:text-3xl' : 'line-clamp-2 text-base'
+                  className={`font-display font-bold leading-tight text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.6)] ${
+                    variant === 'hero' ? 'max-w-2xl text-2xl sm:text-4xl' : 'line-clamp-2 max-w-[85%] text-[1.15rem]'
                   }`}
                 >
                   {courante.description}
                 </p>
               )}
               {courante.lienUrl && (
-                <span className="inline-flex items-center rounded-lg bg-mtm-accent px-4 py-2 text-sm font-semibold text-white shadow-card">
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full bg-mtm-accent font-semibold text-white shadow-card ${
+                    variant === 'hero' ? 'px-5 py-2.5 text-sm' : 'px-4 py-2 text-[13px]'
+                  }`}
+                >
                   {courante.libelleLien || 'En savoir plus'}
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </span>
               )}
             </div>
@@ -178,11 +180,11 @@ export function PromoBanner({ promotions, variant = 'hero' }: PromoBannerProps) 
 
       {total > 1 && (
         <>
-          <div className={`absolute inset-x-0 z-10 flex items-center justify-center gap-2 ${variant === 'hero' ? 'bottom-14' : 'top-3'}`}>
+          <div className={`absolute inset-x-0 z-10 flex items-center justify-center gap-2 ${variant === 'hero' ? 'bottom-14' : 'bottom-3'}`}>
             <button
               type="button"
               onClick={() => setEnPause((valeur) => !valeur)}
-              className="flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+              className="order-last flex h-6 w-6 items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/65 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
               aria-label={enPause ? 'Reprendre le défilement des publicités' : 'Mettre en pause le défilement des publicités'}
             >
               {enPause ? <Play className="h-3.5 w-3.5" aria-hidden="true" /> : <Pause className="h-3.5 w-3.5" aria-hidden="true" />}

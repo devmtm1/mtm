@@ -28,6 +28,38 @@ const location = (id: string, publieLe: string | null, extra: Partial<Location> 
     ...extra,
   }) as unknown as Location;
 
+describe('repères des cartes (chambres, salles d’eau, surface)', () => {
+  it('un bien bâti montre chambres, salles d’eau et surface habitable', () => {
+    const card = terrainCard(
+      terrain('v1', '2026-10-01T00:00:00Z', {
+        typeBien: 'villa',
+        nombreChambres: 4,
+        nombreSallesEau: 3,
+        surfaceHabitable: 250,
+        superficie: 400,
+        uniteSuperficie: 'm²',
+      }),
+    );
+    expect(card.facts?.map((fact) => fact.label.replace(/\s/g, ' '))).toEqual(['4 ch.', '3 sdb.', '250 m²']);
+  });
+
+  it('une parcelle nue ne montre que sa superficie, sans « 0 ch. » ni tiret', () => {
+    const card = terrainCard(
+      terrain('t9', '2026-10-01T00:00:00Z', { superficie: 600, uniteSuperficie: 'm²', nombreChambres: null, nombreSallesEau: 0 }),
+    );
+    expect(card.facts).toEqual([{ icon: 'surface', label: '600 m²' }]);
+  });
+
+  it('une location reprend ses chambres et sa surface, et rien quand elle ne renseigne rien', () => {
+    expect(locationCard(location('l2', null, { nombreChambres: 2, nombreSallesEau: 1, superficie: 85 })).facts).toEqual([
+      { icon: 'chambres', label: '2 ch.' },
+      { icon: 'sallesEau', label: '1 sdb.' },
+      { icon: 'surface', label: '85 m²' },
+    ]);
+    expect(locationCard(location('l3', null)).facts).toEqual([]);
+  });
+});
+
 describe('cartes de l’accueil mobile', () => {
   it('une vente n’a pas de badge d’offre, mais son prix et sa photo', () => {
     const card = terrainCard(terrain('t1', '2026-10-01T00:00:00Z'));

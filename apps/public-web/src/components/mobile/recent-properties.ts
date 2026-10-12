@@ -1,10 +1,27 @@
 import type { Terrain } from '../../types/terrain';
 import type { Location } from '../../types/location';
 import { ROUTES } from '../../routes';
-import { formatMoney } from '../../utils/format';
+import { formatMoney, formatSuperficie } from '../../utils/format';
 import { typeBienLabel } from '../../utils/bienLabels';
 import { formatLoyerMontant, locationPlace, locationTitle } from '../../utils/locationFormat';
-import type { AppPropertyCardData } from './AppPropertyCard';
+import type { AppPropertyCardData, AppPropertyFact } from './AppPropertyCard';
+
+/**
+ * Les repères d'un bien, ceux qu'il renseigne : chambres, salles d'eau, surface.
+ * Une information absente n'est pas montrée — jamais de « — » ni de « 0 ch. ».
+ */
+function facts(source: {
+  nombreChambres: number | null;
+  nombreSallesEau: number | null;
+  surface: number | null;
+  unite: string | null;
+}): AppPropertyFact[] {
+  const repères: AppPropertyFact[] = [];
+  if (source.nombreChambres) repères.push({ icon: 'chambres', label: `${source.nombreChambres} ch.` });
+  if (source.nombreSallesEau) repères.push({ icon: 'sallesEau', label: `${source.nombreSallesEau} sdb.` });
+  if (source.surface) repères.push({ icon: 'surface', label: formatSuperficie(source.surface, source.unite) });
+  return repères;
+}
 
 function photosOf(medias: { type: string; secureUrl: string }[]): string[] {
   const photos = medias.filter((media) => media.type === 'photo');
@@ -22,6 +39,13 @@ export function terrainCard(terrain: Terrain): AppPropertyCardData {
     place: [terrain.commune, terrain.region].filter(Boolean).join(', '),
     featured: terrain.misEnAvant ? 'Mis en avant' : undefined,
     statutJuridique: terrain.statutJuridique || undefined,
+    facts: facts({
+      nombreChambres: terrain.nombreChambres,
+      nombreSallesEau: terrain.nombreSallesEau,
+      // Un bien bâti se lit à sa surface habitable, une parcelle à sa superficie.
+      surface: terrain.surfaceHabitable ?? terrain.superficie,
+      unite: terrain.uniteSuperficie,
+    }),
   };
 }
 
@@ -38,6 +62,12 @@ export function locationCard(location: Location): AppPropertyCardData {
     priceSuffix: location.loyerMensuel === null ? undefined : '/ mois',
     place: locationPlace(location),
     featured: location.misEnAvant ? 'À la une' : undefined,
+    facts: facts({
+      nombreChambres: location.nombreChambres,
+      nombreSallesEau: location.nombreSallesEau,
+      surface: location.superficie,
+      unite: 'm²',
+    }),
   };
 }
 

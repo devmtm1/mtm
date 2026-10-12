@@ -27,6 +27,26 @@ describe('AppPropertyCard', () => {
     expect(screen.queryByText('Vente')).not.toBeInTheDocument();
   });
 
+  it('affiche les repères du bien sous le titre, avant le prix', () => {
+    afficher({
+      facts: [
+        { icon: 'chambres', label: '4 ch.' },
+        { icon: 'sallesEau', label: '3 sdb.' },
+        { icon: 'surface', label: '250 m²' },
+      ],
+    });
+    const reperes = screen.getByRole('list', { name: 'Caractéristiques' });
+    expect(reperes).toHaveTextContent('4 ch.');
+    expect(reperes).toHaveTextContent('3 sdb.');
+    expect(reperes).toHaveTextContent('250 m²');
+    expect(reperes.compareDocumentPosition(screen.getByText('30 000 000 FCFA')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('sans repères, aucune liste vide n’est affichée', () => {
+    afficher();
+    expect(screen.queryByRole('list', { name: 'Caractéristiques' })).not.toBeInTheDocument();
+  });
+
   it('une vente ordinaire n’a aucun badge sur la photo', () => {
     afficher();
     expect(screen.queryByText('Vente')).not.toBeInTheDocument();

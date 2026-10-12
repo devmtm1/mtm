@@ -42,6 +42,7 @@ export interface PromotionDialogData {
             Un média est déjà en place ({{ data.existing?.resourceType === 'video' ? 'vidéo' : 'affiche' }}).
           } @else {
             Affiche (JPG, PNG, WebP) ou vidéo MP4 — 10 Mo au maximum.
+            Préparez-la au format paysage 16/9 (1600 × 900 px) : elle remplit tout le bandeau, un autre format est recadré.
           }
         </span>
         @if (erreurFichier()) {
