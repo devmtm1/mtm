@@ -4,7 +4,10 @@ import { authenticator } from 'otplib';
 import request from 'supertest';
 import { createE2eApp, type E2eContext } from './helpers/e2e-app';
 import { describeE2e } from './helpers/e2e-database';
+import { createCloudinaryMock } from './helpers/cloudinary-mock';
+import { randomUUID } from 'crypto';
 import { TwoFactorService } from '../src/modules/auth/two-factor.service';
+import { LOGO_PAR_DEFAUT_BASE64 } from '../src/common/pdf/logo-defaut';
 import { libelleJalonType } from '../src/modules/construction/construction-options.service';
 
 /**
@@ -35,7 +38,24 @@ describeE2e('Parcours Construction J2.3 (e2e)', () => {
   let secretComptable = '';
 
   beforeAll(async () => {
-    context = await createE2eApp();
+    // Le stockage est simulé : ni le rapport PDF ni les photos envoyées ici ne
+    // doivent partir chez le vrai Cloudinary, même si les identifiants du
+    // poste sont renseignés.
+    const cloudinary = createCloudinaryMock('mtm-e2e/construction');
+    cloudinary.upload.mockImplementation((file: { mimetype: string }) => {
+      const resourceType = file.mimetype.startsWith('image/')
+        ? 'image'
+        : file.mimetype.startsWith('video/')
+          ? 'video'
+          : 'raw';
+      const publicId = `mtm-e2e/construction/${randomUUID()}`;
+      return Promise.resolve({
+        publicId,
+        resourceType,
+        secureUrl: `https://cloudinary.test/${publicId}`,
+      });
+    });
+    context = await createE2eApp({ cloudinary });
     app = context.app;
     data = context.data;
 
@@ -601,6 +621,169 @@ describeE2e('Parcours Construction J2.3 (e2e)', () => {
     // n'en fait pas partie.
     expect(fiche.body.journal).toHaveLength(1);
     expect(fiche.body.journal[0].observations).toContain('Élévation');
+  });
+
+  describe('photos et pièces du chantier', () => {
+    const JPEG = Buffer.from(LOGO_PAR_DEFAUT_BASE64, 'base64');
+
+    const envoyer = (
+      champs: Record<string, string>,
+      fichier: { contenu: Buffer; nom: string; type: string },
+    ) =>
+      request(app.getHttpServer())
+        .post(`/api/construction/chantiers/${chantierId}/documents`)
+        .set('Authorization', `Bearer ${jetonConducteur}`)
+        .field(champs)
+        .attach('file', fichier.contenu, {
+          filename: fichier.nom,
+          contentType: fichier.type,
+        });
+
+    const ficheClient = async () =>
+      (
+        await request(app.getHttpServer())
+          .get(`/api/construction/chantiers/client/chantiers/${chantierId}`)
+          .set('Authorization', `Bearer ${jetonClient}`)
+      ).body;
+
+    let journeePubliee = '';
+    let photoId = '';
+
+    it('rattache une photo à une journée, cachée au client tant qu’elle n’est pas publiée', async () => {
+      const journal = await request(app.getHttpServer())
+        .get(`/api/construction/chantiers/${chantierId}/journal`)
+        .set('Authorization', `Bearer ${jetonConducteur}`);
+      journeePubliee = (
+        journal.body.items as Array<{ id: string; visibleClient: boolean }>
+      ).find((entree) => entree.visibleClient)!.id;
+
+      const reponse = await envoyer(
+        { type: 'photo_chantier', entreeJournalId: journeePubliee },
+        { contenu: JPEG, nom: 'dalle.jpg', type: 'image/jpeg' },
+      );
+      expect(reponse.status).toBe(201);
+      expect(reponse.body).toMatchObject({
+        type: 'photo_chantier',
+        entreeJournalId: journeePubliee,
+        visibleClient: false,
+      });
+      photoId = reponse.body.id;
+
+      const fiche = await ficheClient();
+      expect(fiche.journal[0].documents).toHaveLength(0);
+    });
+
+    it('montre la photo au client une fois publiée, avec la journée', async () => {
+      const publication = await request(app.getHttpServer())
+        .patch(
+          `/api/construction/chantiers/${chantierId}/documents/${photoId}/visibilite`,
+        )
+        .set('Authorization', `Bearer ${jetonConducteur}`)
+        .send({ visibleClient: true });
+      expect(publication.status).toBe(200);
+
+      const fiche = await ficheClient();
+      expect(fiche.journal[0].documents).toHaveLength(1);
+      expect(fiche.journal[0].documents[0]).toMatchObject({
+        id: photoId,
+        resourceType: 'image',
+      });
+      // Une pièce de journée n'apparaît pas aussi dans les pièces générales.
+      expect(fiche.journal[0].documents[0].storageKey).toBeUndefined();
+    });
+
+    it('trace l’ajout de la pièce dans le journal d’audit', async () => {
+      const trace = await context.prisma.auditLog.findFirst({
+        where: { action: 'chantier.piece_ajoutee', entityId: photoId },
+      });
+      expect(trace).not.toBeNull();
+    });
+
+    it('ajoute un plan en PDF, sans l’afficher au client', async () => {
+      const reponse = await envoyer(
+        { type: 'plan', title: 'Plan de masse' },
+        {
+          contenu: Buffer.from('%PDF-1.4\n1 0 obj\n<<>>\nendobj\n%%EOF'),
+          nom: 'plan.pdf',
+          type: 'application/pdf',
+        },
+      );
+      expect(reponse.status).toBe(201);
+      expect(reponse.body).toMatchObject({
+        type: 'plan',
+        title: 'Plan de masse',
+        visibleClient: false,
+      });
+      const fiche = await ficheClient();
+      expect(
+        fiche.documents.some(
+          (d: { title: string }) => d.title === 'Plan de masse',
+        ),
+      ).toBe(false);
+    });
+
+    it('refuse une journée qui n’appartient pas au chantier', async () => {
+      const reponse = await envoyer(
+        {
+          type: 'photo_chantier',
+          entreeJournalId: '00000000-0000-4000-8000-000000000000',
+        },
+        { contenu: JPEG, nom: 'x.jpg', type: 'image/jpeg' },
+      );
+      expect(reponse.status).toBe(400);
+    });
+
+    it('refuse un type de pièce inconnu, un fichier dangereux et un faux JPEG', async () => {
+      expect(
+        (
+          await envoyer(
+            { type: 'inconnu' },
+            { contenu: JPEG, nom: 'x.jpg', type: 'image/jpeg' },
+          )
+        ).status,
+      ).toBe(400);
+      expect(
+        (
+          await envoyer(
+            { type: 'autre' },
+            {
+              contenu: Buffer.from('MZ binaire'),
+              nom: 'virus.exe',
+              type: 'application/x-msdownload',
+            },
+          )
+        ).status,
+      ).toBe(400);
+      expect(
+        (
+          await envoyer(
+            { type: 'photo_chantier' },
+            {
+              contenu: Buffer.from('pas une image'),
+              nom: 'x.jpg',
+              type: 'image/jpeg',
+            },
+          )
+        ).status,
+      ).toBe(400);
+    });
+
+    it('refuse l’envoi sans fichier', async () => {
+      const reponse = await request(app.getHttpServer())
+        .post(`/api/construction/chantiers/${chantierId}/documents`)
+        .set('Authorization', `Bearer ${jetonConducteur}`)
+        .field({ type: 'plan' });
+      expect(reponse.status).toBe(400);
+    });
+
+    it('refuse l’envoi à un compte sans droit de modification', async () => {
+      const reponse = await request(app.getHttpServer())
+        .post(`/api/construction/chantiers/${chantierId}/documents`)
+        .set('Authorization', `Bearer ${jetonClient}`)
+        .field({ type: 'plan' })
+        .attach('file', JPEG, { filename: 'x.jpg', contentType: 'image/jpeg' });
+      expect(reponse.status).toBe(403);
+    });
   });
 
   it('refuse à un autre client l’accès à ce chantier', async () => {

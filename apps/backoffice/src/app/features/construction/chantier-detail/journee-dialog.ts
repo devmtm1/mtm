@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -11,13 +11,20 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { LucideUpload, LucideX } from '@lucide/angular';
 import type { Observable } from 'rxjs';
 import type {
   EntreeJournal,
   EntreeJournalPayload,
   JalonChantier,
 } from '../../../core/models/chantier.model';
-import { METEOS, label } from '../chantier-status';
+import { METEOS, TYPES_MEDIA_ACCEPTES, label, problemeFichier, tailleLisible } from '../chantier-status';
+
+export interface JourneeDialogResult {
+  payload: EntreeJournalPayload;
+  /** Photos et vidéos à envoyer une fois la journée enregistrée. */
+  fichiers: File[];
+}
 
 export interface JourneeDialogData {
   jalons: JalonChantier[];
@@ -44,6 +51,8 @@ export interface JourneeDialogData {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    LucideUpload,
+    LucideX,
   ],
   template: `
     <h2 mat-dialog-title>{{ data.entree ? 'Corriger la journée' : 'Journée de chantier' }}</h2>
@@ -139,6 +148,31 @@ export interface JourneeDialogData {
         </div>
       </details>
 
+      <div class="journee-dialog__medias">
+        <label class="journee-dialog__upload">
+          <svg lucideUpload aria-hidden="true"></svg>
+          Ajouter des photos ou vidéos
+          <input type="file" multiple [accept]="accept" (change)="choisirMedias($event)" />
+        </label>
+        @if (fichiers().length) {
+          <ul class="journee-dialog__liste">
+            @for (fichier of fichiers(); track fichier.name + fichier.size) {
+              <li>
+                <span>{{ fichier.name }} · {{ taille(fichier.size) }}</span>
+                <button type="button" (click)="retirerMedia(fichier)" [attr.aria-label]="'Retirer ' + fichier.name">
+                  <svg lucideX aria-hidden="true"></svg>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+        @if (erreurs().length) {
+          <p class="journee-dialog__erreur" role="alert">{{ erreurs().join(' ') }}</p>
+        } @else if (!fichiers().length) {
+          <p class="journee-dialog__aide">Photos JPG, PNG, WebP ou vidéo MP4 — 10 Mo au maximum chacune.</p>
+        }
+      </div>
+
       <mat-checkbox formControlName="visibleClient" class="journee-dialog__check">
         Montrer cette journée au client dans son espace
       </mat-checkbox>
@@ -169,6 +203,67 @@ export interface JourneeDialogData {
     }
     .journee-dialog__row--three {
       grid-template-columns: repeat(3, 1fr);
+    }
+    .journee-dialog__medias {
+      display: grid;
+      gap: 6px;
+      margin: 2px 0 10px;
+    }
+    .journee-dialog__upload {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      justify-self: start;
+      padding: 7px 12px;
+      border: 1px solid var(--mtm-border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .journee-dialog__upload svg {
+      width: 16px;
+      height: 16px;
+    }
+    .journee-dialog__upload input {
+      display: none;
+    }
+    .journee-dialog__liste {
+      display: grid;
+      gap: 4px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      font-size: 0.82rem;
+    }
+    .journee-dialog__liste li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .journee-dialog__liste button {
+      display: inline-grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      cursor: pointer;
+    }
+    .journee-dialog__liste svg {
+      width: 14px;
+      height: 14px;
+    }
+    .journee-dialog__aide {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--mtm-text-muted);
+    }
+    .journee-dialog__erreur {
+      margin: 0;
+      font-size: 0.8rem;
+      color: #b91c1c;
     }
     .journee-dialog__check {
       display: block;
@@ -203,8 +298,12 @@ export interface JourneeDialogData {
 export class JourneeDialog {
   protected readonly data = inject<JourneeDialogData>(MAT_DIALOG_DATA);
   private readonly dialogRef =
-    inject<MatDialogRef<JourneeDialog, EntreeJournalPayload>>(MatDialogRef);
+    inject<MatDialogRef<JourneeDialog, JourneeDialogResult>>(MatDialogRef);
   private readonly formBuilder = inject(FormBuilder);
+
+  protected readonly accept = TYPES_MEDIA_ACCEPTES;
+  protected readonly fichiers = signal<File[]>([]);
+  protected readonly erreurs = signal<string[]>([]);
 
   protected readonly form = this.formBuilder.nonNullable.group({
     date: [
@@ -248,6 +347,28 @@ export class JourneeDialog {
     );
   }
 
+  protected taille(octets: number): string {
+    return tailleLisible(octets);
+  }
+
+  protected choisirMedias(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const choisis = Array.from(input.files ?? []);
+    input.value = '';
+    const erreurs: string[] = [];
+    const acceptes = choisis.filter((fichier) => {
+      const probleme = problemeFichier(fichier, true);
+      if (probleme) erreurs.push(probleme);
+      return !probleme;
+    });
+    this.erreurs.set(erreurs);
+    this.fichiers.update((liste) => [...liste, ...acceptes]);
+  }
+
+  protected retirerMedia(fichier: File): void {
+    this.fichiers.update((liste) => liste.filter((item) => item !== fichier));
+  }
+
   protected meteoLabel(code: string): string {
     return label(METEOS, code);
   }
@@ -259,7 +380,7 @@ export class JourneeDialog {
     }
     const valeur = this.form.getRawValue();
     const texte = (item: string) => (item.trim() ? item.trim() : undefined);
-    this.dialogRef.close({
+    const payload: EntreeJournalPayload = {
       date: valeur.date,
       jalonId: valeur.jalonId || null,
       effectif: valeur.effectif ?? undefined,
@@ -274,13 +395,14 @@ export class JourneeDialog {
       // même règle, on la reflète ici pour que la case cochée dise vrai.
       resolu: valeur.probleme.trim() ? valeur.resolu : true,
       visibleClient: valeur.visibleClient,
-    });
+    };
+    this.dialogRef.close({ payload, fichiers: this.fichiers() });
   }
 
   static open(
     dialog: MatDialog,
     data: JourneeDialogData,
-  ): Observable<EntreeJournalPayload | undefined> {
+  ): Observable<JourneeDialogResult | undefined> {
     return dialog
       .open(JourneeDialog, { width: '620px', data })
       .afterClosed();

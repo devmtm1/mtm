@@ -2,6 +2,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import cookieParser from 'cookie-parser';
 import { AppModule } from '../../src/app.module';
+import { createStockageDeTest } from './cloudinary-mock';
 import { CloudinaryService } from '../../src/common/storage/cloudinary.service';
 import { PrismaService } from '../../src/database/prisma.service';
 import { requestContextMiddleware } from '../../src/common/request-context/request-context';
@@ -23,8 +24,9 @@ export interface E2eContext {
  */
 export interface E2eOptions {
   /**
-   * Doublure du stockage Cloudinary, pour les parcours qui envoient des
-   * fichiers : sans elle, l'envoi partirait vers le vrai service.
+   * Doublure du stockage Cloudinary, pour les parcours qui veulent vérifier
+   * les appels. Sans elle, un stockage de test est utilisé : un test n'envoie
+   * jamais de fichier au vrai service.
    */
   cloudinary?: object;
 }
@@ -42,9 +44,10 @@ export async function createE2eApp(
   process.env.CORS_ORIGIN ??= 'http://localhost:4200';
 
   const builder = Test.createTestingModule({ imports: [AppModule] });
-  if (options.cloudinary) {
-    builder.overrideProvider(CloudinaryService).useValue(options.cloudinary);
-  }
+  // Jamais le vrai Cloudinary : sans doublure précisée, un stockage de test.
+  builder
+    .overrideProvider(CloudinaryService)
+    .useValue(options.cloudinary ?? createStockageDeTest());
   const moduleRef = await builder.compile();
 
   const app = moduleRef.createNestApplication();

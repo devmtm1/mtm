@@ -312,8 +312,14 @@
                   @if (entree.documents.length) {
                     <p class="journal__pieces">
                       @for (piece of entree.documents; track piece.id) {
-                        <a [href]="piece.secureUrl" target="_blank" rel="noopener">
+                        <a [href]="piece.secureUrl" target="_blank" rel="noopener" class="journal__piece">
+                          @if (piece.resourceType === 'image') {
+                            <img [src]="piece.secureUrl" [alt]="piece.title || 'Photo du chantier'" loading="lazy" />
+                          }
                           {{ piece.title || documentLabel(piece.type) }}
+                          @if (piece.visibleClient) {
+                            <span class="journal__publie">publiée</span>
+                          }
                         </a>
                       }
                     </p>
@@ -712,9 +718,14 @@
               </p>
             </div>
             @if (canModify()) {
-              <button mat-stroked-button type="button" (click)="genererRapport()">
-                <svg class="btn-icon" lucideFileText aria-hidden="true"></svg>Rapport
-              </button>
+              <div class="detail-section__actions">
+                <button mat-stroked-button type="button" (click)="ajouterPiece()">
+                  <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Ajouter
+                </button>
+                <button mat-stroked-button type="button" (click)="genererRapport()">
+                  <svg class="btn-icon" lucideFileText aria-hidden="true"></svg>Rapport
+                </button>
+              </div>
             }
           </div>
 

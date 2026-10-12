@@ -501,13 +501,21 @@ export class ConstructionController {
   @Post(':id/documents')
   @RequirePermissions('construction:modifier')
   @UseInterceptors(FileInterceptor('file'))
-  createDocument(
+  async createDocument(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: { type: string; title?: string; entreeJournalId?: string },
     @UploadedFile() file: Express.Multer.File,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.documents.addDocument(id, dto, file, user);
+    const document = await this.documents.addDocument(id, dto, file, user);
+    await this.audit.record({
+      userId: user.id,
+      action: 'chantier.piece_ajoutee',
+      entityType: 'DocumentChantier',
+      entityId: document.id,
+      newValue: { type: document.type, entreeJournalId: dto.entreeJournalId },
+    });
+    return document;
   }
 
   /** Rapport d'avancement remis au client : publié d'office. */

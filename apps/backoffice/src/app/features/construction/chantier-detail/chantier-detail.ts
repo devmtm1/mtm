@@ -7,6 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, forkJoin, map, of, switchMap } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -55,6 +56,7 @@ import {
 } from '../chantier-status';
 import { JalonDialog } from './jalon-dialog';
 import { JourneeDialog } from './journee-dialog';
+import { PieceDialog } from './piece-dialog';
 import { PrestataireDialog } from './prestataire-dialog';
 import { DepenseDialog } from './depense-dialog';
 import { LigneBudgetDialog } from './ligne-budget-dialog';
@@ -391,20 +393,82 @@ export class ChantierDetailPage implements OnInit {
       jalons: this.chantier()?.jalons ?? [],
       meteos: this.options().meteos ?? [],
       entree,
-    }).subscribe((payload) => {
-      if (!payload) return;
+    }).subscribe((resultat) => {
+      if (!resultat) return;
+      const { payload, fichiers } = resultat;
       const requete = entree
         ? this.api.updateEntree(this.chantierId, entree.id, payload)
         : this.api.createEntree(this.chantierId, payload);
       requete.subscribe({
-        next: () => {
-          this.notify.success(
-            entree ? 'Journée mise à jour' : 'Journée ajoutée au journal',
-          );
-          this.charger();
+        next: (journee) => {
+          const message = entree ? 'Journée mise à jour' : 'Journée ajoutée au journal';
+          if (fichiers.length === 0) {
+            this.notify.success(message);
+            this.charger();
+            return;
+          }
+          this.envoyerMedias(journee.id, fichiers, payload.visibleClient === true, message);
         },
         error: (error: unknown) => this.notify.error(error, 'Enregistrement impossible'),
       });
+    });
+  }
+
+  /**
+   * Envoie les photos et vidéos d’une journée une fois celle-ci enregistrée. Un
+   * fichier refusé ne fait pas perdre les autres ni la journée : on dit
+   * combien sont partis. Elles sont montrées au client avec la journée si la
+   * personne a le droit de publier.
+   */
+  private envoyerMedias(entreeId: string, fichiers: File[], publier: boolean, message: string): void {
+    const publiable = publier && this.canPublish();
+    forkJoin(
+      fichiers.map((fichier) =>
+        this.api.uploadDocument(this.chantierId, fichier, 'photo_chantier', undefined, entreeId).pipe(
+          switchMap((document) =>
+            publiable
+              ? this.api.setVisibiliteDocument(this.chantierId, document.id, true).pipe(map(() => true))
+              : of(true),
+          ),
+          catchError(() => of(false)),
+        ),
+      ),
+    ).subscribe((resultats) => {
+      const envoyes = resultats.filter(Boolean).length;
+      const echecs = resultats.length - envoyes;
+      if (echecs === 0) {
+        const pluriel = envoyes > 1 ? 's' : '';
+        const suite = publier && !publiable ? ' (non montré au client : droit de publication requis)' : '';
+        this.notify.success(`${message} — ${envoyes} fichier${pluriel} joint${pluriel}${suite}`);
+      } else {
+        this.notify.info(`${message}, mais ${echecs} fichier(s) sur ${resultats.length} n’ont pas pu être envoyés. Réessayez depuis la journée.`);
+      }
+      this.charger();
+    });
+  }
+
+  /** Ajoute une pièce au chantier : plan, permis, contrat, facture, photo… */
+  protected ajouterPiece(): void {
+    // Le rapport d’avancement se génère : on ne le téléverse pas à la main.
+    const types = (this.options().typesDocument ?? []).filter((type) => type !== 'rapport_avancement');
+    PieceDialog.open(this.dialog, { types, peutPublier: this.canPublish() }).subscribe((resultat) => {
+      if (!resultat) return;
+      this.api
+        .uploadDocument(this.chantierId, resultat.file, resultat.type, resultat.title)
+        .pipe(
+          switchMap((document) =>
+            resultat.visibleClient
+              ? this.api.setVisibiliteDocument(this.chantierId, document.id, true)
+              : of(document),
+          ),
+        )
+        .subscribe({
+          next: () => {
+            this.notify.success(resultat.visibleClient ? 'Pièce ajoutée et publiée au client' : 'Pièce ajoutée');
+            this.charger();
+          },
+          error: (error: unknown) => this.notify.error(error, 'Envoi impossible'),
+        });
     });
   }
 

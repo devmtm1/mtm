@@ -274,8 +274,20 @@ notification d'alerte de chantier (cloche et e-mail).
 | Un chantier réel : budget, jalons, journal avec photos | ☐ | |
 | Alerte de retard reçue par le responsable | ☐ | |
 
-**Anomalies et réserves** : vue de type Gantt non réalisée (« si possible »
-dans le cahier des charges).
+**Photos, vidéos et pièces** : depuis la saisie d’une journée (photos JPG, PNG, WebP ou vidéo MP4,
+10 Mo chacune) et depuis le bloc « Pièces » (plan, permis, devis, contrat, facture, procès-verbal…). Une
+pièce reste interne tant qu’elle n’est pas publiée ; publiée avec une journée partagée, elle apparaît dans
+l’espace client. Preuves : `test/construction.e2e-spec.ts` (photo rattachée à une journée, cachée puis
+publiée, plan PDF, journée d’un autre chantier refusée, types et fichiers dangereux refusés, droits, trace
+d’audit), `chantier-fichiers.spec.ts`.
+
+| Recette MTM | Fait | Date |
+| --- | --- | --- |
+| Photos ajoutées à une journée réelle, vues sur le téléphone du client après publication | ☐ | |
+| Ajout d’un plan et d’un permis, non visibles du client tant qu’ils ne sont pas publiés | ☐ | |
+
+**Anomalies et réserves** : aucune connue. La vue de type Gantt (« si possible » au cahier des charges)
+est réalisée dans la fiche du chantier.
 
 ---
 
