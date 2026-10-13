@@ -20,7 +20,7 @@
     cursor: pointer;
 
     &.is-actif {
-      border-bottom-color: var(--mtm-primary, #1a4974);
+      border-bottom-color: var(--mtm-primary);
       color: var(--mtm-text-dark);
       font-weight: 600;
     }
@@ -63,7 +63,7 @@
 
 .operation__rejet {
   font-size: 0.85rem;
-  color: #b91c1c;
+  color: var(--mtm-error);
 }
 
 .operation__piece {
@@ -81,7 +81,7 @@
   }
 
   .sortie {
-    color: #b91c1c;
+    color: var(--mtm-error);
   }
 }
 

@@ -1,3 +1,4 @@
+import { LucideCreditCard, LucideScale, LucideTrendingUp, LucideWallet } from '@lucide/angular';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,7 +11,13 @@ import {
 import { SessionService } from '../../core/services/session.service';
 import { donutLibelles, revenuDepensesChart } from '../../shared/charts/mtm-charts';
 import { NotificationService } from '../../shared/services/notification.service';
-import { fcfa, presets, repartitionRevenu, variationDite, type PeriodePreset } from './finances-utils';
+import {
+  fcfa,
+  presets,
+  repartitionRevenu,
+  variationDite,
+  type PeriodePreset,
+} from './finances-utils';
 
 /**
  * Pilotage financier (J3.1, section 18) : ce que MTM a encaissé, ce qu'elle a
@@ -23,7 +30,15 @@ import { fcfa, presets, repartitionRevenu, variationDite, type PeriodePreset } f
 @Component({
   selector: 'app-tableau-financier',
   standalone: true,
-  imports: [RouterLink, MatButtonModule, NgxEchartsDirective],
+  imports: [
+    LucideCreditCard,
+    LucideScale,
+    LucideTrendingUp,
+    LucideWallet,
+    RouterLink,
+    MatButtonModule,
+    NgxEchartsDirective,
+  ],
   templateUrl: './tableau-financier.html',
   styleUrl: './tableau-financier.scss',
 })

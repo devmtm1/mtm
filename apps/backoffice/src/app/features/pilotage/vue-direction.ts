@@ -1,10 +1,25 @@
+import { LucideReceipt, LucideScale, LucideTrendingUp, LucideWallet } from '@lucide/angular';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgxEchartsDirective } from 'ngx-echarts';
-import { PilotageApiService, type TableauDirection } from '../../core/services/api/pilotage-api.service';
-import { donutChart, donutLibelles, monthlyBarChart, revenuDepensesChart } from '../../shared/charts/mtm-charts';
+import {
+  PilotageApiService,
+  type TableauDirection,
+} from '../../core/services/api/pilotage-api.service';
+import {
+  donutChart,
+  donutLibelles,
+  monthlyBarChart,
+  revenuDepensesChart,
+} from '../../shared/charts/mtm-charts';
 import { NotificationService } from '../../shared/services/notification.service';
-import { fcfa, presets, repartitionRevenu, variationDite, type PeriodePreset } from '../finances/finances-utils';
+import {
+  fcfa,
+  presets,
+  repartitionRevenu,
+  variationDite,
+  type PeriodePreset,
+} from '../finances/finances-utils';
 
 /**
  * Tableau de bord direction (maquette B) : chiffre d'affaires et revenu, ventes,
@@ -14,7 +29,14 @@ import { fcfa, presets, repartitionRevenu, variationDite, type PeriodePreset } f
 @Component({
   selector: 'app-vue-direction',
   standalone: true,
-  imports: [RouterLink, NgxEchartsDirective],
+  imports: [
+    LucideReceipt,
+    LucideScale,
+    LucideTrendingUp,
+    LucideWallet,
+    RouterLink,
+    NgxEchartsDirective,
+  ],
   templateUrl: './vue-direction.html',
   styleUrl: './vue-pilotage.scss',
 })
@@ -34,7 +56,9 @@ export class VueDirection implements OnInit {
 
   protected readonly graphiqueVentes = computed(() => {
     const serie = this.donnees()?.tendances.ventes ?? [];
-    return serie.some((p) => p.valeur > 0) ? monthlyBarChart(serie, { unit: 'count', color: '#5EA8C7' }) : null;
+    return serie.some((p) => p.valeur > 0)
+      ? monthlyBarChart(serie, { unit: 'count', color: '#5EA8C7' })
+      : null;
   });
 
   protected readonly graphiqueRepartition = computed(() => {
@@ -52,12 +76,42 @@ export class VueDirection implements OnInit {
     const a = this.donnees()?.alertes;
     if (!a) return [];
     return [
-      { titre: 'Dossiers bloqués', n: a.dossiersBloques, lien: ['/dashboard'], aide: 'Voir la vue Équipe' },
-      { titre: 'Mandats à échéance (30 jours)', n: a.mandatsExpirant30Jours, lien: ['/mandats'], aide: 'À renouveler ou clore' },
-      { titre: 'Impayés de loyer prolongés', n: a.impayesProlonges, lien: ['/locatif/relances'], aide: 'Plus de 30 jours de retard' },
-      { titre: 'Chantiers en alerte', n: a.chantiersEnAlerte, lien: ['/construction/chantiers'], aide: 'En retard ou hors budget' },
-      { titre: 'Commissions à valider', n: a.commissionsAValider, lien: ['/ventes'], aide: 'Estimées, en attente' },
-      { titre: 'Saisies financières à valider', n: a.operationsAValider, lien: ['/finances/operations'], aide: 'Ne comptent pas encore' },
+      {
+        titre: 'Dossiers bloqués',
+        n: a.dossiersBloques,
+        lien: ['/dashboard'],
+        aide: 'Voir la vue Équipe',
+      },
+      {
+        titre: 'Mandats à échéance (30 jours)',
+        n: a.mandatsExpirant30Jours,
+        lien: ['/mandats'],
+        aide: 'À renouveler ou clore',
+      },
+      {
+        titre: 'Impayés de loyer prolongés',
+        n: a.impayesProlonges,
+        lien: ['/locatif/relances'],
+        aide: 'Plus de 30 jours de retard',
+      },
+      {
+        titre: 'Chantiers en alerte',
+        n: a.chantiersEnAlerte,
+        lien: ['/construction/chantiers'],
+        aide: 'En retard ou hors budget',
+      },
+      {
+        titre: 'Commissions à valider',
+        n: a.commissionsAValider,
+        lien: ['/ventes'],
+        aide: 'Estimées, en attente',
+      },
+      {
+        titre: 'Saisies financières à valider',
+        n: a.operationsAValider,
+        lien: ['/finances/operations'],
+        aide: 'Ne comptent pas encore',
+      },
     ];
   });
 
@@ -79,7 +133,9 @@ export class VueDirection implements OnInit {
   }
 
   protected pct(valeur: number | null): string {
-    return valeur === null ? '—' : `${valeur.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} %`;
+    return valeur === null
+      ? '—'
+      : `${valeur.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} %`;
   }
 
   protected barre(taux: number | null): number {

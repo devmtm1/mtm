@@ -31,7 +31,7 @@
   }
 
   &--danger:not(.is-vide) strong {
-    color: #b91c1c;
+    color: var(--mtm-error);
   }
 }
 
@@ -51,7 +51,7 @@
     cursor: pointer;
 
     &.is-actif {
-      border-bottom-color: var(--mtm-primary, #1a4974);
+      border-bottom-color: var(--mtm-primary);
       color: var(--mtm-text-dark);
       font-weight: 600;
     }
@@ -92,7 +92,7 @@
   background: var(--mtm-card-bg);
 
   &.is-retard {
-    border-left: 4px solid #dc2626;
+    border-left: 4px solid var(--mtm-error);
   }
 
   &.is-fermee {
@@ -131,8 +131,8 @@
 
   &:hover,
   &:focus-visible {
-    border-color: #15803d;
-    color: #15803d;
+    border-color: var(--mtm-success);
+    color: var(--mtm-success);
   }
 
   &--vide {
@@ -163,7 +163,7 @@
 }
 
 .is-retard-texte {
-  color: #b91c1c;
+  color: var(--mtm-error);
   font-weight: 600;
 }
 

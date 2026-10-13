@@ -57,8 +57,8 @@
     cursor: pointer;
 
     &.is-actif {
-      background: var(--mtm-primary, #1a4974);
-      color: #fff;
+      background: var(--mtm-primary);
+      color: var(--mat-sys-on-primary);
     }
   }
 }
@@ -110,12 +110,12 @@
   }
 
   &--aujourdhui .case__numero {
-    background: var(--mtm-primary, #1a4974);
-    color: #fff;
+    background: var(--mtm-primary);
+    color: var(--mat-sys-on-primary);
   }
 
   &--choisie {
-    outline: 2px solid var(--mtm-primary, #1a4974);
+    outline: 2px solid var(--mtm-primary);
     outline-offset: -2px;
   }
 }
@@ -152,7 +152,7 @@
 
   &:hover,
   &:focus-visible {
-    background: rgba(26, 73, 116, 0.1);
+    background: var(--mtm-primary-subtle);
   }
 }
 
@@ -207,7 +207,7 @@
   }
 
   &--aujourdhui h3 {
-    color: var(--mtm-primary, #1a4974);
+    color: var(--mtm-primary);
   }
 }
 
@@ -227,7 +227,7 @@
 
   &:hover,
   &:focus-visible {
-    background: rgba(26, 73, 116, 0.08);
+    background: var(--mtm-primary-subtle);
   }
 }
 

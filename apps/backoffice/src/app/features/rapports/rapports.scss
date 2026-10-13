@@ -28,8 +28,8 @@
   }
 
   &.is-actif {
-    border-color: var(--mtm-primary, #1a4974);
-    box-shadow: 0 0 0 1px var(--mtm-primary, #1a4974) inset;
+    border-color: var(--mtm-primary);
+    box-shadow: 0 0 0 1px var(--mtm-primary) inset;
   }
 }
 
@@ -111,43 +111,6 @@
 .section h3 {
   margin: 0 0 10px;
   font-size: 1rem;
-}
-
-.tableau-scroll {
-  overflow-x: auto;
-}
-
-.tableau {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.88rem;
-
-  th,
-  td {
-    padding: 9px 10px;
-    border-bottom: 1px solid var(--mtm-border);
-    text-align: left;
-    vertical-align: top;
-  }
-
-  thead th {
-    font-size: 0.76rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--mtm-text-muted);
-    white-space: nowrap;
-  }
-
-  tfoot td {
-    border-bottom: 0;
-    font-weight: 700;
-  }
-
-  .num {
-    text-align: right;
-    white-space: nowrap;
-    font-variant-numeric: tabular-nums;
-  }
 }
 
 .vide,

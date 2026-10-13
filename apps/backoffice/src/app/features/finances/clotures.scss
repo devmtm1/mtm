@@ -48,7 +48,7 @@
   }
 
   .negatif {
-    color: #b91c1c;
+    color: var(--mtm-error);
   }
 
   @media (max-width: 760px) {

@@ -1,6 +1,10 @@
+import { LucideBellRing, LucideOctagonAlert, LucideReceipt, LucideTarget } from '@lucide/angular';
 import { Component, OnInit, inject, output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { PilotageApiService, type TableauManager } from '../../core/services/api/pilotage-api.service';
+import {
+  PilotageApiService,
+  type TableauManager,
+} from '../../core/services/api/pilotage-api.service';
 import { NotificationService } from '../../shared/services/notification.service';
 import { fcfa, presets, type PeriodePreset } from '../finances/finances-utils';
 
@@ -12,7 +16,7 @@ import { fcfa, presets, type PeriodePreset } from '../finances/finances-utils';
 @Component({
   selector: 'app-vue-manager',
   standalone: true,
-  imports: [RouterLink],
+  imports: [LucideBellRing, LucideOctagonAlert, LucideReceipt, LucideTarget, RouterLink],
   templateUrl: './vue-manager.html',
   styleUrl: './vue-pilotage.scss',
 })

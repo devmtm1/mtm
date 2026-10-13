@@ -1,7 +1,11 @@
+import { LucideBellRing, LucideListChecks, LucideReceipt, LucideUserSearch } from '@lucide/angular';
 import { Component, OnInit, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgxEchartsDirective } from 'ngx-echarts';
-import { PilotageApiService, type TableauCommercial } from '../../core/services/api/pilotage-api.service';
+import {
+  PilotageApiService,
+  type TableauCommercial,
+} from '../../core/services/api/pilotage-api.service';
 import { donutChart } from '../../shared/charts/mtm-charts';
 import { NotificationService } from '../../shared/services/notification.service';
 import { fcfa } from '../finances/finances-utils';
@@ -14,7 +18,14 @@ import { fcfa } from '../finances/finances-utils';
 @Component({
   selector: 'app-vue-commercial',
   standalone: true,
-  imports: [RouterLink, NgxEchartsDirective],
+  imports: [
+    LucideBellRing,
+    LucideListChecks,
+    LucideReceipt,
+    LucideUserSearch,
+    RouterLink,
+    NgxEchartsDirective,
+  ],
   templateUrl: './vue-commercial.html',
   styleUrl: './vue-pilotage.scss',
 })
@@ -56,7 +67,13 @@ export class VueCommercial implements OnInit {
   }
 
   protected jour(valeur: string | null): string {
-    return valeur ? new Date(valeur).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }) : '';
+    return valeur
+      ? new Date(valeur).toLocaleDateString('fr-FR', {
+          weekday: 'short',
+          day: 'numeric',
+          month: 'short',
+        })
+      : '';
   }
 
   protected heure(valeur: string): string {

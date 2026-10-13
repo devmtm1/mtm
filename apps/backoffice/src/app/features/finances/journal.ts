@@ -1,3 +1,9 @@
+import {
+  LucideCreditCard,
+  LucideListChecks,
+  LucideTrendingUp,
+  LucideWallet,
+} from '@lucide/angular';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -21,7 +27,18 @@ import { ACTIVITES, NATURES, fcfa, libelleActivite, presets } from './finances-u
 @Component({
   selector: 'app-journal-financier',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule],
+  imports: [
+    LucideCreditCard,
+    LucideListChecks,
+    LucideTrendingUp,
+    LucideWallet,
+    ReactiveFormsModule,
+    RouterLink,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+  ],
   templateUrl: './journal.html',
   styleUrl: './journal.scss',
 })

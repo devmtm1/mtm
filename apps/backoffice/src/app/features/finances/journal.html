@@ -4,12 +4,14 @@
       <p class="eyebrow">Finances</p>
       <h1 class="page-header__title">Journal financier</h1>
       <p class="page-header__subtitle">
-        Chaque mouvement d’argent des ventes, de la gestion locative, des démarches et des chantiers, repris tel quel,
-        avec les saisies validées. Rien n’est ressaisi.
+        Chaque mouvement d’argent des ventes, de la gestion locative, des démarches et des
+        chantiers, repris tel quel, avec les saisies validées. Rien n’est ressaisi.
       </p>
     </div>
     @if (peutExporter) {
-      <button mat-flat-button color="primary" type="button" (click)="exporter()">Exporter pour la comptabilité</button>
+      <button mat-flat-button color="primary" type="button" (click)="exporter()">
+        Exporter pour la comptabilité
+      </button>
     }
   </header>
 
@@ -24,7 +26,10 @@
     </mat-form-field>
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
       <mat-label>Raccourci</mat-label>
-      <mat-select (selectionChange)="appliquerPreset($event.value)" placeholder="Choisir une période">
+      <mat-select
+        (selectionChange)="appliquerPreset($event.value)"
+        placeholder="Choisir une période"
+      >
         @for (p of periodes; track p.code) {
           <mat-option [value]="p.code">{{ p.label }}</mat-option>
         }
@@ -54,11 +59,35 @@
   </section>
 
   @if (journal(); as j) {
-    <section class="totaux" aria-label="Totaux de la sélection">
-      <div><span>Entrées</span><strong>{{ fcfa(j.totaux.encaissements) }}</strong></div>
-      <div><span>Dont revenu MTM</span><strong>{{ fcfa(j.totaux.revenu) }}</strong></div>
-      <div><span>Sorties</span><strong>{{ fcfa(j.totaux.depenses) }}</strong></div>
-      <div><span>Mouvements</span><strong>{{ j.total }}</strong></div>
+    <section class="kpi-row" aria-label="Totaux de la sélection">
+      <div class="kpi">
+        <span class="kpi__icon"><svg lucideWallet aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ fcfa(j.totaux.encaissements) }}</strong>
+          <span>Entrées</span>
+        </span>
+      </div>
+      <div class="kpi kpi--primary">
+        <span class="kpi__icon"><svg lucideTrendingUp aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ fcfa(j.totaux.revenu) }}</strong>
+          <span>Dont revenu MTM</span>
+        </span>
+      </div>
+      <div class="kpi kpi--muted">
+        <span class="kpi__icon"><svg lucideCreditCard aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ fcfa(j.totaux.depenses) }}</strong>
+          <span>Sorties</span>
+        </span>
+      </div>
+      <div class="kpi kpi--muted">
+        <span class="kpi__icon"><svg lucideListChecks aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ j.total }}</strong>
+          <span>Mouvements</span>
+        </span>
+      </div>
     </section>
   }
 
@@ -73,17 +102,17 @@
         </div>
       </section>
     } @else {
-      <section class="page-card tableau-scroll" [class.is-chargement]="loading()">
-        <table class="tableau">
+      <section class="page-card table-scroll" [class.is-chargement]="loading()">
+        <table class="data-table">
           <thead>
             <tr>
               <th scope="col">Date</th>
               <th scope="col">Libellé</th>
               <th scope="col">Activité</th>
               <th scope="col">Tiers</th>
-              <th scope="col" class="num">Entrée</th>
-              <th scope="col" class="num">Sortie</th>
-              <th scope="col" class="num">Revenu MTM</th>
+              <th scope="col" class="is-right">Entrée</th>
+              <th scope="col" class="is-right">Sortie</th>
+              <th scope="col" class="is-right">Revenu MTM</th>
             </tr>
           </thead>
           <tbody>
@@ -96,13 +125,20 @@
                   } @else {
                     {{ ligne.libelle }}
                   }
-                  <small>{{ nature(ligne.nature) }}{{ ligne.reference ? ' · ' + ligne.reference : '' }}</small>
+                  <small
+                    >{{ nature(ligne.nature)
+                    }}{{ ligne.reference ? ' · ' + ligne.reference : '' }}</small
+                  >
                 </td>
                 <td>{{ libelleActivite(ligne.activite) }}</td>
                 <td>{{ ligne.tiers }}</td>
-                <td class="num">{{ ligne.sens === 'entree' ? fcfa(ligne.montant) : '' }}</td>
-                <td class="num sortie">{{ ligne.sens === 'sortie' ? fcfa(ligne.montant) : '' }}</td>
-                <td class="num">{{ ligne.sens === 'entree' && ligne.revenu ? fcfa(ligne.revenu) : '' }}</td>
+                <td class="is-right">{{ ligne.sens === 'entree' ? fcfa(ligne.montant) : '' }}</td>
+                <td class="is-right sortie">
+                  {{ ligne.sens === 'sortie' ? fcfa(ligne.montant) : '' }}
+                </td>
+                <td class="is-right">
+                  {{ ligne.sens === 'entree' && ligne.revenu ? fcfa(ligne.revenu) : '' }}
+                </td>
               </tr>
             }
           </tbody>
@@ -110,9 +146,23 @@
       </section>
       @if (pages() > 1) {
         <nav class="pagination" aria-label="Pages du journal">
-          <button mat-stroked-button type="button" (click)="aller(page() - 1)" [disabled]="page() <= 1">Précédentes</button>
+          <button
+            mat-stroked-button
+            type="button"
+            (click)="aller(page() - 1)"
+            [disabled]="page() <= 1"
+          >
+            Précédentes
+          </button>
           <span>Page {{ page() }} sur {{ pages() }}</span>
-          <button mat-stroked-button type="button" (click)="aller(page() + 1)" [disabled]="page() >= pages()">Suivantes</button>
+          <button
+            mat-stroked-button
+            type="button"
+            (click)="aller(page() + 1)"
+            [disabled]="page() >= pages()"
+          >
+            Suivantes
+          </button>
         </nav>
       }
     }

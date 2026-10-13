@@ -1,7 +1,11 @@
 <div class="vue">
   <nav class="periodes" aria-label="Période affichée">
     @for (periode of periodes; track periode.code) {
-      <button type="button" [class.is-actif]="choix().code === periode.code" (click)="choisir(periode)">
+      <button
+        type="button"
+        [class.is-actif]="choix().code === periode.code"
+        (click)="choisir(periode)"
+      >
         {{ periode.label }}
       </button>
     }
@@ -10,26 +14,41 @@
   @if (loading() && !donnees()) {
     <div class="skeleton" style="height: 300px"></div>
   } @else if (donnees(); as d) {
-    <section class="kpis" aria-label="Activité de l’équipe">
-      <article class="kpi-pil">
-        <span class="kpi-pil__titre">Ventes soldées</span>
-        <strong>{{ d.totaux.ventesSoldees }}</strong>
-        <span class="kpi-pil__aide">{{ fcfa(d.totaux.chiffreAffaires) }}</span>
+    <section class="kpi-row" aria-label="Activité de l’équipe">
+      <article class="kpi">
+        <span class="kpi__icon"><svg lucideReceipt aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ d.totaux.ventesSoldees }}</strong>
+          <span>Ventes soldées</span>
+          <small>{{ fcfa(d.totaux.chiffreAffaires) }}</small>
+        </span>
       </article>
-      <article class="kpi-pil">
-        <span class="kpi-pil__titre">Objectif de ventes</span>
-        <strong>{{ tauxDit(d.objectifs.tauxVentes) }}</strong>
-        <span class="kpi-pil__aide">{{ d.objectifs.realiseVentes }} sur {{ d.objectifs.cibleVentes }} · {{ d.objectifs.avecObjectif }} commercial(aux) avec objectif</span>
+      <article class="kpi">
+        <span class="kpi__icon"><svg lucideTarget aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ tauxDit(d.objectifs.tauxVentes) }}</strong>
+          <span>Objectif de ventes</span>
+          <small
+            >{{ d.objectifs.realiseVentes }} sur {{ d.objectifs.cibleVentes }} ·
+            {{ d.objectifs.avecObjectif }} commercial(aux) avec objectif</small
+          >
+        </span>
       </article>
-      <article class="kpi-pil" [class.kpi-pil--alerte]="d.totaux.relancesEnRetard > 0">
-        <span class="kpi-pil__titre">Relances en retard</span>
-        <strong>{{ d.totaux.relancesEnRetard }}</strong>
-        <span class="kpi-pil__aide">{{ d.totaux.tachesEnRetard }} tâche(s) en retard</span>
+      <article class="kpi" [class.kpi--attention]="d.totaux.relancesEnRetard > 0">
+        <span class="kpi__icon"><svg lucideBellRing aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ d.totaux.relancesEnRetard }}</strong>
+          <span>Relances en retard</span>
+          <small>{{ d.totaux.tachesEnRetard }} tâche(s) en retard</small>
+        </span>
       </article>
-      <article class="kpi-pil" [class.kpi-pil--alerte]="d.bloques.total > 0">
-        <span class="kpi-pil__titre">Dossiers bloqués</span>
-        <strong>{{ d.bloques.total }}</strong>
-        <span class="kpi-pil__aide">à débloquer</span>
+      <article class="kpi" [class.kpi--attention]="d.bloques.total > 0">
+        <span class="kpi__icon"><svg lucideOctagonAlert aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ d.bloques.total }}</strong>
+          <span>Dossiers bloqués</span>
+          <small>à débloquer</small>
+        </span>
       </article>
     </section>
 
@@ -38,41 +57,53 @@
       @if (d.equipe.length === 0) {
         <p class="vide">Aucun commercial actif.</p>
       } @else {
-        <div class="tableau-scroll">
-          <table class="tableau">
+        <div class="table-scroll">
+          <table class="data-table">
             <thead>
               <tr>
                 <th scope="col">Commercial</th>
-                <th scope="col" class="num">Prospects actifs</th>
-                <th scope="col" class="num">Relances en retard</th>
-                <th scope="col" class="num">Visites</th>
-                <th scope="col" class="num">Ventes</th>
-                <th scope="col" class="num">CA</th>
-                <th scope="col" class="num">Commissions</th>
-                <th scope="col" class="num">Tâches en retard</th>
+                <th scope="col" class="is-right">Prospects actifs</th>
+                <th scope="col" class="is-right">Relances en retard</th>
+                <th scope="col" class="is-right">Visites</th>
+                <th scope="col" class="is-right">Ventes</th>
+                <th scope="col" class="is-right">CA</th>
+                <th scope="col" class="is-right">Commissions</th>
+                <th scope="col" class="is-right">Tâches en retard</th>
                 <th scope="col">Objectif de ventes</th>
               </tr>
             </thead>
             <tbody>
               @for (ligne of d.equipe; track ligne.id) {
                 <tr>
-                  <th scope="row">
-                    <button type="button" class="lien" (click)="ouvrir.emit(ligne.id)">{{ ligne.nom }}</button>
-                  </th>
-                  <td class="num">{{ ligne.prospectsActifs }}</td>
-                  <td class="num" [class.negatif]="ligne.relancesEnRetard > 0">{{ ligne.relancesEnRetard }}</td>
-                  <td class="num">{{ ligne.visitesEffectuees }}</td>
-                  <td class="num">{{ ligne.ventesSoldees }}</td>
-                  <td class="num">{{ fcfa(ligne.chiffreAffaires) }}</td>
-                  <td class="num">{{ fcfa(ligne.commissionsEstimees) }}</td>
-                  <td class="num" [class.negatif]="ligne.tachesEnRetard > 0">{{ ligne.tachesEnRetard }}</td>
+                  <td>
+                    <button type="button" class="lien" (click)="ouvrir.emit(ligne.id)">
+                      {{ ligne.nom }}
+                    </button>
+                  </td>
+                  <td class="is-right">{{ ligne.prospectsActifs }}</td>
+                  <td class="is-right" [class.negatif]="ligne.relancesEnRetard > 0">
+                    {{ ligne.relancesEnRetard }}
+                  </td>
+                  <td class="is-right">{{ ligne.visitesEffectuees }}</td>
+                  <td class="is-right">{{ ligne.ventesSoldees }}</td>
+                  <td class="is-right">{{ fcfa(ligne.chiffreAffaires) }}</td>
+                  <td class="is-right">{{ fcfa(ligne.commissionsEstimees) }}</td>
+                  <td class="is-right" [class.negatif]="ligne.tachesEnRetard > 0">
+                    {{ ligne.tachesEnRetard }}
+                  </td>
                   <td>
                     @if (ligne.objectif?.cibleVentes) {
                       <div class="objectif__ligne">
                         <span>{{ ligne.realise.ventes }} / {{ ligne.objectif?.cibleVentes }}</span>
                         <strong>{{ tauxDit(ligne.taux.ventes) }}</strong>
                       </div>
-                      <div class="barre" role="progressbar" [attr.aria-valuenow]="ligne.taux.ventes ?? 0" aria-valuemin="0" aria-valuemax="100">
+                      <div
+                        class="barre"
+                        role="progressbar"
+                        [attr.aria-valuenow]="ligne.taux.ventes ?? 0"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                      >
                         <span [style.width.%]="barre(ligne.taux.ventes)"></span>
                       </div>
                     } @else {
@@ -85,8 +116,9 @@
           </table>
         </div>
         <p class="note">
-          Les ventes sont celles soldées sur la période ; l’objectif compte les dossiers engagés (réservés, en paiement ou soldés) du mois.
-          Cliquer sur un nom ouvre le tableau de ce commercial.
+          Les ventes sont celles soldées sur la période ; l’objectif compte les dossiers engagés
+          (réservés, en paiement ou soldés) du mois. Cliquer sur un nom ouvre le tableau de ce
+          commercial.
         </p>
       }
     </section>
@@ -94,7 +126,9 @@
     <section aria-label="Dossiers bloqués">
       <h2>Dossiers bloqués</h2>
       @if (d.bloques.total === 0) {
-        <section class="page-card"><p class="vide">Rien n’est bloqué : tous les dossiers ouverts ont bougé récemment.</p></section>
+        <section class="page-card">
+          <p class="vide">Rien n’est bloqué : tous les dossiers ouverts ont bougé récemment.</p>
+        </section>
       } @else {
         <div class="groupes">
           @for (groupe of d.bloques.groupes; track groupe.type) {
@@ -109,7 +143,10 @@
                   @for (dossier of groupe.dossiers; track dossier.id) {
                     <li class="est-retard">
                       <a [routerLink]="route(dossier.lien)">{{ dossier.libelle }}</a>
-                      <span>{{ dossier.detail }} · {{ jours(dossier.jours) }}{{ dossier.responsable ? ' · ' + dossier.responsable : '' }}</span>
+                      <span
+                        >{{ dossier.detail }} · {{ jours(dossier.jours)
+                        }}{{ dossier.responsable ? ' · ' + dossier.responsable : '' }}</span
+                      >
                     </li>
                   }
                 </ul>
@@ -120,7 +157,9 @@
             }
           }
         </div>
-        <p class="note">Les délais se règlent dans Paramètres (<code>pilotage.seuilsBlocage</code>).</p>
+        <p class="note">
+          Les délais se règlent dans Paramètres (<code>pilotage.seuilsBlocage</code>).
+        </p>
       }
     </section>
   }

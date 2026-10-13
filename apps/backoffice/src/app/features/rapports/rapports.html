@@ -4,15 +4,20 @@
       <p class="eyebrow">Pilotage</p>
       <h1 class="page-header__title">Rapports</h1>
       <p class="page-header__subtitle">
-        Ventes, zones, commerciaux, terrains, loyers, rentabilité et démarches. Chaque rapport se lit ici, puis s’exporte en
-        PDF ou en Excel avec l’en-tête de MTM.
+        Ventes, zones, commerciaux, terrains, loyers, rentabilité et démarches. Chaque rapport se
+        lit ici, puis s’exporte en PDF ou en Excel avec l’en-tête de MTM.
       </p>
     </div>
   </header>
 
   <section class="catalogue" aria-label="Choix du rapport">
     @for (rapport of catalogue(); track rapport.code) {
-      <button type="button" class="carte" [class.is-actif]="choisi()?.code === rapport.code" (click)="choisir(rapport)">
+      <button
+        type="button"
+        class="carte"
+        [class.is-actif]="choisi()?.code === rapport.code"
+        (click)="choisir(rapport)"
+      >
         <strong>{{ rapport.titre }}</strong>
         <span>{{ rapport.description }}</span>
       </button>
@@ -32,7 +37,10 @@
         </mat-form-field>
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Raccourci</mat-label>
-          <mat-select (selectionChange)="appliquerPreset($event.value)" placeholder="Choisir une période">
+          <mat-select
+            (selectionChange)="appliquerPreset($event.value)"
+            placeholder="Choisir une période"
+          >
             @for (p of periodes; track p.code) {
               <mat-option [value]="p.code">{{ p.label }}</mat-option>
             }
@@ -46,9 +54,17 @@
         </mat-form-field>
       }
       <div class="filtres__actions">
-        <button mat-stroked-button type="button" (click)="generer()" [disabled]="loading()">Actualiser</button>
+        <button mat-stroked-button type="button" (click)="generer()" [disabled]="loading()">
+          Actualiser
+        </button>
         @if (peutExporter) {
-          <button mat-flat-button color="primary" type="button" (click)="exporter()" [disabled]="loading() || !apercu()">
+          <button
+            mat-flat-button
+            color="primary"
+            type="button"
+            (click)="exporter()"
+            [disabled]="loading() || !apercu()"
+          >
             Exporter (PDF ou Excel)
           </button>
         }
@@ -81,12 +97,12 @@
             @if (section.lignes.length === 0) {
               <p class="vide">Aucune donnée sur cette période.</p>
             } @else {
-              <div class="tableau-scroll">
-                <table class="tableau">
+              <div class="table-scroll">
+                <table class="data-table">
                   <thead>
                     <tr>
                       @for (c of section.colonnes; track c.cle) {
-                        <th scope="col" [class.num]="aligne(c.type)">{{ c.libelle }}</th>
+                        <th scope="col" [class.is-right]="aligne(c.type)">{{ c.libelle }}</th>
                       }
                     </tr>
                   </thead>
@@ -94,7 +110,9 @@
                     @for (ligne of section.lignes; track $index) {
                       <tr>
                         @for (c of section.colonnes; track c.cle) {
-                          <td [class.num]="aligne(c.type)">{{ formater(ligne[c.cle], c.type) }}</td>
+                          <td [class.is-right]="aligne(c.type)">
+                            {{ formater(ligne[c.cle], c.type) }}
+                          </td>
                         }
                       </tr>
                     }
@@ -103,7 +121,9 @@
                     <tfoot>
                       <tr>
                         @for (c of section.colonnes; track c.cle) {
-                          <td [class.num]="aligne(c.type)">{{ formater(section.total[c.cle], c.type) }}</td>
+                          <td [class.is-right]="aligne(c.type)">
+                            {{ formater(section.total[c.cle], c.type) }}
+                          </td>
                         }
                       </tr>
                     </tfoot>
@@ -122,7 +142,10 @@
     <section class="page-card">
       <div class="empty-state">
         <h3>Choisissez un rapport</h3>
-        <p>Sélectionnez-en un ci-dessus : il s’affiche tout de suite, et s’exporte en PDF ou en Excel.</p>
+        <p>
+          Sélectionnez-en un ci-dessus : il s’affiche tout de suite, et s’exporte en PDF ou en
+          Excel.
+        </p>
       </div>
     </section>
   }

@@ -1940,6 +1940,35 @@ ag-grid-angular {
   }
 }
 
+/* Ligne de total d'un tableau, valeur négative, tendance d'un chiffre clé. */
+.data-table tfoot {
+  th,
+  td {
+    border-top: 1px solid var(--mtm-border);
+    border-bottom: 0;
+    font-weight: 700;
+  }
+}
+
+.data-table .is-right,
+.kpi__body strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.negatif {
+  color: var(--mtm-error);
+}
+
+.kpi__body small.tendance {
+  &--hausse {
+    color: var(--mtm-success);
+  }
+
+  &--baisse {
+    color: var(--mtm-error);
+  }
+}
+
 /* ---------------------------------------------------------------------------
    Formulaires : blocs titrés avec explication, grille de champs, aperçu
    latéral, pied d'action collant. Identiques dans tous les modules.
