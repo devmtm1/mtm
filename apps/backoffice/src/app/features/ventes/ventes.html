@@ -5,7 +5,7 @@
       <h1 class="page-header__title">Ventes</h1>
       <p class="page-header__subtitle">
         Un dossier par terrain et par client : réservation, paiements, documents et commissions.
-        Les dossiers s’ouvrent depuis la fiche d’un prospect ou depuis une demande du site.
+        Un dossier s’ouvre avec « Nouveau dossier » (le client, puis le bien), depuis la fiche d’un prospect ou depuis une demande du site.
         @if (!seesAll) {
           Vous voyez les dossiers dont vous êtes responsable.
         }
@@ -24,7 +24,7 @@
         </button>
       }
       @if (canCreate) {
-        <button mat-flat-button color="primary" type="button" (click)="goToProspects()" matTooltip="Un dossier s’ouvre depuis la fiche du prospect concerné">
+        <button mat-flat-button color="primary" type="button" (click)="newDossier()" matTooltip="Choisir le client, puis le bien">
           <svg class="btn-icon" lucideReceipt aria-hidden="true"></svg>Nouveau dossier
         </button>
       }
@@ -188,7 +188,7 @@
             réservation reçue du site public.
           </p>
           @if (canCreate) {
-            <button mat-flat-button color="primary" type="button" (click)="goToProspects()">Ouvrir les prospects</button>
+            <button mat-flat-button color="primary" type="button" (click)="newDossier()">Nouveau dossier</button>
           }
         }
       </div>

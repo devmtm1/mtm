@@ -124,7 +124,7 @@ export class Prospects implements OnInit {
       // même personne, c'était une de trop.
       headerName: 'Prospect',
       flex: 1.5,
-      minWidth: 180,
+      minWidth: 148,
       sortable: true,
       valueGetter: (p) => (p.data ? prospectName(p.data) : ''),
       cellRenderer: (p: ICellRendererParams<ProspectListItem>) =>
@@ -138,7 +138,7 @@ export class Prospects implements OnInit {
       // étaient tronqués ensemble.
       headerName: 'Contact',
       flex: 1.3,
-      minWidth: 170,
+      minWidth: 139,
       valueGetter: (p) => p.data?.telephone ?? p.data?.email ?? '—',
       cellRenderer: (p: ICellRendererParams<ProspectListItem>) =>
         this.cellulePrincipale(
@@ -150,7 +150,7 @@ export class Prospects implements OnInit {
       headerName: 'Intérêt',
       field: 'niveauInteret',
       width: 130,
-      minWidth: 110,
+      minWidth: 90,
       sortable: true,
       cellRenderer: (p: ICellRendererParams<ProspectListItem>) => this.interestPill(p.value as string | null),
     },
@@ -158,14 +158,14 @@ export class Prospects implements OnInit {
       field: 'statutPipeline',
       headerName: 'Étape',
       flex: 1,
-      minWidth: 140,
+      minWidth: 115,
       sortable: true,
       cellRenderer: (p: ICellRendererParams<ProspectListItem>) => this.pill(p.value as string),
     },
     {
       headerName: 'Budget',
       flex: 1,
-      minWidth: 130,
+      minWidth: 107,
       type: 'rightAligned',
       valueGetter: (p) => p.data?.budgetMax ?? null,
       valueFormatter: (p) => (p.value == null ? '—' : `jusqu’à ${this.money.transform(p.value as number)}`),
@@ -173,7 +173,7 @@ export class Prospects implements OnInit {
     {
       headerName: 'Prochaine action',
       flex: 1.4,
-      minWidth: 170,
+      minWidth: 139,
       sortable: true,
       field: 'prochaineRelanceLe',
       cellRenderer: (p: ICellRendererParams<ProspectListItem>) => this.nextActionCell(p),
@@ -181,7 +181,7 @@ export class Prospects implements OnInit {
     {
       headerName: 'Commercial',
       flex: 1,
-      minWidth: 130,
+      minWidth: 107,
       valueGetter: (p) =>
         p.data?.commercialResponsable
           ? `${p.data.commercialResponsable.firstName} ${p.data.commercialResponsable.lastName}`
@@ -192,7 +192,7 @@ export class Prospects implements OnInit {
       headerName: '',
       colId: 'actions',
       width: 72,
-      minWidth: 72,
+      minWidth: 59,
       pinned: 'right',
       sortable: false,
       resizable: false,

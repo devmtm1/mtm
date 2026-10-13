@@ -27,7 +27,7 @@ Un dossier encore ouvert dont plus rien ne bouge depuis un délai. Un « mouveme
 | Prospect actif | aucune activité ni visite, ni modification | 14 jours |
 | Tâche | échéance dépassée de plus de… | 3 jours |
 
-Réglage : paramètre `pilotage.seuilsBlocage` (page Paramètres), par exemple `{"vente":15,"mission":10,"chantier":7,"prospect":14,"tache":3}`. Les nombres de jours doivent être entiers, de 1 à 365 ; une clé absente garde son défaut.
+Réglage : **Administration › Pilotage et rapports** (cinq champs, 1 à 365 jours) ; la valeur est conservée dans le paramètre `pilotage.seuilsBlocage`, par exemple `{"vente":15,"mission":10,"chantier":7,"prospect":14,"tache":3}`. Les nombres de jours doivent être entiers, de 1 à 365 ; une clé absente garde son défaut.
 
 ## Rapports (menu Rapports)
 
@@ -56,7 +56,7 @@ Permission `rapports:exporter` (direction, manager, comptabilité). Le motif est
 
 Chaque matin à 7 h (heure UTC, soit Dakar), si le jour correspond, les rapports choisis sont envoyés en pièces jointes (PDF et/ou Excel) aux destinataires, pour la **dernière période complète** : la semaine écoulée (lundi→dimanche) tous les lundis, ou le mois précédent le 1er du mois. Un envoi n'a lieu qu'une fois par période (consigné dans le journal d'audit, action `rapport.envoi_auto`) ; si aucun e-mail ne part (SMTP indisponible), rien n'est consigné et le passage du lendemain n'est pas rattrapé : relancer à la main ou attendre la période suivante.
 
-Réglage : paramètre `pilotage.envoiAutomatique` (page Paramètres), désactivé par défaut :
+Réglage : **Administration › Pilotage et rapports** (permission `rapports:administrer`) : interrupteur, fréquence, rapports, formats, destinataires, bouton **« M’envoyer un essai »** (un exemplaire à la seule personne connectée, sans compter comme l'envoi de la période), état de la messagerie et derniers envois. La valeur est conservée dans le paramètre `pilotage.envoiAutomatique`, désactivé par défaut :
 
 ```json
 {"actif":true,"frequence":"hebdomadaire","rapports":["rentabilite_activite","ventes_periode"],"formats":["pdf"],"destinataires":["direction@mtm.sn"]}

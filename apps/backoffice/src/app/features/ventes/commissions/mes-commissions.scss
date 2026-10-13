@@ -1,0 +1,16 @@
+.commissions-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.data-table small {
+  display: block;
+  color: var(--mtm-text-muted);
+  font-size: 0.76rem;
+}
+
+tbody tr:focus-visible {
+  outline: 2px solid var(--mtm-primary);
+  outline-offset: -2px;
+}

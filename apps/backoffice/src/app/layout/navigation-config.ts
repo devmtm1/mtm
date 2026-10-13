@@ -19,6 +19,7 @@ import {
   LucideListChecks,
   LucideBell,
   LucideBookOpen,
+  LucideSlidersHorizontal,
   LucideBellRing,
   LucideWorkflow,
   LucideWallet,
@@ -116,6 +117,7 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         children: [
           { label: 'Prospects', route: '/crm/prospects', permission: 'crm:consulter' },
           { label: 'Ventes', route: '/ventes', permission: 'ventes:consulter', exact: true },
+          { label: 'Mes commissions', route: '/ventes/commissions', permission: 'ventes:consulter' },
           { label: 'Objectifs', route: '/ventes/objectifs', permission: 'ventes:consulter' },
         ],
       },
@@ -127,13 +129,13 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         icon: LucideLandPlot,
         defaultOpen: true,
         children: [
-          { label: 'Biens', route: '/terrains', permission: 'terrains:consulter' },
+          { label: 'Biens à vendre', route: '/terrains', permission: 'terrains:consulter' },
           { label: 'Mandats', route: '/mandats', permission: 'mandats:consulter' },
           { label: 'Propriétaires', route: '/proprietaires', permission: 'proprietaires:consulter' },
         ],
       },
       {
-        label: 'Vérifications',
+        label: 'Vérifications et démarches',
         route: '/demarches/missions',
         icon: LucideClipboardCheck,
         permission: 'demarches:consulter',
@@ -144,7 +146,7 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         icon: LucideBuilding2,
         permission: 'locatif:consulter',
         children: [
-          { label: 'Biens', route: '/locatif/biens', permission: 'locatif:consulter' },
+          { label: 'Biens en gestion', route: '/locatif/biens', permission: 'locatif:consulter' },
           { label: 'Locataires', route: '/locatif/locataires', permission: 'locatif:consulter' },
           { label: 'Séjours (à la nuit)', route: '/locatif/sejours', permission: 'locatif:consulter' },
           { label: 'Demandes de résiliation', route: '/locatif/resiliations', permission: 'locatif:consulter' },
@@ -258,6 +260,12 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         route: '/notifications/regles',
         icon: LucideBellRing,
         permission: 'notifications:administrer',
+      },
+      {
+        label: 'Pilotage et rapports',
+        route: '/pilotage/reglages',
+        icon: LucideSlidersHorizontal,
+        permission: 'rapports:administrer',
       },
       {
         label: 'Parcours des dossiers',

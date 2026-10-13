@@ -650,6 +650,7 @@ export class ProspectDetail implements OnInit {
     this.api.findOne(id).subscribe({
       next: (prospect) => {
         this.prospect.set(prospect);
+        this.centrerEtapeCourante();
         this.loading.set(false);
         this.busy.set(false);
       },
@@ -660,5 +661,18 @@ export class ProspectDetail implements OnInit {
         this.goBack();
       },
     });
+  }
+
+  /**
+   * Sur téléphone, la frise des étapes défile : on place l'étape en cours au
+   * milieu pour que le commercial voie tout de suite où en est le prospect.
+   */
+  private centrerEtapeCourante(): void {
+    setTimeout(() => {
+      const etape = document.querySelector<HTMLElement>('.pipeline__step.is-current');
+      const frise = etape?.parentElement;
+      if (etape && frise) frise.scrollTo({ left: etape.offsetLeft - (frise.clientWidth - etape.clientWidth) / 2 });
+      // Le temps que la fiche soit affichée : elle n'existe pas encore au retour de l'API.
+    }, 150);
   }
 }

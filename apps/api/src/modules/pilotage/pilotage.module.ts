@@ -4,6 +4,7 @@ import { FinancesModule } from '../finances/finances.module';
 import { SettingsModule } from '../settings/settings.module';
 import { VentesModule } from '../ventes/ventes.module';
 import { EnvoiAutomatiqueService } from './envoi-automatique.service';
+import { ReglagesPilotageService } from './reglages-pilotage.service';
 import { DossiersBloquesService } from './dossiers-bloques.service';
 import { PilotageController } from './pilotage.controller';
 import { RapportsService } from './rapports.service';
@@ -18,6 +19,7 @@ import { TableauxService } from './tableaux.service';
     DossiersBloquesService,
     RapportsService,
     EnvoiAutomatiqueService,
+    ReglagesPilotageService,
   ],
 })
 export class PilotageModule {}

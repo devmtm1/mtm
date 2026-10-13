@@ -25,7 +25,7 @@ Il se lit **dans le navigateur**, sans rien installer. Pour retrouver une explic
 | **Direction** | Premiers pas, puis *La direction : chiffres et rapports* |
 | **Comptabilité** | Premiers pas, puis *Comptabilité et finances* |
 | **Gestion locative** | Premiers pas, puis *La gestion locative* |
-| **Vérifications (démarches)** | Premiers pas, puis *Les vérifications et démarches* |
+| **Vérifications et démarches** | Premiers pas, puis *Les vérifications et démarches* |
 | **Chantiers** | Premiers pas, puis *Les chantiers* |
 | **Administrateur** | Premiers pas, puis *Administration du back-office* |
 | **RH et autres collaborateurs** | Les chapitres « Pour tout le monde » suffisent |

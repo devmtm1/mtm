@@ -17,6 +17,7 @@ import {
   fcfa,
   presets,
   repartitionRevenu,
+  comparaisonDite,
   variationDite,
   type PeriodePreset,
 } from '../finances/finances-utils';
@@ -126,6 +127,7 @@ export class VueDirection implements OnInit {
 
   protected fcfa = fcfa;
   protected variation = variationDite;
+  protected comparaison = comparaisonDite;
 
   protected tendance(actuel: number, precedent: number): 'hausse' | 'baisse' | 'stable' {
     if (actuel === precedent) return 'stable';

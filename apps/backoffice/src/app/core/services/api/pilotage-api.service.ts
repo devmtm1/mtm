@@ -226,6 +226,31 @@ export interface ExportRapportPayload extends RapportQuery {
   justification: string;
 }
 
+// ------------------------------------------------------------------ réglages
+
+export type SeuilsBlocage = Record<'vente' | 'mission' | 'chantier' | 'prospect' | 'tache', number>;
+
+export interface EnvoiAutomatique {
+  actif: boolean;
+  frequence: 'hebdomadaire' | 'mensuelle';
+  rapports: string[];
+  formats: ('pdf' | 'xlsx')[];
+  destinataires: string[];
+}
+
+export interface ReglagesPilotage {
+  seuils: SeuilsBlocage;
+  envoi: EnvoiAutomatique;
+  messagerieConfiguree: boolean;
+  rapports: { code: string; titre: string }[];
+  derniersEnvois: { date: string; du: string | null; au: string | null; rapports: string[]; destinataires: number }[];
+}
+
+export interface ResultatEssai {
+  envoye: boolean;
+  raison?: 'aucun_rapport' | 'mail_indisponible';
+}
+
 @Injectable({ providedIn: 'root' })
 export class PilotageApiService {
   private readonly http = inject(HttpClient);
@@ -257,6 +282,22 @@ export class PilotageApiService {
     let params = new HttpParams().set('du', query.du).set('au', query.au);
     if (query.region) params = params.set('region', query.region);
     return this.http.get<RapportDonnees>(`${this.baseUrl}/rapports/${code}`, { params });
+  }
+
+  reglages(): Observable<ReglagesPilotage> {
+    return this.http.get<ReglagesPilotage>(`${this.baseUrl}/reglages`);
+  }
+
+  enregistrerSeuils(seuils: SeuilsBlocage): Observable<ReglagesPilotage> {
+    return this.http.put<ReglagesPilotage>(`${this.baseUrl}/reglages/seuils`, seuils);
+  }
+
+  enregistrerEnvoi(envoi: EnvoiAutomatique): Observable<ReglagesPilotage> {
+    return this.http.put<ReglagesPilotage>(`${this.baseUrl}/reglages/envoi`, envoi);
+  }
+
+  essaiEnvoi(): Observable<ResultatEssai> {
+    return this.http.post<ResultatEssai>(`${this.baseUrl}/reglages/envoi/test`, {});
   }
 
   exporter(code: string, payload: ExportRapportPayload): Observable<Blob> {

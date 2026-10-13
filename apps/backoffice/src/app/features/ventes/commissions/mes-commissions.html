@@ -1,0 +1,88 @@
+<div class="commissions-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Commercial</p>
+      <h1 class="page-header__title">Mes commissions</h1>
+      <p class="page-header__subtitle">
+        Chaque commission est <strong>estimée</strong> d’après la règle de MTM, <strong>validée</strong> par un manager, puis <strong>payée</strong> par la comptabilité une fois le
+        dossier de vente soldé.
+      </p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="skeleton" style="height: 220px"></div>
+  } @else if (donnees(); as d) {
+    <section class="kpi-row" aria-label="Mes commissions par étape">
+      <div class="kpi kpi--muted">
+        <span class="kpi__icon"><svg lucideHourglass aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ d.totaux.estimees | mtmMoney }}</strong>
+          <span>Estimées</span>
+          <small>en attente de validation</small>
+        </span>
+      </div>
+      <div class="kpi kpi--warning">
+        <span class="kpi__icon"><svg lucideCircleCheck aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ d.totaux.valideesAPayer | mtmMoney }}</strong>
+          <span>Validées, à payer</span>
+          <small>payables une fois le dossier soldé</small>
+        </span>
+      </div>
+      <div class="kpi kpi--success">
+        <span class="kpi__icon"><svg lucideBanknote aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ d.totaux.payees | mtmMoney }}</strong>
+          <span>Payées</span>
+          <small>déjà versées</small>
+        </span>
+      </div>
+    </section>
+
+    <section class="page-card">
+      @if (d.items.length === 0) {
+        <div class="empty-state">
+          <h3>Aucune commission pour l’instant</h3>
+          <p>Une commission apparaît ici dès qu’un responsable en crée une sur l’un de vos dossiers de vente.</p>
+        </div>
+      } @else {
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Dossier</th>
+                <th>Client</th>
+                <th>Bien</th>
+                <th>Dossier</th>
+                <th>Commission</th>
+                <th class="is-right">Montant</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (commission of d.items; track commission.id) {
+                <tr class="is-clickable" tabindex="0" (click)="ouvrir(commission)" (keydown.enter)="ouvrir(commission)">
+                  <td>
+                    <strong>{{ commission.dossier.reference }}</strong>
+                  </td>
+                  <td>{{ commission.dossier.client || '—' }}</td>
+                  <td>{{ commission.dossier.bien || '—' }}</td>
+                  <td>{{ dossierLabel(commission) }}</td>
+                  <td>
+                    <span [class]="statutPill(commission)" [title]="statutAide(commission)">{{ statutLabel(commission) }}</span>
+                  </td>
+                  <td class="is-right">
+                    <strong>{{ montant(commission) | mtmMoney }}</strong>
+                    @if (commission.statut !== 'estimee') {
+                      <small>estimée {{ commission.montantEstime | mtmMoney }}</small>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  }
+</div>

@@ -111,6 +111,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/finances/tableau-financier').then((m) => m.TableauFinancierPage),
       },
       {
+        path: 'pilotage/reglages',
+        canActivate: [permissionsGuard(['rapports:administrer'])],
+        loadComponent: () => import('./features/pilotage/reglages-pilotage').then((m) => m.ReglagesPilotageComponent),
+      },
+      {
         path: 'rapports',
         canActivate: [permissionsGuard(['rapports:consulter'])],
         loadComponent: () => import('./features/rapports/rapports').then((m) => m.Rapports),
@@ -252,6 +257,11 @@ export const routes: Routes = [
         path: 'documents',
         loadComponent: () =>
           import('./features/documents/documents').then((m) => m.DocumentsPage),
+      },
+      {
+        path: 'ventes/commissions',
+        canActivate: [permissionsGuard(['ventes:consulter'])],
+        loadComponent: () => import('./features/ventes/commissions/mes-commissions').then((m) => m.MesCommissionsComponent),
       },
       {
         path: 'ventes/objectifs',

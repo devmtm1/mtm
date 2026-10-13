@@ -14,9 +14,9 @@ Ce chapitre suit le travail d’un commercial : **suivre ses prospects, proposer
 
 ![Mon activité](img/02-accueil.png)
 
-- **Les boutons du haut** vont droit à l’essentiel : **Nouveau prospect**, **Mes prospects**, **Biens disponibles**, **Mes ventes**, **Mon agenda**.
-- **Les quatre tuiles** : prospects actifs, relances (dues aujourd’hui ou en retard), ventes engagées ce mois-ci, tâches ouvertes.
-- **Mon objectif du mois** : où vous en êtes par rapport à l’objectif fixé par votre responsable (ventes, chiffre d’affaires encaissé). Vos **commissions** sont résumées : estimées, validées (à payer), payées.
+- **Les boutons du haut** vont droit à l’essentiel : **Nouveau prospect**, **Mes prospects**, **Mes biens**, **Mes ventes**, **Mon agenda**.
+- **Les quatre tuiles** : prospects actifs, relances (dues aujourd’hui ou en retard), **ventes soldées** ce mois-ci (avec le nombre de dossiers **engagés**), tâches ouvertes.
+- **Mon objectif du mois** : où vous en êtes par rapport à l’objectif fixé par votre responsable. Les **ventes engagées** sont les dossiers réservés, en paiement ou soldés ; le **chiffre d’affaires encaissé** compte les paiements validés. Vos **commissions** sont résumées (estimées, validées à payer, payées) avec un lien **voir le détail**.
 - **Mon pipeline** : vos prospects par étape.
 - En bas : prospects **à relancer**, **visites à venir**, **agenda du jour**.
 
@@ -47,8 +47,9 @@ Un **prospect** est une personne intéressée par un bien, de la première prise
 1. **Commercial › Prospects**, puis **Nouveau prospect**.
 2. Remplissez au minimum le **nom** et un **téléphone ou un e-mail** (sans cela, impossible de le recontacter).
 3. Cochez **« Ce numéro est joignable sur WhatsApp »** si c’est le cas : le bouton WhatsApp de la fiche en dépend.
-4. Précisez si vous le savez : la **source** (Facebook, recommandation…), le **niveau d’intérêt**, la zone et le budget.
-5. **Créer le prospect.**
+4. Précisez si vous le savez : la **source** (Facebook, recommandation…) et le **niveau d’intérêt**.
+5. Le **projet du client** (premier contact, zone, budget, surface…) est **facultatif** : cliquez sur **« + Renseigner aussi le projet du client »** pour le déplier, ou faites-le plus tard depuis la fiche.
+6. **Créer le prospect.** Le prospect démarre à l’étape **Nouveau**.
 
 ![Formulaire de nouveau prospect](img/15-prospect-nouveau-haut.png)
 
@@ -108,8 +109,8 @@ La relance apparaît dans « Actions à faire », sur votre tableau de bord et d
 | **En réflexion** | Le client réfléchit : gardez le contact. |
 | **À relancer** | Sans nouvelle : une relance est à programmer. |
 | **Négociation** | Discussion sur le prix et les conditions. |
-| **Réservation** | Acompte versé ou en cours : le bien lui est bloqué. |
-| **Vente conclue** | Le prospect est devenu client. |
+| **Réservé** | Acompte versé ou en cours : le bien lui est bloqué (comme le statut « Réservé » du dossier de vente). |
+| **Vente soldée** | Le prix est intégralement payé (statut « Soldé » du dossier) : le prospect est devenu client. |
 
 **Trois étapes de sortie** demandent un **motif**, conservé dans l’historique : **Refusé** (le client ne donne pas suite), **Projet abandonné**, **Injoignable**. Une fenêtre vous demande le motif : soyez bref et précis (« budget insuffisant », « a acheté ailleurs »).
 
@@ -117,7 +118,7 @@ Quand vous passez à une étape **active** sans relance prévue, la fenêtre « 
 
 ## Les biens
 
-**Immobilier › Biens** : les terrains, villas et appartements suivis par MTM.
+**Immobilier › Biens à vendre** : les terrains, villas et appartements suivis par MTM.
 
 ![Liste des biens](img/06-biens.png)
 
@@ -131,7 +132,7 @@ Quand vous passez à une étape **active** sans relance prévue, la fenêtre « 
 
 La fiche réunit prix, superficie, situation juridique, localisation, photos et documents : tout ce qu’il faut pour **présenter le bien à un client**.
 
-> **Vous voyez les biens dont vous êtes responsable.** Si un bien que vous devez présenter n’apparaît pas, demandez à votre responsable de **vous l’affecter**.
+> **Cette liste montre les biens dont vous êtes responsable.** Pour présenter ou vendre le bien d’un collègue, passez par **Proposer un terrain** (fiche du prospect) ou **Ouvrir un dossier** : ces deux fenêtres proposent **tous les biens disponibles**, quel que soit leur responsable.
 
 Prenez l’habitude de **photographier chaque bien lors de la visite** et d’ajouter les photos à sa fiche : une fiche complète (photos, GPS, prix) se vend mieux et alimente le site public.
 
@@ -158,7 +159,12 @@ Un **dossier de vente** suit une vente : **un client + un bien**. Il regroupe r�
 
 ### Ouvrir un dossier
 
-Depuis **la fiche du prospect**, **Ouvrir un dossier** :
+Deux façons de commencer :
+
+- depuis **la fiche du prospect**, **Ouvrir un dossier** ;
+- depuis **Commercial › Ventes**, **Nouveau dossier** : une fenêtre demande d’abord **pour quel client** (recherche par nom, téléphone ou e-mail), puis le bien.
+
+Dans les deux cas :
 
 ![Ouvrir un dossier](img/21-dialogue-dossier.png)
 
@@ -166,7 +172,7 @@ Depuis **la fiche du prospect**, **Ouvrir un dossier** :
 2. Vérifiez le **prix de vente prévisionnel** : pré-rempli avec le prix public, à changer s’il a été négocié.
 3. Ajoutez des **notes** si besoin, puis **Ouvrir le dossier**.
 
-Le dossier reçoit sa référence (« DV-… »). Le bouton **Nouveau dossier** de la page Ventes vous ramène aux prospects : un dossier s’ouvre toujours à partir d’un client.
+Le dossier reçoit sa référence (« DV-… ») et s’ouvre aussitôt. Il propose **tous les biens disponibles**, pas seulement les vôtres.
 
 ### Suivre ses dossiers
 
@@ -176,7 +182,7 @@ Le **bandeau orange** signale ce qui demande votre attention (réservation qui e
 
 ![Fiche d’un dossier de vente](img/09-dossier-vente.png)
 
-Dans le dossier : le bandeau **« À faire sur ce dossier »**, les chiffres (prix, payé validé, reste dû, échéances) et l’**échéancier**.
+Dans le dossier : le bandeau **« À faire sur ce dossier »**, les chiffres (prix, **payé validé**, **reste dû**, échéances), la liste de **vos paiements** et l’**échéancier**. Un commercial voit les paiements et la commission **de ses propres dossiers** ; les chiffres globaux et la commission des autres restent réservés à la comptabilité et aux responsables.
 
 ### Les statuts d’un dossier
 
@@ -210,7 +216,11 @@ Dans le dossier : le bandeau **« À faire sur ce dossier »**, les chiffres (pr
 ### Documents et commission
 
 - Les **documents** du dossier (contrat, reçus, pièces du client) s’ajoutent depuis le dossier, ou depuis **Ventes › Documents**.
-- Votre **commission** est estimée selon les règles de MTM, validée par un responsable, puis payée **une fois le dossier soldé**. Son avancement est visible sur votre tableau de bord.
+- Votre **commission** est estimée selon les règles de MTM, validée par un manager, puis payée **une fois le dossier soldé**. Son avancement est visible dans le dossier, sur votre tableau de bord et dans **Commercial › Mes commissions**.
+
+### Mes commissions
+
+**Commercial › Mes commissions** liste **chacune de vos commissions** : le dossier, le client, le bien, l’étape (**estimée**, **validée**, **payée**) et le montant. Trois totaux en haut résument ce qui est en attente, ce qui est à payer et ce qui est déjà versé. Un clic sur une ligne ouvre le dossier.
 
 ### Annuler un dossier
 

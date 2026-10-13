@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { type MoisCloture, FinancesApiService } from '../../core/services/api/finances-api.service';
@@ -32,6 +32,12 @@ export class CloturesFinancieres implements OnInit {
   protected readonly peutAdministrer = this.session.hasPermission('finances:administrer');
   protected readonly loading = signal(true);
   protected readonly mois = signal<MoisCloture[]>([]);
+  protected readonly toutAfficher = signal(false);
+  /** Les six derniers mois et ceux déjà clôturés : la liste complète n'est qu'à un clic. */
+  protected readonly affiches = computed(() =>
+    this.toutAfficher() ? this.mois() : this.mois().filter((m, i) => i < 6 || m.cloture),
+  );
+  protected readonly masques = computed(() => this.mois().length - this.affiches().length);
   protected readonly occupe = signal<string | null>(null);
 
   ngOnInit(): void {

@@ -116,6 +116,12 @@
             }
           </section>
 
+          @if (!isEdit && !detailsOuverts()) {
+            <button type="button" class="details-toggle" (click)="detailsOuverts.set(true)">
+              <strong>+ Renseigner aussi le projet du client</strong>
+              <small>Premier contact, zone, budget, surface… Facultatif : vous pourrez le faire plus tard depuis la fiche.</small>
+            </button>
+          } @else {
           <section class="page-card form-block">
             <div class="form-block__head">
               <h2>Premier contact</h2>
@@ -197,6 +203,7 @@
               </mat-form-field>
             </div>
           </section>
+          }
 
           <!--
             Mandat de recherche de terrain : l'inverse du catalogue — le client

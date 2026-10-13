@@ -14,13 +14,13 @@ Le back-office s’adapte à l’écran du téléphone : ouvrez **la même adres
 ## Ce qui change
 
 - Le **menu** se range : touchez l’icône à gauche du titre pour l’ouvrir.
-- Les boutons se **rangent en colonnes**, plus faciles à toucher.
+- Les boutons d’une fiche se **rangent en deux colonnes** égales, faciles à toucher.
 - Sur la fiche d’un prospect, **Appeler** et **WhatsApp** lancent l’appel ou la conversation **d’un seul toucher**.
 - Les tableaux défilent latéralement ; les fenêtres de saisie occupent l’écran.
 
 ## Garder l’application sous la main
 
-Dans le menu du navigateur, choisissez **« Ajouter à l’écran d’accueil »** : un raccourci vers le back-office apparaît sur le téléphone, comme une application.
+Dans le menu du navigateur, choisissez **« Installer l’application »** ou **« Ajouter à l’écran d’accueil »** : l’icône MTM apparaît sur le téléphone et le back-office s’ouvre en plein écran, comme une application. Il faut tout de même une connexion pour travailler.
 
 ## Conseils de terrain
 

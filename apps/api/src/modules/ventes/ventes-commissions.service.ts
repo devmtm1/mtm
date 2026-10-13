@@ -28,6 +28,73 @@ export class VentesCommissionsService {
     private readonly workflow: VentesWorkflowService,
   ) {}
 
+  /**
+   * Les commissions de la personne connectée, tous dossiers confondus : où en
+   * est chacune (estimée, validée, payée) et sur quelle vente. Un commercial ne
+   * voyait jusqu'ici que trois totaux sur son tableau de bord.
+   */
+  async listerMesCommissions(user: MandatUser) {
+    const lignes = await this.prisma.commissionVente.findMany({
+      where: { commercialId: user.id },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        dossierVente: {
+          select: {
+            id: true,
+            referenceInterne: true,
+            statut: true,
+            prixVente: true,
+            prospect: { select: { nom: true, prenom: true } },
+            terrain: { select: { referenceInterne: true, nom: true } },
+          },
+        },
+      },
+    });
+    const nombre = (valeur: unknown) =>
+      valeur === null ? null : Number(valeur);
+    const items = lignes.map((ligne) => ({
+      id: ligne.id,
+      statut: ligne.statut,
+      montantEstime: Number(ligne.montantEstime),
+      montantValide: nombre(ligne.montantValide),
+      montantPaye: nombre(ligne.montantPaye),
+      creeeLe: ligne.createdAt.toISOString(),
+      dossier: {
+        id: ligne.dossierVente.id,
+        reference: ligne.dossierVente.referenceInterne,
+        statut: ligne.dossierVente.statut,
+        prixVente: nombre(ligne.dossierVente.prixVente),
+        client: [
+          ligne.dossierVente.prospect?.prenom,
+          ligne.dossierVente.prospect?.nom,
+        ]
+          .filter(Boolean)
+          .join(' '),
+        bien: ligne.dossierVente.terrain
+          ? `${ligne.dossierVente.terrain.referenceInterne} — ${ligne.dossierVente.terrain.nom}`
+          : null,
+      },
+    }));
+    const somme = (
+      statut: string,
+      champ: 'montantEstime' | 'montantValide' | 'montantPaye',
+    ) =>
+      items
+        .filter((item) => item.statut === statut)
+        .reduce(
+          (total, item) => total + (item[champ] ?? item.montantEstime),
+          0,
+        );
+    return {
+      items,
+      totaux: {
+        estimees: somme('estimee', 'montantEstime'),
+        valideesAPayer: somme('validee', 'montantValide'),
+        payees: somme('payee', 'montantPaye'),
+      },
+    };
+  }
+
   async createCommission(
     id: string,
     dto: CreateCommissionDto,

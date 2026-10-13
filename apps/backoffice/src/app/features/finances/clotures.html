@@ -15,7 +15,7 @@
     <div class="skeleton" style="height: 260px"></div>
   } @else {
     <ul class="mois">
-      @for (m of mois(); track m.periode) {
+      @for (m of affiches(); track m.periode) {
         <li class="page-card ligne" [class.is-cloture]="m.cloture">
           <div class="ligne__titre">
             <strong>{{ libelle(m.periode) }}</strong>
@@ -55,5 +55,8 @@
         </li>
       }
     </ul>
+    @if (masques() > 0) {
+      <button mat-stroked-button type="button" class="plus" (click)="toutAfficher.set(true)">Afficher les {{ masques() }} mois plus anciens</button>
+    }
   }
 </div>

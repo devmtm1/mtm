@@ -28,8 +28,8 @@ C’est une question de droits : chaque rôle voit ses modules. Voir le chapitre
 **Je ne trouve pas un prospect.**
 Utilisez la recherche (<kbd>Ctrl</kbd> + <kbd>K</kbd>). Un commercial ne voit que **ses** prospects : s’il appartient à un collègue, il n’apparaît pas.
 
-**Le bien que je veux proposer n’est pas dans la liste.**
-Un commercial ne voit que les biens **dont il est responsable**. Demandez à un responsable de vous l’affecter (fiche du bien › *Commercial responsable*).
+**Le bien d’un collègue n’est pas dans ma liste de biens.**
+La page *Biens à vendre* montre les biens dont vous êtes responsable. Pour en présenter un autre, utilisez **Proposer un terrain** (fiche du prospect) ou **Ouvrir un dossier** : ils proposent **tous les biens disponibles**.
 
 **L’application me demande une « prochaine action ».**
 C’est la règle de MTM : tout prospect actif doit avoir une suite prévue. Indiquez l’action et la date.

@@ -51,8 +51,8 @@ export class JournalFinancier implements OnInit {
   protected readonly peutExporter = this.session.hasPermission('finances:exporter');
 
   protected readonly periodes = presets();
-  protected readonly du = new FormControl(this.periodes[1].du, { nonNullable: true });
-  protected readonly au = new FormControl(this.periodes[1].au, { nonNullable: true });
+  protected readonly du = new FormControl(this.periodes[0].du, { nonNullable: true });
+  protected readonly au = new FormControl(this.periodes[0].au, { nonNullable: true });
   protected readonly recherche = new FormControl('', { nonNullable: true });
   protected readonly activite = signal('');
   protected readonly sens = signal('');

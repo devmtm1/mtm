@@ -117,7 +117,6 @@ export class VenteDetailPage implements OnInit {
   protected canValidateCommission(commission: VenteCommission): boolean {
     return commission.statut === 'estimee' && this.canApproveCommissions && commission.createdById !== this.session.user()?.id;
   }
-  protected readonly canViewFinancials = this.session.hasPermission('ventes:consulter_financier') || this.session.hasSupervisionScope('ventes');
   protected readonly canSeeProspect = this.session.hasPermission('crm:consulter');
   protected readonly canSeeTerrain = this.session.hasPermission('terrains:consulter');
 

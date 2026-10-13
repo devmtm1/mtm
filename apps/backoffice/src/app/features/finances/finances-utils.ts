@@ -86,6 +86,14 @@ export function variationDite(actuel: number, precedent: number): string {
   return `${v > 0 ? '+' : ''}${v} %`;
 }
 
+/** La comparaison en une phrase : « +12 % par rapport à la période précédente », ou pourquoi il n'y en a pas. */
+export function comparaisonDite(actuel: number, precedent: number): string {
+  const v = variation(actuel, precedent);
+  if (v === null) return 'Rien sur la période précédente : pas de comparaison';
+  if (v === 0) return 'Stable par rapport à la période précédente';
+  return `${v > 0 ? '+' : ''}${v} % par rapport à la période précédente`;
+}
+
 /** Part de chaque activité dans le revenu, pour le graphique ; ignore les activités sans revenu. */
 export function repartitionRevenu(parActivite: (TotauxFinanciers & { activite: Activite })[]): { label: string; valeur: number }[] {
   return parActivite

@@ -74,7 +74,7 @@ MTM peut recevoir des rapports **sans les ouvrir** : chaque matin à 7 h (heure 
 - **hebdomadaire** : la semaine écoulée (lundi → dimanche), envoyée **chaque lundi** ;
 - **mensuelle** : le mois précédent, envoyé **le 1er du mois**.
 
-Un envoi n’a lieu **qu’une fois par période**. Il est **désactivé par défaut** : un administrateur l’active dans *Administration › Paramètres* (voir le chapitre *Administration*).
+Un envoi n’a lieu **qu’une fois par période**. Il est **désactivé par défaut**. La direction et les administrateurs le règlent dans **Administration › Pilotage et rapports** : un formulaire (activer, fréquence, rapports, formats, destinataires), un bouton **« M’envoyer un essai »** qui envoie un exemplaire à votre seule adresse, l’état de la messagerie du serveur et la liste des **derniers envois**.
 
 ## Le journal d’audit
 

@@ -47,11 +47,11 @@ Un **mandat** est l’autorisation donnée par un propriétaire de vendre (ou de
 
 ## Les biens
 
-**Immobilier › Biens** : terrains, villas et appartements.
+**Immobilier › Biens à vendre** : terrains, villas et appartements.
 
 ### Créer un bien
 
-1. **Biens › Nouveau bien.**
+1. **Biens à vendre › Nouveau bien.**
 2. Renseignez au minimum la **localité** et le **titre juridique** (titre foncier, bail, délibération…), puis le **propriétaire**, la **superficie** et les **prix** : prix d’acquisition (interne) et **prix public**.
 3. Désignez le **commercial responsable** : seul lui (et l’encadrement) verra le bien dans le back-office.
 4. Ajoutez des **photos** et la **position GPS**.
@@ -67,7 +67,7 @@ Pour reprendre un fichier Excel ou Google Sheets (« Bd terrains MTM IMMO ») **
 
 ![Import de biens](img/adm-08-import-biens.png)
 
-1. **Biens › Importer depuis Excel** (réservé à ceux qui peuvent créer des biens).
+1. **Biens à vendre › Importer depuis Excel** (réservé à ceux qui peuvent créer des biens).
 2. Déposez le fichier **.xlsx** ou **.csv** (5 Mo et 5 000 lignes au maximum). Un classeur à plusieurs onglets propose de choisir l’onglet.
 3. **Aperçu** : biens à créer, déjà présents, lignes refusées avec la raison. **Rien n’est écrit à ce stade.**
 4. **Importer N biens** pour confirmer. Les biens arrivent en **Brouillon** : relisez-les avant de les publier.

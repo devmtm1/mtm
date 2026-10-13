@@ -6,7 +6,7 @@ resume: Biens loués, baux, loyers et quittances, impayés, locations à la nuit
 roles: gestion_locative direction administrateur
 ---
 
-La **gestion locative** suit les biens que les propriétaires confient à MTM pour la location : **baux, loyers, cautions, impayés, séjours à la nuit, résiliations**. Le menu **Gestion locative** regroupe : *Biens*, *Locataires*, *Séjours (à la nuit)*, *Demandes de résiliation*, *Relances*.
+La **gestion locative** suit les biens que les propriétaires confient à MTM pour la location : **baux, loyers, cautions, impayés, séjours à la nuit, résiliations**. Le menu **Gestion locative** regroupe : *Biens en gestion*, *Locataires*, *Séjours (à la nuit)*, *Demandes de résiliation*, *Relances*.
 
 ## Les biens locatifs
 
@@ -19,7 +19,7 @@ La **gestion locative** suit les biens que les propriétaires confient à MTM po
 
 ### Créer un bien locatif
 
-1. **Biens › Nouveau bien.**
+1. **Biens en gestion › Nouveau bien.**
 2. Choisissez le **propriétaire** (créez-le d’abord s’il n’existe pas), le **type** (appartement, villa…), l’**adresse**, la **commune** et la **région**.
 3. Pour une location **au mois**, laissez le mode par défaut ; pour une location **à la nuit**, voir plus bas.
 4. **Enregistrer** : le bien reçoit une référence lisible (« L-2026-0001 ») et le statut *Disponible*.
@@ -78,7 +78,7 @@ Sur la ligne d’une échéance payée, le bouton **Quittance** produit le PDF �
 
 ### Mettre un bien à la nuit
 
-1. **Biens › Nouveau bien** (ou la fiche d’un bien existant › *Annonce*).
+1. **Biens en gestion › Nouveau bien** (ou la fiche d’un bien existant › *Annonce*).
 2. **Mode de location : « Location à la nuit »**.
 3. Renseignez le **prix de la nuit**, les **frais de ménage** (une fois par séjour), la **caution**, la **durée minimale**, la **capacité** et les **heures d’arrivée et de départ**.
 4. Ajoutez des photos puis **publiez** : le bien apparaît sur la page « Locations » avec son prix par nuit.

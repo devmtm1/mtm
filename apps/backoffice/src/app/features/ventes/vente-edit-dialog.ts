@@ -7,7 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import type { Observable } from 'rxjs';
 import { TerrainsApiService } from '../../core/services/api/terrains-api.service';
-import type { TerrainListItem } from '../../core/models/terrain.model';
+import type { TerrainCatalogueItem } from '../../core/models/terrain.model';
 import type { CommercialSummary } from '../../core/models/prospect.model';
 import type { VenteDetail } from '../../core/models/vente.model';
 import { MoneyPipe } from '../../shared/pipes/money.pipe';
@@ -123,8 +123,8 @@ export class VenteEditDialog {
 
   protected readonly loading = signal(true);
   protected readonly query = signal('');
-  protected readonly selected = signal<TerrainListItem | null>(null);
-  private readonly terrains = signal<TerrainListItem[]>([]);
+  protected readonly selected = signal<TerrainCatalogueItem | null>(null);
+  private readonly terrains = signal<TerrainCatalogueItem[]>([]);
 
   protected readonly form = this.formBuilder.nonNullable.group({
     prixVente: [this.data.dossier.prixVente === null ? null : Number(this.data.dossier.prixVente), Validators.min(0)],
@@ -141,21 +141,23 @@ export class VenteEditDialog {
   });
 
   constructor() {
-    this.terrainsApi.findAll({ statutCommercial: 'Disponible', pageSize: 200 }).subscribe({
-      next: (page) => {
-        this.terrains.set(page.items);
+    // Tout le catalogue disponible, pas seulement les biens dont on est responsable :
+    // un commercial peut ouvrir un dossier sur le bien d'un collègue.
+    this.terrainsApi.catalogueProposition().subscribe({
+      next: (items) => {
+        this.terrains.set(items.filter((item) => item.statutCommercial === 'Disponible'));
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
     });
   }
 
-  protected pick(terrain: TerrainListItem): void {
+  protected pick(terrain: TerrainCatalogueItem): void {
     this.selected.set(this.selected()?.id === terrain.id ? null : terrain);
     if (this.selected() && terrain.prixPublic !== null && this.form.controls.prixVente.value === null) this.form.controls.prixVente.setValue(Number(terrain.prixPublic));
   }
 
-  protected location(terrain: TerrainListItem): string {
+  protected location(terrain: TerrainCatalogueItem): string {
     return [terrain.commune, terrain.region].filter(Boolean).join(', ') || 'Localisation non renseignée';
   }
 

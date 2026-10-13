@@ -15,6 +15,7 @@ import {
   fcfa,
   presets,
   repartitionRevenu,
+  comparaisonDite,
   variationDite,
   type PeriodePreset,
 } from './finances-utils';
@@ -85,6 +86,7 @@ export class TableauFinancierPage implements OnInit {
 
   protected fcfa = fcfa;
   protected variation = variationDite;
+  protected comparaison = comparaisonDite;
 
   protected tendance(actuel: number, precedent: number): 'hausse' | 'baisse' | 'stable' {
     if (actuel === precedent) return 'stable';

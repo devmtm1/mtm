@@ -1616,6 +1616,24 @@ ag-grid-angular {
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
+
+    /* Sur téléphone, les boutons se rangent en deux colonnes égales au lieu de
+       s'empiler sur cinq lignes avant d'arriver au contenu. */
+    @media (max-width: 720px) {
+      display: grid;
+      width: 100%;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+
+      > .mat-mdc-button-base:not(.mat-mdc-icon-button) {
+        width: 100%;
+        white-space: normal;
+        line-height: 1.2;
+      }
+
+      > .mat-mdc-icon-button {
+        justify-self: end;
+      }
+    }
   }
 }
 

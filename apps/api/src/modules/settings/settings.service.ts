@@ -259,6 +259,27 @@ export class SettingsService {
     });
   }
 
+  /** Crée le paramètre s'il n'existe pas encore, le met à jour sinon (écrans dédiés). */
+  async upsert(
+    key: string,
+    value: unknown,
+    description: string,
+    updatedById: string,
+  ) {
+    SettingsService.assertValeurValide(key, value);
+    return this.prisma.systemSetting.upsert({
+      where: { key },
+      update: { value: this.toJson(value), updatedById },
+      create: {
+        key,
+        value: this.toJson(value),
+        description,
+        isSensitive: false,
+        updatedById,
+      },
+    });
+  }
+
   async remove(key: string): Promise<void> {
     SettingsService.assertCleModifiable(key);
     const existing = await this.prisma.systemSetting.findUnique({

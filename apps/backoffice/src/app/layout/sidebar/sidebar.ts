@@ -39,6 +39,12 @@ export class Sidebar {
           if (!item.children) return item;
           // Un groupe se réduit à ses enfants autorisés et disparaît s'il n'en reste aucun.
           const children = item.children.filter(allowed);
+          // Un groupe qui n'a plus qu'un enfant devient un lien direct : un menu
+          // déroulant pour une seule entrée ne sert qu'à faire un clic de plus.
+          if (children.length === 1) {
+            const [seul] = children;
+            return { ...item, label: seul.label, route: seul.route, exact: seul.exact, children: undefined };
+          }
           return { ...item, children, route: children[0]?.route ?? item.route };
         })
         .filter((item) => (item.children ? item.children.length > 0 : allowed(item))),

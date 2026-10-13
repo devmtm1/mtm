@@ -1,4 +1,4 @@
-import { fcfa, libelleActivite, libelleCategorie, presets, repartitionRevenu, variation, variationDite } from './finances-utils';
+import { comparaisonDite, fcfa, libelleActivite, libelleCategorie, presets, repartitionRevenu, variation, variationDite } from './finances-utils';
 
 describe('périodes proposées', () => {
   const maintenant = new Date(2026, 9, 12); // 12 octobre 2026
@@ -46,6 +46,9 @@ describe('mises en forme', () => {
     expect(variationDite(80, 100)).toBe('-20 %');
     expect(variationDite(10, 0)).toBe('nouveau');
     expect(variationDite(0, 0)).toBe('stable');
+    expect(comparaisonDite(150, 100)).toBe('+50 % par rapport à la période précédente');
+    expect(comparaisonDite(0, 0)).toBe('Stable par rapport à la période précédente');
+    expect(comparaisonDite(10, 0)).toBe('Rien sur la période précédente : pas de comparaison');
   });
 
   it('ne répartit que les activités qui ont un revenu', () => {

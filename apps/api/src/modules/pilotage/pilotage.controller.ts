@@ -5,17 +5,24 @@ import {
   HttpCode,
   Param,
   Post,
+  Put,
   Query,
   Res,
   StreamableFile,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import {
+  ArrayMaxSize,
+  IsArray,
+  IsBoolean,
   IsIn,
+  IsInt,
   IsOptional,
   IsString,
   IsUUID,
+  Max,
   MaxLength,
+  Min,
   MinLength,
 } from 'class-validator';
 import type { Response } from 'express';
@@ -29,6 +36,8 @@ import { DossiersBloquesService } from './dossiers-bloques.service';
 import { nomFichier } from './pilotage.calculs';
 import { renderRapportPdf } from './rapport-pdf';
 import { renderRapportXlsx } from './rapport-xlsx';
+import { ReglagesPilotageService } from './reglages-pilotage.service';
+import { EnvoiAutomatiqueService } from './envoi-automatique.service';
 import { RapportsService } from './rapports.service';
 import { TableauxService } from './tableaux.service';
 
@@ -55,6 +64,28 @@ export class ExportRapportDto extends QueryRapportDto {
   justification!: string;
 }
 
+/** Délais de « dossier bloqué » : des jours entiers, de 1 à 365. */
+export class SeuilsBlocageDto {
+  @IsOptional() @IsInt() @Min(1) @Max(365) vente?: number;
+  @IsOptional() @IsInt() @Min(1) @Max(365) mission?: number;
+  @IsOptional() @IsInt() @Min(1) @Max(365) chantier?: number;
+  @IsOptional() @IsInt() @Min(1) @Max(365) prospect?: number;
+  @IsOptional() @IsInt() @Min(1) @Max(365) tache?: number;
+}
+
+/** Envoi automatique : la cohérence fine (rapports connus, au moins un destinataire…) est contrôlée par le service. */
+export class EnvoiAutomatiqueDto {
+  @IsBoolean() actif!: boolean;
+  @IsIn(['hebdomadaire', 'mensuelle']) frequence!: string;
+  @IsArray() @ArrayMaxSize(10) @IsString({ each: true }) rapports!: string[];
+  @IsArray() @ArrayMaxSize(2) @IsString({ each: true }) formats!: string[];
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsString({ each: true })
+  @MaxLength(200, { each: true })
+  destinataires!: string[];
+}
+
 const TYPES: Record<string, string> = {
   pdf: 'application/pdf',
   xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -79,7 +110,44 @@ export class PilotageController {
     private readonly rapports: RapportsService,
     private readonly company: CompanyProfileService,
     private readonly audit: AuditService,
+    private readonly reglages: ReglagesPilotageService,
+    private readonly envoi: EnvoiAutomatiqueService,
   ) {}
+
+  @Get('reglages')
+  @RequirePermissions('rapports:administrer')
+  lireReglages() {
+    return this.reglages.lire();
+  }
+
+  @Put('reglages/seuils')
+  @RequirePermissions('rapports:administrer')
+  enregistrerSeuils(
+    @Body() dto: SeuilsBlocageDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.reglages.enregistrerSeuils(
+      dto as Record<string, number>,
+      user.id,
+    );
+  }
+
+  @Put('reglages/envoi')
+  @RequirePermissions('rapports:administrer')
+  enregistrerEnvoi(
+    @Body() dto: EnvoiAutomatiqueDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.reglages.enregistrerEnvoi(dto, user.id);
+  }
+
+  /** Envoie un exemplaire de test à la personne connectée (et à elle seule). */
+  @Post('reglages/envoi/test')
+  @HttpCode(200)
+  @RequirePermissions('rapports:administrer')
+  essaiEnvoi(@CurrentUser() user: AuthenticatedUser) {
+    return this.envoi.envoyerTest(user.email);
+  }
 
   @Get('direction')
   @RequirePermissions('rapports:administrer')

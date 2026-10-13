@@ -26,8 +26,7 @@
               tendance(d.finances.totaux.encaissements, d.finances.precedent.encaissements)
             "
           >
-            {{ variation(d.finances.totaux.encaissements, d.finances.precedent.encaissements) }} vs
-            période précédente
+            {{ comparaison(d.finances.totaux.encaissements, d.finances.precedent.encaissements) }}
           </small>
         </span>
       </article>
@@ -42,8 +41,7 @@
               tendance(d.finances.totaux.revenu, d.finances.precedent.revenu)
             "
           >
-            {{ variation(d.finances.totaux.revenu, d.finances.precedent.revenu) }} vs période
-            précédente
+            {{ comparaison(d.finances.totaux.revenu, d.finances.precedent.revenu) }}
           </small>
         </span>
       </article>
@@ -71,8 +69,7 @@
               tendance(d.finances.totaux.resultat, d.finances.precedent.resultat)
             "
           >
-            {{ variation(d.finances.totaux.resultat, d.finances.precedent.resultat) }} vs période
-            précédente
+            {{ comparaison(d.finances.totaux.resultat, d.finances.precedent.resultat) }}
           </small>
         </span>
       </article>

@@ -6,7 +6,7 @@ resume: Comptes, rôles, paramètres, parcours des dossiers, identité de l’en
 roles: administrateur direction
 ---
 
-Ce chapitre s’adresse aux **administrateurs** (et à la **direction** pour certains écrans). Le menu **Administration** contient : *Accès* (utilisateurs, rôles), *Parcours des dossiers*, *Identité de l’entreprise*, *Règles de notification*, *Paramètres*, *Journal d’audit*.
+Ce chapitre s’adresse aux **administrateurs** (et à la **direction** pour certains écrans). Le menu **Administration** contient : *Accès* (utilisateurs, rôles), *Pilotage et rapports*, *Parcours des dossiers*, *Identité de l’entreprise*, *Règles de notification*, *Paramètres*, *Journal d’audit*.
 
 > **Important** — Un compte **administrateur** doit avoir la **double authentification** activée. Toutes vos actions sont **tracées** dans le journal d’audit : agissez avec soin.
 
@@ -67,8 +67,8 @@ Réglages utiles à connaître :
 
 | Réglage | Rôle |
 | --- | --- |
-| `pilotage.seuilsBlocage` | Jours sans mouvement au-delà desquels un dossier est dit **bloqué** (`{"vente":15,"mission":10,"chantier":7,"prospect":14,"tache":3}`) |
-| `pilotage.envoiAutomatique` | **Envoi automatique de rapports par e-mail** (voir ci-dessous) |
+| `pilotage.seuilsBlocage` | Jours sans mouvement au-delà desquels un dossier est dit **bloqué** — se règle dans **Pilotage et rapports** |
+| `pilotage.envoiAutomatique` | **Envoi automatique de rapports par e-mail** — se règle dans **Pilotage et rapports** |
 | `finances.tauxGestionDefaut` | Commission de gestion par défaut (en %) |
 | `finances.categoriesDepenses` / `categoriesRecettes` | Catégories proposées aux saisies |
 | `finances.doubleValidation` | Exige qu’une saisie soit validée par une autre personne |
@@ -78,19 +78,27 @@ Réglages utiles à connaître :
 
 > Un paramètre qui a une **page dédiée** (Identité de l’entreprise, Parcours des dossiers) ne se modifie **plus** dans cette page : elle le refuse pour éviter les contradictions.
 
-### Activer l’envoi automatique des rapports
+## Pilotage et rapports
 
-Réglage **`pilotage.envoiAutomatique`**, désactivé par défaut. Exemple :
+**Administration › Pilotage et rapports** (direction et administrateurs) regroupe deux réglages qui se saisissaient auparavant en JSON dans Paramètres.
 
-```
-{"actif":true,"frequence":"hebdomadaire","rapports":["rentabilite_activite","ventes_periode"],"formats":["pdf"],"destinataires":["direction@mtm.sn"]}
-```
+![Pilotage et rapports](img/adm-11-pilotage-reglages.png)
 
-- **frequence** : `hebdomadaire` (chaque lundi, semaine écoulée) ou `mensuelle` (le 1er du mois, mois précédent).
-- **formats** : `pdf`, `xlsx`.
-- **rapports** : `ventes_periode`, `ventes_zone`, `performance_commerciaux`, `terrains_etat`, `loyers_impayes`, `rentabilite_activite`, `activite_demarches`.
-- **destinataires** : adresses e-mail (20 au plus). **Activer exige au moins un rapport et un destinataire** ; une valeur invalide est **refusée à l’enregistrement**.
-- Il faut que l’**e-mail du serveur (SMTP)** soit configuré.
+### Dossiers bloqués
+
+Cinq champs, un par type de dossier (vente, mission, chantier, prospect, tâche) : le **nombre de jours** sans mouvement au-delà duquel le dossier est signalé « bloqué ». Valeurs acceptées : des **jours entiers de 1 à 365**. **Enregistrer les délais** applique le changement tout de suite et le consigne dans le journal d’audit.
+
+### Envoi automatique des rapports
+
+- **Interrupteur** : actif ou non (désactivé par défaut).
+- **Fréquence** : chaque lundi (semaine écoulée) ou le 1er du mois (mois précédent).
+- **Rapports à envoyer** : cochez ceux voulus (les sept rapports du menu *Rapports*).
+- **Format** : PDF, Excel, ou les deux.
+- **Destinataires** : une adresse e-mail par ligne, vingt au plus.
+- **Enregistrer** : activer l’envoi exige **au moins un rapport et un destinataire** ; l’écran le dit avant même d’enregistrer.
+- **M’envoyer un essai** : envoie un exemplaire **à votre seule adresse** (pas aux destinataires) pour vérifier le contenu et la messagerie. Le bouton est grisé tant qu’il reste des modifications non enregistrées.
+- Un bandeau signale quand la **messagerie du serveur (SMTP) n’est pas configurée** : aucun e-mail ne part alors, même si le réglage est enregistré.
+- **Derniers envois** : date, période, rapports et nombre de destinataires des envois réellement partis.
 
 ## Les parcours des dossiers
 

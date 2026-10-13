@@ -274,7 +274,7 @@ export class Header {
           const child = item.children
             .filter((candidate) => this.matchesUrl(url, candidate.route))
             .sort((a, b) => b.route.length - a.route.length)[0];
-          if (child) match = { section: `${section.title} · ${item.label}`, label: child.label };
+          if (child) match = { section: section.title === item.label ? section.title : `${section.title} · ${item.label}`, label: child.label };
         } else if (this.matchesUrl(url, item.route)) {
           match = { section: section.title, label: item.label };
         }

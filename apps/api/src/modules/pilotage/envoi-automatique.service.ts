@@ -7,6 +7,7 @@ import { AuditService } from '../audit/audit.service';
 import { SettingsService } from '../settings/settings.service';
 import {
   CLE_ENVOI_AUTOMATIQUE,
+  type ConfigEnvoi,
   estJourDEnvoi,
   lireEnvoi,
   periodeEcoulee,
@@ -88,30 +89,10 @@ export class EnvoiAutomatiqueService {
     });
     if (dejaFait) return { envoye: false, raison: 'deja_envoye', ...vide };
 
-    const societe = await this.company.getSociete();
-    const pieces: { filename: string; content: Buffer; contentType: string }[] =
-      [];
-    const titres: string[] = [];
-    for (const code of config.rapports) {
-      const donnees = await this.rapports.generer(code, periode);
-      titres.push(donnees.titre);
-      const base = nomFichier(donnees.titre, periode.du, periode.au);
-      for (const format of config.formats) {
-        pieces.push({
-          filename: `${base}.${format}`,
-          content:
-            format === 'pdf'
-              ? renderRapportPdf(donnees, societe)
-              : await renderRapportXlsx(donnees),
-          contentType: TYPES[format],
-        });
-      }
-    }
-
-    const intitule =
-      config.frequence === 'hebdomadaire'
-        ? `semaine du ${periode.du} au ${periode.au}`
-        : `mois du ${periode.du} au ${periode.au}`;
+    const { societe, pieces, titres, intitule } = await this.composer(
+      config,
+      periode,
+    );
     let envoyes = 0;
     for (const destinataire of config.destinataires) {
       const parti = await this.mail.send({
@@ -148,5 +129,96 @@ export class EnvoiAutomatiqueService {
       rapports: config.rapports.length,
       destinataires: envoyes,
     };
+  }
+
+  /** Génère les pièces jointes et le libellé de la période. */
+  private async composer(
+    config: ConfigEnvoi,
+    periode: { du: string; au: string },
+  ) {
+    const societe = await this.company.getSociete();
+    const pieces: { filename: string; content: Buffer; contentType: string }[] =
+      [];
+    const titres: string[] = [];
+    for (const code of config.rapports) {
+      const donnees = await this.rapports.generer(code, periode);
+      titres.push(donnees.titre);
+      const base = nomFichier(donnees.titre, periode.du, periode.au);
+      for (const format of config.formats) {
+        pieces.push({
+          filename: `${base}.${format}`,
+          content:
+            format === 'pdf'
+              ? renderRapportPdf(donnees, societe)
+              : await renderRapportXlsx(donnees),
+          contentType: TYPES[format],
+        });
+      }
+    }
+    const intitule =
+      config.frequence === 'hebdomadaire'
+        ? `semaine du ${periode.du} au ${periode.au}`
+        : `mois du ${periode.du} au ${periode.au}`;
+    return { societe, pieces, titres, intitule };
+  }
+
+  /**
+   * Envoie **à une seule personne** un exemplaire de ce que recevront les
+   * destinataires, pour vérifier le réglage et la messagerie. N'est pas
+   * compté comme l'envoi de la période et ne tient pas compte du jour.
+   */
+  async envoyerTest(
+    destinataire: string,
+    maintenant: Date = new Date(),
+  ): Promise<{
+    envoye: boolean;
+    raison?: 'aucun_rapport' | 'mail_indisponible';
+  }> {
+    const config = lireEnvoi(
+      await this.settings.getRawValue(CLE_ENVOI_AUTOMATIQUE),
+    );
+    if (config.rapports.length === 0) {
+      return { envoye: false, raison: 'aucun_rapport' };
+    }
+    const periode = periodeEcoulee(config.frequence, maintenant);
+    const { societe, pieces, titres, intitule } = await this.composer(
+      config,
+      periode,
+    );
+    const parti = await this.mail.send({
+      to: destinataire,
+      subject: `[Essai] ${societe.name} — rapports de la ${intitule}`,
+      text: [
+        'Bonjour,',
+        `Ceci est un essai de l’envoi automatique : voici les rapports de la ${intitule} tels que les destinataires les recevront.`,
+        titres.map((t) => `- ${t}`).join('\n'),
+        'Aucun autre destinataire n’a reçu ce message.',
+      ].join('\n\n'),
+      attachments: pieces,
+    });
+    return parti
+      ? { envoye: true }
+      : { envoye: false, raison: 'mail_indisponible' };
+  }
+
+  /** Les derniers envois réellement partis, du plus récent au plus ancien. */
+  async derniersEnvois(limite = 5) {
+    const lignes = await this.prisma.auditLog.findMany({
+      where: { action: 'rapport.envoi_auto', entityType: 'Rapport' },
+      orderBy: { createdAt: 'desc' },
+      take: limite,
+      select: { createdAt: true, newValue: true },
+    });
+    return lignes.map((ligne) => {
+      const v = (ligne.newValue ?? {}) as Record<string, unknown>;
+      return {
+        date: ligne.createdAt.toISOString(),
+        du: typeof v.du === 'string' ? v.du : null,
+        au: typeof v.au === 'string' ? v.au : null,
+        rapports: Array.isArray(v.rapports) ? (v.rapports as string[]) : [],
+        destinataires:
+          typeof v.destinataires === 'number' ? v.destinataires : 0,
+      };
+    });
   }
 }

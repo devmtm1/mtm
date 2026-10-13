@@ -78,7 +78,7 @@ Les **clients**, **propriétaires** et **locataires** ont un espace séparé (le
 | **Rapports** | V E | — | — | — | — |
 | **Tâches, agenda, messages** | V C M | V C M | V C M | V C M | V C M |
 
-> Les droits des commerciaux s’appliquent **à leur périmètre** : un commercial ne voit que **ses** prospects, **ses** biens et **ses** dossiers de vente. L’encadrement (responsable commercial, manager, direction) voit **tout le monde**.
+> Les droits des commerciaux s’appliquent **à leur périmètre** : un commercial ne voit que **ses** prospects, **ses** biens et **ses** dossiers de vente — avec, dans ses dossiers, **ses** paiements et **sa** commission. Pour proposer un bien ou ouvrir un dossier, il accède en revanche à **tous les biens disponibles**. L’encadrement (responsable commercial, manager, direction) voit **tout le monde**.
 
 ## Les règles des deux regards
 

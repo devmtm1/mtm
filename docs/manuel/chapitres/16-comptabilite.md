@@ -30,7 +30,7 @@ Le menu **Finances** contient : *Tableau de bord*, *Journal*, *Saisies*, *Clôtu
 ![Tableau de bord financier](img/compta-01-tableau.png)
 
 - Boutons de période : *Ce mois-ci*, *Mois précédent*, *Ce trimestre*, *Cette année*, *12 derniers mois*.
-- Quatre tuiles : **Encaissements**, **Revenu de MTM**, **Dépenses**, **Résultat**, chacune comparée à la **période précédente de même durée**.
+- Quatre tuiles : **Encaissements**, **Revenu de MTM**, **Dépenses**, **Résultat**, chacune comparée à la **période précédente de même durée** (« +12 % par rapport à la période précédente », ou « Rien sur la période précédente : pas de comparaison »).
 - Le bandeau orange rappelle les **opérations à valider** : tant qu’elles ne le sont pas, elles ne comptent pas dans les totaux.
 - Plus bas : graphique revenu/dépenses par mois, **d’où vient le revenu** (répartition par activité), tableau **par activité**, et **ce qu’il reste à encaisser**.
 
@@ -48,7 +48,7 @@ Vous n’avez **rien à ressaisir** de ceci : paiements de vente **validés**, c
 
 - Filtres : **période** (du… au…), **raccourci**, **activité**, **sens** (entrées et sorties), recherche libre (libellé, tiers, référence).
 - Les tuiles donnent **entrées**, **dont revenu MTM**, **sorties** et nombre de **mouvements**.
-- Le journal s’ouvre par défaut sur le **mois précédent** (celui que l’on exporte pour la comptabilité) : choisissez **Raccourci › Ce mois-ci** pour voir le mois courant.
+- Le journal s’ouvre sur le **mois en cours** ; **Raccourci › Mois précédent** affiche celui que l’on exporte pour la comptabilité.
 
 ## Les saisies
 
@@ -82,6 +82,8 @@ Les onglets : **À valider**, **Validées**, **Rejetées**, **Toutes**. Un valid
 - **Clôturer exige qu’aucune saisie du mois n’attende sa validation.**
 - Une **correction** se fait alors **à la date du jour**.
 - **Rouvrir** un mois demande un **motif**, consigné dans le journal d’audit.
+
+La liste montre les **six derniers mois** et les mois déjà clôturés ; **« Afficher les mois plus anciens »** déroule le reste.
 
 Ordre conseillé en fin de mois : **1.** valider toutes les saisies et paiements ; **2.** **exporter** le journal ; **3.** **clôturer**.
 

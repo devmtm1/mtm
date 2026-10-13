@@ -6,7 +6,7 @@ resume: Vérifier un terrain pour un client, suivre les démarches administrativ
 roles: verifications commercial direction administrateur
 ---
 
-Le module **Vérifications** (menu principal, *Démarches administratives*) suit les **missions** confiées par des clients — souvent depuis l’étranger — pour **vérifier un terrain avant d’acheter** : visite sur place, consultation des administrations, puis rapport. Il suit aussi les **démarches** administratives (mutation, bail, autorisation de construire…) et les **prestations techniques** (plans).
+Le module **Vérifications et démarches** (menu principal) suit les **missions** confiées par des clients — souvent depuis l’étranger — pour **vérifier un terrain avant d’acheter** : visite sur place, consultation des administrations, puis rapport. Il suit aussi les **démarches** administratives (mutation, bail, autorisation de construire…) et les **prestations techniques** (plans).
 
 ![Liste des missions](img/dem-01-missions.png)
 
