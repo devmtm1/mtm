@@ -426,7 +426,7 @@
 <li>vos <strong>préférences</strong> : recevoir ou non les alertes par <strong>e-mail</strong>, par <strong>SMS</strong>, par <strong>WhatsApp</strong> (avec votre numéro de téléphone) ;</li>
 <li>l’e-mail ne part que si <strong>la règle de MTM le prévoit et que vous ne l’avez pas coupé</strong>.</li>
 </ul>
-<blockquote><p>Les SMS et WhatsApp ne fonctionnent que si MTM a branché une passerelle d’envoi. Tant qu’elle n’est pas en place, ces cases n’ont pas d’effet (l’écran le précise).</p>
+<blockquote><p>Les SMS et WhatsApp partent par le <strong>fournisseur de messagerie</strong> que l’administrateur technique a configuré sur le serveur (il peut en changer à tout moment). Tant qu’aucun n’est configuré, ces cases n’ont pas d’effet (l’écran le précise).</p>
 </blockquote>
 <p><strong>Qui est prévenu de quoi</strong> (groupes de destinataires, canaux) se règle dans <em>Règles de notification</em> : voir le chapitre <em>Administration</em>.</p>
 <h2 id="notifications-documents--retrouver-un-document">Retrouver un document</h2>
@@ -1806,7 +1806,7 @@
 <ul>
 <li>Chaque événement a un interrupteur <strong>Actif</strong>, un <strong>groupe de destinataires</strong> (« Encadrement commercial », « Valideurs des ventes et paiements »…) et des cases <strong>E-mail / SMS / WhatsApp</strong>.</li>
 <li><strong>Enregistrer</strong> applique le changement aux <strong>prochaines alertes</strong> ; <strong>Revenir aux réglages d’origine</strong> annule vos règles.</li>
-<li><strong>SMS et WhatsApp</strong> ne partent que si une <strong>passerelle d’envoi</strong> est branchée sur le serveur (<code>SMS_WEBHOOK_URL</code>, <code>WHATSAPP_WEBHOOK_URL</code>). Sans elle, rien ne part même si la case est cochée.</li>
+<li><strong>SMS et WhatsApp</strong> partent par le <strong>fournisseur</strong> désigné sur le serveur pour chaque canal (<code>SMS_PROVIDER</code>, <code>WHATSAPP_PROVIDER</code>). On change de fournisseur sans toucher à l’application ni aux données : voir <code>docs/AGENDA_TACHES_MESSAGES.md</code>. Le bandeau bleu en haut de l’écran dit quel canal est inactif. Sans fournisseur, rien ne part même si la case est cochée.</li>
 <li>Chacun peut <strong>couper l’e-mail pour lui-même</strong> dans <em>Mes notifications</em>.</li>
 </ul>
 <h2 id="administration--le-journal-d-audit">Le journal d’audit</h2>

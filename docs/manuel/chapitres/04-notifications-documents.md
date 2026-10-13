@@ -29,7 +29,7 @@ Cliquer sur une notification vous amène **directement** sur la fiche concernée
 - vos **préférences** : recevoir ou non les alertes par **e-mail**, par **SMS**, par **WhatsApp** (avec votre numéro de téléphone) ;
 - l’e-mail ne part que si **la règle de MTM le prévoit et que vous ne l’avez pas coupé**.
 
-> Les SMS et WhatsApp ne fonctionnent que si MTM a branché une passerelle d’envoi. Tant qu’elle n’est pas en place, ces cases n’ont pas d’effet (l’écran le précise).
+> Les SMS et WhatsApp partent par le **fournisseur de messagerie** que l’administrateur technique a configuré sur le serveur (il peut en changer à tout moment). Tant qu’aucun n’est configuré, ces cases n’ont pas d’effet (l’écran le précise).
 
 **Qui est prévenu de quoi** (groupes de destinataires, canaux) se règle dans *Règles de notification* : voir le chapitre *Administration*.
 

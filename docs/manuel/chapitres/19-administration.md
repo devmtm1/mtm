@@ -130,7 +130,7 @@ Cinq champs, un par type de dossier (vente, mission, chantier, prospect, tâche)
 
 - Chaque événement a un interrupteur **Actif**, un **groupe de destinataires** (« Encadrement commercial », « Valideurs des ventes et paiements »…) et des cases **E-mail / SMS / WhatsApp**.
 - **Enregistrer** applique le changement aux **prochaines alertes** ; **Revenir aux réglages d’origine** annule vos règles.
-- **SMS et WhatsApp** ne partent que si une **passerelle d’envoi** est branchée sur le serveur (`SMS_WEBHOOK_URL`, `WHATSAPP_WEBHOOK_URL`). Sans elle, rien ne part même si la case est cochée.
+- **SMS et WhatsApp** partent par le **fournisseur** désigné sur le serveur pour chaque canal (`SMS_PROVIDER`, `WHATSAPP_PROVIDER`). On change de fournisseur sans toucher à l’application ni aux données : voir `docs/AGENDA_TACHES_MESSAGES.md`. Le bandeau bleu en haut de l’écran dit quel canal est inactif. Sans fournisseur, rien ne part même si la case est cochée.
 - Chacun peut **couper l’e-mail pour lui-même** dans *Mes notifications*.
 
 ## Le journal d’audit

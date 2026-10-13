@@ -101,6 +101,21 @@ services:
         sync: false
       - key: CONTACT_NOTIFY_EMAIL
         sync: false
+      # SMS et WhatsApp (facultatifs) : fournisseur de chaque canal (brevo, passerelle ou none),
+      # puis les identifiants de ce fournisseur. Changer de prestataire = changer ces variables.
+      - key: SMS_PROVIDER
+        sync: false
+      - key: WHATSAPP_PROVIDER
+        sync: false
+      # Fournisseur « brevo » : clé d'API v3, différente de la clé SMTP.
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_SMS_SENDER
+        sync: false
+      - key: BREVO_WHATSAPP_SENDER
+        sync: false
+      - key: BREVO_WHATSAPP_TEMPLATE_ID
+        sync: false
       # Compte administrateur initial : créé par le seed au premier déploiement.
       # Le mot de passe peut être retiré ensuite (le seed ne l'exige que tant
       # que le compte n'existe pas).

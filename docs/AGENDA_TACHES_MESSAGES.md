@@ -29,18 +29,44 @@ Sections 21 et 22 du cahier des charges. Mode d'emploi pour les équipes et note
 - Événements : nouveau prospect, nouveau message du site, nouveau dossier de vente, paiement à valider, réservation expirée, **document manquant** (contrat absent d'un dossier réservé depuis plus de `notifications.documentManquantJours` jours, 7 par défaut), mandat proche de l'échéance, impayés de loyer, demande de location ou de séjour, demande de résiliation, nouvelle mission, nouveau chantier, chantier en retard ou hors budget, tâche assignée, tâche en retard, tâche à rendre, rappel de rendez-vous, invitation, relance CRM en retard, message sur un dossier, réponse de MTM au client.
 - L'e-mail ne part que si la règle le veut **et** que la personne ne l'a pas coupé.
 
-### SMS et WhatsApp
+### SMS et WhatsApp : un fournisseur au choix, interchangeable
 
-Le choix du prestataire appartient à MTM. Tant qu'aucune passerelle n'est renseignée, ces canaux sont inactifs et rien ne part. Pour les activer, renseigner sur le serveur :
+L'application **ne dépend d'aucun prestataire**. Elle demande d'envoyer un message sur un canal ; le **fournisseur désigné par la configuration** s'en charge. Les écrans, les règles de notification et les données sont les mêmes quel que soit le prestataire : **changer de fournisseur ne demande ni code, ni migration, ni intervention sur les données** — seulement des variables d'environnement.
+
+**Choisir le fournisseur de chaque canal** (indépendamment pour le SMS et pour WhatsApp) :
+
+| Variable | Valeurs | Effet |
+| --- | --- | --- |
+| `SMS_PROVIDER` | `brevo`, `passerelle`, `none` | fournisseur des SMS |
+| `WHATSAPP_PROVIDER` | `brevo`, `passerelle`, `none` | fournisseur de WhatsApp |
+
+- Variable **absente** : le premier fournisseur complètement configuré est utilisé (pratique quand un seul est branché).
+- `none` : le canal est **éteint**, même si un fournisseur est prêt.
+- Nom **inconnu** ou identifiants **incomplets** : le canal reste **inactif** (l'erreur est écrite une fois dans le journal du serveur). L'application n'envoie **jamais** chez un autre prestataire que celui qu'on a désigné.
+
+**Fournisseurs livrés**
+
+*`brevo`* — déjà utilisé pour les e-mails (qui, eux, passent par un SMTP quelconque) :
 
 | Variable | Rôle |
 | --- | --- |
-| `SMS_WEBHOOK_URL` | adresse qui reçoit les SMS |
-| `SMS_WEBHOOK_TOKEN` | jeton envoyé en `Authorization: Bearer …` (facultatif) |
-| `WHATSAPP_WEBHOOK_URL` | adresse qui reçoit les messages WhatsApp |
-| `WHATSAPP_WEBHOOK_TOKEN` | jeton (facultatif) |
+| `BREVO_API_KEY` | clé d'API **v3** (« xkeysib-… »), à créer dans Brevo › *SMTP et API* › *Clés API*. **Ce n'est pas la clé SMTP.** |
+| `BREVO_SMS_SENDER` | nom d'expéditeur des SMS : 11 caractères alphanumériques au plus (15 chiffres si numérique), accepté par Brevo et par les opérateurs du pays |
+| `BREVO_WHATSAPP_SENDER` | numéro WhatsApp Business relié à Brevo |
+| `BREVO_WHATSAPP_TEMPLATE_ID` | facultatif mais **conseillé** : modèle approuvé par WhatsApp |
 
-La passerelle reçoit `POST` avec un corps JSON `{ "canal": "sms" | "whatsapp", "to": "+221771234567", "text": "…" }` et répond 2xx si elle accepte le message. Un petit relais vers le prestataire retenu (Orange, Twilio, WhatsApp Business…) suffit. Chaque envoi est consigné (table `envois_canal`), avec le numéro masqué, réussi ou en échec. Un message n'est envoyé qu'aux personnes qui ont donné leur numéro et demandé ce canal.
+SMS : `POST /v3/transactionalSMS/send` (Unicode activé dès qu'il y a des accents : 70 caractères par segment au lieu de 160 ; chaque SMS consomme du solde Brevo). WhatsApp : `POST /v3/whatsapp/sendMessage` ; WhatsApp impose un **modèle approuvé** pour écrire à quelqu'un qui n'a pas écrit depuis moins de 24 h (le contenu d'un modèle est fixe) ; sans modèle, le texte libre n'est accepté que dans une conversation ouverte.
+
+*`passerelle`* — l'adaptateur **universel** : une passerelle HTTP à vous (`SMS_WEBHOOK_URL`, `WHATSAPP_WEBHOOK_URL`, jetons facultatifs `SMS_WEBHOOK_TOKEN`, `WHATSAPP_WEBHOOK_TOKEN`) qui reçoit `POST { "canal": "sms" | "whatsapp", "to": "+221771234567", "text": "…" }` et répond 2xx. Un petit relais vers n'importe quel prestataire (Orange, Twilio, Infobip, WhatsApp Cloud API…) suffit, **sans toucher à l'application**.
+
+**Passer d'un fournisseur à un autre** : renseigner les identifiants du nouveau, changer `SMS_PROVIDER` (et/ou `WHATSAPP_PROVIDER`), redémarrer. On peut garder l'ancien configuré pour revenir en arrière en une variable.
+
+**Ajouter un fournisseur dans le code** (quand un relais ne suffit pas) : écrire une classe qui respecte l'interface `FournisseurMessagerie` (`apps/api/src/modules/notifications/messagerie/fournisseur.ts` : un `nom`, `estConfigure(canal)`, `envoyer(message)`), puis l'inscrire dans `messagerie/registre.ts`. Rien d'autre ne change.
+
+**Ce qui ne dépend pas du fournisseur**
+- Le numéro de chaque personne se saisit dans **Mes notifications** (format international) ; chaque adaptateur le met au format que son prestataire attend.
+- Chaque envoi est consigné (table `envois_canal`) : canal, **fournisseur qui l'a porté**, numéro masqué, réussi ou en échec, et l'explication du refus.
+- Un message n'est envoyé qu'aux personnes qui ont donné leur numéro et demandé ce canal.
 
 ## Parcours des dossiers (Administration › Parcours des dossiers)
 
@@ -52,4 +78,4 @@ La passerelle reçoit `POST` avec un corps JSON `{ "canal": "sms" | "whatsapp", 
 
 ## Déploiement
 
-Migration `20261013090000_agenda_taches_messages` (tables `taches`, `taches_historique`, `evenements_agenda`, `evenements_participants`, `messages_dossier`, `envois_canal`, et colonnes de préférences sur `users`). Puis seed pour les nouvelles permissions.
+Migration `20261013090000_agenda_taches_messages` (tables `taches`, `taches_historique`, `evenements_agenda`, `evenements_participants`, `messages_dossier`, `envois_canal`, et colonnes de préférences sur `users`). Puis seed pour les nouvelles permissions. Migration `20261015090000_envois_canal_fournisseur` : colonne facultative `fournisseur` du journal des envois (les envois déjà consignés n'en ont pas).

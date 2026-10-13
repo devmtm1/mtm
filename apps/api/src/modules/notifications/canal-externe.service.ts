@@ -1,8 +1,19 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../database/prisma.service';
+import {
+  type CanalExterne,
+  FOURNISSEURS_MESSAGERIE,
+  type FournisseurMessagerie,
+} from './messagerie/fournisseur';
+import {
+  type ChoixFournisseur,
+  choisirFournisseur,
+  creerFournisseurs,
+  VARIABLE_FOURNISSEUR,
+} from './messagerie/registre';
 
-export type CanalExterne = 'sms' | 'whatsapp';
+export type { CanalExterne } from './messagerie/fournisseur';
 
 export interface EnvoiExterne {
   canal: CanalExterne;
@@ -12,31 +23,39 @@ export interface EnvoiExterne {
   notificationId?: string;
 }
 
-/** Variables d'environnement de chaque canal : une passerelle HTTP qui reçoit {canal, to, text}. */
-const VARIABLES: Record<CanalExterne, { url: string; jeton: string }> = {
-  sms: { url: 'SMS_WEBHOOK_URL', jeton: 'SMS_WEBHOOK_TOKEN' },
-  whatsapp: { url: 'WHATSAPP_WEBHOOK_URL', jeton: 'WHATSAPP_WEBHOOK_TOKEN' },
-};
-
 /**
  * Canaux externes de notification (SMS, WhatsApp) — section 22 du cahier des
- * charges : « lorsque l'intégration est disponible et autorisée ». Le choix du
- * prestataire appartient à MTM : tant qu'aucune passerelle n'est renseignée, le
- * canal est inactif et rien ne part. Une passerelle (ou un petit relais vers le
- * prestataire retenu) reçoit un POST JSON `{ canal, to, text }` ; chaque envoi
- * est consigné, réussi ou non.
+ * charges : « lorsque l'intégration est disponible et autorisée ».
+ *
+ * Ce service **ne connaît aucun prestataire**. Il demande au registre le
+ * fournisseur configuré pour le canal, lui confie le message et consigne le
+ * résultat. Changer de prestataire ne touche ni ce service, ni les écrans, ni
+ * les données : voir `messagerie/fournisseur.ts`.
  */
 @Injectable()
 export class CanalExterneService {
   private readonly logger = new Logger(CanalExterneService.name);
+  private readonly fournisseurs: FournisseurMessagerie[];
+  private readonly signales = new Set<string>();
 
+  /** Les fournisseurs peuvent être imposés (tests, branchement d'un prestataire sur mesure). */
   constructor(
     private readonly config: ConfigService,
     private readonly prisma: PrismaService,
-  ) {}
+    @Optional()
+    @Inject(FOURNISSEURS_MESSAGERIE)
+    fournisseurs?: FournisseurMessagerie[],
+  ) {
+    this.fournisseurs = fournisseurs ?? creerFournisseurs(config);
+  }
+
+  /** Nom du fournisseur qui porte ce canal, ou `null` s'il est inactif. */
+  fournisseur(canal: CanalExterne): string | null {
+    return this.choix(canal).fournisseur?.nom ?? null;
+  }
 
   estConfigure(canal: CanalExterne): boolean {
-    return Boolean(this.config.get<string>(VARIABLES[canal].url));
+    return this.fournisseur(canal) !== null;
   }
 
   etat(): Record<CanalExterne, boolean> {
@@ -46,45 +65,56 @@ export class CanalExterneService {
     };
   }
 
-  /** Envoie le message ; ne lève jamais (la notification est déjà créée). Renvoie vrai si la passerelle a accepté. */
+  /** Envoie le message ; ne lève jamais (la notification est déjà créée). Renvoie vrai si le fournisseur a accepté. */
   async envoyer(envoi: EnvoiExterne): Promise<boolean> {
-    const variables = VARIABLES[envoi.canal];
-    const url = this.config.get<string>(variables.url);
-    if (!url) return false;
-    let erreur: string | null = null;
+    const { fournisseur } = this.choix(envoi.canal);
+    if (!fournisseur) return false;
+    let erreur: string | null;
     try {
-      const jeton = this.config.get<string>(variables.jeton);
-      const reponse = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(jeton ? { Authorization: `Bearer ${jeton}` } : {}),
-        },
-        body: JSON.stringify({
-          canal: envoi.canal,
-          to: envoi.destinataire,
-          text: envoi.texte.slice(0, 480),
-        }),
-        signal: AbortSignal.timeout(8000),
+      erreur = await fournisseur.envoyer({
+        canal: envoi.canal,
+        destinataire: envoi.destinataire,
+        texte: envoi.texte,
       });
-      if (!reponse.ok) erreur = `La passerelle a répondu ${reponse.status}`;
     } catch (error) {
       erreur = error instanceof Error ? error.message : String(error);
     }
-    await this.consigner(envoi, erreur);
+    await this.consigner(envoi, fournisseur.nom, erreur);
     if (erreur) {
       this.logger.warn(
-        `Envoi ${envoi.canal} vers ${masquer(envoi.destinataire)} échoué : ${erreur}`,
+        `Envoi ${envoi.canal} (${fournisseur.nom}) vers ${masquer(envoi.destinataire)} échoué : ${erreur}`,
       );
     }
     return erreur === null;
   }
 
-  private async consigner(envoi: EnvoiExterne, erreur: string | null) {
+  private choix(canal: CanalExterne): ChoixFournisseur {
+    const choix = choisirFournisseur(canal, this.config, this.fournisseurs);
+    // Un réglage faux ne doit pas passer inaperçu : on le dit une fois dans le journal.
+    if (choix.raison === 'inconnu' || choix.raison === 'non_configure') {
+      const cle = `${canal}:${choix.raison}`;
+      if (!this.signales.has(cle)) {
+        this.signales.add(cle);
+        this.logger.error(
+          choix.raison === 'inconnu'
+            ? `${VARIABLE_FOURNISSEUR[canal]} désigne un fournisseur inconnu (${this.fournisseurs.map((f) => f.nom).join(', ')}) : le canal ${canal} reste inactif.`
+            : `${VARIABLE_FOURNISSEUR[canal]} désigne un fournisseur dont les identifiants sont incomplets : le canal ${canal} reste inactif.`,
+        );
+      }
+    }
+    return choix;
+  }
+
+  private async consigner(
+    envoi: EnvoiExterne,
+    fournisseur: string,
+    erreur: string | null,
+  ) {
     try {
       await this.prisma.envoiCanal.create({
         data: {
           canal: envoi.canal,
+          fournisseur,
           destinataire: masquer(envoi.destinataire),
           notificationId: envoi.notificationId,
           statut: erreur ? 'echec' : 'envoye',

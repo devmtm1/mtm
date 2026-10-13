@@ -186,6 +186,7 @@ model Terrain {
    * /**
    * /**
    * /**
+   * /**
    * Surface habitable, distincte de la parcelle. Les deux coexistent : une
    * villa de 120 m² habitables peut occuper une parcelle de 300 m², et les
    * confondre fausserait toute comparaison au catalogue.
@@ -235,6 +236,7 @@ model Terrain {
   notesInternes            String?
   // --- Suivi du portefeuille (reprise du tableur « Bd terrains ») ---
   /**
+   * /**
    * /**
    * /**
    * /**
@@ -679,6 +681,7 @@ model Prospect {
   // vivre dans une table à part, pour qu'une seule fiche porte le budget et
   // la zone du client — deux exemplaires finiraient par diverger.
   /**
+   * /**
    * /**
    * /**
    * /**
@@ -1416,6 +1419,7 @@ model BienLocatif {
    * /**
    * /**
    * /**
+   * /**
    * Visible sur le site tant que le bien est « disponible ». Réservé à la
    * permission locatif:publier ; exige un loyer et au moins une photo.
    */
@@ -1441,6 +1445,7 @@ model BienLocatif {
 
   // --- Courte durée (type Airbnb) ---
   /**
+   * /**
    * /**
    * /**
    * /**
@@ -1518,6 +1523,7 @@ model BailLocatif {
 
   // --- Sortie et cas particuliers (section 15) ---
   /**
+   * /**
    * /**
    * /**
    * /**
@@ -2529,6 +2535,8 @@ model MessageDossier {
 model EnvoiCanal {
   id             String   @id @default(uuid())
   canal          String
+  /// Prestataire qui a porté l'envoi (brevo, passerelle…) : change sans toucher au reste.
+  fournisseur    String?
   destinataire   String
   notificationId String?
   /// envoye | echec

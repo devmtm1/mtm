@@ -26,9 +26,14 @@
         <aside class="alert-banner alert-banner--info" role="status">
           <div class="alert-banner__head"><strong>Canaux SMS et WhatsApp</strong></div>
           <p>
-            Ils s’activent dès qu’une passerelle d’envoi est branchée sur le serveur (variables
-            <code>SMS_WEBHOOK_URL</code> et <code>WHATSAPP_WEBHOOK_URL</code>). Tant qu’elle ne l’est pas, rien ne part par ces
-            canaux, même si la case est cochée.
+            Ils partent par le <strong>fournisseur de messagerie</strong> configuré sur le serveur (il se change sans toucher à
+            l’application). Tant qu’un canal n’a pas de fournisseur, rien ne part par lui, même si la case est cochée.
+            @if (!c.canaux.sms) {
+              <br />SMS inactif : aucun fournisseur n’est configuré (<code>SMS_PROVIDER</code>).
+            }
+            @if (!c.canaux.whatsapp) {
+              <br />WhatsApp inactif : aucun fournisseur n’est configuré (<code>WHATSAPP_PROVIDER</code>).
+            }
           </p>
         </aside>
       }
