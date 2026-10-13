@@ -68,7 +68,7 @@ Voir `apps/api/README.md` et `apps/backoffice/README.md` pour le détail de
 chaque application, `docs/DOCKER.md` pour l'usage détaillé de Docker, et
 `docs/FRONTEND_STACK.md` pour les bibliothèques imposées du back-office,
 et `docs/CI.md` pour le détail du pipeline d'intégration continue, et
-`docs/BACKUP.md` pour les sauvegardes et la procédure de restauration.
+`docs/BACKUP.md` pour les sauvegardes et la procédure de restauration. Le **guide d’utilisation de l’équipe** (une page web, `/manuel/` sur le back-office) se maintient dans `docs/manuel/` — voir `docs/manuel/README.md`.
 
 ## Environnements
 

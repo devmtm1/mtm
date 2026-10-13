@@ -205,6 +205,12 @@ textarea {
   align-items: center;
 }
 
+/* Un bouton posé directement dans l'en-tête ne doit jamais être écrasé par un long sous-titre. */
+.page-header > .mat-mdc-button-base {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 .page-shell {
   display: block;
   width: min(100%, 1680px);

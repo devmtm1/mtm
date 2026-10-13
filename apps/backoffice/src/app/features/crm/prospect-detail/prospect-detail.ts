@@ -29,6 +29,8 @@ import type { ActiviteCrmItem, CommercialSummary, ProspectDetail as ProspectDeta
 import { NotificationService } from '../../../shared/services/notification.service';
 import { LabelPipe } from '../../../shared/pipes/label.pipe';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
+import { NextActionDialog } from '../../../shared/dialogs/next-action-dialog';
+import { TextPromptDialog } from '../../../shared/dialogs/text-prompt-dialog';
 import { StatusChoiceDialog } from '../../../shared/dialogs/status-choice-dialog';
 import { HistoryDialog } from '../../../shared/dialogs/history-dialog';
 import { ActiviteDialog } from '../activite-dialog/activite-dialog';
@@ -416,49 +418,35 @@ export class ProspectDetail implements OnInit {
     }).subscribe((result) => {
       if (!result) return;
       if (EXIT_STAGES.includes(result.value)) {
-        const motif = window.prompt(`Motif : pourquoi ce prospect passe-t-il en « ${this.stageLabel(result.value)} » ? (obligatoire, conservé dans l’historique)`)?.trim();
-        if (!motif || motif.length < 3) {
-          this.notify.info('Motif obligatoire (3 caractères minimum) pour sortir un prospect du parcours.');
-          return;
-        }
-        this.run(this.api.transitionPipeline(prospect.id, result.value, motif), `Prospect : ${this.stageLabel(result.value)}`);
+        TextPromptDialog.ask(this.dialog, {
+          title: `Pourquoi « ${this.stageLabel(result.value)} » ?`,
+          description: 'Un prospect qui sort du parcours demande un motif. Il est conservé dans l’historique.',
+          label: 'Motif',
+          placeholder: 'Ex. Budget insuffisant, a acheté ailleurs, ne répond plus',
+          confirmLabel: 'Enregistrer',
+        }).subscribe((motif) => {
+          if (motif) this.run(this.api.transitionPipeline(prospect.id, result.value, motif), `Prospect : ${this.stageLabel(result.value)}`);
+        });
         return;
       }
       // Règle MTM : un prospect qui reste actif doit avoir une suite prévue.
-      const suivi = prospect.prochaineRelanceLe || result.value === 'vente' ? undefined : this.askNextAction();
-      if (suivi === null) return;
-      this.run(this.api.transitionPipeline(prospect.id, result.value, undefined, suivi), `Étape : ${this.stageLabel(result.value)}`);
+      if (prospect.prochaineRelanceLe || result.value === 'vente') {
+        this.run(this.api.transitionPipeline(prospect.id, result.value, undefined, undefined), `Étape : ${this.stageLabel(result.value)}`);
+        return;
+      }
+      NextActionDialog.ask(this.dialog, { subject: this.name(), action: prospect.prochaineAction }).subscribe((suivi) => {
+        if (suivi) this.run(this.api.transitionPipeline(prospect.id, result.value, undefined, suivi), `Étape : ${this.stageLabel(result.value)}`);
+      });
     });
-  }
-
-  /**
-   * Demande la prochaine action et sa date. Renvoie `null` si l'utilisateur
-   * renonce — la transition est alors abandonnée plutôt que refusée par l'API.
-   */
-  private askNextAction(): { prochaineAction: string; prochaineRelanceLe: string } | null {
-    const action = window.prompt('Prochaine action à mener ? (obligatoire : aucun prospect actif ne reste sans suite)')?.trim();
-    if (!action) {
-      this.notify.info('Indiquez la prochaine action pour faire avancer ce prospect.');
-      return null;
-    }
-    const jours = window.prompt('Dans combien de jours le relancer ?', '3')?.trim();
-    const delai = Number(jours);
-    if (!jours || Number.isNaN(delai) || delai < 0) {
-      this.notify.info('Indiquez un nombre de jours valide pour la relance.');
-      return null;
-    }
-    const date = new Date();
-    date.setDate(date.getDate() + delai);
-    return { prochaineAction: action, prochaineRelanceLe: date.toISOString() };
   }
 
   /** Reprogrammer la relance sans changer d'étape. */
   protected planRelance(): void {
     const prospect = this.prospect();
     if (!prospect) return;
-    const suivi = this.askNextAction();
-    if (!suivi) return;
-    this.run(this.api.update(prospect.id, suivi), 'Relance programmée');
+    NextActionDialog.ask(this.dialog, { subject: this.name(), action: prospect.prochaineAction }).subscribe((suivi) => {
+      if (suivi) this.run(this.api.update(prospect.id, suivi), 'Relance programmée');
+    });
   }
 
   protected proposeTerrain(): void {

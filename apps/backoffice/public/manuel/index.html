@@ -1,0 +1,2497 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Guide d’utilisation — MTM Immobilier</title>
+<link rel="icon" href="../favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="manuel.css">
+</head>
+<body>
+<header class="entete">
+<a class="entete__marque" href="#bienvenue"><img src="../logomtm.jpeg" alt="MTM Immobilier"><span><strong>Guide d’utilisation</strong><span>MTM Immobilier · mis à jour le 13 octobre 2026</span></span></a>
+<div class="entete__outils">
+<div class="recherche"><input id="recherche" type="search" placeholder="Rechercher dans le guide…  ( / )" aria-label="Rechercher dans le guide" autocomplete="off"></div>
+<div class="profil"><select id="profil" aria-label="Je suis">
+<option value="tous">Je suis… (choisir mon métier)</option>
+<option value="commercial">Commercial</option>
+<option value="responsable_commercial">Responsable commercial ou manager</option>
+<option value="direction">Direction</option>
+<option value="comptabilite">Comptabilité</option>
+<option value="gestion_locative">Gestion locative</option>
+<option value="verifications">Vérifications (démarches)</option>
+<option value="chantiers">Chantiers</option>
+<option value="administrateur">Administrateur</option>
+<option value="rh">Ressources humaines et autres</option>
+</select></div>
+<a class="bouton" href="/">Ouvrir le back-office</a>
+<button class="bouton bouton--menu" id="bouton-menu" type="button" aria-controls="sommaire">Menu</button>
+</div>
+</header>
+<div class="page">
+<nav class="sommaire" id="sommaire" aria-label="Sommaire du guide">
+<h2>Pour tout le monde</h2>
+<ul>
+<li><a href="#bienvenue" data-chapitre="bienvenue" data-roles="tous">Bienvenue</a></li>
+<li><a href="#premiers-pas" data-chapitre="premiers-pas" data-roles="tous">Premiers pas</a></li>
+<li><a href="#tableau-de-bord" data-chapitre="tableau-de-bord" data-roles="tous">Le tableau de bord</a></li>
+<li><a href="#taches-agenda" data-chapitre="taches-agenda" data-roles="tous">Tâches et agenda</a></li>
+<li><a href="#notifications-documents" data-chapitre="notifications-documents" data-roles="tous">Notifications et documents</a></li>
+<li><a href="#telephone" data-chapitre="telephone" data-roles="tous">Sur téléphone</a></li>
+</ul>
+<h2>Par métier</h2>
+<ul>
+<li><a href="#commercial" data-chapitre="commercial" data-roles="commercial responsable_commercial direction">Le travail du commercial</a></li>
+<li><a href="#responsable-commercial" data-chapitre="responsable-commercial" data-roles="responsable_commercial direction">Piloter l’équipe commerciale</a></li>
+<li><a href="#mandats-proprietaires" data-chapitre="mandats-proprietaires" data-roles="commercial responsable_commercial direction administrateur">Mandats, propriétaires et biens</a></li>
+<li><a href="#gestion-locative" data-chapitre="gestion-locative" data-roles="gestion_locative direction administrateur">La gestion locative</a></li>
+<li><a href="#verifications" data-chapitre="verifications" data-roles="verifications commercial direction administrateur">Les vérifications et démarches</a></li>
+<li><a href="#chantiers" data-chapitre="chantiers" data-roles="chantiers direction administrateur comptabilite">Les chantiers</a></li>
+<li><a href="#comptabilite" data-chapitre="comptabilite" data-roles="comptabilite direction administrateur">Comptabilité et finances</a></li>
+<li><a href="#direction" data-chapitre="direction" data-roles="direction responsable_commercial comptabilite administrateur">La direction : chiffres et rapports</a></li>
+<li><a href="#site-web" data-chapitre="site-web" data-roles="commercial responsable_commercial direction administrateur">Le site public et les demandes web</a></li>
+<li><a href="#administration" data-chapitre="administration" data-roles="administrateur direction">Administration du back-office</a></li>
+</ul>
+<h2>Pour s’y retrouver</h2>
+<ul>
+<li><a href="#droits" data-chapitre="droits" data-roles="tous">Qui peut faire quoi</a></li>
+<li><a href="#faq" data-chapitre="faq" data-roles="tous">Questions fréquentes</a></li>
+<li><a href="#lexique" data-chapitre="lexique" data-roles="tous">Petit lexique</a></li>
+</ul>
+</nav>
+<main class="contenu" id="contenu">
+<div class="resultats-recherche" id="resultats-recherche" hidden></div>
+<article class="chapitre" id="bienvenue" data-titre="Bienvenue">
+<header class="chapitre__entete">
+<p class="chapitre__ligne">Pour tout le monde</p>
+<h1>Bienvenue</h1>
+<p class="chapitre__resume">À quoi sert ce guide, comment le lire, et par où commencer selon votre métier.</p>
+</header>
+<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#bienvenue--par-ou-commencer">Par où commencer ?</a></li><li><a href="#bienvenue--tous-les-chapitres">Tous les chapitres</a></li><li><a href="#bienvenue--ce-que-vous-voyez-depend-de-votre-role">Ce que vous voyez dépend de votre rôle</a></li><li><a href="#bienvenue--une-regle-valable-pour-tout-le-monde">Une règle valable pour tout le monde</a></li></ul></nav>
+<p>Ce guide apprend à <strong>toute l’équipe de MTM Immobilier</strong> à se servir du back-office : commerciaux, responsables, direction, comptabilité, gestion locative, vérifications, chantiers, administration.</p>
+<p>Il se lit <strong>dans le navigateur</strong>, sans rien installer. Pour retrouver une explication, tapez un mot dans la barre de recherche en haut (ou appuyez sur <kbd>/</kbd>).</p>
+<p><a href="img/02-accueil.png" target="_blank" rel="noopener"><img src="img/02-accueil.png" alt="Le tableau de bord du back-office" loading="lazy"></a></p>
+<h2 id="bienvenue--par-ou-commencer">Par où commencer ?</h2>
+<ol>
+<li>Lisez les chapitres <strong>« Pour tout le monde »</strong> (une vingtaine de minutes) : se connecter, se repérer, le tableau de bord, les tâches et l’agenda, les notifications.</li>
+<li>Lisez ensuite le chapitre de <strong>votre métier</strong>. Choisissez-le dans le menu <strong>« Je suis… »</strong> en haut de la page : le guide vous signale les chapitres qui vous concernent.</li>
+<li>Gardez le guide ouvert dans un onglet : il est fait pour être consulté en travaillant.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Si vous êtes…</th>
+<th>Commencez par</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Commercial</strong></td>
+<td>Premiers pas, Mon tableau de bord, puis <em>Le travail du commercial</em></td>
+</tr>
+<tr>
+<td><strong>Responsable commercial ou manager</strong></td>
+<td>Premiers pas, puis <em>Piloter l’équipe commerciale</em></td>
+</tr>
+<tr>
+<td><strong>Direction</strong></td>
+<td>Premiers pas, puis <em>La direction : chiffres et rapports</em></td>
+</tr>
+<tr>
+<td><strong>Comptabilité</strong></td>
+<td>Premiers pas, puis <em>Comptabilité et finances</em></td>
+</tr>
+<tr>
+<td><strong>Gestion locative</strong></td>
+<td>Premiers pas, puis <em>La gestion locative</em></td>
+</tr>
+<tr>
+<td><strong>Vérifications (démarches)</strong></td>
+<td>Premiers pas, puis <em>Les vérifications et démarches</em></td>
+</tr>
+<tr>
+<td><strong>Chantiers</strong></td>
+<td>Premiers pas, puis <em>Les chantiers</em></td>
+</tr>
+<tr>
+<td><strong>Administrateur</strong></td>
+<td>Premiers pas, puis <em>Administration du back-office</em></td>
+</tr>
+<tr>
+<td><strong>RH et autres collaborateurs</strong></td>
+<td>Les chapitres « Pour tout le monde » suffisent</td>
+</tr>
+</tbody></table>
+<h2 id="bienvenue--tous-les-chapitres">Tous les chapitres</h2>
+<p><ul class="accueil-cartes">
+<li><a href="#premiers-pas"><strong>Premiers pas</strong><span>Se connecter, comprendre l’écran, retrouver quelqu’un ou quelque chose, protéger son compte.</span></a></li>
+<li><a href="#tableau-de-bord"><strong>Le tableau de bord</strong><span>La page d’accueil : ce qui demande votre attention aujourd’hui, selon votre rôle.</span></a></li>
+<li><a href="#taches-agenda"><strong>Tâches et agenda</strong><span>Ne rien oublier : confier et suivre des tâches, planifier rendez-vous, visites et appels.</span></a></li>
+<li><a href="#notifications-documents"><strong>Notifications et documents</strong><span>La cloche et ses alertes, régler ce que vous recevez, retrouver un document de n’importe quel module.</span></a></li>
+<li><a href="#telephone"><strong>Sur téléphone</strong><span>Utiliser le back-office depuis un smartphone, sur le terrain.</span></a></li>
+<li><a href="#commercial"><strong>Le travail du commercial</strong><span>Prospects, relances, visites, réservations et dossiers de vente : le quotidien d’un commercial.</span></a></li>
+<li><a href="#responsable-commercial"><strong>Piloter l’équipe commerciale</strong><span>Suivre l’activité de chaque commercial, fixer les objectifs, débloquer les dossiers, valider les commissions.</span></a></li>
+<li><a href="#mandats-proprietaires"><strong>Mandats, propriétaires et biens</strong><span>Enregistrer les propriétaires, signer et suivre les mandats, tenir les fiches de biens à jour.</span></a></li>
+<li><a href="#gestion-locative"><strong>La gestion locative</strong><span>Biens loués, baux, loyers et quittances, impayés, locations à la nuit, résiliations.</span></a></li>
+<li><a href="#verifications"><strong>Les vérifications et démarches</strong><span>Vérifier un terrain pour un client, suivre les démarches administratives, facturer et rendre le rapport.</span></a></li>
+<li><a href="#chantiers"><strong>Les chantiers</strong><span>Suivre un chantier de la préparation à la réception : planning, journal, budget, dépenses, rapports au client.</span></a></li>
+<li><a href="#comptabilite"><strong>Comptabilité et finances</strong><span>Encaissements, revenu réel de MTM, dépenses, saisies à deux, clôture mensuelle et export pour la comptabilité.</span></a></li>
+<li><a href="#direction"><strong>La direction : chiffres et rapports</strong><span>Le tableau de bord de direction, les sept rapports PDF et Excel, l’envoi automatique par e-mail.</span></a></li>
+<li><a href="#site-web"><strong>Le site public et les demandes web</strong><span>Répondre aux messages du site, gérer les textes, réalisations, publicités et l’équipe affichés sur le site.</span></a></li>
+<li><a href="#administration"><strong>Administration du back-office</strong><span>Comptes, rôles, paramètres, parcours des dossiers, identité de l’entreprise, notifications, journal d’audit.</span></a></li>
+</ul></p>
+<h2 id="bienvenue--ce-que-vous-voyez-depend-de-votre-role">Ce que vous voyez dépend de votre rôle</h2>
+<p>Chaque personne a un <strong>rôle</strong> qui définit ce qu’elle voit et ce qu’elle peut faire. Un commercial ne voit pas les finances ; la comptabilité ne modifie pas les prospects. Si un menu décrit dans ce guide n’apparaît pas chez vous, <strong>c’est normal</strong> : il n’est pas prévu pour votre rôle. Le chapitre <em>Qui peut faire quoi</em> récapitule les droits de chaque rôle.</p>
+<blockquote><p>Les captures d’écran de ce guide montrent des <strong>données fictives</strong> (clients, montants, références inventés). Les vôtres afficheront vos propres dossiers.</p>
+</blockquote>
+<h2 id="bienvenue--une-regle-valable-pour-tout-le-monde">Une règle valable pour tout le monde</h2>
+<p>Chaque action est <strong>enregistrée au nom de la personne connectée</strong> (journal d’audit). Ne prêtez jamais votre compte : en cas d’erreur, c’est vous qui seriez désigné.</p>
+
+<nav class="pagination" aria-label="Chapitres voisins"><span></span><a href="#premiers-pas" rel="next"><small>Suivant</small>Premiers pas</a></nav>
+</article>
+<article class="chapitre" id="premiers-pas" data-titre="Premiers pas">
+<header class="chapitre__entete">
+<p class="chapitre__ligne">Pour tout le monde</p>
+<h1>Premiers pas</h1>
+<p class="chapitre__resume">Se connecter, comprendre l’écran, retrouver quelqu’un ou quelque chose, protéger son compte.</p>
+</header>
+<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#premiers-pas--se-connecter">Se connecter</a></li><li><a href="#premiers-pas--comprendre-l-ecran">Comprendre l’écran</a></li><li><a href="#premiers-pas--les-listes-filtrer-chercher-trier">Les listes : filtrer, chercher, trier</a></li><li><a href="#premiers-pas--les-fiches-et-les-boutons">Les fiches et les boutons</a></li><li><a href="#premiers-pas--proteger-son-compte">Protéger son compte</a></li><li><a href="#premiers-pas--les-themes-clair-et-sombre">Les thèmes clair et sombre</a></li></ul></nav>
+<h2 id="premiers-pas--se-connecter">Se connecter</h2>
+<ol>
+<li>Ouvrez l’adresse du back-office que MTM vous a donnée.</li>
+<li>Saisissez votre <strong>e-mail</strong> et votre <strong>mot de passe</strong>, puis <strong>Se connecter</strong>.</li>
+</ol>
+<p><a href="img/01-connexion.png" target="_blank" rel="noopener"><img src="img/01-connexion.png" alt="Page de connexion" loading="lazy"></a></p>
+<ul>
+<li>À la <strong>première connexion</strong>, l’application vous demande de <strong>choisir un nouveau mot de passe</strong> : au moins <strong>12 caractères</strong>, avec une majuscule, une minuscule, un chiffre et un caractère spécial.</li>
+<li><strong>Mot de passe oublié ?</strong> Cliquez sur le lien sous le formulaire : un e-mail vous permet d’en choisir un nouveau.</li>
+<li>Après plusieurs erreurs de mot de passe, le compte se <strong>bloque quelques minutes</strong>. Patientez, ou demandez de l’aide à un administrateur.</li>
+</ul>
+<h3 id="premiers-pas--la-double-authentification-2fa">La double authentification (2FA)</h3>
+<p>Les comptes qui touchent à des données sensibles — <strong>direction, administrateur, comptabilité, ressources humaines</strong> — doivent activer la <strong>double authentification</strong> : après le mot de passe, l’application demande un <strong>code à 6 chiffres</strong> généré par une application sur votre téléphone (Google Authenticator, Microsoft Authenticator…).</p>
+<ul>
+<li>L’activation se fait dans <strong>Mon compte › Sécurité</strong> : scannez le QR code, saisissez le premier code.</li>
+<li><strong>Conservez les codes de secours</strong> affichés à l’activation : ils servent si vous perdez votre téléphone.</li>
+<li>Téléphone perdu et pas de codes de secours ? Un administrateur peut <strong>réinitialiser</strong> votre 2FA.</li>
+</ul>
+<p><a href="img/14-securite.png" target="_blank" rel="noopener"><img src="img/14-securite.png" alt="Sécurité du compte" loading="lazy"></a></p>
+<blockquote class="attention"><p><strong>Attention</strong> — Sans 2FA, un compte de direction, d’administration, de comptabilité ou de RH ne peut pas utiliser les fonctions sensibles (finances, paramètres, exports…). L’application le dit clairement.</p>
+</blockquote>
+<h2 id="premiers-pas--comprendre-l-ecran">Comprendre l’écran</h2>
+<p><a href="img/02-accueil.png" target="_blank" rel="noopener"><img src="img/02-accueil.png" alt="Les zones de l’écran" loading="lazy"></a></p>
+<table>
+<thead>
+<tr>
+<th>Zone</th>
+<th>À quoi elle sert</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Menu à gauche</strong></td>
+<td>Aller d’un module à l’autre. Il ne montre que ce que votre rôle permet. Un groupe (Commercial, Immobilier…) se déplie d’un clic.</td>
+</tr>
+<tr>
+<td><strong>Barre de recherche</strong></td>
+<td>Retrouver un prospect, un bien, un dossier. Raccourci : <kbd>Ctrl</kbd> + <kbd>K</kbd>.</td>
+</tr>
+<tr>
+<td><strong>Lune</strong></td>
+<td>Passer du thème clair au thème sombre.</td>
+</tr>
+<tr>
+<td><strong>Cloche</strong></td>
+<td>Vos notifications ; un point rouge signale du nouveau.</td>
+</tr>
+<tr>
+<td><strong>Votre nom</strong></td>
+<td>Votre profil, la déconnexion.</td>
+</tr>
+<tr>
+<td><strong>Titre de la page et fil d’Ariane</strong></td>
+<td>Où vous êtes (« Principal › Commercial › Prospects »).</td>
+</tr>
+</tbody></table>
+<h3 id="premiers-pas--le-menu">Le menu</h3>
+<p>Le menu est rangé en sections : <strong>Principal</strong> (tableau de bord, agenda, tâches, les modules métier), <strong>Finances</strong>, <strong>Contenu</strong> (le site public), <strong>Mon compte</strong> (notifications, sécurité) et <strong>Administration</strong>. L’icône à gauche du titre de la page <strong>replie</strong> le menu pour gagner de la place. Dans la section <strong>Mon compte</strong>, <strong>Guide d’utilisation</strong> ouvre ce guide dans un nouvel onglet.</p>
+<h3 id="premiers-pas--retrouver-quelqu-un-ou-quelque-chose">Retrouver quelqu’un ou quelque chose</h3>
+<p>Tapez quelques lettres dans la barre de recherche : les prospects, biens et dossiers correspondants apparaissent, un clic ouvre la fiche. Vous ne trouvez que ce que votre rôle vous permet de voir.</p>
+<p><a href="img/22-recherche-rapide.png" target="_blank" rel="noopener"><img src="img/22-recherche-rapide.png" alt="Recherche rapide" loading="lazy"></a></p>
+<h2 id="premiers-pas--les-listes-filtrer-chercher-trier">Les listes : filtrer, chercher, trier</h2>
+<p>Presque tous les modules présentent leurs dossiers de la même façon :</p>
+<ul>
+<li>des <strong>tuiles</strong> en haut résument la situation (et sont cliquables : un clic filtre la liste) ;</li>
+<li>des <strong>pastilles</strong> (« À relancer aujourd’hui », « Demandes à traiter »…) filtrent d’un clic ;</li>
+<li>la <strong>recherche</strong> et les <strong>filtres</strong> affinent ;</li>
+<li>cliquez sur une ligne pour <strong>ouvrir la fiche</strong>.</li>
+</ul>
+<p>Dans les grands tableaux, <strong>Colonnes</strong> choisit ce qui s’affiche, et les en-têtes se redimensionnent.</p>
+<h2 id="premiers-pas--les-fiches-et-les-boutons">Les fiches et les boutons</h2>
+<p>Sur une fiche (prospect, bien, dossier…) :</p>
+<ul>
+<li>en haut, <strong>ce qu’il faut savoir</strong> : référence, statut, responsable ;</li>
+<li>un <strong>bandeau « À faire »</strong> (orange) signale ce qui bloque ou approche ;</li>
+<li>à droite du titre, les <strong>boutons d’action</strong> ; la flèche <strong>⌄</strong> cache les actions moins fréquentes ;</li>
+<li>plus bas, les blocs : paiements, documents, historique, échanges…</li>
+</ul>
+<p>Quand une action est irréversible ou sensible (annuler, supprimer, contre-passer), l’application <strong>demande confirmation</strong> et, souvent, <strong>un motif</strong> : il est conservé dans l’historique.</p>
+<h2 id="premiers-pas--proteger-son-compte">Protéger son compte</h2>
+<ul>
+<li><strong>Un mot de passe que vous seul connaissez</strong>, différent de vos autres comptes.</li>
+<li><strong>Déconnectez-vous</strong> sur un ordinateur partagé (votre nom en haut à droite).</li>
+<li>Changez votre mot de passe dans <strong>Mon compte › Sécurité</strong> si vous avez un doute.</li>
+</ul>
+<h2 id="premiers-pas--les-themes-clair-et-sombre">Les thèmes clair et sombre</h2>
+<p>La <strong>lune</strong> en haut à droite bascule entre les deux. Le choix est retenu sur votre appareil. Le thème sombre repose les yeux en soirée ou en faible lumière.</p>
+
+<nav class="pagination" aria-label="Chapitres voisins"><a href="#bienvenue" rel="prev"><small>Précédent</small>Bienvenue</a><a href="#tableau-de-bord" rel="next"><small>Suivant</small>Le tableau de bord</a></nav>
+</article>
+<article class="chapitre" id="tableau-de-bord" data-titre="Le tableau de bord">
+<header class="chapitre__entete">
+<p class="chapitre__ligne">Pour tout le monde</p>
+<h1>Le tableau de bord</h1>
+<p class="chapitre__resume">La page d’accueil : ce qui demande votre attention aujourd’hui, selon votre rôle.</p>
+</header>
+<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#tableau-de-bord--mon-activite">Mon activité</a></li><li><a href="#tableau-de-bord--equipe">Équipe</a></li><li><a href="#tableau-de-bord--direction">Direction</a></li><li><a href="#tableau-de-bord--vue-generale">Vue générale</a></li><li><a href="#tableau-de-bord--lire-les-couleurs">Lire les couleurs</a></li></ul></nav>
+<p>Le tableau de bord est la <strong>première page</strong> après la connexion. Il répond à une question : <em>« qu’est-ce qui demande mon attention aujourd’hui ? »</em></p>
+<p>Selon votre rôle, <strong>un ou plusieurs onglets</strong> apparaissent en haut. L’application ouvre le plus « haut » que vos droits permettent, et retient votre dernier choix sur l’appareil.</p>
+<table>
+<thead>
+<tr>
+<th>Onglet</th>
+<th>Pour qui</th>
+<th>Ce qu’il montre</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Direction</strong></td>
+<td>Direction, administrateur</td>
+<td>Encaissements, revenu de MTM, ventes et résultat, alertes, tendances sur 12 mois</td>
+</tr>
+<tr>
+<td><strong>Équipe</strong></td>
+<td>Manager, responsable commercial, direction, comptabilité</td>
+<td>L’activité de chaque commercial, les objectifs, les dossiers bloqués</td>
+</tr>
+<tr>
+<td><strong>Mon activité</strong></td>
+<td>Tout collaborateur qui suit des prospects</td>
+<td>Mes prospects, mes relances, mes visites, mon objectif, mes commissions, mes tâches</td>
+</tr>
+<tr>
+<td><strong>Vue générale</strong></td>
+<td>Tous</td>
+<td>L’état de chaque module auquel vous avez accès</td>
+</tr>
+</tbody></table>
+<h2 id="tableau-de-bord--mon-activite">Mon activité</h2>
+<p>Votre écran de départ si vous suivez des prospects. Les boutons du haut vont droit à l’essentiel ; les tuiles disent où vous en êtes ; plus bas, vos objectifs, votre pipeline, vos relances et votre agenda du jour.</p>
+<p><a href="img/02-accueil.png" target="_blank" rel="noopener"><img src="img/02-accueil.png" alt="Mon activité" loading="lazy"></a></p>
+<p>Le détail de cet écran est expliqué dans le chapitre <em>Le travail du commercial</em>.</p>
+<h2 id="tableau-de-bord--equipe">Équipe</h2>
+<p>Pour les responsables : une ligne par commercial (prospects actifs, relances en retard, visites, ventes, chiffre d’affaires, commissions, tâches en retard, atteinte de l’objectif). <strong>Un clic sur un nom ouvre le tableau de cette personne.</strong></p>
+<p><a href="img/resp-01-tableau-equipe.png" target="_blank" rel="noopener"><img src="img/resp-01-tableau-equipe.png" alt="Vue Équipe" loading="lazy"></a></p>
+<p>Voir le chapitre <em>Piloter l’équipe commerciale</em>.</p>
+<h2 id="tableau-de-bord--direction">Direction</h2>
+<p>Les chiffres de l’entreprise, comparés à la période précédente de même durée. Boutons de période : <em>Ce mois-ci</em>, <em>Mois précédent</em>, <em>Ce trimestre</em>, <em>Cette année</em>, <em>12 derniers mois</em>.</p>
+<p><a href="img/dir-01-tableau-direction.png" target="_blank" rel="noopener"><img src="img/dir-01-tableau-direction.png" alt="Vue Direction" loading="lazy"></a></p>
+<p>Voir le chapitre <em>La direction : chiffres et rapports</em>.</p>
+<h2 id="tableau-de-bord--vue-generale">Vue générale</h2>
+<p>Un résumé de chaque module que vous pouvez consulter : biens disponibles, mandats à renouveler, prospects suivis, dossiers de vente en cours, démarches, chantiers, gestion locative. Chaque tuile est <strong>cliquable</strong> et mène au module.</p>
+<h2 id="tableau-de-bord--lire-les-couleurs">Lire les couleurs</h2>
+<p>Dans toute l’application, la couleur a un sens :</p>
+<table>
+<thead>
+<tr>
+<th>Couleur</th>
+<th>Sens</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Vert</strong></td>
+<td>Tout va bien, terminé, validé</td>
+</tr>
+<tr>
+<td><strong>Bleu</strong></td>
+<td>Information, en cours</td>
+</tr>
+<tr>
+<td><strong>Orange</strong></td>
+<td>À surveiller : une échéance approche, une validation attend</td>
+</tr>
+<tr>
+<td><strong>Rouge</strong></td>
+<td>À traiter maintenant : retard, refus, problème</td>
+</tr>
+<tr>
+<td><strong>Gris</strong></td>
+<td>Neutre, inactif, archivé</td>
+</tr>
+</tbody></table>
+<p>Un <strong>chiffre en rouge</strong> ou une tuile <strong>rouge</strong> demande une action : cliquez dessus, la liste correspondante s’ouvre.</p>
+
+<nav class="pagination" aria-label="Chapitres voisins"><a href="#premiers-pas" rel="prev"><small>Précédent</small>Premiers pas</a><a href="#taches-agenda" rel="next"><small>Suivant</small>Tâches et agenda</a></nav>
+</article>
+<article class="chapitre" id="taches-agenda" data-titre="Tâches et agenda">
+<header class="chapitre__entete">
+<p class="chapitre__ligne">Pour tout le monde</p>
+<h1>Tâches et agenda</h1>
+<p class="chapitre__resume">Ne rien oublier : confier et suivre des tâches, planifier rendez-vous, visites et appels.</p>
+</header>
+<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#taches-agenda--les-taches">Les tâches</a></li><li><a href="#taches-agenda--l-agenda">L’agenda</a></li><li><a href="#taches-agenda--les-echanges-par-dossier">Les échanges par dossier</a></li></ul></nav>
+<p>Tâches et agenda sont ouverts à <strong>tous les collaborateurs</strong>.</p>
+<h2 id="taches-agenda--les-taches">Les tâches</h2>
+<p><strong>Tâches</strong> liste ce que vous avez à faire, par qui et pour quand.</p>
+<p><a href="img/10-taches.png" target="_blank" rel="noopener"><img src="img/10-taches.png" alt="Mes tâches" loading="lazy"></a></p>
+<ul>
+<li>Une tâche a un <strong>responsable</strong>, une <strong>priorité</strong> (basse, moyenne, haute, urgente), une <strong>date limite</strong> et un <strong>statut</strong> (à faire, en cours, terminée, annulée).</li>
+<li>Les onglets : <strong>Mes tâches</strong> (celles qui vous sont confiées) et <strong>Confiées par moi</strong>.</li>
+<li>Les tuiles du haut comptent celles <strong>en retard</strong>, <strong>pour aujourd’hui</strong> et <strong>à faire au total</strong>.</li>
+<li>Une tâche <strong>en retard</strong> est marquée en rouge, avec le nombre de jours.</li>
+<li>Cochez le <strong>rond à gauche</strong> quand la tâche est faite.</li>
+</ul>
+<h3 id="taches-agenda--creer-une-tache">Créer une tâche</h3>
+<ol>
+<li><strong>Nouvelle tâche.</strong></li>
+<li>Un <strong>titre</strong> clair (« Appeler M. Fall pour le plan de masse »).</li>
+<li>La <strong>priorité</strong> et la <strong>date limite</strong>.</li>
+<li>Si vous la confiez à quelqu’un d’autre, choisissez le <strong>responsable</strong> : il est <strong>prévenu</strong> tout de suite.</li>
+<li><strong>Enregistrer.</strong></li>
+</ol>
+<h3 id="taches-agenda--rattacher-une-tache-a-un-dossier">Rattacher une tâche à un dossier</h3>
+<p>Depuis la fiche d’un dossier (prospect, vente, mandat, mission, bail, chantier, bien), le bloc <strong>« Tâches et rendez-vous »</strong> crée une tâche <strong>liée à ce dossier</strong>. Dans la liste, le lien <strong>« Ouvrir le dossier »</strong> y mène en un clic. On ne peut rattacher que ce que l’on a le droit d’ouvrir.</p>
+<h3 id="taches-agenda--les-rappels-automatiques">Les rappels automatiques</h3>
+<ul>
+<li>La personne à qui l’on confie une tâche est <strong>prévenue</strong>.</li>
+<li>Une tâche <strong>en retard</strong> prévient son responsable <strong>et</strong> celui qui l’a confiée, <strong>une fois par jour</strong>.</li>
+<li>Une échéance à <strong>moins de 24 h</strong> est signalée une fois.</li>
+</ul>
+<p>Une tâche garde son <strong>historique</strong> : création, changement de responsable, de priorité ou d’échéance, commentaires.</p>
+<blockquote><p>Les responsables (encadrement) voient et réassignent les tâches de <strong>toute l’équipe</strong>.</p>
+</blockquote>
+<h2 id="taches-agenda--l-agenda">L’agenda</h2>
+<p><strong>Agenda</strong> rassemble vos rendez-vous, visites, appels, réunions <strong>et</strong> les échéances de vos dossiers.</p>
+<p><a href="img/11-agenda.png" target="_blank" rel="noopener"><img src="img/11-agenda.png" alt="Mon agenda" loading="lazy"></a></p>
+<ul>
+<li>Vues <strong>mois</strong>, <strong>semaine</strong> et <strong>liste</strong> ; <strong>mon agenda</strong> ou celui de <strong>l’équipe</strong>.</li>
+<li>Les événements : <strong>rendez-vous, visite, appel, vérification, réunion, échéance</strong>.</li>
+<li>Sont ajoutés <strong>automatiquement</strong> (en lecture seule, dans votre périmètre) : tâches à rendre, visites suivies par le CRM, fins de mandat, jalons de chantier, arrivées et départs de séjours, loyers à échéance, échéances de paiement et fins de réservation des ventes.</li>
+<li>La période affichée ne dépasse pas <strong>62 jours</strong>.</li>
+</ul>
+<h3 id="taches-agenda--creer-un-evenement">Créer un événement</h3>
+<ol>
+<li><strong>Nouvel événement.</strong></li>
+<li><strong>Titre</strong>, <strong>nature</strong>, <strong>lieu</strong>, <strong>début</strong> et <strong>fin</strong> (facultative).</li>
+<li>Invitez des <strong>participants</strong> : ils sont prévenus.</li>
+<li><strong>Visible par</strong> : <em>toute l’équipe</em>, ou <em>moi et les participants</em> (un événement privé est invisible aux autres).</li>
+<li><strong>Rappel</strong> : 15 minutes, 1 heure ou 1 jour avant.</li>
+<li>Vous pouvez le <strong>lier à un dossier</strong> pour le retrouver depuis sa fiche.</li>
+</ol>
+<h2 id="taches-agenda--les-echanges-par-dossier">Les échanges par dossier</h2>
+<p>Sur chaque fiche (prospect, vente, mandat, mission, chantier, bien) se trouve un <strong>fil de discussion</strong> avec son historique.</p>
+<ul>
+<li>Un message est soit une <strong>note interne</strong> (jamais lue par le client), soit un <strong>message au client</strong> (case <strong>« Envoyer aussi au client »</strong>, pour les ventes, missions, chantiers et baux).</li>
+<li>Côté client, dans son espace : « Échanges avec MTM » ; il lit uniquement ce qui lui est destiné et peut répondre.</li>
+<li>Les droits sont ceux du dossier : un collègue hors périmètre ne voit rien.</li>
+</ul>
+<blockquote class="attention"><p><strong>Attention</strong> — Avant d’envoyer un message au client, relisez-le : il le recevra tel quel et pourra le conserver. Pour une remarque à l’équipe, utilisez une <strong>note interne</strong>.</p>
+</blockquote>
+
+<nav class="pagination" aria-label="Chapitres voisins"><a href="#tableau-de-bord" rel="prev"><small>Précédent</small>Le tableau de bord</a><a href="#notifications-documents" rel="next"><small>Suivant</small>Notifications et documents</a></nav>
+</article>
+<article class="chapitre" id="notifications-documents" data-titre="Notifications et documents">
+<header class="chapitre__entete">
+<p class="chapitre__ligne">Pour tout le monde</p>
+<h1>Notifications et documents</h1>
+<p class="chapitre__resume">La cloche et ses alertes, régler ce que vous recevez, retrouver un document de n’importe quel module.</p>
+</header>
+<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#notifications-documents--les-notifications">Les notifications</a></li><li><a href="#notifications-documents--retrouver-un-document">Retrouver un document</a></li><li><a href="#notifications-documents--les-documents-pdf-de-mtm">Les documents PDF de MTM</a></li></ul></nav>
+<h2 id="notifications-documents--les-notifications">Les notifications</h2>
+<p>La <strong>cloche</strong> (en haut à droite) vous prévient quand quelque chose vous concerne. Un point rouge signale du nouveau.</p>
+<p><a href="img/12-notifications.png" target="_blank" rel="noopener"><img src="img/12-notifications.png" alt="Mes notifications" loading="lazy"></a></p>
+<p>Les événements qui peuvent vous alerter :</p>
+<ul>
+<li><strong>Commercial</strong> : nouveau prospect, relance CRM en retard, nouveau dossier de vente, paiement reçu à valider, réservation expirée, document manquant dans un dossier réservé ;</li>
+<li><strong>Organisation</strong> : tâche assignée, tâche en retard, tâche à rendre bientôt, rappel de rendez-vous, invitation à un événement, nouveau message sur un dossier ;</li>
+<li><strong>Immobilier</strong> : mandat proche de l’échéance, impayés de loyer à relancer, demande de location, demande de séjour, demande de résiliation ;</li>
+<li><strong>Métiers</strong> : nouvelle mission, nouveau chantier, chantier en retard ou hors budget, opération financière à valider ou rejetée, nouveau message du site.</li>
+</ul>
+<p>Cliquer sur une notification vous amène <strong>directement</strong> sur la fiche concernée.</p>
+<h3 id="notifications-documents--regler-ce-que-vous-recevez">Régler ce que vous recevez</h3>
+<p><strong>Mon compte › Mes notifications</strong> :</p>
+<ul>
+<li><strong>Tout marquer comme lu</strong> vide la cloche ;</li>
+<li>vos <strong>préférences</strong> : recevoir ou non les alertes par <strong>e-mail</strong>, par <strong>SMS</strong>, par <strong>WhatsApp</strong> (avec votre numéro de téléphone) ;</li>
+<li>l’e-mail ne part que si <strong>la règle de MTM le prévoit et que vous ne l’avez pas coupé</strong>.</li>
+</ul>
+<blockquote><p>Les SMS et WhatsApp ne fonctionnent que si MTM a branché une passerelle d’envoi. Tant qu’elle n’est pas en place, ces cases n’ont pas d’effet (l’écran le précise).</p>
+</blockquote>
+<p><strong>Qui est prévenu de quoi</strong> (groupes de destinataires, canaux) se règle dans <em>Règles de notification</em> : voir le chapitre <em>Administration</em>.</p>
+<h2 id="notifications-documents--retrouver-un-document">Retrouver un document</h2>
+<p><strong>Documents</strong> (menu principal) réunit les documents de <strong>tous les modules</strong> : titres fonciers, plans, contrats, reçus, rapports, quittances, factures.</p>
+<p><a href="img/13-documents.png" target="_blank" rel="noopener"><img src="img/13-documents.png" alt="Page Documents" loading="lazy"></a></p>
+<ul>
+<li>Vous ne voyez que les documents des modules que <strong>votre rôle</strong> peut consulter.</li>
+<li>La recherche porte sur le <strong>titre</strong>, le <strong>type</strong> et la <strong>référence du dossier</strong> — pas sur le contenu des fichiers.</li>
+<li>Filtres : <strong>module</strong>, <strong>type</strong>, <strong>période</strong> (du… au…), puis <strong>Effacer</strong>.</li>
+<li>Chaque ligne indique le <strong>module</strong>, le <strong>dossier</strong>, le <strong>type</strong>, la <strong>date</strong>, et si le document est <strong>diffusé</strong> (visible hors de MTM : site public, espace client, propriétaire, locataire).</li>
+<li>L’icône <strong>fichier</strong> ouvre le document ; l’icône <strong>dossier</strong> ouvre la fiche qui le porte.</li>
+<li>La pagination en bas : choisissez <strong>10, 25, 50 ou 100</strong> lignes par page et naviguez avec les numéros.</li>
+</ul>
+<h3 id="notifications-documents--ajouter-un-document">Ajouter un document</h3>
+<p>On ajoute un document <strong>depuis la fiche</strong> à laquelle il appartient (mandat, bien, dossier de vente, mission, chantier, bail…), bloc <strong>Documents</strong> → <strong>Ajouter</strong>. Donnez-lui un <strong>titre clair</strong> (« Contrat de réservation signé — Fall ») et choisissez son <strong>type</strong>.</p>
+<blockquote class="attention"><p><strong>Attention</strong> — Un document « diffusé » est visible par le client ou le propriétaire. Vérifiez qu’il ne contient rien d’interne avant de le diffuser.</p>
+</blockquote>
+<h2 id="notifications-documents--les-documents-pdf-de-mtm">Les documents PDF de MTM</h2>
+<p>Les documents générés par l’application (factures, rapports, quittances, contrats, rapports de la direction) portent l’<strong>en-tête de MTM</strong> : logo, NINEA, RCCM, adresse, banque. Ces mentions se règlent dans <strong>Administration › Identité de l’entreprise</strong>.</p>
+
+<nav class="pagination" aria-label="Chapitres voisins"><a href="#taches-agenda" rel="prev"><small>Précédent</small>Tâches et agenda</a><a href="#telephone" rel="next"><small>Suivant</small>Sur téléphone</a></nav>
+</article>
+<article class="chapitre" id="telephone" data-titre="Sur téléphone">
+<header class="chapitre__entete">
+<p class="chapitre__ligne">Pour tout le monde</p>
+<h1>Sur téléphone</h1>
+<p class="chapitre__resume">Utiliser le back-office depuis un smartphone, sur le terrain.</p>
+</header>
+<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#telephone--ce-qui-change">Ce qui change</a></li><li><a href="#telephone--garder-l-application-sous-la-main">Garder l’application sous la main</a></li><li><a href="#telephone--conseils-de-terrain">Conseils de terrain</a></li></ul></nav>
+<p>Le back-office s’adapte à l’écran du téléphone : ouvrez <strong>la même adresse</strong> dans le navigateur (Chrome, Safari…).</p>
+<p><a href="img/23-telephone-accueil.png" target="_blank" rel="noopener"><img class="mobile" src="img/23-telephone-accueil.png" alt="Accueil sur téléphone" loading="lazy"></a>
+<a href="img/24-telephone-fiche.png" target="_blank" rel="noopener"><img class="mobile" src="img/24-telephone-fiche.png" alt="Fiche d’un prospect sur téléphone" loading="lazy"></a></p>
+<h2 id="telephone--ce-qui-change">Ce qui change</h2>
+<ul>
+<li>Le <strong>menu</strong> se range : touchez l’icône à gauche du titre pour l’ouvrir.</li>
+<li>Les boutons se <strong>rangent en colonnes</strong>, plus faciles à toucher.</li>
+<li>Sur la fiche d’un prospect, <strong>Appeler</strong> et <strong>WhatsApp</strong> lancent l’appel ou la conversation <strong>d’un seul toucher</strong>.</li>
+<li>Les tableaux défilent latéralement ; les fenêtres de saisie occupent l’écran.</li>
+</ul>
+<h2 id="telephone--garder-l-application-sous-la-main">Garder l’application sous la main</h2>
+<p>Dans le menu du navigateur, choisissez <strong>« Ajouter à l’écran d’accueil »</strong> : un raccourci vers le back-office apparaît sur le téléphone, comme une application.</p>
+<h2 id="telephone--conseils-de-terrain">Conseils de terrain</h2>
+<ul>
+<li>Saisissez vos <strong>retours de visite tout de suite</strong> : les détails sont frais.</li>
+<li>Prenez les <strong>photos</strong> du bien sur place et ajoutez-les à sa fiche (formats JPEG, PNG, WebP ; 10 Mo maximum chacune).</li>
+<li><strong>Sans réseau</strong>, rien ne s’enregistre : attendez de retrouver du réseau avant de valider.</li>
+<li>Sur un téléphone partagé ou prêté, <strong>déconnectez-vous</strong> en fin d’usage.</li>
+</ul>
+
+<nav class="pagination" aria-label="Chapitres voisins"><a href="#notifications-documents" rel="prev"><small>Précédent</small>Notifications et documents</a><a href="#commercial" rel="next"><small>Suivant</small>Le travail du commercial</a></nav>
+</article>
+<article class="chapitre" id="commercial" data-titre="Le travail du commercial">
+<header class="chapitre__entete">
+<p class="chapitre__ligne">Par métier</p>
+<h1>Le travail du commercial</h1>
+<p class="chapitre__resume">Prospects, relances, visites, réservations et dossiers de vente : le quotidien d’un commercial.</p>
+</header>
+<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#commercial--mon-tableau-de-bord">Mon tableau de bord</a></li><li><a href="#commercial--ma-journee-type">Ma journée type</a></li><li><a href="#commercial--les-prospects">Les prospects</a></li><li><a href="#commercial--les-biens">Les biens</a></li><li><a href="#commercial--proposer-un-bien-et-organiser-une-visite">Proposer un bien et organiser une visite</a></li><li><a href="#commercial--le-dossier-de-vente">Le dossier de vente</a></li><li><a href="#commercial--ce-qu-un-commercial-peut-faire">Ce qu’un commercial peut faire</a></li></ul></nav>
+<p>Ce chapitre suit le travail d’un commercial : <strong>suivre ses prospects, proposer des biens, ouvrir un dossier de vente, ne rien oublier</strong>.</p>
+<h2 id="commercial--mon-tableau-de-bord">Mon tableau de bord</h2>
+<p>À la connexion, vous arrivez sur <strong>Mon activité</strong>.</p>
+<p><a href="img/02-accueil.png" target="_blank" rel="noopener"><img src="img/02-accueil.png" alt="Mon activité" loading="lazy"></a></p>
+<ul>
+<li><strong>Les boutons du haut</strong> vont droit à l’essentiel : <strong>Nouveau prospect</strong>, <strong>Mes prospects</strong>, <strong>Biens disponibles</strong>, <strong>Mes ventes</strong>, <strong>Mon agenda</strong>.</li>
+<li><strong>Les quatre tuiles</strong> : prospects actifs, relances (dues aujourd’hui ou en retard), ventes engagées ce mois-ci, tâches ouvertes.</li>
+<li><strong>Mon objectif du mois</strong> : où vous en êtes par rapport à l’objectif fixé par votre responsable (ventes, chiffre d’affaires encaissé). Vos <strong>commissions</strong> sont résumées : estimées, validées (à payer), payées.</li>
+<li><strong>Mon pipeline</strong> : vos prospects par étape.</li>
+<li>En bas : prospects <strong>à relancer</strong>, <strong>visites à venir</strong>, <strong>agenda du jour</strong>.</li>
+</ul>
+<h2 id="commercial--ma-journee-type">Ma journée type</h2>
+<p><strong>Le matin (5 minutes)</strong></p>
+<ol>
+<li>Ouvrez le tableau de bord.</li>
+<li>Regardez <strong>Relances</strong> et <strong>Mes tâches</strong> : traitez d’abord ce qui est <strong>en retard</strong> (en rouge).</li>
+<li>Consultez <strong>Visites à venir</strong> et <strong>Mon agenda</strong>.</li>
+</ol>
+<p><strong>Pendant la journée</strong></p>
+<ul>
+<li>Après chaque appel ou rendez-vous : ouvrez la fiche, <strong>ajoutez une note</strong> et <strong>programmez la prochaine relance</strong>.</li>
+<li>Un nouveau contact arrive (téléphone, WhatsApp, réseaux) : <strong>créez-le tout de suite</strong>, 30 secondes suffisent.</li>
+<li>Un client veut visiter : <strong>proposez le bien</strong> depuis sa fiche.</li>
+</ul>
+<p><strong>Le soir (5 minutes)</strong></p>
+<ul>
+<li>Les visites effectuées ont-elles leur <strong>retour client</strong> ?</li>
+<li>Chaque prospect actif a-t-il une <strong>prochaine action</strong> et une date ? Le compteur « Sans prochaine action » doit rester à zéro.</li>
+</ul>
+<h2 id="commercial--les-prospects">Les prospects</h2>
+<p>Un <strong>prospect</strong> est une personne intéressée par un bien, de la première prise de contact jusqu’à la vente.</p>
+<p><a href="img/03-prospects.png" target="_blank" rel="noopener"><img src="img/03-prospects.png" alt="Liste des prospects" loading="lazy"></a></p>
+<h3 id="commercial--creer-un-prospect">Créer un prospect</h3>
+<ol>
+<li><strong>Commercial › Prospects</strong>, puis <strong>Nouveau prospect</strong>.</li>
+<li>Remplissez au minimum le <strong>nom</strong> et un <strong>téléphone ou un e-mail</strong> (sans cela, impossible de le recontacter).</li>
+<li>Cochez <strong>« Ce numéro est joignable sur WhatsApp »</strong> si c’est le cas : le bouton WhatsApp de la fiche en dépend.</li>
+<li>Précisez si vous le savez : la <strong>source</strong> (Facebook, recommandation…), le <strong>niveau d’intérêt</strong>, la zone et le budget.</li>
+<li><strong>Créer le prospect.</strong></li>
+</ol>
+<p><a href="img/15-prospect-nouveau-haut.png" target="_blank" rel="noopener"><img src="img/15-prospect-nouveau-haut.png" alt="Formulaire de nouveau prospect" loading="lazy"></a></p>
+<p><strong>Un nom et un moyen de contact suffisent pour commencer.</strong> Le reste se complète au fil des échanges. Le résumé à droite se remplit pendant que vous écrivez ; le bouton <strong>Créer le prospect</strong> reste en bas de l’écran.</p>
+<blockquote><p>Un client de la <strong>diaspora</strong> ? Renseignez son <strong>pays de résidence</strong> : il sert à penser au décalage horaire, au paiement à distance et à la procuration.</p>
+</blockquote>
+<h3 id="commercial--retrouver-un-prospect">Retrouver un prospect</h3>
+<ul>
+<li>Les <strong>pastilles</strong> au-dessus du tableau filtrent d’un clic : <em>À relancer aujourd’hui</em>, <em>Relances en retard</em>, <em>Sans prochaine action</em>, <em>Visites à venir</em>, <em>Retours de visite à saisir</em>, <em>Tous les actifs</em>.</li>
+<li>Les <strong>tuiles</strong> et le <strong>pipeline</strong> sont cliquables : un clic sur « Négociation » ne montre que ces prospects.</li>
+<li>La <strong>recherche</strong> accepte un nom, un téléphone, une zone.</li>
+</ul>
+<h3 id="commercial--la-fiche-du-prospect">La fiche du prospect</h3>
+<p><a href="img/05-fiche-prospect.png" target="_blank" rel="noopener"><img src="img/05-fiche-prospect.png" alt="Fiche d’un prospect" loading="lazy"></a></p>
+<table>
+<thead>
+<tr>
+<th>Élément</th>
+<th>Utilité</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Appeler</strong> / <strong>WhatsApp</strong></td>
+<td>Lance l’appel ou ouvre la conversation.</td>
+</tr>
+<tr>
+<td><strong>Ajouter une note</strong></td>
+<td>Garde une trace de ce qui s’est dit.</td>
+</tr>
+<tr>
+<td><strong>Programmer une relance</strong></td>
+<td>Fixe la prochaine action et la date.</td>
+</tr>
+<tr>
+<td><strong>Changer d’étape</strong></td>
+<td>Fait avancer le prospect dans le parcours.</td>
+</tr>
+<tr>
+<td><strong>Modifier</strong></td>
+<td>Corrige ou complète la fiche.</td>
+</tr>
+<tr>
+<td><strong>La frise d’étapes</strong></td>
+<td>Montre où en est le prospect (étapes passées cochées).</td>
+</tr>
+<tr>
+<td><strong>Actions à faire</strong></td>
+<td>Appels, relances, rendez-vous à venir. <strong>Cochez</strong> une action quand elle est faite.</td>
+</tr>
+<tr>
+<td><strong>Biens proposés</strong></td>
+<td>Les terrains proposés, avec visite et retour du client.</td>
+</tr>
+<tr>
+<td><strong>Son projet</strong></td>
+<td>Budget, surface, objectif, zone, source.</td>
+</tr>
+</tbody></table>
+<h3 id="commercial--la-regle-d-or-toujours-une-prochaine-action">La règle d’or : toujours une prochaine action</h3>
+<blockquote><p><strong>Aucun prospect actif ne reste sans prochaine action ni date de relance.</strong></p>
+</blockquote>
+<p>Cliquez sur <strong>Programmer une relance</strong> :</p>
+<p><a href="img/16-dialogue-relance.png" target="_blank" rel="noopener"><img src="img/16-dialogue-relance.png" alt="Programmer une relance" loading="lazy"></a></p>
+<ol>
+<li>Écrivez <strong>ce qu’il faut faire</strong> (« Rappeler après la visite », « Envoyer le plan »).</li>
+<li>Choisissez <strong>quand</strong> : un raccourci (<em>Demain</em>, <em>Dans 3 jours</em>, <em>Dans 1 semaine</em>, <em>Dans 2 semaines</em>) ou une date au calendrier.</li>
+<li><strong>Enregistrer.</strong></li>
+</ol>
+<p>La relance apparaît dans « Actions à faire », sur votre tableau de bord et dans votre agenda, et vous recevez un rappel.</p>
+<h3 id="commercial--faire-avancer-un-prospect-les-etapes">Faire avancer un prospect : les étapes</h3>
+<p><strong>Changer d’étape</strong>, puis choisissez la nouvelle étape.</p>
+<p><a href="img/17-dialogue-etape.png" target="_blank" rel="noopener"><img src="img/17-dialogue-etape.png" alt="Changer d’étape" loading="lazy"></a></p>
+<table>
+<thead>
+<tr>
+<th>Étape</th>
+<th>Ce que cela veut dire</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Nouveau</strong></td>
+<td>Prospect enregistré : à contacter rapidement.</td>
+</tr>
+<tr>
+<td><strong>Contacté</strong></td>
+<td>Premier échange réalisé, besoin pas encore précisé.</td>
+</tr>
+<tr>
+<td><strong>Qualifié</strong></td>
+<td>Zone, surface, budget et objectif sont connus.</td>
+</tr>
+<tr>
+<td><strong>Visite programmée</strong></td>
+<td>Un rendez-vous de visite est fixé.</td>
+</tr>
+<tr>
+<td><strong>Visite effectuée</strong></td>
+<td>La visite a eu lieu : saisissez le retour du client.</td>
+</tr>
+<tr>
+<td><strong>En réflexion</strong></td>
+<td>Le client réfléchit : gardez le contact.</td>
+</tr>
+<tr>
+<td><strong>À relancer</strong></td>
+<td>Sans nouvelle : une relance est à programmer.</td>
+</tr>
+<tr>
+<td><strong>Négociation</strong></td>
+<td>Discussion sur le prix et les conditions.</td>
+</tr>
+<tr>
+<td><strong>Réservation</strong></td>
+<td>Acompte versé ou en cours : le bien lui est bloqué.</td>
+</tr>
+<tr>
+<td><strong>Vente conclue</strong></td>
+<td>Le prospect est devenu client.</td>
+</tr>
+</tbody></table>
+<p><strong>Trois étapes de sortie</strong> demandent un <strong>motif</strong>, conservé dans l’historique : <strong>Refusé</strong> (le client ne donne pas suite), <strong>Projet abandonné</strong>, <strong>Injoignable</strong>. Une fenêtre vous demande le motif : soyez bref et précis (« budget insuffisant », « a acheté ailleurs »).</p>
+<p>Quand vous passez à une étape <strong>active</strong> sans relance prévue, la fenêtre « Prochaine action » s’ouvre : c’est la règle d’or.</p>
+<h2 id="commercial--les-biens">Les biens</h2>
+<p><strong>Immobilier › Biens</strong> : les terrains, villas et appartements suivis par MTM.</p>
+<p><a href="img/06-biens.png" target="_blank" rel="noopener"><img src="img/06-biens.png" alt="Liste des biens" loading="lazy"></a></p>
+<ul>
+<li>Les <strong>tuiles</strong> donnent le bilan : biens référencés, disponibles, réservés, vendus, fiches à compléter.</li>
+<li><strong>Disponible</strong> = publié sur le site de MTM. Un bien <strong>réservé</strong> ou <strong>vendu</strong> n’y apparaît plus.</li>
+<li>Filtres (nature, statut, vérification, région…) et <strong>recherche</strong> (référence, nom, commune, vendeur).</li>
+<li><strong>Colonnes</strong> change l’affichage ; l’icône à droite passe en <strong>vue cartes</strong>.</li>
+<li>L’œil ouvre la <strong>fiche</strong> ; le crayon la <strong>modifie</strong>.</li>
+</ul>
+<p><a href="img/07-fiche-bien.png" target="_blank" rel="noopener"><img src="img/07-fiche-bien.png" alt="Fiche d’un bien" loading="lazy"></a></p>
+<p>La fiche réunit prix, superficie, situation juridique, localisation, photos et documents : tout ce qu’il faut pour <strong>présenter le bien à un client</strong>.</p>
+<blockquote><p><strong>Vous voyez les biens dont vous êtes responsable.</strong> Si un bien que vous devez présenter n’apparaît pas, demandez à votre responsable de <strong>vous l’affecter</strong>.</p>
+</blockquote>
+<p>Prenez l’habitude de <strong>photographier chaque bien lors de la visite</strong> et d’ajouter les photos à sa fiche : une fiche complète (photos, GPS, prix) se vend mieux et alimente le site public.</p>
+<h2 id="commercial--proposer-un-bien-et-organiser-une-visite">Proposer un bien et organiser une visite</h2>
+<p>Depuis la fiche du prospect, zone <strong>Biens proposés</strong> :</p>
+<ol>
+<li><strong>Proposer un terrain.</strong></li>
+<li>Dans <strong>Visite et retour client</strong>, choisissez le <strong>bien proposé</strong>.</li>
+<li>Renseignez le <strong>rendez-vous</strong> : date proposée, date confirmée, heure, lieu, accompagnateur.</li>
+<li><strong>Enregistrer.</strong></li>
+</ol>
+<p><a href="img/19-dialogue-visite.png" target="_blank" rel="noopener"><img src="img/19-dialogue-visite.png" alt="Visite et retour client" loading="lazy"></a></p>
+<p>Une <strong>date confirmée</strong> fait passer la visite en « programmée » : elle apparaît dans l’agenda. Les <strong>frais de visite</strong> éventuels se notent avec la case « payés ».</p>
+<p><strong>Après la visite</strong>, rouvrez la fenêtre (<strong>Visite et retour</strong>) et remplissez <strong>Retour après la visite</strong> : le bien plaît-il, le prix est-il accepté, l’<strong>objection principale</strong> (prix, emplacement, distance, documents…), le commentaire du client.</p>
+<p>Le retour permet de savoir quoi répondre au client, d’éviter de lui reproposer le même bien et de repérer ce qui bloque les ventes. Le tableau de bord rappelle les <strong>retours à saisir</strong>. Cochez <strong>« Souhaite voir un autre bien »</strong> pour en proposer un nouveau : chaque bien garde sa propre visite et son retour.</p>
+<h2 id="commercial--le-dossier-de-vente">Le dossier de vente</h2>
+<p>Un <strong>dossier de vente</strong> suit une vente : <strong>un client + un bien</strong>. Il regroupe réservation, paiements, documents et commission.</p>
+<h3 id="commercial--ouvrir-un-dossier">Ouvrir un dossier</h3>
+<p>Depuis <strong>la fiche du prospect</strong>, <strong>Ouvrir un dossier</strong> :</p>
+<p><a href="img/21-dialogue-dossier.png" target="_blank" rel="noopener"><img src="img/21-dialogue-dossier.png" alt="Ouvrir un dossier" loading="lazy"></a></p>
+<ol>
+<li>Dans <strong>Bien concerné</strong>, tapez la référence, le nom ou la commune, puis cliquez sur le bien.</li>
+<li>Vérifiez le <strong>prix de vente prévisionnel</strong> : pré-rempli avec le prix public, à changer s’il a été négocié.</li>
+<li>Ajoutez des <strong>notes</strong> si besoin, puis <strong>Ouvrir le dossier</strong>.</li>
+</ol>
+<p>Le dossier reçoit sa référence (« DV-… »). Le bouton <strong>Nouveau dossier</strong> de la page Ventes vous ramène aux prospects : un dossier s’ouvre toujours à partir d’un client.</p>
+<h3 id="commercial--suivre-ses-dossiers">Suivre ses dossiers</h3>
+<p><a href="img/08-ventes.png" target="_blank" rel="noopener"><img src="img/08-ventes.png" alt="Liste des dossiers de vente" loading="lazy"></a></p>
+<p>Le <strong>bandeau orange</strong> signale ce qui demande votre attention (réservation qui expire bientôt, paiement à valider). La colonne <strong>À faire</strong> donne en une ligne la prochaine étape de chaque dossier.</p>
+<p><a href="img/09-dossier-vente.png" target="_blank" rel="noopener"><img src="img/09-dossier-vente.png" alt="Fiche d’un dossier de vente" loading="lazy"></a></p>
+<p>Dans le dossier : le bandeau <strong>« À faire sur ce dossier »</strong>, les chiffres (prix, payé validé, reste dû, échéances) et l’<strong>échéancier</strong>.</p>
+<h3 id="commercial--les-statuts-d-un-dossier">Les statuts d’un dossier</h3>
+<table>
+<thead>
+<tr>
+<th>Statut</th>
+<th>Signification</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>En cours</strong></td>
+<td>Dossier ouvert : le terrain intéresse le client, rien n’est engagé.</td>
+</tr>
+<tr>
+<td><strong>Pré-réservé</strong></td>
+<td>Intention ferme, acompte pas encore versé : le terrain reste visible sur le site.</td>
+</tr>
+<tr>
+<td><strong>Réservé</strong></td>
+<td>Acompte versé : le terrain est <strong>bloqué pour ce client</strong> et retiré du site.</td>
+</tr>
+<tr>
+<td><strong>Paiement partiel</strong></td>
+<td>Une partie du prix est encaissée ; le solde reste dû.</td>
+</tr>
+<tr>
+<td><strong>Soldé</strong></td>
+<td>Prix intégralement payé : <strong>la vente est conclue</strong>.</td>
+</tr>
+<tr>
+<td><strong>Annulé</strong></td>
+<td>Dossier abandonné ; le terrain redevient disponible.</td>
+</tr>
+</tbody></table>
+<p><strong>Changer le statut</strong> ne propose que les passages autorisés. Passer à <strong>Soldé</strong> exige que le prix soit payé et validé en totalité.</p>
+<h3 id="commercial--reserver-un-bien">Réserver un bien</h3>
+<p><strong>Réserver le bien</strong> : indiquez l’<strong>acompte</strong>, la <strong>durée de blocage</strong> (en jours) et les <strong>conditions d’annulation</strong>. Tant que la réservation est active, le bien est bloqué pour ce client. <strong>À la date d’expiration, sans suite, le bien est libéré</strong> — l’application vous prévient avant.</p>
+<h3 id="commercial--enregistrer-un-paiement">Enregistrer un paiement</h3>
+<p><strong>Enregistrer un paiement</strong> :</p>
+<p><a href="img/20-dialogue-paiement.png" target="_blank" rel="noopener"><img src="img/20-dialogue-paiement.png" alt="Enregistrer un paiement" loading="lazy"></a></p>
+<ol>
+<li><strong>Montant reçu</strong> et <strong>mode de paiement</strong> (virement, espèces, mobile money, chèque…) : obligatoires.</li>
+<li>Vérifiez la <strong>date</strong> (par défaut : aujourd’hui) et indiquez la <strong>référence</strong> (numéro de virement, de reçu) : elle sert à retrouver le paiement sur le relevé.</li>
+<li><strong>Enregistrer le paiement.</strong></li>
+</ol>
+<blockquote class="attention"><p><strong>Important</strong> — Le paiement est enregistré <strong>« à valider »</strong>. Il ne compte dans le « payé » qu’une fois <strong>contrôlé par la comptabilité ou la direction</strong>. Vous ne validez pas vos propres paiements : deux personnes regardent chaque encaissement.</p>
+</blockquote>
+<h3 id="commercial--documents-et-commission">Documents et commission</h3>
+<ul>
+<li>Les <strong>documents</strong> du dossier (contrat, reçus, pièces du client) s’ajoutent depuis le dossier, ou depuis <strong>Ventes › Documents</strong>.</li>
+<li>Votre <strong>commission</strong> est estimée selon les règles de MTM, validée par un responsable, puis payée <strong>une fois le dossier soldé</strong>. Son avancement est visible sur votre tableau de bord.</li>
+</ul>
+<h3 id="commercial--annuler-un-dossier">Annuler un dossier</h3>
+<p><strong>Changer le statut › Annulé.</strong> Si le dossier a déjà des paiements validés, l’application demande ce qu’ils deviennent (acompte conservé selon les conditions de réservation, ou remboursé).</p>
+<blockquote class="attention"><p><strong>Attention</strong> — N’annulez pas un dossier déjà payé sans en parler à votre responsable.</p>
+</blockquote>
+<h2 id="commercial--ce-qu-un-commercial-peut-faire">Ce qu’un commercial peut faire</h2>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Droits</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Prospects</td>
+<td>Voir <strong>ses</strong> prospects, en créer, les modifier, les relancer.</td>
+</tr>
+<tr>
+<td>Biens</td>
+<td>Voir et modifier <strong>ses</strong> biens, en créer.</td>
+</tr>
+<tr>
+<td>Ventes</td>
+<td>Voir <strong>ses</strong> dossiers, en ouvrir, enregistrer des paiements (à valider par un autre).</td>
+</tr>
+<tr>
+<td>Mandats, propriétaires</td>
+<td>Consulter, créer ; modifier les mandats.</td>
+</tr>
+<tr>
+<td>Tâches, agenda, messages</td>
+<td>Tout ce qui le concerne.</td>
+</tr>
+<tr>
+<td>Vérifications</td>
+<td>Demander une vérification pour un client.</td>
+</tr>
+</tbody></table>
+<p>Un commercial <strong>ne voit pas</strong> les finances de MTM, les rapports de direction, la gestion des utilisateurs ni les paramètres.</p>
+
+<nav class="pagination" aria-label="Chapitres voisins"><a href="#telephone" rel="prev"><small>Précédent</small>Sur téléphone</a><a href="#responsable-commercial" rel="next"><small>Suivant</small>Piloter l’équipe commerciale</a></nav>
+</article>
+<article class="chapitre" id="responsable-commercial" data-titre="Piloter l’équipe commerciale">
+<header class="chapitre__entete">
+<p class="chapitre__ligne">Par métier</p>
+<h1>Piloter l’équipe commerciale</h1>
+<p class="chapitre__resume">Suivre l’activité de chaque commercial, fixer les objectifs, débloquer les dossiers, valider les commissions.</p>
+</header>
+<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#responsable-commercial--le-tableau-de-bord-equipe">Le tableau de bord « Équipe »</a></li><li><a href="#responsable-commercial--les-objectifs">Les objectifs</a></li><li><a href="#responsable-commercial--les-prospects-de-toute-l-equipe">Les prospects de toute l’équipe</a></li><li><a href="#responsable-commercial--les-ventes-de-l-equipe">Les ventes de l’équipe</a></li><li><a href="#responsable-commercial--les-taches-et-l-agenda-de-l-equipe">Les tâches et l’agenda de l’équipe</a></li><li><a href="#responsable-commercial--une-routine-hebdomadaire">Une routine hebdomadaire</a></li></ul></nav>
+<p>Ce chapitre s’adresse aux <strong>responsables commerciaux, managers et à la direction</strong>. Il complète le chapitre <em>Le travail du commercial</em> : vous voyez ce que voient vos commerciaux, <strong>et toute l’équipe</strong>.</p>
+<h2 id="responsable-commercial--le-tableau-de-bord-equipe">Le tableau de bord « Équipe »</h2>
+<p>Au lieu de « Mon activité », vous arrivez sur <strong>Équipe</strong> (un onglet <strong>Mon activité</strong> reste disponible si vous suivez vous-même des prospects).</p>
+<p><a href="img/resp-01-tableau-equipe.png" target="_blank" rel="noopener"><img src="img/resp-01-tableau-equipe.png" alt="Vue Équipe" loading="lazy"></a></p>
+<p><strong>Les quatre tuiles</strong> (période : <em>Ce mois-ci</em> ou <em>Mois précédent</em>) :</p>
+<table>
+<thead>
+<tr>
+<th>Tuile</th>
+<th>Ce qu’elle dit</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Ventes soldées</strong></td>
+<td>Les ventes conclues sur la période, avec leur montant.</td>
+</tr>
+<tr>
+<td><strong>Objectif de ventes</strong></td>
+<td>Le taux d’atteinte de l’équipe (« 1 sur 4 · 1 commercial avec objectif »).</td>
+</tr>
+<tr>
+<td><strong>Relances en retard</strong></td>
+<td>Le nombre de relances et de tâches en retard dans l’équipe.</td>
+</tr>
+<tr>
+<td><strong>Dossiers bloqués</strong></td>
+<td>Les dossiers qui n’ont plus bougé depuis trop longtemps (voir plus bas).</td>
+</tr>
+</tbody></table>
+<p><strong>Le tableau « Équipe commerciale »</strong> donne, pour chaque personne : prospects actifs, relances en retard, visites, ventes, chiffre d’affaires, commissions estimées, tâches en retard, atteinte de l’objectif. <strong>Cliquez sur un nom</strong> : vous ouvrez le tableau de cette personne, tel qu’elle le voit, pour l’aider.</p>
+<blockquote><p>Les ventes comptées ici sont celles <strong>soldées</strong> sur la période. L’objectif, lui, compte les <strong>dossiers engagés</strong> (réservés, en paiement ou soldés) du mois. Les deux se lisent avec leur libellé.</p>
+</blockquote>
+<h3 id="responsable-commercial--les-dossiers-bloques">Les dossiers bloqués</h3>
+<p>Un dossier <strong>encore ouvert</strong> dont plus rien ne bouge depuis un délai. Un « mouvement » est une modification, mais aussi un paiement, une étape, une relance : ce qui avance par ses pièces n’est pas signalé comme bloqué.</p>
+<table>
+<thead>
+<tr>
+<th>Dossier</th>
+<th>Bloqué quand…</th>
+<th>Délai par défaut</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Vente</td>
+<td>ni modification, ni paiement, ni réservation, ni document</td>
+<td>15 jours</td>
+</tr>
+<tr>
+<td>Mission</td>
+<td>ni modification, ni étape, ni règlement</td>
+<td>10 jours</td>
+</tr>
+<tr>
+<td>Chantier en cours</td>
+<td>aucune journée saisie ni modification</td>
+<td>7 jours</td>
+</tr>
+<tr>
+<td>Prospect actif</td>
+<td>aucune activité ni visite, ni modification</td>
+<td>14 jours</td>
+</tr>
+<tr>
+<td>Tâche</td>
+<td>échéance dépassée de plus de…</td>
+<td>3 jours</td>
+</tr>
+</tbody></table>
+<p>Les délais se règlent dans <strong>Administration › Paramètres</strong> (réglage <code>pilotage.seuilsBlocage</code>). Chaque dossier bloqué de la liste est <strong>cliquable</strong>.</p>
+<h2 id="responsable-commercial--les-objectifs">Les objectifs</h2>
+<p><strong>Commercial › Objectifs</strong> : les cibles du mois par commercial et leur taux d’atteinte.</p>
+<p><a href="img/resp-02-objectifs.png" target="_blank" rel="noopener"><img src="img/resp-02-objectifs.png" alt="Objectifs commerciaux" loading="lazy"></a></p>
+<ul>
+<li>Naviguez de mois en mois avec les flèches, ou saisissez le mois.</li>
+<li><strong>Fixer un objectif</strong> : choisissez le commercial, puis la cible de <strong>ventes</strong>, de <strong>chiffre d’affaires</strong> et de <strong>commissions</strong> pour le mois.</li>
+<li>Le bandeau bleu signale les commerciaux <strong>sans objectif</strong> ; <strong>Reprendre les cibles du mois précédent</strong> les recopie en un clic.</li>
+<li>Chaque carte montre l’avancement avec un <strong>repère de rythme</strong> : « en retard sur le rythme » compare à la part du mois déjà écoulée.</li>
+</ul>
+<p>Définitions : <strong>ventes</strong> = dossiers réservés, en paiement ou soldés dans le mois ; <strong>chiffre d’affaires</strong> = paiements <strong>validés</strong> ; <strong>commissions</strong> = validées ou payées. Un commercial sans cible n’a ni taux d’atteinte ni suivi sur son tableau de bord.</p>
+<h2 id="responsable-commercial--les-prospects-de-toute-l-equipe">Les prospects de toute l’équipe</h2>
+<p>Là où un commercial ne voit que les siens, <strong>vous voyez tous les prospects</strong>.</p>
+<p><a href="img/resp-03-prospects-equipe.png" target="_blank" rel="noopener"><img src="img/resp-03-prospects-equipe.png" alt="Prospects de l’équipe" loading="lazy"></a></p>
+<ul>
+<li>Le filtre <strong>Commercial</strong> isole les prospects d’une personne.</li>
+<li>Le bloc <strong>Performance par commercial</strong> (à déplier) donne ventes conclues, taux de conversion et chiffre d’affaires.</li>
+<li><strong>Exporter</strong> produit un fichier de la liste (un motif est demandé et conservé dans le journal d’audit).</li>
+</ul>
+<h3 id="responsable-commercial--affecter-un-prospect-a-un-commercial">Affecter un prospect à un commercial</h3>
+<p>Sur la fiche : la flèche <strong>⌄</strong> à droite de <strong>Modifier</strong> › <strong>Affecter un commercial</strong>. Utile quand un prospect arrive du site sans responsable, ou pour répartir la charge.</p>
+<h3 id="responsable-commercial--affecter-un-bien">Affecter un bien</h3>
+<p>Un commercial ne voit que <strong>les biens dont il est responsable</strong>. Pour qu’il puisse en présenter un, affectez-le dans la <strong>fiche du bien</strong> (champ <em>commercial responsable</em>).</p>
+<h2 id="responsable-commercial--les-ventes-de-l-equipe">Les ventes de l’équipe</h2>
+<p><strong>Commercial › Ventes</strong> montre tous les dossiers.</p>
+<p><a href="img/resp-04-ventes-equipe.png" target="_blank" rel="noopener"><img src="img/resp-04-ventes-equipe.png" alt="Dossiers de vente" loading="lazy"></a></p>
+<p>Dans un dossier, vous pouvez :</p>
+<ul>
+<li><strong>Valider ou refuser un paiement</strong> enregistré par un commercial (boutons <strong>Valider</strong> / <strong>Refuser</strong> sur la ligne du paiement). Le refus demande un <strong>motif</strong>, conservé sur le paiement.</li>
+<li>Gérer la <strong>commission</strong> : elle est <strong>estimée</strong> par le responsable, <strong>validée par le manager (jamais par son auteur)</strong>, puis <strong>payée par la comptabilité</strong> une fois le dossier soldé.</li>
+<li><strong>Changer le statut</strong> du dossier, jusqu’à <strong>Soldé</strong>.</li>
+</ul>
+<blockquote class="attention"><p><strong>Important</strong> — On ne valide pas ses propres paiements ni ses propres commissions. C’est la règle des deux regards : l’application l’impose.</p>
+</blockquote>
+<h2 id="responsable-commercial--les-taches-et-l-agenda-de-l-equipe">Les tâches et l’agenda de l’équipe</h2>
+<p>Avec la permission d’<strong>administrer</strong> les tâches et l’agenda (responsables, manager, direction), vous voyez et <strong>réassignez</strong> les tâches de toute l’équipe, et consultez <strong>l’agenda de l’équipe</strong>. Utilisez-le pour répartir la charge après une absence.</p>
+<h2 id="responsable-commercial--une-routine-hebdomadaire">Une routine hebdomadaire</h2>
+<ol>
+<li><strong>Lundi</strong> : ouvrez <em>Équipe</em>, regardez les <strong>relances en retard</strong> et les <strong>dossiers bloqués</strong> ; appelez les personnes concernées.</li>
+<li><strong>Chaque jour</strong> : validez les <strong>paiements</strong> et <strong>commissions</strong> en attente.</li>
+<li><strong>Fin de mois</strong> : vérifiez les objectifs, puis <strong>fixez ceux du mois suivant</strong> (« Reprendre les cibles du mois précédent » fait l’essentiel).</li>
+<li><strong>Vendredi</strong> : regardez le <strong>pipeline</strong> : combien de prospects en négociation ? en réservation ?</li>
+</ol>
+
+<nav class="pagination" aria-label="Chapitres voisins"><a href="#commercial" rel="prev"><small>Précédent</small>Le travail du commercial</a><a href="#mandats-proprietaires" rel="next"><small>Suivant</small>Mandats, propriétaires et biens</a></nav>
+</article>
+<article class="chapitre" id="mandats-proprietaires" data-titre="Mandats, propriétaires et biens">
+<header class="chapitre__entete">
+<p class="chapitre__ligne">Par métier</p>
+<h1>Mandats, propriétaires et biens</h1>
+<p class="chapitre__resume">Enregistrer les propriétaires, signer et suivre les mandats, tenir les fiches de biens à jour.</p>
+</header>
+<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#mandats-proprietaires--les-proprietaires">Les propriétaires</a></li><li><a href="#mandats-proprietaires--les-mandats">Les mandats</a></li><li><a href="#mandats-proprietaires--les-biens">Les biens</a></li><li><a href="#mandats-proprietaires--les-bonnes-habitudes">Les bonnes habitudes</a></li></ul></nav>
+<p>Ce chapitre couvre le menu <strong>Immobilier</strong> : <strong>Biens</strong>, <strong>Mandats</strong>, <strong>Propriétaires</strong>. Le travail d’un commercial sur les biens est détaillé dans <em>Le travail du commercial</em> ; ici, le côté <strong>gestion du portefeuille</strong>.</p>
+<h2 id="mandats-proprietaires--les-proprietaires">Les propriétaires</h2>
+<p><strong>Immobilier › Propriétaires</strong> : les personnes qui confient leurs terrains à MTM.</p>
+<p><a href="img/imm-03-proprietaires.png" target="_blank" rel="noopener"><img src="img/imm-03-proprietaires.png" alt="Liste des propriétaires" loading="lazy"></a></p>
+<ul>
+<li>Les <strong>tuiles</strong> : nombre de propriétaires, biens confiés, mandats signés, propriétaires <strong>sans bien</strong> (« enregistrés mais rien de confié : à relancer »).</li>
+<li><strong>Nouveau propriétaire</strong> : nom, prénom, téléphone, e-mail, notes.</li>
+<li>L’œil ouvre la <strong>fiche</strong> : ses terrains et ses mandats, avec la possibilité d’en créer de nouveaux.</li>
+</ul>
+<blockquote><p>Créez le propriétaire <strong>avant</strong> le bien ou le mandat : ils s’y rattachent.</p>
+</blockquote>
+<h2 id="mandats-proprietaires--les-mandats">Les mandats</h2>
+<p>Un <strong>mandat</strong> est l’autorisation donnée par un propriétaire de vendre (ou de gérer) ses biens. <strong>Immobilier › Mandats</strong> les liste.</p>
+<p><a href="img/imm-01-mandats.png" target="_blank" rel="noopener"><img src="img/imm-01-mandats.png" alt="Liste des mandats" loading="lazy"></a></p>
+<h3 id="mandats-proprietaires--creer-un-mandat">Créer un mandat</h3>
+<ol>
+<li><strong>Mandats › Nouveau mandat.</strong></li>
+<li>Choisissez le <strong>propriétaire</strong> et le <strong>type</strong> : <em>Vente</em>, <em>Location</em> ou <em>Gestion</em>.</li>
+<li>Renseignez les <strong>dates de début et de fin</strong>, l’<strong>exclusivité</strong> (un bien ne peut pas être sous deux mandats exclusifs actifs en même temps), le prix et les conditions, l’<strong>alerte avant échéance</strong> (30 jours par défaut).</li>
+<li><strong>Enregistrer</strong>, puis <strong>rattachez les biens</strong> (voir plus bas).</li>
+</ol>
+<h3 id="mandats-proprietaires--la-fiche-du-mandat">La fiche du mandat</h3>
+<p><a href="img/imm-02-fiche-mandat.png" target="_blank" rel="noopener"><img src="img/imm-02-fiche-mandat.png" alt="Fiche d’un mandat" loading="lazy"></a></p>
+<ul>
+<li>Le bandeau orange <strong>« À faire sur ce mandat »</strong> rappelle ce qui manque (par exemple <em>Joindre le contrat signé</em>).</li>
+<li>Les tuiles : <strong>lots confiés</strong> (disponibles, réservés, vendus), <strong>chiffre d’affaires</strong> des lots vendus, <strong>commissions estimées</strong>, <strong>reste à commercialiser</strong>.</li>
+<li><strong>Biens confiés (lots)</strong> : les biens que le mandat autorise MTM à commercialiser, avec leur avancement. <strong>Rattacher un terrain</strong> ajoute un lot ; la corbeille le retire.</li>
+<li><strong>Documents</strong> : le contrat signé, les avenants, les preuves de signature. <strong>Joignez au minimum le contrat signé.</strong></li>
+<li><strong>Changer le statut</strong> : <em>Brouillon</em>, <em>Actif</em>, <em>Expiré</em>, <em>Résilié</em> ou <em>Clôturé</em>.</li>
+</ul>
+<blockquote class="attention"><p><strong>Important</strong> — Un mandat qui approche de sa fin déclenche une <strong>notification</strong> (30 jours avant, par défaut) et apparaît dans l’alerte « Mandats à échéance » du tableau de bord de la direction. <strong>Renouvelez ou clôturez-le à temps</strong> : un bien sans mandat valide ne doit pas être proposé.</p>
+</blockquote>
+<h2 id="mandats-proprietaires--les-biens">Les biens</h2>
+<p><strong>Immobilier › Biens</strong> : terrains, villas et appartements.</p>
+<h3 id="mandats-proprietaires--creer-un-bien">Créer un bien</h3>
+<ol>
+<li><strong>Biens › Nouveau bien.</strong></li>
+<li>Renseignez au minimum la <strong>localité</strong> et le <strong>titre juridique</strong> (titre foncier, bail, délibération…), puis le <strong>propriétaire</strong>, la <strong>superficie</strong> et les <strong>prix</strong> : prix d’acquisition (interne) et <strong>prix public</strong>.</li>
+<li>Désignez le <strong>commercial responsable</strong> : seul lui (et l’encadrement) verra le bien dans le back-office.</li>
+<li>Ajoutez des <strong>photos</strong> et la <strong>position GPS</strong>.</li>
+<li>Choisissez le <strong>statut commercial</strong> : <em>Brouillon</em> (non publié), <em>Disponible</em> (publié sur le site), <em>Réservé</em>, <em>Vendu</em> ou <em>Suspendu</em>.</li>
+</ol>
+<blockquote><p>Seuls les biens <strong>Disponibles</strong> apparaissent sur le <strong>site public</strong>. Un bien réservé ou vendu en disparaît tout seul.</p>
+</blockquote>
+<p>Le <strong>prix d’acquisition</strong> et la <strong>marge</strong> sont internes : ils ne sont visibles que des rôles autorisés (direction, manager, comptabilité) et servent au calcul du <strong>revenu de MTM</strong> (voir <em>Comptabilité et finances</em>). Renseignez-les : un bien vendu sans marge compte pour zéro dans les chiffres.</p>
+<h3 id="mandats-proprietaires--importer-des-biens-depuis-un-tableur">Importer des biens depuis un tableur</h3>
+<p>Pour reprendre un fichier Excel ou Google Sheets (« Bd terrains MTM IMMO ») <strong>sans tout saisir à la main</strong> :</p>
+<p><a href="img/adm-08-import-biens.png" target="_blank" rel="noopener"><img src="img/adm-08-import-biens.png" alt="Import de biens" loading="lazy"></a></p>
+<ol>
+<li><strong>Biens › Importer depuis Excel</strong> (réservé à ceux qui peuvent créer des biens).</li>
+<li>Déposez le fichier <strong>.xlsx</strong> ou <strong>.csv</strong> (5 Mo et 5 000 lignes au maximum). Un classeur à plusieurs onglets propose de choisir l’onglet.</li>
+<li><strong>Aperçu</strong> : biens à créer, déjà présents, lignes refusées avec la raison. <strong>Rien n’est écrit à ce stade.</strong></li>
+<li><strong>Importer N biens</strong> pour confirmer. Les biens arrivent en <strong>Brouillon</strong> : relisez-les avant de les publier.</li>
+</ol>
+<p>Les colonnes se reconnaissent à leur titre (matricule, localité, titre juridique, prix, propriétaire, téléphone, surface…) ; seules <strong>LOCALITE</strong> et <strong>TITRE JURIDIQUE</strong> sont indispensables. L’import ne touche jamais à un bien déjà présent et chaque import est consigné dans le journal d’audit.</p>
+<h2 id="mandats-proprietaires--les-bonnes-habitudes">Les bonnes habitudes</h2>
+<ul>
+<li><strong>Un propriétaire, un mandat, un bien</strong> : créez dans cet ordre.</li>
+<li><strong>Photographiez</strong> chaque bien et placez-le sur la carte (GPS) : c’est ce qui fait réagir les acheteurs.</li>
+<li>Gardez le <strong>statut commercial</strong> à jour : un bien vendu encore « Disponible » trompe les clients.</li>
+<li>Surveillez les <strong>fiches à compléter</strong> (tuiles de la liste) : sans photo ou sans GPS, elles se vendent moins bien.</li>
+</ul>
+
+<nav class="pagination" aria-label="Chapitres voisins"><a href="#responsable-commercial" rel="prev"><small>Précédent</small>Piloter l’équipe commerciale</a><a href="#gestion-locative" rel="next"><small>Suivant</small>La gestion locative</a></nav>
+</article>
+<article class="chapitre" id="gestion-locative" data-titre="La gestion locative">
+<header class="chapitre__entete">
+<p class="chapitre__ligne">Par métier</p>
+<h1>La gestion locative</h1>
+<p class="chapitre__resume">Biens loués, baux, loyers et quittances, impayés, locations à la nuit, résiliations.</p>
+</header>
+<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#gestion-locative--les-biens-locatifs">Les biens locatifs</a></li><li><a href="#gestion-locative--les-locataires">Les locataires</a></li><li><a href="#gestion-locative--creer-un-bail">Créer un bail</a></li><li><a href="#gestion-locative--encaisser-un-loyer">Encaisser un loyer</a></li><li><a href="#gestion-locative--les-relances-d-impayes">Les relances d’impayés</a></li><li><a href="#gestion-locative--les-locations-a-la-nuit-type-airbnb">Les locations à la nuit (type Airbnb)</a></li><li><a href="#gestion-locative--les-demandes-de-resiliation">Les demandes de résiliation</a></li><li><a href="#gestion-locative--le-releve-de-gestion">Le relevé de gestion</a></li><li><a href="#gestion-locative--une-routine">Une routine</a></li></ul></nav>
+<p>La <strong>gestion locative</strong> suit les biens que les propriétaires confient à MTM pour la location : <strong>baux, loyers, cautions, impayés, séjours à la nuit, résiliations</strong>. Le menu <strong>Gestion locative</strong> regroupe : <em>Biens</em>, <em>Locataires</em>, <em>Séjours (à la nuit)</em>, <em>Demandes de résiliation</em>, <em>Relances</em>.</p>
+<h2 id="gestion-locative--les-biens-locatifs">Les biens locatifs</h2>
+<p><a href="img/loc-01-biens.png" target="_blank" rel="noopener"><img src="img/loc-01-biens.png" alt="Liste des biens locatifs" loading="lazy"></a></p>
+<ul>
+<li>Les <strong>tuiles</strong> : biens en gestion, biens <strong>en retard de loyer</strong> (avec le montant à recouvrer), <strong>relances à envoyer</strong>, <strong>encaissé ce mois</strong>.</li>
+<li>Les <strong>pastilles</strong> filtrent d’un clic : <em>Loués</em>, <em>Disponibles</em>, <em>Sans responsable</em>, <em>Loyers en retard</em>, <em>Impayés prolongés</em>.</li>
+<li>La colonne <strong>Paiement</strong> dit d’un coup d’œil si le loyer est <strong>à jour</strong> ou <strong>en retard</strong>.</li>
+<li>Cliquez sur une ligne pour ouvrir la fiche.</li>
+</ul>
+<h3 id="gestion-locative--creer-un-bien-locatif">Créer un bien locatif</h3>
+<ol>
+<li><strong>Biens › Nouveau bien.</strong></li>
+<li>Choisissez le <strong>propriétaire</strong> (créez-le d’abord s’il n’existe pas), le <strong>type</strong> (appartement, villa…), l’<strong>adresse</strong>, la <strong>commune</strong> et la <strong>région</strong>.</li>
+<li>Pour une location <strong>au mois</strong>, laissez le mode par défaut ; pour une location <strong>à la nuit</strong>, voir plus bas.</li>
+<li><strong>Enregistrer</strong> : le bien reçoit une référence lisible (« L-2026-0001 ») et le statut <em>Disponible</em>.</li>
+</ol>
+<p><a href="img/loc-08-nouveau-bien.png" target="_blank" rel="noopener"><img src="img/loc-08-nouveau-bien.png" alt="Nouveau bien locatif" loading="lazy"></a></p>
+<h3 id="gestion-locative--la-fiche-du-bien">La fiche du bien</h3>
+<p><a href="img/loc-02-fiche-bien.png" target="_blank" rel="noopener"><img src="img/loc-02-fiche-bien.png" alt="Fiche d’un bien locatif" loading="lazy"></a></p>
+<ul>
+<li><strong>Les chiffres du haut</strong> : loyer mensuel, <strong>encaissé</strong>, <strong>reste dû</strong> (en rouge s’il y a des échéances non soldées), <strong>caution détenue</strong>.</li>
+<li>Les pastilles du titre : <strong>Loué</strong> / <strong>Disponible</strong>, <strong>En retard</strong>.</li>
+<li><strong>Annonce sur le site</strong> : tant qu’un bien est <strong>publié et disponible</strong>, les visiteurs le voient sur la page « Locations ». Pour publier, il faut un <strong>loyer affiché</strong> et <strong>au moins une photo</strong>. Dès qu’un bail est créé, le bien <strong>disparaît tout seul</strong> du site.</li>
+<li><strong>Photos et vidéos</strong> : jusqu’à 20 (JPEG, PNG, WebP, vidéo MP4 ; 10 Mo maximum chacune). La première photo sert de couverture.</li>
+<li>Le <strong>menu ⌄</strong> à droite du bouton principal : mouvement de caution, incident ou demande, demande de résiliation, états des lieux d’entrée et de sortie, préavis de départ, clôture du bail, changement de locataire, résiliation sans préavis, <strong>relevé de gestion</strong>, suppression.</li>
+</ul>
+<h2 id="gestion-locative--les-locataires">Les locataires</h2>
+<p><strong>Gestion locative › Locataires</strong> : les personnes qui louent un bien géré par MTM. Depuis une fiche, retrouvez <strong>l’historique complet de ses baux</strong>. <strong>Nouveau locataire</strong> : nom, prénom, téléphone, e-mail.</p>
+<p><a href="img/loc-03-locataires.png" target="_blank" rel="noopener"><img src="img/loc-03-locataires.png" alt="Locataires" loading="lazy"></a></p>
+<h2 id="gestion-locative--creer-un-bail">Créer un bail</h2>
+<p>Dans la fiche d’un bien <strong>disponible</strong>, <strong>Créer un bail</strong> :</p>
+<ol>
+<li>Choisissez le <strong>locataire</strong>.</li>
+<li>Le <strong>loyer mensuel</strong>, le <strong>jour d’échéance</strong> (le 5 de chaque mois, par exemple) et la <strong>date de début</strong>.</li>
+<li>La <strong>caution</strong> : montant et date de versement. Une caution encaissée à la signature est notée « versée ».</li>
+<li><strong>Enregistrer.</strong></li>
+</ol>
+<p>L’application <strong>génère les douze échéances mensuelles</strong> et passe le bien à <strong>Loué</strong>.</p>
+<h2 id="gestion-locative--encaisser-un-loyer">Encaisser un loyer</h2>
+<p>Dans la fiche du bien, <strong>Encaisser un loyer</strong> :</p>
+<ol>
+<li>Choisissez l’<strong>échéance</strong> concernée.</li>
+<li>Le <strong>montant</strong>, le <strong>mode de paiement</strong> (virement, espèces, mobile money…) et la <strong>référence</strong>.</li>
+<li><strong>Enregistrer</strong> : le paiement est <strong>à valider</strong>.</li>
+<li>Une personne habilitée <strong>valide</strong> le paiement : l’échéance passe à <em>payée</em> et le « reste dû » baisse.</li>
+</ol>
+<p>Sur la ligne d’une échéance payée, le bouton <strong>Quittance</strong> produit le PDF à l’en-tête de MTM, à remettre au locataire.</p>
+<blockquote class="attention"><p><strong>Attention</strong> — Enregistrez chaque versement le <strong>jour même</strong>, avec sa référence. C’est ce qui permet de justifier le loyer encaissé au propriétaire et à la comptabilité.</p>
+</blockquote>
+<h2 id="gestion-locative--les-relances-d-impayes">Les relances d’impayés</h2>
+<p><strong>Gestion locative › Relances</strong> liste les rappels à envoyer pour les loyers en retard.</p>
+<ul>
+<li>Les relances sont <strong>proposées automatiquement</strong> selon un calendrier (paliers), <strong>une seule fois par échéance et par palier</strong>.</li>
+<li>Vous les <strong>envoyez</strong> depuis la liste (bouton <strong>Envoyer</strong>, par e-mail), et l’envoi est consigné.</li>
+<li>Le tableau de bord de la direction signale les <strong>impayés prolongés</strong> (plus de 30 jours de retard).</li>
+</ul>
+<h2 id="gestion-locative--les-locations-a-la-nuit-type-airbnb">Les locations à la nuit (type Airbnb)</h2>
+<h3 id="gestion-locative--mettre-un-bien-a-la-nuit">Mettre un bien à la nuit</h3>
+<ol>
+<li><strong>Biens › Nouveau bien</strong> (ou la fiche d’un bien existant › <em>Annonce</em>).</li>
+<li><strong>Mode de location : « Location à la nuit »</strong>.</li>
+<li>Renseignez le <strong>prix de la nuit</strong>, les <strong>frais de ménage</strong> (une fois par séjour), la <strong>caution</strong>, la <strong>durée minimale</strong>, la <strong>capacité</strong> et les <strong>heures d’arrivée et de départ</strong>.</li>
+<li>Ajoutez des photos puis <strong>publiez</strong> : le bien apparaît sur la page « Locations » avec son prix par nuit.</li>
+</ol>
+<p>Un bien à la nuit n’a <strong>pas de bail</strong> : <strong>Nouveau séjour</strong> remplace « Créer un bail ». Un bien ne change de mode que s’il n’a ni bail en cours ni séjour à venir.</p>
+<h3 id="gestion-locative--le-deroule-d-un-sejour">Le déroulé d’un séjour</h3>
+<p><a href="img/loc-04-sejours.png" target="_blank" rel="noopener"><img src="img/loc-04-sejours.png" alt="Séjours" loading="lazy"></a></p>
+<table>
+<thead>
+<tr>
+<th>Étape</th>
+<th>Ce qui se passe</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Demande</strong></td>
+<td>Reçue du site (ou saisie par MTM). N’occupe pas le calendrier. MTM est notifié.</td>
+</tr>
+<tr>
+<td><strong>Confirmé</strong></td>
+<td>Les nuits sont réservées : aucun autre séjour ne peut les prendre.</td>
+</tr>
+<tr>
+<td><strong>En cours</strong></td>
+<td>Le voyageur est arrivé : état des lieux d’entrée.</td>
+</tr>
+<tr>
+<td><strong>Terminé</strong></td>
+<td>Le voyageur est parti : état des lieux de sortie, restitution de la caution.</td>
+</tr>
+<tr>
+<td><strong>Annulé</strong></td>
+<td>Motif obligatoire ; les nuits sont libérées.</td>
+</tr>
+</tbody></table>
+<ul>
+<li>Les <strong>tuiles</strong> comptent les demandes à traiter, les arrivées sous 7 jours, les séjours en cours et les cautions à rendre.</li>
+<li>Le <strong>prix est figé à la réservation</strong> : changer le tarif ensuite ne modifie pas les séjours déjà enregistrés.</li>
+<li>Les <strong>règlements</strong> (acompte, solde) se saisissent dans le séjour ; le reste à payer se calcule seul et un règlement ne peut pas dépasser ce reste.</li>
+<li>La <strong>caution</strong> est reçue puis <strong>restituée</strong>, avec une éventuelle <strong>retenue toujours justifiée</strong>.</li>
+</ul>
+<p><a href="img/loc-05-fiche-sejour.png" target="_blank" rel="noopener"><img src="img/loc-05-fiche-sejour.png" alt="Fiche d’un séjour" loading="lazy"></a></p>
+<p>Les <strong>états des lieux</strong> d’entrée et de sortie se font <strong>pièce par pièce</strong> (bon état, usure normale, dégradé, hors service), avec compteurs d’eau et d’électricité, clés remises et <strong>photos</strong>. La fiche compare la sortie à l’entrée : c’est le <strong>justificatif d’une retenue</strong> sur la caution.</p>
+<blockquote><p>Sur le site, le visiteur voit les nuits déjà prises, choisit ses dates et envoie une <strong>demande</strong> : <strong>aucun paiement en ligne</strong>, MTM confirme les nuits et recontacte le voyageur.</p>
+</blockquote>
+<h2 id="gestion-locative--les-demandes-de-resiliation">Les demandes de résiliation</h2>
+<p>Le locataire dépose sa demande depuis son espace (date de départ souhaitée, motif). MTM peut aussi <strong>enregistrer une demande reçue par téléphone, WhatsApp ou courrier</strong> (fiche du bien › menu ⌄ › <em>Demande de résiliation</em>).</p>
+<p><a href="img/loc-07-resiliations.png" target="_blank" rel="noopener"><img src="img/loc-07-resiliations.png" alt="Demandes de résiliation" loading="lazy"></a></p>
+<ul>
+<li><strong>Accepter</strong> ouvre le <strong>préavis</strong> du bail à la date de départ retenue (par défaut la plus tardive entre le souhait du locataire et la demande + <strong>30 jours</strong> de préavis, réglable dans Paramètres).</li>
+<li><strong>Refuser</strong> exige d’<strong>expliquer pourquoi</strong>.</li>
+<li>Le locataire est <strong>prévenu dans son espace</strong> dans les deux cas.</li>
+</ul>
+<h2 id="gestion-locative--le-releve-de-gestion">Le relevé de gestion</h2>
+<p>Fiche du bien › menu ⌄ › <strong>Relevé de gestion</strong> (réservé à ceux qui peuvent publier) : le relevé est <strong>publié dans l’espace du propriétaire</strong>.</p>
+<h2 id="gestion-locative--une-routine">Une routine</h2>
+<ul>
+<li><strong>Chaque jour</strong> : validez les paiements en attente, traitez les <strong>demandes de séjour</strong> et de <strong>résiliation</strong>.</li>
+<li><strong>Début de mois</strong> : regardez les <strong>loyers en retard</strong> et lancez les <strong>relances</strong>.</li>
+<li><strong>Avant chaque arrivée</strong> (séjours) : confirmez l’heure, préparez l’<strong>état des lieux d’entrée</strong>.</li>
+</ul>
+
+<nav class="pagination" aria-label="Chapitres voisins"><a href="#mandats-proprietaires" rel="prev"><small>Précédent</small>Mandats, propriétaires et biens</a><a href="#verifications" rel="next"><small>Suivant</small>Les vérifications et démarches</a></nav>
+</article>
+<article class="chapitre" id="verifications" data-titre="Les vérifications et démarches">
+<header class="chapitre__entete">
+<p class="chapitre__ligne">Par métier</p>
+<h1>Les vérifications et démarches</h1>
+<p class="chapitre__resume">Vérifier un terrain pour un client, suivre les démarches administratives, facturer et rendre le rapport.</p>
+</header>
+<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#verifications--creer-une-mission">Créer une mission</a></li><li><a href="#verifications--suivre-une-mission-les-etapes">Suivre une mission : les étapes</a></li><li><a href="#verifications--facturer-et-encaisser">Facturer et encaisser</a></li><li><a href="#verifications--le-rapport">Le rapport</a></li><li><a href="#verifications--les-donnees-d-identite-du-client">Les données d’identité du client</a></li><li><a href="#verifications--les-bonnes-habitudes">Les bonnes habitudes</a></li></ul></nav>
+<p>Le module <strong>Vérifications</strong> (menu principal, <em>Démarches administratives</em>) suit les <strong>missions</strong> confiées par des clients — souvent depuis l’étranger — pour <strong>vérifier un terrain avant d’acheter</strong> : visite sur place, consultation des administrations, puis rapport. Il suit aussi les <strong>démarches</strong> administratives (mutation, bail, autorisation de construire…) et les <strong>prestations techniques</strong> (plans).</p>
+<p><a href="img/dem-01-missions.png" target="_blank" rel="noopener"><img src="img/dem-01-missions.png" alt="Liste des missions" loading="lazy"></a></p>
+<ul>
+<li>Les <strong>tuiles</strong> : missions suivies, <strong>échéances dépassées</strong>, <strong>encaissé</strong> sur le total facturé.</li>
+<li><strong>Où en sont les missions</strong> : le nombre de missions par étape ; cliquez pour filtrer.</li>
+<li>Les <strong>pastilles</strong> : <em>Missions en cours</em>, <em>Échéance dépassée</em>, <em>Sans responsable</em>, <em>Rapport à rédiger</em>.</li>
+<li><strong>Exporter</strong> produit un fichier de la liste (un motif est demandé et conservé).</li>
+</ul>
+<blockquote><p>Un <strong>commercial</strong> peut demander une vérification pour son client (depuis la fiche du prospect : <strong>Demander une vérification</strong>). Le suivi de la mission revient ensuite au service des démarches.</p>
+</blockquote>
+<h2 id="verifications--creer-une-mission">Créer une mission</h2>
+<ol>
+<li><strong>Nouvelle mission</strong> (ou <em>Demander une vérification</em> depuis une fiche prospect).</li>
+<li>Choisissez le <strong>client demandeur</strong> (un prospect existant), la <strong>nature de la vérification</strong>, l’<strong>urgence</strong>, un <strong>bien du catalogue</strong> (facultatif), la <strong>localisation décrite par le client</strong>, la commune et la région (latitude et longitude si vous les avez).</li>
+<li>Notez l’<strong>objectif du client</strong>, l’<strong>échéance promise</strong>, le <strong>budget annoncé</strong> si le client en a donné un, (« Vérifier le terrain avant tout envoi de fonds depuis la France ») et les <strong>pièces fournies</strong> (copie du titre foncier transmise par le vendeur…). Exemple d’objectif : « Vérifier le terrain avant tout envoi de fonds depuis la France ».</li>
+<li><strong>Enregistrer.</strong></li>
+</ol>
+<p><a href="img/dem-03-nouvelle-mission.png" target="_blank" rel="noopener"><img src="img/dem-03-nouvelle-mission.png" alt="Nouvelle mission" loading="lazy"></a></p>
+<p>La <strong>référence</strong> est attribuée seule : <code>MTM-VF-001/2026</code> (famille de prestation, rang dans l’année, année). Les formats de numérotation se règlent dans <em>Paramètres › Missions, factures &amp; références</em>.</p>
+<p>Natures de mission : <em>Vérification foncière</em>, <em>Vérification physique</em>, <em>Vérification administrative</em>, <em>Accompagnement à l’achat</em>, <em>Démarche administrative</em> (dépôt de mutation, de bail, d’autorisation de construire, retrait de document), <em>Prestation technique</em> (plan architectural, plan de géomètre) ou <em>Autre</em>.</p>
+<p>Urgence : <em>Normale</em>, <em>Urgente</em>, <em>Très urgente</em>.</p>
+<h2 id="verifications--suivre-une-mission-les-etapes">Suivre une mission : les étapes</h2>
+<p><a href="img/dem-02-fiche-mission.png" target="_blank" rel="noopener"><img src="img/dem-02-fiche-mission.png" alt="Fiche d’une mission" loading="lazy"></a></p>
+<p>Le bouton en haut à droite (« <strong>Passer à Étude de faisabilité</strong> ») fait avancer la mission d’<strong>une étape</strong>. Pour une vérification, les étapes sont :</p>
+<table>
+<thead>
+<tr>
+<th>Étape</th>
+<th>Ce qu’on y fait</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Demande reçue</strong></td>
+<td>Enregistrer la demande du client et les pièces fournies.</td>
+</tr>
+<tr>
+<td><strong>Étude de faisabilité</strong></td>
+<td>Évaluer la faisabilité (<em>favorable</em>, <em>défavorable</em>, <em>à compléter</em>), convenir du <strong>montant</strong> avec le client, frais d’étude.</td>
+</tr>
+<tr>
+<td><strong>Vérification physique</strong></td>
+<td>Visiter le site et <strong>ajouter un constat</strong> : date et heure, accès, environnement, conformité apparente, <strong>personnes présentes</strong>, observations, <strong>photos</strong> (12 au plus, elles partent en annexe du rapport).</td>
+</tr>
+<tr>
+<td><strong>Vérification administrative</strong></td>
+<td>Consulter mairie, service des Domaines, cadastre ; noter la conformité (<em>conforme</em>, <em>écart mineur</em>, <em>écart majeur</em>, <em>non vérifiable</em>).</td>
+</tr>
+<tr>
+<td><strong>Rapport</strong></td>
+<td>Rendre la <strong>décision</strong>, la conclusion, les réserves et la recommandation, puis <strong>générer le rapport</strong> (PDF).</td>
+</tr>
+</tbody></table>
+<p>Une démarche administrative suit les étapes : <em>Constitution du dossier</em>, <em>Dépôt</em>, <em>Suivi administration</em>, <em>Retrait</em>. Une prestation technique : <em>Devis</em>, <em>Production</em>, <em>Livraison</em>. La mission se termine à <strong>Clôturée</strong> (ou <strong>Abandonnée</strong>, avec un motif).</p>
+<blockquote><p>L’<strong>échéance promise</strong> au client alimente l’alerte « échéance dépassée » : renseignez-la dès la prise de commande.</p>
+</blockquote>
+<h2 id="verifications--facturer-et-encaisser">Facturer et encaisser</h2>
+<p>Dans le bloc <strong>Règlements et facture</strong> de la mission :</p>
+<ol>
+<li><strong>Montant convenu</strong> : saisi à l’étape <em>Étude de faisabilité</em>.</li>
+<li>Chaque règlement du client se saisit <strong>à part</strong> : date, <strong>montant envoyé</strong>, <strong>frais</strong> de transfert (Wave, Orange Money, banque), <strong>référence de la transaction</strong>. Le <strong>net</strong> et le <strong>solde</strong> se calculent seuls ; une même transaction ne peut être saisie <strong>qu’une seule fois</strong>.</li>
+<li><strong>Générer la facture</strong> : PDF <code>MTM-FAC-VF-001/2026</code> (client, prestation, règlements, solde, références de transaction). Après un nouveau règlement, <strong>Régénérer la facture</strong> met la situation à jour <strong>sans changer le numéro ni la date</strong>.</li>
+<li>La facture n’est <strong>visible du client</strong> que si vous la <strong>publiez</strong>.</li>
+</ol>
+<p>Le solde et le statut (« Partiellement réglé ») se calculent sur le montant <strong>envoyé</strong> ; les frais restent à part. Le client est <strong>prévenu dans son espace</strong> à chaque règlement.</p>
+<h2 id="verifications--le-rapport">Le rapport</h2>
+<p>À l’étape <strong>Rapport</strong> :</p>
+<ul>
+<li><strong>Décision</strong> : <em>favorable</em>, <em>défavorable</em> ou <em>à compléter</em> (tant que la vérification administrative n’est pas faite).</li>
+<li><strong>Conclusion</strong>, <strong>réserves</strong>, <strong>recommandation</strong>.</li>
+<li><strong>Générer le rapport</strong> : le PDF reprend le constat, les personnes présentes, la facturation avec le solde et l’<strong>annexe photographique</strong>.</li>
+<li>Comme la facture, il n’est visible du client qu’une fois <strong>publié</strong>.</li>
+</ul>
+<h2 id="verifications--les-donnees-d-identite-du-client">Les données d’identité du client</h2>
+<p>La date et le lieu de naissance, le <strong>type</strong> de pièce d’identité apparaissent sur la facture et le rapport ; le <strong>numéro</strong> de la pièce n’y figure <strong>jamais</strong>. Ces informations ne sont visibles qu’avec la permission « identité » (direction, encadrement commercial, responsable des démarches, administrateur).</p>
+<h2 id="verifications--les-bonnes-habitudes">Les bonnes habitudes</h2>
+<ul>
+<li><strong>Enregistrez le constat le jour de la visite</strong>, photos à l’appui.</li>
+<li><strong>Saisissez chaque règlement</strong> dès réception, avec la référence de transaction.</li>
+<li><strong>Ne publiez le rapport</strong> qu’après relecture : le client le recevra tel quel.</li>
+<li>Une mission <strong>sans responsable</strong> n’avance pas : affectez-la tout de suite.</li>
+</ul>
+
+<nav class="pagination" aria-label="Chapitres voisins"><a href="#gestion-locative" rel="prev"><small>Précédent</small>La gestion locative</a><a href="#chantiers" rel="next"><small>Suivant</small>Les chantiers</a></nav>
+</article>
+<article class="chapitre" id="chantiers" data-titre="Les chantiers">
+<header class="chapitre__entete">
+<p class="chapitre__ligne">Par métier</p>
+<h1>Les chantiers</h1>
+<p class="chapitre__resume">Suivre un chantier de la préparation à la réception : planning, journal, budget, dépenses, rapports au client.</p>
+</header>
+<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#chantiers--creer-un-chantier">Créer un chantier</a></li><li><a href="#chantiers--la-fiche-du-chantier">La fiche du chantier</a></li><li><a href="#chantiers--le-journal-de-chantier">Le journal de chantier</a></li><li><a href="#chantiers--le-planning-des-travaux">Le planning des travaux</a></li><li><a href="#chantiers--le-budget-et-les-depenses">Le budget et les dépenses</a></li><li><a href="#chantiers--les-prestataires-et-les-pieces">Les prestataires et les pièces</a></li><li><a href="#chantiers--le-rapport-d-avancement">Le rapport d’avancement</a></li><li><a href="#chantiers--une-routine">Une routine</a></li></ul></nav>
+<p>Le module <strong>Chantiers</strong> suit les projets de <strong>construction</strong> de MTM, <strong>de la préparation à la réception</strong> : planning, journal quotidien, budget par poste, dépenses, prestataires, pièces et rapports d’avancement pour le client.</p>
+<p><a href="img/cons-01-chantiers.png" target="_blank" rel="noopener"><img src="img/cons-01-chantiers.png" alt="Liste des chantiers" loading="lazy"></a></p>
+<ul>
+<li>Les <strong>tuiles</strong> : chantiers actifs (avancement moyen), <strong>en retard</strong>, <strong>budget dépassé</strong>, <strong>dépensé</strong> sur le total devisé.</li>
+<li>Les <strong>pastilles</strong> : <em>Chantiers actifs</em>, <em>En retard</em>, <em>Budget dépassé</em>, <em>Sans responsable</em>, <em>À réceptionner</em>.</li>
+<li>La <strong>barre d’avancement</strong> passe en <strong>orange</strong> dès qu’un chantier prend du retard ou dépasse son budget.</li>
+</ul>
+<h2 id="chantiers--creer-un-chantier">Créer un chantier</h2>
+<ol>
+<li><strong>Chantiers › Nouveau chantier.</strong></li>
+<li>Choisissez le <strong>client</strong>, l’<strong>intitulé du chantier</strong> (« Villa R+1 à Ngaparou ») et la <strong>nature de l’ouvrage</strong> : <em>Villa</em>, <em>Immeuble</em>, <em>Local commercial</em>, <em>Clôture</em>, <em>Rénovation</em>, <em>Viabilisation</em> ou <em>Autre</em>. Un <strong>terrain</strong> du catalogue peut être lié.</li>
+<li>Décrivez le <strong>programme</strong> (« quatre chambres, séjour, cuisine, deux salles d’eau »), l’adresse, la commune et la région, la <strong>surface bâtie</strong> et le nombre de <strong>niveaux</strong>.</li>
+<li>Renseignez le <strong>montant du devis</strong> signé, le <strong>budget prévu</strong> (le budget travaux interne, à ne pas confondre avec le devis) et les <strong>dates de début et de fin prévues</strong>.</li>
+<li>Cochez <strong>« Poser le déroulé type des travaux »</strong> : l’application crée le <strong>déroulé type</strong> (fondations, élévation, toiture, second œuvre, finitions…) et évite neuf saisies.</li>
+</ol>
+<p><a href="img/cons-03-nouveau-chantier.png" target="_blank" rel="noopener"><img src="img/cons-03-nouveau-chantier.png" alt="Nouveau chantier" loading="lazy"></a></p>
+<blockquote><p>La <strong>fin prévue</strong> ne peut pas précéder le début. Le type de projet doit être dans la liste.</p>
+</blockquote>
+<h2 id="chantiers--la-fiche-du-chantier">La fiche du chantier</h2>
+<p><a href="img/cons-02-fiche-chantier.png" target="_blank" rel="noopener"><img src="img/cons-02-fiche-chantier.png" alt="Fiche d’un chantier" loading="lazy"></a></p>
+<p><strong>Les chiffres du haut</strong> :</p>
+<table>
+<thead>
+<tr>
+<th>Chiffre</th>
+<th>Sens</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Avancement</strong></td>
+<td>Calculé à partir des étapes : une étape terminée compte pour 100 %, les étapes les plus lourdes comptent davantage.</td>
+</tr>
+<tr>
+<td><strong>Le client paie</strong></td>
+<td>Le montant du devis signé.</td>
+</tr>
+<tr>
+<td><strong>Déjà dépensé</strong></td>
+<td>Les dépenses <strong>validées</strong> sur le budget travaux.</td>
+</tr>
+<tr>
+<td><strong>Marge</strong></td>
+<td>Ce qui reste à l’entreprise si rien d’autre n’est dépensé (devis − budget dépensé).</td>
+</tr>
+</tbody></table>
+<p><strong>Statuts</strong> : <em>En préparation</em> (devis, budget et planning se mettent en place), <em>En cours</em> (le journal se tient au quotidien), <em>Suspendu</em> (motif conservé), <em>Réceptionné</em> (travaux achevés), <em>Clôturé</em> (dossier soldé), <em>Abandonné</em>. Le bouton <strong>Faire avancer le chantier</strong> (menu ⌄) change le statut.</p>
+<h2 id="chantiers--le-journal-de-chantier">Le journal de chantier</h2>
+<p>Bloc <strong>Journal de chantier</strong> : ce qui s’est passé sur place, <strong>jour par jour</strong>.</p>
+<ol>
+<li><strong>+ Journée</strong> (ou le bouton <strong>Saisir la journée</strong> en haut).</li>
+<li>La <strong>date</strong>, l’<strong>étape (jalon)</strong> concernée, les <strong>intervenants</strong> et l’<strong>effectif</strong>, la <strong>météo</strong>, l’<strong>avancement</strong> constaté (en %), les <strong>observations</strong>.</li>
+<li>Cochez <strong>« Visible par le client »</strong> pour le faire figurer dans son espace.</li>
+<li>Ajoutez des <strong>photos</strong> de la journée.</li>
+</ol>
+<ul>
+<li>L’<strong>avancement</strong> saisi <strong>remonte à l’étape concernée</strong> et au chantier.</li>
+<li>Une journée qui <strong>signale un problème</strong> reste <strong>ouverte</strong> jusqu’à ce qu’on la solde : le chantier est alors « en retard » ou « en alerte ».</li>
+</ul>
+<h2 id="chantiers--le-planning-des-travaux">Le planning des travaux</h2>
+<p>Bloc <strong>Planning des travaux</strong> : chaque <strong>barre</strong> est une étape, placée sur sa période ; le trait vertical marque aujourd’hui.</p>
+<ul>
+<li><strong>+ Étape</strong> ajoute une étape ; <strong>renseignez les dates de début et de fin</strong> : sans elles, le planning ne peut pas se dessiner et aucun retard ne sera détecté.</li>
+<li>États d’une étape : <em>À venir</em>, <em>En cours</em>, <em>Terminé</em>, <em>Bloqué</em> (une décision est attendue), <em>Annulé</em>.</li>
+</ul>
+<h2 id="chantiers--le-budget-et-les-depenses">Le budget et les dépenses</h2>
+<ul>
+<li><strong>Budget par poste</strong> : ajoutez des postes (gros œuvre, électricité, plomberie…) avec leur <strong>montant prévu</strong>. Sans budget prévisionnel chiffré, aucun dépassement ne peut être détecté.</li>
+<li><strong>Dépenses</strong> : <strong>+ Dépense</strong> saisit une dépense (poste, montant, fournisseur, justificatif). Elle est <strong>validée par la comptabilité</strong> : une dépense ne pèse sur le budget <strong>qu’une fois contrôlée</strong>.</li>
+<li>Le chantier passe <strong>« budget dépassé »</strong> quand les dépenses validées dépassent le prévu.</li>
+</ul>
+<blockquote><p>La comptabilité reprend automatiquement les <strong>dépenses de chantier validées</strong> dans le journal financier : inutile de les ressaisir.</p>
+</blockquote>
+<h2 id="chantiers--les-prestataires-et-les-pieces">Les prestataires et les pièces</h2>
+<ul>
+<li><strong>Prestataires</strong> : les entreprises engagées (maçonnerie, électricité…) avec leur contact et leur engagement.</li>
+<li><strong>Pièces</strong> : plans, autorisations, photos, procès-verbaux. <strong>Seules les pièces publiées apparaissent dans l’espace du client.</strong></li>
+</ul>
+<h2 id="chantiers--le-rapport-d-avancement">Le rapport d’avancement</h2>
+<p>Menu ⌄ › <strong>Générer le rapport d’avancement</strong> : un PDF lisible par le client dans son espace une fois publié. Il <strong>ne montre jamais le budget interne</strong> de MTM (marge, coûts).</p>
+<h2 id="chantiers--une-routine">Une routine</h2>
+<ul>
+<li><strong>Chaque soir</strong> : saisissez la <strong>journée</strong> (effectif, avancement, observations, photos).</li>
+<li><strong>Chaque semaine</strong> : relisez le <strong>planning</strong>, mettez à jour les étapes bloquées, <strong>faites le point budget</strong>.</li>
+<li><strong>Chaque mois</strong> : générez et <strong>publiez le rapport d’avancement</strong> pour le client.</li>
+<li><strong>À la réception</strong> : passez le chantier à <em>Réceptionné</em>, puis <em>Clôturé</em> une fois tout soldé.</li>
+</ul>
+
+<nav class="pagination" aria-label="Chapitres voisins"><a href="#verifications" rel="prev"><small>Précédent</small>Les vérifications et démarches</a><a href="#comptabilite" rel="next"><small>Suivant</small>Comptabilité et finances</a></nav>
+</article>
+<article class="chapitre" id="comptabilite" data-titre="Comptabilité et finances">
+<header class="chapitre__entete">
+<p class="chapitre__ligne">Par métier</p>
+<h1>Comptabilité et finances</h1>
+<p class="chapitre__resume">Encaissements, revenu réel de MTM, dépenses, saisies à deux, clôture mensuelle et export pour la comptabilité.</p>
+</header>
+<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#comptabilite--deux-notions-a-ne-pas-confondre">Deux notions à ne pas confondre</a></li><li><a href="#comptabilite--le-tableau-de-bord-financier">Le tableau de bord financier</a></li><li><a href="#comptabilite--ce-qui-est-repris-automatiquement">Ce qui est repris automatiquement</a></li><li><a href="#comptabilite--le-journal">Le journal</a></li><li><a href="#comptabilite--les-saisies">Les saisies</a></li><li><a href="#comptabilite--la-cloture-mensuelle">La clôture mensuelle</a></li><li><a href="#comptabilite--exporter-pour-la-comptabilite">Exporter pour la comptabilité</a></li><li><a href="#comptabilite--valider-cote-comptabilite">Valider côté comptabilité</a></li><li><a href="#comptabilite--reglages-page-parametres">Réglages (page Paramètres)</a></li><li><a href="#comptabilite--limites-a-connaitre">Limites à connaître</a></li></ul></nav>
+<p>Le module <strong>Finances</strong> pilote l’argent de MTM : <strong>ce qui est encaissé, ce que MTM gagne réellement, ce qu’elle dépense, ce qu’il lui reste à encaisser</strong>, et prépare les <strong>exports pour la comptabilité externe</strong>. Ce n’est <strong>pas</strong> un logiciel de comptabilité : pas de plan comptable, de bilan ni de TVA.</p>
+<p>Le menu <strong>Finances</strong> contient : <em>Tableau de bord</em>, <em>Journal</em>, <em>Saisies</em>, <em>Clôtures</em>.</p>
+<h2 id="comptabilite--deux-notions-a-ne-pas-confondre">Deux notions à ne pas confondre</h2>
+<ul>
+<li><strong>Encaissements</strong> : l’argent reçu. Il comprend les loyers (qui reviennent aux propriétaires) et le prix des biens vendus.</li>
+<li><strong>Revenu de MTM</strong> : ce qui reste réellement à MTM.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Activité</th>
+<th>Revenu de MTM</th>
+<th>Dépenses reprises</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Vente de biens</strong></td>
+<td>La <strong>marge</strong> du bien (fiche du bien), reconnue <strong>au prorata de chaque paiement validé</strong> : 5 M payés sur 10 M de prix = la moitié de la marge</td>
+<td>Commissions de commerciaux payées</td>
+</tr>
+<tr>
+<td><strong>Gestion locative</strong></td>
+<td>La <strong>commission de gestion</strong> (taux du bien, ou taux par défaut) sur les loyers et séjours encaissés</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Démarches</strong></td>
+<td>Les règlements reçus pour la prestation</td>
+<td>Frais de transfert (Wave, Orange Money, banque)</td>
+</tr>
+<tr>
+<td><strong>Construction</strong></td>
+<td>Les recettes saisies à la main (paiements du client)</td>
+<td>Dépenses de chantier validées</td>
+</tr>
+<tr>
+<td><strong>Général</strong></td>
+<td>Les autres recettes saisies</td>
+<td>Dépenses de fonctionnement saisies</td>
+</tr>
+</tbody></table>
+<p><strong>Résultat = revenu − dépenses.</strong> Un bien vendu <strong>sans marge renseignée</strong> compte pour zéro (le tableau de bord le signale) : renseignez prix d’acquisition et prix public dans la fiche du bien.</p>
+<h2 id="comptabilite--le-tableau-de-bord-financier">Le tableau de bord financier</h2>
+<p><a href="img/compta-01-tableau.png" target="_blank" rel="noopener"><img src="img/compta-01-tableau.png" alt="Tableau de bord financier" loading="lazy"></a></p>
+<ul>
+<li>Boutons de période : <em>Ce mois-ci</em>, <em>Mois précédent</em>, <em>Ce trimestre</em>, <em>Cette année</em>, <em>12 derniers mois</em>.</li>
+<li>Quatre tuiles : <strong>Encaissements</strong>, <strong>Revenu de MTM</strong>, <strong>Dépenses</strong>, <strong>Résultat</strong>, chacune comparée à la <strong>période précédente de même durée</strong>.</li>
+<li>Le bandeau orange rappelle les <strong>opérations à valider</strong> : tant qu’elles ne le sont pas, elles ne comptent pas dans les totaux.</li>
+<li>Plus bas : graphique revenu/dépenses par mois, <strong>d’où vient le revenu</strong> (répartition par activité), tableau <strong>par activité</strong>, et <strong>ce qu’il reste à encaisser</strong>.</li>
+</ul>
+<h2 id="comptabilite--ce-qui-est-repris-automatiquement">Ce qui est repris automatiquement</h2>
+<p>Vous n’avez <strong>rien à ressaisir</strong> de ceci : paiements de vente <strong>validés</strong>, commissions <strong>payées</strong>, loyers <strong>validés</strong>, paiements de séjours, règlements de missions (avec leurs frais), dépenses de chantier <strong>validées</strong>. Les paiements en attente, refusés ou contre-passés n’y figurent pas.</p>
+<blockquote class="attention"><p><strong>Important</strong> — Validez régulièrement les paiements (ventes, loyers, missions) et les dépenses de chantier : tant qu’ils ne sont pas validés, ils n’entrent pas dans vos chiffres.</p>
+</blockquote>
+<h2 id="comptabilite--le-journal">Le journal</h2>
+<p><strong>Finances › Journal</strong> : chaque mouvement d’argent des ventes, de la gestion locative, des démarches et des chantiers, repris tel quel, avec les saisies validées.</p>
+<p><a href="img/compta-02-journal.png" target="_blank" rel="noopener"><img src="img/compta-02-journal.png" alt="Journal financier" loading="lazy"></a></p>
+<ul>
+<li>Filtres : <strong>période</strong> (du… au…), <strong>raccourci</strong>, <strong>activité</strong>, <strong>sens</strong> (entrées et sorties), recherche libre (libellé, tiers, référence).</li>
+<li>Les tuiles donnent <strong>entrées</strong>, <strong>dont revenu MTM</strong>, <strong>sorties</strong> et nombre de <strong>mouvements</strong>.</li>
+<li>Le journal s’ouvre par défaut sur le <strong>mois précédent</strong> (celui que l’on exporte pour la comptabilité) : choisissez <strong>Raccourci › Ce mois-ci</strong> pour voir le mois courant.</li>
+</ul>
+<h2 id="comptabilite--les-saisies">Les saisies</h2>
+<p>Pour ce qui n’a <strong>pas d’autre origine dans l’outil</strong> : loyer des bureaux, salaires, électricité, recette d’un chantier, subvention… <strong>Finances › Saisies.</strong></p>
+<p><a href="img/compta-03-saisies.png" target="_blank" rel="noopener"><img src="img/compta-03-saisies.png" alt="Saisies à valider" loading="lazy"></a></p>
+<h3 id="comptabilite--saisir-une-depense-ou-une-recette">Saisir une dépense ou une recette</h3>
+<ol>
+<li><strong>Nouvelle saisie.</strong></li>
+<li><strong>Nature</strong> (dépense ou recette), <strong>activité</strong> (général, construction…), <strong>catégorie</strong> (liste paramétrable).</li>
+<li><strong>Libellé</strong>, <strong>montant</strong>, <strong>date</strong>, <strong>mode de paiement</strong>, <strong>référence</strong> (n° de facture, de virement), <strong>fournisseur ou client</strong>.</li>
+<li><strong>Joindre un justificatif</strong> (facture, reçu, relevé : PDF, JPG, PNG, 10 Mo au plus) : facultatif mais recommandé.</li>
+<li><strong>Envoyer à la validation.</strong></li>
+</ol>
+<p><a href="img/compta-06-nouvelle-saisie.png" target="_blank" rel="noopener"><img src="img/compta-06-nouvelle-saisie.png" alt="Nouvelle saisie" loading="lazy"></a></p>
+<h3 id="comptabilite--la-regle-des-deux-regards">La règle des deux regards</h3>
+<blockquote class="attention"><p><strong>Important</strong> — Une saisie compte dans les totaux <strong>une fois validée par une autre personne que son auteur</strong>. Vous ne pouvez pas valider votre propre saisie.</p>
+</blockquote>
+<p>Les onglets : <strong>À valider</strong>, <strong>Validées</strong>, <strong>Rejetées</strong>, <strong>Toutes</strong>. Un valideur ouvre la saisie et la <strong>valide</strong> ou la <strong>rejette</strong> (avec un motif). Une saisie <strong>validée ne se modifie plus</strong> : on la <strong>corrige par une saisie inverse</strong>.</p>
+<h2 id="comptabilite--la-cloture-mensuelle">La clôture mensuelle</h2>
+<p><strong>Finances › Clôtures</strong> : un mois passé se <strong>clôture</strong> (réservé à ceux qui peuvent <em>administrer</em> les finances).</p>
+<p><a href="img/compta-04-clotures.png" target="_blank" rel="noopener"><img src="img/compta-04-clotures.png" alt="Clôtures mensuelles" loading="lazy"></a></p>
+<ul>
+<li>Un mois clôturé <strong>garde ses chiffres</strong> : ses totaux sont <strong>figés</strong> et <strong>plus aucun mouvement daté de ce mois</strong> ne peut être ajouté, validé ou annulé — paiement de vente, loyer, règlement de mission ou de séjour, dépense de chantier, saisie.</li>
+<li><strong>Clôturer exige qu’aucune saisie du mois n’attende sa validation.</strong></li>
+<li>Une <strong>correction</strong> se fait alors <strong>à la date du jour</strong>.</li>
+<li><strong>Rouvrir</strong> un mois demande un <strong>motif</strong>, consigné dans le journal d’audit.</li>
+</ul>
+<p>Ordre conseillé en fin de mois : <strong>1.</strong> valider toutes les saisies et paiements ; <strong>2.</strong> <strong>exporter</strong> le journal ; <strong>3.</strong> <strong>clôturer</strong>.</p>
+<h2 id="comptabilite--exporter-pour-la-comptabilite">Exporter pour la comptabilité</h2>
+<p><strong>Finances › Journal › Exporter pour la comptabilité</strong> :</p>
+<p><a href="img/compta-07-export-comptable.png" target="_blank" rel="noopener"><img src="img/compta-07-export-comptable.png" alt="Export comptable" loading="lazy"></a></p>
+<ul>
+<li><strong>CSV</strong> : le journal, UTF-8, séparateur « ; », virgule décimale — s’ouvre directement dans Excel en français.</li>
+<li><strong>Excel</strong> : journal, synthèse par activité, par mois et sommes dues. Les cellules qui commencent par <code>=</code>, <code>+</code>, <code>-</code> ou <code>@</code> sont <strong>neutralisées</strong> (aucune formule exécutée à l’ouverture).</li>
+<li>Un <strong>motif est obligatoire</strong> : il est consigné dans le journal d’audit avec la période et le nombre de mouvements.</li>
+</ul>
+<h2 id="comptabilite--valider-cote-comptabilite">Valider côté comptabilité</h2>
+<p>La comptabilité a aussi la main sur les encaissements des autres modules :</p>
+<ul>
+<li><strong>Ventes</strong> : <strong>valider ou refuser un paiement</strong> enregistré par un commercial, <strong>payer les commissions</strong> (une fois le dossier soldé).</li>
+<li><strong>Gestion locative</strong> : valider les loyers encaissés.</li>
+<li><strong>Chantiers</strong> : <strong>valider les dépenses</strong> saisies sur le chantier.</li>
+<li><strong>Démarches</strong> : consulter les règlements des missions.</li>
+</ul>
+<p><a href="img/compta-05-ventes.png" target="_blank" rel="noopener"><img src="img/compta-05-ventes.png" alt="Ventes vues par la comptabilité" loading="lazy"></a></p>
+<h2 id="comptabilite--reglages-page-parametres">Réglages (page Paramètres)</h2>
+<table>
+<thead>
+<tr>
+<th>Réglage</th>
+<th>Rôle</th>
+<th>Valeur d’origine</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>finances.tauxGestionDefaut</code></td>
+<td>Commission de gestion quand le bien n’a pas de taux, en %</td>
+<td>10</td>
+</tr>
+<tr>
+<td><code>finances.categoriesDepenses</code></td>
+<td>Catégories de dépenses saisies</td>
+<td>salaires, loyer des bureaux…</td>
+</tr>
+<tr>
+<td><code>finances.categoriesRecettes</code></td>
+<td>Catégories de recettes saisies</td>
+<td>recette de chantier…</td>
+</tr>
+<tr>
+<td><code>finances.doubleValidation</code></td>
+<td>Validation par une autre personne</td>
+<td>oui</td>
+</tr>
+</tbody></table>
+<p>Le <strong>taux de commission de gestion d’un bien</strong> se règle dans sa fiche (« Commission de gestion (%) »).</p>
+<h2 id="comptabilite--limites-a-connaitre">Limites à connaître</h2>
+<ul>
+<li>La commission d’un commercial payée est une dépense <strong>datée du jour de son paiement</strong>.</li>
+<li>Les paiements d’un client sur un <strong>chantier</strong> ne sont pas suivis par le module Chantiers : saisissez-les comme <strong>recettes de chantier</strong> pour voir la marge.</li>
+<li>La <strong>TVA n’est pas gérée</strong>.</li>
+</ul>
+
+<nav class="pagination" aria-label="Chapitres voisins"><a href="#chantiers" rel="prev"><small>Précédent</small>Les chantiers</a><a href="#direction" rel="next"><small>Suivant</small>La direction : chiffres et rapports</a></nav>
+</article>
+<article class="chapitre" id="direction" data-titre="La direction : chiffres et rapports">
+<header class="chapitre__entete">
+<p class="chapitre__ligne">Par métier</p>
+<h1>La direction : chiffres et rapports</h1>
+<p class="chapitre__resume">Le tableau de bord de direction, les sept rapports PDF et Excel, l’envoi automatique par e-mail.</p>
+</header>
+<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#direction--le-tableau-de-bord-de-direction">Le tableau de bord de direction</a></li><li><a href="#direction--les-rapports">Les rapports</a></li><li><a href="#direction--le-journal-d-audit">Le journal d’audit</a></li><li><a href="#direction--les-chiffres-financiers">Les chiffres financiers</a></li><li><a href="#direction--une-routine-de-pilotage">Une routine de pilotage</a></li></ul></nav>
+<p>Ce chapitre s’adresse à la <strong>direction</strong> et à celles et ceux qui consultent les chiffres de l’entreprise : responsables, comptabilité. Pour la partie commerciale, voir <em>Piloter l’équipe commerciale</em> ; pour l’argent, <em>Comptabilité et finances</em>.</p>
+<h2 id="direction--le-tableau-de-bord-de-direction">Le tableau de bord de direction</h2>
+<p>À la connexion, la direction arrive sur l’onglet <strong>Direction</strong>. Les onglets <strong>Équipe</strong>, <strong>Mon activité</strong> et <strong>Vue générale</strong> restent accessibles.</p>
+<p><a href="img/dir-01-tableau-direction.png" target="_blank" rel="noopener"><img src="img/dir-01-tableau-direction.png" alt="Tableau de bord de direction" loading="lazy"></a></p>
+<ul>
+<li><strong>Période</strong> : <em>Ce mois-ci</em>, <em>Mois précédent</em>, <em>Ce trimestre</em>, <em>Cette année</em>, <em>12 derniers mois</em>. Chaque chiffre est <strong>comparé à la période précédente de même durée</strong>.</li>
+<li><strong>Les quatre tuiles</strong> : <strong>Encaissements</strong>, <strong>Revenu de MTM</strong>, <strong>Ventes conclues</strong>, <strong>Résultat</strong>.</li>
+<li><strong>À surveiller</strong> (six alertes cliquables) :</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Alerte</th>
+<th>Sens</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Dossiers bloqués</strong></td>
+<td>Dossiers ouverts qui n’ont plus bougé depuis un délai (voir la vue Équipe)</td>
+</tr>
+<tr>
+<td><strong>Mandats à échéance</strong></td>
+<td>Mandats qui se terminent sous 30 jours : à renouveler ou clore</td>
+</tr>
+<tr>
+<td><strong>Impayés de loyer prolongés</strong></td>
+<td>Plus de 30 jours de retard</td>
+</tr>
+<tr>
+<td><strong>Chantiers en alerte</strong></td>
+<td>En retard ou hors budget</td>
+</tr>
+<tr>
+<td><strong>Commissions à valider</strong></td>
+<td>Estimées, en attente d’un valideur</td>
+</tr>
+<tr>
+<td><strong>Saisies financières à valider</strong></td>
+<td>Elles ne comptent pas encore dans les totaux</td>
+</tr>
+</tbody></table>
+<ul>
+<li>Plus bas : <strong>revenu et dépenses sur 12 mois</strong>, <strong>ventes conclues par mois</strong>, activité commerciale et <strong>taux de conversion</strong>, <strong>revenu par activité</strong>, <strong>locations</strong> (occupation, recouvrement des loyers, séjours), <strong>démarches</strong>, <strong>chantiers</strong>, <strong>meilleurs commerciaux</strong>.</li>
+</ul>
+<blockquote><p><strong>Définitions</strong> — Une <strong>vente conclue</strong> est un dossier au statut « soldé », comptée à sa <strong>date de vente</strong>. Les définitions d’encaissements et de revenu sont détaillées dans le chapitre <em>Comptabilité et finances</em>.</p>
+</blockquote>
+<h2 id="direction--les-rapports">Les rapports</h2>
+<p><strong>Rapports</strong> (menu principal) : sept rapports, à lire à l’écran puis à <strong>exporter</strong>.</p>
+<p><a href="img/dir-02-rapports.png" target="_blank" rel="noopener"><img src="img/dir-02-rapports.png" alt="Les rapports" loading="lazy"></a></p>
+<table>
+<thead>
+<tr>
+<th>Rapport</th>
+<th>Contenu</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Ventes par période</strong></td>
+<td>Une ligne par vente conclue, total, détail par mois (filtrable par région)</td>
+</tr>
+<tr>
+<td><strong>Ventes par zone</strong></td>
+<td>Par région et par commune : ventes, chiffre d’affaires, prix moyen, superficie vendue</td>
+</tr>
+<tr>
+<td><strong>Performance des commerciaux</strong></td>
+<td>Prospects créés, visites, ventes, chiffre d’affaires, commissions, objectif et atteinte</td>
+</tr>
+<tr>
+<td><strong>Terrains disponibles et vendus</strong></td>
+<td>Par statut et par région, liste des biens disponibles (photo du jour)</td>
+</tr>
+<tr>
+<td><strong>Loyers et impayés</strong></td>
+<td>Attendu, encaissé et recouvrement par bien ; impayés à ce jour avec jours de retard</td>
+</tr>
+<tr>
+<td><strong>Rentabilité par activité</strong></td>
+<td>Encaissements, revenu, dépenses, résultat et marge, par activité et par mois</td>
+</tr>
+<tr>
+<td><strong>Activité des démarches</strong></td>
+<td>Missions ouvertes, rapports rendus, décisions, délai moyen, règlements</td>
+</tr>
+</tbody></table>
+<h3 id="direction--lire-un-rapport">Lire un rapport</h3>
+<ol>
+<li><strong>Cliquez sur la carte</strong> du rapport voulu.</li>
+<li>Choisissez la <strong>période</strong> (champs <em>Du</em> et <em>Au</em>, ou un <strong>raccourci</strong> : mois, mois précédent, trimestre, année, 12 mois) et, pour certains rapports, une <strong>région</strong>.</li>
+<li><strong>Actualiser</strong> : le rapport s’affiche à l’écran avec ses chiffres clés et ses tableaux.</li>
+</ol>
+<p><a href="img/dir-03-rapport-ventes.png" target="_blank" rel="noopener"><img src="img/dir-03-rapport-ventes.png" alt="Un rapport à l’écran" loading="lazy"></a></p>
+<blockquote><p>Un rapport est <strong>limité à 500 lignes de détail</strong> (il le dit) : réduisez la période pour tout voir. Les chiffres sont <strong>les mêmes</strong> à l’écran, en PDF et en Excel : ils viennent du même calcul.</p>
+</blockquote>
+<h3 id="direction--exporter-en-pdf-ou-en-excel">Exporter en PDF ou en Excel</h3>
+<p><strong>Exporter (PDF ou Excel)</strong> :</p>
+<p><a href="img/dir-06-export-rapport.png" target="_blank" rel="noopener"><img src="img/dir-06-export-rapport.png" alt="Export d’un rapport" loading="lazy"></a></p>
+<ul>
+<li><strong>Document PDF</strong> : mis en page avec le <strong>logo et les mentions légales de MTM</strong>, prêt à imprimer ; tableaux paginés avec leur ligne de titres, numéro de page.</li>
+<li><strong>Classeur Excel</strong> : un onglet de synthèse puis <strong>un onglet par tableau</strong>, avec de vrais nombres, dates et pourcentages pour trier et totaliser.</li>
+<li><strong>Motif de l’export obligatoire</strong> : il est consigné dans le <strong>journal d’audit</strong> avec le rapport, la période et le format.</li>
+</ul>
+<h3 id="direction--l-envoi-automatique-par-e-mail">L’envoi automatique par e-mail</h3>
+<p>MTM peut recevoir des rapports <strong>sans les ouvrir</strong> : chaque matin à 7 h (heure de Dakar), si le jour correspond, les rapports choisis partent en <strong>pièces jointes</strong> (PDF et/ou Excel) vers les destinataires, pour la <strong>dernière période complète</strong> :</p>
+<ul>
+<li><strong>hebdomadaire</strong> : la semaine écoulée (lundi → dimanche), envoyée <strong>chaque lundi</strong> ;</li>
+<li><strong>mensuelle</strong> : le mois précédent, envoyé <strong>le 1er du mois</strong>.</li>
+</ul>
+<p>Un envoi n’a lieu <strong>qu’une fois par période</strong>. Il est <strong>désactivé par défaut</strong> : un administrateur l’active dans <em>Administration › Paramètres</em> (voir le chapitre <em>Administration</em>).</p>
+<h2 id="direction--le-journal-d-audit">Le journal d’audit</h2>
+<p>Pour savoir <strong>qui a fait quoi, quand</strong> (création, modification, export, validation, connexion…), la direction consulte <strong>Administration › Journal d’audit</strong>.</p>
+<p><a href="img/dir-05-audit.png" target="_blank" rel="noopener"><img src="img/dir-05-audit.png" alt="Journal d’audit" loading="lazy"></a></p>
+<ul>
+<li>Filtres : recherche, période, module, élément.</li>
+<li>Chaque ligne s’ouvre pour montrer l’<strong>avant / après</strong>, le <strong>motif</strong> éventuel et l’adresse de connexion.</li>
+<li>L’<strong>export</strong> du journal demande lui-même un motif, consigné.</li>
+</ul>
+<h2 id="direction--les-chiffres-financiers">Les chiffres financiers</h2>
+<p>Le menu <strong>Finances</strong> donne à la direction la vue d’ensemble : tableau de bord financier, journal, saisies, clôtures.</p>
+<p><a href="img/dir-04-finances.png" target="_blank" rel="noopener"><img src="img/dir-04-finances.png" alt="Tableau de bord financier" loading="lazy"></a></p>
+<p>La direction a tous les droits sur les finances (consulter, saisir, valider, exporter, <strong>clôturer et rouvrir un mois</strong>). Les règles (deux regards, mois clôturé) sont décrites dans <em>Comptabilité et finances</em>.</p>
+<h2 id="direction--une-routine-de-pilotage">Une routine de pilotage</h2>
+<ul>
+<li><strong>Chaque lundi</strong> : lisez les six alertes <strong>À surveiller</strong>, puis le rapport <strong>Rentabilité par activité</strong>.</li>
+<li><strong>Chaque mois</strong> : exportez <em>Ventes par période</em> et <em>Performance des commerciaux</em> ; vérifiez la <strong>clôture</strong> avec la comptabilité.</li>
+<li><strong>Chaque trimestre</strong> : comparez les tendances sur 12 mois et revoyez les <strong>objectifs</strong> de l’équipe.</li>
+</ul>
+
+<nav class="pagination" aria-label="Chapitres voisins"><a href="#comptabilite" rel="prev"><small>Précédent</small>Comptabilité et finances</a><a href="#site-web" rel="next"><small>Suivant</small>Le site public et les demandes web</a></nav>
+</article>
+<article class="chapitre" id="site-web" data-titre="Le site public et les demandes web">
+<header class="chapitre__entete">
+<p class="chapitre__ligne">Par métier</p>
+<h1>Le site public et les demandes web</h1>
+<p class="chapitre__resume">Répondre aux messages du site, gérer les textes, réalisations, publicités et l’équipe affichés sur le site.</p>
+</header>
+<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#site-web--les-demandes-web">Les demandes web</a></li><li><a href="#site-web--les-contenus-du-site">Les contenus du site</a></li><li><a href="#site-web--les-realisations-et-projets">Les réalisations et projets</a></li><li><a href="#site-web--les-publicites-du-bandeau">Les publicités du bandeau</a></li><li><a href="#site-web--l-equipe">L’équipe</a></li><li><a href="#site-web--qui-peut-quoi">Qui peut quoi</a></li></ul></nav>
+<p>Le menu <strong>Contenu</strong> gère ce qui concerne le <strong>site public de MTM</strong> : les <strong>demandes</strong> que les visiteurs envoient, et les <strong>contenus</strong> qu’ils lisent.</p>
+<h2 id="site-web--les-demandes-web">Les demandes web</h2>
+<p><strong>Contenu › Demandes web</strong> : les messages envoyés depuis le <strong>formulaire de contact</strong> du site (et depuis les fiches de biens et les annonces de location).</p>
+<p><a href="img/web-01-demandes.png" target="_blank" rel="noopener"><img src="img/web-01-demandes.png" alt="Demandes web" loading="lazy"></a></p>
+<ul>
+<li>Chaque demande indique le <strong>nom</strong>, l’<strong>e-mail</strong>, le <strong>téléphone</strong>, le <strong>sujet</strong>, le <strong>message</strong> et, s’il y en a un, le <strong>bien</strong> concerné.</li>
+<li>Une demande <strong>non lue</strong> est signalée ; <strong>Tout afficher</strong> efface les filtres.</li>
+<li>Une <strong>notification</strong> prévient l’équipe à l’arrivée d’une nouvelle demande.</li>
+</ul>
+<p>Trois actions :</p>
+<table>
+<thead>
+<tr>
+<th>Action</th>
+<th>Ce qu’elle fait</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Répondre</strong></td>
+<td>Envoie votre réponse <strong>par e-mail</strong> et la <strong>fait apparaître dans l’espace client</strong> du demandeur.</td>
+</tr>
+<tr>
+<td><strong>Créer le prospect</strong></td>
+<td>Crée la <strong>fiche prospect</strong>, ouvre le CRM et permet à un commercial de rappeler la personne.</td>
+</tr>
+<tr>
+<td><strong>Ouvrir le prospect</strong></td>
+<td>Quand le contact est <strong>déjà dans le CRM</strong>, ouvre sa fiche.</td>
+</tr>
+</tbody></table>
+<blockquote><p><strong>Bon réflexe</strong> — Répondez dans la <strong>journée</strong> et <strong>créez le prospect</strong> pour qu’aucun contact ne reste sans suite : c’est la source de beaucoup de ventes. Une demande sur une annonce de location ou un séjour est traitée par la <strong>gestion locative</strong>.</p>
+</blockquote>
+<h2 id="site-web--les-contenus-du-site">Les contenus du site</h2>
+<p><strong>Contenu › Contenus du site</strong> : les <strong>textes</strong> affichés sur le site public, <strong>page par page</strong>.</p>
+<p><a href="img/web-02-contenus.png" target="_blank" rel="noopener"><img src="img/web-02-contenus.png" alt="Contenus du site" loading="lazy"></a></p>
+<ul>
+<li>Un emplacement <strong>vide</strong> affiche le <strong>texte par défaut</strong> du site ; ce que vous saisissez le remplace <strong>dès la publication</strong>.</li>
+<li>Chaque bloc a un statut (<strong>Publié</strong>…), un bouton <strong>Modifier</strong>, l’œil pour <strong>masquer</strong> et la corbeille pour <strong>retirer</strong>.</li>
+<li>Les tuiles du haut : <strong>textes personnalisés</strong> (18 sur 23, par exemple), <strong>témoignages</strong>, <strong>contenus masqués</strong>.</li>
+</ul>
+<h3 id="site-web--modifier-un-texte">Modifier un texte</h3>
+<p><a href="img/adm-10-modifier-contenu.png" target="_blank" rel="noopener"><img src="img/adm-10-modifier-contenu.png" alt="Modifier un contenu" loading="lazy"></a></p>
+<ol>
+<li><strong>Modifier</strong> sur le bloc voulu.</li>
+<li>Écrivez le texte (un retour à la ligne coupe le titre en deux lignes, par exemple).</li>
+<li><strong>Publier</strong>.</li>
+</ol>
+<h2 id="site-web--les-realisations-et-projets">Les réalisations et projets</h2>
+<p><strong>Contenu › Réalisations &amp; projets</strong> : le <strong>portfolio illustré</strong> du site. Chaque carte montre une <strong>photo</strong>, un <strong>titre</strong>, un <strong>lieu</strong> et une <strong>courte description</strong> ; elle n’apparaît sur le site <strong>qu’une fois publiée</strong>.</p>
+<p><a href="img/web-03-realisations.png" target="_blank" rel="noopener"><img src="img/web-03-realisations.png" alt="Réalisations et projets" loading="lazy"></a></p>
+<ul>
+<li><strong>Ajouter</strong> une réalisation (dans la catégorie voulue) : photo, titre, lieu, description.</li>
+<li><strong>Modifier</strong>, <strong>masquer</strong> ou <strong>retirer</strong> une carte à tout moment.</li>
+</ul>
+<h2 id="site-web--les-publicites-du-bandeau">Les publicités du bandeau</h2>
+<p><strong>Contenu › Publicités du bandeau</strong> : affiches, vidéos de publicité et promotions de MTM.</p>
+<p><a href="img/web-04-promotions.png" target="_blank" rel="noopener"><img src="img/web-04-promotions.png" alt="Publicités du bandeau" loading="lazy"></a></p>
+<ul>
+<li>Tant qu’<strong>au moins une</strong> publicité est en ligne, elle prend la <strong>place de la vidéo</strong> du bandeau d’accueil du site ; <strong>s’il n’y en a plus, la vidéo habituelle revient d’elle-même</strong>.</li>
+<li><strong>Ajouter une publicité</strong> : affiche ou vidéo, titre, lien, <strong>période de diffusion</strong> (dates de début et de fin).</li>
+</ul>
+<blockquote class="attention"><p><strong>Attention</strong> — Une publicité à période dépassée sort toute seule du site. Pensez à la renouveler avant la fin d’une promotion.</p>
+</blockquote>
+<h2 id="site-web--l-equipe">L’équipe</h2>
+<p><strong>Contenu › Équipe</strong> : la section <strong>« Notre équipe »</strong> de la page <em>À propos</em> : le <strong>mot du directeur</strong>, une <strong>photo de groupe</strong> et un <strong>portrait par collaborateur</strong>. Chaque contenu n’apparaît qu’<strong>une fois publié</strong>.</p>
+<p><a href="img/web-05-equipe.png" target="_blank" rel="noopener"><img src="img/web-05-equipe.png" alt="Équipe" loading="lazy"></a></p>
+<h2 id="site-web--qui-peut-quoi">Qui peut quoi</h2>
+<p>La <strong>consultation</strong> des contenus est ouverte aux rôles qui ont la permission « contenu : consulter » ; <strong>créer, modifier, publier et supprimer</strong> sont réservés à la direction, aux managers (et aux administrateurs). Un commercial voit les <strong>demandes web</strong> et peut les traiter (consulter, modifier), mais pas les contenus du site.</p>
+
+<nav class="pagination" aria-label="Chapitres voisins"><a href="#direction" rel="prev"><small>Précédent</small>La direction : chiffres et rapports</a><a href="#administration" rel="next"><small>Suivant</small>Administration du back-office</a></nav>
+</article>
+<article class="chapitre" id="administration" data-titre="Administration du back-office">
+<header class="chapitre__entete">
+<p class="chapitre__ligne">Par métier</p>
+<h1>Administration du back-office</h1>
+<p class="chapitre__resume">Comptes, rôles, paramètres, parcours des dossiers, identité de l’entreprise, notifications, journal d’audit.</p>
+</header>
+<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#administration--les-utilisateurs">Les utilisateurs</a></li><li><a href="#administration--les-roles-et-permissions">Les rôles et permissions</a></li><li><a href="#administration--les-parametres">Les paramètres</a></li><li><a href="#administration--les-parcours-des-dossiers">Les parcours des dossiers</a></li><li><a href="#administration--l-identite-de-l-entreprise">L’identité de l’entreprise</a></li><li><a href="#administration--les-regles-de-notification">Les règles de notification</a></li><li><a href="#administration--le-journal-d-audit">Le journal d’audit</a></li><li><a href="#administration--l-import-de-biens">L’import de biens</a></li><li><a href="#administration--les-bonnes-pratiques-d-administration">Les bonnes pratiques d’administration</a></li></ul></nav>
+<p>Ce chapitre s’adresse aux <strong>administrateurs</strong> (et à la <strong>direction</strong> pour certains écrans). Le menu <strong>Administration</strong> contient : <em>Accès</em> (utilisateurs, rôles), <em>Parcours des dossiers</em>, <em>Identité de l’entreprise</em>, <em>Règles de notification</em>, <em>Paramètres</em>, <em>Journal d’audit</em>.</p>
+<blockquote class="attention"><p><strong>Important</strong> — Un compte <strong>administrateur</strong> doit avoir la <strong>double authentification</strong> activée. Toutes vos actions sont <strong>tracées</strong> dans le journal d’audit : agissez avec soin.</p>
+</blockquote>
+<h2 id="administration--les-utilisateurs">Les utilisateurs</h2>
+<p><strong>Administration › Accès › Utilisateurs</strong> : les comptes qui accèdent au back-office. Chaque personne a un <strong>rôle</strong> qui définit ce qu’elle peut voir et faire.</p>
+<p><a href="img/adm-01-utilisateurs.png" target="_blank" rel="noopener"><img src="img/adm-01-utilisateurs.png" alt="Utilisateurs" loading="lazy"></a></p>
+<ul>
+<li>Les <strong>tuiles</strong> : comptes <strong>actifs</strong>, comptes <strong>à surveiller</strong> (2FA à activer ou mot de passe provisoire non changé), comptes <strong>désactivés</strong>.</li>
+<li>Les onglets <strong>Tous / Actifs / À surveiller / Désactivés</strong>, et la recherche.</li>
+<li>Par ligne : le <strong>rôle</strong>, l’<strong>accès</strong> (actif…), la <strong>sécurité</strong> (2FA activée ou non), la <strong>dernière connexion</strong>.</li>
+</ul>
+<h3 id="administration--creer-un-compte">Créer un compte</h3>
+<p><a href="img/adm-09-nouvel-utilisateur.png" target="_blank" rel="noopener"><img src="img/adm-09-nouvel-utilisateur.png" alt="Nouvel utilisateur" loading="lazy"></a></p>
+<ol>
+<li><strong>Nouvel utilisateur.</strong></li>
+<li><strong>Prénom</strong>, <strong>nom</strong>, <strong>adresse e-mail</strong> (elle sert d’identifiant) et <strong>rôle</strong>.</li>
+<li>Le <strong>mot de passe provisoire</strong> est généré (<strong>Générer</strong> en propose un autre, <strong>Copier</strong> le copie). Il respecte les règles : 12 caractères minimum avec majuscule, minuscule, chiffre et caractère spécial.</li>
+<li><strong>Créer le compte</strong>, puis <strong>transmettez le mot de passe</strong> à la personne par un canal sûr. Elle devra <strong>le changer à sa première connexion</strong>.</li>
+</ol>
+<blockquote class="attention"><p><strong>Attention</strong> — Pour les rôles sensibles (direction, administrateur, comptabilité, RH), demandez à la personne d’activer sa <strong>2FA</strong> dès la première connexion : sans elle, les fonctions sensibles lui sont fermées.</p>
+</blockquote>
+<h3 id="administration--modifier-desactiver-supprimer">Modifier, désactiver, supprimer</h3>
+<ul>
+<li>Le <strong>crayon</strong> modifie le nom, le rôle ou l’état du compte.</li>
+<li>Le bouton <strong>désactiver</strong> coupe l’accès <strong>sans perdre l’historique</strong> : c’est le bon geste quand quelqu’un quitte l’entreprise.</li>
+<li>La <strong>corbeille</strong> supprime définitivement (à réserver aux comptes créés par erreur).</li>
+<li>Pour une personne qui a <strong>perdu son téléphone</strong>, utilisez l’action <strong>« Réinitialiser le 2FA (téléphone perdu) »</strong> sur la ligne de son compte ; elle en recréera une.</li>
+<li>Vous ne pouvez pas <strong>désactiver ni supprimer votre propre compte</strong>.</li>
+</ul>
+<h2 id="administration--les-roles-et-permissions">Les rôles et permissions</h2>
+<p><strong>Administration › Accès › Rôles &amp; permissions</strong> : un rôle est un <strong>ensemble de droits</strong> « module : action » (consulter, créer, modifier, valider, publier, payer, exporter, administrer…). <strong>Modifier un rôle change les droits de tous ses utilisateurs.</strong></p>
+<p><a href="img/adm-02-roles.png" target="_blank" rel="noopener"><img src="img/adm-02-roles.png" alt="Rôles et permissions" loading="lazy"></a></p>
+<ul>
+<li>Chaque carte résume les droits du rôle par module, le nombre d’utilisateurs et de permissions.</li>
+<li>Les rôles <strong>Système</strong> (administrateur…) ne se suppriment pas.</li>
+<li>Le badge <strong>2FA obligatoire</strong> signale les rôles qui doivent activer la double authentification.</li>
+<li><strong>Nouveau rôle</strong> crée un rôle sur mesure ; <strong>attribuez-lui ensuite ses permissions</strong>.</li>
+</ul>
+<p>Le tableau complet des droits par rôle est dans le chapitre <em>Qui peut faire quoi</em>.</p>
+<h2 id="administration--les-parametres">Les paramètres</h2>
+<p><strong>Administration › Paramètres</strong> : les <strong>listes de valeurs</strong> (statuts, types, étapes) et les <strong>règles</strong> (durées, taux) utilisées par les écrans. Une modification s’applique <strong>immédiatement à toute l’équipe</strong> et est <strong>tracée</strong>.</p>
+<p><a href="img/adm-03-parametres.png" target="_blank" rel="noopener"><img src="img/adm-03-parametres.png" alt="Paramètres" loading="lazy"></a></p>
+<ul>
+<li>Le menu de gauche range les paramètres par <strong>thème</strong> : Général, Terrains, Mandats, Prospects (CRM), Missions/factures/références, Gestion locative, Ventes/réservations/paiements ; le compteur « 7/7 » dit combien sont <strong>personnalisés</strong>. Les réglages plus récents (finances, pilotage, notifications) se trouvent dans <strong>Avancé › Hors catalogue</strong>, où la <strong>recherche</strong> les retrouve.</li>
+<li><strong>Modifier</strong> change une valeur ; un paramètre <strong>sur valeur par défaut</strong> (non enregistré) utilise le réglage d’origine de l’application.</li>
+<li><strong>Paramètre libre</strong> ajoute une clé hors catalogue (rarement utile).</li>
+<li>Les paramètres <strong>sensibles</strong> ne sont visibles que si vous avez le droit d’administrer.</li>
+</ul>
+<p>Réglages utiles à connaître :</p>
+<table>
+<thead>
+<tr>
+<th>Réglage</th>
+<th>Rôle</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>pilotage.seuilsBlocage</code></td>
+<td>Jours sans mouvement au-delà desquels un dossier est dit <strong>bloqué</strong> (<code>{&quot;vente&quot;:15,&quot;mission&quot;:10,&quot;chantier&quot;:7,&quot;prospect&quot;:14,&quot;tache&quot;:3}</code>)</td>
+</tr>
+<tr>
+<td><code>pilotage.envoiAutomatique</code></td>
+<td><strong>Envoi automatique de rapports par e-mail</strong> (voir ci-dessous)</td>
+</tr>
+<tr>
+<td><code>finances.tauxGestionDefaut</code></td>
+<td>Commission de gestion par défaut (en %)</td>
+</tr>
+<tr>
+<td><code>finances.categoriesDepenses</code> / <code>categoriesRecettes</code></td>
+<td>Catégories proposées aux saisies</td>
+</tr>
+<tr>
+<td><code>finances.doubleValidation</code></td>
+<td>Exige qu’une saisie soit validée par une autre personne</td>
+</tr>
+<tr>
+<td><code>notifications.documentManquantJours</code></td>
+<td>Jours avant l’alerte « document manquant » d’un dossier réservé</td>
+</tr>
+<tr>
+<td>Numérotation des missions et factures</td>
+<td>Formats <code>MTM-{code}-{seq:3}/{annee}</code> et <code>MTM-FAC-…</code></td>
+</tr>
+<tr>
+<td>Gestion locative</td>
+<td><strong>Préavis</strong> de résiliation (30 jours par défaut)</td>
+</tr>
+</tbody></table>
+<blockquote><p>Un paramètre qui a une <strong>page dédiée</strong> (Identité de l’entreprise, Parcours des dossiers) ne se modifie <strong>plus</strong> dans cette page : elle le refuse pour éviter les contradictions.</p>
+</blockquote>
+<h3 id="administration--activer-l-envoi-automatique-des-rapports">Activer l’envoi automatique des rapports</h3>
+<p>Réglage <strong><code>pilotage.envoiAutomatique</code></strong>, désactivé par défaut. Exemple :</p>
+<pre><code>{&quot;actif&quot;:true,&quot;frequence&quot;:&quot;hebdomadaire&quot;,&quot;rapports&quot;:[&quot;rentabilite_activite&quot;,&quot;ventes_periode&quot;],&quot;formats&quot;:[&quot;pdf&quot;],&quot;destinataires&quot;:[&quot;direction@mtm.sn&quot;]}
+</code></pre>
+<ul>
+<li><strong>frequence</strong> : <code>hebdomadaire</code> (chaque lundi, semaine écoulée) ou <code>mensuelle</code> (le 1er du mois, mois précédent).</li>
+<li><strong>formats</strong> : <code>pdf</code>, <code>xlsx</code>.</li>
+<li><strong>rapports</strong> : <code>ventes_periode</code>, <code>ventes_zone</code>, <code>performance_commerciaux</code>, <code>terrains_etat</code>, <code>loyers_impayes</code>, <code>rentabilite_activite</code>, <code>activite_demarches</code>.</li>
+<li><strong>destinataires</strong> : adresses e-mail (20 au plus). <strong>Activer exige au moins un rapport et un destinataire</strong> ; une valeur invalide est <strong>refusée à l’enregistrement</strong>.</li>
+<li>Il faut que l’<strong>e-mail du serveur (SMTP)</strong> soit configuré.</li>
+</ul>
+<h2 id="administration--les-parcours-des-dossiers">Les parcours des dossiers</h2>
+<p><strong>Administration › Parcours des dossiers</strong> : les <strong>étapes</strong> que suit chaque type de dossier — ventes, pipeline commercial, chantiers.</p>
+<p><a href="img/adm-04-parcours.png" target="_blank" rel="noopener"><img src="img/adm-04-parcours.png" alt="Parcours des dossiers" loading="lazy"></a></p>
+<ul>
+<li>Vous pouvez <strong>ajouter des étapes</strong> propres à MTM, les <strong>remettre dans l’ordre</strong> (flèches), et <strong>autoriser de nouveaux passages</strong> d’une étape à une autre (liste « Peut passer à… »).</li>
+<li>Les étapes <strong>d’origine</strong> (cadenas) <strong>ne se retirent pas</strong> : le système s’en sert pour calculer les soldes, conclure une vente ou réceptionner un chantier.</li>
+<li>Une étape ajoutée <strong>ne peut pas être retirée</strong> tant que des dossiers s’y trouvent (le compteur « 1 dossier » le dit).</li>
+</ul>
+<h2 id="administration--l-identite-de-l-entreprise">L’identité de l’entreprise</h2>
+<p><strong>Administration › Identité de l’entreprise</strong> : le <strong>logo</strong> et les <strong>mentions légales</strong> (dénomination, forme juridique, capital, <strong>NINEA</strong>, <strong>RCCM</strong>, banque, mention de pied de page) s’impriment en <strong>en-tête et en pied de page de tous les documents générés</strong> : factures, rapports, contrats, quittances.</p>
+<p><a href="img/adm-05-identite.png" target="_blank" rel="noopener"><img src="img/adm-05-identite.png" alt="Identité de l’entreprise" loading="lazy"></a></p>
+<ol>
+<li><strong>Téléverser un logo</strong> (JPG, PNG ou WebP, 2 Mo au maximum, carré de préférence).</li>
+<li>Renseignez les mentions : <strong>NINEA</strong> et <strong>RCCM</strong> en priorité.</li>
+<li><strong>Voir un aperçu PDF</strong> pour contrôler le rendu avant de généraliser.</li>
+</ol>
+<blockquote><p>Le téléversement du logo suppose que le stockage de fichiers du serveur (Cloudinary) soit configuré.</p>
+</blockquote>
+<h2 id="administration--les-regles-de-notification">Les règles de notification</h2>
+<p><strong>Administration › Règles de notification</strong> : pour chaque <strong>événement</strong>, <strong>qui est prévenu</strong> et par <strong>quels canaux</strong> (e-mail, SMS, WhatsApp).</p>
+<p><a href="img/adm-06-regles-notification.png" target="_blank" rel="noopener"><img src="img/adm-06-regles-notification.png" alt="Règles de notification" loading="lazy"></a></p>
+<ul>
+<li>Chaque événement a un interrupteur <strong>Actif</strong>, un <strong>groupe de destinataires</strong> (« Encadrement commercial », « Valideurs des ventes et paiements »…) et des cases <strong>E-mail / SMS / WhatsApp</strong>.</li>
+<li><strong>Enregistrer</strong> applique le changement aux <strong>prochaines alertes</strong> ; <strong>Revenir aux réglages d’origine</strong> annule vos règles.</li>
+<li><strong>SMS et WhatsApp</strong> ne partent que si une <strong>passerelle d’envoi</strong> est branchée sur le serveur (<code>SMS_WEBHOOK_URL</code>, <code>WHATSAPP_WEBHOOK_URL</code>). Sans elle, rien ne part même si la case est cochée.</li>
+<li>Chacun peut <strong>couper l’e-mail pour lui-même</strong> dans <em>Mes notifications</em>.</li>
+</ul>
+<h2 id="administration--le-journal-d-audit">Le journal d’audit</h2>
+<p><strong>Administration › Journal d’audit</strong> : l’historique de <strong>toutes les actions sensibles</strong> — qui, quand, quoi, avant/après, avec le <strong>motif</strong> quand il est exigé.</p>
+<p><a href="img/adm-07-audit.png" target="_blank" rel="noopener"><img src="img/adm-07-audit.png" alt="Journal d’audit" loading="lazy"></a></p>
+<ul>
+<li>Filtrez par <strong>recherche</strong>, <strong>période</strong>, <strong>module</strong>, <strong>élément</strong>.</li>
+<li>Un clic sur une ligne ouvre le <strong>détail</strong> (valeurs avant et après).</li>
+<li>L’<strong>export</strong> du journal exige un motif, lui-même consigné.</li>
+</ul>
+<h2 id="administration--l-import-de-biens">L’import de biens</h2>
+<p><strong>Immobilier › Biens › Importer depuis Excel</strong> (voir le chapitre <em>Mandats, propriétaires et biens</em>) : reprend en masse le tableur des biens, avec un aperçu avant écriture.</p>
+<h2 id="administration--les-bonnes-pratiques-d-administration">Les bonnes pratiques d’administration</h2>
+<ul>
+<li><strong>Un compte par personne, un rôle par fonction.</strong> Ne créez pas de compte partagé.</li>
+<li><strong>Désactivez</strong> (ne supprimez pas) le compte d’une personne qui part, <strong>le jour même</strong>.</li>
+<li>N’attribuez le rôle <strong>administrateur</strong> qu’à quelques personnes de confiance.</li>
+<li>Avant de modifier un <strong>paramètre</strong>, notez sa valeur d’origine : le journal d’audit la conserve, mais un retour en arrière reste manuel.</li>
+<li>Vérifiez régulièrement <strong>« À surveiller »</strong> dans la liste des utilisateurs et le <strong>journal d’audit</strong>.</li>
+</ul>
+
+<nav class="pagination" aria-label="Chapitres voisins"><a href="#site-web" rel="prev"><small>Précédent</small>Le site public et les demandes web</a><a href="#droits" rel="next"><small>Suivant</small>Qui peut faire quoi</a></nav>
+</article>
+<article class="chapitre" id="droits" data-titre="Qui peut faire quoi">
+<header class="chapitre__entete">
+<p class="chapitre__ligne">Pour s’y retrouver</p>
+<h1>Qui peut faire quoi</h1>
+<p class="chapitre__resume">Les droits de chaque rôle, module par module, et les règles des deux regards.</p>
+</header>
+<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#droits--comment-lire-les-tableaux">Comment lire les tableaux</a></li><li><a href="#droits--les-roles-du-back-office">Les rôles du back-office</a></li><li><a href="#droits--droits-par-module">Droits par module</a></li><li><a href="#droits--les-regles-des-deux-regards">Les règles des deux regards</a></li><li><a href="#droits--ce-qui-est-trace">Ce qui est tracé</a></li></ul></nav>
+<p>Chaque personne a <strong>un rôle</strong>. Le rôle définit <strong>ce qu’elle voit</strong> (menus, fiches) et <strong>ce qu’elle peut faire</strong>. Si un bouton ou un menu manque chez vous, c’est que votre rôle ne le prévoit pas : demandez à un administrateur si vous en avez besoin.</p>
+<h2 id="droits--comment-lire-les-tableaux">Comment lire les tableaux</h2>
+<p>Les droits sont des couples « module : action » :</p>
+<table>
+<thead>
+<tr>
+<th>Lettre</th>
+<th>Action</th>
+<th>Sens</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>V</strong></td>
+<td>Consulter</td>
+<td>Voir</td>
+</tr>
+<tr>
+<td><strong>C</strong></td>
+<td>Créer</td>
+<td>Ajouter une fiche</td>
+</tr>
+<tr>
+<td><strong>M</strong></td>
+<td>Modifier</td>
+<td>Changer une fiche</td>
+</tr>
+<tr>
+<td><strong>Val</strong></td>
+<td>Valider</td>
+<td>Valider un paiement, une saisie, un mandat…</td>
+</tr>
+<tr>
+<td><strong>P</strong></td>
+<td>Payer</td>
+<td>Encaisser, payer une commission, restituer une caution</td>
+</tr>
+<tr>
+<td><strong>Pub</strong></td>
+<td>Publier</td>
+<td>Mettre en ligne ou rendre visible au client</td>
+</tr>
+<tr>
+<td><strong>E</strong></td>
+<td>Exporter</td>
+<td>Produire un fichier de données (avec un motif)</td>
+</tr>
+<tr>
+<td><strong>Adm</strong></td>
+<td>Administrer</td>
+<td>Droit complet sur le module, y compris pour toute l’équipe</td>
+</tr>
+<tr>
+<td><strong>S</strong></td>
+<td>Supprimer</td>
+<td>Supprimer définitivement</td>
+</tr>
+</tbody></table>
+<p>« Tout » = tous les droits du module. « — » = le module n’apparaît pas pour ce rôle.</p>
+<h2 id="droits--les-roles-du-back-office">Les rôles du back-office</h2>
+<table>
+<thead>
+<tr>
+<th>Rôle</th>
+<th>Pour qui</th>
+<th>Double authentification</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Administrateur</strong></td>
+<td>Gère comptes, rôles, paramètres, journal</td>
+<td><strong>Obligatoire</strong></td>
+</tr>
+<tr>
+<td><strong>Direction</strong></td>
+<td>Pilote l’entreprise : chiffres, rapports, finances</td>
+<td><strong>Obligatoire</strong></td>
+</tr>
+<tr>
+<td><strong>Manager</strong></td>
+<td>Encadre les activités</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Responsable commercial</strong></td>
+<td>Chef d’équipe commerciale</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Commercial</strong></td>
+<td>Prospects, ventes, biens</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Comptable</strong></td>
+<td>Contrôle des encaissements, paiement des commissions</td>
+<td><strong>Obligatoire</strong></td>
+</tr>
+<tr>
+<td><strong>Responsable gestion locative</strong></td>
+<td>Gestion des biens loués</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Responsable démarches</strong></td>
+<td>Vérifications et démarches</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Responsable construction</strong></td>
+<td>Chantiers</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>RH</strong></td>
+<td>Ressources humaines</td>
+<td><strong>Obligatoire</strong></td>
+</tr>
+</tbody></table>
+<p>Les <strong>clients</strong>, <strong>propriétaires</strong> et <strong>locataires</strong> ont un espace séparé (leur « espace client ») : ce ne sont pas des rôles du back-office.</p>
+<h2 id="droits--droits-par-module">Droits par module</h2>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Administrateur</th>
+<th>Direction</th>
+<th>Manager</th>
+<th>Resp. commercial</th>
+<th>Commercial</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Prospects (CRM)</strong></td>
+<td>Tout</td>
+<td>V C M E S + identité</td>
+<td>V C M E S + identité</td>
+<td>V C M E S + identité</td>
+<td>V C M (les siens)</td>
+</tr>
+<tr>
+<td><strong>Biens</strong></td>
+<td>Tout</td>
+<td>V C M Val Pub E, Adm</td>
+<td>V C M Val Pub E</td>
+<td>V C M Val Pub E</td>
+<td>V C M (les siens)</td>
+</tr>
+<tr>
+<td><strong>Mandats</strong></td>
+<td>Tout</td>
+<td>V C M Val E, Adm</td>
+<td>V C M Val E</td>
+<td>V C M Val</td>
+<td>V C M</td>
+</tr>
+<tr>
+<td><strong>Propriétaires</strong></td>
+<td>Tout</td>
+<td>V C M</td>
+<td>V C M S</td>
+<td>V C M S</td>
+<td>V C</td>
+</tr>
+<tr>
+<td><strong>Ventes et paiements</strong></td>
+<td>Tout</td>
+<td>V C M Val P Pub E + financier, Adm</td>
+<td>V C M Val Pub E + financier, Adm</td>
+<td>V C M Val Pub E + financier, Adm</td>
+<td>V C M (les siens)</td>
+</tr>
+<tr>
+<td><strong>Demandes web</strong></td>
+<td>Tout</td>
+<td>V M S</td>
+<td>V M S</td>
+<td>V M</td>
+<td>V M</td>
+</tr>
+<tr>
+<td><strong>Vérifications</strong></td>
+<td>Tout</td>
+<td>V C M Val Pub E S, Adm</td>
+<td>V C M Val Pub E, Adm</td>
+<td>V C M Val Pub</td>
+<td>V C M</td>
+</tr>
+<tr>
+<td><strong>Gestion locative</strong></td>
+<td>Tout</td>
+<td>V C M Val P Pub E S, Adm</td>
+<td>V C M Val P Pub E, Adm</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Chantiers</strong></td>
+<td>Tout</td>
+<td>V C M Val P Pub E S, Adm</td>
+<td>V C M Val P Pub E, Adm</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Finances</strong></td>
+<td>Tout</td>
+<td>V C M Val E, Adm</td>
+<td>V</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Rapports</strong></td>
+<td>Tout</td>
+<td>V E, Adm</td>
+<td>V E</td>
+<td>V</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Contenu du site</strong></td>
+<td>Tout</td>
+<td>V C M Pub S, Adm</td>
+<td>V C M Pub S</td>
+<td>V</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Tâches, agenda</strong></td>
+<td>Tout</td>
+<td>V C M S, Adm</td>
+<td>V C M S, Adm</td>
+<td>V C M S, Adm</td>
+<td>V C M</td>
+</tr>
+<tr>
+<td><strong>Utilisateurs, rôles, paramètres</strong></td>
+<td>Tout</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Journal d’audit</strong></td>
+<td>Tout</td>
+<td>V E</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Règles de notification</strong></td>
+<td>Tout</td>
+<td>Adm</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Comptable</th>
+<th>Resp. gestion locative</th>
+<th>Resp. démarches</th>
+<th>Resp. construction</th>
+<th>RH</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Prospects (CRM)</strong></td>
+<td>—</td>
+<td>—</td>
+<td>V + identité</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Biens</strong></td>
+<td>V + financier</td>
+<td>V</td>
+<td>V</td>
+<td>V</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Mandats</strong></td>
+<td>V</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Propriétaires</strong></td>
+<td>—</td>
+<td>V</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Ventes et paiements</strong></td>
+<td>V M Val P E + financier</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Vérifications</strong></td>
+<td>V</td>
+<td>—</td>
+<td>V C M Val Pub E</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Gestion locative</strong></td>
+<td>V Val P E</td>
+<td>V C M Val P Pub E</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Chantiers</strong></td>
+<td>V Val P E</td>
+<td>—</td>
+<td>—</td>
+<td>V C M Val P Pub E</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Finances</strong></td>
+<td>V C M Val E</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Rapports</strong></td>
+<td>V E</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Tâches, agenda, messages</strong></td>
+<td>V C M</td>
+<td>V C M</td>
+<td>V C M</td>
+<td>V C M</td>
+<td>V C M</td>
+</tr>
+</tbody></table>
+<blockquote><p>Les droits des commerciaux s’appliquent <strong>à leur périmètre</strong> : un commercial ne voit que <strong>ses</strong> prospects, <strong>ses</strong> biens et <strong>ses</strong> dossiers de vente. L’encadrement (responsable commercial, manager, direction) voit <strong>tout le monde</strong>.</p>
+</blockquote>
+<h2 id="droits--les-regles-des-deux-regards">Les règles des deux regards</h2>
+<p>Pour limiter les erreurs et la fraude, l’application impose que <strong>deux personnes différentes</strong> interviennent :</p>
+<table>
+<thead>
+<tr>
+<th>Opération</th>
+<th>Qui saisit</th>
+<th>Qui valide</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Paiement d’une vente</strong></td>
+<td>Le commercial</td>
+<td>Comptabilité, responsable, direction (jamais l’auteur)</td>
+</tr>
+<tr>
+<td><strong>Commission</strong></td>
+<td>Estimée par le responsable</td>
+<td><strong>Validée par le manager</strong> (jamais son auteur), <strong>payée par la comptabilité</strong> une fois le dossier soldé</td>
+</tr>
+<tr>
+<td><strong>Saisie financière</strong></td>
+<td>N’importe qui avec le droit de saisir</td>
+<td>Une <strong>autre</strong> personne que l’auteur</td>
+</tr>
+<tr>
+<td><strong>Dépense de chantier</strong></td>
+<td>Le responsable des chantiers</td>
+<td>La comptabilité</td>
+</tr>
+<tr>
+<td><strong>Loyer encaissé</strong></td>
+<td>La gestion locative</td>
+<td>Une personne habilitée</td>
+</tr>
+</tbody></table>
+<h2 id="droits--ce-qui-est-trace">Ce qui est tracé</h2>
+<p>Toute action sensible laisse une trace dans le <strong>journal d’audit</strong> : création, modification, validation, export, connexion, changement de droits. L’<strong>export</strong> d’un rapport ou d’une liste exige un <strong>motif</strong>, conservé avec l’export.</p>
+
+<nav class="pagination" aria-label="Chapitres voisins"><a href="#administration" rel="prev"><small>Précédent</small>Administration du back-office</a><a href="#faq" rel="next"><small>Suivant</small>Questions fréquentes</a></nav>
+</article>
+<article class="chapitre" id="faq" data-titre="Questions fréquentes">
+<header class="chapitre__entete">
+<p class="chapitre__ligne">Pour s’y retrouver</p>
+<h1>Questions fréquentes</h1>
+<p class="chapitre__resume">Les réponses aux questions que l’équipe se pose le plus souvent.</p>
+</header>
+<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#faq--connexion-et-compte">Connexion et compte</a></li><li><a href="#faq--prospects-et-ventes">Prospects et ventes</a></li><li><a href="#faq--gestion-locative-chantiers-verifications">Gestion locative, chantiers, vérifications</a></li><li><a href="#faq--rapports-et-exports">Rapports et exports</a></li><li><a href="#faq--utilisation-courante">Utilisation courante</a></li></ul></nav>
+<h2 id="faq--connexion-et-compte">Connexion et compte</h2>
+<p><strong>J’ai oublié mon mot de passe.</strong>
+Cliquez sur <strong>« Mot de passe oublié ? »</strong> sous le formulaire de connexion : un e-mail vous permet d’en choisir un nouveau. Sans e-mail reçu, demandez à un administrateur de vous en attribuer un provisoire.</p>
+<p><strong>Mon compte est bloqué.</strong>
+Après plusieurs erreurs de mot de passe, il se débloque tout seul au bout de quelques minutes. Sinon, contactez un administrateur.</p>
+<p><strong>L’application me demande un code à 6 chiffres.</strong>
+C’est la <strong>double authentification</strong>, obligatoire pour la direction, l’administration, la comptabilité et les RH. Ouvrez l’application d’authentification de votre téléphone et saisissez le code affiché.</p>
+<p><strong>J’ai perdu mon téléphone (2FA).</strong>
+Utilisez un de vos <strong>codes de secours</strong>, ou demandez à un administrateur de <strong>réinitialiser votre 2FA</strong>.</p>
+<p><strong>Je n’ai pas accès à un menu.</strong>
+C’est une question de droits : chaque rôle voit ses modules. Voir le chapitre <em>Qui peut faire quoi</em>, ou demandez à un administrateur.</p>
+<h2 id="faq--prospects-et-ventes">Prospects et ventes</h2>
+<p><strong>Je ne trouve pas un prospect.</strong>
+Utilisez la recherche (<kbd>Ctrl</kbd> + <kbd>K</kbd>). Un commercial ne voit que <strong>ses</strong> prospects : s’il appartient à un collègue, il n’apparaît pas.</p>
+<p><strong>Le bien que je veux proposer n’est pas dans la liste.</strong>
+Un commercial ne voit que les biens <strong>dont il est responsable</strong>. Demandez à un responsable de vous l’affecter (fiche du bien › <em>Commercial responsable</em>).</p>
+<p><strong>L’application me demande une « prochaine action ».</strong>
+C’est la règle de MTM : tout prospect actif doit avoir une suite prévue. Indiquez l’action et la date.</p>
+<p><strong>Je me suis trompé d’étape.</strong>
+Cliquez à nouveau sur <strong>Changer d’étape</strong> et choisissez la bonne. L’historique garde la trace des changements.</p>
+<p><strong>J’ai enregistré un paiement mais le « payé » n’a pas bougé.</strong>
+Il est <strong>à valider</strong> : il compte une fois contrôlé par la comptabilité ou la direction. Prévenez-les si c’est urgent.</p>
+<p><strong>Ma réservation a expiré.</strong>
+Le bien a été libéré. Si le client est toujours d’accord, parlez-en à un responsable pour rouvrir la réservation.</p>
+<p><strong>Je ne peux pas valider mon propre paiement ou ma propre saisie.</strong>
+C’est voulu : deux personnes différentes doivent regarder chaque encaissement ou saisie financière.</p>
+<h2 id="faq--gestion-locative-chantiers-verifications">Gestion locative, chantiers, vérifications</h2>
+<p><strong>Le bien n’apparaît pas sur le site.</strong>
+Il faut qu’il soit <strong>publié et disponible</strong>, avec un <strong>loyer affiché</strong> et <strong>au moins une photo</strong>. Un bien <strong>loué</strong> disparaît du site automatiquement.</p>
+<p><strong>Je n’arrive pas à clôturer un mois.</strong>
+Il reste des <strong>saisies à valider</strong> : traitez-les d’abord (<em>Finances › Saisies › À valider</em>).</p>
+<p><strong>Un mois clôturé doit être corrigé.</strong>
+Passez la correction <strong>à la date du jour</strong> par une saisie inverse, ou demandez à la direction de <strong>rouvrir</strong> le mois (un motif est exigé).</p>
+<p><strong>Le chantier est « budget dépassé » alors que rien n’a été dépensé.</strong>
+Vérifiez les <strong>dépenses non validées</strong> : seules les dépenses <strong>validées</strong> par la comptabilité comptent. Et sans <strong>budget par poste</strong> chiffré, aucun dépassement n’est détecté.</p>
+<p><strong>Le client ne voit pas le rapport ou la facture.</strong>
+Ils ne lui sont visibles qu’une fois <strong>publiés</strong>. De même, seules les <strong>pièces publiées</strong> d’un chantier apparaissent dans son espace.</p>
+<h2 id="faq--rapports-et-exports">Rapports et exports</h2>
+<p><strong>Mon rapport est tronqué.</strong>
+Un rapport est limité à <strong>500 lignes de détail</strong> (il l’indique). Réduisez la période.</p>
+<p><strong>L’export me demande un motif.</strong>
+Tout export est <strong>tracé</strong> : indiquez en quelques mots pourquoi (« reporting mensuel direction »). Le motif est conservé dans le journal d’audit.</p>
+<p><strong>Les chiffres de l’écran et du PDF sont-ils les mêmes ?</strong>
+Oui : ils viennent du même calcul.</p>
+<h2 id="faq--utilisation-courante">Utilisation courante</h2>
+<p><strong>Une page ne s’affiche pas correctement.</strong>
+Rechargez la page (touche <kbd>F5</kbd>). Si le problème persiste, notez ce que vous faisiez et prévenez un responsable avec une <strong>capture d’écran</strong>.</p>
+<p><strong>Je n’ai pas de réseau sur le terrain.</strong>
+Rien ne s’enregistre sans réseau : attendez d’en retrouver avant de valider une saisie.</p>
+<p><strong>Comment passer en thème sombre ?</strong>
+Cliquez sur la <strong>lune</strong> en haut à droite de l’écran.</p>
+<p><strong>Où trouver ce guide ?</strong>
+Dans le menu, section <strong>Mon compte</strong> : <strong>Guide d’utilisation</strong> (il s’ouvre dans un nouvel onglet).</p>
+
+<nav class="pagination" aria-label="Chapitres voisins"><a href="#droits" rel="prev"><small>Précédent</small>Qui peut faire quoi</a><a href="#lexique" rel="next"><small>Suivant</small>Petit lexique</a></nav>
+</article>
+<article class="chapitre" id="lexique" data-titre="Petit lexique">
+<header class="chapitre__entete">
+<p class="chapitre__ligne">Pour s’y retrouver</p>
+<h1>Petit lexique</h1>
+<p class="chapitre__resume">Les mots utilisés dans le back-office, expliqués simplement.</p>
+</header>
+
+<table>
+<thead>
+<tr>
+<th>Mot</th>
+<th>Sens</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Acompte</strong></td>
+<td>Somme versée à la réservation, déduite du prix.</td>
+</tr>
+<tr>
+<td><strong>Audit (journal d’)</strong></td>
+<td>Historique de qui a fait quoi, quand.</td>
+</tr>
+<tr>
+<td><strong>Bail</strong></td>
+<td>Contrat de location d’un bien au mois.</td>
+</tr>
+<tr>
+<td><strong>Bien</strong></td>
+<td>Un terrain, une villa ou un appartement suivi par MTM.</td>
+</tr>
+<tr>
+<td><strong>Bien disponible</strong></td>
+<td>Bien publié sur le site et proposable à un client.</td>
+</tr>
+<tr>
+<td><strong>Brouillon</strong></td>
+<td>Fiche enregistrée mais pas encore publiée sur le site.</td>
+</tr>
+<tr>
+<td><strong>Caution</strong></td>
+<td>Somme versée en garantie par un locataire ou un voyageur, restituée à la fin (avec retenue justifiée éventuelle).</td>
+</tr>
+<tr>
+<td><strong>Clôture (mensuelle)</strong></td>
+<td>Mois figé en finances : plus aucun mouvement ne peut y être ajouté ou modifié.</td>
+</tr>
+<tr>
+<td><strong>Commission</strong></td>
+<td>Rémunération du commercial sur une vente soldée.</td>
+</tr>
+<tr>
+<td><strong>Commission de gestion</strong></td>
+<td>Part des loyers que MTM garde pour gérer un bien.</td>
+</tr>
+<tr>
+<td><strong>Constat</strong></td>
+<td>Compte rendu d’une visite de vérification sur place (avec photos).</td>
+</tr>
+<tr>
+<td><strong>Contre-passation</strong></td>
+<td>Annulation d’un paiement déjà validé (erreur, rejet, remboursement).</td>
+</tr>
+<tr>
+<td><strong>Dossier bloqué</strong></td>
+<td>Dossier ouvert qui n’a plus bougé depuis un délai.</td>
+</tr>
+<tr>
+<td><strong>Dossier de vente</strong></td>
+<td>Le suivi d’une vente : un client, un bien, réservation, paiements.</td>
+</tr>
+<tr>
+<td><strong>Échéance</strong></td>
+<td>Date à laquelle un paiement ou une action est attendu.</td>
+</tr>
+<tr>
+<td><strong>Échéancier</strong></td>
+<td>Calendrier des versements d’un client ou des loyers d’un bail.</td>
+</tr>
+<tr>
+<td><strong>Encaissements</strong></td>
+<td>Argent reçu (loyers et prix de vente compris).</td>
+</tr>
+<tr>
+<td><strong>État des lieux</strong></td>
+<td>Constat pièce par pièce de l’état d’un logement à l’entrée et à la sortie.</td>
+</tr>
+<tr>
+<td><strong>Exclusivité</strong></td>
+<td>Mandat confié à MTM seule : le bien ne peut pas être sous un autre mandat exclusif actif.</td>
+</tr>
+<tr>
+<td><strong>GED</strong></td>
+<td>Gestion électronique des documents : la page <em>Documents</em>.</td>
+</tr>
+<tr>
+<td><strong>Jalon</strong></td>
+<td>Étape marquante d’un chantier (fondations, élévation, toiture…).</td>
+</tr>
+<tr>
+<td><strong>Lot</strong></td>
+<td>Un bien confié à MTM dans le cadre d’un mandat.</td>
+</tr>
+<tr>
+<td><strong>Mandat</strong></td>
+<td>Autorisation donnée par un propriétaire de vendre, louer ou gérer ses biens.</td>
+</tr>
+<tr>
+<td><strong>Marge</strong></td>
+<td>Prix public moins prix d’acquisition d’un bien : sert au calcul du revenu de MTM.</td>
+</tr>
+<tr>
+<td><strong>Mission</strong></td>
+<td>Une vérification ou une démarche confiée par un client à MTM.</td>
+</tr>
+<tr>
+<td><strong>NINEA / RCCM</strong></td>
+<td>Identifiants légaux de l’entreprise, imprimés sur les documents.</td>
+</tr>
+<tr>
+<td><strong>Notification</strong></td>
+<td>Alerte dans la cloche (et par e-mail si prévu).</td>
+</tr>
+<tr>
+<td><strong>Objectif</strong></td>
+<td>Cible mensuelle d’un commercial (ventes, chiffre d’affaires, commissions).</td>
+</tr>
+<tr>
+<td><strong>Pipeline</strong></td>
+<td>Les prospects rangés selon leur étape, de « Nouveau » à « Vente conclue ».</td>
+</tr>
+<tr>
+<td><strong>Préavis</strong></td>
+<td>Délai entre la demande de départ d’un locataire et son départ (30 jours par défaut).</td>
+</tr>
+<tr>
+<td><strong>Prospect</strong></td>
+<td>Personne intéressée par un bien, pas encore cliente.</td>
+</tr>
+<tr>
+<td><strong>Qualifier</strong></td>
+<td>Connaître la zone, la surface, le budget et l’objectif d’un prospect.</td>
+</tr>
+<tr>
+<td><strong>Quittance</strong></td>
+<td>Document prouvant qu’un loyer a été payé.</td>
+</tr>
+<tr>
+<td><strong>Réservation</strong></td>
+<td>Bien bloqué pour un client pendant un délai, contre un acompte.</td>
+</tr>
+<tr>
+<td><strong>Relance</strong></td>
+<td>Action prévue à une date pour recontacter un prospect ou un débiteur.</td>
+</tr>
+<tr>
+<td><strong>Résiliation</strong></td>
+<td>Fin anticipée d’un bail à la demande du locataire ou de MTM.</td>
+</tr>
+<tr>
+<td><strong>Responsable</strong></td>
+<td>Personne chargée d’un dossier, d’un bien ou d’une mission.</td>
+</tr>
+<tr>
+<td><strong>Revenu de MTM</strong></td>
+<td>Ce qui reste réellement à MTM (marges, commissions de gestion, prestations).</td>
+</tr>
+<tr>
+<td><strong>Rôle</strong></td>
+<td>Ensemble de droits attribué à une personne.</td>
+</tr>
+<tr>
+<td><strong>Saisie</strong></td>
+<td>Dépense ou recette entrée à la main en finances, validée par une autre personne.</td>
+</tr>
+<tr>
+<td><strong>Séjour</strong></td>
+<td>Location à la nuit d’un bien.</td>
+</tr>
+<tr>
+<td><strong>Soldé</strong></td>
+<td>Prix intégralement payé : la vente est conclue.</td>
+</tr>
+<tr>
+<td><strong>Statut</strong></td>
+<td>État d’un dossier (en cours, réservé, soldé, annulé…).</td>
+</tr>
+<tr>
+<td><strong>Titre foncier</strong></td>
+<td>Document juridique prouvant la propriété d’un terrain.</td>
+</tr>
+<tr>
+<td><strong>2FA</strong></td>
+<td>Double authentification : un code à 6 chiffres en plus du mot de passe.</td>
+</tr>
+<tr>
+<td><strong>Visite et retour</strong></td>
+<td>Un bien proposé à un client, avec la date de visite et ce que le client en a pensé.</td>
+</tr>
+</tbody></table>
+
+<nav class="pagination" aria-label="Chapitres voisins"><a href="#faq" rel="prev"><small>Précédent</small>Questions fréquentes</a></nav>
+</article>
+</main>
+</div>
+<script src="manuel.js" defer></script>
+</body>
+</html>

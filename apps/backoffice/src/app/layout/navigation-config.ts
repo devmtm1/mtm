@@ -18,6 +18,7 @@ import {
   LucideCalendarDays,
   LucideListChecks,
   LucideBell,
+  LucideBookOpen,
   LucideBellRing,
   LucideWorkflow,
   LucideWallet,
@@ -56,6 +57,11 @@ export interface NavLeaf {
    * seraient surlignées ensemble.
    */
   exact?: boolean;
+  /**
+   * Adresse hors de l'application (le guide d'utilisation, servi tel quel) : le lien
+   * s'ouvre dans un nouvel onglet au lieu de passer par le routeur.
+   */
+  href?: string;
 }
 
 /** Enfant d'un groupe de navigation (sous-module). */
@@ -226,6 +232,12 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         label: 'Sécurité',
         route: '/security',
         icon: LucideLock,
+      },
+      {
+        label: 'Guide d’utilisation',
+        route: '/manuel/',
+        href: '/manuel/',
+        icon: LucideBookOpen,
       },
     ],
   },

@@ -28,6 +28,7 @@ import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { LabelPipe } from '../../../shared/pipes/label.pipe';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
+import { TextPromptDialog } from '../../../shared/dialogs/text-prompt-dialog';
 import { StatusChoiceDialog } from '../../../shared/dialogs/status-choice-dialog';
 import { VenteCommissionDialog, type VenteCommissionDialogResult } from '../vente-commission-dialog';
 import { VenteDocumentDialog, type VenteDocumentDialogData, type VenteDocumentDialogResult } from '../vente-document-dialog';
@@ -270,14 +271,22 @@ export class VenteDetailPage implements OnInit {
       choices,
     }).subscribe((result) => {
       if (!result) return;
-      let motif: string | undefined;
+      const appliquer = (motif?: string) =>
+        this.run(this.api.updateStatus(dossier.id, result.value, motif), `Dossier passé à « ${this.statusLabel(result.value)} »`);
       // Annuler un dossier qui a encaissé de l’argent oblige à dire ce que deviennent les paiements.
       const aDesPaiementsValides = this.payments().some((payment) => payment.statut === 'valide');
       if (result.value === 'annule' && aDesPaiementsValides) {
-        motif = window.prompt('Ce dossier a des paiements validés. Que deviennent-ils ? (acompte conservé selon les conditions de réservation, ou remboursé après contre-passation — obligatoire)')?.trim();
-        if (!motif) return;
+        TextPromptDialog.ask(this.dialog, {
+          title: 'Annuler un dossier déjà payé',
+          description: 'Ce dossier a des paiements validés. Dites ce qu’ils deviennent : acompte conservé selon les conditions de réservation, ou remboursé après contre-passation.',
+          label: 'Sort des paiements',
+          confirmLabel: 'Annuler le dossier',
+        }).subscribe((motif) => {
+          if (motif) appliquer(motif);
+        });
+        return;
       }
-      this.run(this.api.updateStatus(dossier.id, result.value, motif), `Dossier passé à « ${this.statusLabel(result.value)} »`);
+      appliquer();
     });
   }
 
@@ -327,19 +336,47 @@ export class VenteDetailPage implements OnInit {
   protected refusePayment(payment: VentePaiement): void {
     const dossier = this.dossier();
     if (!dossier) return;
-    const motif = window.prompt('Motif du refus (obligatoire, conservé sur le paiement) :')?.trim();
-    if (!motif) return;
-    this.run(this.api.refusePayment(dossier.id, payment.id, motif), 'Paiement refusé');
+    TextPromptDialog.ask(this.dialog, {
+      title: 'Refuser ce paiement',
+      description: 'Le motif est conservé sur le paiement.',
+      label: 'Motif du refus',
+      confirmLabel: 'Refuser le paiement',
+    }).subscribe((motif) => {
+      if (motif) this.run(this.api.refusePayment(dossier.id, payment.id, motif), 'Paiement refusé');
+    });
   }
 
   protected reversePayment(payment: VentePaiement): void {
     const dossier = this.dossier();
     if (!dossier) return;
-    const motif = window.prompt('Motif de la contre-passation (obligatoire, conservé sur le paiement) :')?.trim();
-    if (!motif) return;
-    const remboursement = confirm('L’argent a-t-il été rendu au client ? OK = remboursé, Annuler = simple correction.');
-    const referenceRemboursement = remboursement ? window.prompt('Référence du remboursement (facultatif) :')?.trim() || undefined : undefined;
-    this.run(this.api.reversePayment(dossier.id, payment.id, { motif, remboursement, referenceRemboursement }), 'Paiement contre-passé : montants et statut recalculés');
+    const terminer = (motif: string, remboursement: boolean, referenceRemboursement?: string) =>
+      this.run(this.api.reversePayment(dossier.id, payment.id, { motif, remboursement, referenceRemboursement }), 'Paiement contre-passé : montants et statut recalculés');
+    TextPromptDialog.ask(this.dialog, {
+      title: 'Contre-passer ce paiement',
+      description: 'Le paiement est annulé et les montants du dossier sont recalculés. Le motif est conservé sur le paiement.',
+      label: 'Motif de la contre-passation',
+      confirmLabel: 'Continuer',
+    }).subscribe((motif) => {
+      if (!motif) return;
+      this.confirmer
+        .ask({ title: 'Remboursement du client', message: 'L’argent a-t-il été rendu au client ?', confirmLabel: 'Oui, remboursé', cancelLabel: 'Non, simple correction', danger: false })
+        .subscribe((rembourse) => {
+          if (!rembourse) {
+            terminer(motif, false);
+            return;
+          }
+          TextPromptDialog.ask(this.dialog, {
+            title: 'Référence du remboursement',
+            description: 'Facultatif : numéro de virement, de reçu ou de transfert.',
+            label: 'Référence',
+            required: false,
+            rows: 1,
+            confirmLabel: 'Enregistrer',
+          }).subscribe((reference) => {
+            if (reference !== undefined) terminer(motif, true, reference || undefined);
+          });
+        });
+    });
   }
 
   protected addCommission(): void {

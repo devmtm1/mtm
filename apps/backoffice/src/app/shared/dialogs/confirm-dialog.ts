@@ -10,6 +10,8 @@ export interface ConfirmDialogData {
   confirmLabel?: string;
   /** Action destructive : le bouton passe en rouge. */
   danger?: boolean;
+  /** Texte du bouton de refus quand « Annuler » prêterait à confusion. */
+  cancelLabel?: string;
 }
 
 /** Libellé du bouton d'après le premier mot du message (« Supprimer … » → « Supprimer »). */
@@ -33,7 +35,7 @@ export function libelleAction(message: string): string {
       <p class="confirm-message">{{ data.message }}</p>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-stroked-button type="button" [mat-dialog-close]="false">Annuler</button>
+      <button mat-stroked-button type="button" [mat-dialog-close]="false">{{ data.cancelLabel ?? 'Annuler' }}</button>
       <button
         mat-flat-button
         type="button"
