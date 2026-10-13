@@ -4,9 +4,10 @@
       <p class="eyebrow">Documents</p>
       <h1 class="page-header__title">Tous les documents</h1>
       <p class="page-header__subtitle">
-        Les documents de tous les modules au même endroit : titres, plans, contrats, reçus, rapports, quittances.
-        Vous ne voyez que ceux que vos droits sur chaque module vous permettent de voir. La recherche porte sur le
-        titre, le type et la référence du dossier, pas sur le contenu des fichiers.
+        Les documents de tous les modules au même endroit : titres, plans, contrats, reçus,
+        rapports, quittances. Vous ne voyez que ceux que vos droits sur chaque module vous
+        permettent de voir. La recherche porte sur le titre, le type et la référence du dossier, pas
+        sur le contenu des fichiers.
       </p>
     </div>
   </header>
@@ -27,7 +28,12 @@
         <mat-form-field appearance="outline" class="list-filters__search" subscriptSizing="dynamic">
           <mat-label>Rechercher</mat-label>
           <svg matPrefix class="list-filters__icon" lucideSearch aria-hidden="true"></svg>
-          <input matInput formControlName="q" placeholder="Titre, type, référence du dossier…" autocomplete="off" />
+          <input
+            matInput
+            formControlName="q"
+            placeholder="Titre, type, référence du dossier…"
+            autocomplete="off"
+          />
         </mat-form-field>
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Module</mat-label>
@@ -72,11 +78,13 @@
       <div class="empty-state">
         <svg lucideFileText aria-hidden="true"></svg>
         <h3>Aucun document</h3>
-        <p>Aucun document ne correspond à cette recherche dans les modules que vous pouvez consulter.</p>
+        <p>
+          Aucun document ne correspond à cette recherche dans les modules que vous pouvez consulter.
+        </p>
       </div>
     } @else {
       <div class="table-scroll">
-        <table class="data-table">
+        <table class="data-table documents-table">
           <thead>
             <tr>
               <th>Document</th>
@@ -84,33 +92,91 @@
               <th>Dossier</th>
               <th>Type</th>
               <th>Créé le</th>
-              <th></th>
+              <th class="is-right">Actions</th>
             </tr>
           </thead>
           <tbody>
             @for (document of documents(); track document.origine + document.id) {
-              <tr class="is-clickable" (click)="openParent(document)">
+              <tr
+                class="is-clickable"
+                tabindex="0"
+                (click)="openParent(document)"
+                (keydown.enter)="openParent(document)"
+              >
                 <td>
                   <span class="doc-cell">
-                    <svg lucideFileText aria-hidden="true"></svg>
-                    <strong>{{ document.titre }}</strong>
-                    <small>v{{ document.version }}</small>
+                    <span
+                      class="doc-cell__icon"
+                      [attr.data-nature]="nature(document)"
+                      aria-hidden="true"
+                    >
+                      @switch (nature(document)) {
+                        @case ('pdf') {
+                          <svg lucideFileText></svg>
+                        }
+                        @case ('image') {
+                          <svg lucideImage></svg>
+                        }
+                        @case ('tableur') {
+                          <svg lucideFileSpreadsheet></svg>
+                        }
+                        @case ('texte') {
+                          <svg lucideFileType></svg>
+                        }
+                        @default {
+                          <svg lucideFile></svg>
+                        }
+                      }
+                    </span>
+                    <span class="doc-cell__text">
+                      <strong>{{ document.titre }}</strong>
+                      <small>
+                        Version {{ document.version }}
+                        @if (document.genere) {
+                          · généré
+                        }
+                      </small>
+                    </span>
                     @if (document.diffuse) {
                       <span class="status-pill status-pill--info">Diffusé</span>
                     }
                   </span>
                 </td>
-                <td>{{ originLabel(document.origine) }}</td>
+                <td>
+                  <span class="status-pill status-pill--primary">{{
+                    originLabel(document.origine)
+                  }}</span>
+                </td>
                 <td>{{ document.entiteLibelle }}</td>
-                <td><span class="status-pill">{{ document.type }}</span></td>
-                <td>{{ document.createdAt | date: 'dd/MM/yyyy' }}</td>
+                <td>
+                  <span class="status-pill">{{ document.type }}</span>
+                </td>
+                <td class="doc-date">{{ document.createdAt | date: 'dd/MM/yyyy' }}</td>
                 <td class="is-right">
-                  @if (document.url) {
-                    <a mat-button [href]="document.url" target="_blank" rel="noopener noreferrer" (click)="$event.stopPropagation()">
-                      <svg class="btn-icon" lucideExternalLink aria-hidden="true"></svg>Ouvrir
-                    </a>
-                  }
-                  <button mat-button type="button" (click)="openParent(document); $event.stopPropagation()">Dossier</button>
+                  <span class="doc-actions">
+                    @if (document.url) {
+                      <a
+                        class="grid-icon-btn"
+                        [href]="document.url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Ouvrir le fichier"
+                        aria-label="Ouvrir le fichier"
+                        (click)="$event.stopPropagation()"
+                      >
+                        <svg lucideExternalLink aria-hidden="true"></svg>
+                      </a>
+                    }
+                    <button
+                      type="button"
+                      class="grid-icon-btn"
+                      title="Ouvrir le dossier"
+                      aria-label="Ouvrir le dossier"
+                      (click)="openParent(document); $event.stopPropagation()"
+                    >
+                      <svg lucideFolderOpen aria-hidden="true"></svg>
+                    </button>
+                  </span>
                 </td>
               </tr>
             }
@@ -118,9 +184,70 @@
         </table>
       </div>
       <nav class="pager" aria-label="Pagination">
-        <button mat-button type="button" (click)="previous()" [disabled]="page() <= 1">Précédent</button>
-        <span>Page {{ page() }} sur {{ pageCount() }}</span>
-        <button mat-button type="button" (click)="next()" [disabled]="page() >= pageCount()">Suivant</button>
+        <div class="pager__info">
+          <span>{{ premier() }}–{{ dernier() }} sur {{ total() }}</span>
+          <label class="pager__size">
+            Par page
+            <select [value]="pageSize()" (change)="changePageSize(+$any($event.target).value)">
+              @for (taille of tailles; track taille) {
+                <option [value]="taille" [selected]="taille === pageSize()">{{ taille }}</option>
+              }
+            </select>
+          </label>
+        </div>
+        <div class="pager__pages">
+          <button
+            type="button"
+            class="pager__btn"
+            (click)="goTo(1)"
+            [disabled]="page() <= 1"
+            aria-label="Première page"
+          >
+            <svg lucideChevronsLeft aria-hidden="true"></svg>
+          </button>
+          <button
+            type="button"
+            class="pager__btn"
+            (click)="goTo(page() - 1)"
+            [disabled]="page() <= 1"
+            aria-label="Page précédente"
+          >
+            <svg lucideChevronLeft aria-hidden="true"></svg>
+          </button>
+          @for (numero of pages(); track $index) {
+            @if (numero === null) {
+              <span class="pager__gap" aria-hidden="true">…</span>
+            } @else {
+              <button
+                type="button"
+                class="pager__btn"
+                [class.is-active]="numero === page()"
+                [attr.aria-current]="numero === page() ? 'page' : null"
+                (click)="goTo(numero)"
+              >
+                {{ numero }}
+              </button>
+            }
+          }
+          <button
+            type="button"
+            class="pager__btn"
+            (click)="goTo(page() + 1)"
+            [disabled]="page() >= pageCount()"
+            aria-label="Page suivante"
+          >
+            <svg lucideChevronRight aria-hidden="true"></svg>
+          </button>
+          <button
+            type="button"
+            class="pager__btn"
+            (click)="goTo(pageCount())"
+            [disabled]="page() >= pageCount()"
+            aria-label="Dernière page"
+          >
+            <svg lucideChevronsRight aria-hidden="true"></svg>
+          </button>
+        </div>
       </nav>
     }
   </section>

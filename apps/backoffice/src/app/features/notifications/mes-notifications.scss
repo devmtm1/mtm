@@ -43,7 +43,7 @@ h2 {
 
   &:hover,
   &:focus-visible {
-    background: rgba(26, 73, 116, 0.08);
+    background: var(--mtm-primary-subtle);
   }
 
   &.is-lue {
@@ -56,10 +56,10 @@ h2 {
   height: 10px;
   margin-top: 6px;
   border-radius: 50%;
-  background: #2563eb;
+  background: var(--mtm-primary);
 
   &--alerte {
-    background: #dc2626;
+    background: var(--mtm-error);
   }
 }
 

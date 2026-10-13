@@ -41,6 +41,17 @@
   --mtm-error: var(--mtm-accent);
   --mtm-error-bg: var(--mtm-accent-subtle);
 
+  /* Alias historiques : plusieurs écrans les utilisent, ils suivent le thème. */
+  --mtm-text: var(--mtm-text-dark);
+  --mtm-muted: var(--mtm-text-muted);
+  --mtm-bg: var(--mtm-bg-surface);
+  --mtm-surface: var(--mtm-card-bg);
+  --mtm-surface-2: var(--mtm-bg-hover);
+  --mtm-surface-muted: var(--mtm-bg-surface);
+  --mtm-danger: var(--mtm-error);
+  --mtm-danger-subtle: var(--mtm-error-bg);
+  --mtm-warning-subtle: var(--mtm-warning-bg);
+
   // Typographie
   --mtm-font-body: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
   --mtm-font-display: 'Outfit', 'Plus Jakarta Sans', sans-serif;

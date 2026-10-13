@@ -263,7 +263,7 @@ export interface JourneeDialogData {
     .journee-dialog__erreur {
       margin: 0;
       font-size: 0.8rem;
-      color: #b91c1c;
+      color: var(--mtm-error);
     }
     .journee-dialog__check {
       display: block;

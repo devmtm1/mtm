@@ -111,7 +111,7 @@ export interface PieceDialogResult {
       color: var(--mtm-text-muted);
     }
     .piece-dialog__fichier--erreur {
-      color: #b91c1c;
+      color: var(--mtm-error);
     }
     @media (max-width: 520px) {
       .piece-dialog {

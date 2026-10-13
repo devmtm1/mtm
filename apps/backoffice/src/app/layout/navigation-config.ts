@@ -102,6 +102,17 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         icon: LucideChartColumn,
         permission: 'rapports:consulter',
       },
+      {
+        label: 'Commercial',
+        route: '/crm/prospects',
+        icon: LucideUserSearch,
+        defaultOpen: true,
+        children: [
+          { label: 'Prospects', route: '/crm/prospects', permission: 'crm:consulter' },
+          { label: 'Ventes', route: '/ventes', permission: 'ventes:consulter', exact: true },
+          { label: 'Objectifs', route: '/ventes/objectifs', permission: 'ventes:consulter' },
+        ],
+      },
       // Un groupe n'a pas de permission propre : il s'affiche dès qu'un de ses
       // enfants est autorisé, et `route` pointe vers le premier enfant.
       {
@@ -113,16 +124,6 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
           { label: 'Biens', route: '/terrains', permission: 'terrains:consulter' },
           { label: 'Mandats', route: '/mandats', permission: 'mandats:consulter' },
           { label: 'Propriétaires', route: '/proprietaires', permission: 'proprietaires:consulter' },
-        ],
-      },
-      {
-        label: 'Commercial',
-        route: '/crm/prospects',
-        icon: LucideUserSearch,
-        children: [
-          { label: 'Prospects', route: '/crm/prospects', permission: 'crm:consulter' },
-          { label: 'Ventes', route: '/ventes', permission: 'ventes:consulter', exact: true },
-          { label: 'Objectifs', route: '/ventes/objectifs', permission: 'ventes:consulter' },
         ],
       },
       {
@@ -213,13 +214,24 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
   },
   
   {
-    title: 'Administration',
+    title: 'Mon compte',
     items: [
+      {
+        label: 'Mes notifications',
+        route: '/notifications',
+        icon: LucideBell,
+        exact: true,
+      },
       {
         label: 'Sécurité',
         route: '/security',
         icon: LucideLock,
       },
+    ],
+  },
+  {
+    title: 'Administration',
+    items: [
       {
         label: 'Accès',
         route: '/users',
@@ -228,12 +240,6 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
           { label: 'Utilisateurs', route: '/users', permission: 'users:consulter' },
           { label: 'Rôles & permissions', route: '/roles', permission: 'roles:consulter' },
         ],
-      },
-      {
-        label: 'Mes notifications',
-        route: '/notifications',
-        icon: LucideBell,
-        exact: true,
       },
       {
         label: 'Règles de notification',

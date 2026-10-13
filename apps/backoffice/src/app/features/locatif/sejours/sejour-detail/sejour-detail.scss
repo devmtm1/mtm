@@ -166,22 +166,22 @@
   border-radius: 999px;
   font-size: 0.76rem;
   font-weight: 600;
-  background: #e8f5ee;
-  color: #1e7a4c;
+  background: var(--mtm-success-bg);
+  color: var(--mtm-success);
 
   &--usage {
-    background: #eef3f8;
-    color: #1a4974;
+    background: var(--mtm-primary-subtle);
+    color: var(--mtm-primary);
   }
 
   &--degrade {
-    background: #fdecec;
-    color: #b52c36;
+    background: var(--mtm-error-bg);
+    color: var(--mtm-error);
   }
 
   &--hors_service {
-    background: #b52c36;
-    color: #fff;
+    background: var(--mtm-error);
+    color: var(--mat-sys-on-primary);
   }
 }
 
@@ -197,7 +197,7 @@
   }
 
   .is-degradee {
-    background: rgba(181, 44, 54, 0.06);
+    background: var(--mtm-error-bg);
   }
 }
 

@@ -2,6 +2,33 @@
   <div class="skeleton" style="height: 280px"></div>
 } @else if (donnees(); as d) {
   <div class="vue">
+    @if (!commercialId()) {
+      <nav class="actions-rapides" aria-label="Raccourcis">
+        @if (peutCreerProspect) {
+          <a mat-flat-button color="primary" routerLink="/crm/prospects/nouveau">
+            <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau prospect
+          </a>
+        }
+        <a mat-stroked-button routerLink="/crm/prospects">
+          <svg class="btn-icon" lucideUserSearch aria-hidden="true"></svg>Mes prospects
+        </a>
+        @if (peutVoirBiens) {
+          <a mat-stroked-button routerLink="/terrains">
+            <svg class="btn-icon" lucideLandPlot aria-hidden="true"></svg>Biens disponibles
+          </a>
+        }
+        @if (peutVoirVentes) {
+          <a mat-stroked-button routerLink="/ventes">
+            <svg class="btn-icon" lucideReceipt aria-hidden="true"></svg>Mes ventes
+          </a>
+        }
+        @if (peutVoirAgenda) {
+          <a mat-stroked-button routerLink="/agenda">
+            <svg class="btn-icon" lucideCalendarDays aria-hidden="true"></svg>Mon agenda
+          </a>
+        }
+      </nav>
+    }
     <section class="kpi-row" aria-label="Mes chiffres">
       <article class="kpi">
         <span class="kpi__icon"><svg lucideUserSearch aria-hidden="true"></svg></span>

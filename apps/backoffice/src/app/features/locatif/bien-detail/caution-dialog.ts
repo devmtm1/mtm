@@ -83,7 +83,7 @@ export interface CautionDialogData {
   styles: `
     .caution-dialog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; min-width: 420px; }
     .wide { grid-column: 1 / -1; }
-    .caution-dialog__etat { margin: 0 0 4px; font-size: 0.8rem; color: #6b7280; }
+    .caution-dialog__etat { margin: 0 0 4px; font-size: 0.8rem; color: var(--mtm-text-muted); }
   `,
 })
 export class CautionDialog {
