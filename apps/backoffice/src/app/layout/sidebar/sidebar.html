@@ -7,7 +7,7 @@
     @if (!collapsed()) {
       <div class="sidebar__brand-text">
         <span class="sidebar__brand-name">MTM IMMOBILIER</span>
-        <span class="sidebar__brand-subtext">Portail ERP & BTP</span>
+        <span class="sidebar__brand-subtext">ERP & Gestion immobilière</span>
       </div>
     }
   </div>
@@ -31,7 +31,9 @@
               <svg lucideChevronDown class="sidebar__section-chevron" [class.sidebar__section-chevron--open]="estOuverte(section)" aria-hidden="true"></svg>
             </button>
           } @else {
-            <p class="sidebar__section-title">{{ section.title }}</p>
+            @if (section.title) {
+              <p class="sidebar__section-title">{{ section.title }}</p>
+            }
           }
         }
         @if (estOuverte(section)) {

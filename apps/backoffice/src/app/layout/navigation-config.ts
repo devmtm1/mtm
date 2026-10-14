@@ -115,10 +115,14 @@ export interface NavSection {
 }
 
 export const NAVIGATION_SECTIONS: NavSection[] = [
+  // Le tableau de bord ouvre le menu, seul et sans titre.
   {
-    title: 'Aujourd’hui',
+    title: '',
+    items: [{ label: 'Tableau de bord', route: '/dashboard', icon: LucideLayoutDashboard }],
+  },
+  {
+    title: 'Espace de travail',
     items: [
-      { label: 'Tableau de bord', route: '/dashboard', icon: LucideLayoutDashboard },
       { label: 'Tâches', route: '/taches', icon: LucideListChecks, permission: 'taches:consulter', compteur: 'tachesEnRetard' },
       { label: 'Agenda', route: '/agenda', icon: LucideCalendarDays, permission: 'agenda:consulter' },
       // GED : visible de tous les collaborateurs ; la recherche ne remonte que
@@ -127,7 +131,7 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
     ],
   },
   {
-    title: 'Ventes',
+    title: 'Commercial',
     items: [
       // La boîte de réception du site nourrit les prospects : elle vit avec eux.
       { label: 'Demandes du site', route: '/contacts', icon: LucideInbox, permission: 'contact:consulter', compteur: 'demandesWeb' },
@@ -138,7 +142,7 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
     ],
   },
   {
-    title: 'Biens',
+    title: 'Patrimoine immobilier',
     items: [
       { label: 'Biens à vendre', route: '/terrains', icon: LucideLandPlot, permission: 'terrains:consulter' },
       { label: 'Mandats', route: '/mandats', icon: LucideScrollText, permission: 'mandats:consulter' },

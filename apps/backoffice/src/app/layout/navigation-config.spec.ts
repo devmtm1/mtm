@@ -41,9 +41,10 @@ describe('navigation du back-office', () => {
     expect(manquantes).toEqual([]);
   });
 
-  it('range chaque entrée sous une rubrique nommée, sans rubrique en double', () => {
+  it('range chaque entrée sous une rubrique nommée (sauf le tableau de bord, seul en tête), sans rubrique en double', () => {
     const titres = NAVIGATION_SECTIONS.map((section) => section.title);
-    expect(titres.every((titre) => titre.trim().length > 0)).toBe(true);
+    expect(titres[0]).toBe('');
+    expect(titres.slice(1).every((titre) => titre.trim().length > 0)).toBe(true);
     expect(new Set(titres).size).toBe(titres.length);
   });
 
@@ -51,13 +52,14 @@ describe('navigation du back-office', () => {
     const rubrique = (titre: string) => NAVIGATION_SECTIONS.find((section) => section.title === titre);
     expect(rubrique('Administration')?.defaultCollapsed).toBe(true);
     expect(rubrique('Site public')?.defaultCollapsed).toBe(true);
-    for (const titre of ['Aujourd’hui', 'Ventes', 'Biens', 'Gestion locative']) {
+    for (const titre of ['Espace de travail', 'Commercial', 'Patrimoine immobilier', 'Gestion locative']) {
       expect(rubrique(titre)?.collapsible ?? false).toBe(false);
     }
   });
 
-  it('commence par le quotidien : tableau de bord, tâches, agenda, documents', () => {
-    expect(NAVIGATION_SECTIONS[0].items.map((item) => item.label)).toEqual(['Tableau de bord', 'Tâches', 'Agenda', 'Documents']);
+  it('commence par le quotidien : tableau de bord, puis tâches, agenda, documents', () => {
+    expect(NAVIGATION_SECTIONS[0].items.map((item) => item.label)).toEqual(['Tableau de bord']);
+    expect(NAVIGATION_SECTIONS[1].items.map((item) => item.label)).toEqual(['Tâches', 'Agenda', 'Documents']);
   });
 
   it('place les pastilles sur les pages où il y a quelque chose à faire', () => {

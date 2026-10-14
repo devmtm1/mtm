@@ -10,7 +10,7 @@ La rubrique **Site public** (repliée par défaut) et, côté ventes, **Demandes
 
 ## Les demandes web
 
-**Ventes › Demandes du site** : les messages envoyés depuis le **formulaire de contact** du site (et depuis les fiches de biens et les annonces de location).
+**Commercial › Demandes du site** : les messages envoyés depuis le **formulaire de contact** du site (et depuis les fiches de biens et les annonces de location).
 
 ![Demandes web](img/web-01-demandes.png)
 

@@ -6,7 +6,7 @@ resume: Enregistrer les propriétaires, signer et suivre les mandats, tenir les 
 roles: commercial responsable_commercial direction administrateur
 ---
 
-Ce chapitre couvre la rubrique **Biens** : **Biens à vendre**, **Mandats**, **Propriétaires**. Le travail d’un commercial sur les biens est détaillé dans *Le travail du commercial* ; ici, le côté **gestion du portefeuille**.
+Ce chapitre couvre la rubrique **Patrimoine immobilier** : **Biens à vendre**, **Mandats**, **Propriétaires**. Le travail d’un commercial sur les biens est détaillé dans *Le travail du commercial* ; ici, le côté **gestion du portefeuille**.
 
 ## Les propriétaires
 

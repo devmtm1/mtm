@@ -1,6 +1,6 @@
 /* ==========================================================================
    Item de navigation du sidebar — état actif discret :
-   fond violet très léger + barre verticale violette + texte/icône violet.
+   pastille arrondie bleu très clair, texte et icône dans la couleur principale.
    ========================================================================== */
 
 :host {
@@ -13,14 +13,14 @@
   align-items: center;
   gap: 12px;
   width: 100%;
-  min-height: 40px;
-  padding: 6px 12px;
+  min-height: 42px;
+  padding: 6px 14px;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   background: transparent;
   color: var(--mtm-text-muted);
   font-family: inherit;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 500;
   line-height: 1;
   text-align: left;
@@ -40,28 +40,12 @@
     outline-offset: -2px;
   }
 
-  /* Barre verticale de l'état actif */
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 10px;
-    bottom: 10px;
-    width: 3px;
-    border-radius: 9999px;
-    background-color: transparent;
-    transition: background-color 0.15s ease;
-  }
 }
 
 .nav-item--active {
   background-color: var(--mtm-primary-subtle);
   color: var(--mtm-primary);
   font-weight: 600;
-
-  &::before {
-    background-color: var(--mtm-primary);
-  }
 
   &:hover {
     background-color: var(--mtm-primary-subtle);
@@ -70,8 +54,8 @@
 }
 
 .nav-item__icon {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
 }
 

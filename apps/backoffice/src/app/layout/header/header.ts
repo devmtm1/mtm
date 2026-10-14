@@ -272,7 +272,9 @@ export class Header {
       if (this.matchesUrl(url, route)) candidats.push({ section, label, precision: route.length });
     };
 
-    for (const section of NAVIGATION_SECTIONS) {
+    for (const rubriqueMenu of NAVIGATION_SECTIONS) {
+      // Le tableau de bord, seul en tête du menu, n'a pas de titre de rubrique.
+      const section = { ...rubriqueMenu, title: rubriqueMenu.title || 'Accueil' };
       for (const item of section.items) {
         if (item.children?.length) {
           const rubrique = section.title === item.label ? section.title : `${section.title} · ${item.label}`;
