@@ -3,13 +3,12 @@ import { routes } from '../app.routes';
 import { texteCompteur } from './nav-compteurs.service';
 import { NAVIGATION_SECTIONS, type NavLeaf } from './navigation-config';
 
-/** Toutes les entrées du menu, groupes dépliés. */
+/** Les pages du menu : les liens directs et les enfants des groupes (un groupe n'est qu'un titre qui se déplie). */
 function entrees(): (NavLeaf & { rubrique: string })[] {
   return NAVIGATION_SECTIONS.flatMap((section) =>
-    section.items.flatMap((item) => [
-      { ...item, rubrique: section.title },
-      ...(item.children ?? []).map((enfant) => ({ ...enfant, rubrique: section.title })),
-    ]),
+    section.items.flatMap((item) =>
+      (item.children ?? [item]).map((entree) => ({ ...entree, rubrique: section.title })),
+    ),
   );
 }
 
@@ -48,13 +47,22 @@ describe('navigation du back-office', () => {
     expect(new Set(titres).size).toBe(titres.length);
   });
 
-  it('replie les rubriques rarement utilisées et garde le quotidien toujours visible', () => {
+  it('permet de plier chaque rubrique, et replie d’origine les rarement utilisées', () => {
     const rubrique = (titre: string) => NAVIGATION_SECTIONS.find((section) => section.title === titre);
     expect(rubrique('Administration')?.defaultCollapsed).toBe(true);
     expect(rubrique('Site public')?.defaultCollapsed).toBe(true);
-    for (const titre of ['Espace de travail', 'Commercial', 'Patrimoine immobilier', 'Gestion locative']) {
-      expect(rubrique(titre)?.collapsible ?? false).toBe(false);
+    for (const section of NAVIGATION_SECTIONS.filter((s) => s.title)) {
+      expect(section.collapsible, section.title).toBe(true);
     }
+    for (const titre of ['Espace de travail', 'Commercial', 'Patrimoine immobilier', 'Gestion locative']) {
+      expect(rubrique(titre)?.defaultCollapsed ?? false).toBe(false);
+    }
+  });
+
+  it('regroupe en menu déroulant les pages d’un même sujet (dossiers de vente, finances)', () => {
+    const groupes = NAVIGATION_SECTIONS.flatMap((s) => s.items).filter((i) => i.children);
+    expect(groupes.map((g) => g.label)).toEqual(['Dossiers de vente', 'Finances']);
+    expect(groupes.every((g) => (g.children?.length ?? 0) >= 2)).toBe(true);
   });
 
   it('commence par le quotidien : tableau de bord, puis tâches, agenda, documents', () => {
@@ -67,7 +75,7 @@ describe('navigation du back-office', () => {
     expect(avecPastille).toEqual({
       Tâches: 'tachesEnRetard',
       'Demandes du site': 'demandesWeb',
-      'Dossiers de vente': 'paiementsAValider',
+      'Tous les dossiers': 'paiementsAValider',
       Résiliations: 'resiliations',
       'Relances d’impayés': 'relancesLocatives',
       'Saisies financières': 'saisiesFinancieres',

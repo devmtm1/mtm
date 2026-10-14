@@ -35,7 +35,7 @@ Les comptes qui touchent à des données sensibles — **direction, administrate
 
 | Zone | À quoi elle sert |
 | --- | --- |
-| **Menu à gauche** | Aller d’un module à l’autre. Il ne montre que ce que votre rôle permet. Il est rangé par rubriques (Espace de travail, Commercial, Patrimoine immobilier, Gestion locative…) ; **Site public** et **Administration** se replient d’un clic sur leur titre. |
+| **Menu à gauche** | Aller d’un module à l’autre. Il ne montre que ce que votre rôle permet. Il est rangé par rubriques (Espace de travail, Commercial, Patrimoine immobilier, Gestion locative…) ; chaque rubrique se plie et se déplie d’un clic sur son titre (**Site public** et **Administration** sont pliées au départ), et **Dossiers de vente** et **Finances** se déplient pour montrer leurs pages. |
 | **Barre de recherche** | Retrouver un prospect, un bien, un dossier. Raccourci : <kbd>Ctrl</kbd> + <kbd>K</kbd>. |
 | **Lune** | Passer du thème clair au thème sombre. |
 | **Cloche** | Vos notifications ; un point rouge signale du nouveau. |

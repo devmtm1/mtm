@@ -1,12 +1,9 @@
 import type { LucideIcon } from '@lucide/angular';
 import {
-  LucideArrowLeftRight,
-  LucideBanknote,
   LucideBedDouble,
   LucideBell,
   LucideBellRing,
   LucideBookOpen,
-  LucideBookText,
   LucideBuilding2,
   LucideCalendarDays,
   LucideChartColumn,
@@ -25,12 +22,10 @@ import {
   LucideListChecks,
   LucideLock,
   LucideMegaphone,
-  LucidePenLine,
   LucideReceipt,
   LucideScrollText,
   LucideSettings,
   LucideSlidersHorizontal,
-  LucideTarget,
   LucideUserCog,
   LucideUserSearch,
   LucideUsers,
@@ -122,6 +117,7 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
   },
   {
     title: 'Espace de travail',
+    collapsible: true,
     items: [
       { label: 'Tâches', route: '/taches', icon: LucideListChecks, permission: 'taches:consulter', compteur: 'tachesEnRetard' },
       { label: 'Agenda', route: '/agenda', icon: LucideCalendarDays, permission: 'agenda:consulter' },
@@ -132,17 +128,26 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
   },
   {
     title: 'Commercial',
+    collapsible: true,
     items: [
       // La boîte de réception du site nourrit les prospects : elle vit avec eux.
       { label: 'Demandes du site', route: '/contacts', icon: LucideInbox, permission: 'contact:consulter', compteur: 'demandesWeb' },
       { label: 'Prospects', route: '/crm/prospects', icon: LucideUserSearch, permission: 'crm:consulter' },
-      { label: 'Dossiers de vente', route: '/ventes', icon: LucideReceipt, permission: 'ventes:consulter', exact: true, compteur: 'paiementsAValider' },
-      { label: 'Mes commissions', route: '/ventes/commissions', icon: LucideBanknote, permission: 'ventes:consulter' },
-      { label: 'Objectifs', route: '/ventes/objectifs', icon: LucideTarget, permission: 'ventes:consulter' },
+      {
+        label: 'Dossiers de vente',
+        route: '/ventes',
+        icon: LucideReceipt,
+        children: [
+          { label: 'Tous les dossiers', route: '/ventes', permission: 'ventes:consulter', exact: true, compteur: 'paiementsAValider' },
+          { label: 'Mes commissions', route: '/ventes/commissions', permission: 'ventes:consulter' },
+          { label: 'Objectifs', route: '/ventes/objectifs', permission: 'ventes:consulter' },
+        ],
+      },
     ],
   },
   {
     title: 'Patrimoine immobilier',
+    collapsible: true,
     items: [
       { label: 'Biens à vendre', route: '/terrains', icon: LucideLandPlot, permission: 'terrains:consulter' },
       { label: 'Mandats', route: '/mandats', icon: LucideScrollText, permission: 'mandats:consulter' },
@@ -151,6 +156,7 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
   },
   {
     title: 'Gestion locative',
+    collapsible: true,
     items: [
       { label: 'Biens en gestion', route: '/locatif/biens', icon: LucideKeyRound, permission: 'locatif:consulter' },
       { label: 'Locataires', route: '/locatif/locataires', icon: LucideUsers, permission: 'locatif:consulter' },
@@ -161,6 +167,7 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
   },
   {
     title: 'Services',
+    collapsible: true,
     items: [
       { label: 'Vérifications et démarches', route: '/demarches/missions', icon: LucideClipboardCheck, permission: 'demarches:consulter' },
       { label: 'Chantiers', route: '/construction/chantiers', icon: LucideHardHat, permission: 'construction:consulter' },
@@ -168,12 +175,20 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
   },
   {
     title: 'Pilotage et finances',
+    collapsible: true,
     items: [
       { label: 'Rapports', route: '/rapports', icon: LucideChartColumn, permission: 'rapports:consulter' },
-      { label: 'Finances', route: '/finances', icon: LucideWallet, permission: 'finances:consulter', exact: true },
-      { label: 'Journal financier', route: '/finances/journal', icon: LucideArrowLeftRight, permission: 'finances:consulter' },
-      { label: 'Saisies financières', route: '/finances/operations', icon: LucidePenLine, permission: 'finances:consulter', compteur: 'saisiesFinancieres' },
-      { label: 'Clôtures mensuelles', route: '/finances/clotures', icon: LucideBookText, permission: 'finances:consulter' },
+      {
+        label: 'Finances',
+        route: '/finances',
+        icon: LucideWallet,
+        children: [
+          { label: 'Tableau de bord financier', route: '/finances', permission: 'finances:consulter', exact: true },
+          { label: 'Journal financier', route: '/finances/journal', permission: 'finances:consulter' },
+          { label: 'Saisies financières', route: '/finances/operations', permission: 'finances:consulter', compteur: 'saisiesFinancieres' },
+          { label: 'Clôtures mensuelles', route: '/finances/clotures', permission: 'finances:consulter' },
+        ],
+      },
     ],
   },
   {
@@ -204,6 +219,7 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
   },
   {
     title: 'Mon compte',
+    collapsible: true,
     items: [
       { label: 'Mes notifications', route: '/notifications', icon: LucideBell, exact: true },
       { label: 'Sécurité', route: '/security', icon: LucideLock },
