@@ -57,8 +57,8 @@ function MotDuDirecteur({ directeur }: { directeur: TeamPerson }) {
 
   return (
     <section aria-labelledby="mot-directeur" className="bg-mtm-primary-subtle">
-      <div className="mx-auto grid max-w-5xl gap-8 px-4 py-14 sm:px-6 md:grid-cols-[minmax(0,280px)_1fr] md:items-center lg:gap-14 lg:py-16">
-        <figure className="mx-auto w-full max-w-[210px] sm:max-w-[280px] md:mx-0">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-14 sm:px-6 md:grid-cols-[minmax(0,400px)_1fr] md:items-center lg:gap-14 lg:py-16">
+        <figure className="mx-auto w-full max-w-[300px] sm:max-w-[400px] md:mx-0">
           <div className="relative">
             <span
               aria-hidden="true"
@@ -67,8 +67,8 @@ function MotDuDirecteur({ directeur }: { directeur: TeamPerson }) {
             <Portrait
               src={directeur.imageUrl}
               nom={directeur.nom}
-              sizes="280px"
-              className="relative aspect-[4/5] w-full rounded-3xl shadow-card-hover"
+              sizes="(min-width: 640px) 400px, 300px"
+              className="relative aspect-[4/5] w-full rounded-3xl object-[center_15%] shadow-card-hover"
             />
           </div>
         </figure>
