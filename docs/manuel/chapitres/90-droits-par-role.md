@@ -54,7 +54,7 @@ Les **clients**, **propriétaires** et **locataires** ont un espace séparé (le
 | **Ventes et paiements** | Tout | V C M Val P Pub E + financier, Adm | V C M Val Pub E + financier, Adm | V C M Val Pub E + financier, Adm | V C M (les siens) |
 | **Demandes web** | Tout | V M S | V M S | V M | V M |
 | **Vérifications** | Tout | V C M Val Pub E S, Adm | V C M Val Pub E, Adm | V C M Val Pub | V C M |
-| **Gestion locative** | Tout | V C M Val P Pub E S, Adm | V C M Val P Pub E, Adm | — | — |
+| **Gestion locative** | Tout | V C M Val P Pub E S, Adm | V C M Val P Pub E, Adm | V C M E (les siens) | V C M E (les siens) |
 | **Chantiers** | Tout | V C M Val P Pub E S, Adm | V C M Val P Pub E, Adm | — | — |
 | **Finances** | Tout | V C M Val E, Adm | V | — | — |
 | **Rapports** | Tout | V E, Adm | V E | V | — |
