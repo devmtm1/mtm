@@ -215,7 +215,7 @@ Dans le dossier : le bandeau **« À faire sur ce dossier »**, les chiffres (pr
 
 ### Documents et commission
 
-- Les **documents** du dossier (contrat, reçus, pièces du client) s’ajoutent depuis le dossier, ou depuis **Documents** (rubrique *Aujourd’hui*).
+- Les **documents** du dossier (contrat, reçus, pièces du client) s’ajoutent depuis le dossier, ou depuis **Documents** (rubrique *Espace de travail*).
 - Votre **commission** est estimée selon les règles de MTM, validée par un manager, puis payée **une fois le dossier soldé**. Son avancement est visible dans le dossier, sur votre tableau de bord et dans **Commercial › Mes commissions**.
 
 ### Mes commissions

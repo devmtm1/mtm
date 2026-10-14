@@ -16,6 +16,10 @@ export function adresseMigration(env: NodeJS.ProcessEnv = process.env): string {
   return url.replace(/(@[^/?:]*?)-pooler(\.)/, '$1$2');
 }
 
+// Prisma 6 lit l’adresse dans le schéma (env("DATABASE_URL")) : on la remplace ici,
+// avant sa lecture, pour que migrate et seed passent par l’adresse directe.
+process.env.DATABASE_URL = adresseMigration();
+
 export default defineConfig({
   schema: 'prisma/schema.prisma',
   migrations: {
