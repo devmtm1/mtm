@@ -14,6 +14,21 @@ import type {
 } from '../../models/vente.model';
 import type { ClientAccountCreated } from '../../models/client-account.model';
 
+export interface MaCommission {
+  id: string;
+  statut: string;
+  montantEstime: number;
+  montantValide: number | null;
+  montantPaye: number | null;
+  creeeLe: string;
+  dossier: { id: string; reference: string; statut: string; prixVente: number | null; client: string; bien: string | null };
+}
+
+export interface MesCommissions {
+  items: MaCommission[];
+  totaux: { estimees: number; valideesAPayer: number; payees: number };
+}
+
 @Injectable({ providedIn: 'root' })
 export class VentesApiService {
   private readonly http = inject(HttpClient);
@@ -111,6 +126,10 @@ export class VentesApiService {
     },
   ): Observable<unknown> {
     return this.http.post(`${this.baseUrl}/${dossierId}/paiements`, payload);
+  }
+
+  mesCommissions(): Observable<MesCommissions> {
+    return this.http.get<MesCommissions>(`${this.baseUrl}/commissions/mes`);
   }
 
   getDashboardStats(): Observable<VenteDashboardStats> {

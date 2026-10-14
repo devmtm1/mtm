@@ -15,6 +15,15 @@ import {
   LucideUserSearch,
   LucideClipboardCheck,
   LucideBuilding2,
+  LucideCalendarDays,
+  LucideListChecks,
+  LucideBell,
+  LucideBookOpen,
+  LucideSlidersHorizontal,
+  LucideBellRing,
+  LucideWorkflow,
+  LucideWallet,
+  LucideChartColumn,
 } from '@lucide/angular';
 
 /**
@@ -49,6 +58,11 @@ export interface NavLeaf {
    * seraient surlignées ensemble.
    */
   exact?: boolean;
+  /**
+   * Adresse hors de l'application (le guide d'utilisation, servi tel quel) : le lien
+   * s'ouvre dans un nouvel onglet au lieu de passer par le routeur.
+   */
+  href?: string;
 }
 
 /** Enfant d'un groupe de navigation (sous-module). */
@@ -77,6 +91,36 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         route: '/dashboard',
         icon: LucideLayoutDashboard,
       },
+      {
+        label: 'Agenda',
+        route: '/agenda',
+        icon: LucideCalendarDays,
+        permission: 'agenda:consulter',
+      },
+      {
+        label: 'Tâches',
+        route: '/taches',
+        icon: LucideListChecks,
+        permission: 'taches:consulter',
+      },
+      {
+        label: 'Rapports',
+        route: '/rapports',
+        icon: LucideChartColumn,
+        permission: 'rapports:consulter',
+      },
+      {
+        label: 'Commercial',
+        route: '/crm/prospects',
+        icon: LucideUserSearch,
+        defaultOpen: true,
+        children: [
+          { label: 'Prospects', route: '/crm/prospects', permission: 'crm:consulter' },
+          { label: 'Ventes', route: '/ventes', permission: 'ventes:consulter', exact: true },
+          { label: 'Mes commissions', route: '/ventes/commissions', permission: 'ventes:consulter' },
+          { label: 'Objectifs', route: '/ventes/objectifs', permission: 'ventes:consulter' },
+        ],
+      },
       // Un groupe n'a pas de permission propre : il s'affiche dès qu'un de ses
       // enfants est autorisé, et `route` pointe vers le premier enfant.
       {
@@ -85,23 +129,13 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         icon: LucideLandPlot,
         defaultOpen: true,
         children: [
-          { label: 'Biens', route: '/terrains', permission: 'terrains:consulter' },
+          { label: 'Biens à vendre', route: '/terrains', permission: 'terrains:consulter' },
           { label: 'Mandats', route: '/mandats', permission: 'mandats:consulter' },
           { label: 'Propriétaires', route: '/proprietaires', permission: 'proprietaires:consulter' },
         ],
       },
       {
-        label: 'Commercial',
-        route: '/crm/prospects',
-        icon: LucideUserSearch,
-        children: [
-          { label: 'Prospects', route: '/crm/prospects', permission: 'crm:consulter' },
-          { label: 'Ventes', route: '/ventes', permission: 'ventes:consulter', exact: true },
-          { label: 'Objectifs', route: '/ventes/objectifs', permission: 'ventes:consulter' },
-        ],
-      },
-      {
-        label: 'Vérifications',
+        label: 'Vérifications et démarches',
         route: '/demarches/missions',
         icon: LucideClipboardCheck,
         permission: 'demarches:consulter',
@@ -112,7 +146,7 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         icon: LucideBuilding2,
         permission: 'locatif:consulter',
         children: [
-          { label: 'Biens', route: '/locatif/biens', permission: 'locatif:consulter' },
+          { label: 'Biens en gestion', route: '/locatif/biens', permission: 'locatif:consulter' },
           { label: 'Locataires', route: '/locatif/locataires', permission: 'locatif:consulter' },
           { label: 'Séjours (à la nuit)', route: '/locatif/sejours', permission: 'locatif:consulter' },
           { label: 'Demandes de résiliation', route: '/locatif/resiliations', permission: 'locatif:consulter' },
@@ -131,6 +165,22 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         label: 'Documents',
         route: '/documents',
         icon: LucideFolderOpen,
+      },
+    ],
+  },
+  {
+    title: 'Finances',
+    items: [
+      {
+        label: 'Finances',
+        route: '/finances',
+        icon: LucideWallet,
+        children: [
+          { label: 'Tableau de bord', route: '/finances', permission: 'finances:consulter', exact: true },
+          { label: 'Journal', route: '/finances/journal', permission: 'finances:consulter' },
+          { label: 'Saisies', route: '/finances/operations', permission: 'finances:consulter' },
+          { label: 'Clôtures', route: '/finances/clotures', permission: 'finances:consulter' },
+        ],
       },
     ],
   },
@@ -172,13 +222,30 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
   },
   
   {
-    title: 'Administration',
+    title: 'Mon compte',
     items: [
+      {
+        label: 'Mes notifications',
+        route: '/notifications',
+        icon: LucideBell,
+        exact: true,
+      },
       {
         label: 'Sécurité',
         route: '/security',
         icon: LucideLock,
       },
+      {
+        label: 'Guide d’utilisation',
+        route: '/manuel/',
+        href: '/manuel/',
+        icon: LucideBookOpen,
+      },
+    ],
+  },
+  {
+    title: 'Administration',
+    items: [
       {
         label: 'Accès',
         route: '/users',
@@ -187,6 +254,24 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
           { label: 'Utilisateurs', route: '/users', permission: 'users:consulter' },
           { label: 'Rôles & permissions', route: '/roles', permission: 'roles:consulter' },
         ],
+      },
+      {
+        label: 'Règles de notification',
+        route: '/notifications/regles',
+        icon: LucideBellRing,
+        permission: 'notifications:administrer',
+      },
+      {
+        label: 'Pilotage et rapports',
+        route: '/pilotage/reglages',
+        icon: LucideSlidersHorizontal,
+        permission: 'rapports:administrer',
+      },
+      {
+        label: 'Parcours des dossiers',
+        route: '/workflows',
+        icon: LucideWorkflow,
+        permission: 'settings:consulter',
       },
       {
         label: 'Identité de l’entreprise',

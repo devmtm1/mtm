@@ -2,10 +2,14 @@
   <header class="page-header">
     <div>
       <p class="eyebrow">Cœur commercial</p>
-      <h1 class="page-header__title">Biens</h1>
+      <h1 class="page-header__title">Biens à vendre</h1>
       <p class="page-header__subtitle">
         Terrains, villas et appartements suivis par MTM. Un bien n’apparaît sur le site public
         que lorsqu’il est <strong>Disponible</strong>.
+        @if (!seesAll) {
+          Vous voyez ici les biens dont vous êtes responsable ; pour présenter le bien d’un collègue, proposez-le depuis la fiche du
+          prospect : tous les biens disponibles y sont proposés.
+        }
       </p>
     </div>
     <div class="page-header__actions">

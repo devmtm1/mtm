@@ -31,6 +31,20 @@ export const envValidationSchema = Joi.object({
   ACCOUNT_LOCK_DURATION_MINUTES: Joi.number().default(15),
 
   TWO_FACTOR_APP_NAME: Joi.string().default('MTM Immobilier'),
+  // SMS et WhatsApp : le fournisseur de chaque canal se choisit ici (brevo, passerelle ou none) ;
+  // s'il est absent, le premier fournisseur configuré est utilisé. Voir docs/AGENDA_TACHES_MESSAGES.md.
+  SMS_PROVIDER: Joi.string().optional(),
+  WHATSAPP_PROVIDER: Joi.string().optional(),
+  // Identifiants du fournisseur Brevo (clé d'API v3 et expéditeur de chaque canal).
+  BREVO_API_KEY: Joi.string().optional(),
+  BREVO_SMS_SENDER: Joi.string().max(15).optional(),
+  BREVO_WHATSAPP_SENDER: Joi.string().optional(),
+  BREVO_WHATSAPP_TEMPLATE_ID: Joi.number().integer().optional(),
+  // Repli : passerelles HTTP (un POST JSON { canal, to, text }).
+  SMS_WEBHOOK_URL: Joi.string().uri().optional(),
+  SMS_WEBHOOK_TOKEN: Joi.string().optional(),
+  WHATSAPP_WEBHOOK_URL: Joi.string().uri().optional(),
+  WHATSAPP_WEBHOOK_TOKEN: Joi.string().optional(),
   CLOUDINARY_CLOUD_NAME: Joi.string().optional(),
   CLOUDINARY_API_KEY: Joi.string().optional(),
   CLOUDINARY_API_SECRET: Joi.string().optional(),

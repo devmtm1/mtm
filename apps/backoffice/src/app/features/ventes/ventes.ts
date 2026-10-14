@@ -33,6 +33,8 @@ import { MoneyPipe } from '../../shared/pipes/money.pipe';
 import { JustificationDialog } from '../../shared/dialogs/justification-dialog';
 import { downloadBlob } from '../../shared/utils/download';
 import { ReservationRequestDialog } from './reservation-request-dialog';
+import { ProspectPickerDialog } from './prospect-picker-dialog';
+import { SalesDossierDialog } from '../crm/sales-dossier-dialog/sales-dossier-dialog';
 import { DOSSIER_STATUS, activeReservation, clientName, joursAvantExpiration, label, pillClass, progression } from './ventes-status';
 
 /**
@@ -207,6 +209,25 @@ export class Ventes implements OnInit {
 
   protected goToProspects(): void {
     void this.router.navigate(['/crm/prospects']);
+  }
+
+  /** Nouveau dossier sans quitter la page : le client, puis le bien, puis le dossier s'ouvre. */
+  protected newDossier(): void {
+    ProspectPickerDialog.ask(this.dialog).subscribe((prospect) => {
+      if (!prospect) return;
+      this.dialog
+        .open(SalesDossierDialog, {
+          width: '560px',
+          maxWidth: 'calc(100vw - 32px)',
+          data: { prospectId: prospect.id, prospectName: `${prospect.prenom ?? ''} ${prospect.nom}`.trim(), budgetMax: prospect.budgetMax },
+        })
+        .afterClosed()
+        .subscribe((created: { id: string } | undefined) => {
+          if (!created) return;
+          this.notify.success('Dossier de vente ouvert : réservez le bien puis enregistrez les paiements ici');
+          void this.router.navigate(['/ventes', created.id]);
+        });
+    });
   }
 
   protected filterByStatus(statut: string): void {

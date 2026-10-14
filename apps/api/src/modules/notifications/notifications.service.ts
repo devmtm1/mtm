@@ -1,8 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { MailService } from '../../common/mail/mail.service';
+import { CanalExterneService } from './canal-externe.service';
+import {
+  CLE_REGLES_NOTIFICATION,
+  type RegleNotification,
+  type ReglesNotification,
+} from './evenements';
 
 export interface NotifierInput {
   type: string;
@@ -48,11 +54,49 @@ export interface CibleClient {
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
 
+  /** Réglages par événement, relus au plus toutes les 30 secondes. */
+  private regles?: { valeur: ReglesNotification; expire: number };
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly mail: MailService,
     private readonly config: ConfigService,
+    @Optional() private readonly canaux?: CanalExterneService,
   ) {}
+
+  /** Règles enregistrées (événement → réglage). Une lecture impossible donne « aucune règle » : rien ne bloque. */
+  async lireRegles(): Promise<ReglesNotification> {
+    if (this.regles && this.regles.expire > Date.now()) {
+      return this.regles.valeur;
+    }
+    let valeur: ReglesNotification = {};
+    try {
+      const ligne = await this.prisma.systemSetting.findUnique({
+        where: { key: CLE_REGLES_NOTIFICATION },
+        select: { value: true },
+      });
+      if (
+        ligne?.value &&
+        typeof ligne.value === 'object' &&
+        !Array.isArray(ligne.value)
+      ) {
+        valeur = ligne.value as ReglesNotification;
+      }
+    } catch {
+      valeur = {};
+    }
+    this.regles = { valeur, expire: Date.now() + 30_000 };
+    return valeur;
+  }
+
+  /** Oublie le cache : à appeler après un changement de règle. */
+  oublierRegles(): void {
+    this.regles = undefined;
+  }
+
+  async regleDe(type: string): Promise<RegleNotification> {
+    return (await this.lireRegles())[type] ?? {};
+  }
 
   /** Utilisateurs actifs titulaires d'une permission, par l'un de leurs rôles. */
   async userIdsWithPermission(permission: string): Promise<string[]> {
@@ -123,6 +167,9 @@ export class NotificationsService {
    * journalisé.
    */
   async notifier(userIds: string[], input: NotifierInput): Promise<number> {
+    const regle = await this.regleDe(input.type);
+    if (regle.actif === false) return 0;
+    const envoyerEmail = regle.email ?? input.email ?? false;
     const destinataires = [...new Set(userIds.filter(Boolean))];
     let creees = 0;
     for (const userId of destinataires) {
@@ -139,11 +186,31 @@ export class NotificationsService {
             entityId: input.entityId,
             dedupeKey: input.dedupeKey,
           },
-          select: { id: true, user: { select: { email: true } } },
+          select: {
+            id: true,
+            user: {
+              select: {
+                email: true,
+                telephone: true,
+                notificationsEmail: true,
+                notificationsSms: true,
+                notificationsWhatsapp: true,
+              },
+            },
+          },
         });
         creees += 1;
-        if (input.email)
-          await this.envoyerEmail(notification.user.email, input);
+        const destinataire = notification.user;
+        // Chacun peut couper l'e-mail ; SMS et WhatsApp ne partent que pour qui les a demandés.
+        if (envoyerEmail && destinataire.notificationsEmail !== false) {
+          await this.envoyerEmail(destinataire.email, input);
+        }
+        await this.envoyerCanauxExternes(
+          notification.id,
+          destinataire,
+          input,
+          regle,
+        );
       } catch (error) {
         if (
           error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -161,13 +228,38 @@ export class NotificationsService {
     return creees;
   }
 
+  /**
+   * Comme `notifierPermission`, pour une opération métier qui ne doit jamais
+   * échouer à cause d'une alerte : toute erreur est journalisée puis avalée.
+   */
+  async alerter(
+    permission: string,
+    input: NotifierInput,
+    exclure?: string,
+  ): Promise<number> {
+    try {
+      return await this.notifierPermission(permission, input, exclure);
+    } catch (error) {
+      this.logger.error(
+        `Alerte « ${input.type} » non envoyée : ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      return 0;
+    }
+  }
+
   /** Notifie tous les titulaires d'une permission, sauf `exclure`. */
   async notifierPermission(
     permission: string,
     input: NotifierInput,
     exclure?: string,
   ): Promise<number> {
-    const ids = await this.userIdsWithPermission(permission);
+    // La direction peut confier l'événement à une autre permission (réglage).
+    const regle = await this.regleDe(input.type);
+    const ids = await this.userIdsWithPermission(
+      regle.permission || permission,
+    );
     return this.notifier(
       ids.filter((id) => id !== exclure),
       input,
@@ -217,6 +309,35 @@ export class NotificationsService {
       where: { readAt: { lt: limite } },
     });
     return count;
+  }
+
+  private async envoyerCanauxExternes(
+    notificationId: string,
+    destinataire: {
+      telephone?: string | null;
+      notificationsSms?: boolean;
+      notificationsWhatsapp?: boolean;
+    },
+    input: NotifierInput,
+    regle: RegleNotification,
+  ): Promise<void> {
+    if (!this.canaux || !destinataire.telephone) return;
+    const texte = [input.titre, input.message].filter(Boolean).join(' — ');
+    for (const canal of ['sms', 'whatsapp'] as const) {
+      const voulu = canal === 'sms' ? regle.sms : regle.whatsapp;
+      const accepte =
+        canal === 'sms'
+          ? destinataire.notificationsSms
+          : destinataire.notificationsWhatsapp;
+      if (voulu && accepte && this.canaux.estConfigure(canal)) {
+        await this.canaux.envoyer({
+          canal,
+          destinataire: destinataire.telephone,
+          texte,
+          notificationId,
+        });
+      }
+    }
   }
 
   private async envoyerEmail(to: string, input: NotifierInput): Promise<void> {

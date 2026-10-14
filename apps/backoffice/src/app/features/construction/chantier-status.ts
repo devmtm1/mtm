@@ -2,6 +2,7 @@ import type {
   StatusChoice,
   StatusTone,
 } from '../../shared/dialogs/status-choice-dialog';
+import { humaniserCode } from '../../shared/utils/humaniser';
 
 export interface StatusMeaning {
   tone: StatusTone;
@@ -297,7 +298,7 @@ export function label(
   map: Record<string, StatusMeaning>,
   value: string | null | undefined,
 ): string {
-  return (value && map[value]?.label) || (value ?? '—');
+  return (value && (map[value]?.label ?? humaniserCode(value))) || '—';
 }
 
 export function help(
@@ -364,6 +365,36 @@ export function tonAvancement(chantier: {
   }
   if (chantier.situationAlerte !== 'aucune') return 'progress--warning';
   return '';
+}
+
+/** Poids maximal d’un fichier envoyé sur un chantier (même limite que l’API). */
+export const TAILLE_MAX_FICHIER = 10 * 1024 * 1024;
+
+/** Photos, vidéos et pièces acceptées : ce que l’API laisse passer. */
+export const TYPES_FICHIER_ACCEPTES = 'image/jpeg,image/png,image/webp,video/mp4,video/quicktime,application/pdf,.docx';
+export const TYPES_MEDIA_ACCEPTES = 'image/jpeg,image/png,image/webp,video/mp4,video/quicktime';
+
+const MIME_MEDIAS = new Set(['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/quicktime']);
+const MIME_PIECES = new Set([
+  ...MIME_MEDIAS,
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+]);
+
+/** Dit pourquoi un fichier est refusé, ou null s’il convient (le serveur revérifie). */
+export function problemeFichier(file: Pick<File, 'name' | 'type' | 'size'>, seulementMedias = false): string | null {
+  const acceptes = seulementMedias ? MIME_MEDIAS : MIME_PIECES;
+  if (!acceptes.has(file.type)) {
+    return `${file.name} : type non accepté (photo, vidéo MP4${seulementMedias ? '' : ', PDF ou Word'}).`;
+  }
+  if (file.size > TAILLE_MAX_FICHIER) return `${file.name} : plus de 10 Mo, non envoyé.`;
+  return null;
+}
+
+/** Taille lisible : « 3,2 Mo ». */
+export function tailleLisible(octets: number): string {
+  if (octets < 1024 * 1024) return `${Math.max(1, Math.round(octets / 1024))} Ko`;
+  return `${(octets / (1024 * 1024)).toFixed(1).replace('.', ',')} Mo`;
 }
 
 /** Les montants arrivent en Decimal sérialisé : « 1500000.00 ». */

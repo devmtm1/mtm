@@ -106,6 +106,23 @@ export class CronService {
       if (await this.dejaSignaleAujourdhui(action, 'ActiviteCrm', task.id)) {
         continue;
       }
+      if (isOverdue && task.prospect.commercialResponsableId) {
+        await this.notifications.notifier(
+          [task.prospect.commercialResponsableId],
+          {
+            type: 'activite_crm_retard',
+            niveau: 'alerte',
+            titre: `Relance en retard : ${task.titre}`,
+            message: [task.prospect.prenom, task.prospect.nom]
+              .filter(Boolean)
+              .join(' '),
+            lien: `/crm/prospects/${task.prospect.id}`,
+            entityType: 'ActiviteCrm',
+            entityId: task.id,
+            dedupeKey: `crm-retard:${task.id}:${now.toISOString().slice(0, 10)}`,
+          },
+        );
+      }
       await this.audit.record({
         userId: task.prospect.commercialResponsableId,
         action,
@@ -280,6 +297,64 @@ export class CronService {
         reservation.dossierVenteId,
         reservation.id,
       );
+    }
+  }
+
+  /**
+   * Un dossier de vente réservé ou en cours de paiement doit avoir son contrat
+   * (section 22 : « document manquant »). Passé le délai réglé
+   * (`notifications.documentManquantJours`, 7 jours par défaut), le
+   * commercial responsable et les valideurs sont prévenus, une fois par
+   * semaine tant que le contrat n'est pas déposé.
+   */
+  @Cron(CronExpression.EVERY_DAY_AT_8AM)
+  async handleDocumentsManquants(): Promise<void> {
+    const maintenant = new Date();
+    const reglage = await this.prisma.systemSetting.findUnique({
+      where: { key: 'notifications.documentManquantJours' },
+      select: { value: true },
+    });
+    const jours =
+      typeof reglage?.value === 'number' && reglage.value > 0
+        ? reglage.value
+        : 7;
+    const limite = new Date(maintenant.getTime() - jours * 24 * 3600 * 1000);
+    const dossiers = await this.prisma.dossierVente.findMany({
+      where: {
+        statut: { in: ['reserve', 'paiement_partiel'] },
+        createdAt: { lt: limite },
+        documents: { none: { type: 'contrat' } },
+      },
+      select: {
+        id: true,
+        referenceInterne: true,
+        commercialResponsableId: true,
+      },
+      take: 200,
+    });
+    const semaine = Math.floor(maintenant.getTime() / (7 * 24 * 3600 * 1000));
+    for (const dossier of dossiers) {
+      const input = {
+        type: 'document_manquant',
+        niveau: 'alerte' as const,
+        titre:
+          `Contrat manquant : dossier ${dossier.referenceInterne ?? ''}`.trim(),
+        message: `Réservé depuis plus de ${jours} jours sans contrat déposé.`,
+        lien: `/ventes/${dossier.id}`,
+        entityType: 'DossierVente',
+        entityId: dossier.id,
+        dedupeKey: `document-manquant:${dossier.id}:${semaine}`,
+      };
+      if (dossier.commercialResponsableId) {
+        await this.notifications.notifier(
+          [dossier.commercialResponsableId],
+          input,
+        );
+      }
+      await this.notifications.alerter('ventes:valider', input);
+    }
+    if (dossiers.length > 0) {
+      this.logger.log(`Contrats manquants : ${dossiers.length} dossier(s).`);
     }
   }
 

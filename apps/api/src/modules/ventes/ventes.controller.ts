@@ -201,6 +201,13 @@ export class VentesController {
     return dossier;
   }
 
+  /** Déclaré avant `:id` pour ne pas être pris pour un identifiant de dossier. */
+  @Get('commissions/mes')
+  @RequirePermissions('ventes:consulter')
+  async mesCommissions(@CurrentUser() user: AuthenticatedUser) {
+    return this.commissions.listerMesCommissions(user);
+  }
+
   @Get('dashboard/stats')
   @RequirePermissions('ventes:consulter')
   async getDashboardStats(@CurrentUser() user: AuthenticatedUser) {

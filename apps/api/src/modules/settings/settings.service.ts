@@ -7,12 +7,28 @@ import {
 import { PrismaService } from '../../database/prisma.service';
 import { CreateSettingDto } from './dto/create-setting.dto';
 import {
+  CLE_ENVOI_AUTOMATIQUE,
+  MESSAGE_ENVOI_INVALIDE,
+  envoiValide,
+} from '../pilotage/envoi-automatique';
+import {
   REFERENCE_SETTING_KEYS,
   formatReferenceValide,
 } from '../demarches/mission-reference';
 
 /** Clés réservées à la page « Identité de l'entreprise ». */
 const PREFIXE_ENTREPRISE = 'entreprise.';
+
+/**
+ * Parcours réglés depuis « Parcours des dossiers » (qui contrôle la saisie).
+ * Doit rester égal à CLES_WORKFLOW : un test le vérifie.
+ */
+export const CLES_PARCOURS = [
+  'ventes.statuts',
+  'ventes.transitions',
+  'crm.pipelineStages',
+  'construction.statuts',
+];
 
 export interface SafeSetting {
   id: string;
@@ -126,6 +142,29 @@ export class SettingsService {
    */
   static assertValeurValide(key: string, value: unknown): void {
     SettingsService.assertCleModifiable(key);
+    if (key === CLE_ENVOI_AUTOMATIQUE && !envoiValide(value)) {
+      throw new BadRequestException(MESSAGE_ENVOI_INVALIDE);
+    }
+    if (key === 'pilotage.seuilsBlocage') {
+      const types = ['vente', 'mission', 'chantier', 'prospect', 'tache'];
+      const valide =
+        value !== null &&
+        typeof value === 'object' &&
+        !Array.isArray(value) &&
+        Object.entries(value as Record<string, unknown>).every(
+          ([cle, jours]) =>
+            types.includes(cle) &&
+            typeof jours === 'number' &&
+            Number.isInteger(jours) &&
+            jours >= 1 &&
+            jours <= 365,
+        );
+      if (!valide) {
+        throw new BadRequestException(
+          'Les délais de blocage sont des nombres de jours entiers (1 à 365) pour : vente, mission, chantier, prospect, tache. Exemple : {"vente":15,"mission":10,"chantier":7,"prospect":14,"tache":3}',
+        );
+      }
+    }
     if (
       key === REFERENCE_SETTING_KEYS.mission ||
       key === REFERENCE_SETTING_KEYS.facture
@@ -160,6 +199,11 @@ export class SettingsService {
     if (key.startsWith(PREFIXE_ENTREPRISE)) {
       throw new BadRequestException(
         'Ce paramètre se modifie dans Administration › Identité de l’entreprise',
+      );
+    }
+    if (CLES_PARCOURS.includes(key)) {
+      throw new BadRequestException(
+        'Ce paramètre se modifie dans Administration › Parcours des dossiers',
       );
     }
   }
@@ -210,6 +254,27 @@ export class SettingsService {
       data: {
         value: this.toJson(value),
         ...(description !== undefined ? { description } : {}),
+        updatedById,
+      },
+    });
+  }
+
+  /** Crée le paramètre s'il n'existe pas encore, le met à jour sinon (écrans dédiés). */
+  async upsert(
+    key: string,
+    value: unknown,
+    description: string,
+    updatedById: string,
+  ) {
+    SettingsService.assertValeurValide(key, value);
+    return this.prisma.systemSetting.upsert({
+      where: { key },
+      update: { value: this.toJson(value), updatedById },
+      create: {
+        key,
+        value: this.toJson(value),
+        description,
+        isSensitive: false,
         updatedById,
       },
     });

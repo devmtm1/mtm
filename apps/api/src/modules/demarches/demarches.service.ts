@@ -3,9 +3,11 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import {
   DemarchesAccessService,
@@ -74,6 +76,7 @@ export class DemarchesService {
     private readonly options: DemarchesOptionsService,
     private readonly cloudinary: CloudinaryService,
     private readonly references: MissionReferencesService,
+    @Optional() private readonly alertes?: NotificationsService,
   ) {}
 
   /**
@@ -223,6 +226,17 @@ export class DemarchesService {
       },
       include: missionInclude,
     });
+    void this.alertes?.alerter(
+      'demarches:valider',
+      {
+        type: 'nouvelle_mission',
+        titre: `Nouvelle mission ${mission.referenceInterne ?? ''}`.trim(),
+        lien: `/demarches/missions/${mission.id}`,
+        entityType: 'MissionVerification',
+        entityId: mission.id,
+      },
+      user.id,
+    );
     return this.avecLiens(mission);
   }
 

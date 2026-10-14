@@ -1028,6 +1028,8 @@
         </p>
       }
     </section>
+    <app-taches-dossier type="mission" [dossierId]="m.id" [libelleDossier]="m.referenceInterne ?? 'Mission'" />
+    <app-fil-discussion type="mission" [dossierId]="m.id" />
   </div>
 } @else {
   <p class="detail-note">Mission introuvable.</p>

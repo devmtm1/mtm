@@ -58,7 +58,7 @@ export const BUSINESS_LABELS: Record<string, string> = {
   proposition: 'Proposition',
   visite: 'Visite',
   negociation: 'Négociation',
-  reservation: 'Réservation',
+  reservation: 'Réservé',
   vente: 'Vente',
   perdu: 'Perdu',
   appel: 'Appel',

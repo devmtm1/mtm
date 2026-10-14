@@ -9,6 +9,63 @@ describe('VentesCommissionsService', () => {
     ({ prismaMock, commissions } = createVentesTestContext());
   });
 
+  it('liste les commissions de la personne connectée avec leurs totaux par statut', async () => {
+    const dossier = {
+      id: 'd1',
+      referenceInterne: 'DV-001',
+      statut: 'solde',
+      prixVente: 1000000,
+      prospect: { nom: 'Fall', prenom: 'Ibrahima' },
+      terrain: { referenceInterne: 'T-1', nom: 'Parcelle' },
+    };
+    prismaMock.commissionVente.findMany.mockResolvedValue([
+      {
+        id: 'c1',
+        statut: 'payee',
+        montantEstime: 50000,
+        montantValide: 48000,
+        montantPaye: 48000,
+        createdAt: new Date('2026-09-01'),
+        dossierVente: dossier,
+      },
+      {
+        id: 'c2',
+        statut: 'validee',
+        montantEstime: 30000,
+        montantValide: 30000,
+        montantPaye: null,
+        createdAt: new Date('2026-09-10'),
+        dossierVente: dossier,
+      },
+      {
+        id: 'c3',
+        statut: 'estimee',
+        montantEstime: 20000,
+        montantValide: null,
+        montantPaye: null,
+        createdAt: new Date('2026-09-20'),
+        dossierVente: { ...dossier, prospect: null, terrain: null },
+      },
+    ]);
+
+    const resultat = await commissions.listerMesCommissions({
+      id: 'u1',
+      roles: ['commercial'],
+      permissions: ['ventes:consulter'],
+    });
+
+    expect(prismaMock.commissionVente.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { commercialId: 'u1' } }),
+    );
+    expect(resultat.totaux).toEqual({
+      estimees: 20000,
+      valideesAPayer: 30000,
+      payees: 48000,
+    });
+    expect(resultat.items[0].dossier.client).toBe('Ibrahima Fall');
+    expect(resultat.items[2].dossier.bien).toBeNull();
+  });
+
   it('calcule une commission avec bonus et palier selon les règles commerciales', async () => {
     prismaMock.dossierVente.findUnique.mockResolvedValue({
       id: 'd1',

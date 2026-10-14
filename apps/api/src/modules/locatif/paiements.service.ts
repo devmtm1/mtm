@@ -3,6 +3,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
@@ -30,6 +31,7 @@ import {
   NotificationsService,
   formaterMontant,
 } from '../notifications/notifications.service';
+import { PeriodesFinancieresService } from '../finances/periodes.service';
 
 const paiementInclude = {
   recordedBy: { select: { id: true, firstName: true, lastName: true } },
@@ -54,6 +56,7 @@ export class PaiementsLoyerService {
     private readonly access: LocatifAccessService,
     private readonly options: LocatifOptionsService,
     private readonly notifications: NotificationsService,
+    @Optional() private readonly periodes?: PeriodesFinancieresService,
   ) {}
 
   async findAll(bailLocatifId: string, user: LocatifUser) {
@@ -138,6 +141,7 @@ export class PaiementsLoyerService {
       if (!paiement) {
         throw new NotFoundException('Encaissement en attente introuvable');
       }
+      await this.periodes?.assertOuverte(paiement.datePaiement);
       const bail = await transaction.bailLocatif.findUniqueOrThrow({
         where: { id: bailLocatifId },
         select: {

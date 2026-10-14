@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { Prisma } from '@prisma/client';
@@ -11,6 +12,7 @@ import { UpdateVenteStatusDto } from './dto/update-vente-status.dto';
 import { InternalNotificationService } from '../../common/mail/internal-notification.service';
 import { nextProspectReference } from '../crm/prospect-reference';
 import { PrismaService } from '../../database/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { applyPaymentToEcheances } from './echeances.helper';
 import { VentesWorkflowService } from './ventes-workflow.service';
 import { VentesAccessService, type MandatUser } from './ventes-access.service';
@@ -37,6 +39,7 @@ export class VentesService {
     private readonly access: VentesAccessService,
     private readonly notifications: InternalNotificationService,
     private readonly workflow: VentesWorkflowService,
+    @Optional() private readonly alertes?: NotificationsService,
   ) {}
 
   private async assertMandatExclusivity(
@@ -65,26 +68,23 @@ export class VentesService {
       commissionEstimee?: unknown;
       paiements?: Array<{ montant: unknown; statut: string }>;
     },
-  >(dossier: T, user: MandatUser) {
-    const canViewFinancials = this.access.canViewFinancials(user);
-    // Sans droit financier, les paiements ne sont pas chargés (include: false).
+  >(dossier: T) {
+    // Les paiements d'un dossier sont visibles de qui peut ouvrir ce dossier :
+    // un commercial n'ouvre que les siens, et c'est lui qui enregistre les
+    // versements de ses clients — lui cacher le payé et le reste dû ferait
+    // croire que rien n'a été saisi. Ce qui reste réservé (droit « financier »),
+    // ce sont les chiffres globaux, les marges et les commissions des autres.
     const montantPaye = (dossier.paiements ?? [])
       .filter((payment) => payment.statut === 'valide')
       .reduce((sum, payment) => sum + Number(payment.montant), 0);
     const prixVente =
       dossier.prixVente === null ? null : Number(dossier.prixVente);
-    const commissionEstimee = canViewFinancials
-      ? Number(dossier.commissionEstimee ?? 0)
-      : undefined;
+    const commissionEstimee = Number(dossier.commissionEstimee ?? 0);
 
     return {
       ...dossier,
-      montantPaye: canViewFinancials ? montantPaye : undefined,
-      soldeRestant: canViewFinancials
-        ? prixVente === null
-          ? null
-          : prixVente - montantPaye
-        : undefined,
+      montantPaye,
+      soldeRestant: prixVente === null ? null : prixVente - montantPaye,
       commissionEstimee,
     };
   }
@@ -111,21 +111,12 @@ export class VentesService {
           select: { id: true, firstName: true, lastName: true },
         },
         reservations: { orderBy: { createdAt: 'desc' }, take: 1 },
-        paiements: this.access.canViewFinancials(user)
-          ? { orderBy: { datePaiement: 'desc' } }
-          : false,
+        paiements: { orderBy: { datePaiement: 'desc' } },
         _count: { select: { documents: true, commissions: true } },
       },
     });
 
-    return dossiers.map((dossier) => {
-      const summary = this.withFinancialSummary(dossier, user);
-      if (!this.access.canViewFinancials(user)) {
-        const { paiements, ...rest } = summary;
-        return rest;
-      }
-      return summary;
-    });
+    return dossiers.map((dossier) => this.withFinancialSummary(dossier));
   }
 
   async findReservationRequests(user: MandatUser) {
@@ -347,7 +338,7 @@ export class VentesService {
       roles: ['administrateur'],
       permissions: ['ventes:consulter'],
     };
-    const summary = this.withFinancialSummary(dossier, effectiveUser);
+    const summary = this.withFinancialSummary(dossier);
     const { documents, commissions, paiements, ...base } = summary;
     const mappedDocuments = documents.map(
       ({ storageKey, resourceType, ...document }) => ({
@@ -361,10 +352,14 @@ export class VentesService {
       documents: mappedDocuments,
     };
 
-    if (this.access.canViewFinancials(effectiveUser)) {
-      response.paiements = paiements;
-      response.commissions = commissions;
-    }
+    response.paiements = paiements;
+    // Les commissions des autres commerciaux restent réservées au droit
+    // « financier » : un commercial ne voit que la sienne.
+    response.commissions = this.access.canViewFinancials(effectiveUser)
+      ? commissions
+      : commissions.filter(
+          (commission) => commission.commercialId === effectiveUser.id,
+        );
 
     return response;
   }
@@ -445,6 +440,18 @@ export class VentesService {
       });
     }
 
+    void this.alertes?.alerter(
+      'ventes:valider',
+      {
+        type: 'nouveau_dossier_vente',
+        titre:
+          `Nouveau dossier de vente ${dossier.referenceInterne ?? ''}`.trim(),
+        lien: `/ventes/${dossier.id}`,
+        entityType: 'DossierVente',
+        entityId: dossier.id,
+      },
+      user.id,
+    );
     return this.findOne(dossier.id, user);
   }
 

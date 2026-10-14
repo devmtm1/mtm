@@ -1,0 +1,145 @@
+<div class="reglages-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Administration</p>
+      <h1 class="page-header__title">Pilotage et rapports</h1>
+      <p class="page-header__subtitle">
+        Les délais au-delà desquels un dossier est dit « bloqué », et l’envoi automatique des rapports à la direction. Une modification
+        s’applique tout de suite et reste tracée dans le journal d’audit.
+      </p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="skeleton" style="height: 320px"></div>
+  } @else if (reglages(); as r) {
+    <section class="page-card" aria-labelledby="titre-delais">
+      <h2 id="titre-delais">Dossiers bloqués</h2>
+      <p class="aide">
+        Un dossier encore ouvert est signalé « bloqué » (vue Équipe et tableau de bord de la direction) quand plus rien ne bouge depuis ce nombre de jours. Un paiement, une
+        étape, une relance comptent comme un mouvement.
+      </p>
+      <form class="delais" [formGroup]="seuils" (ngSubmit)="enregistrerSeuils()">
+        @for (delai of delais; track delai.cle) {
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>{{ delai.label }} (jours)</mat-label>
+            <input matInput type="number" min="1" max="365" step="1" [formControlName]="delai.cle" />
+            <mat-hint>{{ delai.aide }}</mat-hint>
+            @if (seuils.controls[delai.cle].invalid) {
+              <mat-error>Un nombre de jours entier, de 1 à 365.</mat-error>
+            }
+          </mat-form-field>
+        }
+        <div class="actions">
+          <button mat-flat-button color="primary" type="submit" [disabled]="enregistrementSeuils() || seuils.pristine">
+            {{ enregistrementSeuils() ? 'Enregistrement…' : 'Enregistrer les délais' }}
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section class="page-card" aria-labelledby="titre-envoi">
+      <h2 id="titre-envoi">Envoi automatique des rapports</h2>
+      <p class="aide">
+        Chaque matin à 7 h, si le jour correspond, les rapports choisis partent en pièces jointes pour la <strong>dernière période complète</strong> : la semaine écoulée
+        (chaque lundi) ou le mois précédent (le 1<sup>er</sup>). Un envoi n’a lieu qu’une fois par période.
+      </p>
+
+      @if (!r.messagerieConfiguree) {
+        <aside class="alert-banner" role="status">
+          <div class="alert-banner__head">
+            <strong>La messagerie du serveur n’est pas configurée</strong>
+          </div>
+          <p>Aucun e-mail ne partira tant que l’administrateur technique n’a pas renseigné le SMTP du serveur. Vous pouvez quand même enregistrer le réglage.</p>
+        </aside>
+      }
+
+      <form class="envoi" [formGroup]="envoi" (ngSubmit)="enregistrerEnvoi()">
+        <mat-slide-toggle formControlName="actif">Envoi automatique {{ envoi.controls.actif.value ? 'activé' : 'désactivé' }}</mat-slide-toggle>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="frequence">
+          <mat-label>Fréquence</mat-label>
+          <mat-select [formControl]="freqControl">
+            <mat-option value="hebdomadaire">Chaque lundi — la semaine écoulée</mat-option>
+            <mat-option value="mensuelle">Le 1er du mois — le mois précédent</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <fieldset>
+          <legend>Rapports à envoyer</legend>
+          <div class="cases">
+            @for (rapport of r.rapports; track rapport.code) {
+              <mat-checkbox [checked]="rapportCoche(rapport.code)" (change)="basculerRapport(rapport.code, $event.checked)">{{ rapport.titre }}</mat-checkbox>
+            }
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Format des pièces jointes</legend>
+          <div class="cases cases--ligne">
+            <mat-checkbox [checked]="formatCoche('pdf')" (change)="basculerFormat('pdf', $event.checked)">Document PDF</mat-checkbox>
+            <mat-checkbox [checked]="formatCoche('xlsx')" (change)="basculerFormat('xlsx', $event.checked)">Classeur Excel</mat-checkbox>
+          </div>
+        </fieldset>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Destinataires</mat-label>
+          <textarea matInput rows="3" formControlName="destinataires" placeholder="direction@mtm.sn"></textarea>
+          <mat-hint>Une adresse e-mail par ligne (vingt au plus).</mat-hint>
+        </mat-form-field>
+
+        @if (erreurEnvoi(); as message) {
+          <p class="erreur" role="alert">{{ message }}</p>
+        }
+
+        <div class="actions">
+          <button mat-flat-button color="primary" type="submit" [disabled]="enregistrementEnvoi()">
+            {{ enregistrementEnvoi() ? 'Enregistrement…' : 'Enregistrer' }}
+          </button>
+          <button mat-stroked-button type="button" (click)="essayer()" [disabled]="essaiEnCours() || envoi.dirty">
+            {{ essaiEnCours() ? 'Envoi de l’essai…' : 'M’envoyer un essai' }}
+          </button>
+          <span class="aide">
+            @if (envoi.dirty) {
+              Enregistrez d’abord : l’essai utilise le réglage enregistré.
+            } @else {
+              L’essai part à {{ monEmail() }} seulement.
+            }
+          </span>
+        </div>
+      </form>
+
+      <h3>Derniers envois</h3>
+      @if (r.derniersEnvois.length === 0) {
+        <p class="aide">Aucun envoi pour l’instant. Le premier aura lieu au prochain {{ envoi.controls.frequence.value === 'mensuelle' ? '1er du mois' : 'lundi' }} si l’envoi est activé.</p>
+      } @else {
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Envoyé le</th>
+                <th>Période</th>
+                <th>Rapports</th>
+                <th class="is-right">Destinataires</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (envoye of r.derniersEnvois; track envoye.date) {
+                <tr>
+                  <td>{{ envoye.date | date: 'dd/MM/yyyy HH:mm' }}</td>
+                  <td>{{ envoye.du ?? '—' }} → {{ envoye.au ?? '—' }}</td>
+                  <td>
+                    @for (code of envoye.rapports; track code; let dernier = $last) {
+                      {{ titreRapport(code) }}{{ dernier ? '' : ', ' }}
+                    }
+                  </td>
+                  <td class="is-right">{{ envoye.destinataires }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  }
+</div>

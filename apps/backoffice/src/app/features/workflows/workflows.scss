@@ -1,0 +1,131 @@
+.workflows-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.parcours__tete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+
+  h2 {
+    margin: 0 0 4px;
+    font-size: 1.05rem;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--mtm-text-muted);
+  }
+}
+
+.parcours__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.etapes {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.etape {
+  display: grid;
+  grid-template-columns: 28px minmax(160px, 1fr) minmax(200px, 1.4fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--mtm-border);
+  border-radius: 8px;
+
+  @media (max-width: 800px) {
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+
+    .etape__passages {
+      grid-column: 1 / -1;
+    }
+  }
+}
+
+.etape__rang {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--mtm-primary-subtle);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.etape__nom {
+  display: grid;
+  gap: 2px;
+
+  small {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.78rem;
+    color: var(--mtm-text-muted);
+  }
+}
+
+.etape__cadenas {
+  width: 12px;
+  height: 12px;
+}
+
+.etape__passages {
+  padding: 6px 10px;
+  border: 1px solid var(--mtm-border);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.etape__boutons {
+  display: inline-flex;
+  gap: 4px;
+
+  button {
+    display: inline-grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--mtm-border);
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+}
+
+.ajout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+
+  mat-form-field {
+    flex: 1 1 260px;
+  }
+}

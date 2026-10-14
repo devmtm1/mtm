@@ -260,8 +260,7 @@
       </section>
 
       <!-- Commissions -->
-      @if (canViewFinancials) {
-        <section class="page-card detail-section">
+      <section class="page-card detail-section">
           <div class="detail-section__head">
             <div>
               <h2>Commissions</h2>
@@ -302,10 +301,9 @@
             <p class="detail-section__text">Aucune commission. Un responsable peut en créer une à partir des règles paramétrées.</p>
           }
         </section>
-      }
 
       <!-- Documents -->
-      <section class="page-card detail-section" [class.detail-section--wide]="!canViewFinancials">
+      <section class="page-card detail-section">
         <div class="detail-section__head">
           <div>
             <h2>Documents</h2>
@@ -359,5 +357,7 @@
         </dl>
       </section>
     </section>
+    <app-taches-dossier type="vente" [dossierId]="d.id" [libelleDossier]="d.referenceInterne ?? 'Dossier de vente'" />
+    <app-fil-discussion type="vente" [dossierId]="d.id" />
   </section>
 }

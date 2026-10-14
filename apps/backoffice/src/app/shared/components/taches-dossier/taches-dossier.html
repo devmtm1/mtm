@@ -1,0 +1,46 @@
+@if (peutVoir) {
+  <section class="taches-dossier page-card" aria-label="Tâches de ce dossier">
+    <header class="taches-dossier__tete">
+      <div>
+        <h2>Tâches et rendez-vous</h2>
+        <p>Ce qui reste à faire sur ce dossier.</p>
+      </div>
+      <div class="taches-dossier__actions">
+        @if (peutPlanifier) {
+          <button mat-stroked-button type="button" (click)="planifier()">Planifier un rendez-vous</button>
+        }
+        @if (peutCreer) {
+          <button mat-flat-button color="primary" type="button" (click)="nouvelle()">
+            <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Tâche
+          </button>
+        }
+      </div>
+    </header>
+
+    @if (loading()) {
+      <div class="skeleton" style="height: 70px"></div>
+    } @else if (taches().length === 0) {
+      <p class="taches-dossier__vide">Aucune tâche sur ce dossier.</p>
+    } @else {
+      <ul class="taches-dossier__liste">
+        @for (tache of taches(); track tache.id) {
+          <li [class.is-fermee]="!ouverte(tache)" [class.is-retard]="tache.enRetard">
+            <button type="button" class="tache" (click)="ouvrir(tache)">
+              <strong>{{ tache.titre }}</strong>
+              <span>
+                {{ echeance(tache.dateLimite) }} · {{ nom(tache.responsable) }}
+                @if (!ouverte(tache)) {
+                  · {{ libelleStatut(tache.statut) }}
+                }
+              </span>
+            </button>
+            <span [class]="pastillePriorite(tache.priorite)">{{ libellePriorite(tache.priorite) }}</span>
+            @if (ouverte(tache) && tache.peutModifier) {
+              <button mat-button type="button" (click)="terminer(tache)" [attr.aria-label]="'Terminer ' + tache.titre">Terminer</button>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </section>
+}

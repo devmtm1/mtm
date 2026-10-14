@@ -7,9 +7,28 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { LucideExternalLink, LucideFileText, LucideSearch, LucideX } from '@lucide/angular';
+import {
+  LucideChevronLeft,
+  LucideChevronRight,
+  LucideChevronsLeft,
+  LucideChevronsRight,
+  LucideExternalLink,
+  LucideFile,
+  LucideFileSpreadsheet,
+  LucideFileText,
+  LucideFileType,
+  LucideFolderOpen,
+  LucideImage,
+  LucideSearch,
+  LucideX,
+} from '@lucide/angular';
 import { debounceTime } from 'rxjs/operators';
-import { GedApiService, type GedDocument, type GedOrigine } from '../../core/services/api/ged-api.service';
+import {
+  GedApiService,
+  type GedDocument,
+  type GedOrigine,
+} from '../../core/services/api/ged-api.service';
+import { natureFichier, pagesAffichees, type GedFichier } from './documents-utils';
 
 /** Libellé de chaque origine : le module qui porte le document. */
 export const GED_ORIGINE_LABELS: Record<GedOrigine, string> = {
@@ -22,7 +41,8 @@ export const GED_ORIGINE_LABELS: Record<GedOrigine, string> = {
   chantier: 'Chantiers',
 };
 
-const PAGE_SIZE = 25;
+/** Tailles de page proposées (le serveur accepte jusqu'à 100). */
+export const TAILLES_PAGE = [10, 25, 50, 100];
 
 /**
  * GED (section 17 CDC) : retrouver un document — titre, contrat, plan,
@@ -34,7 +54,27 @@ const PAGE_SIZE = 25;
 @Component({
   selector: 'app-documents',
   standalone: true,
-  imports: [DatePipe, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, LucideExternalLink, LucideFileText, LucideSearch, LucideX],
+  imports: [
+    DatePipe,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    LucideChevronLeft,
+    LucideChevronRight,
+    LucideChevronsLeft,
+    LucideChevronsRight,
+    LucideExternalLink,
+    LucideFile,
+    LucideFileSpreadsheet,
+    LucideFileText,
+    LucideFileType,
+    LucideFolderOpen,
+    LucideImage,
+    LucideSearch,
+    LucideX,
+  ],
   templateUrl: './documents.html',
   styleUrl: './documents.scss',
 })
@@ -47,22 +87,51 @@ export class DocumentsPage implements OnInit {
   protected readonly documents = signal<GedDocument[]>([]);
   protected readonly total = signal(0);
   protected readonly page = signal(1);
+  protected readonly pageSize = signal(25);
+  protected readonly tailles = TAILLES_PAGE;
   protected readonly loading = signal(true);
   protected readonly failed = signal(false);
   protected readonly origines = signal<GedOrigine[]>([]);
-  protected readonly filters = this.formBuilder.nonNullable.group({ q: '', origine: '', type: '', depuis: '', jusqua: '' });
+  protected readonly filters = this.formBuilder.nonNullable.group({
+    q: '',
+    origine: '',
+    type: '',
+    depuis: '',
+    jusqua: '',
+  });
 
-  protected readonly pageCount = computed(() => Math.max(1, Math.ceil(this.total() / PAGE_SIZE)));
-  protected readonly originOptions = computed(() => this.origines().map((origine) => ({ value: origine, label: GED_ORIGINE_LABELS[origine] })));
+  protected readonly pageCount = computed(() =>
+    Math.max(1, Math.ceil(this.total() / this.pageSize())),
+  );
+  protected readonly pages = computed(() => pagesAffichees(this.page(), this.pageCount()));
+  protected readonly premier = computed(() =>
+    this.total() === 0 ? 0 : (this.page() - 1) * this.pageSize() + 1,
+  );
+  protected readonly dernier = computed(() =>
+    Math.min(this.total(), this.page() * this.pageSize()),
+  );
+  protected readonly originOptions = computed(() =>
+    this.origines().map((origine) => ({ value: origine, label: GED_ORIGINE_LABELS[origine] })),
+  );
 
   ngOnInit(): void {
     this.load();
     const controls = this.filters.controls;
-    controls.q.valueChanges.pipe(debounceTime(350), takeUntilDestroyed(this.destroyRef)).subscribe(() => this.search());
-    controls.type.valueChanges.pipe(debounceTime(350), takeUntilDestroyed(this.destroyRef)).subscribe(() => this.search());
-    controls.origine.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.search());
-    controls.depuis.valueChanges.pipe(debounceTime(400), takeUntilDestroyed(this.destroyRef)).subscribe(() => this.search());
-    controls.jusqua.valueChanges.pipe(debounceTime(400), takeUntilDestroyed(this.destroyRef)).subscribe(() => this.search());
+    controls.q.valueChanges
+      .pipe(debounceTime(350), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.search());
+    controls.type.valueChanges
+      .pipe(debounceTime(350), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.search());
+    controls.origine.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.search());
+    controls.depuis.valueChanges
+      .pipe(debounceTime(400), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.search());
+    controls.jusqua.valueChanges
+      .pipe(debounceTime(400), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.search());
   }
 
   protected originLabel(origine: GedOrigine): string {
@@ -77,18 +146,20 @@ export class DocumentsPage implements OnInit {
     void this.router.navigateByUrl(document.lien);
   }
 
-  protected previous(): void {
-    if (this.page() > 1) {
-      this.page.update((value) => value - 1);
-      this.load();
-    }
+  protected nature(document: GedDocument): GedFichier {
+    return natureFichier(document.url);
   }
 
-  protected next(): void {
-    if (this.page() < this.pageCount()) {
-      this.page.update((value) => value + 1);
-      this.load();
-    }
+  protected goTo(page: number): void {
+    const cible = Math.min(Math.max(1, page), this.pageCount());
+    if (cible === this.page()) return;
+    this.page.set(cible);
+    this.load();
+  }
+
+  protected changePageSize(taille: number): void {
+    this.pageSize.set(taille);
+    this.search();
   }
 
   /** Toute modification de filtre repart de la première page. */
@@ -109,7 +180,7 @@ export class DocumentsPage implements OnInit {
         depuis: value.depuis || undefined,
         jusqua: value.jusqua || undefined,
         page: this.page(),
-        pageSize: PAGE_SIZE,
+        pageSize: this.pageSize(),
       })
       .subscribe({
         next: (result) => {

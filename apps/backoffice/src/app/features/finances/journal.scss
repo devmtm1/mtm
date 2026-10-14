@@ -1,0 +1,47 @@
+.journal-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.filtres {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+
+  .filtres__recherche {
+    grid-column: 1 / -1;
+  }
+
+  @media (max-width: 1000px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 560px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.table-scroll.is-chargement {
+  opacity: 0.6;
+}
+
+.data-table {
+  td small {
+    display: block;
+  }
+
+  .sortie {
+    color: var(--mtm-error);
+  }
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.88rem;
+}

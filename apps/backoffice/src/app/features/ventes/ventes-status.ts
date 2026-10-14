@@ -1,4 +1,5 @@
 import type { StatusChoice, StatusTone } from '../../shared/dialogs/status-choice-dialog';
+import { humaniserCode } from '../../shared/utils/humaniser';
 import type { VenteReservation } from '../../core/models/vente.model';
 
 export interface StatusMeaning {
@@ -55,7 +56,7 @@ export const ECHEANCE_STATUS: Record<string, StatusMeaning> = {
 };
 
 export function label(map: Record<string, StatusMeaning>, value: string | null | undefined): string {
-  return (value && map[value]?.label) || (value ?? '—');
+  return (value && (map[value]?.label ?? humaniserCode(value))) || '—';
 }
 
 export function help(map: Record<string, StatusMeaning>, value: string | null | undefined): string {

@@ -34,6 +34,21 @@
       </div>
     }
   </div>
+} @else if (item().href) {
+  <a
+    class="nav-item"
+    [href]="item().href"
+    target="_blank"
+    rel="noopener"
+    [matTooltip]="collapsed() ? item().label : ''"
+    matTooltipPosition="right"
+    (click)="navigate.emit()"
+  >
+    <svg [lucideIcon]="item().icon" class="nav-item__icon" aria-hidden="true"></svg>
+    @if (!collapsed()) {
+      <span class="nav-item__label">{{ item().label }}</span>
+    }
+  </a>
 } @else {
   <a
     class="nav-item"

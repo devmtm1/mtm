@@ -19,6 +19,7 @@ import {
   chantierType,
 } from '../../utils/labels';
 import type { ClientChantierDetail } from '../../types/chantier';
+import { ClientEchanges } from '../../components/client/ClientEchanges';
 
 /** Avancement : le chiffre en grand, la barre dessous. La première chose que le client cherche. */
 function Avancement({ valeur }: { valeur: number }) {
@@ -308,6 +309,9 @@ export function ClientChantiersPage() {
               </div>
             </ClientCard>
           )}
+          <ClientCard>
+            <ClientEchanges type="chantier" dossierId={detail.id} chargerDirectement />
+          </ClientCard>
         </>
       )}
     </div>

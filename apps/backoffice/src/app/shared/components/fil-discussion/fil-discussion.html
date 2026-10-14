@@ -1,0 +1,44 @@
+@if (peutLire) {
+  <section class="fil page-card" aria-label="Échanges sur ce dossier">
+    <header class="fil__tete">
+      <h2>Échanges</h2>
+      <p>Notes entre collègues{{ fil()?.clientPeutLire ? ' et messages au client' : '' }}, avec l’historique du dossier.</p>
+    </header>
+
+    @if (loading()) {
+      <div class="skeleton" style="height: 90px"></div>
+    } @else if (messages().length === 0) {
+      <p class="fil__vide">Aucun échange pour l’instant.</p>
+    } @else {
+      <ol class="fil__liste">
+        @for (message of messages(); track message.id) {
+          <li class="message" [class.message--client]="message.deClient" [class.message--public]="message.visibleClient && !message.deClient">
+            <div class="message__tete">
+              <strong>{{ message.deClient ? 'Le client' : nom(message) }}</strong>
+              <span class="message__nature">{{ nature(message) }}</span>
+              <time>{{ date(message.createdAt) }}</time>
+            </div>
+            <p class="message__corps">{{ message.corps }}</p>
+          </li>
+        }
+      </ol>
+    }
+
+    @if (peutEcrire) {
+      <form class="fil__saisie" (ngSubmit)="envoyer()">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Écrire un message</mat-label>
+          <textarea matInput rows="2" [formControl]="texte" maxlength="4000"></textarea>
+        </mat-form-field>
+        <div class="fil__actions">
+          @if (fil()?.clientPeutLire) {
+            <mat-checkbox [formControl]="auClient">Envoyer aussi au client (visible dans son espace)</mat-checkbox>
+          }
+          <button mat-flat-button color="primary" type="submit" [disabled]="!texte.value.trim() || envoi()">
+            {{ envoi() ? 'Envoi…' : auClient.value ? 'Envoyer au client' : 'Ajouter la note' }}
+          </button>
+        </div>
+      </form>
+    }
+  </section>
+}

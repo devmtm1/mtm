@@ -4,9 +4,11 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { nextProspectReference } from './prospect-reference';
 import { nextRechercheReference } from './recherche-reference';
 import { CrmAccessService, type CrmUser } from './crm-access.service';
@@ -93,6 +95,7 @@ export class CrmService {
     private readonly prisma: PrismaService,
     private readonly access: CrmAccessService,
     private readonly options: CrmOptionsService,
+    @Optional() private readonly alertes?: NotificationsService,
   ) {}
 
   async findAll(query: QueryProspectDto, user: CrmUser) {
@@ -603,6 +606,18 @@ export class CrmService {
       },
       include: prospectInclude,
     });
+    void this.alertes?.alerter(
+      'crm:administrer',
+      {
+        type: 'nouveau_prospect',
+        titre: `Nouveau prospect : ${[prospect.prenom, prospect.nom].filter(Boolean).join(' ')}`,
+        message: 'Créé dans le CRM',
+        lien: `/crm/prospects/${prospect.id}`,
+        entityType: 'Prospect',
+        entityId: prospect.id,
+      },
+      user.id,
+    );
     return prospect;
   }
 

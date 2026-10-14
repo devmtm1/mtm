@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import {
@@ -20,6 +21,7 @@ import {
   UpdateLigneBudgetDto,
   ValiderDepenseDto,
 } from './dto/chantier-suivi.dto';
+import { PeriodesFinancieresService } from '../finances/periodes.service';
 
 /**
  * Prestataires, budget prévisionnel et dépenses d'un chantier (section 16 :
@@ -37,6 +39,7 @@ export class BudgetChantierService {
     private readonly prisma: PrismaService,
     private readonly access: ConstructionAccessService,
     private readonly options: ConstructionOptionsService,
+    @Optional() private readonly periodes?: PeriodesFinancieresService,
   ) {}
 
   // ----------------------------------------------------------------
@@ -331,12 +334,13 @@ export class BudgetChantierService {
     await this.access.ensureAccessible(projetId, user);
     const depense = await this.prisma.depenseChantier.findFirst({
       where: { id: depenseId, projetId },
-      select: { id: true, statut: true },
+      select: { id: true, statut: true, date: true },
     });
     if (!depense) throw new NotFoundException('Dépense introuvable');
     if (depense.statut === 'valide') {
       throw new ConflictException('Cette dépense est déjà validée');
     }
+    await this.periodes?.assertOuverte(depense.date);
 
     const validee = await this.prisma.depenseChantier.update({
       where: { id: depenseId },
@@ -391,9 +395,12 @@ export class BudgetChantierService {
     await this.access.ensureAccessible(projetId, user);
     const depense = await this.prisma.depenseChantier.findFirst({
       where: { id: depenseId, projetId },
-      select: { id: true, statut: true },
+      select: { id: true, statut: true, date: true },
     });
     if (!depense) throw new NotFoundException('Dépense introuvable');
+    if (depense.statut === 'valide') {
+      await this.periodes?.assertOuverte(depense.date);
+    }
     if (depense.statut === 'valide' && !this.peutPayer(user)) {
       throw new ForbiddenException(
         'Une dépense validée ne se supprime qu’avec la permission construction:payer',

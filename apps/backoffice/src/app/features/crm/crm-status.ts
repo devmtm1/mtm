@@ -1,4 +1,5 @@
 import type { StatusChoice, StatusTone } from '../../shared/dialogs/status-choice-dialog';
+import { humaniserCode } from '../../shared/utils/humaniser';
 import type { ActiviteCrmItem } from '../../core/models/prospect.model';
 
 export interface StatusMeaning {
@@ -17,8 +18,8 @@ export const PIPELINE: Record<string, StatusMeaning> = {
   en_reflexion: { tone: 'warning', label: 'En réflexion', help: 'Le client réfléchit : garder le contact.' },
   a_relancer: { tone: 'warning', label: 'À relancer', help: 'Sans nouvelle : relance à programmer.' },
   negociation: { tone: 'warning', label: 'Négociation', help: 'Discussion sur le prix et les conditions.' },
-  reservation: { tone: 'warning', label: 'Réservation', help: 'Acompte versé ou en cours : le bien lui est bloqué.' },
-  vente: { tone: 'success', label: 'Vente conclue', help: 'Vente conclue : le prospect est devenu client.' },
+  reservation: { tone: 'warning', label: 'Réservé', help: 'Acompte versé ou en cours : le bien lui est bloqué (statut « Réservé » du dossier de vente).' },
+  vente: { tone: 'success', label: 'Vente soldée', help: 'Prix intégralement payé (statut « Soldé » du dossier de vente) : le prospect est devenu client.' },
   refuse: { tone: 'danger', label: 'Refusé', help: 'Le client ne donne pas suite : motif obligatoire.' },
   abandonne: { tone: 'danger', label: 'Projet abandonné', help: 'Le projet est abandonné : motif obligatoire.' },
   injoignable: { tone: 'danger', label: 'Injoignable', help: 'Plus aucun contact possible : motif obligatoire.' },
@@ -175,7 +176,7 @@ export const PRIORITIES: Record<string, StatusMeaning> = {
 };
 
 export function label(map: Record<string, StatusMeaning>, value: string | null | undefined): string {
-  return (value && map[value]?.label) || (value ?? '—');
+  return (value && (map[value]?.label ?? humaniserCode(value))) || '—';
 }
 
 export function help(map: Record<string, StatusMeaning>, value: string | null | undefined): string {

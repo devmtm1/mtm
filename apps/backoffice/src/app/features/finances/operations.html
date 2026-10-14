@@ -1,0 +1,102 @@
+<div class="operations-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Finances</p>
+      <h1 class="page-header__title">Saisies</h1>
+      <p class="page-header__subtitle">
+        Dépenses de fonctionnement, autres recettes, paiements d’un client de chantier : ce qui n’a pas d’autre origine
+        dans l’outil. Une saisie compte dans les totaux une fois validée par une autre personne que son auteur. Une saisie
+        validée ne se modifie plus : on la corrige par une saisie inverse.
+      </p>
+    </div>
+    @if (peutCreer) {
+      <button mat-flat-button color="primary" type="button" (click)="nouvelle()">
+        <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouvelle saisie
+      </button>
+    }
+  </header>
+
+  <nav class="onglets" aria-label="Statut des saisies">
+    @for (o of onglets; track o.code) {
+      <button type="button" [class.is-actif]="onglet() === o.code" (click)="changerOnglet(o.code)">{{ o.label }}</button>
+    }
+  </nav>
+
+  @if (loading() && !resultat()) {
+    <div class="skeleton" style="height: 220px"></div>
+  } @else if (resultat(); as r) {
+    @if (r.items.length === 0) {
+      <section class="page-card">
+        <div class="empty-state">
+          <h3>Aucune saisie</h3>
+          <p>
+            @if (onglet() === 'en_attente') {
+              Rien n’attend de validation.
+            } @else {
+              Aucune saisie dans cette catégorie.
+            }
+          </p>
+        </div>
+      </section>
+    } @else {
+      <ul class="liste" [class.is-chargement]="loading()">
+        @for (operation of r.items; track operation.id) {
+          <li class="operation page-card">
+            <div class="operation__principal">
+              <strong>{{ operation.libelle }}</strong>
+              <span class="operation__meta">
+                {{ date(operation.date) }} · {{ categorie(operation.categorie) }} · {{ libelleActivite(operation.activite) }}
+                @if (operation.tiers) {
+                  · {{ operation.tiers }}
+                }
+                @if (operation.reference) {
+                  · {{ operation.reference }}
+                }
+              </span>
+              <span class="operation__meta">
+                Saisie par {{ auteur(operation) }}
+                @if (operation.validatedBy) {
+                  · {{ operation.statut === 'rejetee' ? 'rejetée' : 'validée' }} par {{ operation.validatedBy.firstName }} {{ operation.validatedBy.lastName }}
+                }
+              </span>
+              @if (operation.motifRejet) {
+                <span class="operation__rejet">Motif du rejet : {{ operation.motifRejet }}</span>
+              }
+              @if (operation.justificatifUrl) {
+                <a [href]="operation.justificatifUrl" target="_blank" rel="noopener" class="operation__piece">Voir le justificatif</a>
+              }
+            </div>
+            <div class="operation__droite">
+              <strong [class.sortie]="operation.sens === 'depense'">
+                {{ operation.sens === 'depense' ? '−' : '+' }} {{ fcfa(operation.montant) }}
+              </strong>
+              <span [class]="'status-pill status-pill--' + statut(operation.statut).tone">{{ statut(operation.statut).label }}</span>
+            </div>
+            <div class="operation__actions">
+              @if (operation.statut === 'en_attente' && peutValider && operation.createdById !== moi) {
+                <button mat-flat-button color="primary" type="button" (click)="valider(operation)">Valider</button>
+                <button mat-stroked-button type="button" (click)="rejeter(operation)">Rejeter</button>
+              }
+              @if (modifiable(operation)) {
+                <button mat-button type="button" (click)="modifier(operation)">Modifier</button>
+                <button mat-button type="button" (click)="supprimer(operation)">Supprimer</button>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+      @if (pages() > 1) {
+        <nav class="pagination" aria-label="Pages de saisies">
+          <button mat-stroked-button type="button" (click)="aller(page() - 1)" [disabled]="page() <= 1">Précédentes</button>
+          <span>Page {{ page() }} sur {{ pages() }} · {{ r.total }} saisie{{ r.total > 1 ? 's' : '' }}</span>
+          <button mat-stroked-button type="button" (click)="aller(page() + 1)" [disabled]="page() >= pages()">Suivantes</button>
+        </nav>
+      }
+    }
+  }
+
+  <p class="aide">
+    Les paiements des ventes, les loyers, les règlements de missions et les dépenses de chantier ne se saisissent pas ici :
+    ils sont repris automatiquement dans le <a routerLink="/finances/journal">journal</a>.
+  </p>
+</div>

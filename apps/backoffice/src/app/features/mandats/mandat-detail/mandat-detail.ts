@@ -45,6 +45,8 @@ import {
   statusHelp,
 } from '../mandat-status';
 import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
+import { FilDiscussion } from '../../../shared/components/fil-discussion/fil-discussion';
+import { TachesDossier } from '../../../shared/components/taches-dossier/taches-dossier';
 
 /**
  * Fiche mandat (J1.4) : le contrat avec le propriétaire, les lots confiés
@@ -53,6 +55,8 @@ import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 @Component({
   selector: 'app-mandat-detail',
   imports: [
+    FilDiscussion,
+    TachesDossier,
     LabelPipe,
     MoneyPipe,
     DatePipe,

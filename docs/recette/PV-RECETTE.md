@@ -34,7 +34,10 @@ considérée comme terminée sans critère d'acceptation validé ».
 | J2.1 | Gestion locative | oui | à signer |
 | J2.2 | Démarches et vérification foncière | oui | à signer |
 | J2.3 | Construction et suivi de chantier | oui | à signer |
-| J2.4 | Agenda, tâches, notifications | partielle (notifications, GED) | à signer quand le jalon est terminé |
+| J2.4 | Agenda, tâches, workflows, notifications, messagerie | oui (canaux SMS/WhatsApp : passerelle à brancher) | à signer |
+| J2.5 | Applications mobiles | reporté (décision MTM) : le site s'installe comme application (PWA) | — |
+| J3.1 | Comptabilité et finances | oui | à signer |
+| J3.2 | Tableaux de bord et reporting | oui | à signer |
 
 Réserve générale (tous jalons) : le **paiement en ligne** par un prestataire
 (Wave, Orange Money, carte) n'est pas implémenté ; il est reporté à une décision
@@ -274,8 +277,110 @@ notification d'alerte de chantier (cloche et e-mail).
 | Un chantier réel : budget, jalons, journal avec photos | ☐ | |
 | Alerte de retard reçue par le responsable | ☐ | |
 
-**Anomalies et réserves** : vue de type Gantt non réalisée (« si possible »
-dans le cahier des charges).
+**Photos, vidéos et pièces** : depuis la saisie d’une journée (photos JPG, PNG, WebP ou vidéo MP4,
+10 Mo chacune) et depuis le bloc « Pièces » (plan, permis, devis, contrat, facture, procès-verbal…). Une
+pièce reste interne tant qu’elle n’est pas publiée ; publiée avec une journée partagée, elle apparaît dans
+l’espace client. Preuves : `test/construction.e2e-spec.ts` (photo rattachée à une journée, cachée puis
+publiée, plan PDF, journée d’un autre chantier refusée, types et fichiers dangereux refusés, droits, trace
+d’audit), `chantier-fichiers.spec.ts`.
+
+| Recette MTM | Fait | Date |
+| --- | --- | --- |
+| Photos ajoutées à une journée réelle, vues sur le téléphone du client après publication | ☐ | |
+| Ajout d’un plan et d’un permis, non visibles du client tant qu’ils ne sont pas publiés | ☐ | |
+
+**Anomalies et réserves** : aucune connue. La vue de type Gantt (« si possible » au cahier des charges)
+est réalisée dans la fiche du chantier.
+
+---
+
+## J2.4 — Agenda, tâches, workflows, notifications, messagerie
+
+**Critères** : les équipes reçoivent des alertes automatiques et gèrent leurs tâches dans l’outil ;
+agenda partagé et individuel ; workflows configurables ; notifications in-app et e-mail (SMS et WhatsApp
+selon l’intégration) ; fil de discussion par dossier.
+
+**Preuves** : `test/agenda-taches-messages.e2e-spec.ts` (35 scénarios : tâches confiées, vue d’équipe,
+périmètre des dossiers, retard et rappel dédoublonnés, événements privés et partagés, échéances des autres
+modules, fils interne et client, limite d’envoi, règles de notification, préférences, parcours),
+`notifications-regles.spec.ts` (règles, canaux externes, passerelle), `workflows.service.spec.ts`,
+`agenda-utils.spec.ts`, `taches-status.spec.ts`, `regles-notification.spec.ts`, `ClientEchanges.spec.tsx`.
+Mode d’emploi : `docs/AGENDA_TACHES_MESSAGES.md`.
+
+| Recette MTM | Fait | Date |
+| --- | --- | --- |
+| Un manager confie une tâche à un commercial : celui-ci est prévenu, la termine, l’historique le garde | ☐ | |
+| Une tâche en retard prévient le responsable et celui qui l’a confiée, une seule fois par jour | ☐ | |
+| Un rendez-vous d’équipe avec participants et rappel ; un événement privé reste invisible des autres | ☐ | |
+| L’agenda montre les échéances réelles (mandat, loyer, jalon de chantier, visite) de son périmètre | ☐ | |
+| Un message au client sur un dossier : visible dans son espace, il répond, l’équipe est prévenue | ☐ | |
+| Une note interne n’apparaît jamais dans l’espace client | ☐ | |
+| La direction désactive une alerte et change ses destinataires sans développeur | ☐ | |
+| Ajout d’une étape « Attente du notaire » au parcours des ventes ; les étapes d’origine restent protégées | ☐ | |
+| SMS / WhatsApp : passerelle du prestataire retenu branchée, envoi réel à un numéro de test | ☐ | |
+
+**Anomalies et réserves** : SMS et WhatsApp inactifs tant que MTM n’a pas choisi de prestataire (la
+couche d’envoi et son journal sont prêts). Les workflows configurables couvrent les ventes, le pipeline
+commercial et les chantiers ; les parcours des missions et des séjours restent définis par leur référentiel.
+
+---
+
+## J3.1 — Comptabilité et finances
+
+**Critères** : recettes, dépenses, commissions, loyers et frais de démarches suivis ; recettes ventilées par
+activité ; tableaux de bord financiers (chiffre d’affaires, encaissements, dépenses, marge, impayés,
+échéances) ; exports pour l’exploitation comptable externe.
+
+**Preuves** : `test/finances.e2e-spec.ts` (27 scénarios : droits, journal repris des quatre modules sans
+les mouvements en attente ou annulés, revenu par activité chiffré à l’unité — marge au prorata, commission de
+gestion par bien et par défaut, frais de transfert —, saisies validées par une autre personne, rejets, justificatif,
+export CSV et Excel tracé, clôture mensuelle qui fige les totaux et bloque les modules, réouverture motivée),
+`finances.calculs.spec.ts` (calculs, périodes, CSV), `finances-utils.spec.ts`. Mode d’emploi et définitions :
+`docs/FINANCES.md`.
+
+| Recette MTM | Fait | Date |
+| --- | --- | --- |
+| La direction valide les définitions : encaissements, revenu (marge des ventes, commission de gestion, prestations) | ☐ | |
+| Marge renseignée sur les biens vendus ; le revenu de ventes réelles est conforme au calcul de la direction | ☐ | |
+| Commission de gestion fixée pour les biens en gérance (taux par bien ou défaut) ; revenu locatif conforme | ☐ | |
+| Saisie d’un loyer de bureaux par la comptabilité, validation par la direction, présence dans les totaux | ☐ | |
+| Export Excel du mois remis au cabinet comptable : il le reconnaît et l’exploite | ☐ | |
+| Clôture d’un mois réel ; une correction à la date d’un mois clôturé est refusée | ☐ | |
+
+**Anomalies et réserves** : la TVA n’est pas gérée ; les paiements d’un client sur un chantier se saisissent
+comme recettes ; le format d’export est celui du journal (colonnes décrites dans `docs/FINANCES.md`), à adapter
+si le cabinet comptable impose un format d’import précis.
+
+---
+
+## J3.2 — Tableaux de bord et reporting
+
+**Critères** : direction et managers pilotent l’activité par des tableaux de bord fiables, alimentés par des
+données réelles ; tableau direction (chiffre d’affaires, ventes, locations, performances, alertes,
+tendances), manager (équipe, objectifs, activité, dossiers bloqués), commercial (prospects, pipeline, visites,
+ventes, commissions, tâches) ; rapports exportables en PDF et Excel (ventes par période et par zone,
+performance commerciale, terrains, loyers et impayés, rentabilité, démarches).
+
+**Preuves** : `test/pilotage.e2e-spec.ts` (27 scénarios : droits de chaque tableau, chiffres exacts de la
+direction avec comparaison à la période précédente, classement des commerciaux, occupation et recouvrement,
+objectifs et totaux d’équipe, dossiers bloqués et délais réglables, tableau du commercial et cloisonnement,
+les sept rapports chiffrés, export PDF et Excel tracé, rapport de plusieurs pages), `pilotage.calculs.spec.ts`,
+`rapports-utils.spec.ts`, `test/pilotage-envoi.e2e-spec.ts` (envoi automatique : jour prévu, période écoulée, pièces PDF/Excel, pas de doublon, nouvel essai si le courrier échoue), `envoi-automatique.spec.ts`. Mode d’emploi et définitions : `docs/PILOTAGE.md`.
+
+| Recette MTM | Fait | Date |
+| --- | --- | --- |
+| La direction ouvre son tableau de bord : les chiffres du mois correspondent à ce qu’elle sait de l’activité | ☐ | |
+| Les délais de « dossier bloqué » (15, 10, 7, 14, 3 jours) sont validés ou ajustés ; la liste des dossiers bloqués est juste | ☐ | |
+| Le manager lit l’activité de son équipe et ouvre le tableau d’un commercial | ☐ | |
+| Un commercial retrouve ses relances, visites, objectif et commissions du jour | ☐ | |
+| Rapport « Ventes par période » exporté en PDF : mise en page, logo et mentions de MTM conformes | ☐ | |
+| Rapport « Loyers et impayés » exporté en Excel : exploitable par la gérance | ☐ | |
+| Envoi automatique activé (`pilotage.envoiAutomatique`, SMTP configuré) : la direction reçoit les rapports du lundi / du 1er du mois en pièces jointes | ☐ | |
+| Les sept rapports ont été regardés par la direction ; ceux qui ne servent pas sont signalés | ☐ | |
+
+**Anomalies et réserves** : pas de prévisions (hors périmètre) ; l’envoi automatique est désactivé tant que des destinataires ne sont pas renseignés.
+Un rapport est limité à 500 lignes de détail. Les chiffres d’équipe portent sur les rôles « commercial » et
+« responsable commercial ».
 
 ---
 

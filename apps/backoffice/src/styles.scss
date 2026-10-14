@@ -41,6 +41,17 @@
   --mtm-error: var(--mtm-accent);
   --mtm-error-bg: var(--mtm-accent-subtle);
 
+  /* Alias historiques : plusieurs écrans les utilisent, ils suivent le thème. */
+  --mtm-text: var(--mtm-text-dark);
+  --mtm-muted: var(--mtm-text-muted);
+  --mtm-bg: var(--mtm-bg-surface);
+  --mtm-surface: var(--mtm-card-bg);
+  --mtm-surface-2: var(--mtm-bg-hover);
+  --mtm-surface-muted: var(--mtm-bg-surface);
+  --mtm-danger: var(--mtm-error);
+  --mtm-danger-subtle: var(--mtm-error-bg);
+  --mtm-warning-subtle: var(--mtm-warning-bg);
+
   // Typographie
   --mtm-font-body: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
   --mtm-font-display: 'Outfit', 'Plus Jakarta Sans', sans-serif;
@@ -192,6 +203,12 @@ textarea {
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+}
+
+/* Un bouton posé directement dans l'en-tête ne doit jamais être écrasé par un long sous-titre. */
+.page-header > .mat-mdc-button-base {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .page-shell {
@@ -1599,6 +1616,24 @@ ag-grid-angular {
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
+
+    /* Sur téléphone, les boutons se rangent en deux colonnes égales au lieu de
+       s'empiler sur cinq lignes avant d'arriver au contenu. */
+    @media (max-width: 720px) {
+      display: grid;
+      width: 100%;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+
+      > .mat-mdc-button-base:not(.mat-mdc-icon-button) {
+        width: 100%;
+        white-space: normal;
+        line-height: 1.2;
+      }
+
+      > .mat-mdc-icon-button {
+        justify-self: end;
+      }
+    }
   }
 }
 
@@ -1937,6 +1972,35 @@ ag-grid-angular {
   .is-right {
     text-align: right;
     white-space: nowrap;
+  }
+}
+
+/* Ligne de total d'un tableau, valeur négative, tendance d'un chiffre clé. */
+.data-table tfoot {
+  th,
+  td {
+    border-top: 1px solid var(--mtm-border);
+    border-bottom: 0;
+    font-weight: 700;
+  }
+}
+
+.data-table .is-right,
+.kpi__body strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.negatif {
+  color: var(--mtm-error);
+}
+
+.kpi__body small.tendance {
+  &--hausse {
+    color: var(--mtm-success);
+  }
+
+  &--baisse {
+    color: var(--mtm-error);
   }
 }
 

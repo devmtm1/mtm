@@ -211,7 +211,7 @@ export interface TraiterResiliationDialogData {
     .traiter__resume dd { margin: 0; font-weight: 600; }
     .traiter__message dd { font-weight: 400; white-space: pre-line; }
     .traiter__hint { margin: 0; color: var(--mtm-text-muted); font-size: 0.82rem; }
-    .traiter__alerte { margin: 0 0 8px; color: #b7791f; font-size: 0.84rem; }
+    .traiter__alerte { margin: 0 0 8px; color: var(--mtm-warning); font-size: 0.84rem; }
   `,
 })
 export class TraiterResiliationDialog {

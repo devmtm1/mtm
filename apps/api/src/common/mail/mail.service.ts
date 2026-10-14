@@ -16,6 +16,14 @@ export interface MailMessage {
   text: string;
   /** Corps HTML optionnel, dérivé du texte si absent. */
   html?: string;
+  /** Pièces jointes (rapports PDF/Excel…). */
+  attachments?: MailAttachment[];
+}
+
+export interface MailAttachment {
+  filename: string;
+  content: Buffer;
+  contentType: string;
 }
 
 /**
@@ -108,6 +116,7 @@ export class MailService {
         subject: message.subject,
         text: message.text,
         html: message.html ?? this.textToHtml(message.text),
+        attachments: message.attachments,
       });
       return true;
     } catch (error) {

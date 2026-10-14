@@ -91,6 +91,62 @@ export const routes: Routes = [
           import('./features/roles/roles').then((m) => m.Roles),
       },
       {
+        path: 'finances/journal',
+        canActivate: [permissionsGuard(['finances:consulter'])],
+        loadComponent: () => import('./features/finances/journal').then((m) => m.JournalFinancier),
+      },
+      {
+        path: 'finances/operations',
+        canActivate: [permissionsGuard(['finances:consulter'])],
+        loadComponent: () => import('./features/finances/operations').then((m) => m.OperationsFinancieres),
+      },
+      {
+        path: 'finances/clotures',
+        canActivate: [permissionsGuard(['finances:consulter'])],
+        loadComponent: () => import('./features/finances/clotures').then((m) => m.CloturesFinancieres),
+      },
+      {
+        path: 'finances',
+        canActivate: [permissionsGuard(['finances:consulter'])],
+        loadComponent: () => import('./features/finances/tableau-financier').then((m) => m.TableauFinancierPage),
+      },
+      {
+        path: 'pilotage/reglages',
+        canActivate: [permissionsGuard(['rapports:administrer'])],
+        loadComponent: () => import('./features/pilotage/reglages-pilotage').then((m) => m.ReglagesPilotageComponent),
+      },
+      {
+        path: 'rapports',
+        canActivate: [permissionsGuard(['rapports:consulter'])],
+        loadComponent: () => import('./features/rapports/rapports').then((m) => m.Rapports),
+      },
+      {
+        path: 'agenda',
+        canActivate: [permissionsGuard(['agenda:consulter'])],
+        loadComponent: () => import('./features/agenda/agenda').then((m) => m.Agenda),
+      },
+      {
+        path: 'taches',
+        canActivate: [permissionsGuard(['taches:consulter'])],
+        loadComponent: () => import('./features/taches/taches').then((m) => m.Taches),
+      },
+      {
+        path: 'notifications/regles',
+        canActivate: [permissionsGuard(['notifications:administrer'])],
+        loadComponent: () =>
+          import('./features/notifications/regles-notification').then((m) => m.ReglesNotification),
+      },
+      {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./features/notifications/mes-notifications').then((m) => m.MesNotifications),
+      },
+      {
+        path: 'workflows',
+        canActivate: [permissionsGuard(['settings:consulter'])],
+        loadComponent: () => import('./features/workflows/workflows').then((m) => m.Workflows),
+      },
+      {
         path: 'entreprise',
         canActivate: [permissionsGuard(['settings:consulter'])],
         loadComponent: () =>
@@ -201,6 +257,11 @@ export const routes: Routes = [
         path: 'documents',
         loadComponent: () =>
           import('./features/documents/documents').then((m) => m.DocumentsPage),
+      },
+      {
+        path: 'ventes/commissions',
+        canActivate: [permissionsGuard(['ventes:consulter'])],
+        loadComponent: () => import('./features/ventes/commissions/mes-commissions').then((m) => m.MesCommissionsComponent),
       },
       {
         path: 'ventes/objectifs',

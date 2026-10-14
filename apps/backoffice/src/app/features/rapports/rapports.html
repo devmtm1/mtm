@@ -1,0 +1,152 @@
+<div class="rapports-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Pilotage</p>
+      <h1 class="page-header__title">Rapports</h1>
+      <p class="page-header__subtitle">
+        Ventes, zones, commerciaux, terrains, loyers, rentabilité et démarches. Chaque rapport se
+        lit ici, puis s’exporte en PDF ou en Excel avec l’en-tête de MTM.
+      </p>
+    </div>
+  </header>
+
+  <section class="catalogue" aria-label="Choix du rapport">
+    @for (rapport of catalogue(); track rapport.code) {
+      <button
+        type="button"
+        class="carte"
+        [class.is-actif]="choisi()?.code === rapport.code"
+        (click)="choisir(rapport)"
+      >
+        <strong>{{ rapport.titre }}</strong>
+        <span>{{ rapport.description }}</span>
+      </button>
+    }
+  </section>
+
+  @if (choisi(); as rapport) {
+    <section class="page-card filtres" aria-label="Paramètres du rapport">
+      @if (rapport.parPeriode) {
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Du</mat-label>
+          <input matInput type="date" [formControl]="du" (change)="generer()" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Au</mat-label>
+          <input matInput type="date" [formControl]="au" (change)="generer()" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Raccourci</mat-label>
+          <mat-select
+            (selectionChange)="appliquerPreset($event.value)"
+            placeholder="Choisir une période"
+          >
+            @for (p of periodes; track p.code) {
+              <mat-option [value]="p.code">{{ p.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+      @if (avecRegion()) {
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Région (facultatif)</mat-label>
+          <input matInput [formControl]="region" placeholder="Ex. Dakar" (change)="generer()" />
+        </mat-form-field>
+      }
+      <div class="filtres__actions">
+        <button mat-stroked-button type="button" (click)="generer()" [disabled]="loading()">
+          Actualiser
+        </button>
+        @if (peutExporter) {
+          <button
+            mat-flat-button
+            color="primary"
+            type="button"
+            (click)="exporter()"
+            [disabled]="loading() || !apercu()"
+          >
+            Exporter (PDF ou Excel)
+          </button>
+        }
+      </div>
+    </section>
+
+    @if (loading() && !apercu()) {
+      <div class="skeleton" style="height: 220px"></div>
+    } @else if (apercu(); as donnees) {
+      <article class="rapport" [class.is-chargement]="loading()">
+        <header class="rapport__tete">
+          <h2>{{ donnees.titre }}</h2>
+          <p>{{ donnees.sousTitre }}</p>
+        </header>
+
+        @if (donnees.resume.length > 0) {
+          <dl class="resume">
+            @for (r of donnees.resume; track r.libelle) {
+              <div>
+                <dt>{{ r.libelle }}</dt>
+                <dd>{{ r.valeur }}</dd>
+              </div>
+            }
+          </dl>
+        }
+
+        @for (section of donnees.sections; track section.titre) {
+          <section class="page-card section">
+            <h3>{{ section.titre }}</h3>
+            @if (section.lignes.length === 0) {
+              <p class="vide">Aucune donnée sur cette période.</p>
+            } @else {
+              <div class="table-scroll">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      @for (c of section.colonnes; track c.cle) {
+                        <th scope="col" [class.is-right]="aligne(c.type)">{{ c.libelle }}</th>
+                      }
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (ligne of section.lignes; track $index) {
+                      <tr>
+                        @for (c of section.colonnes; track c.cle) {
+                          <td [class.is-right]="aligne(c.type)">
+                            {{ formater(ligne[c.cle], c.type) }}
+                          </td>
+                        }
+                      </tr>
+                    }
+                  </tbody>
+                  @if (section.total) {
+                    <tfoot>
+                      <tr>
+                        @for (c of section.colonnes; track c.cle) {
+                          <td [class.is-right]="aligne(c.type)">
+                            {{ formater(section.total[c.cle], c.type) }}
+                          </td>
+                        }
+                      </tr>
+                    </tfoot>
+                  }
+                </table>
+              </div>
+            }
+            @if (section.note) {
+              <p class="note">{{ section.note }}</p>
+            }
+          </section>
+        }
+      </article>
+    }
+  } @else {
+    <section class="page-card">
+      <div class="empty-state">
+        <h3>Choisissez un rapport</h3>
+        <p>
+          Sélectionnez-en un ci-dessus : il s’affiche tout de suite, et s’exporte en PDF ou en
+          Excel.
+        </p>
+      </div>
+    </section>
+  }
+</div>

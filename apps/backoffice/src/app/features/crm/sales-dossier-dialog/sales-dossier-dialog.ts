@@ -6,7 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { VentesApiService } from '../../../core/services/api/ventes-api.service';
 import { TerrainsApiService } from '../../../core/services/api/terrains-api.service';
-import type { TerrainListItem } from '../../../core/models/terrain.model';
+import type { TerrainCatalogueItem } from '../../../core/models/terrain.model';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 
@@ -108,8 +108,8 @@ export class SalesDossierDialog {
   protected readonly loading = signal(true);
   protected readonly creating = signal(false);
   protected readonly query = signal('');
-  protected readonly selected = signal<TerrainListItem | null>(null);
-  private readonly terrains = signal<TerrainListItem[]>([]);
+  protected readonly selected = signal<TerrainCatalogueItem | null>(null);
+  private readonly terrains = signal<TerrainCatalogueItem[]>([]);
 
   protected readonly form = this.formBuilder.nonNullable.group({
     prixVente: [null as number | null, [Validators.min(0)]],
@@ -129,21 +129,23 @@ export class SalesDossierDialog {
   });
 
   constructor() {
-    this.terrainsApi.findAll({ statutCommercial: 'Disponible', pageSize: 200 }).subscribe({
-      next: (page) => {
-        this.terrains.set(page.items);
+    // Tout le catalogue disponible, pas seulement les biens dont on est responsable :
+    // un commercial peut ouvrir un dossier sur le bien d'un collègue.
+    this.terrainsApi.catalogueProposition().subscribe({
+      next: (items) => {
+        this.terrains.set(items.filter((item) => item.statutCommercial === 'Disponible'));
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
     });
   }
 
-  protected pick(terrain: TerrainListItem): void {
+  protected pick(terrain: TerrainCatalogueItem): void {
     this.selected.set(terrain);
     if (terrain.prixPublic !== null) this.form.controls.prixVente.setValue(Number(terrain.prixPublic));
   }
 
-  protected location(terrain: TerrainListItem): string {
+  protected location(terrain: TerrainCatalogueItem): string {
     return [terrain.commune, terrain.region].filter(Boolean).join(', ') || 'Localisation non renseignée';
   }
 

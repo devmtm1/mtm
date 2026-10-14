@@ -14,6 +14,7 @@ import { MoneyPipe } from '../../../../shared/pipes/money.pipe';
 import { NotificationService } from '../../../../shared/services/notification.service';
 import type { EtatDesLieuxVue, SejourDetail } from '../../../../core/models/sejour.model';
 import { MODES_PAIEMENT } from '../../locatif-status';
+import { TextPromptDialog } from '../../../../shared/dialogs/text-prompt-dialog';
 import { SejourDialog } from '../sejour-dialog';
 import { CautionSejourDialog, EtatDesLieuxDialog, PaiementSejourDialog } from '../sejour-dialogs';
 import {
@@ -191,14 +192,23 @@ export class SejourDetailPage implements OnInit {
       this.notify.info('Choisissez une photo (JPG, PNG ou WebP) de moins de 10 Mo.');
       return;
     }
-    const legende = window.prompt('Légende de la photo (pièce ou élément photographié) :', '') ?? undefined;
-    this.busy.set(true);
-    this.api.addPhotoEtat(etat.id, fichier, legende?.trim() || undefined).subscribe({
-      next: (resultat) => this.apresEtat(resultat, 'Photo ajoutée'),
-      error: (error: unknown) => {
-        this.busy.set(false);
-        this.notify.error(error, 'Envoi de la photo impossible');
-      },
+    TextPromptDialog.ask(this.dialog, {
+      title: 'Légende de la photo',
+      description: 'La pièce ou l’élément photographié (facultatif).',
+      label: 'Légende',
+      required: false,
+      rows: 1,
+      confirmLabel: 'Ajouter la photo',
+    }).subscribe((legende) => {
+      if (legende === undefined) return;
+      this.busy.set(true);
+      this.api.addPhotoEtat(etat.id, fichier, legende || undefined).subscribe({
+        next: (resultat) => this.apresEtat(resultat, 'Photo ajoutée'),
+        error: (error: unknown) => {
+          this.busy.set(false);
+          this.notify.error(error, 'Envoi de la photo impossible');
+        },
+      });
     });
   }
 

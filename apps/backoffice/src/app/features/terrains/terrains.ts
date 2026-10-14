@@ -166,6 +166,8 @@ export class Terrains implements OnInit {
   });
   protected readonly viewMode = signal<'table' | 'grid'>(this.restoreViewMode());
   protected readonly canCreate = computed(() => this.sessionService.hasPermission('terrains:creer'));
+  /** Un commercial ne voit ici que ses biens ; l'encadrement voit tout le portefeuille. */
+  protected readonly seesAll = this.sessionService.hasSupervisionScope('terrains');
   protected readonly canModify = computed(() => this.sessionService.hasPermission('terrains:modifier'));
   protected readonly filters = this.formBuilder.nonNullable.group(EMPTY_FILTERS);
   protected readonly hasActiveFilters = signal(false);

@@ -447,9 +447,36 @@
 .journal__pieces {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 12px;
+  gap: 8px 12px;
   margin: 6px 0 0;
   font-size: 0.8rem;
+}
+
+.journal__piece {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  img {
+    width: 56px;
+    height: 56px;
+    border-radius: 6px;
+    object-fit: cover;
+  }
+}
+
+.journal__publie {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--mtm-info-bg, #e8f1fb);
+  color: var(--mtm-info, #1a4974);
+  font-size: 0.7rem;
+}
+
+.detail-section__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 /* --- Budget par poste --- */

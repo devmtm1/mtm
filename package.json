@@ -12,9 +12,11 @@
     "deepmerge-ts": "^8.0.1"
   },
   "devDependencies": {
+    "marked": "^18.1.1",
     "vite": "^7.3.6"
   },
   "scripts": {
+    "manuel": "node docs/manuel/build.mjs",
     "build": "npm run api:build && npm run backoffice:build",
     "start": "npm run api:start --workspace=apps/api & npm run start --workspace=apps/backoffice",
     "dev": "npm run api:dev --workspace=apps/api & npm run start --workspace=apps/backoffice",

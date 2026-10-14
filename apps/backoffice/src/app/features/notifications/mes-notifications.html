@@ -1,0 +1,80 @@
+<div class="notifs-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Mon compte</p>
+      <h1 class="page-header__title">Mes notifications</h1>
+      <p class="page-header__subtitle">
+        Ce qui vous a été signalé, et la façon dont vous souhaitez être prévenu. Les alertes apparaissent toujours dans
+        la cloche ; l’e-mail, le SMS et WhatsApp s’ajoutent selon vos choix.
+      </p>
+    </div>
+    @if (page().nonLues > 0) {
+      <button mat-stroked-button type="button" (click)="toutLu()">Tout marquer comme lu</button>
+    }
+  </header>
+
+  <div class="notifs-corps">
+    <section class="page-card" aria-label="Historique">
+      <h2>Historique</h2>
+      @if (loading()) {
+        <div class="skeleton" style="height: 200px"></div>
+      } @else if (page().items.length === 0) {
+        <div class="empty-state">
+          <h3>Aucune notification</h3>
+          <p>Vos alertes (tâches, rendez-vous, paiements, messages…) apparaîtront ici.</p>
+        </div>
+      } @else {
+        <ul class="liste">
+          @for (notification of page().items; track notification.id) {
+            <li>
+              <button type="button" class="notif" [class.is-lue]="notification.readAt" (click)="ouvrir(notification)">
+                <span class="notif__point" [class.notif__point--alerte]="notification.niveau === 'alerte'" aria-hidden="true"></span>
+                <span class="notif__corps">
+                  <strong>{{ notification.titre }}</strong>
+                  @if (notification.message) {
+                    <span>{{ notification.message }}</span>
+                  }
+                  <small>{{ date(notification.createdAt) }}{{ notification.readAt ? '' : ' · non lue' }}</small>
+                </span>
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+
+    <section class="page-card" aria-label="Préférences">
+      <h2>Mes canaux</h2>
+      @if (preferences(); as p) {
+        <form [formGroup]="form" (ngSubmit)="enregistrer()" class="prefs">
+          <mat-slide-toggle formControlName="email">Recevoir les alertes importantes par e-mail</mat-slide-toggle>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Numéro de téléphone</mat-label>
+            <input matInput formControlName="telephone" type="tel" placeholder="+221 77 123 45 67" autocomplete="tel" />
+            <mat-hint>Format international, pour les SMS et WhatsApp.</mat-hint>
+          </mat-form-field>
+
+          <mat-slide-toggle formControlName="sms" [disabled]="!p.canaux.sms">
+            Recevoir par SMS
+          </mat-slide-toggle>
+          @if (!p.canaux.sms) {
+            <p class="aide">Le SMS n’est pas encore activé par MTM.</p>
+          }
+          <mat-slide-toggle formControlName="whatsapp" [disabled]="!p.canaux.whatsapp">
+            Recevoir par WhatsApp
+          </mat-slide-toggle>
+          @if (!p.canaux.whatsapp) {
+            <p class="aide">WhatsApp n’est pas encore activé par MTM.</p>
+          }
+
+          <button mat-flat-button color="primary" type="submit" [disabled]="enregistrement()">
+            {{ enregistrement() ? 'Enregistrement…' : 'Enregistrer' }}
+          </button>
+        </form>
+      } @else {
+        <div class="skeleton" style="height: 200px"></div>
+      }
+    </section>
+  </div>
+</div>

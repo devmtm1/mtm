@@ -37,7 +37,7 @@ describe('VentesService', () => {
     ).rejects.toThrow(ConflictException);
   });
 
-  it('masque les détails financiers des paiements pour un commercial standard', async () => {
+  it('montre les paiements de son dossier à un commercial, mais seulement sa propre commission', async () => {
     prismaMock.dossierVente.findFirst.mockResolvedValue({ id: 'd1' });
     prismaMock.dossierVente.findUnique.mockResolvedValue({
       id: 'd1',
@@ -98,7 +98,10 @@ describe('VentesService', () => {
       },
       reservations: [],
       paiements: [{ montant: 500, statut: 'valide' }],
-      commissions: [],
+      commissions: [
+        { id: 'c1', commercialId: 'u1', montantEstime: 50 },
+        { id: 'c2', commercialId: 'u2', montantEstime: 30 },
+      ],
       documents: [],
     });
 
@@ -108,12 +111,16 @@ describe('VentesService', () => {
       permissions: ['ventes:consulter'],
     });
 
-    expect(result.montantPaye).toBeUndefined();
-    expect(result.soldeRestant).toBeUndefined();
-    expect(result.paiements).toBeUndefined();
+    // Le commercial ouvre son dossier : il voit ce que son client a payé.
+    expect(result.montantPaye).toBe(500);
+    expect(result.soldeRestant).toBe(500);
+    expect(result.paiements).toHaveLength(1);
+    expect(result.commissions).toEqual([
+      { id: 'c1', commercialId: 'u1', montantEstime: 50 },
+    ]);
   });
 
-  it('masque les paiements dans la liste de dossiers pour un commercial standard', async () => {
+  it('montre le payé et le reste dû dans la liste de ses dossiers à un commercial', async () => {
     prismaMock.dossierVente.findMany.mockResolvedValue([
       {
         id: 'd1',
@@ -161,12 +168,11 @@ describe('VentesService', () => {
     });
 
     expect(result).toHaveLength(1);
-    expect(result[0]).not.toHaveProperty('paiements');
-    expect(result[0].montantPaye).toBeUndefined();
-    expect(result[0].soldeRestant).toBeUndefined();
+    expect(result[0].montantPaye).toBe(500);
+    expect(result[0].soldeRestant).toBe(500);
   });
 
-  it('liste les dossiers pour un commercial sans droit financier (paiements non chargés)', async () => {
+  it('liste les dossiers d’un commercial sans paiement : payé à zéro', async () => {
     prismaMock.dossierVente.findMany.mockResolvedValue([
       {
         id: 'd1',
@@ -186,7 +192,7 @@ describe('VentesService', () => {
       permissions: ['ventes:consulter'],
     });
     expect(list).toHaveLength(1);
-    expect(list[0]).not.toHaveProperty('paiements');
-    expect(list[0].montantPaye).toBeUndefined();
+    expect(list[0].montantPaye).toBe(0);
+    expect(list[0].soldeRestant).toBe(1000);
   });
 });

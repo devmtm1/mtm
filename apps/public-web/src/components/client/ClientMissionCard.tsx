@@ -6,6 +6,7 @@ import { missionDecision, missionDocumentType, missionStatus, missionType } from
 import { Badge } from '../ui/Badge';
 import { ProgressBar } from './shell/ClientUi';
 import { ClientDisclosure } from './shell/Disclosure';
+import { ClientEchanges } from './ClientEchanges';
 
 /** Ordre d'avancement affiché au client : les cinq étapes, sans le jargon. */
 const ETAPES = [
@@ -194,6 +195,7 @@ export function ClientMissionCard({ mission, defaultOpen = false }: { mission: C
             </ul>
           </div>
         )}
+        <ClientEchanges type="mission" dossierId={mission.id} />
       </div>
     </ClientDisclosure>
   );

@@ -39,6 +39,8 @@ export interface BienListItem {
   commune: string | null;
   region: string | null;
   superficie: number | string | null;
+  /** Commission de gestion de MTM en % (vide : taux par défaut). */
+  tauxGestion: number | string | null;
   statut: string;
   notes: string | null;
   proprietaire: BienProprietaire;
@@ -413,6 +415,8 @@ export interface CreateBienPayload extends Omit<AnnoncePayload, 'publie' | 'misE
   superficie?: number;
   notes?: string;
   responsableId?: string;
+  /** Commission de gestion en % ; `null` à la modification revient au taux par défaut. */
+  tauxGestion?: number | null;
 }
 
 export type UpdateBienPayload = Partial<Omit<CreateBienPayload, 'proprietaireId'>> &

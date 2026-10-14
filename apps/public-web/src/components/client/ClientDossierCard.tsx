@@ -9,6 +9,7 @@ import { Badge } from '../ui/Badge';
 import { ClientRow, ProgressBar } from './shell/ClientUi';
 import { ClientDisclosure } from './shell/Disclosure';
 import { Frise, type FriseItem } from './shell/Frise';
+import { ClientEchanges } from './ClientEchanges';
 
 function Section({ icon: Icon, title, children }: { icon: typeof Receipt; title: string; children: React.ReactNode }) {
   return (
@@ -197,6 +198,7 @@ export function ClientDossierCard({ dossier, defaultOpen = false }: { dossier: C
           </ul>
         )}
       </Section>
+      <ClientEchanges type="vente" dossierId={dossier.id} />
     </ClientDisclosure>
   );
 }

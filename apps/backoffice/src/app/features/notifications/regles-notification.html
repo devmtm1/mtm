@@ -1,0 +1,105 @@
+<div class="regles-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Administration</p>
+      <h1 class="page-header__title">Règles de notification</h1>
+      <p class="page-header__subtitle">
+        Pour chaque événement : qui est prévenu et par quels canaux. Les changements s’appliquent aux prochaines alertes ;
+        chacun garde la possibilité de couper l’e-mail pour lui-même dans « Mes notifications ».
+      </p>
+    </div>
+    <div class="page-header__actions">
+      <button mat-stroked-button type="button" (click)="rendreParDefaut()" [disabled]="loading()">
+        Revenir aux réglages d’origine
+      </button>
+      <button mat-flat-button color="primary" type="button" (click)="enregistrer()" [disabled]="!modifie() || saving()">
+        {{ saving() ? 'Enregistrement…' : 'Enregistrer' }}
+      </button>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="skeleton" style="height: 320px"></div>
+  } @else {
+    @if (catalogue(); as c) {
+      @if (!c.canaux.sms || !c.canaux.whatsapp) {
+        <aside class="alert-banner alert-banner--info" role="status">
+          <div class="alert-banner__head"><strong>Canaux SMS et WhatsApp</strong></div>
+          <p>
+            Ils partent par le <strong>fournisseur de messagerie</strong> configuré sur le serveur (il se change sans toucher à
+            l’application). Tant qu’un canal n’a pas de fournisseur, rien ne part par lui, même si la case est cochée.
+            @if (!c.canaux.sms) {
+              <br />SMS inactif : aucun fournisseur n’est configuré (<code>SMS_PROVIDER</code>).
+            }
+            @if (!c.canaux.whatsapp) {
+              <br />WhatsApp inactif : aucun fournisseur n’est configuré (<code>WHATSAPP_PROVIDER</code>).
+            }
+          </p>
+        </aside>
+      }
+    }
+
+    @for (famille of familles(); track famille[0]) {
+      <section class="page-card famille">
+        <h2>{{ famille[0] }}</h2>
+        <ul class="evenements">
+          @for (ligne of famille[1]; track ligne.evenement.cle) {
+            <li class="evenement" [class.is-inactif]="!ligne.actif">
+              <div class="evenement__texte">
+                <strong>{{ ligne.evenement.libelle }}</strong>
+                <span>{{ ligne.evenement.description }}</span>
+              </div>
+              <mat-slide-toggle
+                [checked]="ligne.actif"
+                (change)="changer(ligne, 'actif', $event.checked)"
+                [attr.aria-label]="'Activer : ' + ligne.evenement.libelle"
+              >
+                Actif
+              </mat-slide-toggle>
+              <div class="evenement__reglages">
+                @if (ligne.evenement.destinataire === 'permission') {
+                  <mat-select
+                    class="evenement__select"
+                    [value]="ligne.permission"
+                    (selectionChange)="changer(ligne, 'permission', $event.value)"
+                    [disabled]="!ligne.actif"
+                    [attr.aria-label]="'Qui est prévenu : ' + ligne.evenement.libelle"
+                  >
+                    @for (option of optionsPour(ligne); track option.permission) {
+                      <mat-option [value]="option.permission">{{ option.label }}</mat-option>
+                    }
+                  </mat-select>
+                } @else if (ligne.evenement.destinataire === 'client') {
+                  <span class="evenement__cible">Le client concerné</span>
+                } @else {
+                  <span class="evenement__cible">La personne concernée</span>
+                }
+                <mat-slide-toggle
+                  [checked]="ligne.email"
+                  (change)="changer(ligne, 'email', $event.checked)"
+                  [disabled]="!ligne.actif"
+                >
+                  E-mail
+                </mat-slide-toggle>
+                <mat-slide-toggle
+                  [checked]="ligne.sms"
+                  (change)="changer(ligne, 'sms', $event.checked)"
+                  [disabled]="!ligne.actif || !catalogue()?.canaux?.sms"
+                >
+                  SMS
+                </mat-slide-toggle>
+                <mat-slide-toggle
+                  [checked]="ligne.whatsapp"
+                  (change)="changer(ligne, 'whatsapp', $event.checked)"
+                  [disabled]="!ligne.actif || !catalogue()?.canaux?.whatsapp"
+                >
+                  WhatsApp
+                </mat-slide-toggle>
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  }
+</div>

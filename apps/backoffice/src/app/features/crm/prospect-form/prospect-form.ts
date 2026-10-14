@@ -83,6 +83,8 @@ export class ProspectForm implements OnInit {
 
   protected readonly prospectId: string | null = this.route.snapshot.paramMap.get('id');
   protected readonly isEdit = this.prospectId !== null;
+  /** À la création, le projet du client se déplie à la demande : un nom et un contact suffisent pour commencer. */
+  protected readonly detailsOuverts = signal(false);
   /** Identité du client (naissance, pièce) : réservée à la permission crm:identite. */
   protected readonly peutSaisirIdentite = computed(() => this.session.hasPermission('crm:identite'));
   protected readonly typesPieceIdentite = [
