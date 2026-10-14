@@ -102,6 +102,59 @@
   color: var(--mtm-text-muted);
 }
 
+/* Titre d'une rubrique repliable : un bouton qui ressemble à un titre. */
+.sidebar__section-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  > span:first-child {
+    flex: 1;
+  }
+
+  &:hover {
+    color: var(--mtm-text-dark);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mtm-primary-light);
+    outline-offset: -2px;
+  }
+}
+
+.sidebar__section-chevron {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+  transform: rotate(-90deg);
+
+  &--open {
+    transform: none;
+  }
+}
+
+/* Pastille : ce qui attend la personne dans une rubrique repliée. */
+.sidebar__pastille {
+  min-width: 18px;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  background: var(--mtm-accent);
+  color: var(--mat-sys-on-primary);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.4;
+  text-align: center;
+}
+
 .sidebar__list {
   list-style: none;
   margin: 0;

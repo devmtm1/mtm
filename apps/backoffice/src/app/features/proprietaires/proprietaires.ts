@@ -22,6 +22,11 @@ type Scope = '' | 'sans-terrain' | 'avec-mandat';
  * Propriétaires fonciers (J1.4). Une liste courte et cherchable : qui a
  * confié quoi, et qui n'a encore rien confié (à relancer).
  */
+/** Biens confiés : terrains à vendre et biens en gestion locative, ensemble. */
+function biensConfies(item: { _count?: { terrains?: number; biensLocatifs?: number } }): number {
+  return (item._count?.terrains ?? 0) + (item._count?.biensLocatifs ?? 0);
+}
+
 @Component({
   selector: 'app-proprietaires',
   imports: [
@@ -62,9 +67,9 @@ export class Proprietaires implements OnInit {
     const list = this.proprietaires();
     return {
       total: list.length,
-      terrains: list.reduce((sum, item) => sum + (item._count?.terrains ?? 0), 0),
+      terrains: list.reduce((sum, item) => sum + biensConfies(item), 0),
       mandats: list.reduce((sum, item) => sum + (item._count?.mandats ?? 0), 0),
-      sansTerrain: list.filter((item) => (item._count?.terrains ?? 0) === 0).length,
+      sansTerrain: list.filter((item) => biensConfies(item) === 0).length,
     };
   });
 
@@ -72,7 +77,7 @@ export class Proprietaires implements OnInit {
     const term = this.searchTerm().trim().toLowerCase();
     const scope = this.scope();
     return this.proprietaires().filter((item) => {
-      if (scope === 'sans-terrain' && (item._count?.terrains ?? 0) > 0) return false;
+      if (scope === 'sans-terrain' && biensConfies(item) > 0) return false;
       if (scope === 'avec-mandat' && (item._count?.mandats ?? 0) === 0) return false;
       if (!term) return true;
       return `${item.firstName} ${item.lastName} ${item.email ?? ''} ${item.phone ?? ''}`.toLowerCase().includes(term);
@@ -96,7 +101,7 @@ export class Proprietaires implements OnInit {
       minWidth: 90,
       type: 'rightAligned',
       sortable: true,
-      valueGetter: (p) => p.data?._count?.terrains ?? 0,
+      valueGetter: (p) => (p.data ? biensConfies(p.data) : 0),
     },
     {
       headerName: 'Mandats',

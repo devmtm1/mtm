@@ -8,7 +8,7 @@ roles: comptabilite direction administrateur
 
 Le module **Finances** pilote l’argent de MTM : **ce qui est encaissé, ce que MTM gagne réellement, ce qu’elle dépense, ce qu’il lui reste à encaisser**, et prépare les **exports pour la comptabilité externe**. Ce n’est **pas** un logiciel de comptabilité : pas de plan comptable, de bilan ni de TVA.
 
-Le menu **Finances** contient : *Tableau de bord*, *Journal*, *Saisies*, *Clôtures*.
+La rubrique **Pilotage et finances** contient : *Finances* (tableau de bord), *Journal financier*, *Saisies financières*, *Clôtures mensuelles*.
 
 ## Deux notions à ne pas confondre
 

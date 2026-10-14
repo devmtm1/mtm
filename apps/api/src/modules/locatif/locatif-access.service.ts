@@ -15,6 +15,8 @@ export type LocatifUser = {
 
 /** Rôles pouvant porter un bien locatif. */
 export const LOCATIF_ROLES = [
+  'commercial',
+  'responsable_commercial',
   'responsable_gestion_locative',
   'manager',
   'direction',

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Building2, KeyRound, TrendingUp, Wallet } from 'lucide-react';
+import { Building2, CalendarCheck, KeyRound, TrendingUp, Wallet } from 'lucide-react';
 import { useClientData } from '../../contexts/client-data-store';
 import { usePageMetadata } from '../../hooks/usePageMetadata';
 import { ClientCard, ClientPageHeader, ClientRow, StatTile } from '../../components/client/shell/ClientUi';
@@ -9,7 +9,13 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { documentIcone } from '../../utils/documentIcon';
 import { formatDate, formatMoney } from '../../utils/format';
-import { bienLocatifStatus, locatifDocumentType, situationPaiement } from '../../utils/labels';
+import {
+  bienLocatifStatus,
+  locatifDocumentType,
+  occupationNuit,
+  sejourStatus,
+  situationPaiement,
+} from '../../utils/labels';
 
 /** Libellé et valeur, alignés en colonne. */
 function Fait({ label, value, hint }: { label: string; value: string; hint?: string }) {
@@ -73,9 +79,13 @@ export function ClientProprietairePage() {
       {/* Le portefeuille en quatre chiffres. */}
       {proprietaireSynthese && (
         <section aria-label="Ma gérance" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatTile icon={KeyRound} value={`${proprietaireSynthese.loues} / ${proprietaireSynthese.biens}`} label="Biens loués" />
+          <StatTile
+            icon={KeyRound}
+            value={`${proprietaireSynthese.loues} / ${proprietaireSynthese.biens}`}
+            label={proprietaireSynthese.biensALaNuit > 0 ? 'Biens loués ou occupés' : 'Biens loués'}
+          />
           <StatTile icon={TrendingUp} value={formatMoney(proprietaireSynthese.loyersDus)} label="Loyers appelés" />
-          <StatTile icon={Wallet} value={formatMoney(proprietaireSynthese.loyersEncaisses)} label="Encaissés" tone="success" />
+          <StatTile icon={Wallet} value={formatMoney(proprietaireSynthese.loyersEncaisses)} label="Loyers encaissés" tone="success" />
           <StatTile
             icon={Wallet}
             value={formatMoney(proprietaireSynthese.solde)}
@@ -86,11 +96,28 @@ export function ClientProprietairePage() {
             }
             tone={proprietaireSynthese.solde > 0 ? 'warning' : 'neutral'}
           />
+          {proprietaireSynthese.biensALaNuit > 0 && (
+            <>
+              <StatTile
+                icon={CalendarCheck}
+                value={String(proprietaireSynthese.sejoursAVenir)}
+                label={`Séjour${proprietaireSynthese.sejoursAVenir > 1 ? 's' : ''} à venir`}
+              />
+              <StatTile
+                icon={Wallet}
+                value={formatMoney(proprietaireSynthese.sejoursEncaisses)}
+                label="Séjours encaissés"
+                tone="success"
+              />
+            </>
+          )}
         </section>
       )}
 
       {biens.map((bien) => {
-        const statutBien = bienLocatifStatus(bien.statut);
+        const nuit = bien.modeLocation === 'courte_duree';
+        // À la nuit, le bien reste « disponible » faute de bail : on dit plutôt s'il est occupé.
+        const statutBien = nuit && bien.occupation ? occupationNuit(bien.occupation) : bienLocatifStatus(bien.statut);
         const situation = bien.bail ? situationPaiement(bien.bail.situationPaiement) : null;
         return (
           <ClientCard key={bien.id}>
@@ -108,12 +135,43 @@ export function ClientProprietairePage() {
                   </p>
                 </div>
                 <div className="flex flex-none flex-wrap gap-2">
+                  {nuit && <Badge tone="neutral">Location à la nuit</Badge>}
                   <Badge tone={statutBien.tone}>{statutBien.label}</Badge>
                   {situation && <Badge tone={situation.tone}>{situation.label}</Badge>}
                 </div>
               </div>
 
-              {bien.bail ? (
+              {nuit ? (
+                bien.sejours.length > 0 ? (
+                  <div className="flex flex-col gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-mtm-muted">
+                      Séjours · {formatMoney(bien.sejoursEncaisses)} encaissés
+                    </p>
+                    <ul className="flex flex-col divide-y divide-mtm-border">
+                      {bien.sejours.map((sejour) => {
+                        const etat = sejourStatus(sejour.statut);
+                        return (
+                          <li key={sejour.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2 text-sm">
+                            <div className="min-w-0">
+                              <p className="font-semibold text-mtm-text">
+                                {formatDate(sejour.dateArrivee)} → {formatDate(sejour.dateDepart)} · {sejour.nuits} nuit
+                                {sejour.nuits > 1 ? 's' : ''}
+                              </p>
+                              <p className="text-mtm-muted">{sejour.voyageur}</p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="font-semibold text-mtm-text">{formatMoney(sejour.montantTotal)}</span>
+                              <Badge tone={etat.tone}>{etat.label}</Badge>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                ) : (
+                  <p className="text-sm text-mtm-muted">Aucun séjour confirmé pour l’instant.</p>
+                )
+              ) : bien.bail ? (
                 <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
                   <Fait label="Locataire" value={bien.bail.locataire ?? '—'} />
                   <Fait label="Loyer mensuel" value={formatMoney(bien.bail.loyerMensuel)} />

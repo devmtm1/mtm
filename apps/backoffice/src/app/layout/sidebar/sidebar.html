@@ -17,19 +17,37 @@
     @for (section of sections(); track section.title) {
       <div class="sidebar__section">
         @if (!collapsed()) {
-          <p class="sidebar__section-title">{{ section.title }}</p>
-        }
-        <ul class="sidebar__list" role="list">
-          @for (item of section.items; track item.route) {
-            <li class="sidebar__list-item">
-              <app-nav-item
-                [item]="item"
-                [collapsed]="collapsed()"
-                (navigate)="navigate.emit()"
-              />
-            </li>
+          @if (section.collapsible) {
+            <button
+              type="button"
+              class="sidebar__section-title sidebar__section-toggle"
+              [attr.aria-expanded]="estOuverte(section)"
+              (click)="basculer(section)"
+            >
+              <span>{{ section.title }}</span>
+              @if (!estOuverte(section) && pastille(section); as total) {
+                <span class="sidebar__pastille" [attr.aria-label]="total + ' à traiter'">{{ total }}</span>
+              }
+              <svg lucideChevronDown class="sidebar__section-chevron" [class.sidebar__section-chevron--open]="estOuverte(section)" aria-hidden="true"></svg>
+            </button>
+          } @else {
+            <p class="sidebar__section-title">{{ section.title }}</p>
           }
-        </ul>
+        }
+        @if (estOuverte(section)) {
+          <ul class="sidebar__list" role="list">
+            @for (item of section.items; track item.route) {
+              <li class="sidebar__list-item">
+                <app-nav-item
+                  [item]="item"
+                  [collapsed]="collapsed()"
+                  [compteurs]="compteurs()"
+                  (navigate)="navigate.emit()"
+                />
+              </li>
+            }
+          </ul>
+        }
       </div>
     }
   </nav>

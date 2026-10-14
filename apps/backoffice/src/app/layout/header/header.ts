@@ -265,23 +265,26 @@ export class Header {
 
   private updateBreadcrumb(): void {
     const url = this.router.url.split('?')[0].split('#')[0];
-    let match: Breadcrumb | null = null;
+    // La route la plus précise l'emporte (/ventes/objectifs et non /ventes), quel que
+    // soit l'ordre du menu.
+    const candidats: (Breadcrumb & { precision: number })[] = [];
+    const retenir = (section: string, label: string, route: string) => {
+      if (this.matchesUrl(url, route)) candidats.push({ section, label, precision: route.length });
+    };
 
     for (const section of NAVIGATION_SECTIONS) {
       for (const item of section.items) {
         if (item.children?.length) {
-          // Plusieurs enfants peuvent partager une racine (/ventes, /ventes/objectifs) : le plus précis l'emporte.
-          const child = item.children
-            .filter((candidate) => this.matchesUrl(url, candidate.route))
-            .sort((a, b) => b.route.length - a.route.length)[0];
-          if (child) match = { section: section.title === item.label ? section.title : `${section.title} · ${item.label}`, label: child.label };
-        } else if (this.matchesUrl(url, item.route)) {
-          match = { section: section.title, label: item.label };
+          const rubrique = section.title === item.label ? section.title : `${section.title} · ${item.label}`;
+          for (const child of item.children) retenir(rubrique, child.label, child.route);
+        } else {
+          retenir(section.title, item.label, item.route);
         }
       }
     }
 
-    this.breadcrumb.set(match);
+    const match = candidats.sort((a, b) => b.precision - a.precision)[0] ?? null;
+    this.breadcrumb.set(match ? { section: match.section, label: match.label } : null);
   }
 
   private matchesUrl(url: string, route: string): boolean {

@@ -6,7 +6,7 @@ resume: Comptes, rôles, paramètres, parcours des dossiers, identité de l’en
 roles: administrateur direction
 ---
 
-Ce chapitre s’adresse aux **administrateurs** (et à la **direction** pour certains écrans). Le menu **Administration** contient : *Accès* (utilisateurs, rôles), *Pilotage et rapports*, *Parcours des dossiers*, *Identité de l’entreprise*, *Règles de notification*, *Paramètres*, *Journal d’audit*.
+Ce chapitre s’adresse aux **administrateurs** (et à la **direction** pour certains écrans). La rubrique **Administration** (repliée par défaut) contient : *Utilisateurs*, *Rôles & permissions*, *Pilotage et rapports*, *Parcours des dossiers*, *Identité de l’entreprise*, *Règles de notification*, *Paramètres*, *Journal d’audit*.
 
 > **Important** — Un compte **administrateur** doit avoir la **double authentification** activée. Toutes vos actions sont **tracées** dans le journal d’audit : agissez avec soin.
 

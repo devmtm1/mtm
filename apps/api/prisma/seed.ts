@@ -389,6 +389,23 @@ async function main(): Promise<void> {
   // --- Permissions gestion locative (J2.1, section 15 CDC) par rôle ---
   // Le responsable gestion locative pilote le service ; l'encadrement supervise.
   const locatifPermissionsByRole: Record<string, string[]> = {
+    // La location est portée par les commerciaux : chacun gère ses propres biens
+    // (périmètre limité à ses biens, voir LocatifAccessService). La publication,
+    // la validation et les sorties d'argent restent à la gestion locative.
+    commercial: [
+      'locatif:consulter',
+      'locatif:creer',
+      'locatif:modifier',
+      'locatif:exporter',
+      'clients:creer',
+    ],
+    responsable_commercial: [
+      'locatif:consulter',
+      'locatif:creer',
+      'locatif:modifier',
+      'locatif:exporter',
+      'clients:creer',
+    ],
     responsable_gestion_locative: [
       'locatif:consulter',
       'locatif:creer',

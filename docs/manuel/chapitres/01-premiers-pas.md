@@ -35,7 +35,7 @@ Les comptes qui touchent à des données sensibles — **direction, administrate
 
 | Zone | À quoi elle sert |
 | --- | --- |
-| **Menu à gauche** | Aller d’un module à l’autre. Il ne montre que ce que votre rôle permet. Un groupe (Commercial, Immobilier…) se déplie d’un clic. |
+| **Menu à gauche** | Aller d’un module à l’autre. Il ne montre que ce que votre rôle permet. Il est rangé par rubriques (Aujourd’hui, Ventes, Biens, Gestion locative…) ; **Site public** et **Administration** se replient d’un clic sur leur titre. |
 | **Barre de recherche** | Retrouver un prospect, un bien, un dossier. Raccourci : <kbd>Ctrl</kbd> + <kbd>K</kbd>. |
 | **Lune** | Passer du thème clair au thème sombre. |
 | **Cloche** | Vos notifications ; un point rouge signale du nouveau. |
@@ -44,7 +44,7 @@ Les comptes qui touchent à des données sensibles — **direction, administrate
 
 ### Le menu
 
-Le menu est rangé en sections : **Principal** (tableau de bord, agenda, tâches, les modules métier), **Finances**, **Contenu** (le site public), **Mon compte** (notifications, sécurité) et **Administration**. L’icône à gauche du titre de la page **replie** le menu pour gagner de la place. Dans la section **Mon compte**, **Guide d’utilisation** ouvre ce guide dans un nouvel onglet.
+Le menu est rangé par ce que vous faites : **Aujourd’hui** (tableau de bord, tâches, agenda, documents), **Ventes**, **Biens**, **Gestion locative**, **Services** (vérifications, chantiers), **Pilotage et finances**, **Site public** (replié), **Administration** (repliée) et **Mon compte** (notifications, sécurité, guide). Une **pastille** rouge sur une entrée indique ce qui vous attend : messages du site non lus, paiements à valider, relances à envoyer, résiliations, saisies financières à valider, tâches en retard. Sur une rubrique repliée, la pastille additionne ses entrées. Le choix de replier est retenu sur votre appareil. L’icône à gauche du titre de la page **replie** le menu pour gagner de la place. Dans la section **Mon compte**, **Guide d’utilisation** ouvre ce guide dans un nouvel onglet.
 
 ### Retrouver quelqu’un ou quelque chose
 

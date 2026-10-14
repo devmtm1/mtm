@@ -72,8 +72,16 @@ export function ClientHomePage() {
   const chargement = dossiersLoading || locataireLoading;
 
   const biens = proprietaireBiens;
-  const biensAvecBail = (biens ?? []).filter((bien) => bien.bail);
-  const loyersEncaissesTotal = biensAvecBail.reduce((sum, bien) => sum + (bien.bail?.loyersEncaisses ?? 0), 0);
+  // Un propriétaire ou un locataire n'a pas forcément acheté : « Mes dossiers » (ventes)
+  // ne lui dirait que « aucun » et sa salutation « bienvenue » serait fausse.
+  const aUnEspaceDeGestion = (biens?.length ?? 0) > 0 || bailActif !== null;
+  const sansDossierDeVente = list.length === 0 && aUnEspaceDeGestion;
+  // Un bien loué à la nuit n'a pas de bail : ses séjours comptent comme son revenu.
+  const biensRapportant = (biens ?? []).filter((bien) => bien.bail || bien.sejours.length > 0);
+  const loyersEncaissesTotal = (biens ?? []).reduce(
+    (sum, bien) => sum + (bien.bail?.loyersEncaisses ?? 0) + bien.sejoursEncaisses,
+    0,
+  );
 
   const demandesEnAttente =
     (demandes?.messages.filter((demande) => !demande.traite).length ?? 0) +
@@ -81,12 +89,16 @@ export function ClientHomePage() {
 
   // Les espaces que ce compte possède vraiment : ni tuile vide, ni détour inutile.
   const espaces: EspaceProps[] = [
-    {
-      to: ROUTES.clientDossiers,
-      icon: FolderOpen,
-      label: 'Mes dossiers',
-      detail: open.length > 0 ? `${open.length} en cours` : list.length > 0 ? 'Tout est soldé' : 'Aucun pour le moment',
-    },
+    ...(sansDossierDeVente
+      ? []
+      : [
+          {
+            to: ROUTES.clientDossiers,
+            icon: FolderOpen,
+            label: 'Mes dossiers',
+            detail: open.length > 0 ? `${open.length} en cours` : list.length > 0 ? 'Tout est soldé' : 'Aucun pour le moment',
+          },
+        ]),
     ...(bailActif
       ? [
           {
@@ -144,7 +156,7 @@ export function ClientHomePage() {
         <p className="text-sm text-white/75">Bonjour,</p>
         <h1 className="font-display text-[1.65rem] font-bold leading-tight">{user?.firstName ?? 'et bienvenue'}</h1>
         <div className="mt-4">
-          <PrioriteBloc priorite={priorite} loading={chargement} aDesDonnees={list.length > 0 || bailActif !== null} />
+          <PrioriteBloc priorite={priorite} loading={chargement} aDesDonnees={list.length > 0 || aUnEspaceDeGestion} />
         </div>
       </section>
 
@@ -182,7 +194,8 @@ export function ClientHomePage() {
         </section>
       )}
 
-      <div className="grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-[1.4fr_1fr]">
+      <div className={`grid grid-cols-1 gap-5 sm:gap-6 ${sansDossierDeVente ? '' : 'lg:grid-cols-[1.4fr_1fr]'}`}>
+        {!sansDossierDeVente && (
         <ClientCard title="Mes dossiers" to={ROUTES.clientDossiers} className="hidden self-start lg:block">
           {dossiersLoading && (
             <div className="flex flex-col gap-3">
@@ -209,15 +222,16 @@ export function ClientHomePage() {
             </ul>
           )}
         </ClientCard>
+        )}
 
         <div className="flex flex-col gap-5 sm:gap-6">
           {!proprietaireLoading && biens !== null && biens.length > 0 && (
             <ClientCard title="Mes loyers encaissés" to={ROUTES.clientProprietaire} className="hidden lg:block">
               <p className="font-display text-2xl font-bold text-mtm-success">{formatMoney(loyersEncaissesTotal)}</p>
               <p className="mt-0.5 text-sm text-mtm-muted">
-                {biensAvecBail.length > 0
-                  ? `sur ${biensAvecBail.length} bien${biensAvecBail.length > 1 ? 's' : ''} loué${biensAvecBail.length > 1 ? 's' : ''}`
-                  : 'Aucun bail en cours'}
+                {biensRapportant.length > 0
+                  ? `sur ${biensRapportant.length} bien${biensRapportant.length > 1 ? 's' : ''} loué${biensRapportant.length > 1 ? 's' : ''}`
+                  : 'Aucune location en cours'}
               </p>
             </ClientCard>
           )}

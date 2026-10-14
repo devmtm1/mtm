@@ -17,12 +17,30 @@ import type {
   ClientChantierDetail,
 } from '../types/chantier';
 
+/**
+ * Un compte propriétaire, locataire ou voyageur n'est pas un « client » au
+ * sens des ventes : l'API répond 403 sur ces routes. Ce n'est pas une panne à
+ * afficher en rouge, simplement « aucun dossier de vente ». On renvoie donc un
+ * résultat vide, comme pour les autres espaces qui ne concernent pas le compte.
+ */
+async function videSiNonClient<T>(promesse: Promise<T>, vide: T): Promise<T> {
+  try {
+    return await promesse;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 403) return vide;
+    throw error;
+  }
+}
+
 export function fetchClientPortal(token: string): Promise<ClientDossier[]> {
-  return apiClient.get<ClientDossier[]>('/ventes/client/portal', undefined, { token });
+  return videSiNonClient(apiClient.get<ClientDossier[]>('/ventes/client/portal', undefined, { token }), []);
 }
 
 export function fetchClientDemandes(token: string): Promise<ClientDemandes> {
-  return apiClient.get<ClientDemandes>('/ventes/client/portal/demandes', undefined, { token });
+  return videSiNonClient(apiClient.get<ClientDemandes>('/ventes/client/portal/demandes', undefined, { token }), {
+    messages: [],
+    reservations: [],
+  });
 }
 
 export type ClientDemandeType = 'information' | 'visite' | 'reservation';
@@ -51,9 +69,12 @@ export function createClientDemande(
  * MTM a publiées.
  */
 export function fetchClientMissions(token: string): Promise<ClientMission[]> {
-  return apiClient.get<ClientMission[]>('/demarches/missions/client/missions', undefined, {
-    token,
-  });
+  return videSiNonClient(
+    apiClient.get<ClientMission[]>('/demarches/missions/client/missions', undefined, {
+      token,
+    }),
+    [],
+  );
 }
 
 export interface ClientMissionPayload {

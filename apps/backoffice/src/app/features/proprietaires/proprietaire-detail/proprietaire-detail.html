@@ -36,6 +36,11 @@
             <svg class="btn-icon" lucideScrollText aria-hidden="true"></svg>Nouveau mandat
           </button>
         }
+        @if (canCreateBienLocatif) {
+          <button mat-stroked-button type="button" (click)="newBienLocatif()" matTooltip="Mettre un bien de ce propriétaire en gestion locative (au mois ou à la nuit)">
+            <svg class="btn-icon" lucideKeyRound aria-hidden="true"></svg>Nouveau bien en gestion
+          </button>
+        }
         @if (canCreateTerrain) {
           <button mat-stroked-button type="button" (click)="newTerrain()" matTooltip="Créer un terrain rattaché à ce propriétaire">
             <svg class="btn-icon" lucideLandPlot aria-hidden="true"></svg>Nouveau terrain
@@ -79,9 +84,9 @@
       <div class="kpi kpi--primary">
         <span class="kpi__icon"><svg lucideLandPlot aria-hidden="true"></svg></span>
         <span class="kpi__body">
-          <strong>{{ terrains()?.length ?? p._count.terrains }}</strong>
+          <strong>{{ (terrains()?.length ?? p._count.terrains) + (biensLocatifs()?.length ?? p._count.biensLocatifs) }}</strong>
           <span>Biens confiés</span>
-          <small>dont {{ terrainsDisponibles() }} publié{{ terrainsDisponibles() > 1 ? 's' : '' }} sur le site</small>
+          <small>{{ terrains()?.length ?? p._count.terrains }} à vendre ({{ terrainsDisponibles() }} publié{{ terrainsDisponibles() > 1 ? 's' : '' }} sur le site) · {{ biensLocatifs()?.length ?? p._count.biensLocatifs }} en gestion</small>
         </span>
       </div>
       <div class="kpi" [class.kpi--success]="activeMandats() > 0" [class.kpi--muted]="activeMandats() === 0">
@@ -141,6 +146,59 @@
               Aucun terrain enregistré pour ce propriétaire.
               @if (canCreateTerrain) {
                 <button mat-button type="button" (click)="newTerrain()">Créer sa première fiche de bien</button>
+              }
+            </div>
+          }
+        </section>
+      }
+
+      <!-- Biens en gestion locative -->
+      @if (canSeeLocatif) {
+        <section class="page-card detail-section detail-section--wide">
+          <div class="detail-section__head">
+            <div>
+              <h2>Biens en gestion locative</h2>
+              <p class="detail-section__hint">Biens que MTM loue pour ce propriétaire, au mois ou à la nuit.</p>
+            </div>
+            @if (canCreateBienLocatif) {
+              <button mat-stroked-button type="button" (click)="newBienLocatif()">
+                <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Ajouter un bien en gestion
+              </button>
+            }
+          </div>
+          @if (biensLocatifs() === null) {
+            <div class="skeleton" style="height: 48px"></div>
+          } @else if (biensLocatifs()!.length) {
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Bien</th>
+                    <th>Localisation</th>
+                    <th>Mode</th>
+                    <th>Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (bien of biensLocatifs(); track bien.id) {
+                    <tr class="is-clickable" tabindex="0" (click)="openBienLocatif(bien.id)" (keydown.enter)="openBienLocatif(bien.id)">
+                      <td>
+                        <strong>{{ bien.referenceInterne }}</strong> — {{ bien.adresse }}
+                        <small>{{ typeBien(bien.type) }}</small>
+                      </td>
+                      <td>{{ bien.commune || bien.region || '—' }}</td>
+                      <td>{{ bien.modeLocation === 'courte_duree' ? 'À la nuit' : 'Au mois' }}</td>
+                      <td><span [class]="bienPill(bien.statut)" [matTooltip]="bienHelp(bien.statut)">{{ bienLabel(bien.statut) }}</span></td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <div class="detail-note">
+              Aucun bien en gestion locative pour ce propriétaire.
+              @if (canCreateBienLocatif) {
+                <button mat-button type="button" (click)="newBienLocatif()">Mettre un bien en gestion</button>
               }
             </div>
           }
