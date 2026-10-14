@@ -30,13 +30,40 @@ export interface ClientBienLocatif {
   commune: string | null;
   region: string | null;
   statut: string;
+  /** longue_duree | courte_duree : à la nuit, il n'y a pas de bail mais des séjours. */
+  modeLocation: string;
+  /** Pour un bien à la nuit : occupe | reserve | libre (null au mois). */
+  occupation: 'occupe' | 'reserve' | 'libre' | null;
+  /** Séjours engagés : en cours et à venir d'abord, puis les plus récents. */
+  sejours: ClientSejourResume[];
+  /** Règlements reçus des voyageurs pour ce bien. */
+  sejoursEncaisses: number;
   bail: ClientBailResume | null;
+}
+
+/** Un séjour vu du propriétaire : le voyageur n'est désigné que par son prénom et l'initiale de son nom. */
+export interface ClientSejourResume {
+  id: string;
+  referenceInterne: string;
+  /** confirmee | en_cours | terminee */
+  statut: string;
+  source: string;
+  dateArrivee: string;
+  dateDepart: string;
+  nuits: number;
+  voyageur: string;
+  montantTotal: number;
+  encaisse: number;
 }
 
 /** Synthèse du portefeuille du propriétaire (section 15 : loyers et solde). */
 export interface ClientSyntheseProprietaire {
   biens: number;
+  /** Biens sous bail, plus biens à la nuit occupés en ce moment. */
   loues: number;
+  biensALaNuit: number;
+  sejoursAVenir: number;
+  sejoursEncaisses: number;
   loyersDus: number;
   loyersEncaisses: number;
   solde: number;
