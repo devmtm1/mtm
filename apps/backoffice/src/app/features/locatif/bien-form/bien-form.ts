@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -38,6 +38,7 @@ export class BienForm implements OnInit, OnDestroy {
   private readonly proprietairesApi = inject(ProprietairesApiService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly notify = inject(NotificationService);
   private readonly sessionService = inject(SessionService);
 
@@ -91,6 +92,9 @@ export class BienForm implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Arrivé depuis la fiche d'un propriétaire : le bien est déjà à son nom.
+    const proprietaireId = this.route.snapshot.queryParamMap.get('proprietaireId');
+    if (proprietaireId) this.form.controls.proprietaireId.setValue(proprietaireId);
     this.api.getOptions().subscribe({
       next: (options) => this.options.set(options),
       error: () => this.options.set({}),

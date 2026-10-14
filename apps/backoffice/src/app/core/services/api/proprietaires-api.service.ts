@@ -9,7 +9,7 @@ export interface ProprietaireDetail extends ProprietaireSummary {
   notes: string | null;
   createdAt: string;
   updatedAt: string;
-  _count: { terrains: number; mandats: number };
+  _count: { terrains: number; biensLocatifs: number; mandats: number };
 }
 
 @Injectable({ providedIn: 'root' })

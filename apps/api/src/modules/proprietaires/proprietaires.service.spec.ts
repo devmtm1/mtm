@@ -140,3 +140,32 @@ describe('ProprietairesService.createClientAccount', () => {
     expect(prismaMock.user.create).not.toHaveBeenCalled();
   });
 });
+
+describe('ProprietairesService : biens confiés', () => {
+  const prismaMock = {
+    proprietaire: { findMany: jest.fn(), findUnique: jest.fn() },
+  };
+  const service = new ProprietairesService(prismaMock as never, {} as never);
+
+  it('compte aussi les biens en gestion locative, pas seulement les terrains', async () => {
+    prismaMock.proprietaire.findMany.mockResolvedValue([]);
+    await service.findAll();
+    const requete = prismaMock.proprietaire.findMany.mock.calls[0][0];
+    expect(requete.select._count.select).toEqual({
+      terrains: true,
+      biensLocatifs: true,
+      mandats: true,
+    });
+  });
+
+  it('renvoie le nombre de biens en gestion sur la fiche', async () => {
+    prismaMock.proprietaire.findUnique.mockResolvedValue({
+      id: 'p1',
+      _count: { terrains: 0, biensLocatifs: 1, mandats: 0 },
+    });
+    const fiche = await service.findById('p1');
+    expect(fiche._count.biensLocatifs).toBe(1);
+    const requete = prismaMock.proprietaire.findUnique.mock.calls[0][0];
+    expect(requete.select._count.select.biensLocatifs).toBe(true);
+  });
+});

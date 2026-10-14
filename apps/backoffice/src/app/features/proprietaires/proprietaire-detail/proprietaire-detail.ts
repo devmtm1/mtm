@@ -18,6 +18,9 @@ import {
 } from '@lucide/angular';
 import { ProprietairesApiService, type ProprietaireDetail as ProprietaireDetailModel } from '../../../core/services/api/proprietaires-api.service';
 import { TerrainsApiService } from '../../../core/services/api/terrains-api.service';
+import { LocatifApiService } from '../../../core/services/api/locatif-api.service';
+import type { BienListItem } from '../../../core/models/locatif.model';
+import { BIEN_STATUTS, label as bienStatutLabel, pillClass as bienPill, help as bienHelp, simpleLabel, TYPES_BIEN } from '../../locatif/locatif-status';
 import { MandatsApiService } from '../../../core/services/api/mandats-api.service';
 import { SessionService } from '../../../core/services/session.service';
 import { ProprietaireDialog } from '../../terrains/proprietaire-dialog';
@@ -62,6 +65,7 @@ export class ProprietaireDetail implements OnInit {
   private readonly router = inject(Router);
   private readonly api = inject(ProprietairesApiService);
   private readonly terrainsApi = inject(TerrainsApiService);
+  private readonly locatifApi = inject(LocatifApiService);
   private readonly mandatsApi = inject(MandatsApiService);
   private readonly session = inject(SessionService);
   private readonly dialog = inject(MatDialog);
@@ -70,11 +74,15 @@ export class ProprietaireDetail implements OnInit {
   protected readonly proprietaire = signal<ProprietaireDetailModel | null>(null);
   protected readonly terrains = signal<TerrainListItem[] | null>(null);
   protected readonly mandats = signal<MandatListItem[] | null>(null);
+  /** Biens que MTM gère en location (au mois ou à la nuit) pour ce propriétaire. */
+  protected readonly biensLocatifs = signal<BienListItem[] | null>(null);
   protected readonly loading = signal(true);
   protected readonly canModify = this.session.hasPermission('proprietaires:modifier');
   protected readonly canDelete = this.session.hasPermission('proprietaires:supprimer');
   protected readonly canSeeTerrains = this.session.hasPermission('terrains:consulter');
   protected readonly canCreateTerrain = this.session.hasPermission('terrains:creer');
+  protected readonly canSeeLocatif = this.session.hasPermission('locatif:consulter');
+  protected readonly canCreateBienLocatif = this.session.hasPermission('locatif:creer');
   protected readonly canSeeMandats = this.session.hasPermission('mandats:consulter');
   protected readonly canCreateMandat = this.session.hasPermission('mandats:creer');
   protected readonly canCreateClient = this.session.hasPermission('clients:creer');
@@ -87,10 +95,12 @@ export class ProprietaireDetail implements OnInit {
     const proprietaire = this.proprietaire();
     const terrains = this.terrains();
     const mandats = this.mandats();
-    if (!proprietaire || terrains === null || mandats === null) return [];
+    const biensLocatifs = this.biensLocatifs();
+    if (!proprietaire || terrains === null || mandats === null || biensLocatifs === null) return [];
     const items: { label: string; hint: string }[] = [];
     if (!proprietaire.phone && !proprietaire.email) items.push({ label: 'Renseigner un moyen de contact', hint: 'Téléphone ou e-mail, pour le joindre.' });
-    if (terrains.length === 0) items.push({ label: 'Enregistrer ses biens', hint: 'Créez la fiche de chaque parcelle confiée.' });
+    if (terrains.length === 0 && biensLocatifs.length === 0) items.push({ label: 'Enregistrer ses biens', hint: 'Créez la fiche de chaque parcelle à vendre, ou de chaque bien à mettre en gestion locative.' });
+    // Le mandat de vente ne concerne que les terrains : un bien en gestion se suit par son bail ou ses séjours.
     if (terrains.length > 0 && mandats.length === 0) items.push({ label: 'Formaliser un mandat', hint: 'Sans mandat signé, MTM n’est pas autorisée à commercialiser.' });
     return items;
   });
@@ -112,6 +122,30 @@ export class ProprietaireDetail implements OnInit {
 
   protected openTerrain(id: string): void {
     void this.router.navigate(['/terrains', id]);
+  }
+
+  protected openBienLocatif(id: string): void {
+    void this.router.navigate(['/locatif/biens', id]);
+  }
+
+  protected newBienLocatif(): void {
+    void this.router.navigate(['/locatif/biens/nouveau'], { queryParams: { proprietaireId: this.id } });
+  }
+
+  protected bienPill(value: string): string {
+    return bienPill(BIEN_STATUTS, value);
+  }
+
+  protected bienLabel(value: string): string {
+    return bienStatutLabel(BIEN_STATUTS, value);
+  }
+
+  protected bienHelp(value: string): string {
+    return bienHelp(BIEN_STATUTS, value);
+  }
+
+  protected typeBien(value: string): string {
+    return simpleLabel(TYPES_BIEN, value);
   }
 
   protected openMandat(id: string): void {
@@ -215,6 +249,14 @@ export class ProprietaireDetail implements OnInit {
       });
     } else {
       this.terrains.set([]);
+    }
+    if (this.canSeeLocatif) {
+      this.locatifApi.findBiens({ proprietaireId: id, pageSize: 100 }).subscribe({
+        next: (page) => this.biensLocatifs.set(page.items),
+        error: () => this.biensLocatifs.set([]),
+      });
+    } else {
+      this.biensLocatifs.set([]);
     }
     if (this.canSeeMandats) {
       this.mandatsApi.findAll({ proprietaireId: id, pageSize: 100 }).subscribe({
