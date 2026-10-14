@@ -9,7 +9,8 @@ import {
 } from '@angular/router';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { LucideDynamicIcon, LucideChevronDown } from '@lucide/angular';
-import type { NavItem as NavItemConfig } from '../navigation-config';
+import { type Compteurs, texteCompteur } from '../nav-compteurs.service';
+import type { CompteurNavigation, NavItem as NavItemConfig } from '../navigation-config';
 
 /**
  * Item de navigation du sidebar : lien simple ou groupe dépliable
@@ -38,8 +39,23 @@ export class NavItem implements OnInit {
   /** Sidebar replié : icônes seules avec tooltips. */
   readonly collapsed = input(false);
 
+  /** Ce qui attend la personne, par entrée (pastilles). */
+  readonly compteurs = input<Compteurs>({});
+
   /** Émis lors d'un clic de navigation (fermeture du sidenav mobile). */
   readonly navigate = output<void>();
+
+  /** Pastille d'une entrée, « 99+ » au-delà ; rien quand il n'y a rien à faire. */
+  protected pastille(cle: CompteurNavigation | undefined): string | null {
+    return cle ? texteCompteur(this.compteurs()[cle]) : null;
+  }
+
+  /** Pastille du groupe replié : la somme de ses entrées. */
+  protected readonly pastilleGroupe = computed(() => {
+    const compteurs = this.compteurs();
+    const total = (this.item().children ?? []).reduce((somme, enfant) => somme + (enfant.compteur ? (compteurs[enfant.compteur] ?? 0) : 0), 0);
+    return texteCompteur(total);
+  });
 
   protected readonly hasChildren = computed(() => (this.item().children?.length ?? 0) > 0);
   protected readonly open = signal(false);

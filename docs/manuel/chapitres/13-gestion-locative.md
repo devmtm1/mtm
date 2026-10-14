@@ -6,7 +6,7 @@ resume: Biens loués, baux, loyers et quittances, impayés, locations à la nuit
 roles: gestion_locative direction administrateur
 ---
 
-La **gestion locative** suit les biens que les propriétaires confient à MTM pour la location : **baux, loyers, cautions, impayés, séjours à la nuit, résiliations**. Le menu **Gestion locative** regroupe : *Biens en gestion*, *Locataires*, *Séjours (à la nuit)*, *Demandes de résiliation*, *Relances*.
+La **gestion locative** suit les biens que les propriétaires confient à MTM pour la location : **baux, loyers, cautions, impayés, séjours à la nuit, résiliations**. Le menu **Gestion locative** regroupe : *Biens en gestion*, *Locataires*, *Séjours à la nuit*, *Résiliations*, *Relances d’impayés*.
 
 ## Les biens locatifs
 
@@ -68,7 +68,7 @@ Sur la ligne d’une échéance payée, le bouton **Quittance** produit le PDF �
 
 ## Les relances d’impayés
 
-**Gestion locative › Relances** liste les rappels à envoyer pour les loyers en retard.
+**Gestion locative › Relances d’impayés** liste les rappels à envoyer pour les loyers en retard.
 
 - Les relances sont **proposées automatiquement** selon un calendrier (paliers), **une seule fois par échéance et par palier**.
 - Vous les **envoyez** depuis la liste (bouton **Envoyer**, par e-mail), et l’envoi est consigné.

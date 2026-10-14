@@ -88,7 +88,7 @@ Pour savoir **qui a fait quoi, quand** (création, modification, export, validat
 
 ## Les chiffres financiers
 
-Le menu **Finances** donne à la direction la vue d’ensemble : tableau de bord financier, journal, saisies, clôtures.
+La rubrique **Pilotage et finances** donne à la direction la vue d’ensemble : tableau de bord financier, journal, saisies, clôtures.
 
 ![Tableau de bord financier](img/dir-04-finances.png)
 

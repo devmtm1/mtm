@@ -12,6 +12,9 @@
       <svg [lucideIcon]="item().icon" class="nav-item__icon" aria-hidden="true"></svg>
       @if (!collapsed()) {
         <span class="nav-item__label">{{ item().label }}</span>
+        @if (!open() && pastilleGroupe(); as total) {
+          <span class="nav-item__pastille" [attr.aria-label]="total + ' à traiter'">{{ total }}</span>
+        }
         <svg lucideChevronDown class="nav-item__chevron" [class.nav-item__chevron--open]="open()" aria-hidden="true"></svg>
       }
     </button>
@@ -29,6 +32,9 @@
             (click)="navigate.emit()"
           >
             {{ child.label }}
+            @if (pastille(child.compteur); as total) {
+              <span class="nav-item__pastille" [attr.aria-label]="total + ' à traiter'">{{ total }}</span>
+            }
           </a>
         }
       </div>
@@ -45,8 +51,14 @@
     (click)="navigate.emit()"
   >
     <svg [lucideIcon]="item().icon" class="nav-item__icon" aria-hidden="true"></svg>
+    @if (collapsed() && pastille(item().compteur)) {
+      <span class="nav-item__point" aria-hidden="true"></span>
+    }
     @if (!collapsed()) {
       <span class="nav-item__label">{{ item().label }}</span>
+      @if (pastille(item().compteur); as total) {
+        <span class="nav-item__pastille" [attr.aria-label]="total + ' à traiter'">{{ total }}</span>
+      }
     }
   </a>
 } @else {
@@ -62,8 +74,14 @@
     (click)="navigate.emit()"
   >
     <svg [lucideIcon]="item().icon" class="nav-item__icon" aria-hidden="true"></svg>
+    @if (collapsed() && pastille(item().compteur)) {
+      <span class="nav-item__point" aria-hidden="true"></span>
+    }
     @if (!collapsed()) {
       <span class="nav-item__label">{{ item().label }}</span>
+      @if (pastille(item().compteur); as total) {
+        <span class="nav-item__pastille" [attr.aria-label]="total + ' à traiter'">{{ total }}</span>
+      }
     }
   </a>
 }

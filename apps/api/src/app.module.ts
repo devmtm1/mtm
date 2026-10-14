@@ -36,6 +36,7 @@ import { MessagesModule } from './modules/messages/messages.module';
 import { WorkflowsModule } from './modules/workflows/workflows.module';
 import { FinancesModule } from './modules/finances/finances.module';
 import { PilotageModule } from './modules/pilotage/pilotage.module';
+import { NavigationModule } from './modules/navigation/navigation.module';
 
 @Module({
   imports: [
@@ -80,6 +81,7 @@ import { PilotageModule } from './modules/pilotage/pilotage.module';
     WorkflowsModule,
     FinancesModule,
     PilotageModule,
+    NavigationModule,
     GedModule,
     CronModule,
     HealthModule,
