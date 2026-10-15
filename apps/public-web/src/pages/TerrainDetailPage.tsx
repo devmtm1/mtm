@@ -203,10 +203,14 @@ export function TerrainDetailPage() {
             <h2 className="font-display text-lg font-bold text-mtm-text lg:hidden">Intéressé par ce bien{'\u00A0'}?</h2>
   
             <div className="mt-4 flex flex-col gap-3 lg:mt-6">
-              <Button onClick={() => setActiveModal('visite')}>
-                <CalendarCheck className="h-4 w-4" aria-hidden="true" />
-                Demander une visite
-              </Button>
+              {/* Mobile : la barre fixe du bas propose déjà « Visiter » ; le
+                  bouton n'est repris ici que sur ordinateur. */}
+              <div className="hidden lg:flex lg:flex-col">
+                <Button onClick={() => setActiveModal('visite')}>
+                  <CalendarCheck className="h-4 w-4" aria-hidden="true" />
+                  Demander une visite
+                </Button>
+              </div>
               {/* Une seule action principale (la visite) ; la réservation vient
                   ensuite, avec ce qu'elle engage ; la simple question est un
                   lien discret. */}
