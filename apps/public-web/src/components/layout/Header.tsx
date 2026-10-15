@@ -4,7 +4,7 @@ import { ChevronDown, Heart, User } from 'lucide-react';
 import { ROUTES } from '../../routes';
 import { useAuth } from '../../contexts/auth-context-store';
 import { useFavorites } from '../../hooks/useFavorites';
-import { PRIMARY_LINKS, SERVICE_LINKS } from './nav-links';
+import { PRIMARY_LINKS, PROJECT_LINKS, SERVICE_LINKS } from './nav-links';
 
 // Lien actif : couleur + filet sous le libellé, pour que l'état ne repose pas
 // sur la seule couleur (lisibilité, daltonisme).
@@ -20,83 +20,99 @@ function navLinkClass({ isActive }: { isActive: boolean }): string {
  * En-tête de l'interface ordinateur. Sur téléphone et petite tablette, c'est
  * la barre d'application (`MobileAppBar`) qui prend le relais, avec son menu.
  */
-export function Header() {
-  const [servicesOpen, setServicesOpen] = useState(false);
-  const { user } = useAuth();
-  const { count: favoris } = useFavorites();
+interface DropdownLink {
+  to: string;
+  label: string;
+}
+
+/**
+ * Entrée du menu qui regroupe plusieurs pages (Projets, Services) : ouverte au
+ * survol comme au clic, refermée par Échap ou à tout changement de route.
+ */
+function NavDropdown({ label, links }: { label: string; links: DropdownLink[] }) {
+  const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
-  const clientLabel = user ? user.firstName : 'Espace client';
-  const servicesActive = SERVICE_LINKS.some((link) => pathname.startsWith(link.to));
+  const active = links.some((link) => pathname.startsWith(link.to));
 
   // Tout changement de route referme le menu déroulant, quelle que soit la
   // façon dont la navigation a été déclenchée (clic, clavier, bouton Retour).
   useEffect(() => {
-    setServicesOpen(false);
+    setOpen(false);
   }, [pathname]);
 
   // Échap referme le menu déroulant, comme attendu de tout menu au clavier.
   useEffect(() => {
-    if (!servicesOpen) return;
+    if (!open) return;
     const handleKeyDown = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') setServicesOpen(false);
+      if (event.key === 'Escape') setOpen(false);
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [servicesOpen]);
+  }, [open]);
+
+  return (
+    <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+      <button
+        type="button"
+        className={`flex items-center gap-1 py-1 text-sm font-semibold transition-colors hover:text-mtm-primary ${
+          active ? 'text-mtm-primary' : 'text-mtm-text'
+        }`}
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+      >
+        {label}
+        <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full w-56 rounded-md border border-mtm-border bg-mtm-surface py-2 shadow-card-hover motion-safe:animate-slide-down">
+          {links.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2 text-sm text-mtm-text hover:bg-mtm-bg hover:text-mtm-primary"
+            >
+              {link.label}
+            </NavLink>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * En-tête de l'interface ordinateur. Sur téléphone et petite tablette, c'est
+ * la barre d'application (`MobileAppBar`) qui prend le relais, avec son menu.
+ */
+export function Header() {
+  const { user } = useAuth();
+  const { count: favoris } = useFavorites();
+  const clientLabel = user ? user.firstName : 'Espace client';
 
   return (
     <header className="sticky top-0 z-40 border-b border-mtm-border bg-mtm-surface/95 shadow-[0_1px_0_rgba(31,41,55,0.04)] backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-        <NavLink to={ROUTES.home} className="flex items-center gap-2.5">
-          <img src="/logomtm.jpeg" alt="MTM Immobilier" className="h-11 w-11 rounded-full object-cover" />
-          {/* Entre lg et xl, le menu n'a plus la place du nom : le logo seul suffit. */}
-          <span className="hidden whitespace-nowrap font-display text-lg font-bold lg:hidden xl:inline">
+        <NavLink to={ROUTES.home} className="flex items-center gap-2" aria-label="MTM Immobilier, accueil">
+          {/* Le symbole seul (le cube) : le logo rond complet, réduit à cette
+              taille, rendait son texte illisible ; le nom est écrit à côté. */}
+          <img src="/logomtm-mark.png" alt="" className="h-10 w-10 object-contain" />
+          <span className="whitespace-nowrap font-display text-lg font-bold">
             <span className="text-mtm-accent">MTM</span> <span className="text-mtm-primary">Immobilier</span>
           </span>
         </NavLink>
 
         <nav className="flex items-center gap-4 whitespace-nowrap xl:gap-5">
-          {/* « Accueil » reste dans le menu mobile ; sur ordinateur, le logo y mène. */}
-          {PRIMARY_LINKS.filter((link) => link.to !== ROUTES.home).map((link) => (
+          {/* « Accueil » reste dans le menu mobile ; sur ordinateur, le logo y
+              mène. Réalisations et projets à venir sont regroupés sous
+              « Projets » pour alléger la barre. */}
+          {PRIMARY_LINKS.filter((link) => link.to !== ROUTES.home && !PROJECT_LINKS.some((p) => p.to === link.to)).map((link) => (
             <NavLink key={link.to} to={link.to} className={navLinkClass}>
               {link.label}
             </NavLink>
           ))}
-
-          <div
-            className="relative"
-            onMouseEnter={() => setServicesOpen(true)}
-            onMouseLeave={() => setServicesOpen(false)}
-          >
-            <button
-              type="button"
-              className={`flex items-center gap-1 py-1 text-sm font-semibold transition-colors hover:text-mtm-primary ${
-                servicesActive ? 'text-mtm-primary' : 'text-mtm-text'
-              }`}
-              onClick={() => setServicesOpen((open) => !open)}
-              aria-expanded={servicesOpen}
-            >
-              Services
-              <ChevronDown
-                className={`h-4 w-4 transition-transform duration-200 ${servicesOpen ? 'rotate-180' : ''}`}
-                aria-hidden="true"
-              />
-            </button>
-            {servicesOpen && (
-              <div className="absolute left-0 top-full w-56 rounded-md border border-mtm-border bg-mtm-surface py-2 shadow-card-hover motion-safe:animate-slide-down">
-                {SERVICE_LINKS.map((link) => (
-                  <NavLink
-                    key={link.to}
-                    to={link.to}
-                    onClick={() => setServicesOpen(false)}
-                    className="block px-4 py-2 text-sm text-mtm-text hover:bg-mtm-bg hover:text-mtm-primary"
-                  >
-                    {link.label}
-                  </NavLink>
-                ))}
-              </div>
-            )}
-          </div>
+          <NavDropdown label="Projets" links={PROJECT_LINKS} />
+          <NavDropdown label="Services" links={SERVICE_LINKS} />
 
           <NavLink to={ROUTES.actualites} className={navLinkClass}>
             Actualités

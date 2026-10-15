@@ -12,7 +12,7 @@ export function RealisationsPreviewSection() {
           <SeeAllLink to={ROUTES.realisations} />
         </div>
         <div className="mt-3 lg:mt-8">
-          <ShowcaseGrid category="realisation" emptyLabel="Aucune réalisation publiée pour le moment" limit={3} mobileCarousel />
+          <ShowcaseGrid category="realisation" emptyLabel="Aucune réalisation publiée pour le moment" limit={3} mobileCarousel mosaic />
         </div>
       </div>
     </section>

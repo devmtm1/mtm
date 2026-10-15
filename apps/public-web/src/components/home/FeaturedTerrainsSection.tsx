@@ -12,6 +12,9 @@ import { ROUTES } from '../../routes';
 export function FeaturedTerrainsSection() {
   const filters = useMemo(() => ({ misEnAvant: true, pageSize: 6 }), []);
   const { data, loading, error } = useTerrainsCatalog(filters);
+  // Grille de 3 colonnes : on n'affiche que des rangées complètes, pour ne
+  // jamais laisser une carte seule sur la dernière ligne (4 biens → 3).
+  const items = data ? data.items.slice(0, data.items.length < 3 ? data.items.length : data.items.length - (data.items.length % 3)) : [];
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
@@ -32,11 +35,11 @@ export function FeaturedTerrainsSection() {
         {!loading && !error && data && data.items.length === 0 && (
           <EmptyState title="Aucun bien en vedette pour le moment" />
         )}
-        {!loading && !error && data && data.items.length > 0 && (
+        {!loading && !error && items.length > 0 && (
           <>
             {/* Mobile : rangée à faire défiler (1,3 carte visible) ; grille dès lg. */}
             <Carousel ariaLabel="Biens en vedette" itemClassName="w-[72%] sm:w-[46%] lg:w-auto" lgClassName="lg:grid lg:grid-cols-3 lg:gap-6">
-              {data.items.map((terrain) => (
+              {items.map((terrain) => (
                 <TerrainCard key={terrain.id} terrain={terrain} compact />
               ))}
             </Carousel>

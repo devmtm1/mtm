@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { insecables } from '../../utils/format';
 
 interface SectionHeadingProps {
   eyebrow?: string;
@@ -31,7 +32,7 @@ export function SectionHeading({
       {eyebrow && (
         <span className={`text-xs font-bold uppercase tracking-wider ${eyebrowColor} ${appHide}`}>{eyebrow}</span>
       )}
-      <h2 className={`font-display font-bold ${app ? 'text-lg lg:text-3xl' : 'text-2xl sm:text-3xl'} ${titleColor}`}>{title}</h2>
+      <h2 className={`font-display font-bold ${app ? 'text-lg lg:text-3xl' : 'text-2xl sm:text-3xl'} ${titleColor}`}>{insecables(title)}</h2>
       {description && <p className={`text-sm sm:text-base ${descriptionColor} ${appHide}`}>{description}</p>}
     </div>
   );

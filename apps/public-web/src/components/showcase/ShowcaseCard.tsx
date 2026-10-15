@@ -11,13 +11,30 @@ import { MediaImage } from '../ui/MediaImage';
  * la date se pose sur la photo et la carte réagit au toucher comme celles des
  * biens ; l'appel « Voir le projet » n'apparaît que sur ordinateur.
  */
-export function ShowcaseCard({ item }: { item: ShowcaseItem }) {
+/**
+ * `featured` / `row` : mise en page d'ordinateur d'une mosaïque (la grande
+ * carte, texte posé sur la photo ; les petites, photo à gauche). Sur mobile,
+ * la carte garde sa forme habituelle.
+ */
+export type ShowcaseCardLayout = 'default' | 'featured' | 'row';
+
+export function ShowcaseCard({ item, layout = 'default' }: { item: ShowcaseItem; layout?: ShowcaseCardLayout }) {
+  const featured = layout === 'featured';
+  const row = layout === 'row';
   return (
     <Link
       to={ROUTES.showcaseDetail(item.category, item.id)}
-      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-mtm-border/70 bg-mtm-surface shadow-card transition-all duration-150 active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mtm-primary lg:rounded-lg lg:border-mtm-border lg:duration-200 lg:hover:-translate-y-0.5 lg:hover:shadow-card-hover"
+      className={`group relative flex h-full flex-col overflow-hidden ${row ? 'lg:min-h-[10.5rem] lg:flex-row' : ''} rounded-2xl border border-mtm-border/70 bg-mtm-surface shadow-card transition-all duration-150 active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mtm-primary lg:rounded-lg lg:border-mtm-border lg:duration-200 lg:hover:-translate-y-0.5 lg:hover:shadow-card-hover`}
     >
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-mtm-border lg:aspect-[3/2]">
+      <div
+        className={`relative aspect-[4/3] w-full overflow-hidden bg-mtm-border ${
+          featured
+            ? 'lg:absolute lg:inset-0 lg:aspect-auto'
+            : row
+              ? 'lg:aspect-auto lg:w-2/5 lg:shrink-0'
+              : 'lg:aspect-[3/2]'
+        }`}
+      >
         <MediaImage
           src={item.imageUrl}
           alt={item.title}
@@ -30,9 +47,21 @@ export function ShowcaseCard({ item }: { item: ShowcaseItem }) {
           </span>
         )}
       </div>
-      <div className="flex flex-1 flex-col gap-1.5 p-3 lg:p-3.5">
-        <h3 className="line-clamp-2 font-display text-sm font-bold leading-snug text-mtm-text">{item.title}</h3>
-        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-mtm-muted">
+      <div
+        className={`flex flex-1 flex-col gap-1.5 p-3 lg:p-3.5 ${
+          featured
+            ? 'lg:relative lg:mt-auto lg:flex-none lg:bg-gradient-to-t lg:from-mtm-primary-dark/95 lg:via-mtm-primary-dark/70 lg:to-transparent lg:p-6 lg:pt-16'
+            : row
+              ? 'lg:justify-center'
+              : ''
+        }`}
+      >
+        <h3
+          className={`line-clamp-2 font-display text-sm font-bold leading-snug text-mtm-text ${featured ? 'lg:text-2xl lg:text-white' : ''}`}
+        >
+          {item.title}
+        </h3>
+        <p className={`flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-mtm-muted ${featured ? 'lg:text-sm lg:text-white/80' : ''}`}>
           {item.location && (
             <span className="inline-flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
@@ -41,7 +70,11 @@ export function ShowcaseCard({ item }: { item: ShowcaseItem }) {
           )}
           {item.date && <span className="hidden lg:inline">{formatMonthYear(item.date)}</span>}
         </p>
-        <span className="mt-auto hidden items-center gap-1 pt-1.5 text-xs font-semibold text-mtm-primary lg:inline-flex">
+        <span
+          className={`mt-auto hidden items-center gap-1 pt-1.5 text-xs font-semibold lg:inline-flex ${
+            featured ? 'text-white' : 'text-mtm-primary'
+          } ${row ? 'lg:mt-1' : ''}`}
+        >
           Voir le projet
           <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
         </span>
