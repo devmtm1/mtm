@@ -50,7 +50,7 @@ export function ShowcaseCard({ item, layout = 'default' }: { item: ShowcaseItem;
       <div
         className={`flex flex-1 flex-col gap-1.5 p-3 lg:p-3.5 ${
           featured
-            ? 'lg:relative lg:mt-auto lg:flex-none lg:bg-gradient-to-t lg:from-mtm-primary-dark/95 lg:via-mtm-primary-dark/70 lg:to-transparent lg:p-6 lg:pt-16'
+            ? 'lg:relative lg:mt-auto lg:flex-none lg:bg-mtm-primary-dark/90 lg:p-5'
             : row
               ? 'lg:justify-center'
               : ''

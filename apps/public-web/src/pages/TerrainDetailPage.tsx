@@ -212,7 +212,7 @@ export function TerrainDetailPage() {
                 </Button>
               </div>
               {/* Une seule action principale (la visite) ; la réservation vient
-                  ensuite, avec ce qu'elle engage ; la simple question est un
+                  ensuite, avec ce qu'elle engage ; la demande d'informations est un
                   lien discret. */}
               <div className="flex flex-col gap-1.5">
                 <Button variant="secondary" onClick={() => setActiveModal('reservation')}>
@@ -229,7 +229,7 @@ export function TerrainDetailPage() {
                 className="inline-flex items-center justify-center gap-1.5 self-center rounded-md px-2 py-1 text-sm font-semibold text-mtm-primary underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-mtm-primary"
               >
                 <MessageSquare className="h-4 w-4" aria-hidden="true" />
-                Poser une question
+                Demander des informations
               </button>
             </div>
   
