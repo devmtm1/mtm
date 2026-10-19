@@ -3,6 +3,7 @@ import { useContentBlocks } from '../../hooks/useContentBlocks';
 import { SectionHeading } from '../ui/SectionHeading';
 import { Carousel } from '../ui/Carousel';
 import { countryFlag, parseTestimonialAuthor } from '../../utils/countryFlag';
+import { initiales } from '../../utils/initiales';
 
 export function TestimonialsSection() {
   const { data, loading, error } = useContentBlocks('testimonial');
@@ -34,16 +35,31 @@ export function TestimonialsSection() {
                 className="flex h-full flex-col gap-3 rounded-2xl bg-white/10 p-5 text-white sm:p-6 lg:gap-4 lg:rounded-lg lg:bg-white/5"
               >
                 <Quote className="h-6 w-6 text-white/50" aria-hidden="true" />
-                <p className="text-sm text-white/90">{block.content}</p>
+                <p className="text-sm leading-relaxed text-white/90 lg:text-base">{block.content}</p>
                 {author && (
-                  <cite className="text-sm font-semibold not-italic text-white/70">
-                    — {author.name}
-                    {flag && (
-                      <span className="ml-1.5" aria-hidden="true">
-                        {flag}
+                  <footer className="mt-auto flex items-center gap-3 border-t border-white/10 pt-4">
+                    {/* Pastille aux initiales : un visage sans photo, plus
+                        incarné qu'un simple tiret devant le nom. */}
+                    <span
+                      aria-hidden="true"
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15 font-display text-sm font-bold text-white"
+                    >
+                      {initiales(author.name.split('·')[0])}
+                    </span>
+                    <cite className="flex min-w-0 flex-col not-italic">
+                      <span className="text-sm font-semibold text-white">
+                        {author.name.split('·')[0].trim()}
+                        {flag && (
+                          <span className="ml-1.5" aria-hidden="true">
+                            {flag}
+                          </span>
+                        )}
                       </span>
-                    )}
-                  </cite>
+                      {author.name.includes('·') && (
+                        <span className="text-xs text-white/60">{author.name.split('·').slice(1).join('·').trim()}</span>
+                      )}
+                    </cite>
+                  </footer>
                 )}
               </blockquote>
             );

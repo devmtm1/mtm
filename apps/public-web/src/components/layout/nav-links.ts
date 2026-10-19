@@ -10,6 +10,12 @@ export const PRIMARY_LINKS = [
   { to: ROUTES.about, label: 'À propos' },
 ];
 
+/** Regroupés sous « Projets » dans le menu ordinateur. */
+export const PROJECT_LINKS = [
+  { to: ROUTES.realisations, label: 'Nos réalisations' },
+  { to: ROUTES.projetsAVenir, label: 'Projets à venir' },
+];
+
 export const SERVICE_LINKS = [
   { to: ROUTES.gestionLocative, label: 'Gestion locative' },
   { to: ROUTES.construction, label: 'Construction' },

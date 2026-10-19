@@ -45,7 +45,7 @@ export function MobileAppBar() {
             </button>
           ) : (
             <Link to={ROUTES.home} className="flex min-w-0 items-center gap-2.5" aria-label="MTM Immobilier, accueil">
-              <img src="/logomtm.jpeg" alt="" className="h-9 w-9 rounded-full object-cover shadow-card" />
+              <img src="/logomtm-mark.png" alt="" className="h-9 w-9 object-contain" />
               <span className="truncate font-display text-[17px] font-bold leading-none">
                 <span className="text-mtm-accent">MTM</span> <span className="text-mtm-primary">Immobilier</span>
               </span>

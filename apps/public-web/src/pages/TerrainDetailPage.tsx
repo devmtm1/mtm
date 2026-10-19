@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, CalendarCheck, Download, FileText, Globe2, MapPin, MessageSquare, Navigation, ShieldCheck, UserCheck } from 'lucide-react';
+import { ArrowLeft, BookmarkCheck, CalendarCheck, Download, FileText, Globe2, MapPin, MessageSquare, Navigation, ShieldCheck, UserCheck } from 'lucide-react';
 import { ROUTES } from '../routes';
 import { useTerrain } from '../hooks/useTerrain';
 import { TerrainGallery } from '../components/terrains/TerrainGallery';
@@ -200,20 +200,37 @@ export function TerrainDetailPage() {
             <p className="mt-1 hidden font-display text-3xl font-bold text-mtm-primary lg:block">
               {formatMoney(terrain.prixPublic)}
             </p>
-            <h2 className="font-display text-lg font-bold text-mtm-text lg:hidden">Intéressé par ce bien ?</h2>
+            <h2 className="font-display text-lg font-bold text-mtm-text lg:hidden">Intéressé par ce bien{'\u00A0'}?</h2>
   
             <div className="mt-4 flex flex-col gap-3 lg:mt-6">
-              <Button onClick={() => setActiveModal('visite')}>
-                <CalendarCheck className="h-4 w-4" aria-hidden="true" />
-                Demander une visite
-              </Button>
-              <Button variant="secondary" onClick={() => setActiveModal('infos')}>
+              {/* Mobile : la barre fixe du bas propose déjà « Visiter » ; le
+                  bouton n'est repris ici que sur ordinateur. */}
+              <div className="hidden lg:flex lg:flex-col">
+                <Button onClick={() => setActiveModal('visite')}>
+                  <CalendarCheck className="h-4 w-4" aria-hidden="true" />
+                  Demander une visite
+                </Button>
+              </div>
+              {/* Une seule action principale (la visite) ; la réservation vient
+                  ensuite, avec ce qu'elle engage ; la demande d'informations est un
+                  lien discret. */}
+              <div className="flex flex-col gap-1.5">
+                <Button variant="secondary" onClick={() => setActiveModal('reservation')}>
+                  <BookmarkCheck className="h-4 w-4" aria-hidden="true" />
+                  Réserver ce terrain
+                </Button>
+                <p className="text-center text-xs text-mtm-muted">
+                  Sans engagement : un conseiller vous rappelle pour l’acompte.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveModal('infos')}
+                className="inline-flex items-center justify-center gap-1.5 self-center rounded-md px-2 py-1 text-sm font-semibold text-mtm-primary underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-mtm-primary"
+              >
                 <MessageSquare className="h-4 w-4" aria-hidden="true" />
                 Demander des informations
-              </Button>
-              <Button variant="secondary" onClick={() => setActiveModal('reservation')}>
-                Réserver ce terrain
-              </Button>
+              </button>
             </div>
   
             {/* Réassurance : les trois engagements du cahier des charges qui

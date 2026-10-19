@@ -38,3 +38,13 @@ export function formatMonthYear(value: string | null | undefined): string {
   if (!value) return '—';
   return new Date(value).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
 }
+
+/**
+ * Typographie française : l'espace devant « ? », « ! », « : » et « ; » (et
+ * après « « », avant « » ») devient insécable, pour que la ponctuation ne
+ * tombe jamais seule en début de ligne. Espace insécable ordinaire, comme
+ * pour les montants : l'espace fine n'est pas dessinée par toutes les polices.
+ */
+export function insecables(texte: string): string {
+  return texte.replace(/ ([?!:;»])/g, ' $1').replace(/« /g, '« ');
+}

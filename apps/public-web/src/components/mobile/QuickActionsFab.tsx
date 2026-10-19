@@ -94,6 +94,22 @@ export function QuickActionsFab() {
 
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
+  // Le bouton s'efface quand on fait défiler vers le bas (il masquait le prix
+  // des cartes) et revient dès qu'on remonte, ou en haut de page.
+  const [cache, setCache] = useState(false);
+  useEffect(() => {
+    let dernier = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (Math.abs(y - dernier) < 8) return;
+      setCache(y > dernier && y > 80);
+      dernier = y;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  const masque = cache && !visible;
+
   // Un changement d'écran referme le bouton aussitôt, sans animation.
   useEffect(() => {
     window.clearTimeout(timer.current);
@@ -164,7 +180,12 @@ export function QuickActionsFab() {
         </>
       )}
 
-      <div className="pointer-events-none fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom)+0.9rem)] right-4 z-[46] lg:hidden">
+      <div
+        className={`pointer-events-none fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom)+0.9rem)] right-4 z-[46] transition-[transform,opacity] duration-300 lg:hidden ${
+          masque ? 'translate-y-6 opacity-0' : ''
+        }`}
+        inert={masque}
+      >
         <div className="relative h-14 w-14">
           {visible && (
             <>

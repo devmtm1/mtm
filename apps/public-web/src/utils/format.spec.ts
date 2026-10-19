@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatMoney, formatSuperficie, groupDigits } from './format';
+import { formatMoney, formatSuperficie, groupDigits, insecables } from './format';
 
 describe('montants lisibles', () => {
   it('sépare les milliers par une espace insécable ordinaire, jamais par l’espace fine', () => {
@@ -16,5 +16,16 @@ describe('montants lisibles', () => {
   it('un petit montant n’a pas de séparateur, un prix sur demande reste lisible', () => {
     expect(formatMoney(950)).toBe('950 FCFA');
     expect(formatMoney(null)).toBe('Prix sur demande');
+  });
+});
+
+describe('ponctuation française', () => {
+  it('lie le « ? », le « : » et les guillemets au mot qui les précède', () => {
+    expect(insecables('Une question ? Un projet en tête ?')).toBe('Une question ? Un projet en tête ?');
+    expect(insecables('Statut : « Vérifié »')).toBe('Statut : « Vérifié »');
+  });
+
+  it('laisse intact un texte sans ponctuation double', () => {
+    expect(insecables('Nos réalisations')).toBe('Nos réalisations');
   });
 });
