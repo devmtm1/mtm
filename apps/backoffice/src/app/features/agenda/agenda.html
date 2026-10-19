@@ -1,12 +1,15 @@
 <div class="agenda-page">
-  <header class="page-header">
-    <div>
-      <p class="eyebrow">Organisation</p>
-      <h1 class="page-header__title">Agenda</h1>
-      <p class="page-header__subtitle">
-        Rendez-vous, visites, appels et réunions de l’équipe, avec les échéances qui tombent dans vos dossiers : tâches,
-        mandats, jalons de chantier, séjours, loyers et paiements.
-      </p>
+  <header class="page-header agenda-entete">
+    <div class="entete-titre">
+      <span class="entete-titre__icone" aria-hidden="true"><svg lucideCalendarDays></svg></span>
+      <div>
+        <p class="eyebrow">Organisation</p>
+        <h1 class="page-header__title">Agenda</h1>
+        <p class="page-header__subtitle">
+          Rendez-vous, visites, appels et réunions de l’équipe, avec les échéances qui tombent dans vos dossiers : tâches,
+          mandats, jalons de chantier, séjours, loyers et paiements.
+        </p>
+      </div>
     </div>
     @if (canCreate) {
       <button mat-flat-button color="primary" type="button" (click)="nouveau()">
@@ -17,14 +20,16 @@
 
   <section class="barre page-card" aria-label="Affichage de l’agenda">
     <div class="barre__nav">
-      <button mat-stroked-button type="button" (click)="naviguer(-1)" aria-label="Période précédente">
+      <button class="barre__rond" type="button" (click)="naviguer(-1)" aria-label="Période précédente">
         <svg lucideChevronLeft aria-hidden="true"></svg>
       </button>
-      <button mat-stroked-button type="button" (click)="naviguer(0)">Aujourd’hui</button>
-      <button mat-stroked-button type="button" (click)="naviguer(1)" aria-label="Période suivante">
+      <button class="barre__aujourdhui" type="button" (click)="naviguer(0)">Aujourd’hui</button>
+      <button class="barre__rond" type="button" (click)="naviguer(1)" aria-label="Période suivante">
         <svg lucideChevronRight aria-hidden="true"></svg>
       </button>
-      <h2 class="barre__titre" aria-live="polite">{{ titre() }}</h2>
+      <h2 class="barre__titre" aria-live="polite">
+        <svg lucideCalendarDays aria-hidden="true"></svg>{{ titre() }}
+      </h2>
     </div>
     <div class="barre__reglages">
       <div class="segment" role="group" aria-label="Vue">
@@ -37,17 +42,26 @@
         <button type="button" [class.is-actif]="scope() === 'equipe'" (click)="changerScope('equipe')">Équipe</button>
       </div>
     </div>
-    <div class="barre__familles">
-      @for (famille of familles; track famille.code) {
-        <mat-checkbox [checked]="!masquees().has(famille.code)" (change)="basculerFamille(famille.code)">
-          {{ famille.label }}
-        </mat-checkbox>
-      }
-    </div>
   </section>
 
+  <div class="legende" role="group" aria-label="Familles affichées">
+    @for (famille of familles; track famille.code) {
+      <button
+        type="button"
+        class="legende__item"
+        [class.is-masque]="masquees().has(famille.code)"
+        [attr.aria-pressed]="!masquees().has(famille.code)"
+        [attr.data-famille]="famille.code"
+        (click)="basculerFamille(famille.code)"
+      >
+        <span class="legende__case"><svg lucideCheck aria-hidden="true"></svg></span>
+        <span class="legende__point"></span>{{ famille.label }}
+      </button>
+    }
+  </div>
+
   <div class="corps">
-    <section class="calendrier page-card" [attr.aria-busy]="loading()">
+    <section class="calendrier page-card" [attr.aria-busy]="loading()" [class.calendrier--chargement]="loading()">
       @if (vue() === 'mois') {
         <div class="mois" role="grid" aria-label="Calendrier du mois">
           <div class="mois__entete" role="row">
@@ -69,11 +83,16 @@
                   (keydown.enter)="choisirJour(jour.cle)"
                   (dblclick)="canCreate && nouveau(jour.date)"
                 >
-                  <span class="case__numero">{{ jour.date.getDate() }}</span>
+                  <span class="case__numero">{{ etiquetteJour(jour) }}</span>
                   @for (item of elementsDe(jour.cle).slice(0, parCase); track item.source + item.id) {
-                    <button type="button" class="element" (click)="choisir(item, $event)" [title]="item.titre">
-                      <span [class]="classeSource(item)"></span>
-                      <span class="element__texte">{{ item.titre }}</span>
+                    <button type="button" class="element" [attr.data-famille]="famille(item)" (click)="choisir(item, $event)" [title]="item.titre">
+                      <span class="puce"></span>
+                      <span class="element__corps">
+                        <span class="element__texte">{{ item.titre }}</span>
+                        @if (heureDebut(item); as h) {
+                          <small class="element__heure">{{ h }}</small>
+                        }
+                      </span>
                     </button>
                   }
                   @if (elementsDe(jour.cle).length > parCase) {
@@ -93,8 +112,8 @@
                 <p class="vide">Rien de prévu</p>
               }
               @for (item of elementsDe(jour.cle); track item.source + item.id) {
-                <button type="button" class="ligne" (click)="choisir(item)">
-                  <span [class]="classeSource(item)"></span>
+                <button type="button" class="ligne" [attr.data-famille]="famille(item)" (click)="choisir(item)">
+                  <span class="puce"></span>
                   <span class="ligne__heure">{{ heure(item) }}</span>
                   <span class="ligne__titre">{{ item.titre }}</span>
                 </button>
@@ -113,8 +132,8 @@
           <section class="semaine__jour">
             <h3>{{ dateLongue(entree[0]) }}</h3>
             @for (item of entree[1]; track item.source + item.id) {
-              <button type="button" class="ligne" (click)="choisir(item)">
-                <span [class]="classeSource(item)"></span>
+              <button type="button" class="ligne" [attr.data-famille]="famille(item)" (click)="choisir(item)">
+                <span class="puce"></span>
                 <span class="ligne__heure">{{ heure(item) }}</span>
                 <span class="ligne__titre">{{ item.titre }}</span>
               </button>
@@ -124,66 +143,122 @@
       }
     </section>
 
-    <aside class="panneau page-card" aria-live="polite">
-      @if (selection(); as item) {
-        <h3 class="panneau__titre">{{ item.titre }}</h3>
-        <ul class="panneau__infos">
-          <li><span>Nature</span><strong>{{ item.source === 'evenement' ? libelleType(item.type) : 'Échéance liée à un dossier' }}</strong></li>
-          <li><span>Quand</span><strong>{{ dateLongue(cleItem(item)) }} · {{ heure(item) }}</strong></li>
-          @if (item.lieu) {
-            <li><span>Lieu</span><strong>{{ item.lieu }}</strong></li>
-          }
-          @if (item.statut && item.source !== 'evenement') {
-            <li><span>Statut</span><strong>{{ item.statut }}</strong></li>
-          }
-          @if (item.participants?.length) {
-            <li>
-              <span>Participants</span>
-              <strong>
-                @for (p of item.participants; track p.id; let dernier = $last) {
-                  {{ p.firstName }} {{ p.lastName }}{{ dernier ? '' : ', ' }}
+    <div class="lateral">
+      <section class="page-card rapide" aria-label="Vue rapide">
+        <h3 class="lateral__titre">Vue rapide</h3>
+        <div class="rapide__tuiles">
+          @for (stat of statistiques(); track stat.code) {
+            <article class="rapide__tuile" [attr.data-famille]="stat.code">
+              <span class="rapide__icone" aria-hidden="true">
+                @switch (stat.code) {
+                  @case ('evenements') {
+                    <svg lucideCalendarDays></svg>
+                  }
+                  @case ('taches') {
+                    <svg lucideClipboardCheck></svg>
+                  }
+                  @case ('visites') {
+                    <svg lucideMapPin></svg>
+                  }
+                  @default {
+                    <svg lucideAlarmClock></svg>
+                  }
                 }
-              </strong>
-            </li>
-          }
-          @if (item.createur) {
-            <li><span>Organisé par</span><strong>{{ item.createur.firstName }} {{ item.createur.lastName }}</strong></li>
-          }
-          @if (item.visibilite === 'prive') {
-            <li><span>Visibilité</span><strong>Privé</strong></li>
-          }
-        </ul>
-        @if (item.description) {
-          <p class="panneau__texte">{{ item.description }}</p>
-        }
-        <div class="panneau__actions">
-          @if (routeLien(item); as lien) {
-            <a mat-stroked-button [routerLink]="lien.chemin" [queryParams]="lien.query">
-              {{ item.source === 'tache' ? 'Ouvrir la tâche' : 'Ouvrir le dossier' }}
-            </a>
-          }
-          @if (item.source === 'evenement' && item.modifiable) {
-            <button mat-flat-button color="primary" type="button" (click)="modifier(item)">Modifier</button>
+              </span>
+              <strong>{{ stat.nombre }}</strong>
+              <span>{{ stat.label }}</span>
+            </article>
           }
         </div>
-      } @else if (jourChoisi(); as cle) {
-        <h3 class="panneau__titre">{{ dateLongue(cle) }}</h3>
-        @if (elementsDuJour().length === 0) {
-          <p class="vide">Rien de prévu ce jour-là.</p>
+      </section>
+
+      <aside class="panneau page-card" aria-live="polite">
+        @if (selection(); as item) {
+          <h3 class="panneau__titre">{{ item.titre }}</h3>
+          <ul class="panneau__infos">
+            <li><span>Nature</span><strong>{{ item.source === 'evenement' ? libelleType(item.type) : 'Échéance liée à un dossier' }}</strong></li>
+            <li><span>Quand</span><strong>{{ dateLongue(cleItem(item)) }} · {{ heure(item) }}</strong></li>
+            @if (item.lieu) {
+              <li><span>Lieu</span><strong>{{ item.lieu }}</strong></li>
+            }
+            @if (item.statut && item.source !== 'evenement') {
+              <li><span>Statut</span><strong>{{ item.statut }}</strong></li>
+            }
+            @if (item.participants?.length) {
+              <li>
+                <span>Participants</span>
+                <strong>
+                  @for (p of item.participants; track p.id; let dernier = $last) {
+                    {{ p.firstName }} {{ p.lastName }}{{ dernier ? '' : ', ' }}
+                  }
+                </strong>
+              </li>
+            }
+            @if (item.createur) {
+              <li><span>Organisé par</span><strong>{{ item.createur.firstName }} {{ item.createur.lastName }}</strong></li>
+            }
+            @if (item.visibilite === 'prive') {
+              <li><span>Visibilité</span><strong>Privé</strong></li>
+            }
+          </ul>
+          @if (item.description) {
+            <p class="panneau__texte">{{ item.description }}</p>
+          }
+          <div class="panneau__actions">
+            @if (routeLien(item); as lien) {
+              <a mat-stroked-button [routerLink]="lien.chemin" [queryParams]="lien.query">
+                {{ item.source === 'tache' ? 'Ouvrir la tâche' : 'Ouvrir le dossier' }}
+              </a>
+            }
+            @if (item.source === 'evenement' && item.modifiable) {
+              <button mat-flat-button color="primary" type="button" (click)="modifier(item)">Modifier</button>
+            }
+          </div>
+        } @else if (jourChoisi(); as cle) {
+          <h3 class="panneau__titre">{{ dateLongue(cle) }}</h3>
+          @if (elementsDuJour().length === 0) {
+            <p class="vide">Rien de prévu ce jour-là.</p>
+          }
+          @for (item of elementsDuJour(); track item.source + item.id) {
+            <button type="button" class="ligne" [attr.data-famille]="famille(item)" (click)="choisir(item)">
+              <span class="puce"></span>
+              <span class="ligne__heure">{{ heure(item) }}</span>
+              <span class="ligne__titre">{{ item.titre }}</span>
+            </button>
+          }
+          @if (canCreate) {
+            <button mat-stroked-button type="button" class="panneau__ajout" (click)="nouveau(parseJour(cle))">
+              Ajouter un événement ce jour
+            </button>
+          }
         }
-        @for (item of elementsDuJour(); track item.source + item.id) {
-          <button type="button" class="ligne" (click)="choisir(item)">
-            <span [class]="classeSource(item)"></span>
-            <span class="ligne__heure">{{ heure(item) }}</span>
-            <span class="ligne__titre">{{ item.titre }}</span>
+      </aside>
+
+      <section class="page-card prochains" aria-label="Prochains événements">
+        <div class="prochains__tete">
+          <h3 class="lateral__titre">Prochains événements</h3>
+          <button type="button" class="prochains__tout" (click)="changerVue('liste')">
+            Tout voir<svg lucideArrowRight aria-hidden="true"></svg>
           </button>
+        </div>
+        @if (prochains().length === 0) {
+          <p class="vide">Rien de prévu dans la période affichée.</p>
         }
-        @if (canCreate) {
-          <button mat-stroked-button type="button" class="panneau__ajout" (click)="nouveau(parseJour(cle))">
-            Ajouter un événement ce jour
-          </button>
-        }
-      }
-    </aside>
+        <ul class="prochains__liste">
+          @for (item of prochains(); track item.source + item.id) {
+            <li>
+              <button type="button" class="prochain" [attr.data-famille]="famille(item)" (click)="aller(item)">
+                <span class="prochain__icone" aria-hidden="true"><span class="puce"></span></span>
+                <span class="prochain__texte">
+                  <strong>{{ item.titre }}</strong>
+                  <small>{{ dateCourte(item) }} · {{ heure(item) }}</small>
+                </span>
+                <span class="prochain__etiquette">{{ libelleFamille(item) }}</span>
+              </button>
+            </li>
+          }
+        </ul>
+      </section>
+    </div>
   </div>
 </div>

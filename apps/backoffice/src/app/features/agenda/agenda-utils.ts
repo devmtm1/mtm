@@ -133,6 +133,12 @@ export function heureDite(item: Pick<ItemAgenda, 'debut' | 'fin' | 'journeeEntie
   return item.fin ? `${format(item.debut)} – ${format(item.fin)}` : format(item.debut);
 }
 
+/** « 14:30 » pour un événement horaire, rien pour une journée entière : sert sous le titre dans une case du mois. */
+export function heureDebutDite(item: Pick<ItemAgenda, 'debut' | 'journeeEntiere'>): string {
+  if (item.journeeEntiere) return '';
+  return new Date(item.debut).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
 /** Valeur pour un champ `datetime-local` (heure locale, sans fuseau). */
 export function versChampDateHeure(valeur: string | Date | null | undefined): string {
   if (!valeur) return '';
