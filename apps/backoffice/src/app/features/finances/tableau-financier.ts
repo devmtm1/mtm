@@ -3,15 +3,14 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { NgxEchartsDirective } from 'ngx-echarts';
-import {
-  type BlocDu,
-  type TableauFinancier,
-  FinancesApiService,
-} from '../../core/services/api/finances-api.service';
+import { type BlocDu } from '../../core/services/api/finances-api.service';
+import { type TableauDirection, TresorerieApiService } from '../../core/services/api/tresorerie-api.service';
 import { SessionService } from '../../core/services/session.service';
 import { donutLibelles, revenuDepensesChart } from '../../shared/charts/mtm-charts';
 import { NotificationService } from '../../shared/services/notification.service';
+import { MODES_PAIEMENT, dateFr } from './finances-outils';
 import {
+  ACTIVITES,
   fcfa,
   presets,
   repartitionRevenu,
@@ -44,16 +43,22 @@ import {
   styleUrl: './tableau-financier.scss',
 })
 export class TableauFinancierPage implements OnInit {
-  private readonly api = inject(FinancesApiService);
+  private readonly api = inject(TresorerieApiService);
   private readonly notify = inject(NotificationService);
   private readonly session = inject(SessionService);
 
   protected readonly canValidate = this.session.hasPermission('finances:valider');
 
+  /** Filtres de la Direction : une activité, un moyen de paiement. */
+  protected readonly activiteFiltre = signal('');
+  protected readonly modeFiltre = signal('');
+  protected readonly activites = ACTIVITES;
+  protected readonly modes = MODES_PAIEMENT;
+
   protected readonly periodes = presets();
   protected readonly choix = signal<PeriodePreset>(this.periodes[0]);
   protected readonly loading = signal(true);
-  protected readonly donnees = signal<TableauFinancier | null>(null);
+  protected readonly donnees = signal<TableauDirection | null>(null);
 
   protected readonly graphiqueMensuel = computed(() => {
     const serie = this.donnees()?.serie ?? [];
@@ -85,6 +90,40 @@ export class TableauFinancierPage implements OnInit {
   }
 
   protected fcfa = fcfa;
+  protected dateFr = dateFr;
+
+  protected filtrer(activite: string, mode: string): void {
+    this.activiteFiltre.set(activite);
+    this.modeFiltre.set(mode);
+    this.charger();
+  }
+
+  /** Les gestes sensibles du journal d'audit, dits en clair. */
+  protected geste(action: string): string {
+    return (
+      {
+        'finances.suppression_refusee': 'Tentative de suppression refusée',
+        'finances.mois_rouvert': 'Mois clôturé rouvert',
+        'finances.ecart_caisse': 'Écart de caisse déclaré',
+        'finances.autorisation_distance': 'Paiement autorisé à distance',
+        'finances.avance_proprietaire_autorisee': 'Avance au propriétaire autorisée',
+      } as Record<string, string>
+    )[action] ?? action;
+  }
+
+  /** Y a-t-il quelque chose à signaler à la Direction ? */
+  protected pointsDAttention(d: TableauDirection): number {
+    return (
+      d.aAutoriser +
+      d.depensesSansJustificatif.nombre +
+      d.ecartsCaisse.nombre +
+      d.joursNonClotures.length +
+      d.rapprochement.lignesNonRapprochees +
+      d.reversements.enAttente.nombre +
+      d.remboursements.enRetard +
+      d.anomaliesAudit.nombre
+    );
+  }
   protected variation = variationDite;
   protected comparaison = comparaisonDite;
 
@@ -100,7 +139,9 @@ export class TableauFinancierPage implements OnInit {
   private charger(): void {
     this.loading.set(true);
     const { du, au } = this.choix();
-    this.api.tableau(du, au).subscribe({
+    this.api
+      .direction({ du, au, activite: this.activiteFiltre() || undefined, mode: this.modeFiltre() || undefined })
+      .subscribe({
       next: (donnees) => {
         this.donnees.set(donnees);
         this.loading.set(false);

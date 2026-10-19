@@ -6,7 +6,7 @@
       <p class="page-header__subtitle">
         Dépenses de fonctionnement, autres recettes, paiements d’un client de chantier : ce qui n’a pas d’autre origine
         dans l’outil. Une saisie compte dans les totaux une fois validée par une autre personne que son auteur. Une saisie
-        validée ne se modifie plus : on la corrige par une saisie inverse.
+        validée ne se modifie plus et ne se supprime jamais : on la corrige par une écriture liée, motivée (bouton « Corriger »). Au-delà de 50 000 FCFA, une dépense demande l’autorisation de la Direction ; elle se valide toujours avec sa pièce justificative.
       </p>
     </div>
     @if (peutCreer) {
@@ -43,7 +43,10 @@
         @for (operation of r.items; track operation.id) {
           <li class="operation page-card">
             <div class="operation__principal">
-              <strong>{{ operation.libelle }}</strong>
+              <strong>
+                {{ operation.libelle }}
+                <span class="meta-numero">{{ operation.numero }}</span>
+              </strong>
               <span class="operation__meta">
                 {{ date(operation.date) }} · {{ categorie(operation.categorie) }} · {{ libelleActivite(operation.activite) }}
                 @if (operation.tiers) {
@@ -57,6 +60,25 @@
                 Saisie par {{ auteur(operation) }}
                 @if (operation.validatedBy) {
                   · {{ operation.statut === 'rejetee' ? 'rejetée' : 'validée' }} par {{ operation.validatedBy.firstName }} {{ operation.validatedBy.lastName }}
+                }
+              </span>
+              <span class="operation__badges">
+                @if (operation.niveauValidation > 0) {
+                  <span [class]="'mtm-badge mtm-badge--' + niveau(operation.niveauValidation).ton">{{ niveau(operation.niveauValidation).court }}</span>
+                }
+                @if (operation.nature !== 'definitive') {
+                  <span class="mtm-badge mtm-badge--info">{{ operation.nature === 'avance' ? 'Avance de fonds' : 'Remboursement' }} · hors résultat</span>
+                }
+                @if (operation.justificatifManquant) {
+                  <span class="mtm-badge mtm-badge--red">Pièce manquante</span>
+                }
+                @if (operation.corrigeId) {
+                  <span class="mtm-badge mtm-badge--warning">Correction : {{ operation.motifCorrection }}</span>
+                }
+                @if (operation.autorisePar) {
+                  <span class="mtm-badge mtm-badge--success">
+                    Autorisée par {{ nomPersonne(operation.autorisePar) }}@if (operation.autorisationDistance) { (à distance) }
+                  </span>
                 }
               </span>
               @if (operation.motifRejet) {
@@ -73,8 +95,17 @@
               <span [class]="'status-pill status-pill--' + statut(operation.statut).tone">{{ statut(operation.statut).label }}</span>
             </div>
             <div class="operation__actions">
+              @if (peutAutoriserCette(operation)) {
+                <button mat-flat-button color="primary" type="button" (click)="autoriser(operation)">Autoriser</button>
+              }
+              @if (operation.statut === 'en_attente' && operation.sens === 'depense' && operation.justificatifManquant && peutModifier) {
+                <button mat-stroked-button type="button" (click)="joindrePiece(operation)">Joindre la pièce</button>
+              }
+              @if (operation.statut === 'validee' && peutCreer && !operation.corrigeId) {
+                <button mat-button type="button" (click)="corriger(operation)">Corriger</button>
+              }
               @if (operation.statut === 'en_attente' && peutValider && operation.createdById !== moi) {
-                <button mat-flat-button color="primary" type="button" (click)="valider(operation)">Valider</button>
+                <button mat-flat-button color="primary" type="button" (click)="valider(operation)" [disabled]="operation.aAutoriser || operation.justificatifManquant" [title]="operation.aAutoriser ? 'Attend l’autorisation de la Direction' : operation.justificatifManquant ? 'Joignez d’abord la pièce justificative' : ''">Valider</button>
                 <button mat-stroked-button type="button" (click)="rejeter(operation)">Rejeter</button>
               }
               @if (modifiable(operation)) {

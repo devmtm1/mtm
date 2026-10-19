@@ -185,6 +185,19 @@ async function main(): Promise<void> {
     });
   }
 
+  // --- Permission d'autorisation de la Direction (trésorerie et contrôle financier) ---
+  await prisma.permission.upsert({
+    where: { name: 'finances:autoriser' },
+    update: {},
+    create: {
+      name: 'finances:autoriser',
+      resource: 'finances',
+      action: 'autoriser',
+      description:
+        'Autoriser une dépense au-delà du premier seuil, un reversement, un remboursement, une correction ou un écart de caisse',
+    },
+  });
+
   // --- Rôles ---
   for (const role of INITIAL_ROLES) {
     await prisma.role.upsert({
@@ -893,6 +906,7 @@ async function main(): Promise<void> {
       'finances:modifier',
       'finances:valider',
       'finances:exporter',
+      'finances:payer',
     ],
     direction: [
       'finances:consulter',
@@ -901,6 +915,8 @@ async function main(): Promise<void> {
       'finances:valider',
       'finances:exporter',
       'finances:administrer',
+      'finances:autoriser',
+      'finances:payer',
     ],
     manager: ['finances:consulter'],
   };
@@ -1424,6 +1440,30 @@ async function main(): Promise<void> {
       description: 'Catégories des recettes saisies à la main',
     },
     {
+      key: 'finances.seuilsValidation',
+      value: { palier1: 50000, palier2: 200000, palier3: 500000 },
+      description:
+        'Seuils de validation des dépenses, en FCFA : la comptable seule jusqu’au premier, la Direction au-delà (autorisation expresse au deuxième, contrôle renforcé au troisième)',
+    },
+    {
+      key: 'finances.justificatifObligatoire',
+      value: true,
+      description:
+        'Une dépense ne se valide qu’avec sa pièce justificative (facture, reçu, bon de dépense)',
+    },
+    {
+      key: 'finances.delegations',
+      value: {},
+      description:
+        'Délégations de signature : identifiant de l’utilisateur → plafond en FCFA qu’il peut autoriser en l’absence de la Direction',
+    },
+    {
+      key: 'finances.desistement',
+      value: { retenuePct: 50, delaiMois: 6, validee: false, version: '' },
+      description:
+        'Règle de désistement : part de l’avance retenue (%) et délai de remboursement (mois). « validee » passe à vrai quand la clause a été validée juridiquement : tant qu’elle ne l’est pas, un remboursement ne peut pas être accepté',
+    },
+    {
       key: 'pilotage.seuilsBlocage',
       value: { vente: 15, mission: 10, chantier: 7, prospect: 14, tache: 3 },
       description:
@@ -1455,6 +1495,40 @@ async function main(): Promise<void> {
       create: { ...reglage, isSensitive: false },
     });
   }
+
+  // --- Comptes de trésorerie : la caisse, la banque et les deux portefeuilles mobiles ---
+  // Le solde initial se règle à la mise en service (page Trésorerie) ; les mouvements
+  // se rattachent au compte qui sert leur mode de paiement. « mobile_money » (mode des
+  // modules existants, sans opérateur) va sur Wave tant qu'il n'est pas précisé.
+  const comptesTresorerie = [
+    { code: 'CAISSE', nom: 'Caisse', type: 'caisse', modes: ['especes'] },
+    {
+      code: 'BANQUE',
+      nom: 'Compte bancaire',
+      type: 'banque',
+      modes: ['virement', 'cheque'],
+    },
+    {
+      code: 'WAVE',
+      nom: 'Wave',
+      type: 'wave',
+      modes: ['wave', 'mobile_money'],
+    },
+    {
+      code: 'ORANGE_MONEY',
+      nom: 'Orange Money',
+      type: 'orange_money',
+      modes: ['orange_money'],
+    },
+  ];
+  for (const compte of comptesTresorerie) {
+    await prisma.compteTresorerie.upsert({
+      where: { code: compte.code },
+      update: {},
+      create: compte,
+    });
+  }
+  console.log('  Comptes de trésorerie créés/à jour');
 
   // --- Statuts d'activités CRM configurables (J1.5) ---
   await prisma.systemSetting.upsert({

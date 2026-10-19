@@ -23,7 +23,9 @@ import { RequirePermissions } from '../auth/decorators/require-permissions.decor
 import { AuditService } from '../audit/audit.service';
 import { MAX_ASSET_SIZE } from '../../common/storage/asset-validation';
 import {
+  AutorisationDto,
   ClotureDto,
+  CorrectionDto,
   CreateOperationDto,
   ExportDto,
   JustificationDto,
@@ -127,6 +129,60 @@ export class FinancesController {
     return operation;
   }
 
+  /**
+   * Autorisation de la Direction. La permission « autoriser » ou une délégation
+   * plafonnée suffit : le service vérifie le pouvoir pour le montant exact.
+   */
+  @Post('operations/:id/autoriser')
+  @RequirePermissions('finances:consulter')
+  async autoriser(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: AutorisationDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const operation = await this.operations.autoriser(id, dto, user);
+    await this.audit.record({
+      userId: user.id,
+      action: dto.distance
+        ? 'finances.autorisation_distance'
+        : 'finances.operation_autorisee',
+      entityType: 'OperationFinanciere',
+      entityId: id,
+      newValue: {
+        montant: operation.montant,
+        niveau: operation.niveauValidation,
+        distance: dto.distance === true,
+      },
+      justification: dto.motif,
+    });
+    return operation;
+  }
+
+  /** Corrige une écriture validée par une écriture liée : l'originale reste consultable. */
+  @Post('operations/:id/corriger')
+  @RequirePermissions('finances:creer')
+  async corriger(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CorrectionDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const correction = await this.operations.corriger(id, dto, user);
+    await this.audit.record({
+      userId: user.id,
+      action: 'finances.correction',
+      entityType: 'OperationFinanciere',
+      entityId: id,
+      newValue: {
+        correctionId: correction.id,
+        type: dto.type,
+        sens: correction.sens,
+        montant: correction.montant,
+      },
+      justification: dto.motif,
+    });
+    return correction;
+  }
+
   @Post('operations/:id/rejeter')
   @RequirePermissions('finances:valider')
   async rejeter(
@@ -165,7 +221,18 @@ export class FinancesController {
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<void> {
-    await this.operations.supprimer(id, user);
+    try {
+      await this.operations.supprimer(id, user);
+    } catch (error) {
+      // Une tentative de supprimer une écriture validée reste dans le journal.
+      await this.audit.record({
+        userId: user.id,
+        action: 'finances.suppression_refusee',
+        entityType: 'OperationFinanciere',
+        entityId: id,
+      });
+      throw error;
+    }
     await this.audit.record({
       userId: user.id,
       action: 'finances.operation_supprimee',

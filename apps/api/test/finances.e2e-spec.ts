@@ -84,6 +84,23 @@ describeE2e('Finances (e2e)', () => {
     app = context.app;
     const { data, prisma } = context;
 
+    // Cette suite vérifie le journal, la validation à deux et la clôture avec les règles
+    // d'origine de J3.1. Les seuils de validation et la pièce obligatoire (cahier des
+    // charges du DG) ont leur propre suite : tresorerie.e2e-spec.ts.
+    await prisma.systemSetting.upsert({
+      where: { key: 'finances.justificatifObligatoire' },
+      update: { value: false },
+      create: { key: 'finances.justificatifObligatoire', value: false },
+    });
+    await prisma.systemSetting.upsert({
+      where: { key: 'finances.seuilsValidation' },
+      update: { value: { palier1: 1e11, palier2: 2e11, palier3: 3e11 } },
+      create: {
+        key: 'finances.seuilsValidation',
+        value: { palier1: 1e11, palier2: 2e11, palier3: 3e11 },
+      },
+    });
+
     const roleSaisie = await data.seedRoleWithPermissions('saisie_finances', [
       'finances:consulter',
       'finances:creer',

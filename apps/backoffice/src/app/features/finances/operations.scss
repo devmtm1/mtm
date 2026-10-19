@@ -110,3 +110,20 @@
   font-size: 0.85rem;
   color: var(--mtm-text-muted);
 }
+
+.meta-numero {
+  margin-left: 8px;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--mtm-text-muted);
+}
+
+.operation__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  &:empty {
+    display: none;
+  }
+}

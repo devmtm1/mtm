@@ -310,6 +310,7 @@ export class BudgetChantierService {
         date: dto.date ? new Date(dto.date) : new Date(),
         modePaiement: dto.modePaiement,
         reference: dto.reference,
+        payeParClient: dto.payeParClient === true,
         // Toute dépense entre en attente : elle ne pèsera sur le budget
         // qu'une fois contrôlée.
         statut: 'en_attente',

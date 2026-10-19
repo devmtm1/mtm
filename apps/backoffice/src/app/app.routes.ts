@@ -91,6 +91,46 @@ export const routes: Routes = [
           import('./features/roles/roles').then((m) => m.Roles),
       },
       {
+        path: 'finances/tresorerie',
+        canActivate: [permissionsGuard(['finances:consulter'])],
+        loadComponent: () => import('./features/finances/tresorerie').then((m) => m.Tresorerie),
+      },
+      {
+        path: 'finances/rapprochement',
+        canActivate: [permissionsGuard(['finances:consulter'])],
+        loadComponent: () => import('./features/finances/rapprochement').then((m) => m.RapprochementBancaire),
+      },
+      {
+        path: 'finances/reversements',
+        canActivate: [permissionsGuard(['finances:consulter'])],
+        loadComponent: () => import('./features/finances/reversements').then((m) => m.Reversements),
+      },
+      {
+        path: 'finances/remboursements',
+        canActivate: [permissionsGuard(['finances:consulter'])],
+        loadComponent: () => import('./features/finances/remboursements').then((m) => m.Remboursements),
+      },
+      {
+        path: 'finances/chantiers/:id',
+        canActivate: [permissionsGuard(['finances:consulter'])],
+        loadComponent: () => import('./features/finances/chantier-finance-fiche').then((m) => m.ChantierFinanceFiche),
+      },
+      {
+        path: 'finances/chantiers',
+        canActivate: [permissionsGuard(['finances:consulter'])],
+        loadComponent: () => import('./features/finances/chantiers-finance').then((m) => m.ChantiersFinance),
+      },
+      {
+        path: 'finances/etats',
+        canActivate: [permissionsGuard(['finances:consulter'])],
+        loadComponent: () => import('./features/finances/etats').then((m) => m.EtatsFinanciers),
+      },
+      {
+        path: 'finances/rapport-quotidien',
+        canActivate: [permissionsGuard(['finances:consulter'])],
+        loadComponent: () => import('./features/finances/rapport-quotidien').then((m) => m.RapportQuotidienPage),
+      },
+      {
         path: 'finances/journal',
         canActivate: [permissionsGuard(['finances:consulter'])],
         loadComponent: () => import('./features/finances/journal').then((m) => m.JournalFinancier),

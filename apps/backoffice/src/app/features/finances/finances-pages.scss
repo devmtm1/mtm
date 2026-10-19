@@ -1,0 +1,238 @@
+/* Styles communs aux écrans de trésorerie et de contrôle financier. */
+:host {
+  display: block;
+}
+
+.page-grille {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+h2 {
+  margin: 0 0 12px;
+  font-family: var(--mtm-font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.onglets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border-bottom: 1px solid var(--mtm-border);
+
+  button {
+    padding: 10px 14px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--mtm-text-muted);
+    font: inherit;
+    cursor: pointer;
+
+    &.is-actif {
+      border-bottom-color: var(--mtm-primary);
+      color: var(--mtm-text-dark);
+      font-weight: 600;
+    }
+  }
+}
+
+.tuiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+}
+
+.tuile {
+  display: grid;
+  gap: 2px;
+  padding: 14px 16px;
+  border: 1px solid var(--mtm-border);
+  border-radius: 12px;
+  background: var(--mtm-surface, #fff);
+
+  strong {
+    font-size: 1.2rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  span,
+  small {
+    color: var(--mtm-text-muted);
+    font-size: 0.82rem;
+  }
+
+  &--attention {
+    border-color: var(--mtm-warning);
+    background: var(--mtm-warning-bg);
+  }
+
+  &--danger strong {
+    color: var(--mtm-accent);
+  }
+}
+
+.liste {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &.is-chargement {
+    opacity: 0.6;
+  }
+}
+
+.element {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 16px;
+  align-items: start;
+
+  @media (max-width: 720px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.element__principal {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+
+  strong {
+    overflow-wrap: anywhere;
+  }
+}
+
+.meta {
+  font-size: 0.82rem;
+  color: var(--mtm-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.element__droite {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+
+  @media (max-width: 720px) {
+    justify-items: start;
+  }
+}
+
+.montant {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.barre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 0.88rem;
+}
+
+.tableau-defilant {
+  overflow-x: auto;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+
+  th,
+  td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--mtm-border);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    color: var(--mtm-text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .nombre {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  tfoot td {
+    font-weight: 700;
+    background: var(--mtm-bg-hover);
+  }
+}
+
+.filtres {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.vide,
+.aide {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--mtm-text-muted);
+}
+
+.alerte {
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--mtm-warning);
+  background: var(--mtm-warning-bg);
+  font-size: 0.9rem;
+
+  strong {
+    display: block;
+  }
+
+  ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+  }
+}
+
+.deux-colonnes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+
+  @media (max-width: 1000px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.negatif {
+  color: var(--mtm-accent);
+}

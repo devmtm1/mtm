@@ -493,6 +493,11 @@ export class CreateDepenseDto {
   @IsString()
   @MaxLength(120)
   reference?: string;
+
+  /** Matériaux achetés directement par le client : suivis, mais jamais une sortie de trésorerie de MTM. */
+  @IsOptional()
+  @IsBoolean()
+  payeParClient?: boolean;
 }
 
 /** Contrôle comptable d'une dépense : elle ne pèse qu'une fois validée. */

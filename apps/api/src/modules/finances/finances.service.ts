@@ -18,6 +18,7 @@ import {
   totaliser,
 } from './finances.calculs';
 import { FluxFinanciersService } from './flux.service';
+import { normaliserMode } from './tresorerie.calculs';
 import { QueryJournalDto, QueryPeriodeDto } from './dto/finances.dto';
 
 const UN_JOUR = 24 * 3600 * 1000;
@@ -73,8 +74,16 @@ export class FinancesService {
 
   async tableau(query: QueryPeriodeDto) {
     const { du, au } = this.periode(query);
-    const { lignes, margesInconnues, tauxGestionDefaut } =
-      await this.flux.collecter(du, au);
+    const collecte = await this.flux.collecter(du, au);
+    const { margesInconnues, tauxGestionDefaut } = collecte;
+    const filtre = (lignes: LigneJournal[]) =>
+      lignes.filter(
+        (ligne) =>
+          (!query.activite || ligne.activite === query.activite) &&
+          (!query.mode ||
+            normaliserMode(ligne.mode) === normaliserMode(query.mode)),
+      );
+    const lignes = filtre(collecte.lignes);
     const { global, parActivite } = totaliser(lignes);
 
     // Période précédente de même durée : sert à dire si l'on progresse.
@@ -83,7 +92,7 @@ export class FinancesService {
       new Date(du.getTime() - duree),
       du,
     );
-    const avant = totaliser(precedente.lignes).global;
+    const avant = totaliser(filtre(precedente.lignes)).global;
 
     return {
       periode: { du, auInclus: new Date(au.getTime() - UN_JOUR) },
@@ -108,10 +117,28 @@ export class FinancesService {
     const { du, au } = this.periode(query);
     const { lignes } = await this.flux.collecter(du, au);
     const recherche = query.search?.trim().toLowerCase();
+    // Un compte reçoit les mouvements qui le nomment, ou dont le mode de paiement est le sien.
+    const compte = query.compteId
+      ? await this.prisma.compteTresorerie.findUnique({
+          where: { id: query.compteId },
+          select: { id: true, modes: true },
+        })
+      : null;
+    const dansLeCompte = (ligne: LigneJournal): boolean =>
+      !compte ||
+      ligne.compteId === compte.id ||
+      (!ligne.compteId &&
+        compte.modes.some(
+          (m) => normaliserMode(m) === normaliserMode(ligne.mode),
+        ));
     const filtrees = lignes.filter(
       (ligne) =>
         (!query.activite || ligne.activite === query.activite) &&
         (!query.sens || ligne.sens === query.sens) &&
+        (!query.mode ||
+          normaliserMode(ligne.mode) === normaliserMode(query.mode)) &&
+        (!query.sansJustificatif || ligne.justifie === false) &&
+        dansLeCompte(ligne) &&
         (!recherche ||
           [ligne.libelle, ligne.tiers, ligne.reference]
             .filter(Boolean)
@@ -145,7 +172,7 @@ export class FinancesService {
   }
 
   /** Ce qui est dû à MTM et pas encore encaissé, et ce qui arrive : à la date du jour. */
-  async aEncaisser(maintenant = new Date()) {
+  async aEncaisser(maintenant = new Date(), lignesMax = 8) {
     const dans30Jours = new Date(maintenant.getTime() + 30 * UN_JOUR);
 
     const loyers = await this.prisma.echeanceLoyer.findMany({
@@ -271,7 +298,7 @@ export class FinancesService {
       loyers: {
         total: somme(loyersImpayes),
         nombre: loyersImpayes.length,
-        lignes: loyersImpayes.slice(0, 8).map(({ e, reste }) => ({
+        lignes: loyersImpayes.slice(0, lignesMax).map(({ e, reste }) => ({
           id: e.id,
           libelle: `Bail ${e.bailLocatif.referenceInterne}`,
           tiers: nomPersonne(e.bailLocatif.locataire),
@@ -283,7 +310,7 @@ export class FinancesService {
       ventes: {
         total: somme(ventesEnRetard),
         nombre: ventesEnRetard.length,
-        lignes: ventesEnRetard.slice(0, 8).map(({ e, reste }) => ({
+        lignes: ventesEnRetard.slice(0, lignesMax).map(({ e, reste }) => ({
           id: e.id,
           libelle: `Échéance n°${e.numero} — ${e.dossierVente.referenceInterne ?? 'dossier'}`,
           tiers: nomPersonne(e.dossierVente.prospect),
@@ -295,7 +322,7 @@ export class FinancesService {
       missions: {
         total: somme(missionsDues),
         nombre: missionsDues.length,
-        lignes: missionsDues.slice(0, 8).map(({ m, reste }) => ({
+        lignes: missionsDues.slice(0, lignesMax).map(({ m, reste }) => ({
           id: m.id,
           libelle: `Mission ${m.referenceInterne ?? ''}`.trim(),
           tiers: nomPersonne(m.prospect),
