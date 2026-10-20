@@ -15,6 +15,8 @@ import { SessionService } from '../../core/services/session.service';
 import { ProprietaireDialog } from '../terrains/proprietaire-dialog';
 import type { ProprietaireSummary } from '../../core/models/terrain.model';
 import { NotificationService } from '../../shared/services/notification.service';
+import { type ContactCard, ContactCards } from '../../shared/components/contact-cards/contact-cards';
+import { type Vue, VueToggle, ecrireVue, lireVue } from '../../shared/components/contact-cards/vue-toggle';
 
 type Scope = '' | 'sans-terrain' | 'avec-mandat';
 
@@ -31,6 +33,8 @@ function biensConfies(item: { _count?: { terrains?: number; biensLocatifs?: numb
   selector: 'app-proprietaires',
   imports: [
     AgGridAngular,
+    ContactCards,
+    VueToggle,
     MatButtonModule,
     MatDialogModule,
     MatFormFieldModule,
@@ -58,6 +62,7 @@ export class Proprietaires implements OnInit {
   protected readonly theme = mtmGridTheme;
   protected readonly loading = signal(true);
   protected readonly proprietaires = signal<ProprietaireSummary[]>([]);
+  protected readonly vue = signal<Vue>(lireVue('proprietaires'));
   protected readonly searchTerm = signal('');
   protected readonly scope = signal<Scope>('');
   protected readonly canCreate = computed(() => this.session.hasPermission('proprietaires:creer'));
@@ -83,6 +88,31 @@ export class Proprietaires implements OnInit {
       return `${item.firstName} ${item.lastName} ${item.email ?? ''} ${item.phone ?? ''}`.toLowerCase().includes(term);
     });
   });
+
+  /** Les mêmes propriétaires, en cartes : qui, comment le joindre, ce qu'il a confié. */
+  protected readonly cartes = computed<ContactCard[]>(() =>
+    this.filtered().map((item) => {
+      const biens = biensConfies(item);
+      const mandats = item._count?.mandats ?? 0;
+      return {
+        id: item.id,
+        titre: `${item.firstName} ${item.lastName}`.trim(),
+        telephone: item.phone,
+        email: item.email,
+        pastilles: [
+          biens > 0
+            ? { label: `${biens} bien${biens > 1 ? 's' : ''} confié${biens > 1 ? 's' : ''}`, classe: 'status-pill status-pill--success' }
+            : { label: 'Sans bien', classe: 'status-pill status-pill--warning', aide: 'Enregistré mais rien de confié : à relancer' },
+          ...(mandats > 0 ? [{ label: `${mandats} mandat${mandats > 1 ? 's' : ''}`, classe: 'status-pill status-pill--primary' }] : []),
+        ],
+      };
+    }),
+  );
+
+  protected choisirVue(vue: Vue): void {
+    this.vue.set(vue);
+    ecrireVue('proprietaires', vue);
+  }
 
   protected readonly columnDefs: ColDef<ProprietaireSummary>[] = [
     {

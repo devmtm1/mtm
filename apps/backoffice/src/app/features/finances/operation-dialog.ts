@@ -22,8 +22,10 @@ export interface OperationDialogData {
 
 const MODES = [
   { code: 'especes', label: 'Espèces' },
+  { code: 'wave', label: 'Wave' },
+  { code: 'orange_money', label: 'Orange Money' },
   { code: 'virement', label: 'Virement' },
-  { code: 'mobile_money', label: 'Mobile money' },
+  { code: 'mobile_money', label: 'Mobile money (opérateur non précisé)' },
   { code: 'cheque', label: 'Chèque' },
   { code: 'carte', label: 'Carte' },
 ];
@@ -60,6 +62,17 @@ const TYPES_JUSTIFICATIF = 'application/pdf,image/jpeg,image/png,image/webp';
           </mat-select>
         </mat-form-field>
       </div>
+      @if (form.controls.sens.value === 'depense') {
+        <mat-form-field appearance="outline">
+          <mat-label>Type de dépense</mat-label>
+          <mat-select formControlName="nature">
+            <mat-option value="definitive">Dépense définitive</mat-option>
+            <mat-option value="avance">Avance de fonds (pas une dépense)</mat-option>
+            <mat-option value="remboursement">Remboursement (pas une dépense)</mat-option>
+          </mat-select>
+          <mat-hint>Une avance ou un remboursement bouge l’argent sans peser sur le résultat.</mat-hint>
+        </mat-form-field>
+      }
       <mat-form-field appearance="outline">
         <mat-label>Catégorie</mat-label>
         <mat-select formControlName="categorie">
@@ -198,6 +211,7 @@ export class OperationDialog implements OnInit {
 
   protected readonly form = this.fb.group({
     sens: [this.data.existante?.sens ?? 'depense'],
+    nature: [this.data.existante?.nature ?? 'definitive'],
     activite: [this.data.existante?.activite ?? 'general'],
     categorie: [this.data.existante?.categorie ?? '', Validators.required],
     libelle: [this.data.existante?.libelle ?? '', [Validators.required, Validators.minLength(2)]],
@@ -270,6 +284,7 @@ export class OperationDialog implements OnInit {
       modePaiement: v.modePaiement || undefined,
       reference: v.reference.trim() || undefined,
       tiers: v.tiers.trim() || undefined,
+      nature: v.sens === 'depense' ? v.nature : 'definitive',
     };
     this.enCours.set(true);
     const existante = this.data.existante;

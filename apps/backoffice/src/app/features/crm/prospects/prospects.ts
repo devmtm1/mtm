@@ -20,6 +20,8 @@ import { NotificationService } from '../../../shared/services/notification.servi
 import { JustificationDialog } from '../../../shared/dialogs/justification-dialog';
 import { downloadBlob } from '../../../shared/utils/download';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
+import { type ContactCard, ContactCards } from '../../../shared/components/contact-cards/contact-cards';
+import { type Vue, VueToggle, ecrireVue, lireVue } from '../../../shared/components/contact-cards/vue-toggle';
 import { CLOSED_STAGES, EXIT_STAGES, INTEREST_LEVELS, PIPELINE, PRIORITIES, dueLabel, isOverdue, label, pillClass, prospectName, relanceState } from '../crm-status';
 
 const EMPTY_FILTERS = { search: '', statutPipeline: '', commercialResponsableId: '', niveauInteret: '', zoneRecherchee: '', vue: '' };
@@ -41,6 +43,8 @@ export const QUICK_VIEWS = [
 @Component({
   selector: 'app-prospects',
   imports: [
+    ContactCards,
+    VueToggle,
     MoneyPipe,
     ReactiveFormsModule,
     AgGridAngular,
@@ -85,6 +89,36 @@ export class Prospects implements OnInit {
   protected readonly seesAll = computed(() => this.sessionService.hasSupervisionScope('crm'));
   protected readonly filters = this.formBuilder.nonNullable.group(EMPTY_FILTERS);
   protected readonly hasActiveFilters = signal(false);
+  protected readonly vue = signal<Vue>(lireVue('prospects'));
+
+  /** Les mêmes prospects, en cartes : qui, comment le joindre, où il en est, quelle suite. */
+  protected readonly cartes = computed<ContactCard[]>(() =>
+    this.rowData().map((p) => {
+      const date = p.prochaineRelanceLe ?? p.activites?.[0]?.dateEcheance ?? null;
+      const action = p.prochaineAction ?? p.activites?.[0]?.titre ?? null;
+      const suite = [date ? dueLabel(date) : null, action].filter(Boolean).join(' · ');
+      const commercial = p.commercialResponsable ? `${p.commercialResponsable.firstName} ${p.commercialResponsable.lastName}` : 'Non assigné';
+      return {
+        id: p.id,
+        titre: prospectName(p),
+        sousTitre: p.referenceInterne,
+        telephone: p.telephone,
+        email: p.email,
+        pastilles: [
+          { label: label(PIPELINE, p.statutPipeline), classe: pillClass(PIPELINE, p.statutPipeline), aide: PIPELINE[p.statutPipeline]?.help },
+          ...(p.niveauInteret
+            ? [{ label: label(INTEREST_LEVELS, p.niveauInteret), classe: pillClass(INTEREST_LEVELS, p.niveauInteret), aide: INTEREST_LEVELS[p.niveauInteret]?.help }]
+            : []),
+        ],
+        pied: `${suite || 'Rien de prévu'} · ${commercial}`,
+      };
+    }),
+  );
+
+  protected choisirVue(vue: Vue): void {
+    this.vue.set(vue);
+    ecrireVue('prospects', vue);
+  }
 
   protected readonly overdueTasks = computed(() => this.tasks().filter((task) => isOverdue(task)));
   protected readonly todayTasks = computed(() => this.tasks().filter((task) => !isOverdue(task) && dueLabel(task.dateEcheance) === 'Aujourd’hui'));

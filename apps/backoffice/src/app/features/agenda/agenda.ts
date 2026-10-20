@@ -1,9 +1,18 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
-import { LucideChevronLeft, LucideChevronRight, LucidePlus } from '@lucide/angular';
+import {
+  LucideAlarmClock,
+  LucideArrowRight,
+  LucideCalendarDays,
+  LucideCheck,
+  LucideChevronLeft,
+  LucideChevronRight,
+  LucideClipboardCheck,
+  LucideMapPin,
+  LucidePlus,
+} from '@lucide/angular';
 import { AgendaApiService, type ItemAgenda } from '../../core/services/api/agenda-api.service';
 import { SessionService } from '../../core/services/session.service';
 import { NotificationService } from '../../shared/services/notification.service';
@@ -18,11 +27,13 @@ import {
   familleDe,
   grilleMois,
   grouperParJour,
+  heureDebutDite,
   heureDite,
   libelleType,
   periodeDeGrille,
   titreMois,
   type Famille,
+  type JourGrille,
 } from './agenda-utils';
 
 type Vue = 'mois' | 'semaine' | 'liste';
@@ -38,7 +49,19 @@ const PAR_CASE = 3;
 @Component({
   selector: 'app-agenda',
   standalone: true,
-  imports: [RouterLink, MatButtonModule, MatCheckboxModule, LucideChevronLeft, LucideChevronRight, LucidePlus],
+  imports: [
+    RouterLink,
+    MatButtonModule,
+    LucideAlarmClock,
+    LucideArrowRight,
+    LucideCalendarDays,
+    LucideCheck,
+    LucideChevronLeft,
+    LucideChevronRight,
+    LucideClipboardCheck,
+    LucideMapPin,
+    LucidePlus,
+  ],
   templateUrl: './agenda.html',
   styleUrl: './agenda.scss',
 })
@@ -95,6 +118,27 @@ export class Agenda implements OnInit {
   protected readonly elementsDuJour = computed(() => {
     const cle = this.jourChoisi();
     return cle ? (this.parJour().get(cle) ?? []) : [];
+  });
+
+  /** « Vue rapide » : combien d'éléments de chaque famille dans la période affichée (les familles masquées comptent zéro). */
+  protected readonly statistiques = computed(() => {
+    const visibles = this.items().filter((item) => !this.masquees().has(familleDe(item)));
+    return FAMILLES.map((f) => ({
+      code: f.code,
+      label: f.label,
+      nombre: visibles.filter((item) => familleDe(item) === f.code).length,
+    }));
+  });
+
+  /** Les cinq prochains éléments à partir de maintenant, dans la période chargée. */
+  protected readonly prochains = computed(() => {
+    const maintenant = Date.now();
+    const aujourdhui = cleDate(new Date());
+    return this.items()
+      .filter((item) => !this.masquees().has(familleDe(item)))
+      .filter((item) => (item.journeeEntiere ? cleJour(item) >= aujourdhui : new Date(item.debut).getTime() >= maintenant))
+      .sort((a, b) => new Date(a.debut).getTime() - new Date(b.debut).getTime())
+      .slice(0, 5);
   });
 
   ngOnInit(): void {
@@ -156,6 +200,34 @@ export class Agenda implements OnInit {
     });
   }
 
+  protected famille = familleDe;
+  protected heureDebut = heureDebutDite;
+
+  /** « 12 » dans le mois ; « 28 sept. » pour un jour d'un mois voisin, pour qu'on ne le prenne pas pour un jour du mois. */
+  protected etiquetteJour(jour: JourGrille): string {
+    if (jour.dansLeMois) return String(jour.date.getDate());
+    return jour.date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+  }
+
+  protected libelleFamille(item: ItemAgenda): string {
+    return FAMILLES.find((f) => f.code === familleDe(item))?.label.replace(/s$/, '') ?? '';
+  }
+
+  /** « Jeudi 2 oct. » ou « Aujourd'hui ». */
+  protected dateCourte(item: ItemAgenda): string {
+    const cle = cleJour(item);
+    if (cle === cleDate(new Date())) return 'Aujourd’hui';
+    const [a, m, j] = cle.split('-').map(Number);
+    const texte = new Date(a, m - 1, j).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'short' });
+    return texte.charAt(0).toUpperCase() + texte.slice(1);
+  }
+
+  /** Ouvre un « prochain événement » : on se place sur son jour et on affiche son détail. */
+  protected aller(item: ItemAgenda): void {
+    this.jourChoisi.set(cleJour(item));
+    this.selection.set(item);
+  }
+
   protected libelleType = libelleType;
   protected heure = heureDite;
   protected cleItem = cleJour;
@@ -177,10 +249,6 @@ export class Agenda implements OnInit {
 
   protected elementsDe(cle: string): ItemAgenda[] {
     return this.parJour().get(cle) ?? [];
-  }
-
-  protected classeSource(item: ItemAgenda): string {
-    return `puce puce--${item.source === 'evenement' ? item.type : item.source === 'tache' ? 'tache' : item.source === 'visite' ? 'visite' : 'echeance'}`;
   }
 
   protected routeLien(item: ItemAgenda): { chemin: string[]; query?: Record<string, string> } | null {

@@ -121,6 +121,169 @@
       </aside>
     }
 
+    <section class="page-card filtres-direction" aria-label="Filtres">
+      <label>
+        Activité
+        <select #activite (change)="filtrer(activite.value, mode.value)">
+          <option value="">Toutes</option>
+          @for (a of activites; track a.code) {
+            <option [value]="a.code" [selected]="activiteFiltre() === a.code">{{ a.label }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Moyen de paiement
+        <select #mode (change)="filtrer(activite.value, mode.value)">
+          <option value="">Tous</option>
+          @for (m of modes; track m.valeur) {
+            <option [value]="m.valeur" [selected]="modeFiltre() === m.valeur">{{ m.label }}</option>
+          }
+        </select>
+      </label>
+      <small>Les filtres s’appliquent aux chiffres de la période ; la trésorerie, les créances et les propriétaires restent à la date du jour.</small>
+    </section>
+
+    <section class="direction" aria-label="Situation de trésorerie">
+      <h2>Trésorerie à la date du jour</h2>
+      <div class="direction__tuiles">
+        <article class="mini">
+          <span>Consolidée</span>
+          <strong [class.negatif]="d.tresorerie.consolide.solde < 0">{{ fcfa(d.tresorerie.consolide.solde) }}</strong>
+        </article>
+        @for (c of d.tresorerie.comptes; track c.id) {
+          @if (c.actif) {
+            <article class="mini">
+              <span>{{ c.nom }}</span>
+              <strong [class.negatif]="c.solde < 0">{{ fcfa(c.solde) }}</strong>
+            </article>
+          }
+        }
+        <article class="mini">
+          <span>À reverser aux propriétaires</span>
+          <strong>{{ fcfa(d.proprietaires.soldeRestant) }}</strong>
+          <small>dont {{ fcfa(d.proprietaires.aReverserMaintenant) }} exigible maintenant</small>
+        </article>
+        <article class="mini">
+          <span>Créances clients</span>
+          <strong>{{ fcfa(d.aEncaisser.loyers.total + d.aEncaisser.ventes.total + d.aEncaisser.missions.total) }}</strong>
+          <small>Loyers, ventes en retard, démarches</small>
+        </article>
+      </div>
+      <p class="note">
+        <a routerLink="/finances/tresorerie">Trésorerie et caisse</a> ·
+        <a routerLink="/finances/reversements">Propriétaires et reversements</a> ·
+        <a routerLink="/finances/etats">États financiers</a> ·
+        <a routerLink="/finances/rapport-quotidien">Rapport du soir</a>
+        @if (d.rapportDuJour === null) {
+          — <strong>le rapport du jour n’est pas encore préparé</strong>
+        } @else if (d.rapportDuJour !== 'transmis') {
+          — le rapport du jour est « {{ d.rapportDuJour }} », pas encore transmis
+        }
+      </p>
+    </section>
+
+    <section class="page-card attention" aria-label="Points d’attention">
+      <h2>Points d’attention ({{ pointsDAttention(d) }})</h2>
+      @if (pointsDAttention(d) === 0) {
+        <p class="vide">Rien à signaler.</p>
+      } @else {
+        <ul>
+          @if (d.aAutoriser > 0) {
+            <li><a routerLink="/finances/operations">{{ d.aAutoriser }} dépense(s) attendent l’autorisation de la Direction</a></li>
+          }
+          @if (d.reversements.enAttente.nombre > 0) {
+            <li>
+              <a routerLink="/finances/reversements"
+                >{{ d.reversements.enAttente.nombre }} reversement(s) en attente d’autorisation ({{ fcfa(d.reversements.enAttente.montant) }})</a
+              >
+            </li>
+          }
+          @if (d.reversements.aPayer.nombre > 0) {
+            <li>{{ d.reversements.aPayer.nombre }} reversement(s) autorisé(s), à payer ({{ fcfa(d.reversements.aPayer.montant) }})</li>
+          }
+          @if (d.depensesSansJustificatif.nombre > 0) {
+            <li>
+              <a routerLink="/finances/operations">{{ d.depensesSansJustificatif.nombre }} dépense(s) sans justificatif ({{ fcfa(d.depensesSansJustificatif.montant) }})</a>
+            </li>
+          }
+          @if (d.ecartsCaisse.nombre > 0) {
+            <li>
+              <a routerLink="/finances/tresorerie">{{ d.ecartsCaisse.nombre }} écart(s) de caisse sans décision définitive ({{ fcfa(d.ecartsCaisse.montant) }})</a>
+            </li>
+          }
+          @if (d.rapprochement.lignesNonRapprochees > 0) {
+            <li>
+              <a routerLink="/finances/rapprochement"
+                >{{ d.rapprochement.lignesNonRapprochees }} ligne(s) de relevé bancaire non rapprochées@if (d.rapprochement.plusAncienne) { (la plus ancienne du {{ dateFr(d.rapprochement.plusAncienne) }}) }</a
+              >
+            </li>
+          }
+          @if (d.joursNonClotures.length > 0) {
+            <li>
+              <a routerLink="/finances/tresorerie">{{ d.joursNonClotures.length }} jour(s) de caisse non clôturés ces 15 derniers jours</a>
+            </li>
+          }
+          @if (d.remboursements.enRetard > 0) {
+            <li>
+              <a routerLink="/finances/remboursements">{{ d.remboursements.enRetard }} remboursement(s) de désistement hors délai</a>
+            </li>
+          }
+          @if (d.mouvementsEnAttente > 0) {
+            <li><a routerLink="/finances/tresorerie">{{ d.mouvementsEnAttente }} mouvement(s) de fonds à confirmer</a></li>
+          }
+          @if (d.paiementsChantierEnAttente > 0) {
+            <li><a routerLink="/finances/chantiers">{{ d.paiementsChantierEnAttente }} paiement(s) de chantier à valider</a></li>
+          }
+        </ul>
+        @if (d.anomaliesAudit.nombre > 0) {
+          <h3>Anomalies du journal d’audit (30 jours) : {{ d.anomaliesAudit.nombre }}</h3>
+          <ul>
+            @for (a of d.anomaliesAudit.liste; track a.id) {
+              <li>
+                {{ geste(a.action) }} — {{ dateFr(a.date) }}@if (a.par) { par {{ a.par }} }@if (a.justification) { : {{ a.justification }} }
+              </li>
+            }
+          </ul>
+        }
+      }
+    </section>
+
+    <section class="page-card" aria-label="Résultats des chantiers">
+      <h2>Résultats des chantiers</h2>
+      @if (d.chantiers.nombre === 0) {
+        <p class="vide">Aucun chantier en cours.</p>
+      } @else {
+        <p class="note">
+          {{ d.chantiers.nombre }} chantier(s) : recettes {{ fcfa(d.chantiers.recettes) }}, coût réel {{ fcfa(d.chantiers.cout) }}, marge
+          <strong [class.negatif]="d.chantiers.marge < 0">{{ fcfa(d.chantiers.marge) }}</strong
+          >@if (d.chantiers.enDepassement > 0) { — {{ d.chantiers.enDepassement }} budget(s) dépassé(s) }.
+          <a routerLink="/finances/chantiers">Voir tous les chantiers</a>
+        </p>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Chantier</th>
+                <th scope="col" class="is-right">Recettes</th>
+                <th scope="col" class="is-right">Coût réel</th>
+                <th scope="col" class="is-right">Marge réelle</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (c of d.chantiers.liste; track c.id) {
+                <tr>
+                  <td><a [routerLink]="['/finances/chantiers', c.id]">{{ c.referenceInterne }} — {{ c.intitule }}</a></td>
+                  <td class="is-right">{{ fcfa(c.recettesConfirmees) }}</td>
+                  <td class="is-right">{{ fcfa(c.coutReel) }}</td>
+                  <td class="is-right" [class.negatif]="c.margeReelle < 0">{{ fcfa(c.margeReelle) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+
     <div class="graphiques">
       <section class="page-card">
         <h2>Revenu et dépenses par mois</h2>
@@ -194,8 +357,7 @@
       <p class="note">
         Gestion locative : le revenu est la commission de gestion ({{ d.tauxGestionDefaut }} % par
         défaut, réglable bien par bien) ; le reste des loyers revient aux propriétaires.
-        Construction : enregistrez les paiements du client comme recettes de chantier pour voir la
-        marge.
+        Construction : les paiements du client se saisissent sur la fiche du chantier (Rentabilité des chantiers). Terrain confié : le revenu est la commission de MTM, le reste revient au propriétaire.
       </p>
     </section>
 

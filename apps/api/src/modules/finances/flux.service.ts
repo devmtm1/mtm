@@ -8,6 +8,7 @@ import {
   margeReconnue,
   nombre,
 } from './finances.calculs';
+import { commissionReconnue, numeroOperation } from './tresorerie.calculs';
 
 export const TAUX_GESTION_DEFAUT = 10;
 
@@ -75,13 +76,21 @@ export class FluxFinanciersService {
         datePaiement: true,
         mode: true,
         reference: true,
+        justificatifUrl: true,
         dossierVente: {
           select: {
             id: true,
             referenceInterne: true,
             prixVente: true,
             prospect: { select: { nom: true, prenom: true } },
-            terrain: { select: { marge: true } },
+            terrain: {
+              select: {
+                marge: true,
+                commission: true,
+                proprietaireId: true,
+                produitDirect: true,
+              },
+            },
           },
         },
       },
@@ -89,11 +98,27 @@ export class FluxFinanciersService {
     for (const p of paiements) {
       const montant = nombre(p.montant);
       const dossier = p.dossierVente;
+      const terrain = dossier.terrain;
+      // Un terrain confié par un propriétaire rapporte sa commission, pas une marge :
+      // le reste de l'argent encaissé revient au propriétaire.
+      const confie = Boolean(
+        terrain?.proprietaireId &&
+        !terrain.produitDirect &&
+        terrain.commission !== null &&
+        terrain.commission !== undefined,
+      );
       const marge =
-        dossier.terrain?.marge === null || dossier.terrain?.marge === undefined
+        terrain?.marge === null || terrain?.marge === undefined
           ? null
-          : nombre(dossier.terrain.marge);
-      if (marge === null) margesInconnues += 1;
+          : nombre(terrain.marge);
+      if (!confie && marge === null) margesInconnues += 1;
+      const revenu = confie
+        ? commissionReconnue(
+            nombre(terrain?.commission),
+            montant,
+            nombre(dossier.prixVente),
+          )
+        : margeReconnue(marge, montant, nombre(dossier.prixVente));
       lignes.push({
         id: `paiement:${p.id}`,
         date: p.datePaiement,
@@ -105,8 +130,9 @@ export class FluxFinanciersService {
         reference: p.reference,
         mode: p.mode,
         montant,
-        revenu: margeReconnue(marge, montant, nombre(dossier.prixVente)),
+        revenu,
         lien: `/ventes/${dossier.id}`,
+        justifie: Boolean(p.justificatifUrl),
       });
     }
 
@@ -270,7 +296,8 @@ export class FluxFinanciersService {
 
     // --- Construction : dépenses de chantier validées ---
     const depenses = await this.prisma.depenseChantier.findMany({
-      where: { statut: 'valide', date: periode },
+      // Les matériaux payés directement par le client ne sont pas une sortie de MTM.
+      where: { statut: 'valide', date: periode, payeParClient: false },
       select: {
         id: true,
         libelle: true,
@@ -305,19 +332,152 @@ export class FluxFinanciersService {
     });
     for (const o of operations) {
       const recette = o.sens === 'recette';
+      // Une avance ou un remboursement bouge de l'argent sans être une dépense ni un revenu.
+      const definitive = o.nature === 'definitive';
       lignes.push({
         id: `operation:${o.id}`,
         date: o.date,
         activite: o.activite as Activite,
         sens: recette ? 'entree' : 'sortie',
-        nature: recette ? 'operation_recette' : 'operation_depense',
+        nature: definitive
+          ? recette
+            ? 'operation_recette'
+            : 'operation_depense'
+          : o.nature === 'avance'
+            ? 'operation_avance'
+            : 'operation_remboursement',
         libelle: o.libelle,
         tiers: o.tiers,
         reference: o.reference,
         mode: o.modePaiement,
         montant: nombre(o.montant),
-        revenu: recette ? nombre(o.montant) : 0,
+        revenu: recette && definitive ? nombre(o.montant) : 0,
         lien: null,
+        compteId: o.compteId,
+        horsResultat: !definitive,
+        numero: numeroOperation('OP', o.createdAt, o.numeroSeq),
+        justifie: Boolean(o.justificatifKey),
+      });
+    }
+
+    // --- Construction : paiements du client, validés par la comptabilité ---
+    const paiementsChantier = await this.prisma.paiementChantier.findMany({
+      where: { statut: 'valide', date: periode },
+      select: {
+        id: true,
+        numeroSeq: true,
+        montant: true,
+        date: true,
+        mode: true,
+        reference: true,
+        createdAt: true,
+        justificatifKey: true,
+        projet: {
+          select: {
+            id: true,
+            referenceInterne: true,
+            client: { select: { nom: true, prenom: true } },
+          },
+        },
+      },
+    });
+    for (const c of paiementsChantier) {
+      lignes.push({
+        id: `chantier-recette:${c.id}`,
+        date: c.date,
+        activite: 'construction',
+        sens: 'entree',
+        nature: 'paiement_chantier',
+        libelle: `Paiement client — chantier ${c.projet.referenceInterne}`,
+        tiers: nomComplet(c.projet.client),
+        reference: c.reference,
+        mode: c.mode,
+        montant: nombre(c.montant),
+        revenu: nombre(c.montant),
+        lien: `/construction/chantiers/${c.projet.id}`,
+        numero: numeroOperation('PC', c.createdAt, c.numeroSeq),
+        justifie: Boolean(c.justificatifKey),
+      });
+    }
+
+    // --- Reversements aux propriétaires : l'argent d'un tiers, hors résultat de MTM ---
+    const reversements = await this.prisma.reversementProprietaire.findMany({
+      where: { statut: 'paye', datePaiement: periode },
+      select: {
+        id: true,
+        numeroSeq: true,
+        montant: true,
+        datePaiement: true,
+        modePaiement: true,
+        reference: true,
+        type: true,
+        createdAt: true,
+        justificatifKey: true,
+        proprietaire: { select: { firstName: true, lastName: true } },
+        dossierVente: { select: { id: true, referenceInterne: true } },
+      },
+    });
+    for (const r of reversements) {
+      const prefixe =
+        r.type === 'avance' ? 'Avance au propriétaire' : 'Reversement';
+      lignes.push({
+        id: `reversement:${r.id}`,
+        date: r.datePaiement as Date,
+        activite: 'vente',
+        sens: 'sortie',
+        nature: 'reversement_proprietaire',
+        libelle:
+          `${prefixe} — dossier ${r.dossierVente.referenceInterne ?? ''}`.trim(),
+        tiers: nomComplet(r.proprietaire),
+        reference: r.reference,
+        mode: r.modePaiement,
+        montant: nombre(r.montant),
+        revenu: 0,
+        lien: `/ventes/${r.dossierVente.id}`,
+        horsResultat: true,
+        numero: numeroOperation('RP', r.createdAt, r.numeroSeq),
+        justifie: Boolean(r.justificatifKey),
+      });
+    }
+
+    // --- Désistements : remboursement du client, une sortie qui pèse sur le résultat ---
+    const remboursements = await this.prisma.demandeRemboursement.findMany({
+      where: { statut: 'payee', datePaiement: periode },
+      select: {
+        id: true,
+        numeroSeq: true,
+        montantRembourse: true,
+        datePaiement: true,
+        modePaiement: true,
+        reference: true,
+        createdAt: true,
+        justificatifKey: true,
+        dossierVente: {
+          select: {
+            id: true,
+            referenceInterne: true,
+            prospect: { select: { nom: true, prenom: true } },
+          },
+        },
+      },
+    });
+    for (const r of remboursements) {
+      lignes.push({
+        id: `remboursement:${r.id}`,
+        date: r.datePaiement as Date,
+        activite: 'vente',
+        sens: 'sortie',
+        nature: 'remboursement_client',
+        libelle:
+          `Remboursement — dossier ${r.dossierVente.referenceInterne ?? ''}`.trim(),
+        tiers: nomComplet(r.dossierVente.prospect),
+        reference: r.reference,
+        mode: r.modePaiement,
+        montant: nombre(r.montantRembourse),
+        revenu: 0,
+        lien: `/ventes/${r.dossierVente.id}`,
+        numero: numeroOperation('RB', r.createdAt, r.numeroSeq),
+        justifie: Boolean(r.justificatifKey),
       });
     }
 

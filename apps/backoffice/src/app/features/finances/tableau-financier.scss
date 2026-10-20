@@ -122,3 +122,72 @@ h2 {
     color: var(--mtm-error);
   }
 }
+
+.filtres-direction {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+
+  label {
+    display: grid;
+    gap: 2px;
+    font-size: 0.8rem;
+    color: var(--mtm-text-muted);
+  }
+
+  select {
+    min-width: 200px;
+    padding: 7px 10px;
+    border: 1px solid var(--mtm-border);
+    border-radius: 8px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+  }
+
+  small {
+    color: var(--mtm-text-muted);
+  }
+}
+
+.direction__tuiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.mini {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1px solid var(--mtm-border);
+  border-radius: 12px;
+
+  strong {
+    font-size: 1.1rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  span,
+  small {
+    font-size: 0.8rem;
+    color: var(--mtm-text-muted);
+  }
+}
+
+.attention ul {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding-left: 18px;
+  font-size: 0.9rem;
+}
+
+.attention h3 {
+  margin: 8px 0 6px;
+}
+
+.negatif {
+  color: var(--mtm-accent);
+}

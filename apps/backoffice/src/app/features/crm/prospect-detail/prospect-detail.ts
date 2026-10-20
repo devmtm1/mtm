@@ -232,6 +232,43 @@ export class ProspectDetail implements OnInit {
     return items;
   });
 
+  /** Initiales pour l'avatar : « FS » pour Fatou Sarr. */
+  protected readonly initials = computed(() => {
+    const prospect = this.prospect();
+    if (!prospect) return '';
+    const lettres = [prospect.prenom, prospect.nom].filter(Boolean).map((mot) => (mot as string).trim()[0]);
+    return lettres.join('').toUpperCase().slice(0, 2) || '?';
+  });
+
+  /** Un prospect actif sans prochaine action : le cas que la règle MTM interdit. */
+  protected readonly needsRelance = computed(() => {
+    const prospect = this.prospect();
+    return !!prospect && !this.isClosed() && !this.isLost() && !prospect.prochaineRelanceLe && !prospect.prochaineAction;
+  });
+
+  /**
+   * Ce qui reste à compléter, hors relance : la relance a sa propre carte, la
+   * répéter ici faisait trois alertes pour une seule chose.
+   */
+  protected readonly complements = computed(() =>
+    this.todo().filter((item) => item.label !== 'Programmer la prochaine relance' && item.label !== 'Relance en retard'),
+  );
+
+  /** Le geste à mettre en avant : relancer quand il n'y a plus de suite prévue, sinon appeler. */
+  protected readonly primary = computed<'relance' | 'appeler' | null>(() => {
+    if (this.isClosed() || this.isLost()) return this.telHref() ? 'appeler' : null;
+    if (this.canModify && (this.needsRelance() || this.relance() === 'en_retard')) return 'relance';
+    return this.telHref() ? 'appeler' : this.canModify ? 'relance' : null;
+  });
+
+  /** Dans la barre du parcours, seules l'étape courante et la suivante portent un nom. */
+  protected stepState(index: number): 'done' | 'current' | 'next' | 'later' {
+    const courant = this.stageIndex();
+    if (index < courant) return 'done';
+    if (index === courant) return 'current';
+    return index === courant + 1 ? 'next' : 'later';
+  }
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {

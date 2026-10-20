@@ -1,200 +1,454 @@
-.detail-header__meta a {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--mtm-text-dark);
-  text-decoration: none;
+/* ---------- Carte d'identité ---------- */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px 24px;
+  align-items: start;
 
-  &:hover {
-    color: var(--mtm-primary);
-    text-decoration: underline;
+  @media (max-width: 960px) {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
-/* Parcours commercial : étapes horizontales */
-.pipeline {
+.hero__id {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--mtm-primary-subtle);
+  color: var(--mtm-primary);
+  font-family: var(--mtm-font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.hero__texte {
   display: grid;
-  gap: 10px;
-  padding: 14px 18px;
+  gap: 6px;
+  min-width: 0;
 
-  &__steps {
-    display: flex;
-    gap: 6px;
+  h1 {
     margin: 0;
-    padding: 0;
-    list-style: none;
-    overflow-x: auto;
+    font-family: var(--mtm-font-display);
+    font-size: clamp(1.5rem, 1.25rem + 0.7vw, 2rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
   }
 
-  /* Le point au-dessus, le nom en dessous et en entier : l'ellipse rendait « Nouv… », « Cont… » illisibles. */
-  &__step {
-    display: flex;
-    flex: 1 1 0;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    min-width: 92px;
-    padding: 8px 4px;
-    border-radius: 8px;
-    color: var(--mtm-text-muted);
-    font-size: 0.74rem;
-    line-height: 1.2;
-    text-align: center;
+  .eyebrow {
+    margin: 0;
+  }
+}
 
-    &.is-done {
-      color: var(--mtm-success);
-    }
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
 
-    &.is-current {
-      background: var(--mtm-primary-subtle);
-      color: var(--mtm-primary);
-      font-weight: 700;
-    }
+  .btn-icon--after {
+    margin: 0 0 0 6px;
   }
 
-  &__dot {
+  @media (max-width: 960px) {
+    justify-content: flex-start;
+  }
+
+  @media (max-width: 720px) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    > * {
+      width: 100%;
+      white-space: normal;
+      line-height: 1.2;
+    }
+  }
+}
+
+.hero__contact {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin: 0;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--mtm-border);
+  list-style: none;
+  font-size: 0.92rem;
+
+  li {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    flex: 0 0 24px;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: var(--mtm-bg-hover);
-    font-size: 0.72rem;
+    gap: 7px;
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+    color: var(--mtm-text-muted);
+  }
+
+  a {
+    color: var(--mtm-text-dark);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--mtm-primary);
+      text-decoration: underline;
+    }
+  }
+
+  .is-muted {
+    color: var(--mtm-text-muted);
+  }
+
+  .is-warning {
+    color: var(--mtm-warning);
+    font-weight: 600;
+  }
+}
+
+/* ---------- Parcours : seules l'étape courante et la suivante portent un nom ---------- */
+.parcours {
+  display: grid;
+  gap: 12px;
+  padding: 16px 20px;
+}
+
+.parcours__etapes {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+}
+
+.etape {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--mtm-text-muted);
+  font-size: 0.84rem;
+
+  /* Le trait qui relie une étape à la suivante. */
+  &:not(:last-child)::after {
+    content: '';
+    flex: 1 1 14px;
+    min-width: 14px;
+    height: 2px;
+    margin: 0 8px;
+    border-radius: 2px;
+    background: var(--mtm-border);
+  }
+
+  &--faite {
+    color: var(--mtm-success);
+
+    &:not(:last-child)::after {
+      background: var(--mtm-success);
+    }
+  }
+
+  &--courante {
+    color: var(--mtm-primary);
     font-weight: 700;
+  }
 
-    svg {
-      width: 14px;
-      height: 14px;
-    }
+  &--suivante {
+    color: var(--mtm-text-dark);
+  }
+}
 
-    .is-done & {
-      background: var(--mtm-success-bg);
-    }
+.etape__rond {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--mtm-border);
+  border-radius: 50%;
+  background: var(--mtm-card-bg);
+  font-size: 0.75rem;
+  font-weight: 700;
 
-    .is-current & {
-      background: var(--mtm-primary);
-      color: var(--mat-sys-on-primary);
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .etape--faite & {
+    border-color: var(--mtm-success);
+    background: var(--mtm-success);
+    color: #fff;
+  }
+
+  .etape--courante & {
+    width: 34px;
+    height: 34px;
+    border-color: var(--mtm-primary);
+    background: var(--mtm-primary);
+    color: var(--mat-sys-on-primary);
+    box-shadow: 0 0 0 4px var(--mtm-primary-subtle);
+  }
+}
+
+.etape__nom {
+  white-space: nowrap;
+}
+
+.parcours__aide,
+.parcours__perdu {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--mtm-text-muted);
+  font-size: 0.88rem;
+
+  strong {
+    color: var(--mtm-text-dark);
+  }
+}
+
+/* ---------- Prochaine action : la seule alerte ---------- */
+.suite {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  padding: 16px 20px;
+  border: 1px solid var(--mtm-border);
+  border-left: 4px solid var(--mtm-primary);
+  border-radius: var(--mtm-radius-md, 12px);
+  background: var(--mtm-primary-subtle);
+
+  &--manque,
+  &--jour {
+    border-color: var(--mtm-warning);
+    background: var(--mtm-warning-bg);
+
+    .suite__icone {
+      color: var(--mtm-warning);
     }
   }
 
-  &__label {
-    overflow-wrap: break-word;
+  &--retard {
+    border-color: var(--mtm-error);
+    background: var(--mtm-error-bg);
+
+    .suite__icone {
+      color: var(--mtm-error);
+    }
   }
 
-  &__help,
-  &__lost {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    margin: 0;
+  &--fermee {
+    border-left-color: var(--mtm-border);
+    background: var(--mtm-bg-surface);
+  }
+}
+
+.suite__icone {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  color: var(--mtm-primary);
+}
+
+.suite__texte {
+  display: grid;
+  gap: 2px;
+  flex: 1 1 260px;
+  min-width: 0;
+
+  strong {
+    font-size: 1rem;
+  }
+
+  small {
     color: var(--mtm-text-muted);
     font-size: 0.84rem;
   }
 }
 
-/* Actions à faire */
-.task-list {
-  display: grid;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-
-  &--done {
-    opacity: 0.85;
-  }
+.suite__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
 }
 
-.task {
+.completer {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 8px 10px;
-  border: 1px solid var(--mtm-border);
-  border-radius: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: -6px;
 
-  &.is-overdue {
-    border-color: var(--mtm-error);
-    background: var(--mtm-error-bg);
-
-    .task__due {
-      color: var(--mtm-error);
-      font-weight: 700;
-    }
-  }
-
-  &__check {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 26px;
-    width: 26px;
-    height: 26px;
-    margin-top: 2px;
-    border: 2px solid var(--mtm-border);
-    border-radius: 50%;
-    background: var(--mtm-card-bg);
-    color: transparent;
-    cursor: pointer;
-    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
-
-    svg {
-      width: 14px;
-      height: 14px;
-    }
-
-    &:hover {
-      border-color: var(--mtm-success);
-      background: var(--mtm-success-bg);
-      color: var(--mtm-success);
-    }
-  }
-
-  &__body {
-    display: grid;
-    flex: 1;
-    gap: 3px;
-    min-width: 0;
-  }
-
-  &__line {
+  ul {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.88rem;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
 
-  small {
-    color: var(--mtm-text-muted);
-    font-size: 0.76rem;
-  }
-
-  &__desc {
+  li {
+    padding: 4px 12px;
+    border: 1px dashed var(--mtm-border);
+    border-radius: 999px;
+    background: var(--mtm-card-bg);
     color: var(--mtm-text-dark);
-  }
-
-  &__actions {
-    display: inline-flex;
-    flex-shrink: 0;
-  }
-
-  button svg {
-    width: 16px;
-    height: 16px;
+    font-size: 0.82rem;
+    cursor: help;
   }
 }
 
-.quick-actions {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 4px;
+.completer__titre {
+  color: var(--mtm-text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-/* Référence du mandat de recherche, posée à côté du titre de section. */
+/* ---------- Deux colonnes : le travail à gauche, la fiche à droite ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 18px;
+  align-items: start;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.colonne {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.vide {
+  margin: 0;
+  color: var(--mtm-text-muted);
+  font-size: 0.88rem;
+}
+
+/* ---------- Colonne latérale ---------- */
+.budget {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--mtm-primary-subtle);
+
+  span {
+    color: var(--mtm-text-muted);
+    font-size: 0.74rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  strong {
+    font-family: var(--mtm-font-display);
+    font-size: 1.1rem;
+  }
+
+  &--vide {
+    background: var(--mtm-bg-surface);
+
+    strong {
+      color: var(--mtm-text-muted);
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+  }
+}
+
+.faits {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+
+  dt {
+    color: var(--mtm-text-muted);
+    font-size: 0.74rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 2px 0 0;
+    font-size: 0.92rem;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+
+    &.is-vide {
+      color: var(--mtm-text-muted);
+      font-style: italic;
+      font-weight: 400;
+    }
+  }
+}
+
+.texte {
+  h3 {
+    margin: 0 0 4px;
+    color: var(--mtm-text-muted);
+    font-size: 0.74rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    white-space: pre-line;
+  }
+}
+
+.plus {
+  border-top: 1px solid var(--mtm-border);
+  padding-top: 10px;
+
+  summary {
+    cursor: pointer;
+    color: var(--mtm-primary);
+    font-size: 0.86rem;
+    font-weight: 600;
+  }
+
+  .faits,
+  .texte {
+    margin-top: 10px;
+  }
+}
+
+.recherche__statut {
+  margin: 0;
+}
+
 .detail-section__ref {
   margin-left: 8px;
   color: var(--mtm-text-muted);
@@ -215,57 +469,131 @@
   white-space: nowrap;
 }
 
-/* Suite à donner : la relance saute aux yeux, en retard elle alerte. */
-.relance-banner {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border-radius: 8px;
-  background: var(--mtm-primary-subtle);
-  color: var(--mtm-text);
-}
-
-.relance-banner svg {
-  width: 20px;
-  height: 20px;
-  flex: none;
-  color: var(--mtm-primary);
-}
-
-.relance-banner strong {
-  display: block;
-}
-
-.relance-banner small {
-  color: var(--mtm-text-muted);
-}
-
-.relance-banner--today {
-  background: var(--mtm-warning-subtle, #fbf1dc);
-}
-
-.relance-banner--late {
-  background: var(--mtm-danger-subtle, #f8e8e9);
-}
-
-.relance-banner--late svg {
-  color: var(--mtm-danger, #b52c36);
-}
-
-/* Terrains proposés : une ligne par proposition, visite et retour inclus. */
-.visite-list {
-  list-style: none;
+/* ---------- Actions à faire ---------- */
+.task-list {
+  display: grid;
+  gap: 8px;
   margin: 0;
   padding: 0;
+  list-style: none;
+
+  &--done {
+    margin-top: 10px;
+    opacity: 0.85;
+  }
+}
+
+.task {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--mtm-border);
+  border-radius: 10px;
+  background: var(--mtm-card-bg);
+
+  &.is-overdue {
+    border-color: var(--mtm-error);
+    background: var(--mtm-error-bg);
+
+    .task__due {
+      color: var(--mtm-error);
+      font-weight: 700;
+    }
+  }
+
+  &__check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+    margin-top: 1px;
+    border: 2px solid var(--mtm-border);
+    border-radius: 50%;
+    background: var(--mtm-card-bg);
+    color: transparent;
+    cursor: pointer;
+    transition:
+      border-color 0.15s ease,
+      background 0.15s ease,
+      color 0.15s ease;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    &:hover,
+    &:focus-visible {
+      border-color: var(--mtm-success);
+      background: var(--mtm-success-bg);
+      color: var(--mtm-success);
+    }
+  }
+
+  &__body {
+    display: grid;
+    flex: 1;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  &__line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+  }
+
+  small {
+    color: var(--mtm-text-muted);
+    font-size: 0.8rem;
+  }
+
+  &__desc {
+    color: var(--mtm-text-dark);
+  }
+
+  &__actions {
+    display: inline-flex;
+    flex-shrink: 0;
+  }
+
+  button svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.fait {
+  border-top: 1px solid var(--mtm-border);
+  padding-top: 10px;
+
+  summary {
+    cursor: pointer;
+    color: var(--mtm-text-muted);
+    font-size: 0.86rem;
+    font-weight: 600;
+  }
+}
+
+/* ---------- Terrains proposés ---------- */
+.visite-list {
   display: grid;
   gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .visite-item {
+  padding: 14px 16px;
   border: 1px solid var(--mtm-border);
-  border-radius: 8px;
-  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--mtm-card-bg);
 }
 
 .visite-item__head {
@@ -273,10 +601,10 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-}
 
-.visite-item__head strong {
-  min-width: 0;
+  strong {
+    min-width: 0;
+  }
 }
 
 .visite-item__place {
@@ -285,33 +613,35 @@
 }
 
 .visite-item__actions {
-  margin-left: auto;
   display: flex;
   align-items: center;
   gap: 4px;
+  margin-left: auto;
 }
 
 .visite-item__facts {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 8px 16px;
-  margin: 10px 0 0;
-}
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--mtm-border);
 
-.visite-item__facts dt {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--mtm-text-muted);
-}
+  dt {
+    color: var(--mtm-text-muted);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
 
-.visite-item__facts dd {
-  margin: 2px 0 0;
-  font-size: 0.9rem;
+  dd {
+    margin: 2px 0 0;
+    font-size: 0.9rem;
+  }
 }
 
 .visite-item__comment {
   margin: 10px 0 0;
-  font-style: italic;
   color: var(--mtm-text-muted);
+  font-style: italic;
 }

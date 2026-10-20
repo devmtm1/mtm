@@ -82,9 +82,9 @@ déclencher à la main, un `git push` suffit.
 | | Test | Production |
 | --- | --- | --- |
 | Branche | `develop` | `main` |
-| API | `https://mtm-2-v2wo.onrender.com` (Render, Oregon) | `https://mtm-api-zm5i.onrender.com` (Render, Frankfurt) |
-| Back-office | `https://mtm-4.onrender.com` | `https://mtm-backoffice.pages.dev` (Cloudflare Pages) |
-| Site public | `https://mtm-public-web.onrender.com` | `https://mtm-public-web.pages.dev` (Cloudflare Pages) |
+| API | `https://mtm-2-v2wo.onrender.com` (Render, Oregon) | `https://api.mtm-immobilier.com` (Render, Frankfurt ; ancienne adresse `mtm-api-zm5i.onrender.com`) |
+| Back-office | `https://mtm-4.onrender.com` | `https://admin.mtm-immobilier.com` (Cloudflare Pages ; ancienne adresse `mtm-backoffice.pages.dev`) |
+| Site public | `https://mtm-public-web.onrender.com` | `https://www.mtm-immobilier.com` (Cloudflare Pages ; ancienne adresse `mtm-public-web.pages.dev`) |
 | Base (Neon) | projet `mtm`, us-east-2, données d'essai | projet `mtm-production`, eu-central-1 |
 | Images (Cloudinary) | dossier `mtm-staging/` | dossier `mtm-prod/` |
 | E-mails | Brevo, port 2525 | Brevo, port 2525 |

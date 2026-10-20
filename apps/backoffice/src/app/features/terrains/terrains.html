@@ -92,195 +92,199 @@
   </section>
 
   <section class="page-section" aria-labelledby="terrains-list-title">
-    <div class="list-toolbar">
-      <div class="list-toolbar__title">
-        <h2 id="terrains-list-title">Liste des biens</h2>
-        <p>
-          @if (loading()) {
-            Chargement…
-          } @else {
-            {{ total() }} terrain{{ total() > 1 ? 's' : '' }}
-            @if (hasActiveFilters()) {
-              correspondant aux filtres
-            }
-          }
-        </p>
-      </div>
-      <form class="list-filters" [formGroup]="filters" (ngSubmit)="$event.preventDefault()">
-        <mat-form-field appearance="outline" class="list-filters__search" subscriptSizing="dynamic">
-          <mat-label>Rechercher</mat-label>
-          <svg matPrefix class="list-filters__icon" lucideSearch aria-hidden="true"></svg>
-          <input matInput formControlName="search" placeholder="Référence, matricule, localité, vendeur, téléphone…" autocomplete="off" />
-        </mat-form-field>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Nature du bien</mat-label>
-          <mat-select formControlName="typeBien">
-            <mat-option value="">Tous</mat-option>
-            @for (option of options().typeBien; track option) {
-              <mat-option [value]="option">{{ typeBienLabel(option) }}</mat-option>
-            }
+    <h2 id="terrains-list-title" class="sr-only">Liste des biens</h2>
+
+    <!-- Recherche, tri et affichage -->
+    <form class="barre" [formGroup]="filters" (ngSubmit)="$event.preventDefault()">
+      <mat-form-field appearance="outline" class="barre__recherche" subscriptSizing="dynamic">
+        <mat-label>Rechercher</mat-label>
+        <svg matPrefix class="list-filters__icon" lucideSearch aria-hidden="true"></svg>
+        <input matInput formControlName="search" placeholder="Référence, matricule, localité, vendeur, téléphone…" autocomplete="off" />
+      </mat-form-field>
+      @if (viewMode() === 'grid') {
+        <mat-form-field appearance="outline" class="barre__tri" subscriptSizing="dynamic">
+          <mat-label>Trier par</mat-label>
+          <mat-select [value]="tri()" (valueChange)="tri.set($event)">
+            <mat-option value="defaut">Ordre du portefeuille</mat-option>
+            <mat-option value="prix-asc">Prix croissant</mat-option>
+            <mat-option value="prix-desc">Prix décroissant</mat-option>
+            <mat-option value="surface-desc">Surface décroissante</mat-option>
+            <mat-option value="nom">Nom (A → Z)</mat-option>
           </mat-select>
         </mat-form-field>
-        <!-- La typologie n'a de sens que sur du bâti : le filtre n'apparaît
-             qu'une fois une villa, un appartement ou un local choisi. -->
-        @if (batiSelectionne()) {
+      }
+      <button
+        mat-stroked-button
+        type="button"
+        class="barre__filtres"
+        (click)="showAdvanced.set(!showAdvanced())"
+        [attr.aria-expanded]="showAdvanced()"
+      >
+        <svg class="btn-icon" lucideSlidersHorizontal aria-hidden="true"></svg>Filtres
+        @if (panelCount() > 0) {
+          <span class="barre__compte">{{ panelCount() }}</span>
+        }
+      </button>
+      @if (viewMode() === 'table') {
+        <button mat-stroked-button type="button" [matMenuTriggerFor]="columnsMenu" aria-label="Choisir les colonnes">
+          <svg class="btn-icon" lucideColumns3 aria-hidden="true"></svg>Colonnes
+        </button>
+        <mat-menu #columnsMenu="matMenu">
+          @for (column of optionalColumns; track column.colId) {
+            <div class="columns-menu__item" role="presentation" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+              <mat-checkbox [checked]="visibleOptional().includes(column.colId)" (change)="toggleColumn(column.colId, $event.checked)">{{ column.label }}</mat-checkbox>
+            </div>
+          }
+        </mat-menu>
+      }
+      <div class="view-switch" role="group" aria-label="Mode d’affichage">
+        <button type="button" [class.is-active]="viewMode() === 'grid'" (click)="setViewMode('grid')" aria-label="Afficher en cartes" matTooltip="Cartes avec photo">
+          <svg lucideGrid2X2 aria-hidden="true"></svg>
+        </button>
+        <button type="button" [class.is-active]="viewMode() === 'table'" (click)="setViewMode('table')" aria-label="Afficher en tableau" matTooltip="Tableau">
+          <svg lucideList aria-hidden="true"></svg>
+        </button>
+      </div>
+
+      <!-- Les deux filtres qu'on utilise le plus, en un clic -->
+      <div class="chips" role="group" aria-label="Nature du bien">
+        <span class="chips__label">Nature</span>
+        <button type="button" class="chip" [class.is-actif]="!filters.controls.typeBien.value" [attr.aria-pressed]="!filters.controls.typeBien.value" (click)="choisirNature('')">Tous</button>
+        @for (option of options().typeBien; track option) {
+          <button type="button" class="chip" [class.is-actif]="filters.controls.typeBien.value === option" [attr.aria-pressed]="filters.controls.typeBien.value === option" (click)="choisirNature(option)">
+            {{ typeBienLabel(option) }}
+          </button>
+        }
+      </div>
+      <div class="chips" role="group" aria-label="Disponibilité">
+        <span class="chips__label">Statut</span>
+        <button type="button" class="chip" [class.is-actif]="!filters.controls.statutCommercial.value" [attr.aria-pressed]="!filters.controls.statutCommercial.value" (click)="choisirStatut('')">Tous</button>
+        @for (option of options().statutCommercial; track option) {
+          <button type="button" class="chip" [class.is-actif]="filters.controls.statutCommercial.value === option" [attr.aria-pressed]="filters.controls.statutCommercial.value === option" (click)="choisirStatut(option)">
+            {{ option }}
+          </button>
+        }
+      </div>
+
+      @if (showAdvanced()) {
+        <div class="panneau" role="region" aria-label="Autres filtres">
           <mat-form-field appearance="outline" subscriptSizing="dynamic">
-            <mat-label>Typologie</mat-label>
-            <mat-select formControlName="nombrePieces">
-              <mat-option value="">Toutes</mat-option>
-              @for (option of options().nombrePieces; track option) {
+            <mat-label>Statut juridique</mat-label>
+            <mat-select formControlName="statutJuridique">
+              <mat-option value="">Tous</mat-option>
+              @for (option of options().statutJuridique; track option) {
                 <mat-option [value]="option">{{ option }}</mat-option>
               }
             </mat-select>
           </mat-form-field>
-        }
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Commercialisation</mat-label>
-          <mat-select formControlName="statutCommercial">
-            <mat-option value="">Tous</mat-option>
-            @for (option of options().statutCommercial; track option) {
-              <mat-option [value]="option">{{ option }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Statut juridique</mat-label>
-          <mat-select formControlName="statutJuridique">
-            <mat-option value="">Tous</mat-option>
-            @for (option of options().statutJuridique; track option) {
-              <mat-option [value]="option">{{ option }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Vérification</mat-label>
-          <mat-select formControlName="niveauVerification">
-            <mat-option value="">Tous</mat-option>
-            @for (option of options().niveauVerification; track option) {
-              <mat-option [value]="option">{{ option }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Portefeuille</mat-label>
-          <mat-select formControlName="archivage">
-            <mat-option value="">Biens actifs</mat-option>
-            <mat-option value="archives">Archives</mat-option>
-            <mat-option value="tous">Tous</mat-option>
-          </mat-select>
-        </mat-form-field>
-        <button
-          mat-stroked-button
-          type="button"
-          (click)="showAdvanced.set(!showAdvanced())"
-          [attr.aria-expanded]="showAdvanced()"
-        >
-          <svg class="btn-icon" lucideSlidersHorizontal aria-hidden="true"></svg>Plus de filtres
-        </button>
-        @if (viewMode() === 'table') {
-          <button mat-stroked-button type="button" [matMenuTriggerFor]="columnsMenu" aria-label="Choisir les colonnes">
-            <svg class="btn-icon" lucideColumns3 aria-hidden="true"></svg>Colonnes
-          </button>
-          <mat-menu #columnsMenu="matMenu">
-            @for (column of optionalColumns; track column.colId) {
-              <div class="columns-menu__item" role="presentation" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
-                <mat-checkbox
-                  [checked]="visibleOptional().includes(column.colId)"
-                  (change)="toggleColumn(column.colId, $event.checked)"
-                  >{{ column.label }}</mat-checkbox
-                >
-              </div>
-            }
-          </mat-menu>
-        }
-        @if (hasActiveFilters()) {
-          <button mat-button type="button" class="list-filters__reset" (click)="resetFilters()">
-            <svg class="btn-icon" lucideX aria-hidden="true"></svg>Effacer
-          </button>
-        }
-        <div class="view-switch" role="group" aria-label="Mode d’affichage">
-          <button
-            type="button"
-            [class.is-active]="viewMode() === 'table'"
-            (click)="setViewMode('table')"
-            aria-label="Afficher en tableau"
-            matTooltip="Tableau"
-          >
-            <svg lucideList aria-hidden="true"></svg>
-          </button>
-          <button
-            type="button"
-            [class.is-active]="viewMode() === 'grid'"
-            (click)="setViewMode('grid')"
-            aria-label="Afficher en cartes"
-            matTooltip="Cartes avec photo"
-          >
-            <svg lucideGrid2X2 aria-hidden="true"></svg>
-          </button>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Vérification</mat-label>
+            <mat-select formControlName="niveauVerification">
+              <mat-option value="">Tous</mat-option>
+              @for (option of options().niveauVerification; track option) {
+                <mat-option [value]="option">{{ option }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Portefeuille</mat-label>
+            <mat-select formControlName="archivage">
+              <mat-option value="">Biens actifs</mat-option>
+              <mat-option value="archives">Archives</mat-option>
+              <mat-option value="tous">Tous</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <!-- La typologie n'a de sens que sur du bâti : le filtre n'apparaît
+               qu'une fois une villa, un appartement ou un local choisi. -->
+          @if (batiSelectionne()) {
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Typologie</mat-label>
+              <mat-select formControlName="nombrePieces">
+                <mat-option value="">Toutes</mat-option>
+                @for (option of options().nombrePieces; track option) {
+                  <mat-option [value]="option">{{ option }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          }
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Prix min. (FCFA)</mat-label>
+            <input matInput type="number" min="0" inputmode="numeric" formControlName="prixPublicMin" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Prix max. (FCFA)</mat-label>
+            <input matInput type="number" min="0" inputmode="numeric" formControlName="prixPublicMax" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Surface min. (m²)</mat-label>
+            <input matInput type="number" min="0" inputmode="numeric" formControlName="superficieMin" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Surface max. (m²)</mat-label>
+            <input matInput type="number" min="0" inputmode="numeric" formControlName="superficieMax" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Modalité de paiement</mat-label>
+            <mat-select formControlName="modalitePaiement">
+              <mat-option value="">Toutes</mat-option>
+              @for (option of options().modalitePaiement; track option) {
+                <mat-option [value]="option">{{ option }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Visite</mat-label>
+            <mat-select formControlName="statutVisite">
+              <mat-option value="">Toutes</mat-option>
+              @for (option of options().statutVisite; track option) {
+                <mat-option [value]="option">{{ option }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Produit direct</mat-label>
+            <mat-select formControlName="produitDirect">
+              <mat-option value="">Indifférent</mat-option>
+              <mat-option value="true">Oui</mat-option>
+              <mat-option value="false">Non</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Protocole d’accord</mat-label>
+            <mat-select formControlName="protocoleAccord">
+              <mat-option value="">Indifférent</mat-option>
+              <mat-option value="true">Signé</mat-option>
+              <mat-option value="false">Non signé</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Entré à partir du</mat-label>
+            <input matInput type="date" formControlName="dateEntreeMin" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Entré jusqu’au</mat-label>
+            <input matInput type="date" formControlName="dateEntreeMax" />
+          </mat-form-field>
         </div>
-        @if (showAdvanced()) {
-          <div class="list-filters__advanced">
-            <mat-form-field appearance="outline" subscriptSizing="dynamic">
-              <mat-label>Modalité de paiement</mat-label>
-              <mat-select formControlName="modalitePaiement">
-                <mat-option value="">Toutes</mat-option>
-                @for (option of options().modalitePaiement; track option) {
-                  <mat-option [value]="option">{{ option }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic">
-              <mat-label>Visite</mat-label>
-              <mat-select formControlName="statutVisite">
-                <mat-option value="">Toutes</mat-option>
-                @for (option of options().statutVisite; track option) {
-                  <mat-option [value]="option">{{ option }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic">
-              <mat-label>Produit direct</mat-label>
-              <mat-select formControlName="produitDirect">
-                <mat-option value="">Indifférent</mat-option>
-                <mat-option value="true">Oui</mat-option>
-                <mat-option value="false">Non</mat-option>
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic">
-              <mat-label>Protocole d’accord</mat-label>
-              <mat-select formControlName="protocoleAccord">
-                <mat-option value="">Indifférent</mat-option>
-                <mat-option value="true">Signé</mat-option>
-                <mat-option value="false">Non signé</mat-option>
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic">
-              <mat-label>Entré à partir du</mat-label>
-              <input matInput type="date" formControlName="dateEntreeMin" />
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic">
-              <mat-label>Entré jusqu’au</mat-label>
-              <input matInput type="date" formControlName="dateEntreeMax" />
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic">
-              <mat-label>Surface min. (m²)</mat-label>
-              <input matInput type="number" min="0" inputmode="numeric" formControlName="superficieMin" />
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic">
-              <mat-label>Surface max. (m²)</mat-label>
-              <input matInput type="number" min="0" inputmode="numeric" formControlName="superficieMax" />
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic">
-              <mat-label>Prix min. (FCFA)</mat-label>
-              <input matInput type="number" min="0" inputmode="numeric" formControlName="prixPublicMin" />
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic">
-              <mat-label>Prix max. (FCFA)</mat-label>
-              <input matInput type="number" min="0" inputmode="numeric" formControlName="prixPublicMax" />
-            </mat-form-field>
-          </div>
+      }
+    </form>
+
+    <div class="resultat">
+      <p aria-live="polite">
+        @if (loading()) {
+          Chargement…
+        } @else {
+          <strong>{{ total() }}</strong> bien{{ total() > 1 ? 's' : '' }}
+          @if (hasActiveFilters()) {
+            correspondant aux filtres
+          }
         }
-      </form>
+      </p>
+      @if (hasActiveFilters()) {
+        <button mat-button type="button" (click)="resetFilters()">
+          <svg class="btn-icon" lucideX aria-hidden="true"></svg>Effacer les filtres
+        </button>
+      }
     </div>
 
     @if (!loading() && rowData().length === 0) {
@@ -293,12 +297,12 @@
         } @else {
           <h3>Aucun bien pour le moment</h3>
           <p>
-            Commencez par créer la fiche d’un terrain : identité, localisation, prix et photos. Elle
+            Commencez par créer la fiche d’un bien : identité, localisation, prix et photos. Elle
             pourra ensuite être publiée sur le site en passant son statut à « Disponible ».
           </p>
           @if (canCreate()) {
             <button mat-flat-button color="primary" type="button" (click)="openCreate()">
-              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Créer le premier terrain
+              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Créer le premier bien
             </button>
           }
         }
@@ -319,102 +323,74 @@
         (rowClicked)="$event.data && openDetail($event.data.id)"
       />
     } @else {
-      <div class="terrain-cards" aria-label="Biens en cartes">
+      <div class="cartes" aria-label="Biens en cartes">
         @if (loading()) {
-          @for (i of [1, 2, 3, 4]; track i) {
-            <div class="terrain-card terrain-card--skeleton" aria-hidden="true">
-              <div class="skeleton terrain-card__image"></div>
+          @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+            <div class="carte carte--skeleton" aria-hidden="true">
+              <div class="skeleton carte__photo"></div>
               <div class="skeleton" style="height: 18px; width: 70%"></div>
               <div class="skeleton" style="height: 14px; width: 50%"></div>
             </div>
           }
         } @else {
-          @for (terrain of rowData(); track terrain.id) {
-            <article class="terrain-card" (click)="openDetail(terrain.id)" tabindex="0" (keyup.enter)="openDetail(terrain.id)">
-              @if (thumbnail(terrain); as imageUrl) {
-                <img class="terrain-card__image" [src]="imageUrl" [alt]="terrain.nom" loading="lazy" />
-              } @else {
-                <div class="terrain-card__image terrain-card__image--empty">
-                  <svg lucideCamera aria-hidden="true"></svg><span>Pas de photo publique</span>
-                </div>
-              }
-              <div class="terrain-card__body">
-                <div class="terrain-card__topline">
-                  <span class="terrain-card__reference">{{ terrain.referenceInterne }}</span>
-                  <!-- Le catalogue mêle parcelles nues et biens bâtis : sans
-                       cette pastille, rien ne distingue une villa d'un terrain
-                       avant d'ouvrir la fiche. -->
-                  <span [class]="pillClass(typeBienMeanings, terrain.typeBien)">
-                    {{ typeBienLabel(terrain.typeBien) }}
-                  </span>
+          @for (terrain of cartesTriees(); track terrain.id) {
+            <article class="carte" (click)="openDetail(terrain.id)" tabindex="0" (keyup.enter)="openDetail(terrain.id)" [attr.aria-label]="terrain.nom">
+              <div class="carte__photo">
+                @if (thumbnail(terrain); as imageUrl) {
+                  <img [src]="imageUrl" [alt]="terrain.nom" loading="lazy" />
+                } @else {
+                  <div class="carte__vide"><svg lucideCamera aria-hidden="true"></svg><span>Pas de photo publique</span></div>
+                }
+                <span class="carte__statut">
                   @if (terrain.archiveLe) {
                     <span class="status-pill">Archivé</span>
                   } @else {
                     <span [class]="pillClass(commercialStatus, terrain.statutCommercial)">{{ terrain.statutCommercial }}</span>
                   }
-                </div>
+                </span>
+                <span class="carte__nature">{{ typeBienLabel(terrain.typeBien) }}</span>
+                <strong class="carte__prix">{{ terrain.prixPublic | mtmMoney }}</strong>
+              </div>
+              <div class="carte__corps">
                 <h3>{{ terrain.nom }}</h3>
-                <p class="terrain-card__location">{{ formatLocation(terrain) }}</p>
-                @if (vendeurNom(terrain); as vendeur) {
-                  <p class="terrain-card__vendeur">{{ vendeur }}</p>
-                }
-                <dl class="terrain-card__facts">
-                  <div>
-                    <dt>{{ estBati(terrain) ? 'Parcelle' : 'Superficie' }}</dt>
-                    <dd>{{ terrain.superficie === null ? '—' : terrain.superficie + ' m²' }}</dd>
-                  </div>
-                  <!-- Sur un bien bâti, c'est l'habitable que l'acheteur
-                       regarde en premier : on l'affiche à côté de la parcelle
-                       plutôt qu'à sa place. -->
+                <p class="carte__lieu"><svg lucideMapPin aria-hidden="true"></svg>{{ formatLocation(terrain) }}</p>
+                <ul class="carte__faits">
+                  <li><strong>{{ terrain.superficie === null ? '—' : (terrain.superficie | number: '1.0-0') + ' m²' }}</strong><span>{{ estBati(terrain) ? 'parcelle' : 'superficie' }}</span></li>
                   @if (estBati(terrain)) {
-                    <div>
-                      <dt>Habitable</dt>
-                      <dd>
-                        {{ terrain.surfaceHabitable === null ? '—' : terrain.surfaceHabitable + ' m²' }}
-                        @if (terrain.nombrePieces) {
-                          · {{ terrain.nombrePieces }}
-                        }
-                      </dd>
-                    </div>
+                    <li>
+                      <strong>{{ terrain.surfaceHabitable === null ? '—' : terrain.surfaceHabitable + ' m²' }}</strong>
+                      <span>habitable{{ terrain.nombrePieces ? ' · ' + terrain.nombrePieces : '' }}</span>
+                    </li>
                   }
-                  <div>
-                    <dt>Prix public</dt>
-                    <dd>{{ terrain.prixPublic | mtmMoney }}</dd>
-                  </div>
                   @if (terrain.nombreLots && terrain.nombreLots > 1) {
-                    <div>
-                      <dt>Lots</dt>
-                      <dd>{{ terrain.nombreLots }}</dd>
-                    </div>
+                    <li><strong>{{ terrain.nombreLots }}</strong><span>lots</span></li>
                   }
                   @if (terrain.modalitePaiement) {
-                    <div>
-                      <dt>Paiement</dt>
-                      <dd>{{ terrain.modalitePaiement }}</dd>
-                    </div>
+                    <li><strong>{{ terrain.modalitePaiement }}</strong><span>paiement</span></li>
                   }
-                </dl>
-                <div class="terrain-card__actions">
-                  <!-- Appeler le vendeur sans ouvrir la fiche : l'usage premier sur le terrain. -->
-                  @if (tel(terrain); as lienTel) {
-                    <a mat-button [href]="lienTel" (click)="$event.stopPropagation()" aria-label="Appeler le vendeur">
-                      <svg class="btn-icon" lucidePhone aria-hidden="true"></svg>Appeler
-                    </a>
-                  }
-                  @if (whatsapp(terrain); as lienWhatsapp) {
-                    <a mat-button [href]="lienWhatsapp" target="_blank" rel="noopener" (click)="$event.stopPropagation()" aria-label="Écrire au vendeur sur WhatsApp">
-                      <svg class="btn-icon" lucideMessageCircle aria-hidden="true"></svg>WhatsApp
-                    </a>
-                  }
-                  <button mat-button type="button" (click)="openDetail(terrain.id); $event.stopPropagation()">
-                    <svg class="btn-icon" lucideEye aria-hidden="true"></svg>Fiche
-                  </button>
-                  @if (canModify()) {
-                    <button mat-button type="button" (click)="openEdit(terrain.id); $event.stopPropagation()">
-                      <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Modifier
-                    </button>
-                  }
+                </ul>
+                <div class="carte__pied">
+                  <span class="carte__vendeur" [class.is-vide]="!vendeurNom(terrain)">{{ vendeurNom(terrain) || 'Vendeur non renseigné' }}</span>
+                  <span class="carte__actions">
+                    <!-- Appeler le vendeur sans ouvrir la fiche : l'usage premier sur le terrain. -->
+                    @if (tel(terrain); as lienTel) {
+                      <a class="carte__icone" [href]="lienTel" (click)="$event.stopPropagation()" aria-label="Appeler le vendeur" matTooltip="Appeler le vendeur">
+                        <svg lucidePhone aria-hidden="true"></svg>
+                      </a>
+                    }
+                    @if (whatsapp(terrain); as lienWhatsapp) {
+                      <a class="carte__icone" [href]="lienWhatsapp" target="_blank" rel="noopener" (click)="$event.stopPropagation()" aria-label="Écrire au vendeur sur WhatsApp" matTooltip="WhatsApp">
+                        <svg lucideMessageCircle aria-hidden="true"></svg>
+                      </a>
+                    }
+                    @if (canModify()) {
+                      <button type="button" class="carte__icone" (click)="openEdit(terrain.id); $event.stopPropagation()" aria-label="Modifier" matTooltip="Modifier">
+                        <svg lucidePencil aria-hidden="true"></svg>
+                      </button>
+                    }
+                  </span>
                 </div>
+                <span class="carte__reference">{{ terrain.referenceInterne }}</span>
               </div>
             </article>
           }

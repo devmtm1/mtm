@@ -30,7 +30,12 @@ export type NatureLigne =
   | 'frais_operateur'
   | 'depense_chantier'
   | 'operation_recette'
-  | 'operation_depense';
+  | 'operation_depense'
+  | 'operation_avance'
+  | 'operation_remboursement'
+  | 'paiement_chantier'
+  | 'reversement_proprietaire'
+  | 'remboursement_client';
 
 export const LIBELLES_NATURE: Record<NatureLigne, string> = {
   encaissement_vente: 'Encaissement de vente',
@@ -42,6 +47,11 @@ export const LIBELLES_NATURE: Record<NatureLigne, string> = {
   depense_chantier: 'Dépense de chantier',
   operation_recette: 'Recette saisie',
   operation_depense: 'Dépense saisie',
+  operation_avance: 'Avance de fonds',
+  operation_remboursement: 'Remboursement',
+  paiement_chantier: 'Paiement client de chantier',
+  reversement_proprietaire: 'Reversement au propriétaire',
+  remboursement_client: 'Remboursement de client (désistement)',
 };
 
 /** Une ligne du journal financier : un mouvement d'argent, d'où qu'il vienne. */
@@ -62,6 +72,17 @@ export interface LigneJournal {
   revenu: number;
   /** Route du back-office du dossier concerné. */
   lien: string | null;
+  /** Compte de trésorerie imposé ; sinon déduit du mode de paiement. */
+  compteId?: string | null;
+  /**
+   * Mouvement d'argent qui ne pèse pas sur le résultat de MTM : reversement à
+   * un propriétaire, avance de fonds, remboursement. Il compte dans la trésorerie.
+   */
+  horsResultat?: boolean;
+  /** Numéro d'opération lisible (OP-2026-000123), quand le mouvement en porte un. */
+  numero?: string | null;
+  /** Le justificatif de la pièce est-il joint ? `undefined` : sans objet. */
+  justifie?: boolean;
 }
 
 /** Arrondi à l'unité : le franc CFA n'a pas de centime en pratique. */
@@ -144,6 +165,7 @@ export function totaliser(lignes: LigneJournal[]): {
   ) as Record<Activite, TotauxActivite>;
   const global = totauxVides();
   for (const ligne of lignes) {
+    if (ligne.horsResultat) continue;
     for (const cible of [parActivite[ligne.activite], global]) {
       if (ligne.sens === 'entree') {
         cible.encaissements += ligne.montant;
@@ -179,6 +201,7 @@ export function serieMensuelle(
     ]),
   );
   for (const ligne of lignes) {
+    if (ligne.horsResultat) continue;
     const point = points.get(moisDe(ligne.date));
     if (!point) continue;
     if (ligne.sens === 'entree') {

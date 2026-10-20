@@ -9,6 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { DecimalPipe } from '@angular/common';
 import { AgGridAngular } from 'ag-grid-angular';
 import type { ColDef, GridApi, GridReadyEvent, ICellRendererParams } from 'ag-grid-community';
 import {
@@ -17,11 +18,11 @@ import {
   LucideCamera,
   LucideCircleCheck,
   LucideColumns3,
-  LucideEye,
   LucideFileSpreadsheet,
   LucideGrid2X2,
   LucideLandPlot,
   LucideList,
+  LucideMapPin,
   LucideMapPinOff,
   LucideMessageCircle,
   LucidePencil,
@@ -105,6 +106,7 @@ const OPTIONAL_COLUMNS: { colId: string; label: string }[] = [
 @Component({
   selector: 'app-terrains',
   imports: [
+    DecimalPipe,
     MoneyPipe,
     ReactiveFormsModule,
     AgGridAngular,
@@ -120,11 +122,11 @@ const OPTIONAL_COLUMNS: { colId: string; label: string }[] = [
     LucideCamera,
     LucideCircleCheck,
     LucideColumns3,
-    LucideEye,
     LucideFileSpreadsheet,
     LucideGrid2X2,
     LucideLandPlot,
     LucideList,
+    LucideMapPin,
     LucideMapPinOff,
     LucideMessageCircle,
     LucidePencil,
@@ -171,6 +173,36 @@ export class Terrains implements OnInit {
   protected readonly canModify = computed(() => this.sessionService.hasPermission('terrains:modifier'));
   protected readonly filters = this.formBuilder.nonNullable.group(EMPTY_FILTERS);
   protected readonly hasActiveFilters = signal(false);
+  /** Nombre de filtres posés dans le panneau « Filtres » (hors recherche, nature et statut, visibles en permanence). */
+  protected readonly panelCount = signal(0);
+  protected readonly tri = signal<'defaut' | 'prix-asc' | 'prix-desc' | 'surface-desc' | 'nom'>('defaut');
+
+  /** Les cartes suivent le tri choisi ; le tableau garde son propre tri par colonne. */
+  protected readonly cartesTriees = computed(() => {
+    const liste = [...this.rowData()];
+    const nombre = (valeur: unknown): number => (valeur === null || valeur === undefined ? Number.NaN : Number(valeur));
+    // Un prix ou une surface absents passent toujours en dernier, quel que soit le sens.
+    const comparer = (cle: 'prixPublic' | 'superficie', sens: 1 | -1) => (a: TerrainListItem, b: TerrainListItem) => {
+      const x = nombre(a[cle]);
+      const y = nombre(b[cle]);
+      if (Number.isNaN(x) && Number.isNaN(y)) return 0;
+      if (Number.isNaN(x)) return 1;
+      if (Number.isNaN(y)) return -1;
+      return (x - y) * sens;
+    };
+    switch (this.tri()) {
+      case 'prix-asc':
+        return liste.sort(comparer('prixPublic', 1));
+      case 'prix-desc':
+        return liste.sort(comparer('prixPublic', -1));
+      case 'surface-desc':
+        return liste.sort(comparer('superficie', -1));
+      case 'nom':
+        return liste.sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
+      default:
+        return liste;
+    }
+  });
   /** Filtres avancés repliés par défaut : sur téléphone, la recherche passe d'abord. */
   protected readonly showAdvanced = signal(false);
   protected readonly optionalColumns = OPTIONAL_COLUMNS;
@@ -416,6 +448,15 @@ export class Terrains implements OnInit {
     this.filters.patchValue({ ...EMPTY_FILTERS, statutCommercial });
   }
 
+  /** Les deux filtres de la barre : un clic, sans ouvrir de liste déroulante. */
+  protected choisirNature(typeBien: string): void {
+    this.filters.controls.typeBien.setValue(typeBien);
+  }
+
+  protected choisirStatut(statutCommercial: string): void {
+    this.filters.controls.statutCommercial.setValue(statutCommercial);
+  }
+
   protected resetFilters(): void {
     this.filters.reset(EMPTY_FILTERS);
   }
@@ -471,6 +512,23 @@ export class Terrains implements OnInit {
     this.loading.set(true);
     const value = this.filters.getRawValue();
     this.hasActiveFilters.set(Object.values(value).some((item) => item !== ''));
+    const dansLePanneau: (keyof typeof EMPTY_FILTERS)[] = [
+      'statutJuridique',
+      'niveauVerification',
+      'archivage',
+      'nombrePieces',
+      'modalitePaiement',
+      'statutVisite',
+      'produitDirect',
+      'protocoleAccord',
+      'dateEntreeMin',
+      'dateEntreeMax',
+      'superficieMin',
+      'superficieMax',
+      'prixPublicMin',
+      'prixPublicMax',
+    ];
+    this.panelCount.set(dansLePanneau.filter((cle) => value[cle] !== '').length);
     const query = { ...value, pageSize: 200 } as unknown as TerrainQuery;
     this.terrainsApi.findAll(query).subscribe({
       next: (page) => {
@@ -567,8 +625,8 @@ export class Terrains implements OnInit {
     try {
       const saved = localStorage.getItem('mtm.terrains.view');
       if (saved) return saved === 'grid' ? 'grid' : 'table';
-      // Sur téléphone, un tableau de dix colonnes est illisible : cartes d'office.
-      return typeof window !== 'undefined' && window.innerWidth < 768 ? 'grid' : 'table';
+      // Un bien se juge d'abord à sa photo, son prix et son lieu : cartes par défaut, le tableau reste à un clic.
+      return 'grid';
     } catch {
       return 'table';
     }

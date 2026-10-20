@@ -116,6 +116,26 @@ model User {
   terrainsArchives               Terrain[]               @relation("TerrainArchivePar")
   terrainNotes                   TerrainNote[]           @relation("TerrainNoteAuteur")
 
+  // --- Trésorerie et contrôle financier (cahier des charges du DG) ---
+  operationsAutorisees         OperationFinanciere[]     @relation("OperationAutorisePar")
+  mouvementsFondsCrees         MouvementFonds[]          @relation("MouvementFondsCreePar")
+  mouvementsFondsRecus         MouvementFonds[]          @relation("MouvementFondsRecuPar")
+  mouvementsFondsRemis         MouvementFonds[]          @relation("MouvementFondsRemisPar")
+  mouvementsFondsConfirmes     MouvementFonds[]          @relation("MouvementFondsConfirmePar")
+  cloturesCaisseFaites         ClotureCaisse[]           @relation("ClotureCaissePar")
+  cloturesCaisseDecidees       ClotureCaisse[]           @relation("ClotureCaisseDecisionPar")
+  reversementsCrees            ReversementProprietaire[] @relation("ReversementCreePar")
+  reversementsAutorises        ReversementProprietaire[] @relation("ReversementAutorisePar")
+  reversementsPayes            ReversementProprietaire[] @relation("ReversementPayePar")
+  remboursementsCrees          DemandeRemboursement[]    @relation("RemboursementCreePar")
+  remboursementsDecides        DemandeRemboursement[]    @relation("RemboursementDecidePar")
+  paiementsChantierEnregistres PaiementChantier[]        @relation("PaiementChantierEnregistrePar")
+  paiementsChantierValides     PaiementChantier[]        @relation("PaiementChantierValidePar")
+  rapportsQuotidiensPrepares   RapportQuotidien[]        @relation("RapportQuotidienPrepare")
+  rapportsQuotidiensVerifies   RapportQuotidien[]        @relation("RapportQuotidienVerifie")
+  relevesImportes              ReleveLigne[]             @relation("ReleveImportePar")
+  relevesRapproches            ReleveLigne[]             @relation("ReleveRapprochePar")
+
   @@map("users")
 }
 
@@ -136,7 +156,8 @@ model Proprietaire {
   terrains      Terrain[]
   mandats       Mandat[]
   biensLocatifs BienLocatif[]
-  clientUser    User?         @relation("ProprietaireClientUser")
+  clientUser    User?                     @relation("ProprietaireClientUser")
+  reversements  ReversementProprietaire[]
 
   @@index([lastName, firstName])
   @@map("proprietaires")
@@ -178,6 +199,8 @@ model Terrain {
   // est construit dessus, et n'apparaissent dans les écrans que si le type
   // du bien les rend pertinentes.
   /**
+   * /**
+   * /**
    * /**
    * /**
    * /**
@@ -236,6 +259,8 @@ model Terrain {
   notesInternes            String?
   // --- Suivi du portefeuille (reprise du tableur « Bd terrains ») ---
   /**
+   * /**
+   * /**
    * /**
    * /**
    * /**
@@ -386,6 +411,8 @@ model Mandat {
   objectifsCommercialisation String?
   alerteEcheanceJours        Int?     @default(30)
   statut                     String   @default("Brouillon")
+  /// Quand MTM reverse au propriétaire ce qu'elle a encaissé pour lui : au_fur_et_a_mesure | fin_paiement | echeancier.
+  modeReversement            String   @default("au_fur_et_a_mesure")
 
   lots      MandatLot[]
   documents MandatDocument[]
@@ -690,6 +717,8 @@ model Prospect {
    * /**
    * /**
    * /**
+   * /**
+   * /**
    * /** Vrai dès qu'un mandat de recherche est ouvert pour ce prospect.
    */
   rechercheActive               Boolean   @default(false)
@@ -862,6 +891,9 @@ model DossierVente {
   paiements    Paiement[]
   commissions  CommissionVente[]
   documents    DocumentVente[]
+
+  reversements   ReversementProprietaire[]
+  remboursements DemandeRemboursement[]
 
   @@index([prospectId])
   @@index([terrainId])
@@ -1420,6 +1452,8 @@ model BienLocatif {
    * /**
    * /**
    * /**
+   * /**
+   * /**
    * Visible sur le site tant que le bien est « disponible ». Réservé à la
    * permission locatif:publier ; exige un loyer et au moins une photo.
    */
@@ -1445,6 +1479,8 @@ model BienLocatif {
 
   // --- Courte durée (type Airbnb) ---
   /**
+   * /**
+   * /**
    * /**
    * /**
    * /**
@@ -1523,6 +1559,8 @@ model BailLocatif {
 
   // --- Sortie et cas particuliers (section 15) ---
   /**
+   * /**
+   * /**
    * /**
    * /**
    * /**
@@ -2083,6 +2121,9 @@ model ProjetConstruction {
   depenses     DepenseChantier[]
   documents    DocumentChantier[]
 
+  echeancesClient EcheanceChantier[]
+  paiementsClient PaiementChantier[]
+
   @@index([clientId])
   @@index([terrainId])
   @@index([statut])
@@ -2300,6 +2341,11 @@ model DepenseChantier {
   date          DateTime  @default(now())
   modePaiement  String?
   reference     String?
+  /**
+   * Matériaux achetés directement par le client : suivis sur la fiche du
+   * chantier mais jamais comptés comme une sortie de trésorerie de MTM.
+   */
+  payeParClient Boolean   @default(false)
   /**
    * Une dépense saisie par le chantier attend la validation comptable avant
    * de peser sur le budget consommé : même principe que les paiements de
@@ -2584,9 +2630,32 @@ model OperationFinanciere {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
+  /// Numéro d'opération unique et lisible : OP-2026-000123.
+  numeroSeq            Int                   @unique @default(autoincrement())
+  /// definitive | avance | remboursement : seule une dépense définitive pèse sur le résultat.
+  nature               String                @default("definitive")
+  /// Compte de trésorerie imposé ; sinon déduit du mode de paiement.
+  compteId             String?
+  compte               CompteTresorerie?     @relation(fields: [compteId], references: [id], onDelete: SetNull)
+  /// 0 : la comptable seule ; 1 à 3 : autorisation de la Direction générale (seuils configurables).
+  niveauValidation     Int                   @default(0)
+  autoriseParId        String?
+  autorisePar          User?                 @relation("OperationAutorisePar", fields: [autoriseParId], references: [id], onDelete: SetNull)
+  autoriseLe           DateTime?
+  motifAutorisation    String?
+  /// Paiement exceptionnel autorisé à distance (déplacement de la Direction générale).
+  autorisationDistance Boolean               @default(false)
+  /// Écriture corrigée : l'originale reste consultable, la correction la référence.
+  corrigeId            String?
+  corrige              OperationFinanciere?  @relation("OperationCorrection", fields: [corrigeId], references: [id], onDelete: Restrict)
+  corrections          OperationFinanciere[] @relation("OperationCorrection")
+  motifCorrection      String?
+
   @@index([date])
   @@index([statut])
   @@index([activite, sens])
+  @@index([compteId])
+  @@index([corrigeId])
   @@map("operations_financieres")
 }
 
@@ -2601,4 +2670,292 @@ model ClotureFinanciere {
   clotureLe  DateTime @default(now())
 
   @@map("clotures_financieres")
+}
+
+// ============================================================
+// Trésorerie et contrôle financier (cahier des charges du DG)
+// ============================================================
+
+/// Caisse, compte bancaire ou portefeuille mobile, suivi séparément.
+/// Un mouvement d'argent est rattaché au compte qui sert son mode de paiement.
+model CompteTresorerie {
+  id               String   @id @default(uuid())
+  code             String   @unique
+  nom              String
+  /// caisse | banque | wave | orange_money | autre
+  type             String
+  /// Modes de paiement encaissés ou décaissés sur ce compte : especes, virement, wave…
+  modes            String[]
+  soldeInitial     Decimal  @default(0) @db.Decimal(15, 2)
+  /// Les mouvements antérieurs ne comptent pas dans le solde.
+  dateSoldeInitial DateTime @default(now()) @db.Date
+  actif            Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  operations       OperationFinanciere[]
+  mouvementsSortie MouvementFonds[]      @relation("MouvementFondsSource")
+  mouvementsEntree MouvementFonds[]      @relation("MouvementFondsDestination")
+  cloturesCaisse   ClotureCaisse[]
+  releves          ReleveLigne[]
+
+  @@map("comptes_tresorerie")
+}
+
+/// Remise de fonds, avance, remboursement ou transfert entre comptes : de l'argent
+/// qui change de main sans être une dépense. Chaque remise porte un bordereau
+/// confirmé par une autre personne que celle qui l'a saisi.
+model MouvementFonds {
+  id                  String            @id @default(uuid())
+  numeroSeq           Int               @unique @default(autoincrement())
+  /// transfert | remise_fonds | avance | remboursement
+  type                String
+  compteSourceId      String?
+  compteSource        CompteTresorerie? @relation("MouvementFondsSource", fields: [compteSourceId], references: [id], onDelete: Restrict)
+  compteDestinationId String?
+  compteDestination   CompteTresorerie? @relation("MouvementFondsDestination", fields: [compteDestinationId], references: [id], onDelete: Restrict)
+  montant             Decimal           @db.Decimal(15, 2)
+  date                DateTime          @db.Date
+  origine             String?
+  motif               String
+  remetId             String?
+  remet               User?             @relation("MouvementFondsRemisPar", fields: [remetId], references: [id], onDelete: SetNull)
+  remetNom            String?
+  recoitId            String?
+  recoit              User?             @relation("MouvementFondsRecuPar", fields: [recoitId], references: [id], onDelete: SetNull)
+  recoitNom           String?
+  reference           String?
+  justificatifKey     String?
+  justificatifType    String?
+  /// en_attente | confirme | rejete : un mouvement ne compte qu'une fois confirmé.
+  statut              String            @default("en_attente")
+  motifRejet          String?
+  confirmeParId       String?
+  confirmePar         User?             @relation("MouvementFondsConfirmePar", fields: [confirmeParId], references: [id], onDelete: SetNull)
+  confirmeLe          DateTime?
+  createdById         String
+  createdBy           User              @relation("MouvementFondsCreePar", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@index([date])
+  @@index([statut])
+  @@index([compteSourceId])
+  @@index([compteDestinationId])
+  @@map("mouvements_fonds")
+}
+
+/// Clôture de caisse d'un jour : solde théorique, montant compté, écart expliqué et soumis à décision.
+model ClotureCaisse {
+  id               String           @id @default(uuid())
+  compteId         String
+  compte           CompteTresorerie @relation(fields: [compteId], references: [id], onDelete: Restrict)
+  date             DateTime         @db.Date
+  soldeInitial     Decimal          @db.Decimal(15, 2)
+  encaissements    Decimal          @db.Decimal(15, 2)
+  decaissements    Decimal          @db.Decimal(15, 2)
+  soldeTheorique   Decimal          @db.Decimal(15, 2)
+  montantCompte    Decimal          @db.Decimal(15, 2)
+  ecart            Decimal          @db.Decimal(15, 2)
+  /// Obligatoire dès qu'il y a un écart.
+  explication      String?
+  justificatifKey  String?
+  justificatifType String?
+  /// aucune (pas d'écart) | en_attente | acceptee | a_corriger : aucun écart n'est régularisé en silence.
+  decision         String           @default("aucune")
+  decisionMotif    String?
+  decisionParId    String?
+  decisionPar      User?            @relation("ClotureCaisseDecisionPar", fields: [decisionParId], references: [id], onDelete: SetNull)
+  decisionLe       DateTime?
+  cloturePar       String
+  parUser          User             @relation("ClotureCaissePar", fields: [cloturePar], references: [id], onDelete: Restrict)
+  createdAt        DateTime         @default(now())
+
+  @@unique([compteId, date])
+  @@index([date])
+  @@index([decision])
+  @@map("clotures_caisse")
+}
+
+/// Somme reversée à un propriétaire sur le prix d'un terrain confié : MTM encaisse,
+/// déduit sa commission, puis reverse. Une avance (avant que le client ait fini de
+/// payer) n'existe que sur autorisation expresse de la Direction générale.
+model ReversementProprietaire {
+  id                String       @id @default(uuid())
+  numeroSeq         Int          @unique @default(autoincrement())
+  proprietaireId    String
+  proprietaire      Proprietaire @relation(fields: [proprietaireId], references: [id], onDelete: Restrict)
+  dossierVenteId    String
+  dossierVente      DossierVente @relation(fields: [dossierVenteId], references: [id], onDelete: Restrict)
+  montant           Decimal      @db.Decimal(15, 2)
+  /// normal | avance
+  type              String       @default("normal")
+  motif             String
+  /// en_attente | autorise | paye | rejete
+  statut            String       @default("en_attente")
+  modePaiement      String?
+  reference         String?
+  datePaiement      DateTime?    @db.Date
+  justificatifKey   String?
+  justificatifType  String?
+  motifRejet        String?
+  createdById       String
+  createdBy         User         @relation("ReversementCreePar", fields: [createdById], references: [id], onDelete: Restrict)
+  autoriseParId     String?
+  autorisePar       User?        @relation("ReversementAutorisePar", fields: [autoriseParId], references: [id], onDelete: SetNull)
+  autoriseLe        DateTime?
+  motifAutorisation String?
+  payeParId         String?
+  payePar           User?        @relation("ReversementPayePar", fields: [payeParId], references: [id], onDelete: SetNull)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([proprietaireId])
+  @@index([dossierVenteId])
+  @@index([statut])
+  @@index([datePaiement])
+  @@map("reversements_proprietaire")
+}
+
+/// Désistement d'un client : retenue sur l'avance, remboursement du solde dans un délai.
+/// La règle appliquée (retenue, délai) est figée dans la demande.
+model DemandeRemboursement {
+  id               String       @id @default(uuid())
+  numeroSeq        Int          @unique @default(autoincrement())
+  dossierVenteId   String
+  dossierVente     DossierVente @relation(fields: [dossierVenteId], references: [id], onDelete: Restrict)
+  dateDemande      DateTime     @db.Date
+  /// Total réellement encaissé (paiements validés) au moment de la demande.
+  montantVerse     Decimal      @db.Decimal(15, 2)
+  retenuePct       Decimal      @db.Decimal(5, 2)
+  montantRetenu    Decimal      @db.Decimal(15, 2)
+  montantRembourse Decimal      @db.Decimal(15, 2)
+  delaiMois        Int
+  dateLimite       DateTime     @db.Date
+  /// La clause a-t-elle été validée juridiquement quand la demande a été enregistrée ?
+  regleValidee     Boolean      @default(false)
+  versionProtocole String?
+  motif            String?
+  /// demandee | acceptee | refusee | payee
+  statut           String       @default("demandee")
+  decisionMotif    String?
+  decisionParId    String?
+  decisionPar      User?        @relation("RemboursementDecidePar", fields: [decisionParId], references: [id], onDelete: SetNull)
+  decisionLe       DateTime?
+  modePaiement     String?
+  reference        String?
+  datePaiement     DateTime?    @db.Date
+  justificatifKey  String?
+  justificatifType String?
+  createdById      String
+  createdBy        User         @relation("RemboursementCreePar", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([dossierVenteId])
+  @@index([statut])
+  @@map("demandes_remboursement")
+}
+
+/// Échéance de paiement du client sur un chantier : l'acompte (environ 50 %), puis les paiements selon l'avancement.
+model EcheanceChantier {
+  id           String             @id @default(uuid())
+  projetId     String
+  projet       ProjetConstruction @relation(fields: [projetId], references: [id], onDelete: Cascade)
+  ordre        Int
+  libelle      String
+  dateEcheance DateTime?          @db.Date
+  montantPrevu Decimal            @db.Decimal(15, 2)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  paiements PaiementChantier[]
+
+  @@unique([projetId, ordre])
+  @@map("echeances_chantier")
+}
+
+/// Paiement reçu du client d'un chantier. Compte dans les recettes de MTM une fois validé par la comptabilité.
+model PaiementChantier {
+  id               String             @id @default(uuid())
+  numeroSeq        Int                @unique @default(autoincrement())
+  projetId         String
+  projet           ProjetConstruction @relation(fields: [projetId], references: [id], onDelete: Cascade)
+  echeanceId       String?
+  echeance         EcheanceChantier?  @relation(fields: [echeanceId], references: [id], onDelete: SetNull)
+  montant          Decimal            @db.Decimal(15, 2)
+  date             DateTime           @db.Date
+  mode             String
+  reference        String?
+  notes            String?
+  justificatifKey  String?
+  justificatifType String?
+  /// en_attente | valide | rejete
+  statut           String             @default("en_attente")
+  motifRejet       String?
+  recordedById     String
+  recordedBy       User               @relation("PaiementChantierEnregistrePar", fields: [recordedById], references: [id], onDelete: Restrict)
+  validatedById    String?
+  validatedBy      User?              @relation("PaiementChantierValidePar", fields: [validatedById], references: [id], onDelete: SetNull)
+  validatedAt      DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([projetId, statut])
+  @@index([date])
+  @@map("paiements_chantier")
+}
+
+/// Rapport financier d'un jour, transmis chaque soir à la Direction générale.
+/// Le contenu est figé à la transmission.
+model RapportQuotidien {
+  id           String    @id @default(uuid())
+  date         DateTime  @unique @db.Date
+  /// brouillon | verifie | transmis
+  statut       String    @default("brouillon")
+  contenu      Json
+  preparePar   String
+  prepare      User      @relation("RapportQuotidienPrepare", fields: [preparePar], references: [id], onDelete: Restrict)
+  verifieParId String?
+  verifiePar   User?     @relation("RapportQuotidienVerifie", fields: [verifieParId], references: [id], onDelete: SetNull)
+  verifieLe    DateTime?
+  transmisLe   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("rapports_quotidiens")
+}
+
+/// Ligne d'un relevé bancaire ou d'un historique Wave / Orange Money, importée pour être rapprochée
+/// des mouvements du logiciel. Une transaction ne se tient pour confirmée que sur une pièce contrôlée,
+/// jamais sur la seule foi d'une capture d'écran.
+model ReleveLigne {
+  id               String           @id @default(uuid())
+  compteId         String
+  compte           CompteTresorerie @relation(fields: [compteId], references: [id], onDelete: Restrict)
+  date             DateTime         @db.Date
+  libelle          String
+  reference        String?
+  /// Positif : entrée sur le compte ; négatif : sortie.
+  montant          Decimal          @db.Decimal(15, 2)
+  /// non_rapproche | rapproche | ignore
+  statut           String           @default("non_rapproche")
+  /// Mouvement du journal rapproché : paiement:…, operation:…, fonds:…
+  mouvementId      String?
+  mouvementLibelle String?
+  motifIgnore      String?
+  /// Sert à ne pas importer deux fois la même ligne quand on réimporte un relevé.
+  empreinte        String
+  importeLe        DateTime         @default(now())
+  importeParId     String
+  importePar       User             @relation("ReleveImportePar", fields: [importeParId], references: [id], onDelete: Restrict)
+  rapprocheParId   String?
+  rapprochePar     User?            @relation("ReleveRapprochePar", fields: [rapprocheParId], references: [id], onDelete: SetNull)
+  rapprocheLe      DateTime?
+
+  @@unique([compteId, empreinte])
+  @@index([compteId, date])
+  @@index([statut])
+  @@index([mouvementId])
+  @@map("releve_lignes")
 }

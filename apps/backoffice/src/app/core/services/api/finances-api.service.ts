@@ -114,6 +114,23 @@ export interface OperationFinanciere {
   validatedBy: PersonneRef | null;
   validatedAt: string | null;
   createdAt: string;
+  /** OP-2026-000123 */
+  numero: string;
+  /** Seule une dépense « définitive » pèse sur le résultat. */
+  nature: 'definitive' | 'avance' | 'remboursement';
+  /** 0 : la comptable seule ; 1 à 3 : autorisation de la Direction. */
+  niveauValidation: 0 | 1 | 2 | 3;
+  niveauLibelle: string;
+  /** En attente de l'autorisation de la Direction. */
+  aAutoriser: boolean;
+  justificatifManquant: boolean;
+  autorisePar: PersonneRef | null;
+  autoriseLe: string | null;
+  motifAutorisation: string | null;
+  autorisationDistance: boolean;
+  corrigeId: string | null;
+  motifCorrection: string | null;
+  compte: { id: string; code: string; nom: string } | null;
 }
 
 export interface OperationsPage {
@@ -133,6 +150,8 @@ export interface OperationPayload {
   modePaiement?: string;
   reference?: string;
   tiers?: string;
+  nature?: string;
+  compteId?: string;
 }
 
 export interface MoisCloture {
@@ -174,7 +193,16 @@ export class FinancesApiService {
     return this.http.get<{ depenses: string[]; recettes: string[] }>(`${this.baseUrl}/categories`);
   }
 
-  operations(query: { statut?: string; activite?: string; sens?: string; page?: number; pageSize?: number }): Observable<OperationsPage> {
+  operations(query: {
+    statut?: string;
+    activite?: string;
+    sens?: string;
+    nature?: string;
+    sansJustificatif?: boolean;
+    aAutoriser?: boolean;
+    page?: number;
+    pageSize?: number;
+  }): Observable<OperationsPage> {
     let params = new HttpParams();
     for (const [cle, valeur] of Object.entries(query)) {
       if (valeur !== undefined && valeur !== '') params = params.set(cle, String(valeur));
@@ -192,6 +220,19 @@ export class FinancesApiService {
 
   validateOperation(id: string): Observable<OperationFinanciere> {
     return this.http.post<OperationFinanciere>(`${this.baseUrl}/operations/${id}/valider`, {});
+  }
+
+  /** Autorisation de la Direction (ou d'un délégué habilité) : le serveur contrôle le pouvoir pour ce montant. */
+  authorizeOperation(id: string, payload: { motif?: string; distance?: boolean }): Observable<OperationFinanciere> {
+    return this.http.post<OperationFinanciere>(`${this.baseUrl}/operations/${id}/autoriser`, payload);
+  }
+
+  /** Corrige une écriture validée par une écriture liée : l'originale n'est jamais effacée. */
+  correctOperation(
+    id: string,
+    payload: { type: 'annulation' | 'ajustement'; motif: string; sens?: string; montant?: number },
+  ): Observable<OperationFinanciere> {
+    return this.http.post<OperationFinanciere>(`${this.baseUrl}/operations/${id}/corriger`, payload);
   }
 
   rejectOperation(id: string, motif: string): Observable<OperationFinanciere> {
