@@ -52,7 +52,7 @@ export class MailService {
     this.isProduction = this.config.get<string>('NODE_ENV') === 'production';
     this.from =
       this.config.get<string>('MAIL_FROM') ??
-      'MTM Immobilier <no-reply@mtm-immobilier.sn>';
+      'MTM Immobilier <no-reply@mtm-immobilier.com>';
 
     const host = this.config.get<string>('SMTP_HOST');
     if (!host) {
