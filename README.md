@@ -350,6 +350,10 @@ le bloc de contenu `contact.email`).
 - Sans SMTP en **développement**, les e-mails sont journalisés dans la console
   et le jeton de réinitialisation est renvoyé par l'API pour permettre la
   recette.
+- Deux contrôles de santé : `GET /api/health/live` (le processus répond, sans
+  toucher à la base : c'est celui que Render appelle en continu, pour que la
+  base Neon puisse s'endormir) et `GET /api/health` (base, stockage,
+  authentification, e-mail : à consulter à la main).
 - Sans SMTP en **production**, `GET /api/health` répond `status: error`
   (`mail: down`) : la réinitialisation de mot de passe serait une impasse pour
   les utilisateurs. Configurer SMTP fait partie des prérequis de déploiement.
