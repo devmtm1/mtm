@@ -27,7 +27,6 @@ import {
   LucideStar,
   LucideTrash2,
   LucideUpload,
-  LucideUserCheck,
 } from '@lucide/angular';
 import * as L from 'leaflet';
 import { installBaseLayers } from '../../../shared/maps/map-layers';
@@ -97,7 +96,6 @@ import { TachesDossier } from '../../../shared/components/taches-dossier/taches-
     LucideStar,
     LucideTrash2,
     LucideUpload,
-    LucideUserCheck,
   ],
   templateUrl: './terrain-detail.html',
   styleUrl: './terrain-detail.scss',
@@ -173,6 +171,16 @@ export class TerrainDetail implements OnInit, OnDestroy {
     if (!terrain.description) items.push({ label: 'Rédiger la description publique', hint: 'Texte de présentation sur le site.' });
     if (terrain.niveauVerification !== 'Vérifié') items.push({ label: 'Terminer la vérification', hint: statusHelp(VERIFICATION_STATUS, terrain.niveauVerification) });
     return items;
+  });
+
+  /**
+   * Le geste à mettre en avant : compléter la fiche tant qu'il manque des
+   * éléments pour la publier, sinon appeler le vendeur.
+   */
+  protected readonly primary = computed<'modifier' | 'appeler' | null>(() => {
+    if (this.archived()) return null;
+    if (this.canModify && this.todo().length > 0) return 'modifier';
+    return this.telHref() ? 'appeler' : null;
   });
 
   protected readonly commercialStatus = COMMERCIAL_STATUS;

@@ -1,27 +1,35 @@
 @if (loading()) {
   <section class="detail-page" aria-busy="true">
     <div class="skeleton" style="height: 20px; width: 120px"></div>
-    <div class="skeleton" style="height: 36px; width: 45%"></div>
-    <div class="hero-grid">
-      <div class="skeleton" style="height: 320px"></div>
-      <div class="skeleton" style="height: 320px"></div>
+    <div class="skeleton" style="height: 150px"></div>
+    <div class="layout">
+      <div class="skeleton" style="height: 420px"></div>
+      <div class="skeleton" style="height: 420px"></div>
     </div>
   </section>
 } @else if (terrain(); as t) {
   <section class="detail-page" [class.is-busy]="busy()">
     <a class="back-link" href="/terrains" (click)="$event.preventDefault(); goBack()">
-      <svg lucideArrowLeft aria-hidden="true"></svg>Retour à la liste des terrains
+      <svg lucideArrowLeft aria-hidden="true"></svg>Retour à la liste des biens
     </a>
 
-    <header class="detail-header">
-      <div class="detail-header__main">
-        <p class="eyebrow">{{ t.referenceInterne }}</p>
+    <!-- Identité du bien, prix et gestes du jour -->
+    <header class="hero page-card">
+      <div class="hero__id">
+        <p class="eyebrow">{{ t.referenceInterne }} · {{ typeBienLabel(t.typeBien) }}</p>
         <h1>{{ t.nom }}</h1>
-        <p class="detail-header__location">
+        <p class="hero__lieu">
           <svg lucideMapPin aria-hidden="true"></svg>{{ t.commune || 'Commune non renseignée' }}{{ t.region ? ', ' + t.region : '' }}
         </p>
         <div class="status-line">
-          <span [class]="pill(commercialStatus, t.statutCommercial)" [matTooltip]="help(commercialStatus, t.statutCommercial)">{{ t.statutCommercial }}</span>
+          <!-- Le statut commercial est celui qu'on change le plus : un clic suffit. -->
+          @if (canModify && !archived()) {
+            <button type="button" class="chip-action" (click)="changeStatus('commercial')" [matTooltip]="help(commercialStatus, t.statutCommercial) + ' — cliquer pour changer'">
+              <span [class]="pill(commercialStatus, t.statutCommercial)">{{ t.statutCommercial }}<svg lucidePencil aria-hidden="true"></svg></span>
+            </button>
+          } @else {
+            <span [class]="pill(commercialStatus, t.statutCommercial)" [matTooltip]="help(commercialStatus, t.statutCommercial)">{{ t.statutCommercial }}</span>
+          }
           <span [class]="pill(legalStatus, t.statutJuridique)" [matTooltip]="help(legalStatus, t.statutJuridique)">{{ t.statutJuridique }}</span>
           <span [class]="pill(verificationStatus, t.niveauVerification)" [matTooltip]="help(verificationStatus, t.niveauVerification)">{{ t.niveauVerification }}</span>
           @if (t.archiveLe) {
@@ -31,19 +39,44 @@
             <span class="status-pill status-pill--info">{{ t.statutVisite }}</span>
           }
           @if (t.misEnAvant) {
-            <span class="status-pill status-pill--primary" matTooltip="Affiché en priorité sur la page d’accueil du site"><svg lucideStar aria-hidden="true"></svg>Mis en avant</span>
+            <span class="status-pill status-pill--primary" matTooltip="Affiché en priorité sur la page d’accueil du site"><svg lucideStar aria-hidden="true"></svg>En avant</span>
           }
           @if (vendu() && t.referenceVendue) {
-            <span class="status-pill status-pill--success" matTooltip="Ce bien vendu est affiché sur le site avec le badge « Vendu », sans prix">Référence vendue visible</span>
+            <span class="status-pill status-pill--success" matTooltip="Ce bien vendu est affiché sur le site avec le badge « Vendu », sans prix">Référence vendue</span>
           }
         </div>
       </div>
-      <div class="detail-header__actions">
+
+      <div class="hero__prix">
+        <span>Prix public</span>
+        <strong>{{ t.prixPublic | mtmMoney }}</strong>
+        @if (t.modalitePaiement) {
+          <small>{{ t.modalitePaiement }}@if (t.dureeMoratoireMois) { · moratoire {{ t.dureeMoratoireMois }} mois }</small>
+        }
+      </div>
+
+      <div class="hero__actions">
+        @if (canModify && archived()) {
+          <button mat-flat-button color="primary" type="button" (click)="restore()" [disabled]="busy()">
+            <svg class="btn-icon" lucideArchiveRestore aria-hidden="true"></svg>Restaurer
+          </button>
+        }
+        @if (canModify && !archived() && primary() === 'modifier') {
+          <button mat-flat-button color="primary" type="button" (click)="edit()">
+            <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Compléter la fiche
+          </button>
+        }
         <!-- Appeler le vendeur sans quitter la fiche : l'usage premier d'un commercial sur le terrain. -->
         @if (telHref(); as href) {
-          <a mat-stroked-button [href]="href" [matTooltip]="'Appeler ' + contactNom()">
-            <svg class="btn-icon" lucidePhone aria-hidden="true"></svg>Appeler
-          </a>
+          @if (primary() === 'appeler') {
+            <a mat-flat-button color="primary" [href]="href" [matTooltip]="'Appeler ' + contactNom()">
+              <svg class="btn-icon" lucidePhone aria-hidden="true"></svg>Appeler {{ contactNom() }}
+            </a>
+          } @else {
+            <a mat-stroked-button [href]="href" [matTooltip]="'Appeler ' + contactNom()">
+              <svg class="btn-icon" lucidePhone aria-hidden="true"></svg>Appeler
+            </a>
+          }
         }
         @if (whatsappHref(); as href) {
           <a mat-stroked-button [href]="href" target="_blank" rel="noopener" [matTooltip]="'Écrire à ' + contactNom() + ' sur WhatsApp'">
@@ -55,19 +88,16 @@
             <svg class="btn-icon" lucideGlobe aria-hidden="true"></svg>Voir sur le site
           </a>
         }
-        @if (canModify && archived()) {
-          <button mat-flat-button color="primary" type="button" (click)="restore()" [disabled]="busy()">
-            <svg class="btn-icon" lucideArchiveRestore aria-hidden="true"></svg>Restaurer
-          </button>
-        }
-        @if (canModify && !archived()) {
-          <button mat-stroked-button type="button" [matMenuTriggerFor]="statusMenu">
-            Changer un statut<svg class="btn-icon btn-icon--after" lucideChevronDown aria-hidden="true"></svg>
-          </button>
-          <mat-menu #statusMenu="matMenu" xPosition="before">
-            <button mat-menu-item type="button" (click)="changeStatus('commercial')">
-              <span class="menu-line"><strong>Commercialisation</strong><small>Visible sur le site, réservé, vendu…</small></span>
-            </button>
+        <button mat-stroked-button type="button" [matMenuTriggerFor]="plusMenu" aria-label="Plus d’actions">
+          Plus<svg class="btn-icon btn-icon--after" lucideChevronDown aria-hidden="true"></svg>
+        </button>
+        <mat-menu #plusMenu="matMenu" xPosition="before">
+          @if (canModify && !archived()) {
+            @if (primary() !== 'modifier') {
+              <button mat-menu-item type="button" (click)="edit()">
+                <span class="menu-line"><strong>Modifier la fiche</strong><small>Identité, prix, caractéristiques</small></span>
+              </button>
+            }
             @if (canValidate) {
               <button mat-menu-item type="button" (click)="changeStatus('juridique')">
                 <span class="menu-line"><strong>Statut juridique</strong><small>Titre foncier, bail, délibération…</small></span>
@@ -76,161 +106,238 @@
                 <span class="menu-line"><strong>Niveau de vérification</strong><small>Contrôle des documents par MTM</small></span>
               </button>
             }
-          </mat-menu>
-          @if (canAssign) {
-            <button mat-stroked-button type="button" (click)="assignCommercial()" matTooltip="Choisir le commercial qui suit ce terrain">
-              <svg class="btn-icon" lucideUserCheck aria-hidden="true"></svg>{{ t.commercialResponsable ? 'Réaffecter' : 'Affecter' }}
+            @if (canAssign) {
+              <button mat-menu-item type="button" (click)="assignCommercial()">
+                <span class="menu-line"><strong>{{ t.commercialResponsable ? 'Réaffecter' : 'Affecter' }} un commercial</strong><small>Qui suit ce bien</small></span>
+              </button>
+            }
+          }
+          <button mat-menu-item type="button" (click)="openHistory()">
+            <span class="menu-line"><strong>Historique des modifications</strong><small>Qui a changé quoi, et quand</small></span>
+          </button>
+          @if (canModify && !archived()) {
+            <button mat-menu-item type="button" (click)="archive()" [disabled]="busy()">
+              <span class="menu-line"><strong>Archiver</strong><small>Retire du portefeuille actif, sans rien supprimer</small></span>
             </button>
           }
-          <button mat-flat-button color="primary" type="button" (click)="edit()">
-            <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Modifier la fiche
-          </button>
-          <button mat-stroked-button type="button" (click)="archive()" [disabled]="busy()" matTooltip="Retirer du portefeuille actif sans rien supprimer">
-            <svg class="btn-icon" lucideArchive aria-hidden="true"></svg>Archiver
-          </button>
-        }
+        </mat-menu>
       </div>
     </header>
 
+    <!-- Une seule alerte : archivé, ou ce qu'il reste à compléter -->
     @if (t.archiveLe) {
-      <aside class="todo-banner" aria-label="Bien archivé">
+      <section class="alerte alerte--archive" aria-label="Bien archivé">
         <strong>Ce bien est archivé depuis le {{ t.archiveLe | date: 'dd/MM/yyyy' }}.</strong>
-        <ul>
-          <li>
-            <span>{{ t.motifArchivage || 'Aucun motif enregistré' }}</span>
-            <small>Il n’apparaît plus sur le site ni dans la liste courante. Restaurez-le pour le modifier.</small>
-          </li>
-        </ul>
-      </aside>
-    }
-
-    <!-- Bandeau : ce qu'il reste à faire pour une fiche prête à être publiée -->
-    @if (canModify && !archived() && todo().length) {
-      <aside class="todo-banner" aria-label="Fiche à compléter">
-        <strong>Pour une fiche complète, il reste {{ todo().length }} point{{ todo().length > 1 ? 's' : '' }} :</strong>
+        <span>{{ t.motifArchivage || 'Aucun motif enregistré' }}. Il n’apparaît plus sur le site ni dans la liste courante : restaurez-le pour le modifier.</span>
+      </section>
+    } @else if (canModify && todo().length) {
+      <section class="alerte" aria-label="Fiche à compléter">
+        <span class="alerte__titre">À compléter pour une fiche prête à publier ({{ todo().length }})</span>
         <ul>
           @for (item of todo(); track item.label) {
-            <li><span>{{ item.label }}</span><small>{{ item.hint }}</small></li>
+            <li [matTooltip]="item.hint">{{ item.label }}</li>
           }
         </ul>
-      </aside>
+      </section>
     }
 
-    <section class="hero-grid">
-      <!-- Galerie -->
-      <div class="page-card gallery">
-        <div class="gallery__main">
-          @if (mainImage(); as imageUrl) {
-            <img [src]="imageUrl" [alt]="t.nom" />
-          } @else {
-            <div class="gallery__empty">
-              <svg lucideCamera aria-hidden="true"></svg>
-              <span>Aucune photo</span>
+    <div class="layout">
+      <!-- Le bien : photos, description, caractéristiques, carte, suivi -->
+      <div class="colonne">
+        <div class="page-card gallery">
+          <div class="gallery__main">
+            @if (mainImage(); as imageUrl) {
+              <img [src]="imageUrl" [alt]="t.nom" />
+            } @else {
+              <div class="gallery__empty">
+                <svg lucideCamera aria-hidden="true"></svg>
+                <span>Aucune photo</span>
+                @if (canModify) {
+                  <small>Ajoutez une photo publique : c’est la première chose que voient les visiteurs.</small>
+                }
+              </div>
+            }
+          </div>
+          @if (images().length || canModify) {
+            <div class="gallery__thumbs">
+              @for (media of images(); track media.id) {
+                <div class="gallery__thumb" [class.is-active]="mainImage() === media.secureUrl">
+                  <button type="button" (click)="showMedia(media.secureUrl)" [attr.aria-label]="media.title || 'Photo'">
+                    <img [src]="media.secureUrl" [alt]="media.title || ''" loading="lazy" />
+                  </button>
+                  <span class="gallery__thumb-flag" [matTooltip]="media.isPublic ? 'Visible sur le site public' : 'Photo interne, non publiée'">
+                    @if (media.isPublic) {
+                      <svg lucideEye aria-hidden="true"></svg>
+                    } @else {
+                      <svg lucideEyeOff aria-hidden="true"></svg>
+                    }
+                  </span>
+                  @if (canModify) {
+                    <button type="button" class="gallery__thumb-delete" (click)="removeMedia(media.id)" aria-label="Supprimer la photo" matTooltip="Supprimer">
+                      <svg lucideTrash2 aria-hidden="true"></svg>
+                    </button>
+                  }
+                </div>
+              }
               @if (canModify) {
-                <small>Ajoutez une photo publique : c’est la première chose que voient les visiteurs.</small>
+                <label class="gallery__add" matTooltip="Photo visible sur le site public">
+                  <svg lucidePlus aria-hidden="true"></svg><span>Photo publique</span>
+                  <input type="file" accept="image/*,video/*" multiple (change)="uploadAsset($event, 'media', true)" [disabled]="busy()" />
+                </label>
+                <label class="gallery__add gallery__add--internal" matTooltip="Photo conservée en interne uniquement">
+                  <svg lucidePlus aria-hidden="true"></svg><span>Photo interne</span>
+                  <input type="file" accept="image/*,video/*" multiple (change)="uploadAsset($event, 'media', false)" [disabled]="busy()" />
+                </label>
               }
             </div>
           }
-        </div>
-        @if (images().length || canModify) {
-          <div class="gallery__thumbs">
-            @for (media of images(); track media.id) {
-              <div class="gallery__thumb" [class.is-active]="mainImage() === media.secureUrl">
-                <button type="button" (click)="showMedia(media.secureUrl)" [attr.aria-label]="media.title || 'Photo'">
-                  <img [src]="media.secureUrl" [alt]="media.title || ''" loading="lazy" />
-                </button>
-                <span class="gallery__thumb-flag" [matTooltip]="media.isPublic ? 'Visible sur le site public' : 'Photo interne, non publiée'">
-                  @if (media.isPublic) {
-                    <svg lucideEye aria-hidden="true"></svg>
-                  } @else {
-                    <svg lucideEyeOff aria-hidden="true"></svg>
+          @if (otherMedias().length) {
+            <ul class="gallery__files">
+              @for (media of otherMedias(); track media.id) {
+                <li>
+                  <a [href]="media.secureUrl" target="_blank" rel="noopener">{{ media.title || (media.type | mtmLabel) }}</a>
+                  <small>{{ media.isPublic ? 'Public' : 'Interne' }}</small>
+                  @if (canModify) {
+                    <button mat-icon-button type="button" (click)="removeMedia(media.id)" aria-label="Supprimer"><svg lucideTrash2 aria-hidden="true"></svg></button>
                   }
-                </span>
-                @if (canModify) {
-                  <button type="button" class="gallery__thumb-delete" (click)="removeMedia(media.id)" aria-label="Supprimer la photo" matTooltip="Supprimer">
-                    <svg lucideTrash2 aria-hidden="true"></svg>
-                  </button>
-                }
-              </div>
-            }
-            @if (canModify) {
-              <label class="gallery__add" matTooltip="Photo visible sur le site public">
-                <svg lucidePlus aria-hidden="true"></svg><span>Photo publique</span>
-                <input type="file" accept="image/*,video/*" multiple (change)="uploadAsset($event, 'media', true)" [disabled]="busy()" />
-              </label>
-              <label class="gallery__add gallery__add--internal" matTooltip="Photo conservée en interne uniquement">
-                <svg lucidePlus aria-hidden="true"></svg><span>Photo interne</span>
-                <input type="file" accept="image/*,video/*" multiple (change)="uploadAsset($event, 'media', false)" [disabled]="busy()" />
-              </label>
-            }
-          </div>
-        }
-        @if (otherMedias().length) {
-          <ul class="gallery__files">
-            @for (media of otherMedias(); track media.id) {
-              <li>
-                <a [href]="media.secureUrl" target="_blank" rel="noopener">{{ media.title || (media.type | mtmLabel) }}</a>
-                <small>{{ media.isPublic ? 'Public' : 'Interne' }}</small>
-                @if (canModify) {
-                  <button mat-icon-button type="button" (click)="removeMedia(media.id)" aria-label="Supprimer"><svg lucideTrash2 aria-hidden="true"></svg></button>
-                }
-              </li>
-            }
-          </ul>
-        }
+                </li>
+              }
+            </ul>
+          }
+        </div>
+
+        <!-- Les chiffres que le commercial cite au téléphone -->
+        <section class="chiffres" aria-label="Le bien en chiffres">
+          <article>
+            <span>{{ estBati(t) ? 'Parcelle' : 'Superficie' }}</span>
+            <strong>{{ formatNumber(t.superficie) }} m²</strong>
+          </article>
+          @if (estBati(t)) {
+            <article>
+              <span>Habitable</span>
+              <strong>{{ t.surfaceHabitable === null ? '—' : formatNumber(t.surfaceHabitable) + ' m²' }}</strong>
+            </article>
+            <article>
+              <span>Typologie</span>
+              <strong>{{ t.nombrePieces || '—' }}</strong>
+              @if (t.nombreChambres !== null) {
+                <small>{{ t.nombreChambres }} chambre{{ t.nombreChambres > 1 ? 's' : '' }}</small>
+              }
+            </article>
+            <article>
+              <span>État</span>
+              <strong>{{ etatBienLabel(t.etatBien) }}</strong>
+              @if (t.anneeConstruction !== null) {
+                <small>Construit en {{ t.anneeConstruction }}</small>
+              }
+            </article>
+          }
+          <article>
+            <span>Vocation</span>
+            <strong>{{ t.vocation || '—' }}</strong>
+          </article>
+          @if (t.nombreLots && t.nombreLots > 1) {
+            <article>
+              <span>Lots</span>
+              <strong>{{ t.nombreLots }}</strong>
+            </article>
+          }
+        </section>
+
+        <section class="page-card detail-section">
+          <h2>Présentation publique</h2>
+          <p class="detail-section__text" [class.is-vide]="!t.description">{{ t.description || 'Aucune description publique. Elle est affichée sur la fiche du site.' }}</p>
+          @if (t.notesInternes) {
+            <h3>Notes internes <span class="status-pill">jamais publiées</span></h3>
+            <p class="detail-section__text">{{ t.notesInternes }}</p>
+          }
+        </section>
+
+        <section class="page-card detail-section">
+          <h2>Caractéristiques</h2>
+          <dl class="info-list">
+            <div><dt>Accès routier</dt><dd>{{ t.accesRoutier || '—' }}</dd></div>
+            <div><dt>Eau</dt><dd>{{ yesNo(t.eauDisponible) }}</dd></div>
+            <div><dt>Électricité</dt><dd>{{ yesNo(t.electriciteDisponible) }}</dd></div>
+            <div><dt>Voisinage</dt><dd>{{ t.voisinage || '—' }}</dd></div>
+            <div><dt>Proximité des axes</dt><dd>{{ t.proximiteAxes || '—' }}</dd></div>
+            <div><dt>Dimensions</dt><dd>{{ dimensionsText(t) }}</dd></div>
+          </dl>
+          @if (t.pointsInteret?.length) {
+            <h3>Points d’intérêt à proximité</h3>
+            <ul class="poi-list">
+              @for (point of t.pointsInteret; track $index) {
+                <li>
+                  <strong>{{ point.nom }}</strong>
+                  @if (point.type) { <span>{{ point.type }}</span> }
+                  @if (point.distanceKm !== null && point.distanceKm !== undefined) { <small>{{ point.distanceKm }} km</small> }
+                </li>
+              }
+            </ul>
+          }
+        </section>
+
+        <section class="page-card detail-section">
+          <h2>Localisation</h2>
+          <p class="detail-section__text" [class.is-vide]="!t.localisationDetail">{{ t.localisationDetail || 'Aucun détail de localisation renseigné.' }}</p>
+          @if (hasGps()) {
+            <div #mapContainer class="bo-terrain-map"></div>
+            <a class="inline-link" [href]="mapUrl()" target="_blank" rel="noopener noreferrer">
+              <svg lucideExternalLink aria-hidden="true"></svg>Ouvrir dans OpenStreetMap
+            </a>
+          } @else {
+            <div class="detail-note">
+              Coordonnées GPS non renseignées : la carte ne peut pas être affichée, ni ici ni sur le site public.
+              @if (canModify) {
+                <button mat-button type="button" (click)="edit()">Ajouter les coordonnées</button>
+              }
+            </div>
+          }
+        </section>
+
+        <section class="page-card detail-section">
+          <h2>Notes de suivi</h2>
+          @if (canModify) {
+            <div class="note-form">
+              <textarea
+                rows="2"
+                maxlength="2000"
+                placeholder="Appel passé, visite faite, relance du vendeur…"
+                aria-label="Nouvelle note de suivi"
+                [value]="noteDraft()"
+                (input)="onNoteInput($event)"
+              ></textarea>
+              <button mat-flat-button color="primary" type="button" (click)="addNote()" [disabled]="!noteDraft().trim()">
+                <svg class="btn-icon" lucideSend aria-hidden="true"></svg>Ajouter
+              </button>
+            </div>
+          }
+          @if (notes().length) {
+            <ul class="note-list">
+              @for (note of notes(); track note.id) {
+                <li>
+                  <p>{{ note.texte }}</p>
+                  <small>
+                    {{ note.auteur ? note.auteur.firstName + ' ' + note.auteur.lastName : 'Utilisateur supprimé' }}
+                    · {{ note.createdAt | date: 'dd/MM/yyyy à HH:mm' }}
+                  </small>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="detail-section__text is-vide">Aucune note pour l’instant. Gardez ici la trace de chaque échange avec le vendeur.</p>
+          }
+        </section>
+
+        <app-taches-dossier type="terrain" [dossierId]="t.id" [libelleDossier]="t.referenceInterne" />
+        <app-fil-discussion type="terrain" [dossierId]="t.id" />
       </div>
 
-      <!-- Résumé commercial -->
-      <div class="page-card summary">
-        <h2>En un coup d’œil</h2>
-        <dl class="fact-list">
-          <div>
-            <dt>Prix public</dt>
-            <dd class="fact-list__price">{{ t.prixPublic | mtmMoney }}</dd>
-          </div>
-          <div>
-            <dt>Nature</dt>
-            <dd>{{ typeBienLabel(t.typeBien) }}</dd>
-          </div>
-          <div>
-            <dt>{{ estBati(t) ? 'Parcelle' : 'Superficie' }}</dt>
-            <dd>{{ formatNumber(t.superficie) }} m²</dd>
-          </div>
-          <!-- Sur un bien bâti, l'habitable et la typologie passent devant la
-               vocation : ce sont les deux chiffres que le commercial cite au
-               téléphone. -->
-          @if (estBati(t)) {
-            <div>
-              <dt>Surface habitable</dt>
-              <dd>
-                {{ t.surfaceHabitable === null ? '—' : formatNumber(t.surfaceHabitable) + ' m²' }}
-              </dd>
-            </div>
-            <div>
-              <dt>Typologie</dt>
-              <dd>
-                {{ t.nombrePieces || '—' }}
-                @if (t.nombreChambres !== null) {
-                  <small>{{ t.nombreChambres }} chambre{{ t.nombreChambres > 1 ? 's' : '' }}</small>
-                }
-              </dd>
-            </div>
-            <div>
-              <dt>État</dt>
-              <dd>{{ etatBienLabel(t.etatBien) }}</dd>
-            </div>
-            @if (t.anneeConstruction !== null) {
-              <div>
-                <dt>Construction</dt>
-                <dd>{{ t.anneeConstruction }}</dd>
-              </div>
-            }
-          }
-          <div>
-            <dt>Vocation</dt>
-            <dd>{{ t.vocation || '—' }}</dd>
-          </div>
-          @if (t.contactVendeurNom || t.contactVendeurTelephone) {
+      <!-- Les données commerciales et administratives -->
+      <aside class="colonne">
+        <div class="page-card summary">
+          <h2>Contacts</h2>
+          <dl class="fact-list">
             <div>
               <dt>Vendeur / mandataire</dt>
               <dd>
@@ -240,269 +347,160 @@
                 }
               </dd>
             </div>
-          }
-          <div>
-            <dt>Propriétaire</dt>
-            <dd>
-              @if (t.proprietaire) {
-                {{ t.proprietaire.firstName }} {{ t.proprietaire.lastName }}
-                @if (t.proprietaire.phone) {
-                  <small>{{ t.proprietaire.phone }}</small>
+            <div>
+              <dt>Propriétaire</dt>
+              <dd>
+                @if (t.proprietaire) {
+                  {{ t.proprietaire.firstName }} {{ t.proprietaire.lastName }}
+                  @if (t.proprietaire.phone) {
+                    <small>{{ t.proprietaire.phone }}</small>
+                  }
+                } @else {
+                  —
                 }
-              } @else {
-                —
-              }
-            </dd>
-          </div>
-          <div>
-            <dt>Commercial responsable</dt>
-            <dd>
-              @if (t.commercialResponsable) {
-                {{ t.commercialResponsable.firstName }} {{ t.commercialResponsable.lastName }}
-              } @else {
-                <span class="status-pill status-pill--warning">Aucun : seul l’encadrement voit ce bien</span>
-              }
-            </dd>
-          </div>
-        </dl>
-
-        @if (canViewFinancials) {
-          <h3>Données internes <span class="status-pill">jamais publiées</span></h3>
-          <dl class="fact-list fact-list--compact">
-            <div>
-              <dt>Prix de cession</dt>
-              <dd>{{ t.prixCession | mtmMoney }}</dd>
+              </dd>
             </div>
             <div>
-              <dt>Prix d’acquisition</dt>
-              <dd>{{ t.prixAcquisition | mtmMoney }}</dd>
-            </div>
-            <div>
-              <dt>Marge</dt>
-              <dd>{{ t.marge | mtmMoney }}</dd>
-            </div>
-            <div>
-              <dt>Commission</dt>
-              <dd>{{ t.commission | mtmMoney }}</dd>
+              <dt>Commercial responsable</dt>
+              <dd>
+                @if (t.commercialResponsable) {
+                  {{ t.commercialResponsable.firstName }} {{ t.commercialResponsable.lastName }}
+                } @else {
+                  <span class="status-pill status-pill--warning">Aucun : seul l’encadrement voit ce bien</span>
+                }
+              </dd>
             </div>
           </dl>
-        }
-
-        <!-- Toujours visible : un interrupteur qui disparaît sans explication laisse croire que la fonction n'existe pas. -->
-        <div class="feature-toggle">
-          <mat-slide-toggle [checked]="!!t.referenceVendue" [disabled]="busy() || !vendu() || !canModify" (change)="toggleReferenceVendue($event.checked)">
-            Afficher sur le site comme référence vendue
-          </mat-slide-toggle>
-          <small>
-            @if (!vendu()) {
-              Disponible uniquement pour un bien au statut « Vendu » (statut actuel : {{ t.statutCommercial }}). Changez d’abord son statut commercial.
-            } @else if (!canModify) {
-              Vous n’avez pas le droit de modifier les biens : demandez à un responsable d’activer cet affichage.
-            } @else {
-              Badge rouge « Vendu » sur le site, sans prix ni position exacte, pour rassurer les visiteurs. Décochez pour le retirer à tout moment.
-            }
-          </small>
         </div>
 
-        @if (canPublish && canModify) {
+        @if (canViewFinancials) {
+          <div class="page-card summary">
+            <h2>Données internes <span class="status-pill">jamais publiées</span></h2>
+            <dl class="fact-list fact-list--compact">
+              <div><dt>Prix de cession</dt><dd>{{ t.prixCession | mtmMoney }}</dd></div>
+              <div><dt>Prix d’acquisition</dt><dd>{{ t.prixAcquisition | mtmMoney }}</dd></div>
+              <div><dt>Marge</dt><dd>{{ t.marge | mtmMoney }}</dd></div>
+              <div><dt>Commission</dt><dd>{{ t.commission | mtmMoney }}</dd></div>
+              @if (t.acompteMontant !== null) {
+                <div><dt>Acompte demandé</dt><dd>{{ t.acompteMontant | mtmMoney }}</dd></div>
+              }
+            </dl>
+          </div>
+        }
+
+        <section class="page-card detail-section">
+          <h2>Commercialisation</h2>
+          <dl class="info-list info-list--un">
+            <div><dt>Date d’entrée</dt><dd>{{ t.dateEntree ? (t.dateEntree | date: 'dd/MM/yyyy' : 'UTC') : '—' }}</dd></div>
+            <div>
+              <dt>Modalité de paiement</dt>
+              <dd>
+                {{ t.modalitePaiement || '—' }}
+                @if (t.dureeMoratoireMois) {
+                  <small>Moratoire de {{ t.dureeMoratoireMois }} mois</small>
+                }
+              </dd>
+            </div>
+            @if (t.notesPaiement) {
+              <div><dt>Précisions sur le paiement</dt><dd>{{ t.notesPaiement }}</dd></div>
+            }
+            <div><dt>Produit direct</dt><dd>{{ t.produitDirect ? 'Oui' : 'Non' }}</dd></div>
+            <div><dt>Protocole d’accord</dt><dd>{{ t.protocoleAccord ? 'Signé' : 'Non signé' }}</dd></div>
+          </dl>
+
+          <!-- Toujours visible : un interrupteur qui disparaît sans explication laisse croire que la fonction n'existe pas. -->
           <div class="feature-toggle">
-            <mat-slide-toggle [checked]="t.misEnAvant" [disabled]="busy() || !published()" (change)="toggleFeatured($event.checked)">
-              Mettre en avant sur la page d’accueil
+            <mat-slide-toggle [checked]="!!t.referenceVendue" [disabled]="busy() || !vendu() || !canModify" (change)="toggleReferenceVendue($event.checked)">
+              Afficher sur le site comme référence vendue
             </mat-slide-toggle>
             <small>
-              @if (published()) {
-                Le terrain apparaît dans la sélection de la page d’accueil du site.
+              @if (!vendu()) {
+                Réservé aux biens « Vendu » (statut actuel : {{ t.statutCommercial }}).
+              } @else if (!canModify) {
+                Vous n’avez pas le droit de modifier les biens : demandez à un responsable.
               } @else {
-                Disponible uniquement pour un terrain au statut « Disponible ».
+                Badge « Vendu » sur le site, sans prix ni position exacte. Décochez pour le retirer.
               }
             </small>
           </div>
-        }
-      </div>
-    </section>
-
-    <section class="content-grid">
-      <section class="page-card detail-section">
-        <h2>Identité du bien</h2>
-        <dl class="info-list">
-          <div><dt>Référence interne</dt><dd>{{ t.referenceInterne }}</dd></div>
-          <div><dt>Parcelle / matricule</dt><dd>{{ t.parcelleMatricule || '—' }}</dd></div>
-          <div><dt>Document foncier</dt><dd>{{ t.typeDocumentFoncier || '—' }}</dd></div>
-          <div><dt>Référence du document</dt><dd>{{ t.referenceDocumentFoncier || '—' }}</dd></div>
-          <div>
-            <dt>Date du document</dt>
-            <dd>{{ t.dateDocumentFoncier ? (t.dateDocumentFoncier | date: 'dd/MM/yyyy' : 'UTC') : '—' }}</dd>
-          </div>
-          <div>
-            <dt>Statut juridique</dt>
-            <dd><span [class]="pill(legalStatus, t.statutJuridique)">{{ t.statutJuridique }}</span><small>{{ help(legalStatus, t.statutJuridique) }}</small></dd>
-          </div>
-          <div>
-            <dt>Vérification</dt>
-            <dd><span [class]="pill(verificationStatus, t.niveauVerification)">{{ t.niveauVerification }}</span><small>{{ help(verificationStatus, t.niveauVerification) }}</small></dd>
-          </div>
-          <div><dt>Dimensions</dt><dd>{{ dimensionsText(t) }}</dd></div>
-          @if (t.commentaireAdministratif) {
-            <div><dt>Commentaire administratif</dt><dd>{{ t.commentaireAdministratif }}</dd></div>
-          }
-        </dl>
-      </section>
-
-      <section class="page-card detail-section">
-        <h2>Commercialisation et paiement</h2>
-        <dl class="info-list">
-          <div>
-            <dt>Date d’entrée</dt>
-            <dd>{{ t.dateEntree ? (t.dateEntree | date: 'dd/MM/yyyy' : 'UTC') : '—' }}</dd>
-          </div>
-          <div><dt>Nombre de lots</dt><dd>{{ t.nombreLots ?? '—' }}</dd></div>
-          <div>
-            <dt>Modalité de paiement</dt>
-            <dd>
-              {{ t.modalitePaiement || '—' }}
-              @if (t.dureeMoratoireMois) {
-                <small>Moratoire de {{ t.dureeMoratoireMois }} mois</small>
-              }
-            </dd>
-          </div>
-          @if (canViewFinancials && t.acompteMontant !== null) {
-            <div><dt>Acompte demandé</dt><dd>{{ t.acompteMontant | mtmMoney }}</dd></div>
-          }
-          @if (t.notesPaiement) {
-            <div><dt>Précisions sur le paiement</dt><dd>{{ t.notesPaiement }}</dd></div>
-          }
-          <div><dt>Produit direct</dt><dd>{{ t.produitDirect ? 'Oui' : 'Non' }}</dd></div>
-          <div><dt>Protocole d’accord</dt><dd>{{ t.protocoleAccord ? 'Signé' : 'Non' }}</dd></div>
-          <div><dt>Visite</dt><dd>{{ t.statutVisite || '—' }}</dd></div>
-        </dl>
-      </section>
-
-      <section class="page-card detail-section">
-        <h2>Caractéristiques</h2>
-        <dl class="info-list">
-          <div><dt>Accès routier</dt><dd>{{ t.accesRoutier || '—' }}</dd></div>
-          <div><dt>Eau</dt><dd>{{ yesNo(t.eauDisponible) }}</dd></div>
-          <div><dt>Électricité</dt><dd>{{ yesNo(t.electriciteDisponible) }}</dd></div>
-          <div><dt>Voisinage</dt><dd>{{ t.voisinage || '—' }}</dd></div>
-          <div><dt>Proximité des axes</dt><dd>{{ t.proximiteAxes || '—' }}</dd></div>
-        </dl>
-        @if (t.pointsInteret?.length) {
-          <h3>Points d’intérêt à proximité</h3>
-          <ul class="poi-list">
-            @for (point of t.pointsInteret; track $index) {
-              <li>
-                <strong>{{ point.nom }}</strong>
-                @if (point.type) { <span>{{ point.type }}</span> }
-                @if (point.distanceKm !== null && point.distanceKm !== undefined) { <small>{{ point.distanceKm }} km</small> }
-              </li>
-            }
-          </ul>
-        }
-      </section>
-
-      <section class="page-card detail-section detail-section--wide">
-        <h2>Localisation</h2>
-        <p class="detail-section__text">{{ t.localisationDetail || 'Aucun détail de localisation renseigné.' }}</p>
-        @if (hasGps()) {
-          <div #mapContainer class="bo-terrain-map"></div>
-          <a class="inline-link" [href]="mapUrl()" target="_blank" rel="noopener noreferrer">
-            <svg lucideExternalLink aria-hidden="true"></svg>Ouvrir dans OpenStreetMap
-          </a>
-        } @else {
-          <div class="detail-note">
-            Coordonnées GPS non renseignées : la carte ne peut pas être affichée, ni ici ni sur le site public.
-            @if (canModify) {
-              <button mat-button type="button" (click)="edit()">Ajouter les coordonnées</button>
-            }
-          </div>
-        }
-      </section>
-
-      <section class="page-card detail-section">
-        <h2>Présentation publique</h2>
-        <p class="detail-section__text">{{ t.description || 'Aucune description publique. Elle est affichée sur la fiche du site.' }}</p>
-        @if (t.notesInternes) {
-          <h3>Notes internes <span class="status-pill">jamais publiées</span></h3>
-          <p class="detail-section__text">{{ t.notesInternes }}</p>
-        }
-      </section>
-
-      <section class="page-card detail-section">
-        <div class="detail-section__head">
-          <h2>Documents</h2>
-          @if (canModify) {
-            <label class="upload-button">
-              <svg lucideUpload aria-hidden="true"></svg>Ajouter
-              <input type="file" accept="application/pdf,image/*,.doc,.docx" multiple (change)="uploadAsset($event, 'documents', false)" [disabled]="busy()" />
-            </label>
-          }
-        </div>
-        @if (t.documents.length) {
-          <ul class="doc-list">
-            @for (document of t.documents; track document.id) {
-              <li>
-                <svg lucideFileText aria-hidden="true"></svg>
-                <a [href]="document.secureUrl" target="_blank" rel="noopener">{{ document.title || (document.type | mtmLabel) }}</a>
-                <span class="status-pill" [class.status-pill--info]="document.isPublic">{{ document.isPublic ? 'Public' : 'Interne' }}</span>
-                @if (canModify) {
-                  <button mat-icon-button type="button" (click)="removeDocument(document.id)" aria-label="Supprimer le document" matTooltip="Supprimer">
-                    <svg lucideTrash2 aria-hidden="true"></svg>
-                  </button>
+          @if (canPublish && canModify) {
+            <div class="feature-toggle">
+              <mat-slide-toggle [checked]="t.misEnAvant" [disabled]="busy() || !published()" (change)="toggleFeatured($event.checked)">
+                Mettre en avant sur la page d’accueil
+              </mat-slide-toggle>
+              <small>
+                @if (published()) {
+                  Le bien apparaît dans la sélection de la page d’accueil du site.
+                } @else {
+                  Réservé aux biens « Disponible ».
                 }
-              </li>
+              </small>
+            </div>
+          }
+        </section>
+
+        <section class="page-card detail-section">
+          <h2>Situation juridique</h2>
+          <dl class="info-list info-list--un">
+            <div><dt>Parcelle / matricule</dt><dd>{{ t.parcelleMatricule || '—' }}</dd></div>
+            <div><dt>Document foncier</dt><dd>{{ t.typeDocumentFoncier || '—' }}</dd></div>
+            <div><dt>Référence du document</dt><dd>{{ t.referenceDocumentFoncier || '—' }}</dd></div>
+            <div><dt>Date du document</dt><dd>{{ t.dateDocumentFoncier ? (t.dateDocumentFoncier | date: 'dd/MM/yyyy' : 'UTC') : '—' }}</dd></div>
+            <div>
+              <dt>Statut juridique</dt>
+              <dd><span [class]="pill(legalStatus, t.statutJuridique)">{{ t.statutJuridique }}</span><small>{{ help(legalStatus, t.statutJuridique) }}</small></dd>
+            </div>
+            <div>
+              <dt>Vérification</dt>
+              <dd><span [class]="pill(verificationStatus, t.niveauVerification)">{{ t.niveauVerification }}</span><small>{{ help(verificationStatus, t.niveauVerification) }}</small></dd>
+            </div>
+            @if (t.commentaireAdministratif) {
+              <div><dt>Commentaire administratif</dt><dd>{{ t.commentaireAdministratif }}</dd></div>
             }
-          </ul>
-        } @else {
-          <p class="detail-section__text">Aucun document. Ajoutez le titre, le plan ou tout justificatif : ils restent internes sauf mention contraire.</p>
-        }
-      </section>
+          </dl>
+        </section>
 
-      <section class="page-card detail-section">
-        <h2>Suivi</h2>
-        <dl class="info-list">
-          <div><dt>Créé le</dt><dd>{{ t.createdAt | date: 'dd/MM/yyyy à HH:mm' }}</dd></div>
-          <div><dt>Dernière modification</dt><dd>{{ t.updatedAt | date: 'dd/MM/yyyy à HH:mm' }}</dd></div>
-        </dl>
-        <button mat-stroked-button type="button" (click)="openHistory()">
-          <svg class="btn-icon" lucideClock aria-hidden="true"></svg>Voir l’historique des modifications
-        </button>
-      </section>
-
-      <section class="page-card detail-section detail-section--wide">
-        <h2>Notes de suivi</h2>
-        @if (canModify) {
-          <div class="note-form">
-            <textarea
-              rows="2"
-              maxlength="2000"
-              placeholder="Appel passé, visite faite, relance du vendeur…"
-              aria-label="Nouvelle note de suivi"
-              [value]="noteDraft()"
-              (input)="onNoteInput($event)"
-            ></textarea>
-            <button mat-flat-button color="primary" type="button" (click)="addNote()" [disabled]="!noteDraft().trim()">
-              <svg class="btn-icon" lucideSend aria-hidden="true"></svg>Ajouter
-            </button>
+        <section class="page-card detail-section">
+          <div class="detail-section__head">
+            <h2>Documents</h2>
+            @if (canModify) {
+              <label class="upload-button">
+                <svg lucideUpload aria-hidden="true"></svg>Ajouter
+                <input type="file" accept="application/pdf,image/*,.doc,.docx" multiple (change)="uploadAsset($event, 'documents', false)" [disabled]="busy()" />
+              </label>
+            }
           </div>
-        }
-        @if (notes().length) {
-          <ul class="note-list">
-            @for (note of notes(); track note.id) {
-              <li>
-                <p>{{ note.texte }}</p>
-                <small>
-                  {{ note.auteur ? note.auteur.firstName + ' ' + note.auteur.lastName : 'Utilisateur supprimé' }}
-                  · {{ note.createdAt | date: 'dd/MM/yyyy à HH:mm' }}
-                </small>
-              </li>
-            }
-          </ul>
-        } @else {
-          <p class="detail-section__text">Aucune note pour l’instant. Gardez ici la trace de chaque échange avec le vendeur.</p>
-        }
-      </section>
-    </section>
-    <app-taches-dossier type="terrain" [dossierId]="t.id" [libelleDossier]="t.referenceInterne" />
-    <app-fil-discussion type="terrain" [dossierId]="t.id" />
+          @if (t.documents.length) {
+            <ul class="doc-list">
+              @for (document of t.documents; track document.id) {
+                <li>
+                  <svg lucideFileText aria-hidden="true"></svg>
+                  <a [href]="document.secureUrl" target="_blank" rel="noopener">{{ document.title || (document.type | mtmLabel) }}</a>
+                  <span class="status-pill" [class.status-pill--info]="document.isPublic">{{ document.isPublic ? 'Public' : 'Interne' }}</span>
+                  @if (canModify) {
+                    <button mat-icon-button type="button" (click)="removeDocument(document.id)" aria-label="Supprimer le document" matTooltip="Supprimer">
+                      <svg lucideTrash2 aria-hidden="true"></svg>
+                    </button>
+                  }
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="detail-section__text is-vide">Aucun document. Ajoutez le titre, le plan ou tout justificatif : ils restent internes sauf mention contraire.</p>
+          }
+        </section>
+
+        <section class="page-card detail-section">
+          <h2>Suivi</h2>
+          <dl class="info-list info-list--un">
+            <div><dt>Créé le</dt><dd>{{ t.createdAt | date: 'dd/MM/yyyy à HH:mm' }}</dd></div>
+            <div><dt>Dernière modification</dt><dd>{{ t.updatedAt | date: 'dd/MM/yyyy à HH:mm' }}</dd></div>
+          </dl>
+          <button mat-stroked-button type="button" (click)="openHistory()">
+            <svg class="btn-icon" lucideClock aria-hidden="true"></svg>Voir l’historique des modifications
+          </button>
+        </section>
+      </aside>
+    </div>
   </section>
 }
