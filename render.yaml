@@ -34,7 +34,11 @@ services:
     releaseCommand: cd apps/api && npx prisma migrate deploy && npx prisma db seed
     # Render attend que l'API réponde avant de lui envoyer le trafic : pas de
     # fenêtre d'erreur pendant un déploiement.
-    healthCheckPath: /api/health
+    # Contrôle léger, sans requête SQL : Render l'appelle en continu, et un
+    # contrôle qui interroge la base l'empêcherait de s'endormir la nuit (Neon
+    # facture le calcul tant qu'elle est éveillée). Le contrôle complet reste
+    # sur /api/health, à consulter à la main.
+    healthCheckPath: /api/health/live
     envVars:
       - key: NODE_ENV
         value: production

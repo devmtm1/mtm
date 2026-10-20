@@ -27,6 +27,17 @@ describe('HealthService', () => {
     );
   });
 
+  it('le contrôle léger répond sans toucher à la base, au stockage ni au courrier', () => {
+    const result = service.live();
+
+    expect(result.status).toBe('ok');
+    expect(typeof result.uptime).toBe('number');
+    expect(Number.isNaN(Date.parse(result.timestamp))).toBe(false);
+    expect(prismaMock.$queryRaw).not.toHaveBeenCalled();
+    expect(cloudinaryMock.isConfigured).not.toHaveBeenCalled();
+    expect(mailMock.verify).not.toHaveBeenCalled();
+  });
+
   it('devrait retourner un statut "ok" et database "up" si la requête réussit', async () => {
     configMock.get.mockImplementation((key: string) => {
       if (key === 'JWT_ACCESS_SECRET') return 'a'.repeat(32);

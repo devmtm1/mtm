@@ -4,6 +4,12 @@ import { PrismaService } from '../../database/prisma.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import { MailService } from '../../common/mail/mail.service';
 
+export interface LiveStatus {
+  status: 'ok';
+  timestamp: string;
+  uptime: number;
+}
+
 export interface HealthStatus {
   status: 'ok' | 'error';
   timestamp: string;
@@ -25,6 +31,15 @@ export class HealthService {
     private readonly cloudinaryService: CloudinaryService,
     private readonly mailService: MailService,
   ) {}
+
+  /** Le processus est vivant. N'interroge ni la base, ni le stockage, ni le serveur de courrier. */
+  live(): LiveStatus {
+    return {
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+    };
+  }
 
   async check(): Promise<HealthStatus> {
     const database = await this.checkDatabase();
