@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
+import { originesAutorisees } from './common/cors-origins';
 import { requestContextMiddleware } from './common/request-context/request-context';
 import { AppModule } from './app.module';
 import type { AppConfig } from './config/app.config';
@@ -49,15 +50,12 @@ async function bootstrap(): Promise<void> {
         callback(null, true);
         return;
       }
-      const allowed = appCfg.corsOrigin.split(',').map((s) => s.trim());
+      const allowed = originesAutorisees(appCfg.corsOrigin);
       if (appCfg.nodeEnv !== 'production') {
         allowed.push('http://localhost:5173', 'http://127.0.0.1:5173');
       }
-      if (allowed.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
+      // Refus : pas d'en-tête CORS, le navigateur bloque. Une erreur ferait répondre 500.
+      callback(null, allowed.includes(origin));
     },
     credentials: true,
   });
