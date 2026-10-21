@@ -1135,6 +1135,36 @@ model Promotion {
   @@map("promotions")
 }
 
+/// Vidéo de la page « Actualités et conseils » du site public : un conseil, une
+/// actualité du foncier… La vidéo est hébergée sur Cloudinary (envoyée du poste
+/// de l'utilisateur directement vers Cloudinary, par morceaux) ; la base ne
+/// garde que son identifiant et ses caractéristiques.
+model Publication {
+  id              String    @id @default(uuid())
+  titre           String
+  /// « conseil » | « actualite » | « foncier » | « construction » | « autre ».
+  categorie       String    @default("conseil")
+  /// Courte présentation affichée sous la vidéo.
+  resume          String?
+  /// Identifiant public Cloudinary de la vidéo ; vide tant qu'elle n'est pas envoyée.
+  storageKey      String?
+  dureeSecondes   Int?
+  largeur         Int?
+  hauteur         Int?
+  tailleOctets    Int?
+  /// Jour affiché sur le site ; une date à venir programme la mise en ligne.
+  datePublication DateTime?
+  /// Vidéo à la une : présentée en grand en haut de la page.
+  misEnAvant      Boolean   @default(false)
+  isActive        Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([isActive])
+  @@index([datePublication])
+  @@map("publications")
+}
+
 model TeamMember {
   id           String   @id @default(uuid())
   kind         String // "directeur" | "groupe" | "membre"

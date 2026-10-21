@@ -54,7 +54,7 @@ Elle est **repliée au départ** : cliquez sur son titre pour la déplier. Elle 
 | --- | --- |
 | **Utilisateurs et accès** | **Utilisateurs**, **Rôles et droits d’accès**, **Historique des actions** |
 | **Réglages** | **Paramètres**, **Identité de l’entreprise**, **Étapes des dossiers**, **Règles de notification**, **Alertes et rapports automatiques** |
-| **Site web** | **Contenus du site**, **Réalisations & projets**, **Publicités du bandeau**, **Équipe du site** |
+| **Site web** | **Contenus du site**, **Réalisations & projets**, **Publicités du bandeau**, **Équipe du site**, **Actualités et conseils** |
 
 Les autres rubriques (Commercial, Biens, Location et services, Pilotage et finances) vous sont ouvertes comme à la direction.
 
@@ -245,7 +245,7 @@ Activer l’envoi exige **au moins un rapport et un destinataire**.
 
 ## Le site web
 
-**Administration › Site web** regroupe ce que les visiteurs lisent sur le **site public** : **Contenus du site** (textes page par page), **Réalisations & projets**, **Publicités du bandeau**, **Équipe du site**.
+**Administration › Site web** regroupe ce que les visiteurs lisent sur le **site public** : **Contenus du site** (textes page par page), **Réalisations & projets**, **Publicités du bandeau**, **Équipe du site**, **Actualités et conseils** (vidéos : titre, rubrique, fichier MP4 de 100 Mo maximum, puis publication).
 
 ![Contenus du site](img/web-02-contenus.png)
 

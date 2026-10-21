@@ -1,0 +1,120 @@
+<div class="pub-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Site web</p>
+      <h1 class="page-header__title">Actualités et conseils</h1>
+      <p class="page-header__subtitle">
+        Les vidéos de la page « Actualités et conseils » du site : conseils pour acheter ou construire, actualités du foncier.
+        Une vidéo n’apparaît qu’une fois publiée, avec sa date de publication atteinte.
+      </p>
+    </div>
+    @if (canCreate) {
+      <button mat-flat-button color="primary" type="button" (click)="openEditor()">
+        <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouvelle vidéo
+      </button>
+    }
+  </header>
+
+  @if (!loading()) {
+    <aside class="alert-banner" [class.alert-banner--info]="enLigne().length === 0" role="status">
+      <div class="alert-banner__head">
+        <svg lucideVideo aria-hidden="true"></svg>
+        <strong>
+          @if (enLigne().length === 0) {
+            Aucune vidéo en ligne : la page du site n’affiche que ses articles de texte.
+          } @else {
+            {{ enLigne().length }} vidéo{{ enLigne().length > 1 ? 's' : '' }} en ligne sur la page Actualités et conseils.
+          }
+        </strong>
+      </div>
+      <p>
+        Les modifications apparaissent sur le site en une minute environ. Pour une bonne qualité : vidéo <strong>MP4 (H.264) en 1080p</strong>,
+        format paysage, son clair, moins de 100 Mo.
+      </p>
+    </aside>
+  }
+
+  @if (loading()) {
+    <div class="skeleton" style="height: 280px"></div>
+  } @else if (items().length === 0) {
+    <section class="page-card detail-section">
+      <div class="empty-state">
+        <h3>Aucune vidéo pour l’instant</h3>
+        <p>Ajoutez un premier conseil en vidéo : il s’affichera sur la page Actualités et conseils du site public.</p>
+        @if (canCreate) {
+          <button mat-flat-button color="primary" type="button" (click)="openEditor()">Ajouter une vidéo</button>
+        }
+      </div>
+    </section>
+  } @else {
+    <ul class="cards">
+      @for (publication of items(); track publication.id) {
+        <li>
+          <article class="card" [class.is-hidden]="publication.statut !== 'en_ligne'" [class.is-busy]="busyId() === publication.id">
+            <div class="card__media">
+              @if (publication.posterUrl) {
+                <img [src]="publication.posterUrl" [alt]="publication.titre" loading="lazy" />
+              } @else {
+                <div class="card__placeholder" aria-hidden="true">
+                  <svg lucideVideo></svg>
+                  <small>Aucune vidéo</small>
+                </div>
+              }
+              @if (publication.videoUrl) {
+                <button type="button" class="card__play" (click)="regarder(publication)" aria-label="Regarder la vidéo" matTooltip="Regarder">
+                  <svg lucidePlay aria-hidden="true"></svg>
+                </button>
+              }
+              <span class="status-pill card__state" [class]="statuts[publication.statut].pill" [matTooltip]="statuts[publication.statut].help">{{ statuts[publication.statut].label }}</span>
+              @if (publication.misEnAvant) {
+                <span class="card__une"><svg lucideStar aria-hidden="true"></svg>À la une</span>
+              }
+              @if (publication.dureeSecondes) {
+                <span class="card__duree">{{ duree(publication.dureeSecondes) }}</span>
+              }
+            </div>
+            <div class="card__body">
+              <span class="card__rubrique">{{ categorie(publication.categorie) }}</span>
+              <h3>{{ publication.titre }}</h3>
+              @if (publication.resume) {
+                <p class="card__text">{{ publication.resume }}</p>
+              }
+              <p class="card__meta">
+                {{ dateDite(publication) }}@if (publication.tailleOctets) { · {{ taille(publication.tailleOctets) }} }
+              </p>
+            </div>
+            <div class="card__actions">
+              @if (canModify) {
+                <button mat-stroked-button type="button" (click)="openEditor(publication)">
+                  <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Modifier
+                </button>
+              }
+              <span class="card__spacer"></span>
+              @if (canPublish) {
+                <button
+                  mat-icon-button
+                  type="button"
+                  (click)="togglePublish(publication)"
+                  [disabled]="!publication.isActive && !publication.videoUrl"
+                  [matTooltip]="publication.isActive ? 'Retirer du site' : publication.videoUrl ? 'Publier sur le site' : 'Ajoutez d’abord la vidéo'"
+                  [attr.aria-label]="publication.isActive ? 'Retirer du site' : 'Publier'"
+                >
+                  @if (publication.isActive) {
+                    <svg lucideEyeOff aria-hidden="true"></svg>
+                  } @else {
+                    <svg lucideEye aria-hidden="true"></svg>
+                  }
+                </button>
+              }
+              @if (canDelete) {
+                <button mat-icon-button type="button" class="card__delete" (click)="remove(publication)" matTooltip="Supprimer" aria-label="Supprimer">
+                  <svg lucideTrash2 aria-hidden="true"></svg>
+                </button>
+              }
+            </div>
+          </article>
+        </li>
+      }
+    </ul>
+  }
+</div>

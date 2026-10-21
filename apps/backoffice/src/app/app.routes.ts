@@ -225,6 +225,12 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'content/actualites',
+        canActivate: [permissionsGuard(['content:consulter'])],
+        loadComponent: () =>
+          import('./features/content/publications/publications').then((m) => m.Publications),
+      },
+      {
         path: 'content/promotions',
         canActivate: [permissionsGuard(['content:consulter'])],
         loadComponent: () =>

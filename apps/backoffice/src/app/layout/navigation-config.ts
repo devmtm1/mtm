@@ -210,6 +210,7 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         children: [
           { label: 'Contenus du site', route: '/content', permission: 'content:consulter', exact: true },
           { label: 'Réalisations & projets', route: '/content/showcase', permission: 'content:consulter' },
+          { label: 'Actualités et conseils', route: '/content/actualites', permission: 'content:consulter' },
           { label: 'Publicités du bandeau', route: '/content/promotions', permission: 'content:consulter' },
           { label: 'Équipe du site', route: '/content/equipe', permission: 'content:consulter' },
         ],
