@@ -27,7 +27,7 @@ import { dateFr, libelleMode, nomPersonne } from './finances-outils';
     <div class="page-grille">
       <header class="page-header">
         <div>
-          <p class="eyebrow">Finances</p>
+          <p class="eyebrow">Comptabilité</p>
           <h1 class="page-header__title">Rentabilité des chantiers</h1>
           <p class="page-header__subtitle">
             Chaque chantier a sa fiche financière : budget, paiements du client, dépenses engagées, marge prévisionnelle et

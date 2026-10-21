@@ -36,7 +36,8 @@
             }
           }
         }
-        @if (estOuverte(section)) {
+        <!-- Menu compact : pas de titre à cliquer, donc rien à replier. -->
+        @if (collapsed() || estOuverte(section)) {
           <ul class="sidebar__list" role="list">
             @for (item of section.items; track item.route) {
               <li class="sidebar__list-item">
@@ -53,12 +54,4 @@
       </div>
     }
   </nav>
-
-  <!-- Pied sobre : les coordonnées complètes restent disponibles sur la page
-       de connexion et seront exposées via Paramètres → Informations entreprise -->
-  <div class="sidebar__footer">
-    @if (!collapsed()) {
-      <span class="sidebar__footer-text">MTM Immobilier · ERP</span>
-    }
-  </div>
 </div>

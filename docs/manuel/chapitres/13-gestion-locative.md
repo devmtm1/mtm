@@ -6,7 +6,7 @@ resume: Biens loués, baux, loyers et quittances, impayés, locations à la nuit
 roles: commercial responsable_commercial gestion_locative direction administrateur
 ---
 
-La **gestion locative** suit les biens que les propriétaires confient à MTM pour la location : **baux, loyers, cautions, impayés, séjours à la nuit, résiliations**. **La location est portée par les commerciaux** : chacun crée et suit **ses propres biens** (fiche, bail, séjours, locataires, loyers) et ne voit que ceux-là ; le responsable de la gestion locative, le manager et la direction voient tout le portefeuille. La **publication sur le site**, la **validation** (résiliations, versements) et les **sorties d’argent** (restitution de caution) restent à la gestion locative. La rubrique **Gestion locative** regroupe : *Biens en gestion*, *Locataires*, *Séjours à la nuit*, *Résiliations*, *Relances d’impayés*.
+La **gestion locative** suit les biens que les propriétaires confient à MTM pour la location : **baux, loyers, cautions, impayés, séjours à la nuit, résiliations**. **La location est portée par les commerciaux** : chacun crée et suit **ses propres biens** (fiche, bail, séjours, locataires, loyers) et ne voit que ceux-là ; le responsable de la gestion locative, le manager et la direction voient tout le portefeuille. La **publication sur le site**, la **validation** (résiliations, versements) et les **sorties d’argent** (restitution de caution) restent à la gestion locative. La ligne **Gestion locative** du menu (rubrique *Location et services*) ouvre un écran à **onglets** : *Biens en gestion*, *Locataires*, *Séjours à la nuit*, *Résiliations*, *Relances d’impayés*.
 
 ## Les biens locatifs
 

@@ -993,7 +993,7 @@ describeE2e('Agenda, tâches, messages et notifications (e2e)', () => {
         value: ['en_cours'],
       });
       expect(reponse.status).toBe(400);
-      expect(reponse.body.message).toContain('Parcours des dossiers');
+      expect(reponse.body.message).toContain('Étapes des dossiers');
     });
 
     it('sans permission, on ne modifie pas un parcours', async () => {

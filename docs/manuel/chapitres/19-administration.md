@@ -2,17 +2,17 @@
 id: administration
 titre: Administration du back-office
 groupe: metier
-resume: Comptes, rôles, paramètres, parcours des dossiers, identité de l’entreprise, notifications, journal d’audit.
+resume: Comptes, rôles, paramètres, étapes des dossiers, identité de l’entreprise, notifications, historique des actions.
 roles: administrateur direction
 ---
 
-Ce chapitre s’adresse aux **administrateurs** (et à la **direction** pour certains écrans). La rubrique **Administration** (repliée par défaut) contient : *Utilisateurs*, *Rôles & permissions*, *Pilotage et rapports*, *Parcours des dossiers*, *Identité de l’entreprise*, *Règles de notification*, *Paramètres*, *Journal d’audit*.
+Ce chapitre s’adresse aux **administrateurs** (et à la **direction** pour certains écrans). La rubrique **Administration** (repliée par défaut) contient trois lignes, chacune avec ses **onglets** : **Utilisateurs et accès** (*Utilisateurs*, *Rôles et droits d’accès*, *Historique des actions*), **Réglages** (*Paramètres*, *Identité de l’entreprise*, *Étapes des dossiers*, *Règles de notification*, *Alertes et rapports automatiques*) et **Site web** (les contenus du site public).
 
-> **Important** — Un compte **administrateur** doit avoir la **double authentification** activée. Toutes vos actions sont **tracées** dans le journal d’audit : agissez avec soin.
+> **Important** — Un compte **administrateur** doit avoir la **double authentification** activée. Toutes vos actions sont **tracées** dans l’historique des actions : agissez avec soin.
 
 ## Les utilisateurs
 
-**Administration › Accès › Utilisateurs** : les comptes qui accèdent au back-office. Chaque personne a un **rôle** qui définit ce qu’elle peut voir et faire.
+**Administration › Utilisateurs et accès › Utilisateurs** : les comptes qui accèdent au back-office. Chaque personne a un **rôle** qui définit ce qu’elle peut voir et faire.
 
 ![Utilisateurs](img/adm-01-utilisateurs.png)
 
@@ -41,7 +41,7 @@ Ce chapitre s’adresse aux **administrateurs** (et à la **direction** pour cer
 
 ## Les rôles et permissions
 
-**Administration › Accès › Rôles & permissions** : un rôle est un **ensemble de droits** « module : action » (consulter, créer, modifier, valider, publier, payer, exporter, administrer…). **Modifier un rôle change les droits de tous ses utilisateurs.**
+**Administration › Utilisateurs et accès › Rôles et droits d’accès** : un rôle est un **ensemble de droits** « module : action » (consulter, créer, modifier, valider, publier, payer, exporter, administrer…). **Modifier un rôle change les droits de tous ses utilisateurs.**
 
 ![Rôles et permissions](img/adm-02-roles.png)
 
@@ -67,8 +67,8 @@ Réglages utiles à connaître :
 
 | Réglage | Rôle |
 | --- | --- |
-| `pilotage.seuilsBlocage` | Jours sans mouvement au-delà desquels un dossier est dit **bloqué** — se règle dans **Pilotage et rapports** |
-| `pilotage.envoiAutomatique` | **Envoi automatique de rapports par e-mail** — se règle dans **Pilotage et rapports** |
+| `pilotage.seuilsBlocage` | Jours sans mouvement au-delà desquels un dossier est dit **bloqué** — se règle dans **Alertes et rapports automatiques** |
+| `pilotage.envoiAutomatique` | **Envoi automatique de rapports par e-mail** — se règle dans **Alertes et rapports automatiques** |
 | `finances.tauxGestionDefaut` | Commission de gestion par défaut (en %) |
 | `finances.categoriesDepenses` / `categoriesRecettes` | Catégories proposées aux saisies |
 | `finances.doubleValidation` | Exige qu’une saisie soit validée par une autre personne |
@@ -76,17 +76,17 @@ Réglages utiles à connaître :
 | Numérotation des missions et factures | Formats `MTM-{code}-{seq:3}/{annee}` et `MTM-FAC-…` |
 | Gestion locative | **Préavis** de résiliation (30 jours par défaut) |
 
-> Un paramètre qui a une **page dédiée** (Identité de l’entreprise, Parcours des dossiers) ne se modifie **plus** dans cette page : elle le refuse pour éviter les contradictions.
+> Un paramètre qui a une **page dédiée** (Identité de l’entreprise, Étapes des dossiers) ne se modifie **plus** dans cette page : elle le refuse pour éviter les contradictions.
 
-## Pilotage et rapports
+## Alertes et rapports automatiques
 
-**Administration › Pilotage et rapports** (direction et administrateurs) regroupe deux réglages qui se saisissaient auparavant en JSON dans Paramètres.
+**Administration › Alertes et rapports automatiques** (direction et administrateurs) regroupe deux réglages qui se saisissaient auparavant en JSON dans Paramètres.
 
-![Pilotage et rapports](img/adm-11-pilotage-reglages.png)
+![Alertes et rapports automatiques](img/adm-11-pilotage-reglages.png)
 
 ### Dossiers bloqués
 
-Cinq champs, un par type de dossier (vente, mission, chantier, prospect, tâche) : le **nombre de jours** sans mouvement au-delà duquel le dossier est signalé « bloqué ». Valeurs acceptées : des **jours entiers de 1 à 365**. **Enregistrer les délais** applique le changement tout de suite et le consigne dans le journal d’audit.
+Cinq champs, un par type de dossier (vente, mission, chantier, prospect, tâche) : le **nombre de jours** sans mouvement au-delà duquel le dossier est signalé « bloqué ». Valeurs acceptées : des **jours entiers de 1 à 365**. **Enregistrer les délais** applique le changement tout de suite et le consigne dans l’historique des actions.
 
 ### Envoi automatique des rapports
 
@@ -100,11 +100,11 @@ Cinq champs, un par type de dossier (vente, mission, chantier, prospect, tâche)
 - Un bandeau signale quand la **messagerie du serveur (SMTP) n’est pas configurée** : aucun e-mail ne part alors, même si le réglage est enregistré.
 - **Derniers envois** : date, période, rapports et nombre de destinataires des envois réellement partis.
 
-## Les parcours des dossiers
+## Les étapes des dossiers
 
-**Administration › Parcours des dossiers** : les **étapes** que suit chaque type de dossier — ventes, pipeline commercial, chantiers.
+**Administration › Étapes des dossiers** : les **étapes** que suit chaque type de dossier — ventes, pipeline commercial, chantiers.
 
-![Parcours des dossiers](img/adm-04-parcours.png)
+![Étapes des dossiers](img/adm-04-parcours.png)
 
 - Vous pouvez **ajouter des étapes** propres à MTM, les **remettre dans l’ordre** (flèches), et **autoriser de nouveaux passages** d’une étape à une autre (liste « Peut passer à… »).
 - Les étapes **d’origine** (cadenas) **ne se retirent pas** : le système s’en sert pour calculer les soldes, conclure une vente ou réceptionner un chantier.
@@ -133,11 +133,11 @@ Cinq champs, un par type de dossier (vente, mission, chantier, prospect, tâche)
 - **SMS et WhatsApp** partent par le **fournisseur** désigné sur le serveur pour chaque canal (`SMS_PROVIDER`, `WHATSAPP_PROVIDER`). On change de fournisseur sans toucher à l’application ni aux données : voir `docs/AGENDA_TACHES_MESSAGES.md`. Le bandeau bleu en haut de l’écran dit quel canal est inactif. Sans fournisseur, rien ne part même si la case est cochée.
 - Chacun peut **couper l’e-mail pour lui-même** dans *Mes notifications*.
 
-## Le journal d’audit
+## L’historique des actions
 
-**Administration › Journal d’audit** : l’historique de **toutes les actions sensibles** — qui, quand, quoi, avant/après, avec le **motif** quand il est exigé.
+**Administration › Historique des actions** : l’historique de **toutes les actions sensibles** — qui, quand, quoi, avant/après, avec le **motif** quand il est exigé.
 
-![Journal d’audit](img/adm-07-audit.png)
+![Historique des actions](img/adm-07-audit.png)
 
 - Filtrez par **recherche**, **période**, **module**, **élément**.
 - Un clic sur une ligne ouvre le **détail** (valeurs avant et après).
@@ -152,5 +152,5 @@ Cinq champs, un par type de dossier (vente, mission, chantier, prospect, tâche)
 - **Un compte par personne, un rôle par fonction.** Ne créez pas de compte partagé.
 - **Désactivez** (ne supprimez pas) le compte d’une personne qui part, **le jour même**.
 - N’attribuez le rôle **administrateur** qu’à quelques personnes de confiance.
-- Avant de modifier un **paramètre**, notez sa valeur d’origine : le journal d’audit la conserve, mais un retour en arrière reste manuel.
-- Vérifiez régulièrement **« À surveiller »** dans la liste des utilisateurs et le **journal d’audit**.
+- Avant de modifier un **paramètre**, notez sa valeur d’origine : l’historique des actions la conserve, mais un retour en arrière reste manuel.
+- Vérifiez régulièrement **« À surveiller »** dans la liste des utilisateurs et l’**historique des actions**.

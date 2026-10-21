@@ -42,4 +42,4 @@ Chaque personne a un **rôle** qui définit ce qu’elle voit et ce qu’elle pe
 
 ## Une règle valable pour tout le monde
 
-Chaque action est **enregistrée au nom de la personne connectée** (journal d’audit). Ne prêtez jamais votre compte : en cas d’erreur, c’est vous qui seriez désigné.
+Chaque action est **enregistrée au nom de la personne connectée** (historique des actions). Ne prêtez jamais votre compte : en cas d’erreur, c’est vous qui seriez désigné.

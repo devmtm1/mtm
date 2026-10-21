@@ -468,7 +468,7 @@ export class BienDetailPage implements OnInit {
       bailId: bail.id,
       libelle: `${this.personne(bail.locataire)} — bail ${bail.referenceInterne}`,
     }).subscribe((demande) => {
-      if (demande) this.notify.success('Demande enregistrée : elle est dans « Demandes de résiliation »');
+      if (demande) this.notify.success('Demande enregistrée : elle est dans « Résiliations »');
     });
   }
 

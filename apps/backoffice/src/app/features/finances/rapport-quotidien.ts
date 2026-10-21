@@ -36,7 +36,7 @@ const STATUTS: Record<string, { label: string; ton: string }> = {
       <header class="page-header">
         <div>
           <p class="eyebrow">Finances</p>
-          <h1 class="page-header__title">Rapport financier quotidien</h1>
+          <h1 class="page-header__title">Rapport du soir</h1>
           <p class="page-header__subtitle">
             Le compte rendu du soir : caisse, encaissements par moyen de paiement, dépenses et leurs autorisations, ventes,
             reversements, chantiers, créances, pièces manquantes et anomalies. Transmis chaque soir à la Direction, en PDF.

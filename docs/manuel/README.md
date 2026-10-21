@@ -1,6 +1,6 @@
 # Guide d’utilisation de l’équipe MTM
 
-Le guide est une **page web** servie par le back-office, à l’adresse **`/manuel/`** (menu *Mon compte › Guide d’utilisation*). Il s’adresse à toute l’équipe : commerciaux, responsables, direction, comptabilité, gestion locative, vérifications, chantiers, administration.
+Le guide est une **page web** servie par le back-office, à l’adresse **`/manuel/`** (point d’interrogation en haut à droite, ou menu de votre nom › *Guide d’utilisation*). Il s’adresse à toute l’équipe : commerciaux, responsables, direction, comptabilité, gestion locative, vérifications, chantiers, administration.
 
 On peut aussi **double-cliquer sur `apps/backoffice/public/manuel/index.html`** pour l’ouvrir directement depuis le dépôt (les adresses du guide sont relatives). Il fonctionne dans n’importe quel navigateur, sans connexion au back-office, avec recherche, choix du métier (« Je suis… ») et lecture sur téléphone. Il s’imprime proprement (*Ctrl + P* → « Enregistrer au format PDF » donne tous les chapitres).
 

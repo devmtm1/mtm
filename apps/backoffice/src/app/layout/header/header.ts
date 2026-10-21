@@ -9,7 +9,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { Subject, timer } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, map, switchMap, tap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -20,16 +20,18 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   LucideBell,
   LucideBellOff,
+  LucideBookOpen,
   LucideChevronDown,
   LucideChevronRight,
+  LucideCircleQuestionMark,
   LucideLogOut,
   LucideMoon,
   LucidePanelLeftClose,
   LucidePanelLeftOpen,
   LucideSearch,
   LucideSettings,
+  LucideShieldCheck,
   LucideSun,
-  LucideUser,
 } from '@lucide/angular';
 import { AuthService } from '../../core/services/auth.service';
 import { SessionService } from '../../core/services/session.service';
@@ -43,7 +45,17 @@ import {
   NotificationsFeedService,
   type FeedItem,
 } from '../../core/services/notifications-feed.service';
-import { NAVIGATION_SECTIONS } from '../navigation-config';
+import { entreeCorrespond, pagesNavigables } from '../navigation-config';
+
+/** Sans accents ni majuscules : « Tresorerie » trouve « Trésorerie et caisse ». */
+function normaliser(texte: string): string {
+  return texte
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase();
+}
+
+const PAGES_PAR_RECHERCHE = 4;
 
 interface Breadcrumb {
   section: string;
@@ -67,16 +79,18 @@ interface Breadcrumb {
     MatTooltipModule,
     LucideBell,
     LucideBellOff,
+    LucideBookOpen,
     LucideChevronDown,
     LucideChevronRight,
+    LucideCircleQuestionMark,
     LucideLogOut,
     LucideMoon,
     LucidePanelLeftClose,
     LucidePanelLeftOpen,
     LucideSearch,
     LucideSettings,
+    LucideShieldCheck,
     LucideSun,
-    LucideUser,
   ],
   templateUrl: './header.html',
   styleUrl: './header.scss',
@@ -168,7 +182,10 @@ export class Header {
           this.searchLoading.set(term.trim().length >= 2);
           this.searchOpen.set(term.trim().length >= 2);
         }),
-        switchMap((term) => this.globalSearch.search(term)),
+        // Les pages d'abord (aller à « Trésorerie »), puis les dossiers trouvés.
+        switchMap((term) =>
+          this.globalSearch.search(term).pipe(map((results) => [...this.pagesCorrespondantes(term), ...results])),
+        ),
         takeUntilDestroyed(),
       )
       .subscribe((results) => {
@@ -263,33 +280,35 @@ export class Header {
     this.themeService.toggle();
   }
 
-  private updateBreadcrumb(): void {
-    const url = this.router.url.split('?')[0].split('#')[0];
-    // La route la plus précise l'emporte (/ventes/objectifs et non /ventes), quel que
-    // soit l'ordre du menu.
-    const candidats: (Breadcrumb & { precision: number })[] = [];
-    const retenir = (section: string, label: string, route: string) => {
-      if (this.matchesUrl(url, route)) candidats.push({ section, label, precision: route.length });
-    };
-
-    for (const rubriqueMenu of NAVIGATION_SECTIONS) {
-      // Le tableau de bord, seul en tête du menu, n'a pas de titre de rubrique.
-      const section = { ...rubriqueMenu, title: rubriqueMenu.title || 'Accueil' };
-      for (const item of section.items) {
-        if (item.children?.length) {
-          const rubrique = section.title === item.label ? section.title : `${section.title} · ${item.label}`;
-          for (const child of item.children) retenir(rubrique, child.label, child.route);
-        } else {
-          retenir(section.title, item.label, item.route);
-        }
-      }
-    }
-
-    const match = candidats.sort((a, b) => b.precision - a.precision)[0] ?? null;
-    this.breadcrumb.set(match ? { section: match.section, label: match.label } : null);
+  /** Pages du menu dont le nom correspond à la saisie, présentées comme des résultats « Pages ». */
+  private pagesCorrespondantes(terme: string): GlobalSearchResult[] {
+    if (terme.trim().length < 2) return [];
+    const mots = normaliser(terme).split(/\s+/).filter(Boolean);
+    return pagesNavigables()
+      .filter((page) => !page.href && (!page.permission || this.sessionService.hasPermission(page.permission)))
+      .filter((page) => {
+        const texte = normaliser(`${page.label} ${page.section}`);
+        return mots.every((mot) => texte.includes(mot));
+      })
+      .slice(0, PAGES_PAR_RECHERCHE)
+      .map((page) => ({
+        kind: 'page' as const,
+        kindLabel: 'Pages',
+        id: `page:${page.route}`,
+        title: page.label,
+        hint: page.section,
+        route: [page.route],
+      }));
   }
 
-  private matchesUrl(url: string, route: string): boolean {
-    return url === route || url.startsWith(`${route}/`);
+  private updateBreadcrumb(): void {
+    const url = this.router.url.split('?')[0].split('#')[0];
+    // La page la plus précise l'emporte (/ventes/objectifs et non /ventes), quel que
+    // soit l'ordre du menu.
+    const match =
+      pagesNavigables()
+        .filter((page) => entreeCorrespond(page, url))
+        .sort((a, b) => b.route.length - a.route.length)[0] ?? null;
+    this.breadcrumb.set(match ? { section: match.section, label: match.label } : null);
   }
 }

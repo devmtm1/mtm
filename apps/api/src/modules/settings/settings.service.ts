@@ -198,12 +198,12 @@ export class SettingsService {
   static assertCleModifiable(key: string): void {
     if (key.startsWith(PREFIXE_ENTREPRISE)) {
       throw new BadRequestException(
-        'Ce paramètre se modifie dans Administration › Identité de l’entreprise',
+        'Ce paramètre se modifie dans Administration › Réglages › Identité de l’entreprise',
       );
     }
     if (CLES_PARCOURS.includes(key)) {
       throw new BadRequestException(
-        'Ce paramètre se modifie dans Administration › Parcours des dossiers',
+        'Ce paramètre se modifie dans Administration › Réglages › Étapes des dossiers',
       );
     }
   }

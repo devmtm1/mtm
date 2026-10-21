@@ -1,0 +1,19 @@
+@if (sujet(); as s) {
+  <nav class="onglets" [attr.aria-label]="s.titre">
+    @for (onglet of s.onglets; track onglet.route) {
+      <a
+        class="onglet"
+        [routerLink]="onglet.route"
+        routerLinkActive="onglet--actif"
+        [routerLinkActiveOptions]="{ exact: !!onglet.exact }"
+        #rla="routerLinkActive"
+        [attr.aria-current]="rla.isActive ? 'page' : null"
+      >
+        {{ onglet.label }}
+        @if (pastille(onglet.compteur); as total) {
+          <span class="onglet__pastille" [attr.aria-label]="total + ' à traiter'">{{ total }}</span>
+        }
+      </a>
+    }
+  </nav>
+}

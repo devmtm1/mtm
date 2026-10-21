@@ -1,45 +1,25 @@
 @if (hasChildren()) {
-  <div class="nav-group">
-    <button
-      type="button"
-      class="nav-item nav-item--group"
-      [class.nav-item--active]="childActive()"
-      [matTooltip]="collapsed() ? item().label : ''"
-      matTooltipPosition="right"
-      [attr.aria-expanded]="!collapsed() && open()"
-      (click)="toggleOpen()"
-    >
-      <svg [lucideIcon]="item().icon" class="nav-item__icon" aria-hidden="true"></svg>
-      @if (!collapsed()) {
-        <span class="nav-item__label">{{ item().label }}</span>
-        @if (!open() && pastilleGroupe(); as total) {
-          <span class="nav-item__pastille" [attr.aria-label]="total + ' à traiter'">{{ total }}</span>
-        }
-        <svg lucideChevronDown class="nav-item__chevron" [class.nav-item__chevron--open]="open()" aria-hidden="true"></svg>
-      }
-    </button>
-
-    @if (!collapsed() && open()) {
-      <div class="nav-group__children">
-        @for (child of item().children; track child.route) {
-          <a
-            class="nav-child"
-            [routerLink]="child.route"
-            routerLinkActive="nav-child--active"
-            [routerLinkActiveOptions]="{ exact: !!child.exact }"
-            #rla="routerLinkActive"
-            [attr.aria-current]="rla.isActive ? 'page' : null"
-            (click)="navigate.emit()"
-          >
-            {{ child.label }}
-            @if (pastille(child.compteur); as total) {
-              <span class="nav-item__pastille" [attr.aria-label]="total + ' à traiter'">{{ total }}</span>
-            }
-          </a>
-        }
-      </div>
+  <!-- Sujet à plusieurs pages : une ligne, les pages sont en onglets dans l'écran -->
+  <a
+    class="nav-item"
+    [class.nav-item--active]="sujetActif()"
+    [routerLink]="item().route"
+    [matTooltip]="collapsed() ? item().label : ''"
+    matTooltipPosition="right"
+    [attr.aria-current]="sujetActif() ? 'page' : null"
+    (click)="navigate.emit()"
+  >
+    <svg [lucideIcon]="item().icon" class="nav-item__icon" aria-hidden="true"></svg>
+    @if (collapsed() && pastille()) {
+      <span class="nav-item__point" aria-hidden="true"></span>
     }
-  </div>
+    @if (!collapsed()) {
+      <span class="nav-item__label">{{ item().label }}</span>
+      @if (pastille(); as total) {
+        <span class="nav-item__pastille" [attr.aria-label]="total + ' à traiter'">{{ total }}</span>
+      }
+    }
+  </a>
 } @else if (item().href) {
   <a
     class="nav-item"
@@ -51,14 +31,8 @@
     (click)="navigate.emit()"
   >
     <svg [lucideIcon]="item().icon" class="nav-item__icon" aria-hidden="true"></svg>
-    @if (collapsed() && pastille(item().compteur)) {
-      <span class="nav-item__point" aria-hidden="true"></span>
-    }
     @if (!collapsed()) {
       <span class="nav-item__label">{{ item().label }}</span>
-      @if (pastille(item().compteur); as total) {
-        <span class="nav-item__pastille" [attr.aria-label]="total + ' à traiter'">{{ total }}</span>
-      }
     }
   </a>
 } @else {
@@ -74,12 +48,12 @@
     (click)="navigate.emit()"
   >
     <svg [lucideIcon]="item().icon" class="nav-item__icon" aria-hidden="true"></svg>
-    @if (collapsed() && pastille(item().compteur)) {
+    @if (collapsed() && pastille()) {
       <span class="nav-item__point" aria-hidden="true"></span>
     }
     @if (!collapsed()) {
       <span class="nav-item__label">{{ item().label }}</span>
-      @if (pastille(item().compteur); as total) {
+      @if (pastille(); as total) {
         <span class="nav-item__pastille" [attr.aria-label]="total + ' à traiter'">{{ total }}</span>
       }
     }

@@ -24,7 +24,7 @@ import { telecharger } from './finances-outils';
     <div class="page-grille">
       <header class="page-header">
         <div>
-          <p class="eyebrow">Finances</p>
+          <p class="eyebrow">Comptabilité</p>
           <h1 class="page-header__title">États financiers</h1>
           <p class="page-header__subtitle">
             Les états que la Direction demande à la comptable : chacun se lit à l’écran et se télécharge en CSV, ouvrable

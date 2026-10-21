@@ -73,7 +73,7 @@ export class CloturesFinancieres implements OnInit {
     JustificationDialog.ask(this.dialog, {
       title: `Rouvrir ${this.libelle(mois.periode)}`,
       description:
-        'Rouvrir un mois autorise de nouveau les modifications datées de ce mois. Le motif est consigné dans le journal d’audit.',
+        'Rouvrir un mois autorise de nouveau les modifications datées de ce mois. Le motif est consigné dans l’historique des actions.',
       confirmLabel: 'Rouvrir le mois',
     }).subscribe((justification) => {
       if (!justification) return;

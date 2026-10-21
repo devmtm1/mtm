@@ -69,7 +69,7 @@ export function pillClassFor(tone: StatusTone | undefined): string {
         <mat-form-field appearance="outline" class="w-full">
           <mat-label>Justification</mat-label>
           <textarea matInput rows="2" [formControl]="justification" placeholder="Pourquoi ce changement ?"></textarea>
-          <mat-hint>Consignée dans le journal d’audit avec votre identifiant.</mat-hint>
+          <mat-hint>Consignée dans l’historique des actions avec votre identifiant.</mat-hint>
           @if (justification.invalid && justification.touched) {
             <mat-error>Trois caractères minimum.</mat-error>
           }

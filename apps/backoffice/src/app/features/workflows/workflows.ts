@@ -30,7 +30,7 @@ const LIBELLES_PAR_MODULE: Record<string, Record<string, { label: string }>> = {
 };
 
 /**
- * Parcours des dossiers (section 21 : « étapes configurables selon le module »).
+ * Étapes des dossiers (section 21 : « étapes configurables selon le module »).
  * On ajoute des étapes, on les ordonne, on autorise de nouveaux passages ; les
  * étapes d'origine ne se retirent pas, le système s'en sert pour calculer
  * les soldes, réceptionner un chantier ou conclure une vente.

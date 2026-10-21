@@ -6,13 +6,13 @@ resume: Répondre aux messages du site, gérer les textes, réalisations, public
 roles: commercial responsable_commercial direction administrateur
 ---
 
-La rubrique **Site public** (repliée par défaut) et, côté ventes, **Demandes du site** gèrent ce qui concerne le **site public de MTM** : les **demandes** que les visiteurs envoient, et les **contenus** qu’ils lisent.
+La ligne **Site web** (rubrique **Administration**, repliée par défaut, avec des **onglets** pour chaque contenu) et, côté ventes, **Demandes du site** gèrent ce qui concerne le **site public de MTM** : les **demandes** que les visiteurs envoient, et les **contenus** qu’ils lisent.
 
 ## Les demandes web
 
 **Commercial › Demandes du site** : les messages envoyés depuis le **formulaire de contact** du site (et depuis les fiches de biens et les annonces de location).
 
-![Demandes web](img/web-01-demandes.png)
+![Demandes du site](img/web-01-demandes.png)
 
 - Chaque demande indique le **nom**, l’**e-mail**, le **téléphone**, le **sujet**, le **message** et, s’il y en a un, le **bien** concerné.
 - Une demande **non lue** est signalée ; **Tout afficher** efface les filtres.
@@ -30,7 +30,7 @@ Trois actions :
 
 ## Les contenus du site
 
-**Site public › Contenus du site** : les **textes** affichés sur le site public, **page par page**.
+**Site web › Contenus du site** : les **textes** affichés sur le site public, **page par page**.
 
 ![Contenus du site](img/web-02-contenus.png)
 
@@ -48,7 +48,7 @@ Trois actions :
 
 ## Les réalisations et projets
 
-**Site public › Réalisations & projets** : le **portfolio illustré** du site. Chaque carte montre une **photo**, un **titre**, un **lieu** et une **courte description** ; elle n’apparaît sur le site **qu’une fois publiée**.
+**Site web › Réalisations & projets** : le **portfolio illustré** du site. Chaque carte montre une **photo**, un **titre**, un **lieu** et une **courte description** ; elle n’apparaît sur le site **qu’une fois publiée**.
 
 ![Réalisations et projets](img/web-03-realisations.png)
 
@@ -57,7 +57,7 @@ Trois actions :
 
 ## Les publicités du bandeau
 
-**Site public › Publicités du bandeau** : affiches, vidéos de publicité et promotions de MTM.
+**Site web › Publicités du bandeau** : affiches, vidéos de publicité et promotions de MTM.
 
 ![Publicités du bandeau](img/web-04-promotions.png)
 
@@ -68,7 +68,7 @@ Trois actions :
 
 ## L’équipe
 
-**Site public › Équipe** : la section **« Notre équipe »** de la page *À propos* : le **mot du directeur**, une **photo de groupe** et un **portrait par collaborateur**. Chaque contenu n’apparaît qu’**une fois publié**.
+**Site web › Équipe du site** : la section **« Notre équipe »** de la page *À propos* : le **mot du directeur**, une **photo de groupe** et un **portrait par collaborateur**. Chaque contenu n’apparaît qu’**une fois publié**.
 
 ![Équipe](img/web-05-equipe.png)
 

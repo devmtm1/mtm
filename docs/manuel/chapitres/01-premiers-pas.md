@@ -21,7 +21,7 @@ roles: tous
 
 Les comptes qui touchent à des données sensibles — **direction, administrateur, comptabilité, ressources humaines** — doivent activer la **double authentification** : après le mot de passe, l’application demande un **code à 6 chiffres** généré par une application sur votre téléphone (Google Authenticator, Microsoft Authenticator…).
 
-- L’activation se fait dans **Mon compte › Sécurité** : scannez le QR code, saisissez le premier code.
+- L’activation se fait dans **votre nom (en haut à droite) › Sécurité et mot de passe** : scannez le QR code, saisissez le premier code.
 - **Conservez les codes de secours** affichés à l’activation : ils servent si vous perdez votre téléphone.
 - Téléphone perdu et pas de codes de secours ? Un administrateur peut **réinitialiser** votre 2FA.
 
@@ -35,16 +35,17 @@ Les comptes qui touchent à des données sensibles — **direction, administrate
 
 | Zone | À quoi elle sert |
 | --- | --- |
-| **Menu à gauche** | Aller d’un module à l’autre. Il ne montre que ce que votre rôle permet. Il est rangé par rubriques (Espace de travail, Commercial, Patrimoine immobilier, Gestion locative…) ; chaque rubrique se plie et se déplie d’un clic sur son titre (**Site public** et **Administration** sont pliées au départ), et **Dossiers de vente** et **Finances** se déplient pour montrer leurs pages. |
-| **Barre de recherche** | Retrouver un prospect, un bien, un dossier. Raccourci : <kbd>Ctrl</kbd> + <kbd>K</kbd>. |
+| **Menu à gauche** | Aller d’un module à l’autre. Il ne montre que ce que votre rôle permet. Il est rangé par rubriques (Mon travail, Commercial, Biens, Location et services…) et tient en une vingtaine de lignes. Un sujet qui compte plusieurs pages (**Dossiers de vente**, **Gestion locative**, **Finances**, **Comptabilité**…) n’a **qu’une ligne** : ses pages sont les **onglets** affichés en haut de l’écran. **Administration** est repliée au départ. |
+| **Barre de recherche** | Retrouver un prospect, un bien, un dossier, **ou aller directement à une page** en tapant son nom (« trésorerie », « locataires »…). Raccourci : <kbd>Ctrl</kbd> + <kbd>K</kbd>. |
+| **Point d’interrogation** | Ouvre ce guide d’utilisation dans un nouvel onglet. |
 | **Lune** | Passer du thème clair au thème sombre. |
 | **Cloche** | Vos notifications ; un point rouge signale du nouveau. |
-| **Votre nom** | Votre profil, la déconnexion. |
+| **Votre nom** | Vos notifications, la sécurité de votre compte, les paramètres, le guide d’utilisation et la déconnexion. |
 | **Titre de la page et fil d’Ariane** | Où vous êtes (« Principal › Commercial › Prospects »). |
 
 ### Le menu
 
-Le menu est rangé par ce que vous faites : le **Tableau de bord** en tête, puis **Espace de travail** (tâches, agenda, documents), **Commercial**, **Patrimoine immobilier**, **Gestion locative**, **Services** (vérifications, chantiers), **Pilotage et finances**, **Site public** (replié), **Administration** (repliée) et **Mon compte** (notifications, sécurité, guide). Une **pastille** rouge sur une entrée indique ce qui vous attend : messages du site non lus, paiements à valider, relances à envoyer, résiliations, saisies financières à valider, tâches en retard. Sur une rubrique repliée, la pastille additionne ses entrées. Le choix de replier est retenu sur votre appareil. L’icône à gauche du titre de la page **replie** le menu pour gagner de la place. Dans la section **Mon compte**, **Guide d’utilisation** ouvre ce guide dans un nouvel onglet.
+Le menu est rangé par ce que vous faites : le **Tableau de bord** en tête, puis **Mon travail** (tâches, agenda, documents), **Commercial**, **Biens**, **Location et services** (gestion locative, vérifications, chantiers), **Pilotage et finances** et **Administration** (repliée : site web, utilisateurs et accès, réglages). Une **pastille** rouge sur une entrée indique ce qui vous attend : messages du site non lus, paiements à valider, relances à envoyer, résiliations, saisies financières à valider, tâches en retard. Sur une ligne qui compte plusieurs pages, la pastille additionne celles de ses onglets, et chaque onglet a la sienne. Le choix de replier **Administration** est retenu sur votre appareil. L’icône à gauche du titre de la page **replie** le menu pour gagner de la place. Vos notifications, la sécurité de votre compte et le **Guide d’utilisation** se trouvent dans le menu de **votre nom**, en haut à droite.
 
 ### Retrouver quelqu’un ou quelque chose
 
@@ -78,7 +79,7 @@ Quand une action est irréversible ou sensible (annuler, supprimer, contre-passe
 
 - **Un mot de passe que vous seul connaissez**, différent de vos autres comptes.
 - **Déconnectez-vous** sur un ordinateur partagé (votre nom en haut à droite).
-- Changez votre mot de passe dans **Mon compte › Sécurité** si vous avez un doute.
+- Changez votre mot de passe dans **votre nom (en haut à droite) › Sécurité et mot de passe** si vous avez un doute.
 
 ## Les thèmes clair et sombre
 

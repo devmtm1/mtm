@@ -51,7 +51,7 @@ const STATUTS: Record<string, { label: string; ton: string }> = {
       <header class="page-header">
         <div>
           <p class="eyebrow">Finances</p>
-          <h1 class="page-header__title">Propriétaires et reversements</h1>
+          <h1 class="page-header__title">Reversements aux propriétaires</h1>
           <p class="page-header__subtitle">
             L’argent encaissé pour le compte des propriétaires n’est pas celui de MTM. Ici : ce que MTM a encaissé, sa
             commission, ce qu’elle doit encore reverser, et chaque reversement, de la demande à la preuve de paiement.
