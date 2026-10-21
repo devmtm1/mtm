@@ -49,6 +49,16 @@ export class CreatePublicationDto {
   @IsDateString()
   datePublication?: string | null;
 
+  @ApiPropertyOptional({
+    example: 'https://www.youtube.com/watch?v=LSH6GRjVwho',
+    description:
+      'Lien d’une vidéo YouTube, à la place d’un fichier ; une chaîne vide retire la vidéo YouTube',
+  })
+  @IsOptional()
+  @IsString()
+  @Length(0, 300)
+  youtubeUrl?: string | null;
+
   @ApiPropertyOptional({ description: 'Vidéo à la une (une seule à la fois)' })
   @IsOptional()
   @Transform(versBooleen)
@@ -60,7 +70,9 @@ export class UpdatePublicationDto extends PartialType(CreatePublicationDto) {}
 
 /** La vidéo est déjà chez Cloudinary : on dit à l'API laquelle, elle la vérifie. */
 export class AttacherVideoDto {
-  @ApiProperty({ description: 'Identifiant public Cloudinary renvoyé par l’envoi' })
+  @ApiProperty({
+    description: 'Identifiant public Cloudinary renvoyé par l’envoi',
+  })
   @IsString()
   @Length(5, 300)
   @Matches(/^[A-Za-z0-9_\-./]+$/, { message: 'Identifiant de vidéo invalide' })

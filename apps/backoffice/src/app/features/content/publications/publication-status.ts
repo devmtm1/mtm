@@ -61,3 +61,31 @@ export function datePublicationDite(publication: Pick<Publication, 'datePublicat
   const date = `${jour}/${mois}/${annee}`;
   return publication.statut === 'programmee' ? `Sera publiée le ${date}` : `Publication du ${date}`;
 }
+
+const HOTES_YOUTUBE = new Set(['youtube.com', 'www.youtube.com', 'm.youtube.com', 'music.youtube.com', 'youtube-nocookie.com', 'www.youtube-nocookie.com']);
+
+/**
+ * Identifiant d'une vidéo YouTube dans un lien (watch?v=, youtu.be/, /shorts/, /embed/, /live/), ou
+ * `null`. Sert à reconnaître le lien et à montrer la vignette avant l'enregistrement ; l'API refait
+ * la même vérification.
+ */
+export function idYoutube(lien: string): string | null {
+  const texte = lien.trim();
+  if (!texte) return null;
+  let url: URL;
+  try {
+    url = new URL(/^https?:\/\//i.test(texte) ? texte : `https://${texte}`);
+  } catch {
+    return null;
+  }
+  const hote = url.hostname.toLowerCase();
+  let candidat: string | null = null;
+  if (hote === 'youtu.be' || hote === 'www.youtu.be') {
+    candidat = url.pathname.split('/')[1] ?? null;
+  } else if (HOTES_YOUTUBE.has(hote)) {
+    const segments = url.pathname.split('/').filter(Boolean);
+    if (url.pathname === '/watch') candidat = url.searchParams.get('v');
+    else if (['shorts', 'embed', 'live', 'v'].includes(segments[0] ?? '')) candidat = segments[1] ?? null;
+  }
+  return candidat && /^[A-Za-z0-9_-]{11}$/.test(candidat) ? candidat : null;
+}

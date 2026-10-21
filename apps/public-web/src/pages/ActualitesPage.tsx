@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Play } from 'lucide-react';
+import { ExternalLink, Play } from 'lucide-react';
 import { PageIntro } from '../components/layout/PageIntro';
 import { useContentBlocks } from '../hooks/useContentBlocks';
 import { usePublications } from '../hooks/usePublications';
@@ -52,6 +52,11 @@ function Vignette({ publication, grande = false }: { publication: Publication; g
           alt=""
           loading={grande ? 'eager' : 'lazy'}
           decoding="async"
+          // YouTube n'a pas toujours la version haute définition de l'image : on se rabat sur la standard.
+          onError={(event) => {
+            const image = event.currentTarget;
+            if (image.src.includes('maxresdefault')) image.src = image.src.replace('maxresdefault', 'hqdefault');
+          }}
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
       )}
@@ -153,6 +158,7 @@ export function ActualitesPage() {
   const { publications, loading: videosLoading } = usePublications();
   const [rubrique, setRubrique] = useState<RubriquePublication | null>(null);
   const [enLecture, setEnLecture] = useState<Publication | null>(null);
+  // Les articles de texte ne servent que de repli : dès qu'il y a des vidéos, elles seules font la page.
   const articles = data ? buildNewsItems(data) : [];
 
   usePageMetadata({
@@ -219,13 +225,13 @@ export function ActualitesPage() {
         </section>
       )}
 
-      <section className="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-14">
+      <section className={`mx-auto max-w-3xl px-4 sm:px-6 ${aDesVideos ? "pb-14 sm:pb-20" : "py-12 sm:py-14"}`}>
         {(loading || (videosLoading && !aDesVideos)) && <ArticleListSkeleton />}
         {error && !aDesVideos && <EmptyState title="Impossible de charger les actualités" description={error} />}
         {!loading && !videosLoading && !error && articles.length === 0 && !aDesVideos && (
           <EmptyState title="Aucune actualité publiée pour le moment" />
         )}
-        {!loading && !error && articles.length > 0 && (
+        {!loading && !error && !aDesVideos && articles.length > 0 && (
           <div className="flex flex-col gap-4">
             {articles.map((article) => (
               <article key={article.index} className="rounded-2xl border border-mtm-border bg-mtm-surface p-5 shadow-card sm:p-6">
@@ -244,18 +250,41 @@ export function ActualitesPage() {
 
       {enLecture && (
         <Modal title={enLecture.titre} large onClose={() => setEnLecture(null)}>
-          <video
-            key={enLecture.id}
-            src={enLecture.videoUrl}
-            poster={enLecture.posterUrl ?? undefined}
-            controls
-            autoPlay
-            playsInline
-            preload="metadata"
-            controlsList="nodownload"
-            className="-mx-5 w-[calc(100%+2.5rem)] max-w-none bg-black sm:mx-0 sm:w-full sm:max-w-full sm:rounded-lg"
-            style={{ maxHeight: '70dvh' }}
-          />
+          {enLecture.youtubeId ? (
+            <iframe
+              key={enLecture.id}
+              title={enLecture.titre}
+              src={`https://www.youtube-nocookie.com/embed/${enLecture.youtubeId}?autoplay=1&rel=0&playsinline=1`}
+              allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+              allowFullScreen
+              referrerPolicy="strict-origin-when-cross-origin"
+              className="-mx-5 aspect-video w-[calc(100%+2.5rem)] max-w-none border-0 bg-black sm:mx-0 sm:w-full sm:max-w-full sm:rounded-lg"
+            />
+          ) : (
+            <video
+              key={enLecture.id}
+              src={enLecture.videoUrl ?? undefined}
+              poster={enLecture.posterUrl ?? undefined}
+              controls
+              autoPlay
+              playsInline
+              preload="metadata"
+              controlsList="nodownload"
+              className="-mx-5 w-[calc(100%+2.5rem)] max-w-none bg-black sm:mx-0 sm:w-full sm:max-w-full sm:rounded-lg"
+              style={{ maxHeight: '70dvh' }}
+            />
+          )}
+          {enLecture.youtubeId && (
+            <a
+              href={`https://www.youtube.com/watch?v=${enLecture.youtubeId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-mtm-primary underline-offset-4 hover:underline ${FOCUS}`}
+            >
+              <ExternalLink className="h-4 w-4" aria-hidden="true" />
+              Voir sur YouTube
+            </a>
+          )}
           <div className="mt-4 flex items-center gap-2">
             <Badge tone="primary">{etiquetteRubrique(enLecture.categorie)}</Badge>
             <time dateTime={enLecture.datePublication} className="text-xs text-mtm-muted">

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { datePublicationDite, formaterDuree, formaterTaille, libelleCategorie } from './publication-status';
+import { datePublicationDite, formaterDuree, formaterTaille, idYoutube, libelleCategorie } from './publication-status';
 
 describe('durée d’une vidéo', () => {
   it('se lit comme on la dirait', () => {
@@ -30,5 +30,21 @@ describe('affichage d’une publication', () => {
   it('traduit les rubriques', () => {
     expect(libelleCategorie('conseil')).toBe('Conseil');
     expect(libelleCategorie('foncier')).toBe('Foncier');
+  });
+});
+
+describe('lien YouTube', () => {
+  it('reconnaît les formes usuelles de lien', () => {
+    expect(idYoutube('https://www.youtube.com/watch?v=LSH6GRjVwho')).toBe('LSH6GRjVwho');
+    expect(idYoutube('https://youtu.be/LSH6GRjVwho?si=x')).toBe('LSH6GRjVwho');
+    expect(idYoutube('https://www.youtube.com/shorts/LSH6GRjVwho')).toBe('LSH6GRjVwho');
+    expect(idYoutube('youtube.com/watch?v=LSH6GRjVwho&t=5s')).toBe('LSH6GRjVwho');
+  });
+
+  it('refuse ce qui n’est pas une vidéo YouTube', () => {
+    expect(idYoutube('')).toBeNull();
+    expect(idYoutube('bonjour')).toBeNull();
+    expect(idYoutube('https://exemple.com/watch?v=LSH6GRjVwho')).toBeNull();
+    expect(idYoutube('https://www.youtube.com/watch?v=court')).toBeNull();
   });
 });

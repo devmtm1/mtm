@@ -13,7 +13,7 @@
   # navigateur la bloque ; le test « csp » du dépôt rappelle cette règle.
   # cloudflareinsights.com : la mesure d'audience de Cloudflare (Web Analytics),
   # que Cloudflare Pages injecte seule quand elle est activée.
-  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://res.cloudinary.com https://*.tile.openstreetmap.org https://server.arcgisonline.com; media-src 'self' https://res.cloudinary.com; connect-src 'self' https://api.mtm-immobilier.com https://mtm-api-zm5i.onrender.com https://mtm-2-v2wo.onrender.com https://cloudflareinsights.com;
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://res.cloudinary.com https://i.ytimg.com https://*.tile.openstreetmap.org https://server.arcgisonline.com; media-src 'self' https://res.cloudinary.com; frame-src https://www.youtube-nocookie.com; connect-src 'self' https://api.mtm-immobilier.com https://mtm-api-zm5i.onrender.com https://mtm-2-v2wo.onrender.com https://cloudflareinsights.com;
 
 # Le service worker et le manifeste doivent se revalider : une mise à jour
 # du site ne doit pas rester bloquée derrière un ancien fichier.

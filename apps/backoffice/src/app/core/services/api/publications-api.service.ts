@@ -16,6 +16,9 @@ export interface Publication {
   resume: string | null;
   /** Lien de lecture ; `null` tant qu'aucune vidéo n'est envoyée. */
   videoUrl: string | null;
+  /** Identifiant YouTube, quand la vidéo vient de YouTube plutôt que d'un fichier. */
+  youtubeId: string | null;
+  lienYoutube: string | null;
   /** Image fixe tirée de la vidéo. */
   posterUrl: string | null;
   dureeSecondes: number | null;
@@ -35,6 +38,8 @@ export interface PublicationPayload {
   /** AAAA-MM-JJ ; `null` à la modification retire la date. */
   datePublication?: string | null;
   misEnAvant?: boolean;
+  /** Lien d'une vidéo YouTube ; `''` retire la vidéo YouTube. */
+  youtubeUrl?: string | null;
 }
 
 /** Autorisation signée pour envoyer une vidéo directement à Cloudinary. */

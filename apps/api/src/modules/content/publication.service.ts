@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import type { Publication } from '@prisma/client';
+import { extraireIdYoutube } from './youtube';
 import { PrismaService } from '../../database/prisma.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import {
@@ -44,10 +45,14 @@ export class PublicationService {
     const lignes = await this.prisma.publication.findMany({
       where: {
         isActive: true,
-        storageKey: { not: null },
-        OR: [
-          { datePublication: null },
-          { datePublication: { lte: maintenant } },
+        AND: [
+          { OR: [{ storageKey: { not: null } }, { youtubeId: { not: null } }] },
+          {
+            OR: [
+              { datePublication: null },
+              { datePublication: { lte: maintenant } },
+            ],
+          },
         ],
       },
       orderBy: [
@@ -62,12 +67,14 @@ export class PublicationService {
       categorie: publication.categorie,
       resume: publication.resume,
       videoUrl: this.videoUrl(publication),
+      youtubeId: publication.youtubeId,
       posterUrl: this.posterUrl(publication),
       dureeSecondes: publication.dureeSecondes,
       largeur: publication.largeur,
       hauteur: publication.hauteur,
-      datePublication: (publication.datePublication ?? publication.createdAt)
-        .toISOString(),
+      datePublication: (
+        publication.datePublication ?? publication.createdAt
+      ).toISOString(),
       misEnAvant: publication.misEnAvant,
     }));
   }
@@ -82,6 +89,7 @@ export class PublicationService {
 
   /** Une publication neuve naît brouillon : on y ajoute la vidéo, puis on la publie. */
   async create(dto: CreatePublicationDto) {
+    const youtubeId = this.lireYoutube(dto.youtubeUrl);
     const publication = await this.prisma.$transaction(async (tx) => {
       if (dto.misEnAvant) {
         await tx.publication.updateMany({
@@ -98,6 +106,7 @@ export class PublicationService {
             ? debutDeJournee(dto.datePublication)
             : undefined,
           misEnAvant: dto.misEnAvant ?? false,
+          youtubeId: youtubeId ?? undefined,
           isActive: false,
         },
       });
@@ -106,7 +115,8 @@ export class PublicationService {
   }
 
   async update(id: string, dto: UpdatePublicationDto) {
-    await this.ensureExists(id);
+    const existante = await this.ensureExists(id);
+    const youtubeId = this.lireYoutube(dto.youtubeUrl);
     const publication = await this.prisma.$transaction(async (tx) => {
       if (dto.misEnAvant) {
         await tx.publication.updateMany({
@@ -133,15 +143,31 @@ export class PublicationService {
           ...(dto.misEnAvant !== undefined
             ? { misEnAvant: dto.misEnAvant }
             : {}),
+          // Un lien YouTube remplace le fichier Cloudinary ; une chaîne vidée retire le lien.
+          ...(youtubeId
+            ? {
+                youtubeId,
+                storageKey: null,
+                dureeSecondes: null,
+                largeur: null,
+                hauteur: null,
+                tailleOctets: null,
+              }
+            : youtubeId === null
+              ? { youtubeId: null }
+              : {}),
         },
       });
     });
+    if (youtubeId && existante.storageKey) {
+      await this.cloudinary.destroy(existante.storageKey, 'video', true);
+    }
     return this.pourAdmin(publication, new Date());
   }
 
   async setActive(id: string, isActive: boolean) {
     const existante = await this.ensureExists(id);
-    if (isActive && !existante.storageKey) {
+    if (isActive && !existante.storageKey && !existante.youtubeId) {
       throw new BadRequestException(
         'Ajoutez d’abord la vidéo : une publication sans vidéo ne peut pas être publiée',
       );
@@ -190,6 +216,7 @@ export class PublicationService {
       where: { id },
       data: {
         storageKey: dto.publicId,
+        youtubeId: null,
         dureeSecondes:
           info.duration !== null ? Math.round(info.duration) : null,
         largeur: info.width,
@@ -213,12 +240,18 @@ export class PublicationService {
 
   /** Où en est la diffusion d'une publication, à l'instant donné. */
   static statut(
-    publication: Pick<Publication, 'storageKey' | 'isActive' | 'datePublication'>,
+    publication: Pick<
+      Publication,
+      'storageKey' | 'isActive' | 'datePublication'
+    > & { youtubeId?: string | null },
     maintenant: Date,
   ): StatutPublication {
-    if (!publication.storageKey) return 'sans_video';
+    if (!publication.storageKey && !publication.youtubeId) return 'sans_video';
     if (!publication.isActive) return 'brouillon';
-    if (publication.datePublication && publication.datePublication > maintenant) {
+    if (
+      publication.datePublication &&
+      publication.datePublication > maintenant
+    ) {
       return 'programmee';
     }
     return 'en_ligne';
@@ -229,20 +262,44 @@ export class PublicationService {
       ...publication,
       videoUrl: this.videoUrl(publication),
       posterUrl: this.posterUrl(publication),
+      lienYoutube: publication.youtubeId
+        ? `https://www.youtube.com/watch?v=${publication.youtubeId}`
+        : null,
       statut: PublicationService.statut(publication, maintenant),
     };
   }
 
   private videoUrl(publication: Publication): string | null {
     return publication.storageKey
-      ? this.cloudinary.videoUrl(publication.storageKey, publication.tailleOctets)
+      ? this.cloudinary.videoUrl(
+          publication.storageKey,
+          publication.tailleOctets,
+        )
       : null;
   }
 
   private posterUrl(publication: Publication): string | null {
+    if (publication.youtubeId) {
+      return `https://i.ytimg.com/vi/${publication.youtubeId}/maxresdefault.jpg`;
+    }
     return publication.storageKey
       ? this.cloudinary.videoPosterUrl(publication.storageKey, 2)
       : null;
+  }
+
+  /** `undefined` : pas de lien fourni ; `null` : lien vidé (on le retire) ; sinon l'identifiant. */
+  private lireYoutube(
+    lien: string | null | undefined,
+  ): string | null | undefined {
+    if (lien === undefined) return undefined;
+    if (lien === null || !lien.trim()) return null;
+    const identifiant = extraireIdYoutube(lien);
+    if (!identifiant) {
+      throw new BadRequestException(
+        'Lien YouTube non reconnu : collez l’adresse de la vidéo (youtube.com/watch?v=… ou youtu.be/…)',
+      );
+    }
+    return identifiant;
   }
 
   private async ensureExists(id: string) {

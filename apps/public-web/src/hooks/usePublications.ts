@@ -8,5 +8,5 @@ import { useAsyncData } from './useAsyncData';
  */
 export function usePublications(): { publications: Publication[]; loading: boolean } {
   const { data, loading } = useAsyncData(fetchPublications, []);
-  return { publications: (data ?? []).filter((publication) => Boolean(publication.videoUrl)), loading };
+  return { publications: (data ?? []).filter((publication) => Boolean(publication.videoUrl || publication.youtubeId)), loading };
 }

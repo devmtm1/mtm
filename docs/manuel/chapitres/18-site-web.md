@@ -76,8 +76,8 @@ Trois actions :
 
 **Site web › Actualités et conseils** : les vidéos de la page *Actualités et conseils* du site public (conseils, actualités du foncier, construction…).
 
-1. **Nouvelle vidéo** : saisissez le titre, choisissez la rubrique, ajoutez un court résumé, puis sélectionnez le fichier (MP4, MOV ou WebM, 100 Mo maximum, 20 minutes maximum).
-2. La vidéo est envoyée par morceaux, avec une barre de progression. Laissez la fenêtre ouverte jusqu’à la fin.
+1. **Nouvelle vidéo** : saisissez le titre, choisissez la rubrique, ajoutez un court résumé, puis **soit** sélectionnez le fichier (MP4, MOV ou WebM, 100 Mo maximum, 20 minutes maximum), **soit** choisissez **Lien YouTube** et collez l’adresse de la vidéo (par exemple *youtube.com/watch?v=…* ou *youtu.be/…*). Avec un lien YouTube, la vignette s’affiche tout de suite et rien n’est à envoyer : les visiteurs la regardent sur le site ou sur YouTube.
+2. Un fichier est envoyé par morceaux, avec une barre de progression. Laissez la fenêtre ouverte jusqu’à la fin.
 3. Une vidéo n’apparaît sur le site qu’**une fois publiée**. Vous pouvez la programmer avec une date, la mettre **à la une** (une seule à la fois) ou la retirer.
 
 > **Conseil** — Préférez des vidéos courtes (1 à 3 minutes), en bonne qualité et avec un titre clair : un visiteur décide en quelques secondes de la regarder ou non.

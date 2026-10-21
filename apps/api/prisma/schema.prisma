@@ -1148,6 +1148,8 @@ model Publication {
   resume          String?
   /// Identifiant public Cloudinary de la vidéo ; vide tant qu'elle n'est pas envoyée.
   storageKey      String?
+  /// Identifiant (11 caractères) d'une vidéo YouTube, à la place d'un fichier Cloudinary.
+  youtubeId       String?
   dureeSecondes   Int?
   largeur         Int?
   hauteur         Int?

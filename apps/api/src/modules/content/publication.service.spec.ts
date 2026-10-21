@@ -6,6 +6,7 @@ describe('PublicationService', () => {
     id: 'p1',
     titre: 'Conseil',
     storageKey: null as string | null,
+    youtubeId: null as string | null,
     isActive: false,
     datePublication: null as Date | null,
     tailleOctets: null as number | null,
@@ -29,7 +30,9 @@ describe('PublicationService', () => {
             ? null
             : { ...existante, ...options.publication },
         ),
-      update: jest.fn().mockImplementation(({ data }) => ({ ...existante, ...data })),
+      update: jest
+        .fn()
+        .mockImplementation(({ data }) => ({ ...existante, ...data })),
       create: jest.fn().mockResolvedValue({ ...existante }),
       updateMany: jest.fn().mockResolvedValue({ count: 0 }),
       delete: jest.fn().mockResolvedValue({}),
@@ -37,7 +40,9 @@ describe('PublicationService', () => {
     };
     const prisma = {
       publication,
-      $transaction: jest.fn().mockImplementation((action) => action({ publication })),
+      $transaction: jest
+        .fn()
+        .mockImplementation((action) => action({ publication })),
     };
     const cloudinary = {
       dossier: (dossier: string) => `mtm-prod/${dossier}`,
@@ -50,11 +55,16 @@ describe('PublicationService', () => {
         ...options.info,
       }),
       videoUrl: jest.fn().mockReturnValue('https://exemple.test/video.mp4'),
-      videoPosterUrl: jest.fn().mockReturnValue('https://exemple.test/poster.jpg'),
+      videoPosterUrl: jest
+        .fn()
+        .mockReturnValue('https://exemple.test/poster.jpg'),
       destroy: jest.fn().mockResolvedValue(undefined),
       signedUploadParams: jest.fn().mockReturnValue({ signature: 'x' }),
     };
-    const service = new PublicationService(prisma as never, cloudinary as never);
+    const service = new PublicationService(
+      prisma as never,
+      cloudinary as never,
+    );
     return { prisma, cloudinary, service };
   }
 
@@ -63,31 +73,76 @@ describe('PublicationService', () => {
 
     it('dit « sans vidéo », « brouillon », « programmée » ou « en ligne »', () => {
       const statut = PublicationService.statut.bind(PublicationService);
-      expect(statut({ storageKey: null, isActive: true, datePublication: null }, maintenant)).toBe('sans_video');
-      expect(statut({ storageKey: 'v', isActive: false, datePublication: null }, maintenant)).toBe('brouillon');
-      expect(statut({ storageKey: 'v', isActive: true, datePublication: new Date('2026-11-01') }, maintenant)).toBe('programmee');
-      expect(statut({ storageKey: 'v', isActive: true, datePublication: new Date('2026-10-01') }, maintenant)).toBe('en_ligne');
-      expect(statut({ storageKey: 'v', isActive: true, datePublication: null }, maintenant)).toBe('en_ligne');
+      expect(
+        statut(
+          { storageKey: null, isActive: true, datePublication: null },
+          maintenant,
+        ),
+      ).toBe('sans_video');
+      expect(
+        statut(
+          { storageKey: 'v', isActive: false, datePublication: null },
+          maintenant,
+        ),
+      ).toBe('brouillon');
+      expect(
+        statut(
+          {
+            storageKey: 'v',
+            isActive: true,
+            datePublication: new Date('2026-11-01'),
+          },
+          maintenant,
+        ),
+      ).toBe('programmee');
+      expect(
+        statut(
+          {
+            storageKey: 'v',
+            isActive: true,
+            datePublication: new Date('2026-10-01'),
+          },
+          maintenant,
+        ),
+      ).toBe('en_ligne');
+      expect(
+        statut(
+          { storageKey: 'v', isActive: true, datePublication: null },
+          maintenant,
+        ),
+      ).toBe('en_ligne');
     });
   });
 
   describe('publication', () => {
     it('refuse de publier une publication sans vidéo', async () => {
       const { service } = creer();
-      await expect(service.setActive('p1', true)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(service.setActive('p1', true)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
     });
 
     it('publie une publication qui a sa vidéo, et la retire sans condition', async () => {
-      const { prisma, service } = creer({ publication: { storageKey: 'mtm-prod/mtm/publications/a' } });
+      const { prisma, service } = creer({
+        publication: { storageKey: 'mtm-prod/mtm/publications/a' },
+      });
       await service.setActive('p1', true);
-      expect(prisma.publication.update).toHaveBeenCalledWith({ where: { id: 'p1' }, data: { isActive: true } });
+      expect(prisma.publication.update).toHaveBeenCalledWith({
+        where: { id: 'p1' },
+        data: { isActive: true },
+      });
       await service.setActive('p1', false);
-      expect(prisma.publication.update).toHaveBeenLastCalledWith({ where: { id: 'p1' }, data: { isActive: false } });
+      expect(prisma.publication.update).toHaveBeenLastCalledWith({
+        where: { id: 'p1' },
+        data: { isActive: false },
+      });
     });
 
     it('signale une publication introuvable', async () => {
       const { service } = creer({ publication: null });
-      await expect(service.update('absente', { titre: 'x' })).rejects.toBeInstanceOf(NotFoundException);
+      await expect(
+        service.update('absente', { titre: 'x' }),
+      ).rejects.toBeInstanceOf(NotFoundException);
     });
 
     it('n’a qu’une vidéo à la une : en désigner une retire l’étiquette aux autres', async () => {
@@ -100,16 +155,84 @@ describe('PublicationService', () => {
     });
   });
 
+  describe('vidéo YouTube', () => {
+    it('enregistre l’identifiant tiré du lien et laisse publier', async () => {
+      const { prisma, service } = creer({
+        publication: { youtubeId: 'LSH6GRjVwho' },
+      });
+      await service.update('p1', {
+        youtubeUrl: 'https://www.youtube.com/watch?v=LSH6GRjVwho&t=3s',
+      });
+      expect(prisma.publication.update).toHaveBeenCalledWith({
+        where: { id: 'p1' },
+        data: expect.objectContaining({
+          youtubeId: 'LSH6GRjVwho',
+          storageKey: null,
+        }),
+      });
+      prisma.publication.update.mockResolvedValueOnce({
+        id: 'p1',
+        titre: 'Conseil',
+        storageKey: null,
+        youtubeId: 'LSH6GRjVwho',
+        isActive: true,
+        datePublication: null,
+        tailleOctets: null,
+      });
+      await expect(service.setActive('p1', true)).resolves.toMatchObject({
+        statut: 'en_ligne',
+        lienYoutube: 'https://www.youtube.com/watch?v=LSH6GRjVwho',
+        posterUrl: 'https://i.ytimg.com/vi/LSH6GRjVwho/maxresdefault.jpg',
+        videoUrl: null,
+      });
+    });
+
+    it('refuse un lien qui n’est pas une vidéo YouTube', async () => {
+      const { service } = creer();
+      await expect(
+        service.update('p1', { youtubeUrl: 'https://exemple.com/video' }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('supprime le fichier Cloudinary quand un lien YouTube le remplace', async () => {
+      const { cloudinary, service } = creer({
+        publication: { storageKey: 'mtm-prod/mtm/publications/a' },
+      });
+      await service.update('p1', {
+        youtubeUrl: 'https://youtu.be/LSH6GRjVwho',
+      });
+      expect(cloudinary.destroy).toHaveBeenCalledWith(
+        'mtm-prod/mtm/publications/a',
+        'video',
+        true,
+      );
+    });
+
+    it('retire le lien quand le champ est vidé', async () => {
+      const { prisma, service } = creer({
+        publication: { youtubeId: 'LSH6GRjVwho' },
+      });
+      await service.update('p1', { youtubeUrl: '' });
+      expect(prisma.publication.update).toHaveBeenCalledWith({
+        where: { id: 'p1' },
+        data: { youtubeId: null },
+      });
+    });
+  });
+
   describe('vidéo envoyée directement à Cloudinary', () => {
     const idValide = 'mtm-prod/mtm/publications/conseil-titre-foncier';
 
     it('rattache une vidéo vérifiée et en garde les caractéristiques', async () => {
       const { prisma, service } = creer();
-      const resultat = await service.attacherVideo('p1', { publicId: idValide });
+      const resultat = await service.attacherVideo('p1', {
+        publicId: idValide,
+      });
       expect(prisma.publication.update).toHaveBeenCalledWith({
         where: { id: 'p1' },
         data: {
           storageKey: idValide,
+          youtubeId: null,
           dureeSecondes: 95,
           largeur: 1920,
           hauteur: 1080,
@@ -122,28 +245,56 @@ describe('PublicationService', () => {
     it('refuse une vidéo qui ne vient pas du dossier des publications', async () => {
       const { cloudinary, service } = creer();
       await expect(
-        service.attacherVideo('p1', { publicId: 'mtm-prod/mtm/terrains/une-photo' }),
+        service.attacherVideo('p1', {
+          publicId: 'mtm-prod/mtm/terrains/une-photo',
+        }),
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(cloudinary.videoInfo).not.toHaveBeenCalled();
     });
 
     it('refuse un format que le navigateur ne sait pas lire, une vidéo vide ou trop longue', async () => {
-      await expect(creer({ info: { format: 'avi' } }).service.attacherVideo('p1', { publicId: idValide })).rejects.toBeInstanceOf(BadRequestException);
-      await expect(creer({ info: { bytes: 0 } }).service.attacherVideo('p1', { publicId: idValide })).rejects.toBeInstanceOf(BadRequestException);
-      await expect(creer({ info: { duration: 21 * 60 } }).service.attacherVideo('p1', { publicId: idValide })).rejects.toBeInstanceOf(BadRequestException);
+      await expect(
+        creer({ info: { format: 'avi' } }).service.attacherVideo('p1', {
+          publicId: idValide,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      await expect(
+        creer({ info: { bytes: 0 } }).service.attacherVideo('p1', {
+          publicId: idValide,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      await expect(
+        creer({ info: { duration: 21 * 60 } }).service.attacherVideo('p1', {
+          publicId: idValide,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('remplace l’ancienne vidéo : elle est supprimée de Cloudinary', async () => {
-      const { cloudinary, service } = creer({ publication: { storageKey: 'mtm-prod/mtm/publications/ancienne' } });
+      const { cloudinary, service } = creer({
+        publication: { storageKey: 'mtm-prod/mtm/publications/ancienne' },
+      });
       await service.attacherVideo('p1', { publicId: idValide });
-      expect(cloudinary.destroy).toHaveBeenCalledWith('mtm-prod/mtm/publications/ancienne', 'video', true);
+      expect(cloudinary.destroy).toHaveBeenCalledWith(
+        'mtm-prod/mtm/publications/ancienne',
+        'video',
+        true,
+      );
     });
 
     it('supprime aussi la vidéo de Cloudinary quand on supprime la publication', async () => {
-      const { prisma, cloudinary, service } = creer({ publication: { storageKey: 'mtm-prod/mtm/publications/a' } });
+      const { prisma, cloudinary, service } = creer({
+        publication: { storageKey: 'mtm-prod/mtm/publications/a' },
+      });
       await service.remove('p1');
-      expect(prisma.publication.delete).toHaveBeenCalledWith({ where: { id: 'p1' } });
-      expect(cloudinary.destroy).toHaveBeenCalledWith('mtm-prod/mtm/publications/a', 'video', true);
+      expect(prisma.publication.delete).toHaveBeenCalledWith({
+        where: { id: 'p1' },
+      });
+      expect(cloudinary.destroy).toHaveBeenCalledWith(
+        'mtm-prod/mtm/publications/a',
+        'video',
+        true,
+      );
     });
   });
 });
