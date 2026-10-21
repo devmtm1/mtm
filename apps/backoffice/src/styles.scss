@@ -2010,29 +2010,283 @@ ag-grid-angular {
   }
 }
 
+/* Un titre de section avec, à droite, son état en une pastille ou ses raccourcis. */
+.titre-ligne {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-bottom: 12px;
+
+  h2 {
+    margin: 0;
+  }
+}
+
+/* Sélecteur de période : un bloc segmenté. Il dit QUAND (les onglets disent QUOI). */
+.periodes {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 3px;
+  border: 1px solid var(--mtm-border);
+  border-radius: 12px;
+  background: var(--mtm-bg-hover);
+
+  button {
+    padding: 6px 14px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--mtm-text-muted);
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease;
+
+    &:hover {
+      color: var(--mtm-text-dark);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--mtm-primary-light);
+      outline-offset: 1px;
+    }
+
+    &.is-actif {
+      background: var(--mtm-card-bg);
+      color: var(--mtm-text-dark);
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, 0.1);
+    }
+  }
+}
+
+/* Rien à signaler : un état rassurant (vert) ou un encadré discret (pointillés). */
+.etat-ok {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 14px 18px;
+  border-radius: var(--mtm-radius-md);
+  background: var(--mtm-success-bg);
+  color: var(--mtm-success);
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  &::before {
+    content: '✓';
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 22px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--mtm-success);
+    color: #fff;
+    font-size: 0.8rem;
+  }
+}
+
+.etat-vide {
+  margin: 0;
+  padding: 14px 16px;
+  border: 1px dashed var(--mtm-border);
+  border-radius: var(--mtm-radius-md);
+  background: var(--mtm-bg-surface);
+  color: var(--mtm-text-muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+/* Tableau doux : en-têtes en casse normale sur une bande grise, lignes aérées, total en pied. */
+.data-table--douce {
+  thead th {
+    padding: 11px 14px;
+    border-bottom: 0;
+    background: var(--mtm-bg-surface);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+
+    &:first-child {
+      border-radius: 10px 0 0 10px;
+    }
+
+    &:last-child {
+      border-radius: 0 10px 10px 0;
+    }
+  }
+
+  tbody td {
+    padding: 13px 14px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  tfoot td,
+  tfoot th {
+    padding: 13px 14px;
+    border-top: 2px solid var(--mtm-border);
+    background: var(--mtm-bg-surface);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Cartes de chiffres soignées : le libellé d'abord, le chiffre en grand, l'icône à droite,
+   un zéro qui s'efface. S'active en ajoutant `kpi-row--soigne` à `.kpi-row`. */
+.kpi-row--soigne {
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+
+  .kpi {
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    justify-content: space-between;
+    min-height: 108px;
+    padding: 16px 18px;
+    border-radius: var(--mtm-radius-lg);
+    box-shadow: var(--mtm-shadow-card);
+
+    .kpi__icon {
+      flex: 0 0 42px;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+
+      svg {
+        width: 21px;
+        height: 21px;
+      }
+    }
+
+    .kpi__body {
+      flex: 1;
+      gap: 4px;
+
+      > span {
+        order: 1;
+        color: var(--mtm-text-muted);
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+
+      strong {
+        order: 2;
+        font-size: 1.7rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+      }
+
+      small {
+        order: 3;
+        margin-top: 2px;
+        font-size: 0.78rem;
+        line-height: 1.35;
+      }
+    }
+  }
+
+  .kpi--zero .kpi__body strong {
+    color: var(--mtm-text-muted);
+    opacity: 0.75;
+  }
+
+  @media (max-width: 720px) {
+    .kpi {
+      min-height: 0;
+      padding: 12px 14px;
+    }
+
+    .kpi__body strong {
+      font-size: 1.3rem;
+    }
+  }
+}
+
 /* ---------------------------------------------------------------------------
    Formulaires : blocs titrés avec explication, grille de champs, aperçu
    latéral, pied d'action collant. Identiques dans tous les modules.
    --------------------------------------------------------------------------- */
 
+/* La page de formulaire : une colonne centrée, lisible, qui ne s'étire pas sur un grand écran. */
 .form-page {
   display: grid;
-  gap: 16px;
+  width: min(100%, 1080px);
+  margin-inline: auto;
+  gap: 20px;
 }
 
 .form-body {
   display: grid;
-  gap: 16px;
+  gap: 20px;
 }
 
-/* Bloc de formulaire : un titre, une phrase d'explication, une grille de champs */
+/* Bloc de formulaire : un titre, une phrase d'explication, une grille de champs.
+   Sur grand écran, le titre et son explication se rangent à gauche, les champs à droite :
+   la phrase ne pousse plus les champs vers le bas, et le bloc se lit d'un coup d'œil. */
 .form-block {
   display: grid;
-  gap: 16px;
+  gap: 20px;
+  padding: 24px 28px;
+
+  @media (min-width: 1180px) {
+    &:has(> .form-block__head) {
+      grid-template-columns: 230px minmax(0, 1fr);
+      column-gap: 40px;
+      row-gap: 0;
+      padding: 28px 32px;
+
+      > .form-block__head {
+        position: sticky;
+        top: 8px;
+        grid-column: 1;
+        grid-row: 1 / span 8;
+        align-self: start;
+      }
+
+      > :not(.form-block__head) {
+        grid-column: 2;
+      }
+
+      > .form-block__head ~ * ~ * {
+        margin-top: 24px;
+      }
+    }
+
+    /* À côté d'un aperçu (prix et publication), on garde une seule colonne. */
+    .two-columns__main &:has(> .form-block__head) {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 20px;
+
+      > .form-block__head {
+        position: static;
+        grid-column: 1;
+        grid-row: auto;
+      }
+
+      > :not(.form-block__head) {
+        grid-column: 1;
+      }
+
+      > .form-block__head ~ * ~ * {
+        margin-top: 0;
+      }
+    }
+  }
 
   &__head {
     display: grid;
-    gap: 4px;
+    gap: 6px;
 
     h2 {
       display: flex;
@@ -2040,7 +2294,7 @@ ag-grid-angular {
       gap: 8px;
       margin: 0;
       font-family: var(--mtm-font-display);
-      font-size: 1rem;
+      font-size: 1.05rem;
       font-weight: 700;
 
       svg {
@@ -2053,8 +2307,8 @@ ag-grid-angular {
     p {
       margin: 0;
       color: var(--mtm-text-muted);
-      font-size: 0.86rem;
-      line-height: 1.5;
+      font-size: 0.84rem;
+      line-height: 1.55;
     }
 
     code {
@@ -2074,7 +2328,7 @@ ag-grid-angular {
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px 16px;
+  gap: 10px 20px;
 
   @media (max-width: 720px) {
     grid-template-columns: minmax(0, 1fr);
@@ -2220,15 +2474,23 @@ ag-grid-angular {
 .form-footer {
   position: sticky;
   bottom: 0;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 14px 20px;
   border: 1px solid var(--mtm-border);
-  border-radius: var(--mtm-radius-md);
+  border-radius: var(--mtm-radius-lg);
   background: var(--mtm-card-bg);
-  box-shadow: var(--mtm-shadow-soft);
+  box-shadow: 0 -6px 18px rgba(16, 24, 40, 0.06);
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-left: auto;
+  }
 
   &__step {
     color: var(--mtm-text-muted);
@@ -2238,6 +2500,78 @@ ag-grid-angular {
 
 .hint-error {
   color: var(--mtm-error) !important;
+}
+
+/* Un sous-titre à l'intérieur d'un bloc (ex. « Informations internes ») : sépare sans ajouter de carte. */
+.form-sub {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 0;
+  color: var(--mtm-text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--mtm-border);
+  }
+}
+
+/* Ce qui est facultatif se range sous « Plus de détails » : le formulaire reste court, rien n'est perdu. */
+.form-more {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--mtm-border);
+
+  > summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 0 8px;
+    color: var(--mtm-primary);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &::before {
+      content: '+';
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border: 1px solid var(--mtm-primary-light);
+      border-radius: 50%;
+      background: var(--mtm-primary-subtle);
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--mtm-primary-light);
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+  }
+
+  &[open] > summary::before {
+    content: '−';
+  }
+
+  > .form-grid {
+    margin-top: 8px;
+  }
 }
 
 .preview__facts {

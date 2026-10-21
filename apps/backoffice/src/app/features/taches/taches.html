@@ -17,13 +17,33 @@
 
   @if (resume(); as r) {
     <section class="compteurs" aria-label="Vos tâches en un coup d’œil">
-      <button type="button" class="compteur compteur--danger" [class.is-vide]="r.enRetard === 0" (click)="changerVue('mes'); filtrer('echeance', 'retard')">
+      <button
+        type="button"
+        class="compteur compteur--danger"
+        [class.is-vide]="r.enRetard === 0"
+        [class.is-actif]="echeance() === 'retard'"
+        [attr.aria-pressed]="echeance() === 'retard'"
+        (click)="changerVue('mes'); filtrer('echeance', 'retard')"
+      >
         <strong>{{ r.enRetard }}</strong><span>en retard</span>
       </button>
-      <button type="button" class="compteur" (click)="changerVue('mes'); filtrer('echeance', 'aujourdhui')">
+      <button
+        type="button"
+        class="compteur compteur--jour"
+        [class.is-vide]="r.aujourdhui === 0"
+        [class.is-actif]="echeance() === 'aujourdhui'"
+        [attr.aria-pressed]="echeance() === 'aujourdhui'"
+        (click)="changerVue('mes'); filtrer('echeance', 'aujourdhui')"
+      >
         <strong>{{ r.aujourdhui }}</strong><span>pour aujourd’hui</span>
       </button>
-      <button type="button" class="compteur" (click)="changerVue('mes'); filtrer('echeance', '')">
+      <button
+        type="button"
+        class="compteur"
+        [class.is-actif]="echeance() === ''"
+        [attr.aria-pressed]="echeance() === ''"
+        (click)="changerVue('mes'); filtrer('echeance', '')"
+      >
         <strong>{{ r.aFaire }}</strong><span>à faire au total</span>
       </button>
     </section>
@@ -38,6 +58,10 @@
   </nav>
 
   <section class="filtres page-card" aria-label="Filtres">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="filtres__recherche">
+      <mat-label>Rechercher une tâche</mat-label>
+      <input matInput [formControl]="recherche" autocomplete="off" />
+    </mat-form-field>
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
       <mat-label>Statut</mat-label>
       <mat-select [value]="statut()" (selectionChange)="filtrer('statut', $event.value)">
@@ -62,10 +86,6 @@
           <mat-option [value]="code">{{ libellePriorite(code) }}</mat-option>
         }
       </mat-select>
-    </mat-form-field>
-    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="filtres__recherche">
-      <mat-label>Rechercher</mat-label>
-      <input matInput [formControl]="recherche" autocomplete="off" />
     </mat-form-field>
   </section>
 
@@ -101,12 +121,12 @@
           <button type="button" class="ligne__corps" (click)="ouvrir(tache)">
             <strong class="ligne__titre">{{ tache.titre }}</strong>
             <span class="ligne__meta">
-              <span [class.is-retard-texte]="tache.enRetard">{{ echeanceDite(tache.dateLimite) }}</span>
+              <span [class]="'echeance echeance--' + (tache.enRetard ? 'retard' : urgence(tache.dateLimite))">{{ echeanceDite(tache.dateLimite) }}</span>
               @if (tache.entityLabel) {
-                <span>· {{ typeDossier(tache.entityType) }} {{ tache.entityLabel }}</span>
+                <span class="ligne__lien">{{ typeDossier(tache.entityType) }} {{ tache.entityLabel }}</span>
               }
               @if (vue() !== 'mes' || tache.responsableId !== moi) {
-                <span>· {{ nom(tache.responsable) }}</span>
+                <span class="ligne__lien">{{ nom(tache.responsable) }}</span>
               }
             </span>
           </button>

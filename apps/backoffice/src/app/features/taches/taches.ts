@@ -23,6 +23,7 @@ import {
   STATUTS,
   TYPES_DOSSIER_LABELS,
   echeanceDite,
+  urgenceEcheance,
   libelle,
   nomPersonne,
   pastille,
@@ -167,6 +168,7 @@ export class Taches implements OnInit {
   protected libellePriorite = (code: string) => libelle(PRIORITES, code);
   protected pastillePriorite = (code: string) => pastille(PRIORITES, code);
   protected echeanceDite = (valeur: string | null) => echeanceDite(valeur);
+  protected urgence = (valeur: string | null) => urgenceEcheance(valeur);
   protected nom = nomPersonne;
 
   private rafraichir(): void {

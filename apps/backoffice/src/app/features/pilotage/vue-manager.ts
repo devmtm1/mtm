@@ -1,5 +1,5 @@
 import { LucideBellRing, LucideOctagonAlert, LucideReceipt, LucideTarget } from '@lucide/angular';
-import { Component, OnInit, inject, output, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   PilotageApiService,
@@ -32,6 +32,22 @@ export class VueManager implements OnInit {
   protected readonly loading = signal(true);
   protected readonly donnees = signal<TableauManager | null>(null);
 
+  /** Total de l'équipe, en dernière ligne du tableau : ce que chacun apporte, et ce que cela fait ensemble. */
+  protected readonly totauxEquipe = computed(() => {
+    const equipe = this.donnees()?.equipe ?? [];
+    const somme = (cle: 'prospectsActifs' | 'relancesEnRetard' | 'visitesEffectuees' | 'ventesSoldees' | 'chiffreAffaires' | 'commissionsEstimees' | 'tachesEnRetard') =>
+      equipe.reduce((total, ligne) => total + ligne[cle], 0);
+    return {
+      prospectsActifs: somme('prospectsActifs'),
+      relancesEnRetard: somme('relancesEnRetard'),
+      visitesEffectuees: somme('visitesEffectuees'),
+      ventesSoldees: somme('ventesSoldees'),
+      chiffreAffaires: somme('chiffreAffaires'),
+      commissionsEstimees: somme('commissionsEstimees'),
+      tachesEnRetard: somme('tachesEnRetard'),
+    };
+  });
+
   ngOnInit(): void {
     this.charger();
   }
@@ -42,6 +58,13 @@ export class VueManager implements OnInit {
   }
 
   protected fcfa = fcfa;
+
+  /** « Fallou Senghor » → « FS » : de quoi repérer une ligne sans lire le nom. */
+  protected initiales(nom: string): string {
+    const mots = nom.trim().split(/\s+/).filter(Boolean);
+    const lettres = mots.length > 1 ? mots[0][0] + mots[mots.length - 1][0] : (mots[0] ?? '').slice(0, 2);
+    return lettres.toUpperCase();
+  }
 
   protected route(lien: string): string[] {
     return lien

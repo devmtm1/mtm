@@ -1,4 +1,4 @@
-import { echeanceDite, libelle, nomPersonne, pastille, PRIORITES, routeDossier, STATUTS } from './taches-status';
+import { echeanceDite, libelle, nomPersonne, pastille, PRIORITES, routeDossier, STATUTS, urgenceEcheance } from './taches-status';
 
 describe('échéance dite à l’oral', () => {
   const maintenant = new Date('2026-10-12T10:00:00');
@@ -36,5 +36,18 @@ describe('libellés des tâches', () => {
     expect(routeDossier('vente', 'v1')).toEqual(['/ventes', 'v1']);
     expect(routeDossier(null, null)).toBeNull();
     expect(routeDossier('planete', 'x')).toBeNull();
+  });
+});
+
+describe('teinte d’une échéance', () => {
+  const maintenant = new Date('2026-10-12T10:00:00');
+
+  it('rouge en retard, orange le jour même, discrète au-delà', () => {
+    expect(urgenceEcheance('2026-10-11T23:00:00', maintenant)).toBe('retard');
+    expect(urgenceEcheance('2026-10-12T18:00:00', maintenant)).toBe('aujourdhui');
+    expect(urgenceEcheance('2026-10-13T08:00:00', maintenant)).toBe('bientot');
+    expect(urgenceEcheance('2026-10-14T08:00:00', maintenant)).toBe('bientot');
+    expect(urgenceEcheance('2026-10-20T08:00:00', maintenant)).toBe('normal');
+    expect(urgenceEcheance(null, maintenant)).toBe('sans');
   });
 });

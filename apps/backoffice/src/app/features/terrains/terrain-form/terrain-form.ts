@@ -297,6 +297,30 @@ export class TerrainForm implements OnInit {
     };
   });
 
+  /**
+   * Les rubriques facultatives (« Plus de détails ») restent fermées à la création, pour que le
+   * formulaire soit court. En modification, celles qui contiennent déjà quelque chose s'ouvrent :
+   * on ne cache jamais une donnée existante.
+   */
+  protected readonly sectionsOuvertes = signal<Record<string, boolean>>({});
+
+  private static readonly SECTIONS_FACULTATIVES: Record<string, string[]> = {
+    foncier: ['referenceDocumentFoncier', 'dateDocumentFoncier', 'commentaireAdministratif'],
+    environnement: ['dimensions', 'proximiteAxes', 'accesRoutier', 'voisinage'],
+    suivi: ['statutVisite', 'produitDirect', 'protocoleAccord', 'notesPaiement'],
+  };
+
+  private ouvrirSectionsRemplies(): void {
+    const ouvertes: Record<string, boolean> = {};
+    for (const [section, champs] of Object.entries(TerrainForm.SECTIONS_FACULTATIVES)) {
+      ouvertes[section] = champs.some((champ) => {
+        const valeur = this.form.get(champ)?.value as unknown;
+        return valeur === true || (typeof valeur === 'string' && valeur.trim() !== '');
+      });
+    }
+    this.sectionsOuvertes.set(ouvertes);
+  }
+
   /** La durée de moratoire n'a de sens que pour une modalité à échéances. */
   protected readonly moratoire = computed(() =>
     (this.formValue().modalitePaiement ?? '').toLowerCase().startsWith('morato'),
@@ -578,6 +602,7 @@ export class TerrainForm implements OnInit {
     this.pointsInteretArray.clear();
     (terrain.pointsInteret ?? []).forEach((point) => this.pointsInteretArray.push(this.buildPointInteretGroup(point)));
     this.formValue.set(this.form.getRawValue());
+    this.ouvrirSectionsRemplies();
     this.loading.set(false);
   }
 

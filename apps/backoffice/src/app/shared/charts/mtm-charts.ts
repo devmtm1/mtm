@@ -80,13 +80,31 @@ export function monthlyBarChart(points: MonthlyPoint[], options: { unit?: 'FCFA'
 }
 
 /** Répartition (dossiers par statut, lots par état…) en anneau, libellés français. */
-export function donutChart(distribution: Partial<Record<string, number>>): EChartsCoreOption {
+export function donutChart(
+  distribution: Partial<Record<string, number>>,
+  options: { centre?: string } = {},
+): EChartsCoreOption {
   const data = Object.entries(distribution)
     .filter((entry): entry is [string, number] => typeof entry[1] === 'number' && entry[1] > 0)
     .map(([code, value]) => ({ name: businessLabel(code), value }));
+  const total = data.reduce((somme, part) => somme + part.value, 0);
   return {
     color: SERIES_COLORS,
     textStyle: { fontFamily: FONT },
+    // Le total au centre de l'anneau : sinon un seul groupe donne un disque plein qui ne dit rien.
+    ...(options.centre
+      ? {
+          title: {
+            text: total.toLocaleString('fr-FR'),
+            subtext: options.centre,
+            left: 'center',
+            top: '31%',
+            itemGap: 2,
+            textStyle: { fontFamily: FONT, fontSize: 28, fontWeight: 700, color: '#1F2937' },
+            subtextStyle: { fontFamily: FONT, fontSize: 12, color: TEXT_COLOR },
+          },
+        }
+      : {}),
     tooltip: { trigger: 'item', formatter: '{b} : {c} ({d} %)' },
     legend: { bottom: 0, left: 'center', icon: 'circle', textStyle: { color: TEXT_COLOR, fontSize: 11 }, itemWidth: 10, itemHeight: 10 },
     series: [

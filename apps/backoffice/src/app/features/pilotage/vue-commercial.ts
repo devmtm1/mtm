@@ -62,7 +62,7 @@ export class VueCommercial implements OnInit {
 
   protected readonly graphiquePipeline = computed(() => {
     const pipeline = this.donnees()?.pipeline ?? {};
-    return Object.values(pipeline).some((n) => n > 0) ? donutChart(pipeline) : null;
+    return Object.values(pipeline).some((n) => n > 0) ? donutChart(pipeline, { centre: 'prospects' }) : null;
   });
 
   ngOnInit(): void {
@@ -79,6 +79,13 @@ export class VueCommercial implements OnInit {
   }
 
   protected fcfa = fcfa;
+
+  /** « 2026-10 » → « octobre 2026 » : une période que l'on lit, pas un code. */
+  protected moisDit(periode: string): string {
+    const [annee, mois] = periode.split('-').map(Number);
+    if (!annee || !mois) return periode;
+    return new Date(annee, mois - 1, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  }
 
   protected route(lien: string): string[] {
     return lien

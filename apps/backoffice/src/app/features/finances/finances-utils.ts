@@ -100,3 +100,17 @@ export function repartitionRevenu(parActivite: (TotauxFinanciers & { activite: A
     .filter((a) => a.revenu > 0)
     .map((a) => ({ label: libelleActivite(a.activite), valeur: a.revenu }));
 }
+
+export type Tendance = 'hausse' | 'baisse' | 'stable' | 'neutre';
+
+/** Hausse, baisse ou stable ; « neutre » quand la période précédente était vide (rien à comparer). */
+export function tendanceDe(actuel: number, precedent: number): Tendance {
+  if (actuel === precedent) return 'stable';
+  if (precedent === 0) return 'neutre';
+  return actuel > precedent ? 'hausse' : 'baisse';
+}
+
+/** La comparaison en une phrase courte : une période précédente vide se dit en trois mots, sans couleur. */
+export function comparaisonCourte(actuel: number, precedent: number): string {
+  return precedent === 0 && actuel !== 0 ? 'Période précédente vide' : comparaisonDite(actuel, precedent);
+}

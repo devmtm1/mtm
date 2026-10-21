@@ -21,24 +21,38 @@ h3 {
   font-size: 0.95rem;
 }
 
+/* Onglets internes d'un écran (statut des saisies, comptes…) : les mêmes que ceux des sujets du menu. */
 .onglets {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
   border-bottom: 1px solid var(--mtm-border);
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
   button {
-    padding: 10px 14px;
+    flex-shrink: 0;
+    margin-bottom: -1px;
+    padding: 10px 16px;
     border: 0;
     border-bottom: 2px solid transparent;
     background: transparent;
     color: var(--mtm-text-muted);
     font: inherit;
+    font-weight: 500;
+    white-space: nowrap;
     cursor: pointer;
+
+    &:hover {
+      color: var(--mtm-text-dark);
+    }
 
     &.is-actif {
       border-bottom-color: var(--mtm-primary);
-      color: var(--mtm-text-dark);
+      color: var(--mtm-primary);
       font-weight: 600;
     }
   }
@@ -47,19 +61,25 @@ h3 {
 .tuiles {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 12px;
+  gap: 14px;
 }
 
+/* Une tuile de chiffre : en carte, le chiffre bien lisible, un filet de couleur quand il y a un souci. */
 .tuile {
+  position: relative;
   display: grid;
-  gap: 2px;
-  padding: 14px 16px;
+  align-content: start;
+  gap: 3px;
+  padding: 16px 18px;
   border: 1px solid var(--mtm-border);
-  border-radius: 12px;
-  background: var(--mtm-surface, #fff);
+  border-radius: var(--mtm-radius-md);
+  background: var(--mtm-card-bg);
+  box-shadow: var(--mtm-shadow-card);
 
   strong {
-    font-size: 1.2rem;
+    font-family: var(--mtm-font-display);
+    font-size: 1.35rem;
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
   }
 
@@ -69,13 +89,42 @@ h3 {
     font-size: 0.82rem;
   }
 
+  span {
+    font-weight: 600;
+  }
+
+  &--attention,
+  &--danger {
+    padding-left: 22px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 12px;
+      bottom: 12px;
+      width: 4px;
+      border-radius: 0 4px 4px 0;
+    }
+  }
+
   &--attention {
     border-color: var(--mtm-warning);
     background: var(--mtm-warning-bg);
+
+    &::before {
+      background: var(--mtm-warning);
+    }
   }
 
-  &--danger strong {
-    color: var(--mtm-accent);
+  &--danger {
+    &::before {
+      background: var(--mtm-error);
+    }
+
+    strong {
+      color: var(--mtm-error);
+    }
   }
 }
 
@@ -96,6 +145,15 @@ h3 {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px 16px;
   align-items: start;
+  padding: 12px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--mtm-radius-md);
+  background: var(--mtm-bg-surface);
+  transition: border-color 0.15s ease;
+
+  &:hover {
+    border-color: var(--mtm-border);
+  }
 
   @media (max-width: 720px) {
     grid-template-columns: minmax(0, 1fr);
@@ -168,16 +226,32 @@ h3 {
 
   th,
   td {
-    padding: 8px 10px;
+    padding: 11px 14px;
     border-bottom: 1px solid var(--mtm-border);
     text-align: left;
     vertical-align: top;
   }
 
+  /* En-têtes en casse normale sur une bande grise : on lit les colonnes sans effort. */
   th {
+    border-bottom: 0;
+    background: var(--mtm-bg-surface);
     color: var(--mtm-text-muted);
+    font-size: 0.82rem;
     font-weight: 600;
     white-space: nowrap;
+
+    &:first-child {
+      border-radius: 10px 0 0 10px;
+    }
+
+    &:last-child {
+      border-radius: 0 10px 10px 0;
+    }
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
   }
 
   .nombre {
@@ -187,8 +261,10 @@ h3 {
   }
 
   tfoot td {
+    border-top: 2px solid var(--mtm-border);
+    border-bottom: 0;
+    background: var(--mtm-bg-surface);
     font-weight: 700;
-    background: var(--mtm-bg-hover);
   }
 }
 

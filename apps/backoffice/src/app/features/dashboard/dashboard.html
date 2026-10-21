@@ -1,7 +1,7 @@
 <div class="dashboard-page">
-  <header class="page-header">
+  <header class="page-header dash-header">
     <div>
-      <p class="eyebrow">Tableau de bord · {{ today | date: 'EEEE d MMMM yyyy' }}</p>
+      <p class="dash-date">{{ today | date: 'EEEE d MMMM yyyy' }}</p>
       <h1 class="page-header__title">{{ greeting() }} {{ user()?.firstName }}</h1>
       <p class="page-header__subtitle">
         @if (hasAnyModule) {
@@ -16,7 +16,14 @@
   @if (vues().length > 1) {
     <nav class="vues" aria-label="Vue du tableau de bord">
       @for (v of vues(); track v.code) {
-        <button type="button" [class.is-actif]="vue() === v.code" (click)="choisirVue(v.code)">{{ v.label }}</button>
+        <button
+          type="button"
+          [class.is-actif]="vue() === v.code"
+          [attr.aria-current]="vue() === v.code ? 'page' : null"
+          (click)="choisirVue(v.code)"
+        >
+          {{ v.label }}
+        </button>
       }
     </nav>
   }

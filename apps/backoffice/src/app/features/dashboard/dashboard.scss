@@ -211,25 +211,138 @@
   }
 }
 
+/* En-tête : la date en clair (plus de majuscules criardes), un seul filet sous les onglets. */
+.dash-header {
+  margin-bottom: 0;
+  padding-bottom: 12px;
+  border-bottom: 0;
+}
+
+.dash-date {
+  margin: 0 0 4px;
+  color: var(--mtm-text-muted);
+  font-size: 0.88rem;
+  font-weight: 500;
+
+  &::first-letter {
+    text-transform: uppercase;
+  }
+}
+
+/* Les vues du tableau de bord : des onglets (QUI on regarde), comme les sujets du menu. */
 .vues {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
   margin-bottom: 4px;
+  border-bottom: 1px solid var(--mtm-border);
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
   button {
-    padding: 8px 16px;
-    border: 1px solid var(--mtm-border);
-    border-radius: 999px;
+    flex-shrink: 0;
+    margin-bottom: -1px;
+    padding: 10px 16px;
+    border: 0;
+    border-bottom: 2px solid transparent;
     background: transparent;
+    color: var(--mtm-text-muted);
     font: inherit;
-    font-size: 0.9rem;
+    font-size: 0.92rem;
+    font-weight: 500;
+    white-space: nowrap;
     cursor: pointer;
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease;
+
+    &:hover {
+      color: var(--mtm-text-dark);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--mtm-primary-light);
+      outline-offset: -2px;
+      border-radius: 6px;
+    }
 
     &.is-actif {
-      border-color: var(--mtm-primary, #1a4974);
-      background: var(--mtm-primary, #1a4974);
-      color: #fff;
+      border-bottom-color: var(--mtm-primary);
+      color: var(--mtm-primary);
+      font-weight: 600;
+    }
+  }
+}
+
+/* Vue générale : les mêmes cartes de chiffres que les autres vues, plus lisibles. */
+.kpi-row {
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 14px;
+}
+
+.kpi {
+  flex-direction: row-reverse;
+  align-items: flex-start;
+  justify-content: space-between;
+  min-height: 112px;
+  padding: 18px 20px;
+  border-radius: var(--mtm-radius-lg);
+  box-shadow: var(--mtm-shadow-card);
+
+  .kpi__icon {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+
+    svg {
+      width: 22px;
+      height: 22px;
+    }
+  }
+
+  .kpi__body {
+    flex: 1;
+    gap: 4px;
+
+    > span {
+      order: 1;
+      color: var(--mtm-text-muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    strong {
+      order: 2;
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+
+    small {
+      order: 3;
+      margin-top: 4px;
+      font-size: 0.78rem;
+      line-height: 1.35;
+    }
+  }
+
+  @media (max-width: 720px) {
+    min-height: 0;
+    padding: 14px;
+
+    .kpi__icon {
+      flex-basis: 36px;
+      width: 36px;
+      height: 36px;
+    }
+
+    .kpi__body strong {
+      font-size: 1.3rem;
     }
   }
 }
