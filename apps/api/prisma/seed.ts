@@ -88,12 +88,21 @@ async function main(): Promise<void> {
   // être retirée sans bloquer les déploiements suivants.
   const adminEmail = process.env.SEED_ADMIN_EMAIL ?? 'admin@mtm-immobilier.sn';
   const adminPassword = process.env.SEED_ADMIN_PASSWORD;
-  const adminExists = Boolean(
+  const adminParDefautExiste = Boolean(
     await prisma.user.findUnique({
       where: { email: adminEmail },
       select: { id: true },
     }),
   );
+  // Un administrateur existe déjà sous une autre adresse (cas de la production,
+  // où le compte réel a remplacé celui par défaut) : inutile d'en recréer un.
+  const unAdministrateurExiste = Boolean(
+    await prisma.userRole.findFirst({
+      where: { role: { name: 'administrateur' }, user: { isActive: true } },
+      select: { userId: true },
+    }),
+  );
+  const adminExists = adminParDefautExiste || unAdministrateurExiste;
   if (!adminExists && (!adminPassword || adminPassword.length < 12)) {
     throw new Error(
       'SEED_ADMIN_PASSWORD doit être configuré (12 caractères minimum) pour créer le compte administrateur',
@@ -974,32 +983,39 @@ async function main(): Promise<void> {
   console.log('  Permissions tableaux de bord et rapports attribuées');
 
   // --- Utilisateur administrateur par défaut ---
-  const adminUser = await prisma.user.upsert({
-    where: { email: adminEmail },
-    update: {},
-    create: {
-      email: adminEmail,
-      // Présent par construction quand le compte n'existe pas encore (contrôle
-      // en début de seed) ; jamais utilisé quand il existe déjà.
-      password: await bcrypt.hash(adminPassword ?? '', 12),
-      firstName: 'Admin',
-      lastName: 'MTM',
-      isActive: true,
-      // Force le changement dès la première connexion réelle, même si
-      // SEED_ADMIN_PASSWORD a été fourni explicitement.
-      mustChangePassword: true,
-    },
-  });
+  // Créé seulement s'il n'y a encore aucun administrateur (première installation).
+  if (adminParDefautExiste || !unAdministrateurExiste) {
+    const adminUser = await prisma.user.upsert({
+      where: { email: adminEmail },
+      update: {},
+      create: {
+        email: adminEmail,
+        // Présent par construction quand le compte n'existe pas encore (contrôle
+        // en début de seed) ; jamais utilisé quand il existe déjà.
+        password: await bcrypt.hash(adminPassword ?? '', 12),
+        firstName: 'Admin',
+        lastName: 'MTM',
+        isActive: true,
+        // Force le changement dès la première connexion réelle, même si
+        // SEED_ADMIN_PASSWORD a été fourni explicitement.
+        mustChangePassword: true,
+      },
+    });
 
-  await prisma.userRole.upsert({
-    where: {
-      userId_roleId: { userId: adminUser.id, roleId: adminRole.id },
-    },
-    update: {},
-    create: { userId: adminUser.id, roleId: adminRole.id },
-  });
+    await prisma.userRole.upsert({
+      where: {
+        userId_roleId: { userId: adminUser.id, roleId: adminRole.id },
+      },
+      update: {},
+      create: { userId: adminUser.id, roleId: adminRole.id },
+    });
 
-  console.log(`  Utilisateur administrateur : ${adminEmail}`);
+    console.log(`  Utilisateur administrateur : ${adminEmail}`);
+  } else {
+    console.log(
+      '  Administrateur existant conservé : aucun compte par défaut créé',
+    );
+  }
   // --- Paramètres système de base ---
   await prisma.systemSetting.upsert({
     where: { key: 'app.name' },
