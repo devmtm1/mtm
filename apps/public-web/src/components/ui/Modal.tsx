@@ -7,6 +7,8 @@ interface ModalProps {
   title: string;
   onClose: () => void;
   children: ReactNode;
+  /** Fenêtre large (lecteur vidéo) au lieu de la fenêtre de formulaire. */
+  large?: boolean;
 }
 
 const FOCUSABLE =
@@ -21,7 +23,7 @@ const FOCUSABLE =
  * se centrerait dans la page entière, hors écran sur mobile. Sur petit écran,
  * elle s'ancre en bas (feuille) pour rester atteignable au pouce.
  */
-export function Modal({ title, onClose, children }: ModalProps) {
+export function Modal({ title, onClose, children, large = false }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
 
@@ -93,7 +95,7 @@ export function Modal({ title, onClose, children }: ModalProps) {
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="relative flex max-h-[92dvh] w-full max-w-lg flex-col overflow-y-auto overflow-x-hidden rounded-t-3xl bg-mtm-surface px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-lg outline-none motion-safe:animate-sheet-in sm:max-h-full sm:rounded-lg sm:p-6 sm:motion-safe:animate-scale-in"
+        className={`relative flex max-h-[92dvh] w-full ${large ? 'sm:max-w-4xl' : 'max-w-lg'} flex-col overflow-y-auto overflow-x-hidden rounded-t-3xl bg-mtm-surface px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-lg outline-none motion-safe:animate-sheet-in sm:max-h-full sm:rounded-lg sm:p-6 sm:motion-safe:animate-scale-in`}
       >
         <span className="mx-auto mb-3 h-1.5 w-10 shrink-0 rounded-full bg-mtm-border sm:hidden" aria-hidden="true" />
         <div className="mb-4 flex items-center justify-between">

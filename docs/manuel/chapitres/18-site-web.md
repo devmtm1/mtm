@@ -72,6 +72,16 @@ Trois actions :
 
 ![Équipe](img/web-05-equipe.png)
 
+## Actualités et conseils (vidéos)
+
+**Site web › Actualités et conseils** : les vidéos de la page *Actualités et conseils* du site public (conseils, actualités du foncier, construction…).
+
+1. **Nouvelle vidéo** : saisissez le titre, choisissez la rubrique, ajoutez un court résumé, puis sélectionnez le fichier (MP4, MOV ou WebM, 100 Mo maximum, 20 minutes maximum).
+2. La vidéo est envoyée par morceaux, avec une barre de progression. Laissez la fenêtre ouverte jusqu’à la fin.
+3. Une vidéo n’apparaît sur le site qu’**une fois publiée**. Vous pouvez la programmer avec une date, la mettre **à la une** (une seule à la fois) ou la retirer.
+
+> **Conseil** — Préférez des vidéos courtes (1 à 3 minutes), en bonne qualité et avec un titre clair : un visiteur décide en quelques secondes de la regarder ou non.
+
 ## Qui peut quoi
 
 La **consultation** des contenus est ouverte aux rôles qui ont la permission « contenu : consulter » ; **créer, modifier, publier et supprimer** sont réservés à la direction, aux managers (et aux administrateurs). Un commercial voit les **demandes web** et peut les traiter (consulter, modifier), mais pas les contenus du site.

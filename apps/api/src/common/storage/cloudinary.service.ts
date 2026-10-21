@@ -192,14 +192,16 @@ export class CloudinaryService {
    * avant la lecture et quand la vidéo est écartée (économie de données).
    * Vide si Cloudinary n'est pas configuré.
    */
-  videoPosterUrl(publicId: string): string {
+  videoPosterUrl(publicId: string, decalageSecondes = 0): string {
     if (!this.config.get('CLOUDINARY_CLOUD_NAME')) return '';
     return cloudinary.url(publicId, {
       secure: true,
       resource_type: 'video',
       type: 'upload',
       format: 'jpg',
-      transformation: [{ start_offset: 0, width: 1280, crop: 'limit' }],
+      transformation: [
+        { start_offset: decalageSecondes, width: 1280, crop: 'limit' },
+      ],
     });
   }
 
@@ -240,6 +242,109 @@ export class CloudinaryService {
       );
       return null;
     }
+  }
+
+  /** Dossier Cloudinary complet (racine de l'environnement comprise) d'un sous-dossier métier. */
+  dossier(folder: string): string {
+    return this.rootFolder ? `${this.rootFolder}/${folder}` : folder;
+  }
+
+  /**
+   * Autorisation d'envoi direct : le navigateur envoie la vidéo à Cloudinary sans passer par l'API
+   * (qui limite les fichiers à 10 Mo et les tient en mémoire). La signature fixe le dossier et
+   * l'heure ; le secret de l'API ne quitte jamais le serveur.
+   */
+  signedUploadParams(folder: string): {
+    cloudName: string;
+    apiKey: string;
+    timestamp: number;
+    folder: string;
+    signature: string;
+    uploadUrl: string;
+  } {
+    if (!this.isConfigured()) {
+      throw new ServiceUnavailableException(
+        'Le stockage Cloudinary n’est pas configuré : l’envoi de vidéos est indisponible',
+      );
+    }
+    const cloudName = this.config.get<string>('CLOUDINARY_CLOUD_NAME') ?? '';
+    const apiKey = this.config.get<string>('CLOUDINARY_API_KEY') ?? '';
+    const apiSecret = this.config.get<string>('CLOUDINARY_API_SECRET') ?? '';
+    const timestamp = Math.floor(Date.now() / 1000);
+    const dossier = this.dossier(folder);
+    const signature = cloudinary.utils.api_sign_request(
+      { folder: dossier, timestamp },
+      apiSecret,
+    );
+    return {
+      cloudName,
+      apiKey,
+      timestamp,
+      folder: dossier,
+      signature,
+      uploadUrl: `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
+    };
+  }
+
+  /**
+   * Caractéristiques d'une vidéo réellement présente sur Cloudinary (durée, taille, format…).
+   * Sert à vérifier ce que le navigateur annonce avoir envoyé : on ne croit pas le client.
+   */
+  async videoInfo(publicId: string): Promise<{
+    bytes: number;
+    duration: number | null;
+    width: number | null;
+    height: number | null;
+    format: string | null;
+  }> {
+    if (!this.isConfigured()) {
+      throw new ServiceUnavailableException(
+        'Le stockage Cloudinary n’est pas configuré',
+      );
+    }
+    try {
+      const ressource = (await cloudinary.api.resource(publicId, {
+        resource_type: 'video',
+        type: 'upload',
+      })) as {
+        bytes?: number;
+        duration?: number;
+        width?: number;
+        height?: number;
+        format?: string;
+      };
+      return {
+        bytes: ressource.bytes ?? 0,
+        duration:
+          typeof ressource.duration === 'number' ? ressource.duration : null,
+        width: ressource.width ?? null,
+        height: ressource.height ?? null,
+        format: ressource.format ?? null,
+      };
+    } catch {
+      throw new NotFoundException(
+        'Vidéo introuvable sur Cloudinary : l’envoi n’a pas abouti',
+      );
+    }
+  }
+
+  /**
+   * Lien de lecture d'une vidéo publique. Jusqu'à 40 Mo, Cloudinary adapte codec et débit au
+   * navigateur (lecture fluide, qualité conservée) ; au-delà il ne sait pas transformer à la
+   * volée, on sert alors le fichier envoyé tel quel (MP4 H.264 recommandé).
+   */
+  videoUrl(publicId: string, tailleOctets?: number | null): string {
+    if (!this.config.get('CLOUDINARY_CLOUD_NAME')) return '';
+    const TRANSFORMABLE = 40 * 1024 * 1024;
+    return cloudinary.url(publicId, {
+      secure: true,
+      resource_type: 'video',
+      type: 'upload',
+      format: 'mp4',
+      ...(tailleOctets && tailleOctets <= TRANSFORMABLE
+        ? { transformation: [{ quality: 'auto:good', video_codec: 'auto' }] }
+        : {}),
+    });
   }
 
   isConfigured(): boolean {
