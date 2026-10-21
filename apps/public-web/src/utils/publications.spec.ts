@@ -9,6 +9,7 @@ function video(id: string, categorie: Publication['categorie'], misEnAvant = fal
     categorie,
     resume: null,
     videoUrl: `https://exemple.test/${id}.mp4`,
+    youtubeId: null,
     posterUrl: null,
     dureeSecondes: null,
     largeur: null,

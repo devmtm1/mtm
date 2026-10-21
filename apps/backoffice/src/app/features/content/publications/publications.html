@@ -3,10 +3,7 @@
     <div>
       <p class="eyebrow">Site web</p>
       <h1 class="page-header__title">Actualités et conseils</h1>
-      <p class="page-header__subtitle">
-        Les vidéos de la page « Actualités et conseils » du site : conseils pour acheter ou construire, actualités du foncier.
-        Une vidéo n’apparaît qu’une fois publiée, avec sa date de publication atteinte.
-      </p>
+      <p class="page-header__subtitle">Les vidéos de la page publique. Une vidéo n’apparaît qu’une fois publiée.</p>
     </div>
     @if (canCreate) {
       <button mat-flat-button color="primary" type="button" (click)="openEditor()">
@@ -15,22 +12,12 @@
     }
   </header>
 
-  @if (!loading()) {
-    <aside class="alert-banner" [class.alert-banner--info]="enLigne().length === 0" role="status">
+  @if (!loading() && enLigne().length === 0) {
+    <aside class="alert-banner alert-banner--info" role="status">
       <div class="alert-banner__head">
         <svg lucideVideo aria-hidden="true"></svg>
-        <strong>
-          @if (enLigne().length === 0) {
-            Aucune vidéo en ligne : la page du site n’affiche que ses articles de texte.
-          } @else {
-            {{ enLigne().length }} vidéo{{ enLigne().length > 1 ? 's' : '' }} en ligne sur la page Actualités et conseils.
-          }
-        </strong>
+        <strong>Aucune vidéo en ligne : la page du site n’affiche que ses articles de texte.</strong>
       </div>
-      <p>
-        Les modifications apparaissent sur le site en une minute environ. Pour une bonne qualité : vidéo <strong>MP4 (H.264) en 1080p</strong>,
-        format paysage, son clair, moins de 100 Mo.
-      </p>
     </aside>
   }
 
@@ -60,7 +47,7 @@
                   <small>Aucune vidéo</small>
                 </div>
               }
-              @if (publication.videoUrl) {
+              @if (publication.videoUrl || publication.youtubeId) {
                 <button type="button" class="card__play" (click)="regarder(publication)" aria-label="Regarder la vidéo" matTooltip="Regarder">
                   <svg lucidePlay aria-hidden="true"></svg>
                 </button>
@@ -80,7 +67,7 @@
                 <p class="card__text">{{ publication.resume }}</p>
               }
               <p class="card__meta">
-                {{ dateDite(publication) }}@if (publication.tailleOctets) { · {{ taille(publication.tailleOctets) }} }
+                {{ dateDite(publication) }}@if (publication.tailleOctets) { · {{ taille(publication.tailleOctets) }} }@if (publication.youtubeId) { · YouTube }
               </p>
             </div>
             <div class="card__actions">
@@ -95,8 +82,8 @@
                   mat-icon-button
                   type="button"
                   (click)="togglePublish(publication)"
-                  [disabled]="!publication.isActive && !publication.videoUrl"
-                  [matTooltip]="publication.isActive ? 'Retirer du site' : publication.videoUrl ? 'Publier sur le site' : 'Ajoutez d’abord la vidéo'"
+                  [disabled]="!publication.isActive && !publication.videoUrl && !publication.youtubeId"
+                  [matTooltip]="publication.isActive ? 'Retirer du site' : (publication.videoUrl || publication.youtubeId) ? 'Publier sur le site' : 'Ajoutez d’abord la vidéo'"
                   [attr.aria-label]="publication.isActive ? 'Retirer du site' : 'Publier'"
                 >
                   @if (publication.isActive) {

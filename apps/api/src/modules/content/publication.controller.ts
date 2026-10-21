@@ -98,7 +98,9 @@ export class PublicationController {
     const publication = await this.publications.setActive(id, dto.isActive);
     await this.audit.record({
       userId: user.id,
-      action: dto.isActive ? 'publication.published' : 'publication.unpublished',
+      action: dto.isActive
+        ? 'publication.published'
+        : 'publication.unpublished',
       entityType: 'Publication',
       entityId: id,
     });
