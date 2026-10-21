@@ -103,7 +103,7 @@ const sommaire = Object.entries(GROUPES)
   .join('\n');
 
 const cartesGuides = lireGuides()
-  .map((g) => `<li><a href="${g.id}.html"><strong>${echapper(g.titre)}</strong><span>${echapper(g.soustitre)}</span></a></li>`)
+  .map((g) => `<li><a href="${g.id}.html"><strong>${echapper(g.titre)}</strong><span>${echapper(g.soustitre)}</span></a><a class="carte-pdf" href="pdf/guide-${g.id}.pdf" download>Télécharger le PDF</a></li>`)
   .join('\n');
 
 const ordre = sections.map((s) => s.id);

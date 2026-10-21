@@ -5,7 +5,9 @@
   gap: 16px 24px;
   align-items: start;
 
-  @media (max-width: 960px) {
+  /* Six boutons côte à côte ne tiennent pas à côté du nom sous ~1600 px : ils passent dessous,
+     sinon le nom est écrasé dans une colonne étroite et les boutons recouvrent le texte. */
+  @media (max-width: 1600px) {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -61,7 +63,7 @@
     margin: 0 0 0 6px;
   }
 
-  @media (max-width: 960px) {
+  @media (max-width: 1600px) {
     justify-content: flex-start;
   }
 

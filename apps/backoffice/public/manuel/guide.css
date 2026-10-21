@@ -594,13 +594,7 @@ img {
 /* ------------------------------------------------------------ impression */
 @page {
   size: A4;
-  margin: 18mm 16mm 20mm;
-
-  @bottom-center {
-    content: 'MTM Immobilier · ' counter(page);
-    color: #6b7280;
-    font-size: 9pt;
-  }
+  margin: 16mm 15mm 18mm;
 }
 
 @media print {
@@ -626,6 +620,14 @@ img {
     background: none;
     box-shadow: none;
     break-after: page;
+    min-height: 245mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .couverture__sommaire ol {
+    padding-left: 2.4em;
   }
 
   .page {

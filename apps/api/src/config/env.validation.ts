@@ -27,6 +27,8 @@ export const envValidationSchema = Joi.object({
   BCRYPT_SALT_ROUNDS: Joi.number().min(10).max(15).default(12),
   LOGIN_RATE_LIMIT_TTL: Joi.number().default(60),
   LOGIN_RATE_LIMIT_MAX: Joi.number().default(5),
+  // Limite générale (requêtes par minute et par adresse). Seul l'outil de captures du guide la relève.
+  GLOBAL_RATE_LIMIT_MAX: Joi.number().default(100),
   ACCOUNT_LOCK_THRESHOLD: Joi.number().default(5),
   ACCOUNT_LOCK_DURATION_MINUTES: Joi.number().default(15),
 
