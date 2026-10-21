@@ -41,7 +41,7 @@ export interface ExportDialogData {
       <mat-form-field appearance="outline">
         <mat-label>Motif de l’export</mat-label>
         <textarea matInput rows="2" formControlName="justification" placeholder="Ex. Envoi au cabinet comptable, clôture de septembre"></textarea>
-        <mat-hint>Consigné dans le journal d’audit avec votre identifiant.</mat-hint>
+        <mat-hint>Consigné dans l’historique des actions avec votre identifiant.</mat-hint>
         @if (form.controls.justification.touched && form.controls.justification.invalid) {
           <mat-error>Trois caractères minimum.</mat-error>
         }

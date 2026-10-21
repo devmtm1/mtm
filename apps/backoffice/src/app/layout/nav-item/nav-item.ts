@@ -1,28 +1,24 @@
 import { Component, computed, inject, input, OnInit, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import {
-  ActivatedRoute,
-  NavigationEnd,
-  Router,
-  RouterLink,
-  RouterLinkActive,
-} from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { LucideDynamicIcon, LucideChevronDown } from '@lucide/angular';
+import { LucideDynamicIcon } from '@lucide/angular';
 import { type Compteurs, texteCompteur } from '../nav-compteurs.service';
-import type { CompteurNavigation, NavItem as NavItemConfig } from '../navigation-config';
+import { sujetCorrespond, type CompteurNavigation, type NavItem as NavItemConfig } from '../navigation-config';
 
 /**
- * Item de navigation du sidebar : lien simple ou groupe dépliable
- * (si `children` est renseigné dans la configuration).
+ * Ligne du menu latéral : un lien, rien d'autre.
  *
- * - État actif : fond violet léger + barre verticale (voir sidebar.scss).
- * - Mode replié : icône seule + tooltip ; un groupe navigue vers son
- *   premier enfant.
+ * Un sujet à plusieurs pages (`children`) n'est plus un groupe qui se déplie :
+ * c'est une ligne qui ouvre sa première page, surlignée tant que l'on reste
+ * dans le sujet ; les autres pages s'affichent en onglets dans l'écran.
+ *
+ * - État actif : fond léger, texte et icône dans la couleur principale.
+ * - Mode replié : icône seule + tooltip ; un point signale ce qui attend.
  */
 @Component({
   selector: 'app-nav-item',
-  imports: [RouterLink, RouterLinkActive, MatTooltipModule, LucideDynamicIcon, LucideChevronDown],
+  imports: [RouterLink, RouterLinkActive, MatTooltipModule, LucideDynamicIcon],
   templateUrl: './nav-item.html',
   styleUrl: './nav-item.scss',
   host: {
@@ -31,7 +27,6 @@ import type { CompteurNavigation, NavItem as NavItemConfig } from '../navigation
 })
 export class NavItem implements OnInit {
   private readonly router = inject(Router);
-  private readonly activatedRoute = inject(ActivatedRoute);
 
   /** Configuration de l'item (voir navigation-config.ts). */
   readonly item = input.required<NavItemConfig>();
@@ -45,69 +40,37 @@ export class NavItem implements OnInit {
   /** Émis lors d'un clic de navigation (fermeture du sidenav mobile). */
   readonly navigate = output<void>();
 
-  /** Pastille d'une entrée, « 99+ » au-delà ; rien quand il n'y a rien à faire. */
-  protected pastille(cle: CompteurNavigation | undefined): string | null {
-    return cle ? texteCompteur(this.compteurs()[cle]) : null;
-  }
-
-  /** Pastille du groupe replié : la somme de ses entrées. */
-  protected readonly pastilleGroupe = computed(() => {
+  /** Pastille de la ligne : celle de sa page, ou la somme de celles du sujet. */
+  protected readonly pastille = computed(() => {
     const compteurs = this.compteurs();
-    const total = (this.item().children ?? []).reduce((somme, enfant) => somme + (enfant.compteur ? (compteurs[enfant.compteur] ?? 0) : 0), 0);
+    const item = this.item();
+    const cles = [item.compteur, ...(item.children ?? []).map((enfant) => enfant.compteur)];
+    const total = cles.reduce((somme, cle: CompteurNavigation | undefined) => somme + (cle ? (compteurs[cle] ?? 0) : 0), 0);
     return texteCompteur(total);
   });
 
   protected readonly hasChildren = computed(() => (this.item().children?.length ?? 0) > 0);
-  protected readonly open = signal(false);
 
-  /** Vrai si une route enfant est actuellement active (surbrillance du groupe). */
-  protected readonly childActive = signal(false);
+  /** Vrai quand la page affichée appartient au sujet (surbrillance de la ligne). */
+  protected readonly sujetActif = signal(false);
 
   constructor() {
     this.router.events.pipe(takeUntilDestroyed()).subscribe((event) => {
-      if (event instanceof NavigationEnd) {
-        this.updateChildActive();
-      }
+      if (event instanceof NavigationEnd) this.mettreAJourSujet();
     });
   }
 
   ngOnInit(): void {
     // L'input requis est disponible après l'initialisation du composant.
-    this.open.set(this.item().defaultOpen ?? false);
-    this.updateChildActive();
+    this.mettreAJourSujet();
   }
 
-  protected toggleOpen(): void {
-    // Groupe replié (sidebar compact) : naviguer vers le premier enfant.
-    if (this.collapsed()) {
-      const firstChild = this.item().children?.[0];
-      if (firstChild) {
-        void this.router.navigateByUrl(firstChild.route);
-        this.navigate.emit();
-      }
+  private mettreAJourSujet(): void {
+    if (!this.hasChildren()) {
+      this.sujetActif.set(false);
       return;
     }
-    this.open.update((value) => !value);
-  }
-
-  private updateChildActive(): void {
-    const children = this.item().children;
-    if (!children?.length) {
-      this.childActive.set(false);
-      return;
-    }
-    const tree = this.activatedRoute.snapshot.pathFromRoot[0]?.url.join('/') ?? '';
-    const base = tree ? `/${tree}` : '';
-    const active = children.some((child) =>
-      this.router.isActive(base + child.route, {
-        paths: child.exact ? 'exact' : 'subset',
-        queryParams: 'subset',
-        fragment: 'ignored',
-        matrixParams: 'ignored',
-      }),
-    );
-    this.childActive.set(active);
-    // Arriver sur une page d'un groupe replié (lien direct, actualisation) le déplie.
-    if (active) this.open.set(true);
+    const url = this.router.url.split('?')[0].split('#')[0];
+    this.sujetActif.set(sujetCorrespond(this.item(), url));
   }
 }

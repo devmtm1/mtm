@@ -186,7 +186,7 @@ export class Audit implements OnInit {
   protected exportLogs(): void {
     if (!this.canExport) return;
     JustificationDialog.ask(this.dialog, {
-      title: 'Exporter le journal d’audit',
+      title: 'Exporter l’historique des actions',
       description: 'L’export de données sensibles est lui-même tracé : indiquez le motif (contrôle, audit externe, enquête interne…).',
       confirmLabel: 'Exporter',
     }).subscribe((justification) => {

@@ -23,7 +23,7 @@ Cliquer sur une notification vous amène **directement** sur la fiche concernée
 
 ### Régler ce que vous recevez
 
-**Mon compte › Mes notifications** :
+**votre nom (en haut à droite) › Mes notifications** :
 
 - **Tout marquer comme lu** vide la cloche ;
 - vos **préférences** : recevoir ou non les alertes par **e-mail**, par **SMS**, par **WhatsApp** (avec votre numéro de téléphone) ;

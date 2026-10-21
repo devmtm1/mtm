@@ -23,7 +23,7 @@ interface ModuleSummary {
 const RESOURCE_ORDER = ['terrains', 'proprietaires', 'mandats', 'crm', 'ventes', 'contact', 'content', 'clients', 'users', 'roles', 'settings', 'audit'];
 
 /**
- * Rôles & permissions (Phase 0, section 24 CDC). Un rôle regroupe des
+ * Rôles et droits d’accès (Phase 0, section 24 CDC). Un rôle regroupe des
  * permissions « module : action » ; chaque utilisateur a un rôle. Les rôles
  * système sont livrés avec l'application et ne peuvent pas être supprimés,
  * mais leurs permissions restent ajustables par un administrateur.

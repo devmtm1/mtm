@@ -45,7 +45,7 @@ function ilYaJours(n: number): string {
     <div class="page-grille">
       <header class="page-header">
         <div>
-          <p class="eyebrow">Finances</p>
+          <p class="eyebrow">Comptabilité</p>
           <h1 class="page-header__title">Rapprochement bancaire</h1>
           <p class="page-header__subtitle">
             Comparez le relevé de la banque, de Wave ou d’Orange Money aux mouvements du logiciel. Un virement ou un paiement

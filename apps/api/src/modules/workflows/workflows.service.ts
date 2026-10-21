@@ -184,7 +184,7 @@ export class WorkflowsService {
         key: cle,
         value: valeur as object,
         description:
-          'Étapes du parcours, réglées depuis Administration › Parcours des dossiers',
+          'Étapes du parcours, réglées depuis Administration › Réglages › Étapes des dossiers',
         isSensitive: false,
         updatedById: userId,
       },

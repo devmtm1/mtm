@@ -69,7 +69,7 @@ Ils ne lui sont visibles qu’une fois **publiés**. De même, seules les **piè
 Un rapport est limité à **500 lignes de détail** (il l’indique). Réduisez la période.
 
 **L’export me demande un motif.**
-Tout export est **tracé** : indiquez en quelques mots pourquoi (« reporting mensuel direction »). Le motif est conservé dans le journal d’audit.
+Tout export est **tracé** : indiquez en quelques mots pourquoi (« reporting mensuel direction »). Le motif est conservé dans l’historique des actions.
 
 **Les chiffres de l’écran et du PDF sont-ils les mêmes ?**
 Oui : ils viennent du même calcul.
@@ -86,4 +86,4 @@ Rien ne s’enregistre sans réseau : attendez d’en retrouver avant de valider
 Cliquez sur la **lune** en haut à droite de l’écran.
 
 **Où trouver ce guide ?**
-Dans le menu, section **Mon compte** : **Guide d’utilisation** (il s’ouvre dans un nouvel onglet).
+Cliquez sur le **point d’interrogation** en haut à droite, ou sur votre nom › **Guide d’utilisation** (il s’ouvre dans un nouvel onglet).

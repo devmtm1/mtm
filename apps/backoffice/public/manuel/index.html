@@ -13,7 +13,7 @@
 </head>
 <body>
 <header class="entete">
-<a class="entete__marque" href="#bienvenue"><img src="../logomtm.jpeg" alt="MTM Immobilier"><span><strong>Guide d’utilisation</strong><span>MTM Immobilier · mis à jour le 19 octobre 2026</span></span></a>
+<a class="entete__marque" href="#bienvenue"><img src="../logomtm.jpeg" alt="MTM Immobilier"><span><strong>Guide d’utilisation</strong><span>MTM Immobilier · mis à jour le 21 octobre 2026</span></span></a>
 <div class="entete__outils">
 <div class="recherche"><input id="recherche" type="search" placeholder="Rechercher dans le guide…  ( / )" aria-label="Rechercher dans le guide" autocomplete="off"></div>
 <div class="profil"><select id="profil" aria-label="Je suis">
@@ -141,14 +141,14 @@
 <li><a href="#comptabilite"><strong>Comptabilité et finances</strong><span>Encaissements, revenu réel de MTM, dépenses et seuils d’autorisation, trésorerie et clôture de caisse, rapprochement bancaire, reversements aux propriétaires, désistements, chantiers, rapport du soir.</span></a></li>
 <li><a href="#direction"><strong>La direction : chiffres et rapports</strong><span>Le tableau de bord de direction, les sept rapports PDF et Excel, l’envoi automatique par e-mail.</span></a></li>
 <li><a href="#site-web"><strong>Le site public et les demandes web</strong><span>Répondre aux messages du site, gérer les textes, réalisations, publicités et l’équipe affichés sur le site.</span></a></li>
-<li><a href="#administration"><strong>Administration du back-office</strong><span>Comptes, rôles, paramètres, parcours des dossiers, identité de l’entreprise, notifications, journal d’audit.</span></a></li>
+<li><a href="#administration"><strong>Administration du back-office</strong><span>Comptes, rôles, paramètres, étapes des dossiers, identité de l’entreprise, notifications, historique des actions.</span></a></li>
 </ul></p>
 <h2 id="bienvenue--ce-que-vous-voyez-depend-de-votre-role">Ce que vous voyez dépend de votre rôle</h2>
 <p>Chaque personne a un <strong>rôle</strong> qui définit ce qu’elle voit et ce qu’elle peut faire. Un commercial ne voit pas les finances ; la comptabilité ne modifie pas les prospects. Si un menu décrit dans ce guide n’apparaît pas chez vous, <strong>c’est normal</strong> : il n’est pas prévu pour votre rôle. Le chapitre <em>Qui peut faire quoi</em> récapitule les droits de chaque rôle.</p>
 <blockquote><p>Les captures d’écran de ce guide montrent des <strong>données fictives</strong> (clients, montants, références inventés). Les vôtres afficheront vos propres dossiers.</p>
 </blockquote>
 <h2 id="bienvenue--une-regle-valable-pour-tout-le-monde">Une règle valable pour tout le monde</h2>
-<p>Chaque action est <strong>enregistrée au nom de la personne connectée</strong> (journal d’audit). Ne prêtez jamais votre compte : en cas d’erreur, c’est vous qui seriez désigné.</p>
+<p>Chaque action est <strong>enregistrée au nom de la personne connectée</strong> (historique des actions). Ne prêtez jamais votre compte : en cas d’erreur, c’est vous qui seriez désigné.</p>
 
 <nav class="pagination" aria-label="Chapitres voisins"><span></span><a href="#premiers-pas" rel="next"><small>Suivant</small>Premiers pas</a></nav>
 </article>
@@ -173,7 +173,7 @@
 <h3 id="premiers-pas--la-double-authentification-2fa">La double authentification (2FA)</h3>
 <p>Les comptes qui touchent à des données sensibles — <strong>direction, administrateur, comptabilité, ressources humaines</strong> — doivent activer la <strong>double authentification</strong> : après le mot de passe, l’application demande un <strong>code à 6 chiffres</strong> généré par une application sur votre téléphone (Google Authenticator, Microsoft Authenticator…).</p>
 <ul>
-<li>L’activation se fait dans <strong>Mon compte › Sécurité</strong> : scannez le QR code, saisissez le premier code.</li>
+<li>L’activation se fait dans <strong>votre nom (en haut à droite) › Sécurité et mot de passe</strong> : scannez le QR code, saisissez le premier code.</li>
 <li><strong>Conservez les codes de secours</strong> affichés à l’activation : ils servent si vous perdez votre téléphone.</li>
 <li>Téléphone perdu et pas de codes de secours ? Un administrateur peut <strong>réinitialiser</strong> votre 2FA.</li>
 </ul>
@@ -191,11 +191,15 @@
 </thead>
 <tbody><tr>
 <td><strong>Menu à gauche</strong></td>
-<td>Aller d’un module à l’autre. Il ne montre que ce que votre rôle permet. Il est rangé par rubriques (Espace de travail, Commercial, Patrimoine immobilier, Gestion locative…) ; chaque rubrique se plie et se déplie d’un clic sur son titre (<strong>Site public</strong> et <strong>Administration</strong> sont pliées au départ), et <strong>Dossiers de vente</strong> et <strong>Finances</strong> se déplient pour montrer leurs pages.</td>
+<td>Aller d’un module à l’autre. Il ne montre que ce que votre rôle permet. Il est rangé par rubriques (Mon travail, Commercial, Biens, Location et services…) et tient en une vingtaine de lignes. Un sujet qui compte plusieurs pages (<strong>Dossiers de vente</strong>, <strong>Gestion locative</strong>, <strong>Finances</strong>, <strong>Comptabilité</strong>…) n’a <strong>qu’une ligne</strong> : ses pages sont les <strong>onglets</strong> affichés en haut de l’écran. <strong>Administration</strong> est repliée au départ.</td>
 </tr>
 <tr>
 <td><strong>Barre de recherche</strong></td>
-<td>Retrouver un prospect, un bien, un dossier. Raccourci : <kbd>Ctrl</kbd> + <kbd>K</kbd>.</td>
+<td>Retrouver un prospect, un bien, un dossier, <strong>ou aller directement à une page</strong> en tapant son nom (« trésorerie », « locataires »…). Raccourci : <kbd>Ctrl</kbd> + <kbd>K</kbd>.</td>
+</tr>
+<tr>
+<td><strong>Point d’interrogation</strong></td>
+<td>Ouvre ce guide d’utilisation dans un nouvel onglet.</td>
 </tr>
 <tr>
 <td><strong>Lune</strong></td>
@@ -207,7 +211,7 @@
 </tr>
 <tr>
 <td><strong>Votre nom</strong></td>
-<td>Votre profil, la déconnexion.</td>
+<td>Vos notifications, la sécurité de votre compte, les paramètres, le guide d’utilisation et la déconnexion.</td>
 </tr>
 <tr>
 <td><strong>Titre de la page et fil d’Ariane</strong></td>
@@ -215,7 +219,7 @@
 </tr>
 </tbody></table>
 <h3 id="premiers-pas--le-menu">Le menu</h3>
-<p>Le menu est rangé par ce que vous faites : le <strong>Tableau de bord</strong> en tête, puis <strong>Espace de travail</strong> (tâches, agenda, documents), <strong>Commercial</strong>, <strong>Patrimoine immobilier</strong>, <strong>Gestion locative</strong>, <strong>Services</strong> (vérifications, chantiers), <strong>Pilotage et finances</strong>, <strong>Site public</strong> (replié), <strong>Administration</strong> (repliée) et <strong>Mon compte</strong> (notifications, sécurité, guide). Une <strong>pastille</strong> rouge sur une entrée indique ce qui vous attend : messages du site non lus, paiements à valider, relances à envoyer, résiliations, saisies financières à valider, tâches en retard. Sur une rubrique repliée, la pastille additionne ses entrées. Le choix de replier est retenu sur votre appareil. L’icône à gauche du titre de la page <strong>replie</strong> le menu pour gagner de la place. Dans la section <strong>Mon compte</strong>, <strong>Guide d’utilisation</strong> ouvre ce guide dans un nouvel onglet.</p>
+<p>Le menu est rangé par ce que vous faites : le <strong>Tableau de bord</strong> en tête, puis <strong>Mon travail</strong> (tâches, agenda, documents), <strong>Commercial</strong>, <strong>Biens</strong>, <strong>Location et services</strong> (gestion locative, vérifications, chantiers), <strong>Pilotage et finances</strong> et <strong>Administration</strong> (repliée : site web, utilisateurs et accès, réglages). Une <strong>pastille</strong> rouge sur une entrée indique ce qui vous attend : messages du site non lus, paiements à valider, relances à envoyer, résiliations, saisies financières à valider, tâches en retard. Sur une ligne qui compte plusieurs pages, la pastille additionne celles de ses onglets, et chaque onglet a la sienne. Le choix de replier <strong>Administration</strong> est retenu sur votre appareil. L’icône à gauche du titre de la page <strong>replie</strong> le menu pour gagner de la place. Vos notifications, la sécurité de votre compte et le <strong>Guide d’utilisation</strong> se trouvent dans le menu de <strong>votre nom</strong>, en haut à droite.</p>
 <h3 id="premiers-pas--retrouver-quelqu-un-ou-quelque-chose">Retrouver quelqu’un ou quelque chose</h3>
 <p>Tapez quelques lettres dans la barre de recherche : les prospects, biens et dossiers correspondants apparaissent, un clic ouvre la fiche. Vous ne trouvez que ce que votre rôle vous permet de voir.</p>
 <p><a href="img/22-recherche-rapide.png" target="_blank" rel="noopener"><img src="img/22-recherche-rapide.png" alt="Recherche rapide" loading="lazy"></a></p>
@@ -241,7 +245,7 @@
 <ul>
 <li><strong>Un mot de passe que vous seul connaissez</strong>, différent de vos autres comptes.</li>
 <li><strong>Déconnectez-vous</strong> sur un ordinateur partagé (votre nom en haut à droite).</li>
-<li>Changez votre mot de passe dans <strong>Mon compte › Sécurité</strong> si vous avez un doute.</li>
+<li>Changez votre mot de passe dans <strong>votre nom (en haut à droite) › Sécurité et mot de passe</strong> si vous avez un doute.</li>
 </ul>
 <h2 id="premiers-pas--les-themes-clair-et-sombre">Les thèmes clair et sombre</h2>
 <p>La <strong>lune</strong> en haut à droite bascule entre les deux. Le choix est retenu sur votre appareil. Le thème sombre repose les yeux en soirée ou en faible lumière.</p>
@@ -420,7 +424,7 @@
 </ul>
 <p>Cliquer sur une notification vous amène <strong>directement</strong> sur la fiche concernée.</p>
 <h3 id="notifications-documents--regler-ce-que-vous-recevez">Régler ce que vous recevez</h3>
-<p><strong>Mon compte › Mes notifications</strong> :</p>
+<p><strong>votre nom (en haut à droite) › Mes notifications</strong> :</p>
 <ul>
 <li><strong>Tout marquer comme lu</strong> vide la cloche ;</li>
 <li>vos <strong>préférences</strong> : recevoir ou non les alertes par <strong>e-mail</strong>, par <strong>SMS</strong>, par <strong>WhatsApp</strong> (avec votre numéro de téléphone) ;</li>
@@ -742,7 +746,7 @@
 </blockquote>
 <h3 id="commercial--documents-et-commission">Documents et commission</h3>
 <ul>
-<li>Les <strong>documents</strong> du dossier (contrat, reçus, pièces du client) s’ajoutent depuis le dossier, ou depuis <strong>Documents</strong> (rubrique <em>Espace de travail</em>).</li>
+<li>Les <strong>documents</strong> du dossier (contrat, reçus, pièces du client) s’ajoutent depuis le dossier, ou depuis <strong>Documents</strong> (rubrique <em>Mon travail</em>).</li>
 <li>Votre <strong>commission</strong> est estimée selon les règles de MTM, validée par un manager, puis payée <strong>une fois le dossier soldé</strong>. Son avancement est visible dans le dossier, sur votre tableau de bord et dans <strong>Commercial › Mes commissions</strong>.</li>
 </ul>
 <h3 id="commercial--mes-commissions">Mes commissions</h3>
@@ -880,7 +884,7 @@
 <ul>
 <li>Le filtre <strong>Commercial</strong> isole les prospects d’une personne.</li>
 <li>Le bloc <strong>Performance par commercial</strong> (à déplier) donne ventes conclues, taux de conversion et chiffre d’affaires.</li>
-<li><strong>Exporter</strong> produit un fichier de la liste (un motif est demandé et conservé dans le journal d’audit).</li>
+<li><strong>Exporter</strong> produit un fichier de la liste (un motif est demandé et conservé dans l’historique des actions).</li>
 </ul>
 <h3 id="responsable-commercial--affecter-un-prospect-a-un-commercial">Affecter un prospect à un commercial</h3>
 <p>Sur la fiche : la flèche <strong>⌄</strong> à droite de <strong>Modifier</strong> › <strong>Affecter un commercial</strong>. Utile quand un prospect arrive du site sans responsable, ou pour répartir la charge.</p>
@@ -916,7 +920,7 @@
 <p class="chapitre__resume">Enregistrer les propriétaires, signer et suivre les mandats, tenir les fiches de biens à jour.</p>
 </header>
 <nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#mandats-proprietaires--les-proprietaires">Les propriétaires</a></li><li><a href="#mandats-proprietaires--les-mandats">Les mandats</a></li><li><a href="#mandats-proprietaires--les-biens">Les biens</a></li><li><a href="#mandats-proprietaires--les-bonnes-habitudes">Les bonnes habitudes</a></li></ul></nav>
-<p>Ce chapitre couvre la rubrique <strong>Patrimoine immobilier</strong> : <strong>Biens à vendre</strong>, <strong>Mandats</strong>, <strong>Propriétaires</strong>. Le travail d’un commercial sur les biens est détaillé dans <em>Le travail du commercial</em> ; ici, le côté <strong>gestion du portefeuille</strong>.</p>
+<p>Ce chapitre couvre la rubrique <strong>Biens</strong> : <strong>Biens à vendre</strong>, <strong>Mandats</strong>, <strong>Propriétaires</strong>. Le travail d’un commercial sur les biens est détaillé dans <em>Le travail du commercial</em> ; ici, le côté <strong>gestion du portefeuille</strong>.</p>
 <h2 id="mandats-proprietaires--les-proprietaires">Les propriétaires</h2>
 <p><strong>Immobilier › Propriétaires</strong> : les personnes qui confient leurs terrains à MTM.</p>
 <p><a href="img/imm-03-proprietaires.png" target="_blank" rel="noopener"><img src="img/imm-03-proprietaires.png" alt="Liste des propriétaires" loading="lazy"></a></p>
@@ -970,7 +974,7 @@
 <li><strong>Aperçu</strong> : biens à créer, déjà présents, lignes refusées avec la raison. <strong>Rien n’est écrit à ce stade.</strong></li>
 <li><strong>Importer N biens</strong> pour confirmer. Les biens arrivent en <strong>Brouillon</strong> : relisez-les avant de les publier.</li>
 </ol>
-<p>Les colonnes se reconnaissent à leur titre (matricule, localité, titre juridique, prix, propriétaire, téléphone, surface…) ; seules <strong>LOCALITE</strong> et <strong>TITRE JURIDIQUE</strong> sont indispensables. L’import ne touche jamais à un bien déjà présent et chaque import est consigné dans le journal d’audit.</p>
+<p>Les colonnes se reconnaissent à leur titre (matricule, localité, titre juridique, prix, propriétaire, téléphone, surface…) ; seules <strong>LOCALITE</strong> et <strong>TITRE JURIDIQUE</strong> sont indispensables. L’import ne touche jamais à un bien déjà présent et chaque import est consigné dans l’historique des actions.</p>
 <h2 id="mandats-proprietaires--les-bonnes-habitudes">Les bonnes habitudes</h2>
 <ul>
 <li><strong>Un propriétaire, un mandat, un bien</strong> : créez dans cet ordre.</li>
@@ -988,7 +992,7 @@
 <p class="chapitre__resume">Biens loués, baux, loyers et quittances, impayés, locations à la nuit, résiliations.</p>
 </header>
 <nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#gestion-locative--les-biens-locatifs">Les biens locatifs</a></li><li><a href="#gestion-locative--les-locataires">Les locataires</a></li><li><a href="#gestion-locative--creer-un-bail">Créer un bail</a></li><li><a href="#gestion-locative--encaisser-un-loyer">Encaisser un loyer</a></li><li><a href="#gestion-locative--les-relances-d-impayes">Les relances d’impayés</a></li><li><a href="#gestion-locative--les-locations-a-la-nuit-type-airbnb">Les locations à la nuit (type Airbnb)</a></li><li><a href="#gestion-locative--les-demandes-de-resiliation">Les demandes de résiliation</a></li><li><a href="#gestion-locative--le-releve-de-gestion">Le relevé de gestion</a></li><li><a href="#gestion-locative--une-routine">Une routine</a></li></ul></nav>
-<p>La <strong>gestion locative</strong> suit les biens que les propriétaires confient à MTM pour la location : <strong>baux, loyers, cautions, impayés, séjours à la nuit, résiliations</strong>. <strong>La location est portée par les commerciaux</strong> : chacun crée et suit <strong>ses propres biens</strong> (fiche, bail, séjours, locataires, loyers) et ne voit que ceux-là ; le responsable de la gestion locative, le manager et la direction voient tout le portefeuille. La <strong>publication sur le site</strong>, la <strong>validation</strong> (résiliations, versements) et les <strong>sorties d’argent</strong> (restitution de caution) restent à la gestion locative. La rubrique <strong>Gestion locative</strong> regroupe : <em>Biens en gestion</em>, <em>Locataires</em>, <em>Séjours à la nuit</em>, <em>Résiliations</em>, <em>Relances d’impayés</em>.</p>
+<p>La <strong>gestion locative</strong> suit les biens que les propriétaires confient à MTM pour la location : <strong>baux, loyers, cautions, impayés, séjours à la nuit, résiliations</strong>. <strong>La location est portée par les commerciaux</strong> : chacun crée et suit <strong>ses propres biens</strong> (fiche, bail, séjours, locataires, loyers) et ne voit que ceux-là ; le responsable de la gestion locative, le manager et la direction voient tout le portefeuille. La <strong>publication sur le site</strong>, la <strong>validation</strong> (résiliations, versements) et les <strong>sorties d’argent</strong> (restitution de caution) restent à la gestion locative. La ligne <strong>Gestion locative</strong> du menu (rubrique <em>Location et services</em>) ouvre un écran à <strong>onglets</strong> : <em>Biens en gestion</em>, <em>Locataires</em>, <em>Séjours à la nuit</em>, <em>Résiliations</em>, <em>Relances d’impayés</em>.</p>
 <h2 id="gestion-locative--les-biens-locatifs">Les biens locatifs</h2>
 <p><a href="img/loc-01-biens.png" target="_blank" rel="noopener"><img src="img/loc-01-biens.png" alt="Liste des biens locatifs" loading="lazy"></a></p>
 <ul>
@@ -1307,7 +1311,7 @@
 </header>
 <nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#comptabilite--deux-notions-a-ne-pas-confondre">Deux notions à ne pas confondre</a></li><li><a href="#comptabilite--le-tableau-de-bord-financier">Le tableau de bord financier</a></li><li><a href="#comptabilite--ce-qui-est-repris-automatiquement">Ce qui est repris automatiquement</a></li><li><a href="#comptabilite--le-journal">Le journal</a></li><li><a href="#comptabilite--les-saisies">Les saisies</a></li><li><a href="#comptabilite--la-cloture-mensuelle">La clôture mensuelle</a></li><li><a href="#comptabilite--exporter-pour-la-comptabilite">Exporter pour la comptabilité</a></li><li><a href="#comptabilite--la-tresorerie-caisse-banques-wave-et-orange-money">La trésorerie : caisse, banques, Wave et Orange Money</a></li><li><a href="#comptabilite--le-rapprochement-bancaire">Le rapprochement bancaire</a></li><li><a href="#comptabilite--les-terrains-confies-et-les-reversements-aux-proprietaires">Les terrains confiés et les reversements aux propriétaires</a></li><li><a href="#comptabilite--les-desistements-et-les-remboursements">Les désistements et les remboursements</a></li><li><a href="#comptabilite--la-rentabilite-des-chantiers">La rentabilité des chantiers</a></li><li><a href="#comptabilite--les-etats-financiers">Les états financiers</a></li><li><a href="#comptabilite--le-rapport-du-soir">Le rapport du soir</a></li><li><a href="#comptabilite--le-tableau-de-bord-de-la-direction">Le tableau de bord de la Direction</a></li><li><a href="#comptabilite--valider-cote-comptabilite">Valider côté comptabilité</a></li><li><a href="#comptabilite--reglages-page-parametres">Réglages (page Paramètres)</a></li><li><a href="#comptabilite--limites-a-connaitre">Limites à connaître</a></li></ul></nav>
 <p>Le module <strong>Finances</strong> pilote l’argent de MTM : <strong>ce qui est encaissé, ce que MTM gagne réellement, ce qu’elle dépense, ce qu’il lui reste à encaisser</strong>, et prépare les <strong>exports pour la comptabilité externe</strong>. Ce n’est <strong>pas</strong> un logiciel de comptabilité : pas de plan comptable, de bilan ni de TVA.</p>
-<p>La rubrique <strong>Pilotage et finances</strong> contient : <em>Finances</em> (tableau de bord), <em>Journal financier</em>, <em>Saisies financières</em>, <em>Trésorerie et caisse</em>, <em>Rapprochement bancaire</em>, <em>Propriétaires et reversements</em>, <em>Désistements</em>, <em>Rentabilité des chantiers</em>, <em>États financiers</em>, <em>Rapport du soir</em> et <em>Clôtures mensuelles</em>.</p>
+<p>La rubrique <strong>Pilotage et finances</strong> contient deux lignes, chacune avec ses <strong>onglets</strong> : <strong>Finances</strong> (l’argent du quotidien : <em>Tableau de bord financier</em>, <em>Saisies financières</em>, <em>Trésorerie et caisse</em>, <em>Reversements aux propriétaires</em>, <em>Désistements et remboursements</em>, <em>Rapport du soir</em>) et <strong>Comptabilité</strong> (le travail du comptable : <em>Journal financier</em>, <em>Rapprochement bancaire</em>, <em>États financiers</em>, <em>Rentabilité des chantiers</em>, <em>Clôtures mensuelles</em>).</p>
 <h2 id="comptabilite--deux-notions-a-ne-pas-confondre">Deux notions à ne pas confondre</h2>
 <ul>
 <li><strong>Encaissements</strong> : l’argent reçu. Il comprend les loyers (qui reviennent aux propriétaires) et le prix des biens vendus.</li>
@@ -1417,7 +1421,7 @@
 </tbody></table>
 <p>La Direction (ou un <strong>délégué</strong> auquel elle a donné un plafond) clique sur <strong>Autoriser</strong> ; la comptable peut alors valider. On n’autorise jamais sa propre saisie. Si le montant d’une saisie change, l’autorisation donnée est annulée. Quand la Direction est en déplacement, elle peut <strong>autoriser à distance</strong> : cochez la case, le <strong>motif est obligatoire</strong> et la trace est visible au tableau de bord.</p>
 <h3 id="comptabilite--corriger-une-erreur-jamais-d-effacement">Corriger une erreur : jamais d’effacement</h3>
-<p>Une saisie <strong>validée ne se modifie plus et ne se supprime jamais</strong>. Pour la corriger, cliquez sur <strong>Corriger</strong> : vous créez une <strong>écriture liée</strong> — une <em>annulation</em> (l’écriture inverse) ou un <em>ajustement</em> (un montant précis) — avec un <strong>motif obligatoire</strong>. L’écriture d’origine reste consultable, la correction la référence, et la Direction doit l’autoriser. Toute <strong>tentative de suppression</strong> d’une écriture validée est refusée <strong>et inscrite</strong> au journal d’audit.</p>
+<p>Une saisie <strong>validée ne se modifie plus et ne se supprime jamais</strong>. Pour la corriger, cliquez sur <strong>Corriger</strong> : vous créez une <strong>écriture liée</strong> — une <em>annulation</em> (l’écriture inverse) ou un <em>ajustement</em> (un montant précis) — avec un <strong>motif obligatoire</strong>. L’écriture d’origine reste consultable, la correction la référence, et la Direction doit l’autoriser. Toute <strong>tentative de suppression</strong> d’une écriture validée est refusée <strong>et inscrite</strong> à l’historique des actions.</p>
 <h2 id="comptabilite--la-cloture-mensuelle">La clôture mensuelle</h2>
 <p><strong>Finances › Clôtures</strong> : un mois passé se <strong>clôture</strong> (réservé à ceux qui peuvent <em>administrer</em> les finances).</p>
 <p><a href="img/compta-04-clotures.png" target="_blank" rel="noopener"><img src="img/compta-04-clotures.png" alt="Clôtures mensuelles" loading="lazy"></a></p>
@@ -1425,7 +1429,7 @@
 <li>Un mois clôturé <strong>garde ses chiffres</strong> : ses totaux sont <strong>figés</strong> et <strong>plus aucun mouvement daté de ce mois</strong> ne peut être ajouté, validé ou annulé — paiement de vente, loyer, règlement de mission ou de séjour, dépense de chantier, saisie.</li>
 <li><strong>Clôturer exige qu’aucune saisie du mois n’attende sa validation.</strong></li>
 <li>Une <strong>correction</strong> se fait alors <strong>à la date du jour</strong>.</li>
-<li><strong>Rouvrir</strong> un mois demande un <strong>motif</strong>, consigné dans le journal d’audit.</li>
+<li><strong>Rouvrir</strong> un mois demande un <strong>motif</strong>, consigné dans l’historique des actions.</li>
 </ul>
 <p>La liste montre les <strong>six derniers mois</strong> et les mois déjà clôturés ; <strong>« Afficher les mois plus anciens »</strong> déroule le reste.</p>
 <p>Ordre conseillé en fin de mois : <strong>1.</strong> valider toutes les saisies et paiements ; <strong>2.</strong> <strong>exporter</strong> le journal ; <strong>3.</strong> <strong>clôturer</strong>.</p>
@@ -1435,7 +1439,7 @@
 <ul>
 <li><strong>CSV</strong> : le journal, UTF-8, séparateur « ; », virgule décimale — s’ouvre directement dans Excel en français.</li>
 <li><strong>Excel</strong> : journal, synthèse par activité, par mois et sommes dues. Les cellules qui commencent par <code>=</code>, <code>+</code>, <code>-</code> ou <code>@</code> sont <strong>neutralisées</strong> (aucune formule exécutée à l’ouverture).</li>
-<li>Un <strong>motif est obligatoire</strong> : il est consigné dans le journal d’audit avec la période et le nombre de mouvements.</li>
+<li>Un <strong>motif est obligatoire</strong> : il est consigné dans l’historique des actions avec la période et le nombre de mouvements.</li>
 </ul>
 <h2 id="comptabilite--la-tresorerie-caisse-banques-wave-et-orange-money">La trésorerie : caisse, banques, Wave et Orange Money</h2>
 <p><strong>Finances › Trésorerie.</strong> Chaque compte — la <strong>caisse</strong>, le <strong>compte bancaire</strong>, <strong>Wave</strong>, <strong>Orange Money</strong> — est suivi <strong>séparément</strong>, avec une vue <strong>consolidée</strong>. Un mouvement se range dans le compte qui sert son <strong>mode de paiement</strong> (espèces, virement, Wave, Orange Money…).</p>
@@ -1457,7 +1461,7 @@
 </ol>
 <p>À droite, les <strong>mouvements du logiciel que le relevé ne confirme pas</strong> : à vérifier (paiement non reçu, erreur de saisie, mauvais compte). Les lignes non rapprochées remontent au tableau de bord.</p>
 <h2 id="comptabilite--les-terrains-confies-et-les-reversements-aux-proprietaires">Les terrains confiés et les reversements aux propriétaires</h2>
-<p><strong>Finances › Propriétaires et reversements.</strong> Pour un terrain confié (fiche du bien : un <strong>propriétaire</strong> et la <strong>commission de MTM</strong>), MTM <strong>encaisse d’abord, déduit sa commission, puis reverse le reste</strong>. Exemple du cahier des charges : vendu 3 500 000 FCFA, commission de MTM 500 000, <strong>dû au propriétaire 3 000 000</strong>.</p>
+<p><strong>Finances › Reversements aux propriétaires.</strong> Pour un terrain confié (fiche du bien : un <strong>propriétaire</strong> et la <strong>commission de MTM</strong>), MTM <strong>encaisse d’abord, déduit sa commission, puis reverse le reste</strong>. Exemple du cahier des charges : vendu 3 500 000 FCFA, commission de MTM 500 000, <strong>dû au propriétaire 3 000 000</strong>.</p>
 <p>L’écran montre, pour chaque vente : l’<strong>encaissé</strong>, la <strong>commission acquise</strong> par MTM (au prorata de ce que le client a payé), le <strong>dû</strong>, le <strong>déjà reversé</strong> et le <strong>solde restant</strong>. Le <strong>mode de reversement</strong> est une clause du mandat : <em>au fur et à mesure</em> des paiements du client, <em>à la fin du paiement</em>, ou selon un échéancier.</p>
 <p>Le circuit d’un reversement :</p>
 <ol>
@@ -1481,7 +1485,7 @@
 <h2 id="comptabilite--le-rapport-du-soir">Le rapport du soir</h2>
 <p><strong>Finances › Rapport du soir.</strong> Chaque soir, la comptable <strong>prépare</strong> le rapport du jour (caisse, encaissements par moyen de paiement, dépenses et autorisations, ventes, reversements, chantiers, créances, justificatifs manquants, opérations en attente, anomalies), une autre personne le <strong>vérifie</strong>, puis il est <strong>transmis</strong> à la Direction, en <strong>PDF</strong>. Même <strong>sans opération</strong>, le rapport est produit : il le dit et indique l’état de la clôture de caisse. Une fois <strong>transmis</strong>, il est figé.</p>
 <h2 id="comptabilite--le-tableau-de-bord-de-la-direction">Le tableau de bord de la Direction</h2>
-<p>Le tableau de bord financier affiche, en plus des chiffres de la période (filtrables par <strong>activité</strong> et <strong>moyen de paiement</strong>) : les <strong>soldes</strong> de chaque compte, les <strong>créances clients</strong>, les <strong>sommes à reverser aux propriétaires</strong>, les <strong>reversements en attente d’autorisation</strong>, les <strong>résultats des chantiers</strong>, et les <strong>points d’attention</strong> — dépenses à autoriser ou sans justificatif, écarts de caisse sans décision, jours de caisse non clôturés, lignes de relevé non rapprochées, remboursements hors délai, <strong>anomalies du journal d’audit</strong>.</p>
+<p>Le tableau de bord financier affiche, en plus des chiffres de la période (filtrables par <strong>activité</strong> et <strong>moyen de paiement</strong>) : les <strong>soldes</strong> de chaque compte, les <strong>créances clients</strong>, les <strong>sommes à reverser aux propriétaires</strong>, les <strong>reversements en attente d’autorisation</strong>, les <strong>résultats des chantiers</strong>, et les <strong>points d’attention</strong> — dépenses à autoriser ou sans justificatif, écarts de caisse sans décision, jours de caisse non clôturés, lignes de relevé non rapprochées, remboursements hors délai, <strong>anomalies de l’historique des actions</strong>.</p>
 <h2 id="comptabilite--valider-cote-comptabilite">Valider côté comptabilité</h2>
 <p>La comptabilité a aussi la main sur les encaissements des autres modules :</p>
 <ul>
@@ -1560,7 +1564,7 @@
 <h1>La direction : chiffres et rapports</h1>
 <p class="chapitre__resume">Le tableau de bord de direction, les sept rapports PDF et Excel, l’envoi automatique par e-mail.</p>
 </header>
-<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#direction--le-tableau-de-bord-de-direction">Le tableau de bord de direction</a></li><li><a href="#direction--les-rapports">Les rapports</a></li><li><a href="#direction--le-journal-d-audit">Le journal d’audit</a></li><li><a href="#direction--les-chiffres-financiers">Les chiffres financiers</a></li><li><a href="#direction--une-routine-de-pilotage">Une routine de pilotage</a></li></ul></nav>
+<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#direction--le-tableau-de-bord-de-direction">Le tableau de bord de direction</a></li><li><a href="#direction--les-rapports">Les rapports</a></li><li><a href="#direction--l-historique-des-actions">L’historique des actions</a></li><li><a href="#direction--les-chiffres-financiers">Les chiffres financiers</a></li><li><a href="#direction--une-routine-de-pilotage">Une routine de pilotage</a></li></ul></nav>
 <p>Ce chapitre s’adresse à la <strong>direction</strong> et à celles et ceux qui consultent les chiffres de l’entreprise : responsables, comptabilité. Pour la partie commerciale, voir <em>Piloter l’équipe commerciale</em> ; pour l’argent, <em>Comptabilité et finances</em>.</p>
 <h2 id="direction--le-tableau-de-bord-de-direction">Le tableau de bord de direction</h2>
 <p>À la connexion, la direction arrive sur l’onglet <strong>Direction</strong>. Les onglets <strong>Équipe</strong>, <strong>Mon activité</strong> et <strong>Vue générale</strong> restent accessibles.</p>
@@ -1661,7 +1665,7 @@
 <ul>
 <li><strong>Document PDF</strong> : mis en page avec le <strong>logo et les mentions légales de MTM</strong>, prêt à imprimer ; tableaux paginés avec leur ligne de titres, numéro de page.</li>
 <li><strong>Classeur Excel</strong> : un onglet de synthèse puis <strong>un onglet par tableau</strong>, avec de vrais nombres, dates et pourcentages pour trier et totaliser.</li>
-<li><strong>Motif de l’export obligatoire</strong> : il est consigné dans le <strong>journal d’audit</strong> avec le rapport, la période et le format.</li>
+<li><strong>Motif de l’export obligatoire</strong> : il est consigné dans l’<strong>historique des actions</strong> avec le rapport, la période et le format.</li>
 </ul>
 <h3 id="direction--l-envoi-automatique-par-e-mail">L’envoi automatique par e-mail</h3>
 <p>MTM peut recevoir des rapports <strong>sans les ouvrir</strong> : chaque matin à 7 h (heure de Dakar), si le jour correspond, les rapports choisis partent en <strong>pièces jointes</strong> (PDF et/ou Excel) vers les destinataires, pour la <strong>dernière période complète</strong> :</p>
@@ -1669,10 +1673,10 @@
 <li><strong>hebdomadaire</strong> : la semaine écoulée (lundi → dimanche), envoyée <strong>chaque lundi</strong> ;</li>
 <li><strong>mensuelle</strong> : le mois précédent, envoyé <strong>le 1er du mois</strong>.</li>
 </ul>
-<p>Un envoi n’a lieu <strong>qu’une fois par période</strong>. Il est <strong>désactivé par défaut</strong>. La direction et les administrateurs le règlent dans <strong>Administration › Pilotage et rapports</strong> : un formulaire (activer, fréquence, rapports, formats, destinataires), un bouton <strong>« M’envoyer un essai »</strong> qui envoie un exemplaire à votre seule adresse, l’état de la messagerie du serveur et la liste des <strong>derniers envois</strong>.</p>
-<h2 id="direction--le-journal-d-audit">Le journal d’audit</h2>
-<p>Pour savoir <strong>qui a fait quoi, quand</strong> (création, modification, export, validation, connexion…), la direction consulte <strong>Administration › Journal d’audit</strong>.</p>
-<p><a href="img/dir-05-audit.png" target="_blank" rel="noopener"><img src="img/dir-05-audit.png" alt="Journal d’audit" loading="lazy"></a></p>
+<p>Un envoi n’a lieu <strong>qu’une fois par période</strong>. Il est <strong>désactivé par défaut</strong>. La direction et les administrateurs le règlent dans <strong>Administration › Alertes et rapports automatiques</strong> : un formulaire (activer, fréquence, rapports, formats, destinataires), un bouton <strong>« M’envoyer un essai »</strong> qui envoie un exemplaire à votre seule adresse, l’état de la messagerie du serveur et la liste des <strong>derniers envois</strong>.</p>
+<h2 id="direction--l-historique-des-actions">L’historique des actions</h2>
+<p>Pour savoir <strong>qui a fait quoi, quand</strong> (création, modification, export, validation, connexion…), la direction consulte <strong>Administration › Historique des actions</strong>.</p>
+<p><a href="img/dir-05-audit.png" target="_blank" rel="noopener"><img src="img/dir-05-audit.png" alt="Historique des actions" loading="lazy"></a></p>
 <ul>
 <li>Filtres : recherche, période, module, élément.</li>
 <li>Chaque ligne s’ouvre pour montrer l’<strong>avant / après</strong>, le <strong>motif</strong> éventuel et l’adresse de connexion.</li>
@@ -1698,10 +1702,10 @@
 <p class="chapitre__resume">Répondre aux messages du site, gérer les textes, réalisations, publicités et l’équipe affichés sur le site.</p>
 </header>
 <nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#site-web--les-demandes-web">Les demandes web</a></li><li><a href="#site-web--les-contenus-du-site">Les contenus du site</a></li><li><a href="#site-web--les-realisations-et-projets">Les réalisations et projets</a></li><li><a href="#site-web--les-publicites-du-bandeau">Les publicités du bandeau</a></li><li><a href="#site-web--l-equipe">L’équipe</a></li><li><a href="#site-web--qui-peut-quoi">Qui peut quoi</a></li></ul></nav>
-<p>La rubrique <strong>Site public</strong> (repliée par défaut) et, côté ventes, <strong>Demandes du site</strong> gèrent ce qui concerne le <strong>site public de MTM</strong> : les <strong>demandes</strong> que les visiteurs envoient, et les <strong>contenus</strong> qu’ils lisent.</p>
+<p>La ligne <strong>Site web</strong> (rubrique <strong>Administration</strong>, repliée par défaut, avec des <strong>onglets</strong> pour chaque contenu) et, côté ventes, <strong>Demandes du site</strong> gèrent ce qui concerne le <strong>site public de MTM</strong> : les <strong>demandes</strong> que les visiteurs envoient, et les <strong>contenus</strong> qu’ils lisent.</p>
 <h2 id="site-web--les-demandes-web">Les demandes web</h2>
 <p><strong>Commercial › Demandes du site</strong> : les messages envoyés depuis le <strong>formulaire de contact</strong> du site (et depuis les fiches de biens et les annonces de location).</p>
-<p><a href="img/web-01-demandes.png" target="_blank" rel="noopener"><img src="img/web-01-demandes.png" alt="Demandes web" loading="lazy"></a></p>
+<p><a href="img/web-01-demandes.png" target="_blank" rel="noopener"><img src="img/web-01-demandes.png" alt="Demandes du site" loading="lazy"></a></p>
 <ul>
 <li>Chaque demande indique le <strong>nom</strong>, l’<strong>e-mail</strong>, le <strong>téléphone</strong>, le <strong>sujet</strong>, le <strong>message</strong> et, s’il y en a un, le <strong>bien</strong> concerné.</li>
 <li>Une demande <strong>non lue</strong> est signalée ; <strong>Tout afficher</strong> efface les filtres.</li>
@@ -1731,7 +1735,7 @@
 <blockquote><p><strong>Bon réflexe</strong> — Répondez dans la <strong>journée</strong> et <strong>créez le prospect</strong> pour qu’aucun contact ne reste sans suite : c’est la source de beaucoup de ventes. Une demande sur une annonce de location ou un séjour est traitée par la <strong>gestion locative</strong>.</p>
 </blockquote>
 <h2 id="site-web--les-contenus-du-site">Les contenus du site</h2>
-<p><strong>Site public › Contenus du site</strong> : les <strong>textes</strong> affichés sur le site public, <strong>page par page</strong>.</p>
+<p><strong>Site web › Contenus du site</strong> : les <strong>textes</strong> affichés sur le site public, <strong>page par page</strong>.</p>
 <p><a href="img/web-02-contenus.png" target="_blank" rel="noopener"><img src="img/web-02-contenus.png" alt="Contenus du site" loading="lazy"></a></p>
 <ul>
 <li>Un emplacement <strong>vide</strong> affiche le <strong>texte par défaut</strong> du site ; ce que vous saisissez le remplace <strong>dès la publication</strong>.</li>
@@ -1746,14 +1750,14 @@
 <li><strong>Publier</strong>.</li>
 </ol>
 <h2 id="site-web--les-realisations-et-projets">Les réalisations et projets</h2>
-<p><strong>Site public › Réalisations &amp; projets</strong> : le <strong>portfolio illustré</strong> du site. Chaque carte montre une <strong>photo</strong>, un <strong>titre</strong>, un <strong>lieu</strong> et une <strong>courte description</strong> ; elle n’apparaît sur le site <strong>qu’une fois publiée</strong>.</p>
+<p><strong>Site web › Réalisations &amp; projets</strong> : le <strong>portfolio illustré</strong> du site. Chaque carte montre une <strong>photo</strong>, un <strong>titre</strong>, un <strong>lieu</strong> et une <strong>courte description</strong> ; elle n’apparaît sur le site <strong>qu’une fois publiée</strong>.</p>
 <p><a href="img/web-03-realisations.png" target="_blank" rel="noopener"><img src="img/web-03-realisations.png" alt="Réalisations et projets" loading="lazy"></a></p>
 <ul>
 <li><strong>Ajouter</strong> une réalisation (dans la catégorie voulue) : photo, titre, lieu, description.</li>
 <li><strong>Modifier</strong>, <strong>masquer</strong> ou <strong>retirer</strong> une carte à tout moment.</li>
 </ul>
 <h2 id="site-web--les-publicites-du-bandeau">Les publicités du bandeau</h2>
-<p><strong>Site public › Publicités du bandeau</strong> : affiches, vidéos de publicité et promotions de MTM.</p>
+<p><strong>Site web › Publicités du bandeau</strong> : affiches, vidéos de publicité et promotions de MTM.</p>
 <p><a href="img/web-04-promotions.png" target="_blank" rel="noopener"><img src="img/web-04-promotions.png" alt="Publicités du bandeau" loading="lazy"></a></p>
 <ul>
 <li>Tant qu’<strong>au moins une</strong> publicité est en ligne, elle prend la <strong>place de la vidéo</strong> du bandeau d’accueil du site ; <strong>s’il n’y en a plus, la vidéo habituelle revient d’elle-même</strong>.</li>
@@ -1762,7 +1766,7 @@
 <blockquote class="attention"><p><strong>Attention</strong> — Une publicité à période dépassée sort toute seule du site. Pensez à la renouveler avant la fin d’une promotion.</p>
 </blockquote>
 <h2 id="site-web--l-equipe">L’équipe</h2>
-<p><strong>Site public › Équipe</strong> : la section <strong>« Notre équipe »</strong> de la page <em>À propos</em> : le <strong>mot du directeur</strong>, une <strong>photo de groupe</strong> et un <strong>portrait par collaborateur</strong>. Chaque contenu n’apparaît qu’<strong>une fois publié</strong>.</p>
+<p><strong>Site web › Équipe du site</strong> : la section <strong>« Notre équipe »</strong> de la page <em>À propos</em> : le <strong>mot du directeur</strong>, une <strong>photo de groupe</strong> et un <strong>portrait par collaborateur</strong>. Chaque contenu n’apparaît qu’<strong>une fois publié</strong>.</p>
 <p><a href="img/web-05-equipe.png" target="_blank" rel="noopener"><img src="img/web-05-equipe.png" alt="Équipe" loading="lazy"></a></p>
 <h2 id="site-web--qui-peut-quoi">Qui peut quoi</h2>
 <p>La <strong>consultation</strong> des contenus est ouverte aux rôles qui ont la permission « contenu : consulter » ; <strong>créer, modifier, publier et supprimer</strong> sont réservés à la direction, aux managers (et aux administrateurs). Un commercial voit les <strong>demandes web</strong> et peut les traiter (consulter, modifier), mais pas les contenus du site.</p>
@@ -1773,14 +1777,14 @@
 <header class="chapitre__entete">
 <p class="chapitre__ligne">Par métier</p>
 <h1>Administration du back-office</h1>
-<p class="chapitre__resume">Comptes, rôles, paramètres, parcours des dossiers, identité de l’entreprise, notifications, journal d’audit.</p>
+<p class="chapitre__resume">Comptes, rôles, paramètres, étapes des dossiers, identité de l’entreprise, notifications, historique des actions.</p>
 </header>
-<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#administration--les-utilisateurs">Les utilisateurs</a></li><li><a href="#administration--les-roles-et-permissions">Les rôles et permissions</a></li><li><a href="#administration--les-parametres">Les paramètres</a></li><li><a href="#administration--pilotage-et-rapports">Pilotage et rapports</a></li><li><a href="#administration--les-parcours-des-dossiers">Les parcours des dossiers</a></li><li><a href="#administration--l-identite-de-l-entreprise">L’identité de l’entreprise</a></li><li><a href="#administration--les-regles-de-notification">Les règles de notification</a></li><li><a href="#administration--le-journal-d-audit">Le journal d’audit</a></li><li><a href="#administration--l-import-de-biens">L’import de biens</a></li><li><a href="#administration--les-bonnes-pratiques-d-administration">Les bonnes pratiques d’administration</a></li></ul></nav>
-<p>Ce chapitre s’adresse aux <strong>administrateurs</strong> (et à la <strong>direction</strong> pour certains écrans). La rubrique <strong>Administration</strong> (repliée par défaut) contient : <em>Utilisateurs</em>, <em>Rôles &amp; permissions</em>, <em>Pilotage et rapports</em>, <em>Parcours des dossiers</em>, <em>Identité de l’entreprise</em>, <em>Règles de notification</em>, <em>Paramètres</em>, <em>Journal d’audit</em>.</p>
-<blockquote class="attention"><p><strong>Important</strong> — Un compte <strong>administrateur</strong> doit avoir la <strong>double authentification</strong> activée. Toutes vos actions sont <strong>tracées</strong> dans le journal d’audit : agissez avec soin.</p>
+<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#administration--les-utilisateurs">Les utilisateurs</a></li><li><a href="#administration--les-roles-et-permissions">Les rôles et permissions</a></li><li><a href="#administration--les-parametres">Les paramètres</a></li><li><a href="#administration--alertes-et-rapports-automatiques">Alertes et rapports automatiques</a></li><li><a href="#administration--les-etapes-des-dossiers">Les étapes des dossiers</a></li><li><a href="#administration--l-identite-de-l-entreprise">L’identité de l’entreprise</a></li><li><a href="#administration--les-regles-de-notification">Les règles de notification</a></li><li><a href="#administration--l-historique-des-actions">L’historique des actions</a></li><li><a href="#administration--l-import-de-biens">L’import de biens</a></li><li><a href="#administration--les-bonnes-pratiques-d-administration">Les bonnes pratiques d’administration</a></li></ul></nav>
+<p>Ce chapitre s’adresse aux <strong>administrateurs</strong> (et à la <strong>direction</strong> pour certains écrans). La rubrique <strong>Administration</strong> (repliée par défaut) contient trois lignes, chacune avec ses <strong>onglets</strong> : <strong>Utilisateurs et accès</strong> (<em>Utilisateurs</em>, <em>Rôles et droits d’accès</em>, <em>Historique des actions</em>), <strong>Réglages</strong> (<em>Paramètres</em>, <em>Identité de l’entreprise</em>, <em>Étapes des dossiers</em>, <em>Règles de notification</em>, <em>Alertes et rapports automatiques</em>) et <strong>Site web</strong> (les contenus du site public).</p>
+<blockquote class="attention"><p><strong>Important</strong> — Un compte <strong>administrateur</strong> doit avoir la <strong>double authentification</strong> activée. Toutes vos actions sont <strong>tracées</strong> dans l’historique des actions : agissez avec soin.</p>
 </blockquote>
 <h2 id="administration--les-utilisateurs">Les utilisateurs</h2>
-<p><strong>Administration › Accès › Utilisateurs</strong> : les comptes qui accèdent au back-office. Chaque personne a un <strong>rôle</strong> qui définit ce qu’elle peut voir et faire.</p>
+<p><strong>Administration › Utilisateurs et accès › Utilisateurs</strong> : les comptes qui accèdent au back-office. Chaque personne a un <strong>rôle</strong> qui définit ce qu’elle peut voir et faire.</p>
 <p><a href="img/adm-01-utilisateurs.png" target="_blank" rel="noopener"><img src="img/adm-01-utilisateurs.png" alt="Utilisateurs" loading="lazy"></a></p>
 <ul>
 <li>Les <strong>tuiles</strong> : comptes <strong>actifs</strong>, comptes <strong>à surveiller</strong> (2FA à activer ou mot de passe provisoire non changé), comptes <strong>désactivés</strong>.</li>
@@ -1806,7 +1810,7 @@
 <li>Vous ne pouvez pas <strong>désactiver ni supprimer votre propre compte</strong>.</li>
 </ul>
 <h2 id="administration--les-roles-et-permissions">Les rôles et permissions</h2>
-<p><strong>Administration › Accès › Rôles &amp; permissions</strong> : un rôle est un <strong>ensemble de droits</strong> « module : action » (consulter, créer, modifier, valider, publier, payer, exporter, administrer…). <strong>Modifier un rôle change les droits de tous ses utilisateurs.</strong></p>
+<p><strong>Administration › Utilisateurs et accès › Rôles et droits d’accès</strong> : un rôle est un <strong>ensemble de droits</strong> « module : action » (consulter, créer, modifier, valider, publier, payer, exporter, administrer…). <strong>Modifier un rôle change les droits de tous ses utilisateurs.</strong></p>
 <p><a href="img/adm-02-roles.png" target="_blank" rel="noopener"><img src="img/adm-02-roles.png" alt="Rôles et permissions" loading="lazy"></a></p>
 <ul>
 <li>Chaque carte résume les droits du rôle par module, le nombre d’utilisateurs et de permissions.</li>
@@ -1834,11 +1838,11 @@
 </thead>
 <tbody><tr>
 <td><code>pilotage.seuilsBlocage</code></td>
-<td>Jours sans mouvement au-delà desquels un dossier est dit <strong>bloqué</strong> — se règle dans <strong>Pilotage et rapports</strong></td>
+<td>Jours sans mouvement au-delà desquels un dossier est dit <strong>bloqué</strong> — se règle dans <strong>Alertes et rapports automatiques</strong></td>
 </tr>
 <tr>
 <td><code>pilotage.envoiAutomatique</code></td>
-<td><strong>Envoi automatique de rapports par e-mail</strong> — se règle dans <strong>Pilotage et rapports</strong></td>
+<td><strong>Envoi automatique de rapports par e-mail</strong> — se règle dans <strong>Alertes et rapports automatiques</strong></td>
 </tr>
 <tr>
 <td><code>finances.tauxGestionDefaut</code></td>
@@ -1865,13 +1869,13 @@
 <td><strong>Préavis</strong> de résiliation (30 jours par défaut)</td>
 </tr>
 </tbody></table>
-<blockquote><p>Un paramètre qui a une <strong>page dédiée</strong> (Identité de l’entreprise, Parcours des dossiers) ne se modifie <strong>plus</strong> dans cette page : elle le refuse pour éviter les contradictions.</p>
+<blockquote><p>Un paramètre qui a une <strong>page dédiée</strong> (Identité de l’entreprise, Étapes des dossiers) ne se modifie <strong>plus</strong> dans cette page : elle le refuse pour éviter les contradictions.</p>
 </blockquote>
-<h2 id="administration--pilotage-et-rapports">Pilotage et rapports</h2>
-<p><strong>Administration › Pilotage et rapports</strong> (direction et administrateurs) regroupe deux réglages qui se saisissaient auparavant en JSON dans Paramètres.</p>
-<p><a href="img/adm-11-pilotage-reglages.png" target="_blank" rel="noopener"><img src="img/adm-11-pilotage-reglages.png" alt="Pilotage et rapports" loading="lazy"></a></p>
+<h2 id="administration--alertes-et-rapports-automatiques">Alertes et rapports automatiques</h2>
+<p><strong>Administration › Alertes et rapports automatiques</strong> (direction et administrateurs) regroupe deux réglages qui se saisissaient auparavant en JSON dans Paramètres.</p>
+<p><a href="img/adm-11-pilotage-reglages.png" target="_blank" rel="noopener"><img src="img/adm-11-pilotage-reglages.png" alt="Alertes et rapports automatiques" loading="lazy"></a></p>
 <h3 id="administration--dossiers-bloques">Dossiers bloqués</h3>
-<p>Cinq champs, un par type de dossier (vente, mission, chantier, prospect, tâche) : le <strong>nombre de jours</strong> sans mouvement au-delà duquel le dossier est signalé « bloqué ». Valeurs acceptées : des <strong>jours entiers de 1 à 365</strong>. <strong>Enregistrer les délais</strong> applique le changement tout de suite et le consigne dans le journal d’audit.</p>
+<p>Cinq champs, un par type de dossier (vente, mission, chantier, prospect, tâche) : le <strong>nombre de jours</strong> sans mouvement au-delà duquel le dossier est signalé « bloqué ». Valeurs acceptées : des <strong>jours entiers de 1 à 365</strong>. <strong>Enregistrer les délais</strong> applique le changement tout de suite et le consigne dans l’historique des actions.</p>
 <h3 id="administration--envoi-automatique-des-rapports">Envoi automatique des rapports</h3>
 <ul>
 <li><strong>Interrupteur</strong> : actif ou non (désactivé par défaut).</li>
@@ -1884,9 +1888,9 @@
 <li>Un bandeau signale quand la <strong>messagerie du serveur (SMTP) n’est pas configurée</strong> : aucun e-mail ne part alors, même si le réglage est enregistré.</li>
 <li><strong>Derniers envois</strong> : date, période, rapports et nombre de destinataires des envois réellement partis.</li>
 </ul>
-<h2 id="administration--les-parcours-des-dossiers">Les parcours des dossiers</h2>
-<p><strong>Administration › Parcours des dossiers</strong> : les <strong>étapes</strong> que suit chaque type de dossier — ventes, pipeline commercial, chantiers.</p>
-<p><a href="img/adm-04-parcours.png" target="_blank" rel="noopener"><img src="img/adm-04-parcours.png" alt="Parcours des dossiers" loading="lazy"></a></p>
+<h2 id="administration--les-etapes-des-dossiers">Les étapes des dossiers</h2>
+<p><strong>Administration › Étapes des dossiers</strong> : les <strong>étapes</strong> que suit chaque type de dossier — ventes, pipeline commercial, chantiers.</p>
+<p><a href="img/adm-04-parcours.png" target="_blank" rel="noopener"><img src="img/adm-04-parcours.png" alt="Étapes des dossiers" loading="lazy"></a></p>
 <ul>
 <li>Vous pouvez <strong>ajouter des étapes</strong> propres à MTM, les <strong>remettre dans l’ordre</strong> (flèches), et <strong>autoriser de nouveaux passages</strong> d’une étape à une autre (liste « Peut passer à… »).</li>
 <li>Les étapes <strong>d’origine</strong> (cadenas) <strong>ne se retirent pas</strong> : le système s’en sert pour calculer les soldes, conclure une vente ou réceptionner un chantier.</li>
@@ -1911,9 +1915,9 @@
 <li><strong>SMS et WhatsApp</strong> partent par le <strong>fournisseur</strong> désigné sur le serveur pour chaque canal (<code>SMS_PROVIDER</code>, <code>WHATSAPP_PROVIDER</code>). On change de fournisseur sans toucher à l’application ni aux données : voir <code>docs/AGENDA_TACHES_MESSAGES.md</code>. Le bandeau bleu en haut de l’écran dit quel canal est inactif. Sans fournisseur, rien ne part même si la case est cochée.</li>
 <li>Chacun peut <strong>couper l’e-mail pour lui-même</strong> dans <em>Mes notifications</em>.</li>
 </ul>
-<h2 id="administration--le-journal-d-audit">Le journal d’audit</h2>
-<p><strong>Administration › Journal d’audit</strong> : l’historique de <strong>toutes les actions sensibles</strong> — qui, quand, quoi, avant/après, avec le <strong>motif</strong> quand il est exigé.</p>
-<p><a href="img/adm-07-audit.png" target="_blank" rel="noopener"><img src="img/adm-07-audit.png" alt="Journal d’audit" loading="lazy"></a></p>
+<h2 id="administration--l-historique-des-actions">L’historique des actions</h2>
+<p><strong>Administration › Historique des actions</strong> : l’historique de <strong>toutes les actions sensibles</strong> — qui, quand, quoi, avant/après, avec le <strong>motif</strong> quand il est exigé.</p>
+<p><a href="img/adm-07-audit.png" target="_blank" rel="noopener"><img src="img/adm-07-audit.png" alt="Historique des actions" loading="lazy"></a></p>
 <ul>
 <li>Filtrez par <strong>recherche</strong>, <strong>période</strong>, <strong>module</strong>, <strong>élément</strong>.</li>
 <li>Un clic sur une ligne ouvre le <strong>détail</strong> (valeurs avant et après).</li>
@@ -1926,8 +1930,8 @@
 <li><strong>Un compte par personne, un rôle par fonction.</strong> Ne créez pas de compte partagé.</li>
 <li><strong>Désactivez</strong> (ne supprimez pas) le compte d’une personne qui part, <strong>le jour même</strong>.</li>
 <li>N’attribuez le rôle <strong>administrateur</strong> qu’à quelques personnes de confiance.</li>
-<li>Avant de modifier un <strong>paramètre</strong>, notez sa valeur d’origine : le journal d’audit la conserve, mais un retour en arrière reste manuel.</li>
-<li>Vérifiez régulièrement <strong>« À surveiller »</strong> dans la liste des utilisateurs et le <strong>journal d’audit</strong>.</li>
+<li>Avant de modifier un <strong>paramètre</strong>, notez sa valeur d’origine : l’historique des actions la conserve, mais un retour en arrière reste manuel.</li>
+<li>Vérifiez régulièrement <strong>« À surveiller »</strong> dans la liste des utilisateurs et l’<strong>historique des actions</strong>.</li>
 </ul>
 
 <nav class="pagination" aria-label="Chapitres voisins"><a href="#site-web" rel="prev"><small>Précédent</small>Le site public et les demandes web</a><a href="#droits" rel="next"><small>Suivant</small>Qui peut faire quoi</a></nav>
@@ -2111,7 +2115,7 @@
 <td>V C M (les siens)</td>
 </tr>
 <tr>
-<td><strong>Demandes web</strong></td>
+<td><strong>Demandes du site</strong></td>
 <td>Tout</td>
 <td>V M S</td>
 <td>V M S</td>
@@ -2183,7 +2187,7 @@
 <td>—</td>
 </tr>
 <tr>
-<td><strong>Journal d’audit</strong></td>
+<td><strong>Historique des actions</strong></td>
 <td>Tout</td>
 <td>V E</td>
 <td>—</td>
@@ -2338,7 +2342,7 @@
 </tr>
 </tbody></table>
 <h2 id="droits--ce-qui-est-trace">Ce qui est tracé</h2>
-<p>Toute action sensible laisse une trace dans le <strong>journal d’audit</strong> : création, modification, validation, export, connexion, changement de droits. L’<strong>export</strong> d’un rapport ou d’une liste exige un <strong>motif</strong>, conservé avec l’export.</p>
+<p>Toute action sensible laisse une trace dans l’<strong>historique des actions</strong> : création, modification, validation, export, connexion, changement de droits. L’<strong>export</strong> d’un rapport ou d’une liste exige un <strong>motif</strong>, conservé avec l’export.</p>
 
 <nav class="pagination" aria-label="Chapitres voisins"><a href="#administration" rel="prev"><small>Précédent</small>Administration du back-office</a><a href="#faq" rel="next"><small>Suivant</small>Questions fréquentes</a></nav>
 </article>
@@ -2390,7 +2394,7 @@ Ils ne lui sont visibles qu’une fois <strong>publiés</strong>. De même, seul
 <p><strong>Mon rapport est tronqué.</strong>
 Un rapport est limité à <strong>500 lignes de détail</strong> (il l’indique). Réduisez la période.</p>
 <p><strong>L’export me demande un motif.</strong>
-Tout export est <strong>tracé</strong> : indiquez en quelques mots pourquoi (« reporting mensuel direction »). Le motif est conservé dans le journal d’audit.</p>
+Tout export est <strong>tracé</strong> : indiquez en quelques mots pourquoi (« reporting mensuel direction »). Le motif est conservé dans l’historique des actions.</p>
 <p><strong>Les chiffres de l’écran et du PDF sont-ils les mêmes ?</strong>
 Oui : ils viennent du même calcul.</p>
 <h2 id="faq--utilisation-courante">Utilisation courante</h2>
@@ -2401,7 +2405,7 @@ Rien ne s’enregistre sans réseau : attendez d’en retrouver avant de valider
 <p><strong>Comment passer en thème sombre ?</strong>
 Cliquez sur la <strong>lune</strong> en haut à droite de l’écran.</p>
 <p><strong>Où trouver ce guide ?</strong>
-Dans le menu, section <strong>Mon compte</strong> : <strong>Guide d’utilisation</strong> (il s’ouvre dans un nouvel onglet).</p>
+Cliquez sur le <strong>point d’interrogation</strong> en haut à droite, ou sur votre nom › <strong>Guide d’utilisation</strong> (il s’ouvre dans un nouvel onglet).</p>
 
 <nav class="pagination" aria-label="Chapitres voisins"><a href="#droits" rel="prev"><small>Précédent</small>Qui peut faire quoi</a><a href="#lexique" rel="next"><small>Suivant</small>Petit lexique</a></nav>
 </article>

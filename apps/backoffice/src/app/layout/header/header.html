@@ -34,7 +34,7 @@
           #searchInput
           type="text"
           class="header__search-input"
-          placeholder="Rechercher un terrain, un prospect, un dossier…"
+          placeholder="Rechercher un dossier, un contact ou une page…"
           aria-label="Recherche globale"
           autocomplete="off"
           role="combobox"
@@ -81,6 +81,19 @@
         </div>
       }
     </div>
+
+    <!-- L'aide : le guide d'utilisation, toujours à portée de clic -->
+    <a
+      mat-icon-button
+      class="header__icon-btn"
+      href="/manuel/"
+      target="_blank"
+      rel="noopener"
+      matTooltip="Guide d’utilisation"
+      aria-label="Guide d’utilisation (s’ouvre dans un nouvel onglet)"
+    >
+      <svg lucideCircleQuestionMark class="header__icon-svg" aria-hidden="true"></svg>
+    </a>
 
     <button
       mat-icon-button
@@ -165,16 +178,24 @@
           </div>
         </div>
         <mat-divider />
-        <button mat-menu-item type="button" disabled>
-          <svg lucideUser class="menu-item-icon" aria-hidden="true"></svg>
-          Mon profil
-        </button>
+        <a mat-menu-item routerLink="/notifications">
+          <svg lucideBell class="menu-item-icon" aria-hidden="true"></svg>
+          Mes notifications
+        </a>
+        <a mat-menu-item routerLink="/security">
+          <svg lucideShieldCheck class="menu-item-icon" aria-hidden="true"></svg>
+          Sécurité et mot de passe
+        </a>
         @if (canAccessSettings()) {
           <a mat-menu-item routerLink="/settings">
             <svg lucideSettings class="menu-item-icon" aria-hidden="true"></svg>
             Paramètres
           </a>
         }
+        <a mat-menu-item href="/manuel/" target="_blank" rel="noopener">
+          <svg lucideBookOpen class="menu-item-icon" aria-hidden="true"></svg>
+          Guide d’utilisation
+        </a>
         <mat-divider />
         <button mat-menu-item type="button" (click)="logout()">
           <svg lucideLogOut class="menu-item-icon menu-item-icon--danger" aria-hidden="true"></svg>

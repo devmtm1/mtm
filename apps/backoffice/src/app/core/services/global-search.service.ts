@@ -7,7 +7,7 @@ import { TerrainsApiService } from './api/terrains-api.service';
 import { VentesApiService } from './api/ventes-api.service';
 import { SessionService } from './session.service';
 
-export type SearchResultKind = 'terrain' | 'prospect' | 'mandat' | 'vente';
+export type SearchResultKind = 'terrain' | 'prospect' | 'mandat' | 'vente' | 'page';
 
 export interface GlobalSearchResult {
   kind: SearchResultKind;
@@ -24,6 +24,7 @@ const KIND_LABELS: Record<SearchResultKind, string> = {
   prospect: 'Prospects',
   mandat: 'Mandats',
   vente: 'Dossiers de vente',
+  page: 'Pages',
 };
 
 const PER_KIND = 5;

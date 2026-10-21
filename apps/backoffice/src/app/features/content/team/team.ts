@@ -97,7 +97,7 @@ export class Team implements OnInit {
 
   protected remove(member: TeamMember): void {
     if (!this.canDelete) return;
-    this.confirmer.ask(`Supprimer « ${member.nom} » de la page Équipe ? Sa photo sera perdue.`).subscribe((confirme) => {
+    this.confirmer.ask(`Supprimer « ${member.nom} » de la page « Équipe du site » ? Sa photo sera perdue.`).subscribe((confirme) => {
       if (!confirme) return;
       this.busyId.set(member.id);
       this.api.remove(member.id).subscribe({

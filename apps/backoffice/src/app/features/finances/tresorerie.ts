@@ -56,7 +56,7 @@ const STATUTS_MOUVEMENT: Record<string, { label: string; ton: string }> = {
       <header class="page-header">
         <div>
           <p class="eyebrow">Finances</p>
-          <h1 class="page-header__title">Trésorerie</h1>
+          <h1 class="page-header__title">Trésorerie et caisse</h1>
           <p class="page-header__subtitle">
             Où est l’argent : la caisse, chaque banque et chaque portefeuille mobile, suivis séparément. Les soldes se
             calculent à partir du solde initial et des mouvements : ils ne se saisissent jamais.
@@ -310,7 +310,7 @@ const STATUTS_MOUVEMENT: Record<string, { label: string; ton: string }> = {
           }
           <p class="aide">
             Aucun écart n’est régularisé en silence : il est expliqué, documenté, puis accepté ou renvoyé à la comptable par
-            la Direction. La décision est consignée dans le journal d’audit.
+            la Direction. La décision est consignée dans l’historique des actions.
           </p>
         }
       }

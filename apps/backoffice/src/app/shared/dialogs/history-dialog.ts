@@ -50,7 +50,7 @@ const IGNORED_FIELDS = new Set(['id', 'createdAt', 'updatedAt']);
     <h2 mat-dialog-title>{{ data.title ?? 'Historique des modifications' }}</h2>
     <mat-dialog-content class="history-body">
       <p class="history-intro">
-        <strong>{{ data.subject }}</strong> · chaque action est tracée dans le journal d’audit avec son auteur.
+        <strong>{{ data.subject }}</strong> · chaque action est tracée dans l’historique des actions avec son auteur.
       </p>
       @if (loading()) {
         <div class="skeleton" style="height: 56px"></div>

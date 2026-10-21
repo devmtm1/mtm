@@ -86,17 +86,19 @@
 }
 
 .sidebar__section + .sidebar__section {
-  margin-top: 14px;
+  margin-top: 10px;
 }
 
+/* Titre de rubrique : assez grand et contrasté pour se lire sans effort. */
 .sidebar__section-title {
   margin: 0;
-  padding: 10px 12px 6px;
-  font-size: 0.68rem;
+  padding: 10px 14px 6px;
+  font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--mtm-text-muted);
+  color: var(--mtm-text-dark);
+  opacity: 0.62;
 }
 
 /* Titre d'une rubrique repliable : un bouton qui ressemble à un titre. */
@@ -159,23 +161,6 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-}
-
-/* --------------------------------------------------------------------------
-   Pied — mention minimale (les coordonnées complètes ne sont plus ici)
-   -------------------------------------------------------------------------- */
-.sidebar__footer {
-  flex-shrink: 0;
-  padding: 10px 16px;
-  border-top: 1px solid var(--mtm-border);
-  text-align: center;
-}
-
-.sidebar__footer-text {
-  font-size: 0.68rem;
-  font-weight: 500;
-  color: var(--mtm-text-muted);
-  white-space: nowrap;
 }
 
 /* --------------------------------------------------------------------------

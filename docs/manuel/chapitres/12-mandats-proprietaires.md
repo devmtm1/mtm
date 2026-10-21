@@ -6,7 +6,7 @@ resume: Enregistrer les propriétaires, signer et suivre les mandats, tenir les 
 roles: commercial responsable_commercial direction administrateur
 ---
 
-Ce chapitre couvre la rubrique **Patrimoine immobilier** : **Biens à vendre**, **Mandats**, **Propriétaires**. Le travail d’un commercial sur les biens est détaillé dans *Le travail du commercial* ; ici, le côté **gestion du portefeuille**.
+Ce chapitre couvre la rubrique **Biens** : **Biens à vendre**, **Mandats**, **Propriétaires**. Le travail d’un commercial sur les biens est détaillé dans *Le travail du commercial* ; ici, le côté **gestion du portefeuille**.
 
 ## Les propriétaires
 
@@ -72,7 +72,7 @@ Pour reprendre un fichier Excel ou Google Sheets (« Bd terrains MTM IMMO ») **
 3. **Aperçu** : biens à créer, déjà présents, lignes refusées avec la raison. **Rien n’est écrit à ce stade.**
 4. **Importer N biens** pour confirmer. Les biens arrivent en **Brouillon** : relisez-les avant de les publier.
 
-Les colonnes se reconnaissent à leur titre (matricule, localité, titre juridique, prix, propriétaire, téléphone, surface…) ; seules **LOCALITE** et **TITRE JURIDIQUE** sont indispensables. L’import ne touche jamais à un bien déjà présent et chaque import est consigné dans le journal d’audit.
+Les colonnes se reconnaissent à leur titre (matricule, localité, titre juridique, prix, propriétaire, téléphone, surface…) ; seules **LOCALITE** et **TITRE JURIDIQUE** sont indispensables. L’import ne touche jamais à un bien déjà présent et chaque import est consigné dans l’historique des actions.
 
 ## Les bonnes habitudes
 

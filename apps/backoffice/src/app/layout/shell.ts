@@ -6,6 +6,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs';
 import { Sidebar } from './sidebar/sidebar';
 import { Header } from './header/header';
+import { SousNavigation } from './sous-navigation/sous-navigation';
 
 const SIDEBAR_COLLAPSED_KEY = 'mtm.sidebar-collapsed';
 
@@ -20,7 +21,7 @@ const SIDEBAR_COLLAPSED_KEY = 'mtm.sidebar-collapsed';
  */
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, MatSidenavModule, Sidebar, Header],
+  imports: [RouterOutlet, MatSidenavModule, Sidebar, Header, SousNavigation],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })

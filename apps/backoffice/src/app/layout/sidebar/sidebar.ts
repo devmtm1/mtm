@@ -5,7 +5,7 @@ import { LucideChevronDown } from '@lucide/angular';
 import { filter } from 'rxjs';
 import { SessionService } from '../../core/services/session.service';
 import { NavCompteursService, texteCompteur } from '../nav-compteurs.service';
-import { NAVIGATION_SECTIONS, type NavSection } from '../navigation-config';
+import { NAVIGATION_SECTIONS, sujetCorrespond, type NavSection } from '../navigation-config';
 import { NavItem } from '../nav-item/nav-item';
 
 const CLE_STOCKAGE = 'mtm.menu.rubriques';
@@ -26,9 +26,11 @@ function lireEtat(): Record<string, boolean> {
  * La structure vient intégralement de `NAVIGATION_SECTIONS`
  * (voir navigation-config.ts) — aucun item codé en dur ici.
  *
- * - une rubrique « repliable » (Administration, Site public) se replie d'un
- *   clic sur son titre ; le choix est retenu sur l'appareil, et la rubrique
- *   qui contient la page affichée s'ouvre toute seule ;
+ * - seule la rubrique rarement utilisée (Administration) est repliable : le
+ *   choix est retenu sur l'appareil, et la rubrique qui contient la page
+ *   affichée s'ouvre toute seule ;
+ * - un sujet à plusieurs pages n'occupe qu'une ligne (ses pages sont les
+ *   onglets de l'écran) ;
  * - des pastilles disent ce qui attend la personne (messages, paiements,
  *   relances…), y compris sur le titre d'une rubrique repliée.
  */
@@ -136,8 +138,9 @@ export class Sidebar implements OnInit {
     const titres = new Set<string>();
     for (const section of NAVIGATION_SECTIONS) {
       if (!section.collapsible) continue;
-      const contient = section.items.some((item) =>
-        [item, ...(item.children ?? [])].some((entree) => url === entree.route || url.startsWith(`${entree.route}/`)),
+      const contient = section.items.some(
+        (item) =>
+          url === item.route || url.startsWith(`${item.route}/`) || sujetCorrespond(item, url),
       );
       if (contient) titres.add(section.title);
     }

@@ -8,7 +8,7 @@ roles: comptabilite direction administrateur
 
 Le module **Finances** pilote l’argent de MTM : **ce qui est encaissé, ce que MTM gagne réellement, ce qu’elle dépense, ce qu’il lui reste à encaisser**, et prépare les **exports pour la comptabilité externe**. Ce n’est **pas** un logiciel de comptabilité : pas de plan comptable, de bilan ni de TVA.
 
-La rubrique **Pilotage et finances** contient : *Finances* (tableau de bord), *Journal financier*, *Saisies financières*, *Trésorerie et caisse*, *Rapprochement bancaire*, *Propriétaires et reversements*, *Désistements*, *Rentabilité des chantiers*, *États financiers*, *Rapport du soir* et *Clôtures mensuelles*.
+La rubrique **Pilotage et finances** contient deux lignes, chacune avec ses **onglets** : **Finances** (l’argent du quotidien : *Tableau de bord financier*, *Saisies financières*, *Trésorerie et caisse*, *Reversements aux propriétaires*, *Désistements et remboursements*, *Rapport du soir*) et **Comptabilité** (le travail du comptable : *Journal financier*, *Rapprochement bancaire*, *États financiers*, *Rentabilité des chantiers*, *Clôtures mensuelles*).
 
 ## Deux notions à ne pas confondre
 
@@ -93,7 +93,7 @@ La Direction (ou un **délégué** auquel elle a donné un plafond) clique sur *
 
 ### Corriger une erreur : jamais d’effacement
 
-Une saisie **validée ne se modifie plus et ne se supprime jamais**. Pour la corriger, cliquez sur **Corriger** : vous créez une **écriture liée** — une *annulation* (l’écriture inverse) ou un *ajustement* (un montant précis) — avec un **motif obligatoire**. L’écriture d’origine reste consultable, la correction la référence, et la Direction doit l’autoriser. Toute **tentative de suppression** d’une écriture validée est refusée **et inscrite** au journal d’audit.
+Une saisie **validée ne se modifie plus et ne se supprime jamais**. Pour la corriger, cliquez sur **Corriger** : vous créez une **écriture liée** — une *annulation* (l’écriture inverse) ou un *ajustement* (un montant précis) — avec un **motif obligatoire**. L’écriture d’origine reste consultable, la correction la référence, et la Direction doit l’autoriser. Toute **tentative de suppression** d’une écriture validée est refusée **et inscrite** à l’historique des actions.
 
 ## La clôture mensuelle
 
@@ -104,7 +104,7 @@ Une saisie **validée ne se modifie plus et ne se supprime jamais**. Pour la cor
 - Un mois clôturé **garde ses chiffres** : ses totaux sont **figés** et **plus aucun mouvement daté de ce mois** ne peut être ajouté, validé ou annulé — paiement de vente, loyer, règlement de mission ou de séjour, dépense de chantier, saisie.
 - **Clôturer exige qu’aucune saisie du mois n’attende sa validation.**
 - Une **correction** se fait alors **à la date du jour**.
-- **Rouvrir** un mois demande un **motif**, consigné dans le journal d’audit.
+- **Rouvrir** un mois demande un **motif**, consigné dans l’historique des actions.
 
 La liste montre les **six derniers mois** et les mois déjà clôturés ; **« Afficher les mois plus anciens »** déroule le reste.
 
@@ -118,7 +118,7 @@ Ordre conseillé en fin de mois : **1.** valider toutes les saisies et paiements
 
 - **CSV** : le journal, UTF-8, séparateur « ; », virgule décimale — s’ouvre directement dans Excel en français.
 - **Excel** : journal, synthèse par activité, par mois et sommes dues. Les cellules qui commencent par `=`, `+`, `-` ou `@` sont **neutralisées** (aucune formule exécutée à l’ouverture).
-- Un **motif est obligatoire** : il est consigné dans le journal d’audit avec la période et le nombre de mouvements.
+- Un **motif est obligatoire** : il est consigné dans l’historique des actions avec la période et le nombre de mouvements.
 
 ## La trésorerie : caisse, banques, Wave et Orange Money
 
@@ -149,7 +149,7 @@ Onglet **Clôture de caisse**. La clôture est **obligatoire chaque jour d’act
 
 ## Les terrains confiés et les reversements aux propriétaires
 
-**Finances › Propriétaires et reversements.** Pour un terrain confié (fiche du bien : un **propriétaire** et la **commission de MTM**), MTM **encaisse d’abord, déduit sa commission, puis reverse le reste**. Exemple du cahier des charges : vendu 3 500 000 FCFA, commission de MTM 500 000, **dû au propriétaire 3 000 000**.
+**Finances › Reversements aux propriétaires.** Pour un terrain confié (fiche du bien : un **propriétaire** et la **commission de MTM**), MTM **encaisse d’abord, déduit sa commission, puis reverse le reste**. Exemple du cahier des charges : vendu 3 500 000 FCFA, commission de MTM 500 000, **dû au propriétaire 3 000 000**.
 
 L’écran montre, pour chaque vente : l’**encaissé**, la **commission acquise** par MTM (au prorata de ce que le client a payé), le **dû**, le **déjà reversé** et le **solde restant**. Le **mode de reversement** est une clause du mandat : *au fur et à mesure* des paiements du client, *à la fin du paiement*, ou selon un échéancier.
 
@@ -184,7 +184,7 @@ Le circuit d’un reversement :
 
 ## Le tableau de bord de la Direction
 
-Le tableau de bord financier affiche, en plus des chiffres de la période (filtrables par **activité** et **moyen de paiement**) : les **soldes** de chaque compte, les **créances clients**, les **sommes à reverser aux propriétaires**, les **reversements en attente d’autorisation**, les **résultats des chantiers**, et les **points d’attention** — dépenses à autoriser ou sans justificatif, écarts de caisse sans décision, jours de caisse non clôturés, lignes de relevé non rapprochées, remboursements hors délai, **anomalies du journal d’audit**.
+Le tableau de bord financier affiche, en plus des chiffres de la période (filtrables par **activité** et **moyen de paiement**) : les **soldes** de chaque compte, les **créances clients**, les **sommes à reverser aux propriétaires**, les **reversements en attente d’autorisation**, les **résultats des chantiers**, et les **points d’attention** — dépenses à autoriser ou sans justificatif, écarts de caisse sans décision, jours de caisse non clôturés, lignes de relevé non rapprochées, remboursements hors délai, **anomalies de l’historique des actions**.
 
 ## Valider côté comptabilité
 

@@ -62,7 +62,7 @@ Là où un commercial ne voit que les siens, **vous voyez tous les prospects**.
 
 - Le filtre **Commercial** isole les prospects d’une personne.
 - Le bloc **Performance par commercial** (à déplier) donne ventes conclues, taux de conversion et chiffre d’affaires.
-- **Exporter** produit un fichier de la liste (un motif est demandé et conservé dans le journal d’audit).
+- **Exporter** produit un fichier de la liste (un motif est demandé et conservé dans l’historique des actions).
 
 ### Affecter un prospect à un commercial
 

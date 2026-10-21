@@ -27,7 +27,7 @@ const KIND_META: Record<TerrainStatusKind, { title: string; intro: string; map: 
   },
   juridique: {
     title: 'Changer le statut juridique',
-    intro: 'Le statut juridique décrit le titre de propriété. Ce changement est sensible : il est tracé dans le journal d’audit avec votre justification.',
+    intro: 'Le statut juridique décrit le titre de propriété. Ce changement est sensible : il est tracé dans l’historique des actions avec votre justification.',
     map: LEGAL_STATUS,
     justification: true,
   },

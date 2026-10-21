@@ -52,7 +52,7 @@ Les **clients**, **propriétaires** et **locataires** ont un espace séparé (le
 | **Mandats** | Tout | V C M Val E, Adm | V C M Val E | V C M Val | V C M |
 | **Propriétaires** | Tout | V C M | V C M S | V C M S | V C |
 | **Ventes et paiements** | Tout | V C M Val P Pub E + financier, Adm | V C M Val Pub E + financier, Adm | V C M Val Pub E + financier, Adm | V C M (les siens) |
-| **Demandes web** | Tout | V M S | V M S | V M | V M |
+| **Demandes du site** | Tout | V M S | V M S | V M | V M |
 | **Vérifications** | Tout | V C M Val Pub E S, Adm | V C M Val Pub E, Adm | V C M Val Pub | V C M |
 | **Gestion locative** | Tout | V C M Val P Pub E S, Adm | V C M Val P Pub E, Adm | V C M E (les siens) | V C M E (les siens) |
 | **Chantiers** | Tout | V C M Val P Pub E S, Adm | V C M Val P Pub E, Adm | — | — |
@@ -61,7 +61,7 @@ Les **clients**, **propriétaires** et **locataires** ont un espace séparé (le
 | **Contenu du site** | Tout | V C M Pub S, Adm | V C M Pub S | V | — |
 | **Tâches, agenda** | Tout | V C M S, Adm | V C M S, Adm | V C M S, Adm | V C M |
 | **Utilisateurs, rôles, paramètres** | Tout | — | — | — | — |
-| **Journal d’audit** | Tout | V E | — | — | — |
+| **Historique des actions** | Tout | V E | — | — | — |
 | **Règles de notification** | Tout | Adm | — | — | — |
 
 | Module | Comptable | Resp. gestion locative | Resp. démarches | Resp. construction | RH |
@@ -94,4 +94,4 @@ Pour limiter les erreurs et la fraude, l’application impose que **deux personn
 
 ## Ce qui est tracé
 
-Toute action sensible laisse une trace dans le **journal d’audit** : création, modification, validation, export, connexion, changement de droits. L’**export** d’un rapport ou d’une liste exige un **motif**, conservé avec l’export.
+Toute action sensible laisse une trace dans l’**historique des actions** : création, modification, validation, export, connexion, changement de droits. L’**export** d’un rapport ou d’une liste exige un **motif**, conservé avec l’export.

@@ -65,7 +65,7 @@ Ce chapitre s’adresse à la **direction** et à celles et ceux qui consultent 
 
 - **Document PDF** : mis en page avec le **logo et les mentions légales de MTM**, prêt à imprimer ; tableaux paginés avec leur ligne de titres, numéro de page.
 - **Classeur Excel** : un onglet de synthèse puis **un onglet par tableau**, avec de vrais nombres, dates et pourcentages pour trier et totaliser.
-- **Motif de l’export obligatoire** : il est consigné dans le **journal d’audit** avec le rapport, la période et le format.
+- **Motif de l’export obligatoire** : il est consigné dans l’**historique des actions** avec le rapport, la période et le format.
 
 ### L’envoi automatique par e-mail
 
@@ -74,13 +74,13 @@ MTM peut recevoir des rapports **sans les ouvrir** : chaque matin à 7 h (heure 
 - **hebdomadaire** : la semaine écoulée (lundi → dimanche), envoyée **chaque lundi** ;
 - **mensuelle** : le mois précédent, envoyé **le 1er du mois**.
 
-Un envoi n’a lieu **qu’une fois par période**. Il est **désactivé par défaut**. La direction et les administrateurs le règlent dans **Administration › Pilotage et rapports** : un formulaire (activer, fréquence, rapports, formats, destinataires), un bouton **« M’envoyer un essai »** qui envoie un exemplaire à votre seule adresse, l’état de la messagerie du serveur et la liste des **derniers envois**.
+Un envoi n’a lieu **qu’une fois par période**. Il est **désactivé par défaut**. La direction et les administrateurs le règlent dans **Administration › Alertes et rapports automatiques** : un formulaire (activer, fréquence, rapports, formats, destinataires), un bouton **« M’envoyer un essai »** qui envoie un exemplaire à votre seule adresse, l’état de la messagerie du serveur et la liste des **derniers envois**.
 
-## Le journal d’audit
+## L’historique des actions
 
-Pour savoir **qui a fait quoi, quand** (création, modification, export, validation, connexion…), la direction consulte **Administration › Journal d’audit**.
+Pour savoir **qui a fait quoi, quand** (création, modification, export, validation, connexion…), la direction consulte **Administration › Historique des actions**.
 
-![Journal d’audit](img/dir-05-audit.png)
+![Historique des actions](img/dir-05-audit.png)
 
 - Filtres : recherche, période, module, élément.
 - Chaque ligne s’ouvre pour montrer l’**avant / après**, le **motif** éventuel et l’adresse de connexion.
