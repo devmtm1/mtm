@@ -5,8 +5,8 @@
 //
 // Sources  : docs/manuel/guides/*.md et docs/manuel/assets/guide.css|guide.js
 // Résultat : apps/backoffice/public/manuel/<id>.html (servi sur /manuel/<id>)
-// Chaque guide est une page autonome qui s'imprime proprement : Ctrl + P donne un PDF
-// avec page de garde, sommaire et aide-mémoire.
+// Chaque guide est une page autonome qui s'imprime proprement ; son PDF téléchargeable
+// est fabriqué à part (npm run manuel:pdf).
 import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { marked } from 'marked';
@@ -79,9 +79,10 @@ for (const guide of guides) {
 <header class="barre">
 <a class="barre__marque" href="#couverture"><img src="../logomtm.jpeg" alt="MTM Immobilier"><span><strong>${echapper(guide.titre)}</strong><span>MTM Immobilier</span></span></a>
 <nav class="barre__outils" aria-label="Outils du guide">
-<button class="bouton" type="button" data-imprimer>Imprimer / PDF</button>
+<a class="bouton bouton--plein" href="pdf/guide-${guide.id}.pdf" download>Télécharger le PDF</a>
+<button class="bouton" type="button" data-imprimer>Imprimer</button>
 <a class="bouton" href="index.html">Guide complet</a>
-<a class="bouton bouton--plein" href="/">Ouvrir le back-office</a>
+<a class="bouton" href="/">Ouvrir le back-office</a>
 <button class="bouton bouton--menu" type="button" id="bouton-sommaire" aria-controls="sommaire">Sommaire</button>
 </nav>
 </header>

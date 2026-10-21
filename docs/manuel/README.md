@@ -21,6 +21,8 @@ On peut aussi **double-cliquer sur `apps/backoffice/public/manuel/index.html`** 
 
 En plus du guide complet, **chaque métier a son propre document** : page de garde, sommaire numéroté, étapes illustrées, questions fréquentes et **aide-mémoire** d’une page. Ils s’ouvrent sur `/manuel/commercial`, `/manuel/responsable-commercial` et `/manuel/administrateur`, et **Imprimer / PDF** produit un PDF propre (page de garde, sommaire, aide-mémoire sur une page neuve).
 
+**Les PDF** (`apps/backoffice/public/manuel/pdf/guide-<id>.pdf`) sont **téléchargeables** depuis chaque guide (bouton « Télécharger le PDF ») et depuis l’accueil du guide complet. Ils se fabriquent avec Chrome : `npm run manuel` puis `npm run manuel:pdf`. Relancez-les quand un guide ou une capture change, puis commitez les fichiers générés.
+
 Le bouton « ? » et le menu du profil du back-office ouvrent **le guide du métier de la personne connectée** (administrateur, responsable commercial ou manager, commercial) ; les autres métiers ouvrent le guide complet.
 
 **Ajouter un guide pour un autre métier** : créez `docs/manuel/guides/<métier>.md` avec l’en-tête ci-dessous, puis `npm run manuel`. Il apparaît tout seul sur l’accueil du guide complet et dans la liste « Les autres guides » de chaque guide. Pour que le bouton « ? » l’ouvre, ajoutez le rôle dans `guideUrl` de `apps/backoffice/src/app/layout/header/header.ts`.
@@ -68,11 +70,24 @@ Métiers reconnus dans `roles` : `tous`, `commercial`, `responsable_commercial`,
 
 ## Refaire les captures d’écran
 
-Les captures montrent le back-office avec des **données fictives**. Pour les refaire après un changement d’interface :
+Les captures montrent le back-office avec des **données fictives**. Une seule commande les refait toutes :
 
-1. Lancer l’API sur une **base jetable** (le test e2e utilise un PostgreSQL embarqué : `apps/api/test/e2e-runner.mjs`) — **jamais sur la base de dev ou de production**.
-2. Y créer quelques comptes (un par rôle) et des dossiers fictifs, comme le font les scénarios e2e.
-3. Construire le back-office en développement (`ng build --configuration development`), le servir, et photographier chaque écran avec le compte du rôle concerné (viewport 1366 × 820).
-4. Optimiser les PNG (256 couleurs suffisent : de 10 Mo à 4 Mo pour l’ensemble).
+```
+npm run manuel:captures
+```
+
+Le script (`docs/manuel/captures/`) monte un **environnement jetable**, sur ce poste et nulle part ailleurs :
+
+1. un **PostgreSQL embarqué** dans un dossier temporaire (jamais la base de dev ni de production) ;
+2. l’**API** locale, migrée et initialisée, puis le **back-office** compilé en développement (dans `apps/backoffice/dist/captures`) ;
+3. des **données fictives** créées par l’API (propriétaires, biens, mandats, prospects à chaque étape, visites, ventes avec paiements, objectifs, tâches, agenda, demandes du site) et un **compte par métier** (administrateur, responsable commercial, deux commerciaux, comptable) ;
+4. **Chrome** (celui du poste, piloté par puppeteer-core) qui se connecte avec chaque compte et photographie chaque écran en 1366 × 820 (téléphone : 390 × 844).
+
+Les images remplacent celles de `apps/backoffice/public/manuel/img/`, donc le guide complet **et** les guides par métier en profitent. Tout est détruit à la fin. Ensuite : `npm run manuel` puis `npm run manuel:pdf`, et commitez les images et les fichiers générés.
+
+- **Ajouter une capture** : ajoutez une ligne `prendre(page, 'nom-du-fichier', '/adresse', préparer)` dans `captures/photographier.mjs`. `préparer` ouvre une fenêtre (`cliquer(p, 'Texte du bouton')`) ou remplit un champ.
+- **Changer les données** : `captures/jeu-donnees.mjs` et `captures/jeu-donnees-suite.mjs`. Une création qui échoue est signalée en jaune sans arrêter le reste.
+- **Chrome introuvable** : indiquez son chemin dans la variable `CHROME_PATH`.
+- Les ports **3000** (API) et **4300** (back-office) doivent être libres. Le script le vérifie et s’arrête sinon.
 
 Ne mettez **jamais** de donnée réelle (clients, montants, pièces d’identité) dans une capture : le dossier `test reel/` reste hors du dépôt.

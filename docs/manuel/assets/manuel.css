@@ -647,3 +647,30 @@ mark {
     font-size: 11pt;
   }
 }
+
+/* Carte d'un guide par métier : le lien vers la page, et le PDF à télécharger dessous. */
+.accueil-cartes li:has(.carte-pdf) {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.accueil-cartes li:has(.carte-pdf) > a:first-child {
+  flex: 1;
+}
+
+.carte-pdf {
+  align-self: flex-start;
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.carte-pdf:hover {
+  border-color: var(--primary);
+}

@@ -13,10 +13,13 @@
   },
   "devDependencies": {
     "marked": "^18.1.1",
+    "puppeteer-core": "^25.15.0",
     "vite": "^7.3.6"
   },
   "scripts": {
     "manuel": "node docs/manuel/build.mjs && node docs/manuel/build-guides.mjs",
+    "manuel:pdf": "node docs/manuel/build-pdf.mjs",
+    "manuel:captures": "node docs/manuel/captures/lancer.mjs",
     "build": "npm run api:build && npm run backoffice:build",
     "start": "npm run api:start --workspace=apps/api & npm run start --workspace=apps/backoffice",
     "dev": "npm run api:dev --workspace=apps/api & npm run start --workspace=apps/backoffice",

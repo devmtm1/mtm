@@ -52,7 +52,7 @@ import { NavigationModule } from './modules/navigation/navigation.module';
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
-        limit: 100,
+        limit: Number.parseInt(process.env.GLOBAL_RATE_LIMIT_MAX ?? '100', 10),
       },
     ]),
     PrismaModule,
