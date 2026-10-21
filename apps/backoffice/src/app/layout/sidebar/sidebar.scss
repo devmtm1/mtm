@@ -89,16 +89,15 @@
   margin-top: 10px;
 }
 
-/* Titre de rubrique : assez grand et contrasté pour se lire sans effort. */
+/* Titre de rubrique : casse normale (les majuscules se lisent plus lentement),
+   assez grand et contrasté pour se lire sans effort. */
 .sidebar__section-title {
   margin: 0;
   padding: 10px 14px 6px;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--mtm-text-dark);
-  opacity: 0.62;
+  letter-spacing: 0.01em;
+  color: var(--mtm-text-muted);
 }
 
 /* Titre d'une rubrique repliable : un bouton qui ressemble à un titre. */
