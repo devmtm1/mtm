@@ -9,6 +9,7 @@ import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFi
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { marked } from 'marked';
+import { lireGuides } from './lib.mjs';
 
 const ICI = dirname(fileURLToPath(import.meta.url));
 const SORTIE = join(ICI, '..', '..', 'apps', 'backoffice', 'public', 'manuel');
@@ -101,10 +102,16 @@ const sommaire = Object.entries(GROUPES)
   })
   .join('\n');
 
+const cartesGuides = lireGuides()
+  .map((g) => `<li><a href="${g.id}.html"><strong>${echapper(g.titre)}</strong><span>${echapper(g.soustitre)}</span></a></li>`)
+  .join('\n');
+
 const ordre = sections.map((s) => s.id);
 const corps = sections
   .map((s, i) => {
-    const html = s.html.replace('{{CARTES}}', `<ul class="accueil-cartes">\n${cartes}\n</ul>`);
+    const html = s.html
+      .replace('{{CARTES}}', `<ul class="accueil-cartes">\n${cartes}\n</ul>`)
+      .replace('{{GUIDES}}', `<ul class="accueil-cartes">\n${cartesGuides}\n</ul>`);
     const surCette =
       s.titres.length > 2
         ? `<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul>${s.titres

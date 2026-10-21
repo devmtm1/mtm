@@ -1,0 +1,672 @@
+/* Guides par métier MTM — mêmes couleurs que le back-office, clair et sombre, impression soignée. */
+:root {
+  --primary-dark: #233d5b;
+  --primary: #1a4974;
+  --primary-light: #cfe0ee;
+  --primary-subtle: #eaf1f7;
+  --accent: #b52c36;
+  --text: #1f2937;
+  --muted: #5b6472;
+  --border: #dce0e6;
+  --surface: #f7f8fa;
+  --card: #ffffff;
+  --hover: #eef2f7;
+  --success: #047857;
+  --success-bg: #ecfdf5;
+  --warning: #b45309;
+  --warning-bg: #fff7e6;
+  --shadow: 0 2px 10px rgba(31, 41, 55, 0.06);
+  --radius: 14px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --primary-dark: #e3eef8;
+    --primary: #8dbce0;
+    --primary-light: #3a5c7c;
+    --primary-subtle: #1e2e3f;
+    --accent: #e4707a;
+    --text: #f4f4f5;
+    --muted: #a1a1aa;
+    --border: #3f3f46;
+    --surface: #111318;
+    --card: #1a1b21;
+    --hover: #23262e;
+    --success: #34d399;
+    --success-bg: #123329;
+    --warning: #fbbf24;
+    --warning-bg: #3a2c13;
+    --shadow: none;
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 84px;
+}
+
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+a {
+  color: var(--primary);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ------------------------------------------------------------------ barre */
+.barre {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+
+.barre__marque {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.barre__marque img {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  object-fit: cover;
+}
+
+.barre__marque strong {
+  display: block;
+  color: var(--primary-dark);
+  font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.05rem;
+  line-height: 1.15;
+}
+
+.barre__marque span span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.barre__outils {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bouton {
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.bouton:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.bouton--plein {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--card);
+}
+
+.bouton--plein:hover {
+  color: var(--card);
+  opacity: 0.9;
+}
+
+.bouton--menu {
+  display: none;
+}
+
+/* ---------------------------------------------------------------- couverture */
+.couverture {
+  max-width: 1180px;
+  margin: 28px auto 0;
+  padding: 48px 48px 40px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--primary-subtle), var(--card) 60%);
+  box-shadow: var(--shadow);
+}
+
+.couverture__logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  object-fit: cover;
+}
+
+.couverture__role {
+  margin: 24px 0 6px;
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.couverture h1 {
+  margin: 0;
+  color: var(--primary-dark);
+  font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(2rem, 1.5rem + 2vw, 3.1rem);
+  line-height: 1.1;
+}
+
+.couverture__soustitre {
+  max-width: 62ch;
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 1.12rem;
+}
+
+.couverture__infos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 36px;
+  margin: 28px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.couverture__infos dt {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.couverture__infos dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.couverture__sommaire {
+  margin-top: 28px;
+}
+
+.couverture__sommaire h2 {
+  margin: 0 0 8px;
+  color: var(--primary-dark);
+  font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.15rem;
+}
+
+.couverture__sommaire ol {
+  margin: 0;
+  padding-left: 1.4em;
+  columns: 2;
+  column-gap: 40px;
+}
+
+.couverture__sommaire li {
+  break-inside: avoid;
+  margin: 3px 0;
+}
+
+.couverture__sommaire a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.couverture__sommaire a:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+/* -------------------------------------------------------------------- page */
+.page {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.sommaire {
+  position: sticky;
+  top: 61px;
+  align-self: start;
+  max-height: calc(100vh - 61px);
+  padding: 28px 14px 40px 24px;
+  overflow-y: auto;
+}
+
+.sommaire h2 {
+  margin: 0 10px 8px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sommaire ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: partie;
+}
+
+.sommaire li {
+  counter-increment: partie;
+}
+
+.sommaire a {
+  display: flex;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 9px;
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+.sommaire a::before {
+  content: counter(partie);
+  flex: 0 0 22px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.6;
+  text-align: right;
+}
+
+.sommaire a:hover {
+  background: var(--hover);
+}
+
+.sommaire a[aria-current] {
+  background: var(--primary-subtle);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+/* ---------------------------------------------------------------- document */
+.document {
+  min-width: 0;
+  max-width: 880px;
+  padding: 28px 32px 80px;
+  counter-reset: partie;
+}
+
+.document h2 {
+  counter-increment: partie;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin: 48px 0 14px;
+  padding-top: 10px;
+  color: var(--primary-dark);
+  font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.6rem;
+  line-height: 1.25;
+}
+
+.document h2::before {
+  content: counter(partie);
+  flex: 0 0 auto;
+  min-width: 2.1rem;
+  padding: 0 8px;
+  border-radius: 10px;
+  background: var(--primary-subtle);
+  color: var(--primary);
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.document h2:first-child {
+  margin-top: 8px;
+}
+
+.document h3 {
+  margin: 30px 0 8px;
+  color: var(--primary-dark);
+  font-size: 1.15rem;
+}
+
+.document p,
+.document li {
+  max-width: 78ch;
+}
+
+.document li {
+  margin: 5px 0;
+}
+
+.document ul,
+.document ol {
+  padding-left: 1.4em;
+}
+
+/* Les étapes numérotées se lisent comme des étapes. */
+.document ol > li::marker {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.document figure {
+  margin: 18px 0 22px;
+}
+
+.document figure img {
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.document figure a > img {
+  cursor: zoom-in;
+}
+
+.document figcaption {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.document figure.mobile {
+  display: inline-block;
+  max-width: 260px;
+  margin-right: 14px;
+  vertical-align: top;
+}
+
+/* Les trois boîtes : à retenir (vert), important/attention (orange), remarque (bleu). */
+.document blockquote {
+  margin: 20px 0;
+  padding: 14px 18px;
+  border-left: 4px solid var(--primary);
+  border-radius: 0 12px 12px 0;
+  background: var(--primary-subtle);
+}
+
+.document blockquote p {
+  margin: 4px 0;
+}
+
+.document blockquote.attention {
+  border-left-color: var(--warning);
+  background: var(--warning-bg);
+}
+
+.document blockquote.retenir {
+  border-left-color: var(--success);
+  background: var(--success-bg);
+}
+
+.document table {
+  display: block;
+  width: 100%;
+  margin: 16px 0 24px;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.93rem;
+}
+
+.document th,
+.document td {
+  padding: 9px 14px;
+  border: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.document th {
+  background: var(--primary-subtle);
+  color: var(--primary-dark);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.document tbody tr:nth-child(even) td {
+  background: var(--surface);
+}
+
+.document code {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--hover);
+  font-size: 0.88em;
+}
+
+.document kbd {
+  padding: 1px 6px;
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  background: var(--card);
+  font-size: 0.85em;
+}
+
+/* L'aide-mémoire (dernière partie) : une page à imprimer et à garder sous les yeux. */
+.document h2#aide-memoire {
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  background: var(--primary-subtle);
+}
+
+.aide-finale {
+  margin-top: 56px;
+  padding: 22px 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.aide-finale h2 {
+  display: block;
+  margin: 0 0 8px;
+  font-size: 1.25rem;
+}
+
+.aide-finale h2::before {
+  content: none;
+}
+
+.aide-finale h3 {
+  margin: 18px 0 8px;
+}
+
+.aide-finale__guides {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.aide-finale__guides li {
+  margin: 0;
+  max-width: none;
+}
+
+.aide-finale__guides a {
+  display: block;
+  height: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.aide-finale__guides a:hover {
+  border-color: var(--primary);
+}
+
+.aide-finale__guides strong {
+  display: block;
+  color: var(--primary-dark);
+}
+
+.aide-finale__guides span {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+/* ------------------------------------------------------------------ mobile */
+@media (max-width: 960px) {
+  .barre {
+    flex-wrap: wrap;
+    padding: 10px 14px;
+  }
+
+  .barre__outils {
+    flex-wrap: wrap;
+  }
+
+  .bouton--menu {
+    display: inline-block;
+  }
+
+  .couverture {
+    margin: 14px 12px 0;
+    padding: 28px 20px;
+  }
+
+  .couverture__sommaire ol {
+    columns: 1;
+  }
+
+  .page {
+    display: block;
+  }
+
+  .sommaire {
+    position: static;
+    display: none;
+    max-height: none;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+  }
+
+  .sommaire.est-ouvert {
+    display: block;
+  }
+
+  .document {
+    padding: 20px 16px 60px;
+  }
+
+  .document h2 {
+    font-size: 1.35rem;
+  }
+}
+
+/* ------------------------------------------------------------ impression */
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm;
+
+  @bottom-center {
+    content: 'MTM Immobilier · ' counter(page);
+    color: #6b7280;
+    font-size: 9pt;
+  }
+}
+
+@media print {
+  .barre,
+  .sommaire,
+  .aide-finale__guides {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+    color: #111;
+    font-size: 10.5pt;
+  }
+
+  /* Page de garde : seule sur sa page, avec le sommaire. */
+  .couverture {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    break-after: page;
+  }
+
+  .page {
+    display: block;
+    max-width: none;
+  }
+
+  .document {
+    max-width: none;
+    padding: 0;
+  }
+
+  .document h2 {
+    break-after: avoid;
+    break-before: auto;
+    margin-top: 28px;
+  }
+
+  .document h3 {
+    break-after: avoid;
+  }
+
+  .document figure,
+  .document table,
+  .document blockquote {
+    break-inside: avoid;
+  }
+
+  .document figure img {
+    max-height: 120mm;
+    width: auto;
+    box-shadow: none;
+  }
+
+  /* L'aide-mémoire commence sur une page neuve : c'est la feuille à garder. */
+  .document h2#aide-memoire {
+    break-before: page;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}

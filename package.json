@@ -16,7 +16,7 @@
     "vite": "^7.3.6"
   },
   "scripts": {
-    "manuel": "node docs/manuel/build.mjs",
+    "manuel": "node docs/manuel/build.mjs && node docs/manuel/build-guides.mjs",
     "build": "npm run api:build && npm run backoffice:build",
     "start": "npm run api:start --workspace=apps/api & npm run start --workspace=apps/backoffice",
     "dev": "npm run api:dev --workspace=apps/api & npm run start --workspace=apps/backoffice",

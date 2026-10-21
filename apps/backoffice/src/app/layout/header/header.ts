@@ -162,6 +162,18 @@ export class Header {
     () => this.user()?.roles?.[0]?.replace(/_/g, ' ').toUpperCase() ?? '',
   );
 
+  /**
+   * Le guide du métier : chacun ouvre le sien (commercial, responsable commercial, administrateur) ;
+   * les autres métiers ouvrent le guide complet.
+   */
+  protected readonly guideUrl = computed(() => {
+    const roles = this.user()?.roles ?? [];
+    if (roles.includes('administrateur')) return '/manuel/administrateur.html';
+    if (roles.includes('responsable_commercial') || roles.includes('manager')) return '/manuel/responsable-commercial.html';
+    if (roles.includes('commercial')) return '/manuel/commercial.html';
+    return '/manuel/';
+  });
+
   protected readonly canAccessSettings = computed(() =>
     this.sessionService.hasPermission('settings:consulter'),
   );
