@@ -11,9 +11,34 @@ On peut aussi **double-cliquer sur `apps/backoffice/public/manuel/index.html`** 
 | Chemin | Rôle |
 | --- | --- |
 | `docs/manuel/chapitres/*.md` | Le **texte**, un fichier par chapitre (c’est ici qu’on corrige) |
-| `docs/manuel/assets/` | La **feuille de style** et le **script** de la page (aucun script en ligne : la politique de sécurité du back-office n’autorise que `'self'`) |
+| `docs/manuel/assets/` | Les **feuilles de style** et **scripts** des pages (aucun script en ligne : la politique de sécurité du back-office n’autorise que `'self'`) |
+| `docs/manuel/guides/*.md` | Le **texte de chaque guide par métier** (commercial, responsable commercial, administrateur) |
+| `docs/manuel/build-guides.mjs` | Le générateur des **guides par métier** |
 | `docs/manuel/build.mjs` | Le **générateur** |
 | `apps/backoffice/public/manuel/` | Le **résultat** (page, style, script) et les **captures** (`img/`) — servi tel quel par le back-office |
+
+## Les guides par métier
+
+En plus du guide complet, **chaque métier a son propre document** : page de garde, sommaire numéroté, étapes illustrées, questions fréquentes et **aide-mémoire** d’une page. Ils s’ouvrent sur `/manuel/commercial`, `/manuel/responsable-commercial` et `/manuel/administrateur`, et **Imprimer / PDF** produit un PDF propre (page de garde, sommaire, aide-mémoire sur une page neuve).
+
+Le bouton « ? » et le menu du profil du back-office ouvrent **le guide du métier de la personne connectée** (administrateur, responsable commercial ou manager, commercial) ; les autres métiers ouvrent le guide complet.
+
+**Ajouter un guide pour un autre métier** : créez `docs/manuel/guides/<métier>.md` avec l’en-tête ci-dessous, puis `npm run manuel`. Il apparaît tout seul sur l’accueil du guide complet et dans la liste « Les autres guides » de chaque guide. Pour que le bouton « ? » l’ouvre, ajoutez le rôle dans `guideUrl` de `apps/backoffice/src/app/layout/header/header.ts`.
+
+```
+---
+id: commercial                 # sert dans l’adresse : /manuel/commercial
+titre: Guide du commercial
+soustitre: Une phrase sur ce que le guide permet de faire.
+role: Commercial               # affiché au-dessus du titre, sur la page de garde
+public: Commerciaux de MTM Immobilier
+version: Octobre 2026
+---
+```
+
+Chaque partie est un titre de niveau 2 (`## …`) : elle est **numérotée automatiquement** et reprise dans le sommaire. Une partie nommée **Aide-mémoire** démarre sur une page neuve à l’impression. Trois boîtes d’information : `> **À retenir** — …` (vert), `> **Important** — …` ou `> **Attention** — …` (orange), et une citation simple (bleu).
+
+> Les captures d’écran viennent du dossier `img/` du guide complet. Elles montrent l’interface au moment où elles ont été prises : refaites-les (voir plus bas) quand un écran change beaucoup.
 
 ## Mettre à jour le guide
 

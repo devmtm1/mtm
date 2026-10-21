@@ -12,6 +12,12 @@ Il se lit **dans le navigateur**, sans rien installer. Pour retrouver une explic
 
 ![Le tableau de bord du back-office](img/02-accueil.png)
 
+## Votre guide personnel
+
+Trois métiers ont **leur propre guide** : un document complet, avec page de garde, étapes illustrées, questions fréquentes et **aide-mémoire à imprimer**. Ouvrez celui qui vous correspond, puis **Imprimer / PDF** pour le garder sous la main.
+
+{{GUIDES}}
+
 ## Par où commencer ?
 
 1. Lisez les chapitres **« Pour tout le monde »** (une vingtaine de minutes) : se connecter, se repérer, le tableau de bord, les tâches et l’agenda, les notifications.

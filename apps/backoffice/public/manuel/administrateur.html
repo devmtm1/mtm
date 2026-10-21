@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Guide de l’administrateur — MTM Immobilier</title>
+<link rel="icon" href="../favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="guide.css">
+</head>
+<body>
+<header class="barre">
+<a class="barre__marque" href="#couverture"><img src="../logomtm.jpeg" alt="MTM Immobilier"><span><strong>Guide de l’administrateur</strong><span>MTM Immobilier</span></span></a>
+<nav class="barre__outils" aria-label="Outils du guide">
+<button class="bouton" type="button" data-imprimer>Imprimer / PDF</button>
+<a class="bouton" href="index.html">Guide complet</a>
+<a class="bouton bouton--plein" href="/">Ouvrir le back-office</a>
+<button class="bouton bouton--menu" type="button" id="bouton-sommaire" aria-controls="sommaire">Sommaire</button>
+</nav>
+</header>
+
+<section class="couverture" id="couverture">
+<img class="couverture__logo" src="../logomtm.jpeg" alt="MTM Immobilier">
+<p class="couverture__role">Administrateur</p>
+<h1>Guide de l’administrateur</h1>
+<p class="couverture__soustitre">Créer les comptes, régler les droits, paramétrer l’application et garder la main sur la sécurité du back-office de MTM.</p>
+<dl class="couverture__infos">
+<div><dt>Pour</dt><dd>Administrateurs du back-office de MTM Immobilier</dd></div>
+<div><dt>Version</dt><dd>Octobre 2026</dd></div>
+<div><dt>Édité le</dt><dd>21 octobre 2026</dd></div>
+</dl>
+<nav class="couverture__sommaire" aria-label="Sommaire">
+<h2>Dans ce guide</h2>
+<ol>
+<li><a href="#ce-guide-en-deux-minutes">Ce guide en deux minutes</a></li>
+<li><a href="#se-connecter-et-activer-la-double-authentification">Se connecter et activer la double authentification</a></li>
+<li><a href="#decouvrir-l-ecran">Découvrir l’écran</a></li>
+<li><a href="#les-utilisateurs">Les utilisateurs</a></li>
+<li><a href="#les-roles-et-droits-d-acces">Les rôles et droits d’accès</a></li>
+<li><a href="#les-parametres">Les paramètres</a></li>
+<li><a href="#les-etapes-des-dossiers">Les étapes des dossiers</a></li>
+<li><a href="#l-identite-de-l-entreprise">L’identité de l’entreprise</a></li>
+<li><a href="#les-regles-de-notification">Les règles de notification</a></li>
+<li><a href="#alertes-et-rapports-automatiques">Alertes et rapports automatiques</a></li>
+<li><a href="#l-historique-des-actions">L’historique des actions</a></li>
+<li><a href="#le-site-web">Le site web</a></li>
+<li><a href="#l-import-de-biens-depuis-un-tableur">L’import de biens depuis un tableur</a></li>
+<li><a href="#une-routine-de-securite-simple">Une routine de sécurité simple</a></li>
+<li><a href="#questions-frequentes">Questions fréquentes</a></li>
+<li><a href="#aide-memoire">Aide-mémoire</a></li>
+</ol>
+</nav>
+</section>
+
+<div class="page">
+<nav class="sommaire" id="sommaire" aria-label="Sommaire du guide">
+<h2>Sommaire</h2>
+<ol>
+<li><a href="#ce-guide-en-deux-minutes">Ce guide en deux minutes</a></li>
+<li><a href="#se-connecter-et-activer-la-double-authentification">Se connecter et activer la double authentification</a></li>
+<li><a href="#decouvrir-l-ecran">Découvrir l’écran</a></li>
+<li><a href="#les-utilisateurs">Les utilisateurs</a></li>
+<li><a href="#les-roles-et-droits-d-acces">Les rôles et droits d’accès</a></li>
+<li><a href="#les-parametres">Les paramètres</a></li>
+<li><a href="#les-etapes-des-dossiers">Les étapes des dossiers</a></li>
+<li><a href="#l-identite-de-l-entreprise">L’identité de l’entreprise</a></li>
+<li><a href="#les-regles-de-notification">Les règles de notification</a></li>
+<li><a href="#alertes-et-rapports-automatiques">Alertes et rapports automatiques</a></li>
+<li><a href="#l-historique-des-actions">L’historique des actions</a></li>
+<li><a href="#le-site-web">Le site web</a></li>
+<li><a href="#l-import-de-biens-depuis-un-tableur">L’import de biens depuis un tableur</a></li>
+<li><a href="#une-routine-de-securite-simple">Une routine de sécurité simple</a></li>
+<li><a href="#questions-frequentes">Questions fréquentes</a></li>
+<li><a href="#aide-memoire">Aide-mémoire</a></li>
+</ol>
+</nav>
+<main class="document" id="document">
+<h2 id="ce-guide-en-deux-minutes">Ce guide en deux minutes</h2>
+<p>Ce guide est <strong>le vôtre</strong> : il couvre ce que fait un <strong>administrateur</strong> du back-office. Vous êtes la personne qui <strong>donne les accès</strong>, <strong>règle les listes et les règles</strong> de l’application et <strong>surveille ce qui s’y passe</strong>. Vous avez aussi tous les droits des autres rôles.</p>
+<p><strong>À la fin de la lecture, vous saurez :</strong></p>
+<ul>
+<li>créer, modifier, désactiver un compte, et aider quelqu’un qui a perdu son accès ;</li>
+<li>comprendre et modifier les <strong>rôles</strong> et leurs droits ;</li>
+<li>régler les <strong>paramètres</strong>, les <strong>étapes des dossiers</strong>, l’<strong>identité de l’entreprise</strong> ;</li>
+<li>décider <strong>qui est prévenu de quoi</strong>, par quel canal ;</li>
+<li>lire l’<strong>historique des actions</strong> pour savoir qui a fait quoi ;</li>
+<li>tenir une routine de sécurité simple.</li>
+</ul>
+<blockquote class="attention"><p><strong>Important</strong> — Un compte administrateur doit avoir la <strong>double authentification</strong> activée. <strong>Toutes vos actions sont tracées</strong> dans l’historique des actions : agissez avec soin. Un réglage modifié s’applique <strong>immédiatement à toute l’équipe</strong>.</p>
+</blockquote>
+<h2 id="se-connecter-et-activer-la-double-authentification">Se connecter et activer la double authentification</h2>
+<ol>
+<li>Saisissez votre <strong>e-mail</strong> et votre <strong>mot de passe</strong>, puis <strong>Se connecter</strong>.</li>
+<li>À la première connexion, choisissez un <strong>nouveau mot de passe</strong> : 12 caractères minimum, avec majuscule, minuscule, chiffre et caractère spécial.</li>
+<li>Le back-office vous demande ensuite d’activer la <strong>double authentification (2FA)</strong> : après le mot de passe, un <strong>code à 6 chiffres</strong> généré par une application sur votre téléphone (Google Authenticator, Microsoft Authenticator…).</li>
+</ol>
+<p><strong>Pour l’activer :</strong> <strong>votre nom (en haut à droite) › Sécurité et mot de passe</strong>, scannez le QR code, saisissez le premier code.</p>
+<p><figure><a href="img/14-securite.png" target="_blank" rel="noopener"><img src="img/14-securite.png" alt="Sécurité du compte" loading="lazy"></a><figcaption>Sécurité du compte</figcaption></figure></p>
+<blockquote class="attention"><p><strong>Attention</strong> — <strong>Conservez les codes de secours</strong> affichés à l’activation : ils servent si vous perdez votre téléphone. Sans 2FA, un compte administrateur ne peut pas utiliser les fonctions sensibles (paramètres, exports…).</p>
+</blockquote>
+<h2 id="decouvrir-l-ecran">Découvrir l’écran</h2>
+<p><figure><a href="img/02-accueil.png" target="_blank" rel="noopener"><img src="img/02-accueil.png" alt="Les zones de l’écran" loading="lazy"></a><figcaption>Les zones de l’écran</figcaption></figure></p>
+<table>
+<thead>
+<tr>
+<th>Zone</th>
+<th>À quoi elle sert</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Menu à gauche</strong></td>
+<td>Un sujet = une ligne ; ses pages sont les <strong>onglets</strong> en haut de l’écran.</td>
+</tr>
+<tr>
+<td><strong>Barre de recherche</strong></td>
+<td>Un dossier, un contact, ou une <strong>page</strong> par son nom : <kbd>Ctrl</kbd> + <kbd>K</kbd>.</td>
+</tr>
+<tr>
+<td><strong>Cloche</strong></td>
+<td>Vos alertes.</td>
+</tr>
+<tr>
+<td><strong>Point d’interrogation</strong></td>
+<td>Ouvre ce guide.</td>
+</tr>
+<tr>
+<td><strong>Votre nom</strong></td>
+<td>Notifications, sécurité, paramètres, déconnexion.</td>
+</tr>
+</tbody></table>
+<h3 id="la-rubrique-administration">La rubrique Administration</h3>
+<p>Elle est <strong>repliée au départ</strong> : cliquez sur son titre pour la déplier. Elle compte <strong>trois lignes</strong>, chacune avec ses <strong>onglets</strong> :</p>
+<table>
+<thead>
+<tr>
+<th>Ligne</th>
+<th>Onglets</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Utilisateurs et accès</strong></td>
+<td><strong>Utilisateurs</strong>, <strong>Rôles et droits d’accès</strong>, <strong>Historique des actions</strong></td>
+</tr>
+<tr>
+<td><strong>Réglages</strong></td>
+<td><strong>Paramètres</strong>, <strong>Identité de l’entreprise</strong>, <strong>Étapes des dossiers</strong>, <strong>Règles de notification</strong>, <strong>Alertes et rapports automatiques</strong></td>
+</tr>
+<tr>
+<td><strong>Site web</strong></td>
+<td><strong>Contenus du site</strong>, <strong>Réalisations &amp; projets</strong>, <strong>Publicités du bandeau</strong>, <strong>Équipe du site</strong></td>
+</tr>
+</tbody></table>
+<p>Les autres rubriques (Commercial, Biens, Location et services, Pilotage et finances) vous sont ouvertes comme à la direction.</p>
+<h2 id="les-utilisateurs">Les utilisateurs</h2>
+<p><strong>Administration › Utilisateurs et accès › Utilisateurs</strong> : les comptes qui accèdent au back-office. Chaque personne a un <strong>rôle</strong>, qui définit ce qu’elle voit et ce qu’elle peut faire.</p>
+<p><figure><a href="img/adm-01-utilisateurs.png" target="_blank" rel="noopener"><img src="img/adm-01-utilisateurs.png" alt="Utilisateurs" loading="lazy"></a><figcaption>Utilisateurs</figcaption></figure></p>
+<ul>
+<li>Les <strong>cartes de chiffres</strong> : comptes <strong>actifs</strong>, comptes <strong>à surveiller</strong> (2FA à activer ou mot de passe provisoire non changé), comptes <strong>désactivés</strong>.</li>
+<li>Les onglets <strong>Tous / Actifs / À surveiller / Désactivés</strong>, et la recherche.</li>
+<li>Par ligne : le <strong>rôle</strong>, l’<strong>accès</strong>, la <strong>sécurité</strong> (2FA activée ou non), la <strong>dernière connexion</strong>.</li>
+</ul>
+<h3 id="creer-un-compte">Créer un compte</h3>
+<ol>
+<li><strong>Nouvel utilisateur.</strong></li>
+<li><strong>Prénom</strong>, <strong>nom</strong>, <strong>adresse e-mail</strong> (elle sert d’identifiant) et <strong>rôle</strong>.</li>
+<li>Le <strong>mot de passe provisoire</strong> est généré (<strong>Générer</strong> en propose un autre, <strong>Copier</strong> le copie).</li>
+<li><strong>Créer le compte</strong>, puis <strong>transmettez le mot de passe</strong> à la personne par un canal sûr (en main propre ou par message privé, <strong>jamais dans un groupe</strong>). Elle devra le changer à sa première connexion.</li>
+</ol>
+<p><figure><a href="img/adm-09-nouvel-utilisateur.png" target="_blank" rel="noopener"><img src="img/adm-09-nouvel-utilisateur.png" alt="Nouvel utilisateur" loading="lazy"></a><figcaption>Nouvel utilisateur</figcaption></figure></p>
+<blockquote class="attention"><p><strong>Attention</strong> — Pour les rôles sensibles (<strong>direction, administrateur, comptabilité, RH</strong>), demandez à la personne d’activer sa <strong>2FA dès la première connexion</strong>.</p>
+</blockquote>
+<h3 id="modifier-desactiver-supprimer">Modifier, désactiver, supprimer</h3>
+<ul>
+<li>Le <strong>crayon</strong> modifie le nom, le rôle ou l’état du compte.</li>
+<li><strong>Désactiver</strong> coupe l’accès <strong>sans perdre l’historique</strong> : c’est le bon geste quand quelqu’un quitte l’entreprise.</li>
+<li>La <strong>corbeille</strong> supprime définitivement : à réserver aux comptes créés <strong>par erreur</strong>.</li>
+<li><strong>Téléphone perdu ?</strong> Utilisez <strong>Réinitialiser le 2FA (téléphone perdu)</strong> sur la ligne du compte : la personne en recréera une.</li>
+<li>Vous ne pouvez pas <strong>désactiver ni supprimer votre propre compte</strong>.</li>
+</ul>
+<h3 id="check-list-d-arrivee-et-de-depart">Check-list d’arrivée et de départ</h3>
+<p><strong>Arrivée d’un collaborateur</strong></p>
+<ol>
+<li>Créer le compte avec le <strong>bon rôle</strong>.</li>
+<li>Transmettre le mot de passe provisoire par un canal sûr.</li>
+<li>Pour un rôle sensible, vérifier au bout de quelques jours que la <strong>2FA est activée</strong> (carte <strong>À surveiller</strong>).</li>
+<li>Lui donner le guide de son métier.</li>
+</ol>
+<p><strong>Départ d’un collaborateur</strong></p>
+<ol>
+<li><strong>Désactiver le compte le jour même</strong> (ne pas supprimer).</li>
+<li>Faire <strong>réaffecter</strong> ses prospects, biens et tâches par un responsable.</li>
+<li>Vérifier dans l’<strong>historique des actions</strong> qu’aucune action inhabituelle n’a eu lieu les derniers jours.</li>
+</ol>
+<h2 id="les-roles-et-droits-d-acces">Les rôles et droits d’accès</h2>
+<p><strong>Administration › Utilisateurs et accès › Rôles et droits d’accès</strong> : un rôle est un <strong>ensemble de droits</strong> du type « module : action » (consulter, créer, modifier, valider, publier, payer, exporter, administrer…).</p>
+<p><figure><a href="img/adm-02-roles.png" target="_blank" rel="noopener"><img src="img/adm-02-roles.png" alt="Rôles et droits d’accès" loading="lazy"></a><figcaption>Rôles et droits d’accès</figcaption></figure></p>
+<blockquote class="attention"><p><strong>Important</strong> — <strong>Modifier un rôle change les droits de tous ses utilisateurs.</strong> Vérifiez le nombre d’utilisateurs concernés (affiché sur la carte du rôle) avant d’enregistrer.</p>
+</blockquote>
+<ul>
+<li>Chaque carte résume les droits du rôle par module, le nombre d’utilisateurs et de droits.</li>
+<li>Les rôles <strong>Système</strong> (administrateur…) ne se suppriment pas.</li>
+<li>Le badge <strong>2FA obligatoire</strong> signale les rôles qui doivent activer la double authentification.</li>
+<li><strong>Nouveau rôle</strong> crée un rôle sur mesure ; <strong>attribuez-lui ensuite ses droits</strong>.</li>
+</ul>
+<h3 id="les-roles-prevus">Les rôles prévus</h3>
+<table>
+<thead>
+<tr>
+<th>Rôle</th>
+<th>Pour qui</th>
+<th>2FA</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Administrateur</strong></td>
+<td>Comptes, rôles, paramètres, historique</td>
+<td><strong>Obligatoire</strong></td>
+</tr>
+<tr>
+<td><strong>Direction</strong></td>
+<td>Chiffres, rapports, finances</td>
+<td><strong>Obligatoire</strong></td>
+</tr>
+<tr>
+<td><strong>Manager</strong></td>
+<td>Encadre les activités</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Responsable commercial</strong></td>
+<td>Chef d’équipe commerciale</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Commercial</strong></td>
+<td>Prospects, ventes, biens</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Comptable</strong></td>
+<td>Contrôle des encaissements, paiement des commissions</td>
+<td><strong>Obligatoire</strong></td>
+</tr>
+<tr>
+<td><strong>Responsable gestion locative</strong></td>
+<td>Biens loués</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Responsable démarches</strong></td>
+<td>Vérifications et démarches</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Responsable construction</strong></td>
+<td>Chantiers</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>RH</strong></td>
+<td>Ressources humaines</td>
+<td><strong>Obligatoire</strong></td>
+</tr>
+</tbody></table>
+<p>Les <strong>clients, propriétaires et locataires</strong> ont un <strong>espace client</strong> séparé : ce ne sont pas des rôles du back-office.</p>
+<h3 id="les-regles-des-deux-regards">Les règles des deux regards</h3>
+<p>Pour limiter les erreurs et la fraude, l’application impose que <strong>deux personnes différentes</strong> interviennent :</p>
+<table>
+<thead>
+<tr>
+<th>Opération</th>
+<th>Qui saisit</th>
+<th>Qui valide</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Paiement d’une vente</strong></td>
+<td>Le commercial</td>
+<td>Comptabilité, responsable, direction (jamais l’auteur)</td>
+</tr>
+<tr>
+<td><strong>Commission</strong></td>
+<td>Estimée par le responsable</td>
+<td><strong>Validée par le manager</strong>, <strong>payée par la comptabilité</strong> une fois le dossier soldé</td>
+</tr>
+<tr>
+<td><strong>Saisie financière</strong></td>
+<td>Toute personne habilitée</td>
+<td>Une <strong>autre</strong> personne</td>
+</tr>
+<tr>
+<td><strong>Dépense de chantier</strong></td>
+<td>Le responsable des chantiers</td>
+<td>La comptabilité</td>
+</tr>
+<tr>
+<td><strong>Loyer encaissé</strong></td>
+<td>La gestion locative</td>
+<td>Une personne habilitée</td>
+</tr>
+</tbody></table>
+<blockquote class="retenir"><p><strong>À retenir</strong> — <strong>Un compte par personne, un rôle par fonction.</strong> Ne créez jamais de compte partagé : l’historique ne pourrait plus dire qui a fait quoi. N’attribuez le rôle <strong>administrateur</strong> qu’à quelques personnes de confiance.</p>
+</blockquote>
+<h2 id="les-parametres">Les paramètres</h2>
+<p><strong>Administration › Réglages › Paramètres</strong> : les <strong>listes de valeurs</strong> (statuts, types, étapes) et les <strong>règles</strong> (durées, taux) utilisées par les écrans. Une modification s’applique <strong>immédiatement à toute l’équipe</strong> et est <strong>tracée</strong>.</p>
+<p><figure><a href="img/adm-03-parametres.png" target="_blank" rel="noopener"><img src="img/adm-03-parametres.png" alt="Paramètres" loading="lazy"></a><figcaption>Paramètres</figcaption></figure></p>
+<ul>
+<li>Le menu de gauche range les paramètres par <strong>thème</strong> : Général, Terrains, Mandats, Prospects (CRM), Missions/factures/références, Gestion locative, Ventes/réservations/paiements. Le compteur « 7/7 » dit combien sont <strong>personnalisés</strong>. Les réglages plus récents (finances, pilotage, notifications) se trouvent dans <strong>Avancé › Hors catalogue</strong>, où la <strong>recherche</strong> les retrouve.</li>
+<li><strong>Modifier</strong> change une valeur ; un paramètre sur <strong>valeur par défaut</strong> utilise le réglage d’origine de l’application.</li>
+<li><strong>Paramètre libre</strong> ajoute une clé hors catalogue (rarement utile).</li>
+</ul>
+<p>Quelques réglages utiles :</p>
+<table>
+<thead>
+<tr>
+<th>Réglage</th>
+<th>Rôle</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>finances.tauxGestionDefaut</code></td>
+<td>Commission de gestion par défaut (en %)</td>
+</tr>
+<tr>
+<td><code>finances.categoriesDepenses</code> / <code>categoriesRecettes</code></td>
+<td>Catégories proposées aux saisies</td>
+</tr>
+<tr>
+<td><code>finances.doubleValidation</code></td>
+<td>Exige qu’une saisie soit validée par une autre personne</td>
+</tr>
+<tr>
+<td><code>notifications.documentManquantJours</code></td>
+<td>Jours avant l’alerte « document manquant » d’un dossier réservé</td>
+</tr>
+<tr>
+<td>Numérotation des missions et factures</td>
+<td>Formats <code>MTM-{code}-{seq:3}/{annee}</code> et <code>MTM-FAC-…</code></td>
+</tr>
+<tr>
+<td>Gestion locative</td>
+<td><strong>Préavis</strong> de résiliation (30 jours par défaut)</td>
+</tr>
+</tbody></table>
+<blockquote class="attention"><p><strong>Attention</strong> — <strong>Avant de modifier un paramètre, notez sa valeur d’origine</strong> : l’historique la conserve, mais un retour en arrière reste manuel. Un paramètre qui a une <strong>page dédiée</strong> (Identité de l’entreprise, Étapes des dossiers, Alertes et rapports automatiques) ne se modifie plus dans cette page.</p>
+</blockquote>
+<h2 id="les-etapes-des-dossiers">Les étapes des dossiers</h2>
+<p><strong>Administration › Réglages › Étapes des dossiers</strong> : les <strong>étapes</strong> que suit chaque type de dossier (ventes, pipeline commercial, chantiers).</p>
+<p><figure><a href="img/adm-04-parcours.png" target="_blank" rel="noopener"><img src="img/adm-04-parcours.png" alt="Étapes des dossiers" loading="lazy"></a><figcaption>Étapes des dossiers</figcaption></figure></p>
+<ul>
+<li><strong>Ajouter</strong> des étapes propres à MTM, les <strong>remettre dans l’ordre</strong> (flèches), <strong>autoriser de nouveaux passages</strong> d’une étape à une autre (liste « Peut passer à… »).</li>
+<li>Les étapes <strong>d’origine</strong> (cadenas) <strong>ne se retirent pas</strong> : le système s’en sert pour calculer les soldes, conclure une vente ou réceptionner un chantier.</li>
+<li>Une étape ajoutée <strong>ne peut pas être retirée</strong> tant que des dossiers s’y trouvent (le compteur « 1 dossier » le dit).</li>
+</ul>
+<h2 id="l-identite-de-l-entreprise">L’identité de l’entreprise</h2>
+<p><strong>Administration › Réglages › Identité de l’entreprise</strong> : le <strong>logo</strong> et les <strong>mentions légales</strong> (dénomination, forme juridique, capital, <strong>NINEA</strong>, <strong>RCCM</strong>, banque, pied de page) s’impriment en <strong>en-tête et pied de page de tous les documents générés</strong> : factures, rapports, contrats, quittances.</p>
+<p><figure><a href="img/adm-05-identite.png" target="_blank" rel="noopener"><img src="img/adm-05-identite.png" alt="Identité de l’entreprise" loading="lazy"></a><figcaption>Identité de l’entreprise</figcaption></figure></p>
+<ol>
+<li><strong>Téléverser un logo</strong> (JPG, PNG ou WebP, 2 Mo au maximum, carré de préférence).</li>
+<li>Renseignez les mentions : <strong>NINEA</strong> et <strong>RCCM</strong> en priorité.</li>
+<li><strong>Voir un aperçu PDF</strong> pour contrôler le rendu avant de généraliser.</li>
+</ol>
+<h2 id="les-regles-de-notification">Les règles de notification</h2>
+<p><strong>Administration › Réglages › Règles de notification</strong> : pour chaque <strong>événement</strong>, <strong>qui est prévenu</strong> et par <strong>quels canaux</strong> (e-mail, SMS, WhatsApp).</p>
+<p><figure><a href="img/adm-06-regles-notification.png" target="_blank" rel="noopener"><img src="img/adm-06-regles-notification.png" alt="Règles de notification" loading="lazy"></a><figcaption>Règles de notification</figcaption></figure></p>
+<ul>
+<li>Chaque événement a un interrupteur <strong>Actif</strong>, un <strong>groupe de destinataires</strong> (« Encadrement commercial », « Valideurs des ventes et paiements »…) et des cases <strong>E-mail / SMS / WhatsApp</strong>.</li>
+<li><strong>Enregistrer</strong> applique le changement aux <strong>prochaines alertes</strong>. <strong>Revenir aux réglages d’origine</strong> annule vos règles.</li>
+<li>Le <strong>bandeau bleu</strong> en haut de l’écran dit <strong>quel canal est inactif</strong> : sans fournisseur configuré sur le serveur, rien ne part même si la case est cochée.</li>
+<li>Chacun peut <strong>couper l’e-mail pour lui-même</strong> et choisir ses canaux dans <strong>son nom › Mes notifications</strong>.</li>
+</ul>
+<h3 id="si-les-e-mails-ou-les-sms-ne-partent-pas">Si les e-mails ou les SMS ne partent pas</h3>
+<p>Passez dans cet ordre :</p>
+<ol>
+<li><strong>La règle</strong> : l’événement est-il <strong>Actif</strong>, avec le <strong>bon groupe</strong> et le <strong>canal coché</strong> ?</li>
+<li><strong>La personne</strong> : dans <strong>Mes notifications</strong>, a-t-elle activé le canal ? Pour un SMS ou WhatsApp, son <strong>numéro est-il saisi avec l’indicatif du pays</strong> (<code>+221…</code>) ?</li>
+<li><strong>Le bandeau bleu</strong> de l’écran des règles signale-t-il un canal inactif ? Si oui, c’est un réglage du <strong>serveur</strong> : prévenez l’équipe technique.</li>
+<li><strong>Les SMS</strong> sont payés <strong>à l’unité</strong> chez le fournisseur : si le solde est épuisé, les envois échouent. Rechargez le compte.</li>
+<li><strong>L’e-mail est parti mais n’arrive pas ?</strong> Demandez au destinataire de regarder ses <strong>spams</strong> et signalez le message comme <strong>non-spam</strong>. Si cela se répète, prévenez l’équipe technique : l’authentification du domaine d’envoi doit être vérifiée.</li>
+</ol>
+<h2 id="alertes-et-rapports-automatiques">Alertes et rapports automatiques</h2>
+<p><strong>Administration › Réglages › Alertes et rapports automatiques</strong> (direction et administrateurs) regroupe deux réglages.</p>
+<p><figure><a href="img/adm-11-pilotage-reglages.png" target="_blank" rel="noopener"><img src="img/adm-11-pilotage-reglages.png" alt="Alertes et rapports automatiques" loading="lazy"></a><figcaption>Alertes et rapports automatiques</figcaption></figure></p>
+<h3 id="dossiers-bloques">Dossiers bloqués</h3>
+<p>Cinq champs, un par type de dossier (vente, mission, chantier, prospect, tâche) : le <strong>nombre de jours</strong> sans mouvement au-delà duquel le dossier est signalé « bloqué » (vue Équipe et tableau de bord de la direction). Valeurs : des <strong>jours entiers de 1 à 365</strong>. <strong>Enregistrer les délais</strong> applique le changement tout de suite et le consigne dans l’historique.</p>
+<h3 id="envoi-automatique-des-rapports">Envoi automatique des rapports</h3>
+<ul>
+<li><strong>Interrupteur</strong> : actif ou non (désactivé par défaut).</li>
+<li><strong>Fréquence</strong> : chaque lundi (semaine écoulée) ou le 1er du mois (mois précédent).</li>
+<li><strong>Rapports à envoyer</strong> : cochez ceux voulus. <strong>Format</strong> : PDF, Excel, ou les deux.</li>
+<li><strong>Destinataires</strong> : une adresse e-mail par ligne, vingt au plus.</li>
+<li><strong>M’envoyer un essai</strong> : envoie un exemplaire à <strong>votre seule adresse</strong> pour vérifier le contenu et la messagerie.</li>
+<li><strong>Derniers envois</strong> : date, période, rapports et nombre de destinataires des envois réellement partis.</li>
+</ul>
+<p>Activer l’envoi exige <strong>au moins un rapport et un destinataire</strong>.</p>
+<h2 id="l-historique-des-actions">L’historique des actions</h2>
+<p><strong>Administration › Utilisateurs et accès › Historique des actions</strong> : toutes les <strong>actions sensibles</strong> — <strong>qui, quand, quoi</strong>, valeurs <strong>avant et après</strong>, avec le <strong>motif</strong> quand il est exigé.</p>
+<p><figure><a href="img/adm-07-audit.png" target="_blank" rel="noopener"><img src="img/adm-07-audit.png" alt="Historique des actions" loading="lazy"></a><figcaption>Historique des actions</figcaption></figure></p>
+<ul>
+<li>Filtrez par <strong>recherche</strong>, <strong>période</strong>, <strong>module</strong>, <strong>élément</strong>.</li>
+<li>Un clic sur une ligne ouvre le <strong>détail</strong> (valeurs avant et après).</li>
+<li>L’<strong>export</strong> exige un motif, lui-même consigné.</li>
+</ul>
+<blockquote class="retenir"><p><strong>À retenir</strong> — C’est votre outil de <strong>contrôle</strong> : consultez-le régulièrement, en particulier après le départ d’un collaborateur ou en cas de doute sur une modification.</p>
+</blockquote>
+<h2 id="le-site-web">Le site web</h2>
+<p><strong>Administration › Site web</strong> regroupe ce que les visiteurs lisent sur le <strong>site public</strong> : <strong>Contenus du site</strong> (textes page par page), <strong>Réalisations &amp; projets</strong>, <strong>Publicités du bandeau</strong>, <strong>Équipe du site</strong>.</p>
+<p><figure><a href="img/web-02-contenus.png" target="_blank" rel="noopener"><img src="img/web-02-contenus.png" alt="Contenus du site" loading="lazy"></a><figcaption>Contenus du site</figcaption></figure></p>
+<ul>
+<li>Un contenu n’apparaît sur le site <strong>qu’une fois publié</strong>.</li>
+<li>Relisez avant de publier : le texte est visible de tous.</li>
+</ul>
+<p>Les messages envoyés par les visiteurs arrivent dans <strong>Commercial › Demandes du site</strong>.</p>
+<h2 id="l-import-de-biens-depuis-un-tableur">L’import de biens depuis un tableur</h2>
+<p><strong>Biens › Biens à vendre › Importer depuis Excel</strong> reprend en masse un tableur de biens, <strong>avec un aperçu avant écriture</strong>.</p>
+<p><figure><a href="img/adm-08-import-biens.png" target="_blank" rel="noopener"><img src="img/adm-08-import-biens.png" alt="Import de biens" loading="lazy"></a><figcaption>Import de biens</figcaption></figure></p>
+<ol>
+<li>Déposez le fichier <strong>.xlsx</strong> ou <strong>.csv</strong> (5 Mo et 5 000 lignes au maximum).</li>
+<li><strong>Aperçu</strong> : biens à créer, déjà présents, lignes refusées avec la raison. <strong>Rien n’est écrit à ce stade.</strong></li>
+<li><strong>Importer N biens</strong> pour confirmer. Les biens arrivent en <strong>Brouillon</strong> : relisez-les avant de les publier.</li>
+</ol>
+<p>Seules les colonnes <strong>LOCALITE</strong> et <strong>TITRE JURIDIQUE</strong> sont indispensables. L’import ne touche jamais à un bien déjà présent, et chaque import est consigné dans l’historique.</p>
+<h2 id="une-routine-de-securite-simple">Une routine de sécurité simple</h2>
+<p><strong>Chaque semaine (10 minutes)</strong></p>
+<ol>
+<li><strong>Utilisateurs</strong>, onglet <strong>À surveiller</strong> : 2FA à activer, mots de passe provisoires jamais changés. Relancez les personnes concernées.</li>
+<li><strong>Historique des actions</strong> : parcourez les actions de la semaine, en particulier suppressions, exports et changements de droits.</li>
+</ol>
+<p><strong>Chaque mois</strong></p>
+<ol>
+<li>Passez en revue la liste des <strong>comptes actifs</strong> : y a-t-il des personnes parties dont le compte est encore ouvert ?</li>
+<li>Vérifiez que seuls les bons rôles ont les droits <strong>administrer</strong> et <strong>exporter</strong>.</li>
+</ol>
+<p><strong>À chaque départ</strong></p>
+<ul>
+<li><strong>Désactiver le compte le jour même.</strong></li>
+</ul>
+<h2 id="questions-frequentes">Questions fréquentes</h2>
+<p><strong>Quelqu’un a oublié son mot de passe.</strong>
+Le lien <strong>Mot de passe oublié ?</strong> de la page de connexion lui envoie un e-mail. Sans e-mail reçu, donnez-lui un mot de passe provisoire : <strong>Utilisateurs</strong>, le <strong>crayon</strong> de sa ligne, champ <strong>Nouveau mot de passe provisoire (facultatif)</strong> (le bouton <strong>Générer</strong> en propose un). Elle devra le changer à sa prochaine connexion.</p>
+<p><strong>Quelqu’un est bloqué après plusieurs erreurs.</strong>
+Le compte se débloque <strong>tout seul au bout de quelques minutes</strong>. Sinon, vérifiez son état dans <strong>Utilisateurs</strong>.</p>
+<p><strong>Une personne a perdu son téléphone (2FA).</strong>
+Elle peut utiliser un <strong>code de secours</strong>. Sinon, <strong>Réinitialiser le 2FA (téléphone perdu)</strong> sur la ligne de son compte, puis elle en recrée une.</p>
+<p><strong>Quelqu’un n’a pas accès à un menu.</strong>
+C’est une question de <strong>rôle</strong>. Vérifiez son rôle dans <strong>Utilisateurs</strong>, puis les droits du rôle dans <strong>Rôles et droits d’accès</strong>. Ne donnez pas un rôle plus large « pour dépanner » : créez plutôt un rôle sur mesure.</p>
+<p><strong>Un export demande un motif.</strong>
+Tout export est <strong>tracé</strong> : le motif est conservé dans l’historique des actions.</p>
+<p><strong>Un mois comptable clôturé doit être corrigé.</strong>
+Passez la correction <strong>à la date du jour</strong> par une saisie inverse, ou demandez à la direction de <strong>rouvrir</strong> le mois (un motif est exigé).</p>
+<p><strong>Je ne vois pas un réglage dans Paramètres.</strong>
+Les réglages récents sont dans <strong>Avancé › Hors catalogue</strong> : utilisez la <strong>recherche</strong>.</p>
+<h2 id="aide-memoire">Aide-mémoire</h2>
+<p><strong>Les cinq règles de l’administrateur</strong></p>
+<ol>
+<li><strong>Un compte par personne</strong>, un rôle par fonction.</li>
+<li><strong>Désactiver</strong> (jamais supprimer) le compte d’une personne qui part, <strong>le jour même</strong>.</li>
+<li><strong>Activer la 2FA</strong> pour les rôles sensibles.</li>
+<li><strong>Noter la valeur d’origine</strong> avant de modifier un paramètre.</li>
+<li><strong>Consulter l’historique des actions</strong> régulièrement.</li>
+</ol>
+<p><strong>Où cliquer</strong></p>
+<table>
+<thead>
+<tr>
+<th>Je veux…</th>
+<th>J’ouvre…</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Créer un compte</td>
+<td><strong>Administration › Utilisateurs et accès › Utilisateurs › Nouvel utilisateur</strong></td>
+</tr>
+<tr>
+<td>Aider quelqu’un qui a perdu son 2FA</td>
+<td><strong>Utilisateurs</strong> › la ligne › <strong>Réinitialiser le 2FA</strong></td>
+</tr>
+<tr>
+<td>Changer les droits d’un rôle</td>
+<td><strong>Utilisateurs et accès › Rôles et droits d’accès</strong></td>
+</tr>
+<tr>
+<td>Modifier une liste ou une règle</td>
+<td><strong>Réglages › Paramètres</strong></td>
+</tr>
+<tr>
+<td>Décider qui est prévenu</td>
+<td><strong>Réglages › Règles de notification</strong></td>
+</tr>
+<tr>
+<td>Régler les rapports automatiques</td>
+<td><strong>Réglages › Alertes et rapports automatiques</strong></td>
+</tr>
+<tr>
+<td>Mettre le logo et le NINEA</td>
+<td><strong>Réglages › Identité de l’entreprise</strong></td>
+</tr>
+<tr>
+<td>Voir qui a fait quoi</td>
+<td><strong>Utilisateurs et accès › Historique des actions</strong></td>
+</tr>
+<tr>
+<td>Trouver n’importe quoi</td>
+<td><kbd>Ctrl</kbd> + <kbd>K</kbd></td>
+</tr>
+</tbody></table>
+
+<aside class="aide-finale">
+<h2>Besoin d’aide ?</h2>
+<p>Commencez par la <strong>recherche</strong> du guide complet, ou appuyez sur <kbd>Ctrl</kbd> + <kbd>K</kbd> dans le back-office pour retrouver une page. Sinon, prévenez votre responsable en joignant une <strong>capture d’écran</strong>.</p>
+<h3>Les autres guides</h3>
+<ul class="aide-finale__guides">
+<li><a href="commercial.html"><strong>Guide du commercial</strong><span>Commerciaux de MTM Immobilier</span></a></li>
+<li><a href="responsable-commercial.html"><strong>Guide du responsable commercial</strong><span>Responsables commerciaux et managers de MTM Immobilier</span></a></li>
+</ul>
+</aside>
+</main>
+</div>
+<script src="guide.js" defer></script>
+</body>
+</html>

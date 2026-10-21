@@ -86,7 +86,7 @@
     <a
       mat-icon-button
       class="header__icon-btn"
-      href="/manuel/"
+      [href]="guideUrl()"
       target="_blank"
       rel="noopener"
       matTooltip="Guide d’utilisation"
@@ -192,7 +192,7 @@
             Paramètres
           </a>
         }
-        <a mat-menu-item href="/manuel/" target="_blank" rel="noopener">
+        <a mat-menu-item [href]="guideUrl()" target="_blank" rel="noopener">
           <svg lucideBookOpen class="menu-item-icon" aria-hidden="true"></svg>
           Guide d’utilisation
         </a>
