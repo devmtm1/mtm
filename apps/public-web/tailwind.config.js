@@ -55,6 +55,11 @@ export default {
           from: { opacity: '0', transform: 'scale(0.96)' },
           to: { opacity: '1', transform: 'scale(1)' },
         },
+        // Ouverture du lecteur vidéo : monte et se déploie doucement depuis le bas.
+        'lecteur-in': {
+          from: { opacity: '0', transform: 'translateY(20px) scale(0.93)' },
+          to: { opacity: '1', transform: 'none' },
+        },
         'sheet-in': {
           from: { opacity: '0', transform: 'translateY(24px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
@@ -102,6 +107,7 @@ export default {
         'page-in': 'rise-in 250ms ease-out both',
         'scale-in': 'scale-in 180ms ease-out both',
         'sheet-in': 'sheet-in 220ms ease-out both',
+        'lecteur-in': 'lecteur-in 320ms cubic-bezier(0.2, 0.9, 0.3, 1) both',
         'slide-down': 'slide-down 160ms ease-out both',
         'sheet-right': 'sheet-right 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both',
         'pop-in': 'pop-in 260ms cubic-bezier(0.2, 0.9, 0.3, 1.15) both',
