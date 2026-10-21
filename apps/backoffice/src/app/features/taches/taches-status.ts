@@ -99,3 +99,18 @@ export function echeanceDite(valeur: string | null | undefined, maintenant = new
   if (ecart < 8) return `Dans ${ecart} jours`;
   return dateCourte(valeur);
 }
+
+/** La teinte d'une échéance : rouge dépassée, orange le jour même, discrète sinon. */
+export type UrgenceEcheance = 'sans' | 'retard' | 'aujourdhui' | 'bientot' | 'normal';
+
+export function urgenceEcheance(valeur: string | null | undefined, maintenant = new Date()): UrgenceEcheance {
+  if (!valeur) return 'sans';
+  const debutAujourdhui = new Date(maintenant);
+  debutAujourdhui.setHours(0, 0, 0, 0);
+  const debutEcheance = new Date(valeur);
+  debutEcheance.setHours(0, 0, 0, 0);
+  const ecart = Math.round((debutEcheance.getTime() - debutAujourdhui.getTime()) / JOUR);
+  if (ecart < 0) return 'retard';
+  if (ecart === 0) return 'aujourdhui';
+  return ecart <= 2 ? 'bientot' : 'normal';
+}

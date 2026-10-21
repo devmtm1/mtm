@@ -1,4 +1,4 @@
-import { comparaisonDite, fcfa, libelleActivite, libelleCategorie, presets, repartitionRevenu, variation, variationDite } from './finances-utils';
+import { comparaisonCourte, comparaisonDite, fcfa, libelleActivite, libelleCategorie, presets, repartitionRevenu, tendanceDe, variation, variationDite } from './finances-utils';
 
 describe('périodes proposées', () => {
   const maintenant = new Date(2026, 9, 12); // 12 octobre 2026
@@ -58,5 +58,20 @@ describe('mises en forme', () => {
         { activite: 'locatif', revenu: 0, encaissements: 5, depenses: 0, resultat: 0 },
       ]),
     ).toEqual([{ label: 'Vente de biens', valeur: 100 }]);
+  });
+});
+
+describe('tendance d’un chiffre', () => {
+  it('dit hausse, baisse ou stable, et « neutre » quand la période précédente est vide', () => {
+    expect(tendanceDe(150, 100)).toBe('hausse');
+    expect(tendanceDe(80, 100)).toBe('baisse');
+    expect(tendanceDe(100, 100)).toBe('stable');
+    expect(tendanceDe(0, 0)).toBe('stable');
+    expect(tendanceDe(200000, 0)).toBe('neutre');
+  });
+
+  it('résume une comparaison impossible en trois mots', () => {
+    expect(comparaisonCourte(200000, 0)).toBe('Période précédente vide');
+    expect(comparaisonCourte(150, 100)).toBe('+50 % par rapport à la période précédente');
   });
 });

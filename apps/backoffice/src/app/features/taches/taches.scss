@@ -1,68 +1,150 @@
 .taches-page {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 16px;
+  gap: 18px;
 }
 
+/* --------------------------------------------------------------------------
+   Compteurs : ce sont des filtres. Celui qui est appliqué est cerné et le dit.
+   -------------------------------------------------------------------------- */
 .compteurs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
+
+  @media (max-width: 560px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .compteur {
-  display: grid;
-  gap: 2px;
-  padding: 14px 16px;
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 14px 18px 14px 22px;
   border: 1px solid var(--mtm-border);
   border-radius: var(--mtm-radius-md);
   background: var(--mtm-card-bg);
+  box-shadow: var(--mtm-shadow-card);
+  color: var(--mtm-text-dark);
+  font: inherit;
   text-align: left;
   cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  /* Filet de couleur à gauche : la teinte dit la gravité avant même de lire. */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 12px;
+    bottom: 12px;
+    width: 4px;
+    border-radius: 0 4px 4px 0;
+    background: var(--mtm-primary);
+  }
 
   strong {
-    font-size: 1.6rem;
+    font-family: var(--mtm-font-display);
+    font-size: 1.7rem;
+    font-weight: 700;
     line-height: 1.1;
+    font-variant-numeric: tabular-nums;
   }
 
   span {
-    font-size: 0.85rem;
+    font-size: 0.88rem;
     color: var(--mtm-text-muted);
+  }
+
+  &--danger::before {
+    background: var(--mtm-error);
+  }
+
+  &--jour::before {
+    background: var(--mtm-warning);
+  }
+
+  /* Rien dedans : le compteur se tait. */
+  &.is-vide {
+    background: var(--mtm-bg-surface);
+    box-shadow: none;
+
+    strong {
+      color: var(--mtm-text-muted);
+    }
+
+    &::before {
+      background: var(--mtm-border);
+    }
   }
 
   &--danger:not(.is-vide) strong {
     color: var(--mtm-error);
   }
+
+  &:hover {
+    border-color: var(--mtm-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mtm-primary-light);
+    outline-offset: 2px;
+  }
+
+  &.is-actif {
+    border-color: var(--mtm-primary);
+    box-shadow: 0 0 0 1px var(--mtm-primary);
+  }
 }
 
+/* Onglets : les mêmes que ceux des sujets du menu. */
 .onglets {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
   border-bottom: 1px solid var(--mtm-border);
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
   button {
-    padding: 10px 14px;
+    flex-shrink: 0;
+    margin-bottom: -1px;
+    padding: 10px 16px;
     border: 0;
     border-bottom: 2px solid transparent;
     background: transparent;
     color: var(--mtm-text-muted);
     font: inherit;
+    font-weight: 500;
+    white-space: nowrap;
     cursor: pointer;
+
+    &:hover {
+      color: var(--mtm-text-dark);
+    }
 
     &.is-actif {
       border-bottom-color: var(--mtm-primary);
-      color: var(--mtm-text-dark);
+      color: var(--mtm-primary);
       font-weight: 600;
     }
   }
 }
 
+/* Filtres : une barre compacte, la recherche d'abord et la plus large. */
 .filtres {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 180px)) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) repeat(3, minmax(0, 190px));
   gap: 12px;
   align-items: start;
+  padding: 14px 16px;
 
   @media (max-width: 900px) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -75,24 +157,46 @@
 
 .liste {
   display: grid;
-  gap: 8px;
+  gap: 10px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+/* --------------------------------------------------------------------------
+   Une tâche : la case à cocher, le titre et sa ligne de contexte, puis les
+   pastilles. L'échéance est colorée selon l'urgence.
+   -------------------------------------------------------------------------- */
 .ligne {
+  position: relative;
   display: grid;
   grid-template-columns: 36px minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: 12px;
+  padding: 14px 18px 14px 16px;
   border: 1px solid var(--mtm-border);
   border-radius: var(--mtm-radius-md);
   background: var(--mtm-card-bg);
+  box-shadow: var(--mtm-shadow-card);
+  transition: border-color 0.15s ease;
+
+  &:hover {
+    border-color: var(--mtm-primary-light);
+  }
 
   &.is-retard {
-    border-left: 4px solid var(--mtm-error);
+    border-color: var(--mtm-error);
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 10px;
+      bottom: 10px;
+      width: 4px;
+      border-radius: 0 4px 4px 0;
+      background: var(--mtm-error);
+    }
   }
 
   &.is-fermee {
@@ -118,11 +222,15 @@
   place-items: center;
   width: 28px;
   height: 28px;
-  border: 2px solid var(--mtm-border);
+  border: 2px solid var(--mtm-field-border, var(--mtm-border));
   border-radius: 50%;
   background: transparent;
   color: transparent;
   cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease;
 
   svg {
     width: 14px;
@@ -132,6 +240,7 @@
   &:hover,
   &:focus-visible {
     border-color: var(--mtm-success);
+    background: var(--mtm-success-bg);
     color: var(--mtm-success);
   }
 
@@ -143,28 +252,84 @@
 
 .ligne__corps {
   display: grid;
-  gap: 2px;
+  gap: 5px;
   padding: 0;
   border: 0;
   background: transparent;
+  color: var(--mtm-text-dark);
   text-align: left;
   font: inherit;
   cursor: pointer;
   min-width: 0;
+
+  &:hover .ligne__titre,
+  &:focus-visible .ligne__titre {
+    color: var(--mtm-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mtm-primary-light);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
 }
 
 .ligne__titre {
+  font-size: 0.98rem;
+  font-weight: 600;
   overflow-wrap: anywhere;
 }
 
 .ligne__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
   font-size: 0.82rem;
   color: var(--mtm-text-muted);
 }
 
-.is-retard-texte {
-  color: var(--mtm-error);
+/* L'échéance en pastille de texte : la couleur seule ne porte pas l'information, les mots restent. */
+.echeance {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--mtm-bg-hover);
+  color: var(--mtm-text-muted);
+  font-size: 0.78rem;
   font-weight: 600;
+
+  &--retard {
+    background: var(--mtm-error-bg);
+    color: var(--mtm-error);
+  }
+
+  &--aujourdhui {
+    background: var(--mtm-warning-bg);
+    color: var(--mtm-warning);
+  }
+
+  &--bientot {
+    background: var(--mtm-primary-subtle);
+    color: var(--mtm-primary);
+  }
+}
+
+.ligne__lien {
+  position: relative;
+  padding-left: 12px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--mtm-text-muted);
+    opacity: 0.6;
+    transform: translateY(-50%);
+  }
 }
 
 .ligne__pastilles {
@@ -175,6 +340,10 @@
 
 .ligne__dossier {
   font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--mtm-primary);
+  text-underline-offset: 3px;
+  white-space: nowrap;
 }
 
 .pagination {

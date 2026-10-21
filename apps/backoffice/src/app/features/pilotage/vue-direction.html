@@ -76,13 +76,24 @@
     </section>
 
     <section aria-label="Alertes">
-      <h2>À surveiller</h2>
+      <div class="titre-ligne">
+        <h2>À surveiller</h2>
+        @if (nbAlertes() > 0) {
+          <span class="status-pill status-pill--danger">
+            {{ nbAlertes() }} point{{ nbAlertes() > 1 ? 's' : '' }} à traiter
+          </span>
+        } @else {
+          <span class="status-pill status-pill--success">Tout est en ordre</span>
+        }
+      </div>
       <div class="alertes">
         @for (a of alertes(); track a.titre) {
           <a [routerLink]="a.lien" [class.est-alerte]="a.n > 0">
-            <strong>{{ a.n }}</strong>
-            <span>{{ a.titre }}</span>
-            <span>{{ a.aide }}</span>
+            <span class="alerte__n">{{ a.n }}</span>
+            <span class="alerte__texte">
+              <strong>{{ a.titre }}</strong>
+              <small>{{ a.aide }}</small>
+            </span>
           </a>
         }
       </div>

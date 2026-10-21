@@ -25,16 +25,16 @@
   </header>
 
   <!-- Chiffres clés : chaque tuile est un raccourci vers le filtre correspondant. -->
-  <section class="kpi-row" aria-label="Synthèse du portefeuille">
+  <section class="kpi-row kpi-row--soigne" aria-label="Synthèse du portefeuille">
     @if (stats(); as s) {
-      <button type="button" class="kpi" (click)="resetFilters()">
+      <button type="button" class="kpi" [class.kpi--zero]="s.total === 0" (click)="resetFilters()">
         <span class="kpi__icon"><svg lucideLandPlot aria-hidden="true"></svg></span>
         <span class="kpi__body">
           <strong>{{ s.total }}</strong>
           <span>Biens référencés</span>
         </span>
       </button>
-      <button type="button" class="kpi kpi--success" (click)="filterByStatus('Disponible')">
+      <button type="button" class="kpi kpi--success" [class.kpi--zero]="(s.parStatut['Disponible'] ?? 0) === 0" (click)="filterByStatus('Disponible')">
         <span class="kpi__icon"><svg lucideCircleCheck aria-hidden="true"></svg></span>
         <span class="kpi__body">
           <strong>{{ s.parStatut['Disponible'] ?? 0 }}</strong>
@@ -42,7 +42,7 @@
           <small>Publiés sur le site</small>
         </span>
       </button>
-      <button type="button" class="kpi kpi--warning" (click)="filterByStatus('Réservé')">
+      <button type="button" class="kpi kpi--warning" [class.kpi--zero]="(s.parStatut['Réservé'] ?? 0) === 0" (click)="filterByStatus('Réservé')">
         <span class="kpi__icon"><svg lucideStar aria-hidden="true"></svg></span>
         <span class="kpi__body">
           <strong>{{ s.parStatut['Réservé'] ?? 0 }}</strong>
@@ -50,14 +50,14 @@
           <small>Dossier de vente en cours</small>
         </span>
       </button>
-      <button type="button" class="kpi kpi--primary" (click)="filterByStatus('Vendu')">
+      <button type="button" class="kpi kpi--primary" [class.kpi--zero]="(s.parStatut['Vendu'] ?? 0) === 0" (click)="filterByStatus('Vendu')">
         <span class="kpi__icon"><svg lucideCircleCheck aria-hidden="true"></svg></span>
         <span class="kpi__body">
           <strong>{{ s.parStatut['Vendu'] ?? 0 }}</strong>
           <span>Vendus</span>
         </span>
       </button>
-      <button type="button" class="kpi kpi--muted" (click)="filterArchives()">
+      <button type="button" class="kpi kpi--muted" [class.kpi--zero]="(s.archives ?? 0) === 0" (click)="filterArchives()">
         <span class="kpi__icon"><svg lucideArchive aria-hidden="true"></svg></span>
         <span class="kpi__body">
           <strong>{{ s.archives ?? 0 }}</strong>
@@ -85,7 +85,7 @@
         </span>
       </div>
     } @else {
-      @for (i of [1, 2, 3, 4, 5]; track i) {
+      @for (i of [1, 2, 3, 4, 5, 6]; track i) {
         <div class="kpi skeleton" aria-hidden="true"></div>
       }
     }
@@ -162,6 +162,9 @@
         @for (option of options().statutCommercial; track option) {
           <button type="button" class="chip" [class.is-actif]="filters.controls.statutCommercial.value === option" [attr.aria-pressed]="filters.controls.statutCommercial.value === option" (click)="choisirStatut(option)">
             {{ option }}
+            @if (stats(); as s) {
+              <span class="chip__n">{{ s.parStatut[option] ?? 0 }}</span>
+            }
           </button>
         }
       </div>
@@ -298,7 +301,7 @@
           <h3>Aucun bien pour le moment</h3>
           <p>
             Commencez par créer la fiche d’un bien : identité, localisation, prix et photos. Elle
-            pourra ensuite être publiée sur le site en passant son statut à « Disponible ».
+            pourra ensuite être publiée sur le site en passant son statut à « Disponible ».
           </p>
           @if (canCreate()) {
             <button mat-flat-button color="primary" type="button" (click)="openCreate()">

@@ -1,34 +1,6 @@
-.bien-form-page {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
+/* Les blocs, la grille et le pied d'action viennent des styles communs des formulaires (styles.scss). */
 
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.form-section-title {
-  margin: 20px 0 8px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--mtm-text);
-
-  &:first-child {
-    margin-top: 0;
-  }
-}
-
-.form-section-hint {
-  margin: 0 0 8px;
-  font-size: 0.84rem;
-  line-height: 1.5;
-  color: var(--mtm-text-muted);
-}
-
+/* Trois champs côte à côte (pièces, chambres, salles d'eau). */
 .form-grid--three {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 
@@ -37,17 +9,28 @@
   }
 }
 
+.photos {
+  display: grid;
+  gap: 14px;
+}
+
+/* Zone d'ajout : un grand bouton en pointillés, pas un simple lien. */
 .photo-add {
-  display: inline-flex;
+  position: relative;
+  display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border: 1px dashed var(--mtm-border, #d1d5db);
-  border-radius: 10px;
+  justify-content: center;
+  gap: 10px;
+  min-height: 84px;
+  padding: 16px;
+  border: 1px dashed var(--mtm-primary);
+  border-radius: var(--mtm-radius-md);
+  background: var(--mtm-primary-subtle);
+  color: var(--mtm-primary);
+  font-size: 0.92rem;
   font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--mtm-primary, #1a4974);
   cursor: pointer;
+  transition: background-color 0.15s ease;
 
   input {
     position: absolute;
@@ -58,7 +41,7 @@
 
   &:hover,
   &:focus-within {
-    background: var(--mtm-primary-subtle, #eef4fa);
+    background: var(--mtm-primary-light);
   }
 }
 
@@ -66,18 +49,18 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin: 12px 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .photo-item {
   position: relative;
-  width: 112px;
-  height: 84px;
+  width: 120px;
+  height: 90px;
   overflow: hidden;
   border-radius: 10px;
-  background: var(--mtm-surface-muted, #f3f4f6);
+  background: var(--mtm-bg-hover);
 
   img {
     width: 100%;

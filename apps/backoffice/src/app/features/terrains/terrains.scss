@@ -25,12 +25,37 @@
   gap: 4px;
 }
 
+/* La section ne dessine plus de carte : la barre est la seule carte du haut, les biens se posent
+   directement sur le fond de page. Sans « overflow: hidden », l'étiquette flottante des champs
+   n'est plus rognée. */
+.terrains-page .page-section {
+  display: grid;
+  gap: 16px;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
 /* ---------- Barre : recherche, tri, affichage, puis les deux filtres du quotidien ---------- */
 .barre {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--mtm-border);
+  border-radius: var(--mtm-radius-lg);
+  background: var(--mtm-card-bg);
+  box-shadow: var(--mtm-shadow-card);
+
+  /* Tout ce qui est sur la première ligne a la hauteur d'un champ. */
+  .view-switch {
+    align-self: stretch;
+    align-items: center;
+    height: 56px;
+    border-radius: 10px;
+  }
 }
 
 .barre__recherche {
@@ -70,22 +95,23 @@
 }
 
 .chips__label {
-  min-width: 52px;
+  min-width: 56px;
   color: var(--mtm-text-muted);
-  font-size: 0.74rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .chip {
-  padding: 6px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 13px;
   border: 1px solid var(--mtm-border);
   border-radius: 999px;
   background: var(--mtm-card-bg);
   color: var(--mtm-text-dark);
   font: inherit;
-  font-size: 0.86rem;
+  font-size: 0.85rem;
   cursor: pointer;
   transition:
     background 0.15s ease,
@@ -101,7 +127,26 @@
     background: var(--mtm-primary);
     color: var(--mat-sys-on-primary);
     font-weight: 600;
+
+    .chip__n {
+      background: rgba(255, 255, 255, 0.22);
+      color: inherit;
+    }
   }
+}
+
+/* Combien de biens dans ce statut, sans avoir à cliquer. */
+.chip__n {
+  min-width: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--mtm-bg-hover);
+  color: var(--mtm-text-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1.55;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 .panneau {
@@ -113,6 +158,13 @@
   border: 1px solid var(--mtm-border);
   border-radius: 12px;
   background: var(--mtm-bg-surface);
+}
+
+/* Rien à montrer : une carte en pointillés, pas un trou dans la page. */
+.terrains-page .empty-state {
+  border: 1px dashed var(--mtm-field-border, var(--mtm-border));
+  border-radius: var(--mtm-radius-lg);
+  background: var(--mtm-card-bg);
 }
 
 .resultat {

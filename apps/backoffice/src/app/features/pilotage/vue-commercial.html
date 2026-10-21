@@ -70,7 +70,10 @@
 
     <div class="deux">
       <section class="page-card">
-        <h2>Mon objectif de {{ d.objectif.periode }}</h2>
+        <div class="titre-ligne">
+          <h2>Mon objectif du mois</h2>
+          <span class="status-pill">{{ moisDit(d.objectif.periode) }}</span>
+        </div>
         @if (d.objectif.cibles) {
           <ul class="objectifs">
             @if (d.objectif.cibles.cibleVentes) {
@@ -114,7 +117,7 @@
             }
           </ul>
         } @else {
-          <p class="vide">
+          <p class="etat-vide">
             Aucun objectif fixé pour ce mois. Votre responsable peut le définir dans « Objectifs ».
           </p>
         }
@@ -155,7 +158,7 @@
       <section class="page-card">
         <h2>À relancer</h2>
         @if (d.relances.prochaines.length === 0) {
-          <p class="vide">Aucune relance en retard ni prévue aujourd’hui.</p>
+          <p class="etat-ok">Aucune relance en retard ni prévue aujourd’hui.</p>
         } @else {
           <ul class="liste">
             @for (r of d.relances.prochaines; track r.id) {
@@ -177,7 +180,7 @@
           effectuée{{ d.visites.effectueesCeMois > 1 ? 's' : '' }} ce mois.
         </p>
         @if (d.visites.aVenir.length === 0) {
-          <p class="vide">Aucune visite programmée.</p>
+          <p class="etat-vide">Aucune visite programmée.</p>
         } @else {
           <ul class="liste">
             @for (v of d.visites.aVenir; track v.id) {
@@ -196,7 +199,7 @@
     <section class="page-card">
       <h2>Mon agenda aujourd’hui</h2>
       @if (d.agenda.length === 0) {
-        <p class="vide">
+        <p class="etat-vide">
           Rien d’inscrit à l’agenda aujourd’hui. <a routerLink="/agenda">Ouvrir l’agenda</a>
         </p>
       } @else {

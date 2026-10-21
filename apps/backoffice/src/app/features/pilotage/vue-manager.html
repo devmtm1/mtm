@@ -53,12 +53,17 @@
     </section>
 
     <section class="page-card" aria-label="Équipe commerciale">
-      <h2>Équipe commerciale</h2>
+      <div class="titre-ligne">
+        <h2>Équipe commerciale</h2>
+        <span class="status-pill">
+          {{ d.equipe.length }} commercial{{ d.equipe.length > 1 ? 'aux' : '' }}
+        </span>
+      </div>
       @if (d.equipe.length === 0) {
         <p class="vide">Aucun commercial actif.</p>
       } @else {
         <div class="table-scroll">
-          <table class="data-table">
+          <table class="data-table table-equipe">
             <thead>
               <tr>
                 <th scope="col">Commercial</th>
@@ -74,24 +79,47 @@
             </thead>
             <tbody>
               @for (ligne of d.equipe; track ligne.id) {
-                <tr>
+                <tr class="is-clickable" (click)="ouvrir.emit(ligne.id)">
                   <td>
-                    <button type="button" class="lien" (click)="ouvrir.emit(ligne.id)">
-                      {{ ligne.nom }}
+                    <button
+                      type="button"
+                      class="identite"
+                      (click)="$event.stopPropagation(); ouvrir.emit(ligne.id)"
+                    >
+                      <span class="avatar" aria-hidden="true">{{ initiales(ligne.nom) }}</span>
+                      <span class="identite__nom">{{ ligne.nom }}</span>
                     </button>
                   </td>
-                  <td class="is-right">{{ ligne.prospectsActifs }}</td>
-                  <td class="is-right" [class.negatif]="ligne.relancesEnRetard > 0">
+                  <td class="is-right" [class.zero]="ligne.prospectsActifs === 0">
+                    {{ ligne.prospectsActifs }}
+                  </td>
+                  <td
+                    class="is-right"
+                    [class.zero]="ligne.relancesEnRetard === 0"
+                    [class.negatif]="ligne.relancesEnRetard > 0"
+                  >
                     {{ ligne.relancesEnRetard }}
                   </td>
-                  <td class="is-right">{{ ligne.visitesEffectuees }}</td>
-                  <td class="is-right">{{ ligne.ventesSoldees }}</td>
-                  <td class="is-right">{{ fcfa(ligne.chiffreAffaires) }}</td>
-                  <td class="is-right">{{ fcfa(ligne.commissionsEstimees) }}</td>
-                  <td class="is-right" [class.negatif]="ligne.tachesEnRetard > 0">
+                  <td class="is-right" [class.zero]="ligne.visitesEffectuees === 0">
+                    {{ ligne.visitesEffectuees }}
+                  </td>
+                  <td class="is-right" [class.zero]="ligne.ventesSoldees === 0">
+                    {{ ligne.ventesSoldees }}
+                  </td>
+                  <td class="is-right" [class.zero]="ligne.chiffreAffaires === 0">
+                    {{ fcfa(ligne.chiffreAffaires) }}
+                  </td>
+                  <td class="is-right" [class.zero]="ligne.commissionsEstimees === 0">
+                    {{ fcfa(ligne.commissionsEstimees) }}
+                  </td>
+                  <td
+                    class="is-right"
+                    [class.zero]="ligne.tachesEnRetard === 0"
+                    [class.negatif]="ligne.tachesEnRetard > 0"
+                  >
                     {{ ligne.tachesEnRetard }}
                   </td>
-                  <td>
+                  <td class="objectif">
                     @if (ligne.objectif?.cibleVentes) {
                       <div class="objectif__ligne">
                         <span>{{ ligne.realise.ventes }} / {{ ligne.objectif?.cibleVentes }}</span>
@@ -113,22 +141,46 @@
                 </tr>
               }
             </tbody>
+            @if (d.equipe.length > 1) {
+              <tfoot>
+                <tr>
+                  <th scope="row">Total de l’équipe</th>
+                  <td class="is-right">{{ totauxEquipe().prospectsActifs }}</td>
+                  <td class="is-right" [class.negatif]="totauxEquipe().relancesEnRetard > 0">
+                    {{ totauxEquipe().relancesEnRetard }}
+                  </td>
+                  <td class="is-right">{{ totauxEquipe().visitesEffectuees }}</td>
+                  <td class="is-right">{{ totauxEquipe().ventesSoldees }}</td>
+                  <td class="is-right">{{ fcfa(totauxEquipe().chiffreAffaires) }}</td>
+                  <td class="is-right">{{ fcfa(totauxEquipe().commissionsEstimees) }}</td>
+                  <td class="is-right" [class.negatif]="totauxEquipe().tachesEnRetard > 0">
+                    {{ totauxEquipe().tachesEnRetard }}
+                  </td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            }
           </table>
         </div>
         <p class="note">
           Les ventes sont celles soldées sur la période ; l’objectif compte les dossiers engagés
-          (réservés, en paiement ou soldés) du mois. Cliquer sur un nom ouvre le tableau de ce
+          (réservés, en paiement ou soldés) du mois. Cliquer sur une ligne ouvre le tableau de ce
           commercial.
         </p>
       }
     </section>
 
     <section aria-label="Dossiers bloqués">
-      <h2>Dossiers bloqués</h2>
+      <div class="titre-ligne">
+        <h2>Dossiers bloqués</h2>
+        @if (d.bloques.total > 0) {
+          <span class="status-pill status-pill--danger">{{ d.bloques.total }} à débloquer</span>
+        } @else {
+          <span class="status-pill status-pill--success">Aucun</span>
+        }
+      </div>
       @if (d.bloques.total === 0) {
-        <section class="page-card">
-          <p class="vide">Rien n’est bloqué : tous les dossiers ouverts ont bougé récemment.</p>
-        </section>
+        <p class="etat-ok">Rien n’est bloqué : tous les dossiers ouverts ont bougé récemment.</p>
       } @else {
         <div class="groupes">
           @for (groupe of d.bloques.groupes; track groupe.type) {

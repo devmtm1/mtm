@@ -14,7 +14,8 @@ import {
   fcfa,
   presets,
   repartitionRevenu,
-  comparaisonDite,
+  comparaisonCourte,
+  tendanceDe,
   variationDite,
   type PeriodePreset,
 } from './finances-utils';
@@ -125,12 +126,9 @@ export class TableauFinancierPage implements OnInit {
     );
   }
   protected variation = variationDite;
-  protected comparaison = comparaisonDite;
+  protected comparaison = comparaisonCourte;
 
-  protected tendance(actuel: number, precedent: number): 'hausse' | 'baisse' | 'stable' {
-    if (actuel === precedent) return 'stable';
-    return actuel > precedent ? 'hausse' : 'baisse';
-  }
+  protected tendance = tendanceDe;
 
   protected date(valeur: string | null): string {
     return valeur ? new Date(valeur).toLocaleDateString('fr-FR') : '';

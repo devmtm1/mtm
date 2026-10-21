@@ -44,7 +44,7 @@
       </aside>
     }
 
-    <section class="kpi-row" aria-label="Chiffres de la période">
+    <section class="kpi-row kpi-row--soigne" aria-label="Chiffres de la période">
       <article class="kpi">
         <span class="kpi__icon"><svg lucideWallet aria-hidden="true"></svg></span>
         <span class="kpi__body">
@@ -144,21 +144,30 @@
     </section>
 
     <section class="direction" aria-label="Situation de trésorerie">
-      <h2>Trésorerie à la date du jour</h2>
+      <div class="titre-ligne">
+        <h2>Trésorerie à la date du jour</h2>
+        <nav class="liens-rapides" aria-label="Aller plus loin">
+          <a routerLink="/finances/tresorerie">Trésorerie et caisse</a>
+          <a routerLink="/finances/reversements">Reversements</a>
+          <a routerLink="/finances/etats">États financiers</a>
+          <a routerLink="/finances/rapport-quotidien">Rapport du soir</a>
+        </nav>
+      </div>
       <div class="direction__tuiles">
-        <article class="mini">
-          <span>Consolidée</span>
+        <article class="mini mini--total">
+          <span>Trésorerie consolidée</span>
           <strong [class.negatif]="d.tresorerie.consolide.solde < 0">{{ fcfa(d.tresorerie.consolide.solde) }}</strong>
+          <small>Tous les comptes réunis</small>
         </article>
         @for (c of d.tresorerie.comptes; track c.id) {
           @if (c.actif) {
-            <article class="mini">
+            <article class="mini" [class.mini--zero]="c.solde === 0">
               <span>{{ c.nom }}</span>
               <strong [class.negatif]="c.solde < 0">{{ fcfa(c.solde) }}</strong>
             </article>
           }
         }
-        <article class="mini">
+        <article class="mini" [class.mini--zero]="d.proprietaires.soldeRestant === 0">
           <span>À reverser aux propriétaires</span>
           <strong>{{ fcfa(d.proprietaires.soldeRestant) }}</strong>
           <small>dont {{ fcfa(d.proprietaires.aReverserMaintenant) }} exigible maintenant</small>
@@ -169,23 +178,30 @@
           <small>Loyers, ventes en retard, démarches</small>
         </article>
       </div>
-      <p class="note">
-        <a routerLink="/finances/tresorerie">Trésorerie et caisse</a> ·
-        <a routerLink="/finances/reversements">Reversements aux propriétaires</a> ·
-        <a routerLink="/finances/etats">États financiers</a> ·
-        <a routerLink="/finances/rapport-quotidien">Rapport du soir</a>
-        @if (d.rapportDuJour === null) {
-          — <strong>le rapport du jour n’est pas encore préparé</strong>
-        } @else if (d.rapportDuJour !== 'transmis') {
-          — le rapport du jour est « {{ d.rapportDuJour }} », pas encore transmis
-        }
-      </p>
+      @if (d.rapportDuJour === null) {
+        <p class="note rapport-jour">
+          <strong>Le rapport du jour n’est pas encore préparé.</strong>
+          <a routerLink="/finances/rapport-quotidien">Le préparer</a>
+        </p>
+      } @else if (d.rapportDuJour !== 'transmis') {
+        <p class="note rapport-jour">
+          Le rapport du jour est « {{ d.rapportDuJour }} », pas encore transmis.
+          <a routerLink="/finances/rapport-quotidien">L’ouvrir</a>
+        </p>
+      }
     </section>
 
     <section class="page-card attention" aria-label="Points d’attention">
-      <h2>Points d’attention ({{ pointsDAttention(d) }})</h2>
+      <div class="titre-ligne">
+        <h2>Points d’attention</h2>
+        @if (pointsDAttention(d) > 0) {
+          <span class="status-pill status-pill--danger">{{ pointsDAttention(d) }} à traiter</span>
+        } @else {
+          <span class="status-pill status-pill--success">Rien à signaler</span>
+        }
+      </div>
       @if (pointsDAttention(d) === 0) {
-        <p class="vide">Rien à signaler.</p>
+        <p class="etat-ok">Aucun point d’attention : tout est en ordre.</p>
       } @else {
         <ul>
           @if (d.aAutoriser > 0) {
@@ -260,7 +276,7 @@
           <a routerLink="/finances/chantiers">Voir tous les chantiers</a>
         </p>
         <div class="table-scroll">
-          <table class="data-table">
+          <table class="data-table data-table--douce">
             <thead>
               <tr>
                 <th scope="col">Chantier</th>
@@ -318,7 +334,7 @@
     <section class="page-card" aria-label="Résultat par activité">
       <h2>Par activité</h2>
       <div class="table-scroll">
-        <table class="data-table">
+        <table class="data-table data-table--douce">
           <thead>
             <tr>
               <th scope="col">Activité</th>

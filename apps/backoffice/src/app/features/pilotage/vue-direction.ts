@@ -17,7 +17,8 @@ import {
   fcfa,
   presets,
   repartitionRevenu,
-  comparaisonDite,
+  comparaisonCourte,
+  tendanceDe,
   variationDite,
   type PeriodePreset,
 } from '../finances/finances-utils';
@@ -69,14 +70,14 @@ export class VueDirection implements OnInit {
 
   protected readonly graphiquePipeline = computed(() => {
     const pipeline = this.donnees()?.ventes.pipeline ?? {};
-    return Object.values(pipeline).some((n) => n > 0) ? donutChart(pipeline) : null;
+    return Object.values(pipeline).some((n) => n > 0) ? donutChart(pipeline, { centre: 'prospects' }) : null;
   });
 
-  /** Alertes à afficher : les nombres nuls restent visibles, en gris, pour rassurer. */
+  /** Alertes à afficher : celles qui demandent une action d'abord, les nombres nuls restent visibles, en gris, pour rassurer. */
   protected readonly alertes = computed(() => {
     const a = this.donnees()?.alertes;
     if (!a) return [];
-    return [
+    const liste = [
       {
         titre: 'Dossiers bloqués',
         n: a.dossiersBloques,
@@ -114,6 +115,8 @@ export class VueDirection implements OnInit {
         aide: 'Ne comptent pas encore',
       },
     ];
+    // Tri stable : à nombre égal l'ordre d'origine est conservé.
+    return liste.sort((x, y) => Number(y.n > 0) - Number(x.n > 0));
   });
 
   ngOnInit(): void {
@@ -125,14 +128,15 @@ export class VueDirection implements OnInit {
     this.charger();
   }
 
+  /** Ce qui demande une action : les points à zéro passent derrière, en gris. */
+  protected readonly nbAlertes = computed(() => this.alertes().filter((a) => a.n > 0).length);
+
   protected fcfa = fcfa;
   protected variation = variationDite;
-  protected comparaison = comparaisonDite;
 
-  protected tendance(actuel: number, precedent: number): 'hausse' | 'baisse' | 'stable' {
-    if (actuel === precedent) return 'stable';
-    return actuel > precedent ? 'hausse' : 'baisse';
-  }
+  /** Une période précédente vide n'est ni une hausse ni une baisse : on le dit court, sans couleur. */
+  protected comparaison = comparaisonCourte;
+  protected tendance = tendanceDe;
 
   protected pct(valeur: number | null): string {
     return valeur === null
