@@ -23,8 +23,13 @@
   --mtm-info-bg: #E9F4F9;
 
   --mtm-text-dark: #1F2937;
-  --mtm-text-muted: #6B7280;
-  --mtm-border: #E5E7EB;
+  // Gris secondaire : 6:1 sur blanc et 5,3:1 sur le fond de survol (le seuil de lisibilité est 4,5:1).
+  // L'ancien #6B7280 tombait à 4,3:1 sur les lignes survolées du menu.
+  --mtm-text-muted: #5B6472;
+  --mtm-border: #DCE0E6;
+  // Contour des champs de saisie : 3:1 sur blanc (seuil des éléments d'interface),
+  // alors que les filets des cartes et tableaux restent discrets.
+  --mtm-field-border: #8A94A3;
   --mtm-bg-surface: #F7F8FA;
   --mtm-bg-hover: #EEF2F7;
   --mtm-card-bg: #FFFFFF;
@@ -95,6 +100,7 @@
   --mtm-text-dark: #F4F4F5;
   --mtm-text-muted: #A1A1AA;
   --mtm-border: #3F3F46;
+  --mtm-field-border: #71717A;
   --mtm-bg-surface: #111318;
   --mtm-bg-hover: #23262E;
   --mtm-card-bg: #1A1B21;
@@ -284,7 +290,7 @@ ag-grid-angular {
   --mdc-outlined-text-field-label-text-color: var(--mtm-text-muted);
   --mdc-outlined-text-field-hover-label-text-color: var(--mtm-primary);
   --mdc-outlined-text-field-focus-label-text-color: var(--mtm-primary);
-  --mdc-outlined-text-field-outline-color: var(--mtm-border);
+  --mdc-outlined-text-field-outline-color: var(--mtm-field-border);
   --mdc-outlined-text-field-hover-outline-color: var(--mtm-primary);
   --mdc-outlined-text-field-focus-outline-color: var(--mtm-primary);
 }

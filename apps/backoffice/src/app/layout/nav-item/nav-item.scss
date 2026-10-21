@@ -46,6 +46,19 @@
   color: var(--mtm-primary);
   font-weight: 600;
 
+  /* Une barre franche à gauche : la page courante se repère d'un coup d'œil,
+     même quand le fond clair se confond avec celui du menu. */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 9px;
+    bottom: 9px;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background-color: var(--mtm-primary);
+  }
+
   &:hover {
     background-color: var(--mtm-primary-subtle);
     color: var(--mtm-primary);
