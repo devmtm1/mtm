@@ -2,6 +2,7 @@ import { useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import type { ReactNode } from 'react';
 import { X } from 'lucide-react';
+import { reinitialiserBarre } from '../mobile/barre-flottante';
 
 interface ModalProps {
   title: string;
@@ -77,6 +78,8 @@ export function Modal({ title, onClose, children, large = false }: ModalProps) {
       style.right = previous.right;
       style.overflow = previous.overflow;
       window.scrollTo({ top: scrollY, behavior: 'instant' });
+      // Le retour à la position de lecture ne doit pas être pris pour un défilement de l'utilisateur.
+      reinitialiserBarre();
       opener?.focus({ preventScroll: true });
     };
   }, [onClose]);

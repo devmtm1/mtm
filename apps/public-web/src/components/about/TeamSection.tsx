@@ -8,7 +8,7 @@ import { initiales } from '../../utils/initiales';
  * Portrait cadré en 4/5. Sans photo — ou si son URL est morte — on affiche les
  * initiales sur le dégradé de la charte plutôt qu'une image cassée.
  */
-function Portrait({
+export function Portrait({
   src,
   nom,
   sizes,

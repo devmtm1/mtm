@@ -4,6 +4,8 @@ import { FeaturedTerrainsSection } from '../components/home/FeaturedTerrainsSect
 import { FeaturedLocationsSection } from '../components/home/FeaturedLocationsSection';
 import { UpcomingProjectsSection } from '../components/home/UpcomingProjectsSection';
 import { RealisationsPreviewSection } from '../components/home/RealisationsPreviewSection';
+import { VideosSection } from '../components/home/VideosSection';
+import { AboutPreviewSection } from '../components/home/AboutPreviewSection';
 import { ServicesSection } from '../components/home/ServicesSection';
 import { TestimonialsSection } from '../components/home/TestimonialsSection';
 import { ContactCtaSection } from '../components/home/ContactCtaSection';
@@ -46,6 +48,9 @@ export function HomePage() {
         <FeaturedLocationsSection />
       </Reveal>
       <Reveal>
+        <VideosSection />
+      </Reveal>
+      <Reveal>
         <ServicesSection />
       </Reveal>
       <Reveal>
@@ -56,6 +61,9 @@ export function HomePage() {
       </Reveal>
       <Reveal>
         <TestimonialsSection />
+      </Reveal>
+      <Reveal>
+        <AboutPreviewSection />
       </Reveal>
       <Reveal>
         <ContactCtaSection />

@@ -26,6 +26,8 @@ import { useHeroPromotions } from '../../hooks/useHeroPromotions';
 import { ServicesSection } from './ServicesSection';
 import { UpcomingProjectsSection } from './UpcomingProjectsSection';
 import { RealisationsPreviewSection } from './RealisationsPreviewSection';
+import { VideosSection } from './VideosSection';
+import { AboutPreviewSection } from './AboutPreviewSection';
 import { TestimonialsSection } from './TestimonialsSection';
 import { ContactCtaSection } from './ContactCtaSection';
 import { Reveal } from '../ui/Reveal';
@@ -226,6 +228,9 @@ export function MobileHome() {
 
       <div className="mt-2">
         <Reveal>
+          <VideosSection />
+        </Reveal>
+        <Reveal>
           <ServicesSection />
         </Reveal>
         <Reveal>
@@ -236,6 +241,9 @@ export function MobileHome() {
         </Reveal>
         <Reveal>
           <TestimonialsSection />
+        </Reveal>
+        <Reveal>
+          <AboutPreviewSection />
         </Reveal>
         <Reveal>
           <ContactCtaSection />
