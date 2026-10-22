@@ -27,9 +27,9 @@ export const STATUTS_SEJOUR: Record<StatutSejour, Signification> = {
   en_cours: {
     label: 'En cours',
     pill: 'status-pill status-pill--primary',
-    help: 'Le voyageur est arrivé.',
+    help: 'Le client est arrivé.',
   },
-  terminee: { label: 'Terminé', pill: 'status-pill status-pill--success', help: 'Le voyageur est parti.' },
+  terminee: { label: 'Terminé', pill: 'status-pill status-pill--success', help: 'Le client est parti.' },
   annulee: { label: 'Annulé', pill: 'status-pill status-pill--danger', help: 'Réservation annulée : les nuits sont libres.' },
 };
 
@@ -42,7 +42,7 @@ export const STATUTS_REGLEMENT: Record<StatutReglementSejour, Signification> = {
 
 export const STATUTS_CAUTION_SEJOUR: Record<string, Signification> = {
   non_versee: { label: 'Non versée', pill: 'status-pill', help: 'La caution n’a pas encore été reçue.' },
-  versee: { label: 'Détenue', pill: 'status-pill status-pill--warning', help: 'Reçue : à rendre au départ du voyageur.' },
+  versee: { label: 'Détenue', pill: 'status-pill status-pill--warning', help: 'Reçue : à rendre au départ du client.' },
   restituee: { label: 'Restituée', pill: 'status-pill status-pill--success', help: 'Rendue en totalité.' },
   partiellement_retenue: {
     label: 'Retenue en partie',

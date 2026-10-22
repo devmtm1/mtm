@@ -14,7 +14,7 @@ const ACTION_LABELS: Record<string, string> = {
 };
 
 const FIELD_LABELS: Record<string, string> = {
-  referenceInterne: 'Référence',
+  referenceInterne: 'Matricule',
   proprietaireId: 'Propriétaire',
   commercialResponsableId: 'Commercial responsable',
   typeMandat: 'Type',

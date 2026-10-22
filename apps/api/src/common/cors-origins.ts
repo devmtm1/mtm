@@ -22,10 +22,12 @@ export function originesAutorisees(corsOrigin: string): string[] {
     }
     const { protocol, hostname, port } = url;
     const suffixe = port ? `:${port}` : '';
-    if (hostname.startsWith('www.')) return [`${protocol}//${hostname.slice(4)}${suffixe}`];
+    if (hostname.startsWith('www.'))
+      return [`${protocol}//${hostname.slice(4)}${suffixe}`];
     // Seul un domaine nu (deux étiquettes : « mtm-immobilier.com ») a un « www » évident ;
     // « admin.mtm-immobilier.com » ou « localhost » n'en ont pas.
-    if (hostname.split('.').length === 2) return [`${protocol}//www.${hostname}${suffixe}`];
+    if (hostname.split('.').length === 2)
+      return [`${protocol}//www.${hostname}${suffixe}`];
     return [];
   });
 

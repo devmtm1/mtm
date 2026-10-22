@@ -138,6 +138,89 @@ describe('TerrainsService', () => {
     );
   });
 
+  describe('matricule automatique', () => {
+    const dto = {
+      nom: 'Terrain test',
+      statutJuridique: 'Titre foncier',
+      niveauVerification: 'Non vérifié',
+      statutCommercial: 'Brouillon',
+    };
+    const annee = new Date().getFullYear();
+
+    beforeEach(() => {
+      prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+      prismaMock.terrain.create.mockImplementation(({ data }) =>
+        Promise.resolve({
+          id: 't1',
+          referenceInterne: data.referenceInterne,
+          medias: [],
+          documents: [],
+          pointsInteret: [],
+        }),
+      );
+    });
+
+    it('attribue le matricule suivant quand le formulaire n’en fournit pas', async () => {
+      prismaMock.terrain.findMany.mockResolvedValue([
+        { referenceInterne: `T-${annee}-0001` },
+        { referenceInterne: `T-${annee}-0007` },
+      ]);
+      await service.create(dto, internalUser);
+      expect(prismaMock.terrain.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            referenceInterne: `T-${annee}-0008`,
+          }),
+        }),
+      );
+    });
+
+    it('conserve un matricule fourni (import, reprise) s’il est libre', async () => {
+      prismaMock.terrain.findUnique.mockResolvedValue(null);
+      await service.create(
+        { ...dto, referenceInterne: 'KNL001' },
+        internalUser,
+      );
+      expect(prismaMock.terrain.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ referenceInterne: 'KNL001' }),
+        }),
+      );
+    });
+
+    it('recalcule le matricule quand une création simultanée a pris le même', async () => {
+      prismaMock.terrain.findMany
+        .mockResolvedValueOnce([{ referenceInterne: `T-${annee}-0001` }])
+        .mockResolvedValueOnce([
+          { referenceInterne: `T-${annee}-0001` },
+          { referenceInterne: `T-${annee}-0002` },
+        ]);
+      prismaMock.terrain.create
+        .mockRejectedValueOnce({
+          code: 'P2002',
+          meta: { target: ['referenceInterne'] },
+        })
+        .mockImplementationOnce(({ data }) =>
+          Promise.resolve({
+            id: 't1',
+            referenceInterne: data.referenceInterne,
+            medias: [],
+            documents: [],
+            pointsInteret: [],
+          }),
+        );
+      await service.create(dto, internalUser);
+      expect(prismaMock.terrain.create).toHaveBeenCalledTimes(2);
+      expect(prismaMock.terrain.create).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            referenceInterne: `T-${annee}-0003`,
+          }),
+        }),
+      );
+    });
+  });
+
   it('refuse à un commercial d’affecter un terrain à quelqu’un d’autre', async () => {
     prismaMock.terrain.findUnique.mockResolvedValue(null);
     prismaMock.systemSetting.findUnique.mockResolvedValue(null);

@@ -211,13 +211,13 @@ La fiche réunit prix, superficie, situation juridique, localisation, photos et 
 ### Créer un bien
 
 1. **Biens à vendre › Nouveau bien.**
-2. **Étape 1** : la **nature** du bien, une **référence** et un **nom**, le **propriétaire**, puis la situation juridique.
+2. **Étape 1** : la **nature** du bien et son **nom** (le **matricule**, par exemple *T-2026-0014*, est attribué automatiquement), le **propriétaire**, puis la situation juridique.
 3. **Étape 2** : l’**adresse**, la **position GPS** (astuce : copiez les coordonnées de Google Maps dans le champ *Latitude*), la **surface** et l’environnement.
 4. **Étape 3** : le **prix public** et la publication. Seul le prix public est affiché sur le site.
 5. **Étape 4** : les **photos** et les documents.
 6. **Créer le bien.**
 
-Les champs facultatifs sont rangés sous **Plus de détails** : ouvrez-les seulement si vous avez l’information. Seuls la référence, le nom et les statuts sont obligatoires.
+Les champs facultatifs sont rangés sous **Plus de détails** : ouvrez-les seulement si vous avez l’information. Seuls le nom et les statuts sont obligatoires.
 
 ## Proposer un bien et organiser une visite
 

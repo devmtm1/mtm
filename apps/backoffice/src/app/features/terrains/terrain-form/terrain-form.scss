@@ -1,5 +1,38 @@
 /* Étapes : une seule barre, sobre ; l'étape en cours est teintée, les terminées sont cochées. */
+.brouillon {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--mtm-info, var(--mtm-primary));
+  border-radius: var(--mtm-radius-md);
+  background: var(--mtm-primary-subtle);
+  font-size: 0.9rem;
+
+  &__actions {
+    display: flex;
+    gap: 8px;
+  }
+}
+
+.form-footer__step {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+}
+
+.form-footer__brouillon {
+  color: var(--mtm-text-muted);
+  font-size: 0.76rem;
+}
+
 .stepper {
+  // Les étapes restent collées en haut pendant le défilement : on sait toujours où l'on en est.
+  position: sticky;
+  top: 8px;
+  z-index: 5;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 4px;

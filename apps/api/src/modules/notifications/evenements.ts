@@ -103,7 +103,7 @@ export const EVENEMENTS_NOTIFICATION: EvenementNotification[] = [
     cle: 'sejour_demande',
     famille: 'Gestion locative',
     libelle: 'Demande de séjour',
-    description: 'Un voyageur demande une location à la nuit.',
+    description: 'Un client demande une location à la nuit.',
     destinataire: 'permission',
     permission: 'locatif:modifier',
     emailParDefaut: false,

@@ -88,7 +88,7 @@ export class Mandats implements OnInit {
   protected readonly lotsVendus = computed(() => this.stats()?.lotsParStatut['Vendu'] ?? 0);
 
   protected readonly columnDefs: ColDef<MandatListItem>[] = [
-    { field: 'referenceInterne', headerName: 'Réf.', flex: 0.7, minWidth: 96, sortable: true, cellClass: 'cell-strong' },
+    { field: 'referenceInterne', headerName: 'Matricule', flex: 0.8, minWidth: 112, sortable: true, cellClass: 'cell-strong' },
     {
       headerName: 'Propriétaire',
       flex: 1.4,

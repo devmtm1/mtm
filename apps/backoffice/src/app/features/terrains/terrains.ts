@@ -216,7 +216,7 @@ export class Terrains implements OnInit {
   });
 
   protected readonly columnDefs: ColDef<TerrainListItem>[] = [
-    { field: 'referenceInterne', headerName: 'Réf.', flex: 0.6, minWidth: 84, sortable: true, cellClass: 'cell-strong' },
+    { field: 'referenceInterne', headerName: 'Matricule', flex: 0.7, minWidth: 108, sortable: true, cellClass: 'cell-strong' },
     { field: 'nom', headerName: 'Bien', flex: 1.6, minWidth: 170, sortable: true, tooltipField: 'nom' },
     { colId: 'parcelleMatricule', field: 'parcelleMatricule', headerName: 'Matricule', minWidth: 110, sortable: true, hide: true },
     { colId: 'nombreLots', field: 'nombreLots', headerName: 'Lots', minWidth: 80, type: 'rightAligned', sortable: true, hide: true, valueFormatter: (p) => (p.value == null ? '—' : String(p.value)) },

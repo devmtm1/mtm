@@ -38,7 +38,7 @@ describe('séjour à la nuit — calculs', () => {
     expect(verifier('2026-10-10', '2026-10-14')).toMatch(/déjà passée/);
     expect(verifier('2026-10-15', '2026-10-16')).toMatch(/2 nuits minimum/);
     expect(verifier('2026-10-15', '2027-03-01')).toMatch(/longue durée/);
-    expect(verifier('2026-10-15', '2026-10-18', 6)).toMatch(/4 voyageurs au plus/);
+    expect(verifier('2026-10-15', '2026-10-18', 6)).toMatch(/4 personnes au plus/);
     expect(verifier('2026-10-19', '2026-10-22')).toMatch(/réservé du 20\/10\/2026 au 23\/10\/2026/);
   });
 

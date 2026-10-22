@@ -32,12 +32,6 @@
             </div>
             <div class="form-grid">
               <mat-form-field appearance="outline">
-                <mat-label>Référence du mandat</mat-label>
-                <input matInput formControlName="referenceInterne" placeholder="M-2026-007" autocomplete="off" />
-                <mat-hint>Votre numérotation interne, unique.</mat-hint>
-                <mat-error>La référence est obligatoire.</mat-error>
-              </mat-form-field>
-              <mat-form-field appearance="outline">
                 <mat-label>Propriétaire</mat-label>
                 <mat-select formControlName="proprietaireId">
                   @for (proprietaire of proprietaires(); track proprietaire.id) {
@@ -49,12 +43,6 @@
                 <mat-hint>Personne qui signe le mandat.</mat-hint>
                 <mat-error>Choisissez le propriétaire.</mat-error>
               </mat-form-field>
-              <div class="form-grid__side">
-                <button mat-stroked-button type="button" (click)="addProprietaire()">
-                  <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau propriétaire
-                </button>
-                <small>Si la personne n’est pas encore enregistrée.</small>
-              </div>
               <mat-form-field appearance="outline">
                 <mat-label>Commercial responsable</mat-label>
                 <mat-select formControlName="commercialResponsableId">
@@ -65,6 +53,18 @@
                 </mat-select>
                 <mat-hint>Reçoit les alertes d’échéance et suit la commercialisation.</mat-hint>
               </mat-form-field>
+              <div class="form-grid__side form-grid__side--ligne">
+                <button mat-stroked-button type="button" (click)="addProprietaire()">
+                  <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau propriétaire
+                </button>
+                <small>Si la personne n’est pas encore enregistrée.</small>
+              </div>
+              <app-matricule-auto
+                class="wide"
+                libelle="Matricule du mandat"
+                [valeur]="isEdit ? form.controls.referenceInterne.value : matriculePrevu()"
+                [edition]="isEdit"
+              />
             </div>
           </section>
 
@@ -144,7 +144,7 @@
               <mat-form-field appearance="outline" class="wide">
                 <mat-label>Commissions</mat-label>
                 <textarea matInput rows="2" formControlName="commissions" placeholder="Ex. 5 % du prix de vente, à la charge de l’acheteur"></textarea>
-                <mat-hint>Le calcul automatique utilise le taux paramétré ; précisez ici les accords particuliers.</mat-hint>
+                <mat-hint>Taux paramétré par défaut ; précisez les accords.</mat-hint>
               </mat-form-field>
               <mat-form-field appearance="outline" class="wide">
                 <mat-label>Clauses particulières</mat-label>

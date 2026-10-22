@@ -59,7 +59,7 @@ export function verifierDates(
   }
   if (nuits > 90) return 'Au-delà de 90 nuits, il s’agit d’une location longue durée : contactez-nous.';
   if (regles.capaciteVoyageurs && saisie.voyageurs > regles.capaciteVoyageurs) {
-    return `Ce bien accueille ${regles.capaciteVoyageurs} voyageur${regles.capaciteVoyageurs > 1 ? 's' : ''} au plus.`;
+    return `Ce bien accueille ${regles.capaciteVoyageurs} personne${regles.capaciteVoyageurs > 1 ? 's' : ''} au plus.`;
   }
   const conflit = periodeEnConflit(periodes, saisie.arrivee, saisie.depart);
   if (conflit) {

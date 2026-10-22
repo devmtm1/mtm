@@ -1,3 +1,4 @@
+import { MatriculeAuto } from '../../../shared/components/matricule-auto/matricule-auto';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormArray, FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -9,7 +10,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { forkJoin, of } from 'rxjs';
+import { debounceTime, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import {
   LucideArrowLeft,
@@ -60,7 +61,7 @@ interface Step {
 }
 
 export const STEPS: Step[] = [
-  { index: 1, title: 'Identité', hint: 'Qui est propriétaire, quel titre, quelle référence', controls: ['referenceInterne', 'nom', 'statutJuridique', 'niveauVerification'] },
+  { index: 1, title: 'Identité', hint: 'Qui est propriétaire, quel titre', controls: ['nom', 'statutJuridique', 'niveauVerification'] },
   { index: 2, title: 'Localisation', hint: 'Où se trouve le bien et ce qu’il y a autour', controls: ['latitude', 'longitude', 'superficie'] },
   { index: 3, title: 'Prix et publication', hint: 'Ce que voit le public, ce qui reste interne', controls: ['prixAcquisition', 'prixPublic', 'commission', 'statutCommercial'] },
   { index: 4, title: 'Photos et documents', hint: 'Ce qui illustre et justifie la fiche', controls: [] },
@@ -94,6 +95,7 @@ const CHAMPS_BATI = [
     MatInputModule,
     MatSelectModule,
     MatTooltipModule,
+    MatriculeAuto,
     LucideArrowLeft,
     LucideCheck,
     LucideFileText,
@@ -155,13 +157,22 @@ export class TerrainForm implements OnInit {
   protected readonly commercials = signal<CommercialSummary[]>([]);
   protected readonly canAssign = this.session.hasSupervisionScope('terrains');
   protected readonly selectedAssets = signal<SelectedAsset[]>([]);
+  /** Matricule que recevra le bien à l'enregistrement (création seulement). */
+  protected readonly matriculePrevu = signal<string | null>(null);
+
+  /** Brouillon retrouvé au chargement (création seulement) : proposé à la reprise. */
+  protected readonly brouillonRetrouve = signal<{ quand: string } | null>(null);
+  /** Heure du dernier enregistrement automatique, affichée dans la barre du bas. */
+  protected readonly brouillonEnregistreA = signal<string | null>(null);
+  private static readonly CLE_BROUILLON = 'mtm.brouillon.terrain';
   protected readonly canValidate = this.session.hasPermission('terrains:valider');
   protected readonly canPublish = this.session.hasPermission('terrains:publier') || this.session.hasRole('administrateur') || this.session.hasRole('direction');
   protected readonly canViewFinancials =
     this.session.hasPermission('terrains:consulter_financier') || this.session.hasRole('administrateur') || this.session.hasRole('direction');
 
   protected readonly form = this.formBuilder.group({
-    referenceInterne: ['', [Validators.required, Validators.maxLength(100)]],
+    // Matricule : attribué par le système, jamais saisi (affiché en lecture seule).
+    referenceInterne: [''],
     nom: ['', [Validators.required, Validators.maxLength(200)]],
     parcelleMatricule: [''],
     proprietaireId: [''],
@@ -336,6 +347,9 @@ export class TerrainForm implements OnInit {
 
   ngOnInit(): void {
     this.api.getOptions().subscribe({ next: (options) => this.options.set(options) });
+    if (!this.terrainId) {
+      this.api.prochaineReference().subscribe({ next: ({ reference }) => this.matriculePrevu.set(reference), error: () => this.matriculePrevu.set(null) });
+    }
     this.api.getProprietaires().subscribe({ next: (proprietaires) => this.proprietaires.set(proprietaires) });
     if (this.canAssign && this.session.hasPermission('crm:consulter')) {
       this.crmApi
@@ -344,6 +358,13 @@ export class TerrainForm implements OnInit {
         .subscribe((list) => this.commercials.set(list));
     }
     this.form.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.formValue.set(this.form.getRawValue()));
+
+    // Création : le formulaire se sauvegarde tout seul, pour ne rien perdre si la page se ferme.
+    if (!this.terrainId) {
+      const brouillon = this.lireBrouillon();
+      if (brouillon) this.brouillonRetrouve.set({ quand: this.quand(brouillon.enregistreLe) });
+      this.form.valueChanges.pipe(debounceTime(700), takeUntilDestroyed(this.destroyRef)).subscribe(() => this.ecrireBrouillon());
+    }
 
     const preselected = this.route.snapshot.queryParamMap.get('proprietaireId');
     if (preselected && !this.terrainId) this.form.controls.proprietaireId.setValue(preselected);
@@ -503,6 +524,7 @@ export class TerrainForm implements OnInit {
         forkJoin(uploads.length ? uploads : [of(null)]).subscribe({
           next: () => {
             this.saving.set(false);
+            this.effacerBrouillon();
             this.notify.success(this.terrainId ? 'Terrain mis à jour' : 'Terrain créé');
             void this.router.navigate(['/terrains', terrain.id]);
           },
@@ -518,6 +540,60 @@ export class TerrainForm implements OnInit {
         this.notify.error(error, 'Impossible d’enregistrer le terrain');
       },
     });
+  }
+
+  /** Remet dans le formulaire ce qui avait été saisi avant la fermeture de la page. */
+  protected reprendreBrouillon(): void {
+    const brouillon = this.lireBrouillon();
+    this.brouillonRetrouve.set(null);
+    if (!brouillon) return;
+    // Le matricule n'est jamais repris : il est attribué par le système à l'enregistrement.
+    const { referenceInterne: _ignore, ...valeur } = brouillon.valeur;
+    void _ignore;
+    this.form.patchValue(valeur);
+    this.form.markAsDirty();
+    this.notify.info('Brouillon repris : vérifiez, puis poursuivez.');
+  }
+
+  protected ignorerBrouillon(): void {
+    this.effacerBrouillon();
+    this.brouillonRetrouve.set(null);
+  }
+
+  private lireBrouillon(): { valeur: Record<string, unknown>; enregistreLe: string } | null {
+    try {
+      const brut = localStorage.getItem(TerrainForm.CLE_BROUILLON);
+      if (!brut) return null;
+      const donnees = JSON.parse(brut) as { valeur?: Record<string, unknown>; enregistreLe?: string };
+      return donnees.valeur && donnees.enregistreLe ? { valeur: donnees.valeur, enregistreLe: donnees.enregistreLe } : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private ecrireBrouillon(): void {
+    // Rien tant que l'utilisateur n'a rien saisi lui-même (la présélection d'un propriétaire n'en est pas une).
+    if (!this.form.dirty) return;
+    const maintenant = new Date();
+    try {
+      localStorage.setItem(TerrainForm.CLE_BROUILLON, JSON.stringify({ valeur: this.form.getRawValue(), enregistreLe: maintenant.toISOString() }));
+      this.brouillonEnregistreA.set(maintenant.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }));
+    } catch {
+      // Stockage plein ou interdit : le formulaire fonctionne, simplement sans brouillon.
+    }
+  }
+
+  private effacerBrouillon(): void {
+    try {
+      localStorage.removeItem(TerrainForm.CLE_BROUILLON);
+    } catch {
+      // sans importance
+    }
+  }
+
+  private quand(iso: string): string {
+    const date = new Date(iso);
+    return date.toLocaleString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
   }
 
   protected goBack(): void {
@@ -619,6 +695,8 @@ export class TerrainForm implements OnInit {
       dimensions: value.dimensions?.trim() ? { description: value.dimensions.trim() } : undefined,
       pointsInteret: pointsInteret.length ? pointsInteret : undefined,
     };
+    // Le matricule appartient au système : ni envoyé à la création (il est attribué), ni modifié ensuite.
+    delete cleaned['referenceInterne'];
     if (this.terrainId) {
       delete cleaned['statutJuridique'];
       delete cleaned['niveauVerification'];

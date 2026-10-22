@@ -26,8 +26,12 @@ describe('originesAutorisees', () => {
   });
 
   it('n’invente pas de « www » pour un sous-domaine, localhost ou une adresse IP', () => {
-    expect(originesAutorisees('https://admin.mtm-immobilier.com')).toEqual(['https://admin.mtm-immobilier.com']);
-    expect(originesAutorisees('http://localhost:4200')).toEqual(['http://localhost:4200']);
+    expect(originesAutorisees('https://admin.mtm-immobilier.com')).toEqual([
+      'https://admin.mtm-immobilier.com',
+    ]);
+    expect(originesAutorisees('http://localhost:4200')).toEqual([
+      'http://localhost:4200',
+    ]);
   });
 
   it('conserve le port de la variante', () => {
@@ -38,9 +42,8 @@ describe('originesAutorisees', () => {
   });
 
   it('ignore une valeur qui n’est pas une adresse', () => {
-    expect(originesAutorisees('pas-une-url, https://admin.mtm-immobilier.com')).toEqual([
-      'pas-une-url',
-      'https://admin.mtm-immobilier.com',
-    ]);
+    expect(
+      originesAutorisees('pas-une-url, https://admin.mtm-immobilier.com'),
+    ).toEqual(['pas-une-url', 'https://admin.mtm-immobilier.com']);
   });
 });

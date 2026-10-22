@@ -12,6 +12,7 @@
       </p>
     </div>
   </header>
+  <p class="form-legend"><span aria-hidden="true">*</span> champ obligatoire</p>
 
   <form class="form-body" [formGroup]="form" (ngSubmit)="submit()">
     <section class="page-card form-block">
@@ -90,7 +91,7 @@
       <div class="form-block__head">
         <h2>Location et tarif</h2>
         <p>
-          Au mois : un bail, un loyer, des échéances. À la nuit : des séjours de voyageurs, un prix par nuit,
+          Au mois : un bail, un loyer, des échéances. À la nuit : des séjours de clients, un prix par nuit,
           une caution et un état des lieux à chaque arrivée.
         </p>
       </div>
@@ -113,7 +114,7 @@
             @if (form.controls.prixNuit.hasError('min')) {
               <mat-error>Le prix ne peut pas être négatif.</mat-error>
             }
-            <mat-hint>Figé à chaque réservation : changer le tarif plus tard ne touche pas aux séjours confirmés.</mat-hint>
+            <mat-hint>Figé à chaque réservation : un changement ne touche pas les séjours confirmés.</mat-hint>
           </mat-form-field>
 
           <mat-form-field appearance="outline">
@@ -145,7 +146,7 @@
               </mat-form-field>
 
               <mat-form-field appearance="outline">
-                <mat-label>Capacité (voyageurs)</mat-label>
+                <mat-label>Capacité (nombre de personnes)</mat-label>
                 <input matInput type="number" min="1" max="50" formControlName="capaciteVoyageurs" />
               </mat-form-field>
 

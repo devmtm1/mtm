@@ -117,7 +117,8 @@ export interface MandatExpirant {
 }
 
 export interface CreateMandatPayload {
-  referenceInterne: string;
+  /** Attribué par le système à la création ; fourni seulement par une reprise de données. */
+  referenceInterne?: string;
   proprietaireId: string;
   commercialResponsableId?: string;
   typeMandat: string;

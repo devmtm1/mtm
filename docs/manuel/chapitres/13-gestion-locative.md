@@ -93,8 +93,8 @@ Un bien à la nuit n’a **pas de bail** : **Nouveau séjour** remplace « Crée
 | --- | --- |
 | **Demande** | Reçue du site (ou saisie par MTM). N’occupe pas le calendrier. MTM est notifié. |
 | **Confirmé** | Les nuits sont réservées : aucun autre séjour ne peut les prendre. |
-| **En cours** | Le voyageur est arrivé : état des lieux d’entrée. |
-| **Terminé** | Le voyageur est parti : état des lieux de sortie, restitution de la caution. |
+| **En cours** | Le client est arrivé : état des lieux d’entrée. |
+| **Terminé** | Le client est parti : état des lieux de sortie, restitution de la caution. |
 | **Annulé** | Motif obligatoire ; les nuits sont libérées. |
 
 - Les **tuiles** comptent les demandes à traiter, les arrivées sous 7 jours, les séjours en cours et les cautions à rendre.
@@ -106,7 +106,7 @@ Un bien à la nuit n’a **pas de bail** : **Nouveau séjour** remplace « Crée
 
 Les **états des lieux** d’entrée et de sortie se font **pièce par pièce** (bon état, usure normale, dégradé, hors service), avec compteurs d’eau et d’électricité, clés remises et **photos**. La fiche compare la sortie à l’entrée : c’est le **justificatif d’une retenue** sur la caution.
 
-> Sur le site, le visiteur voit les nuits déjà prises, choisit ses dates et envoie une **demande** : **aucun paiement en ligne**, MTM confirme les nuits et recontacte le voyageur.
+> Sur le site, le visiteur voit les nuits déjà prises, choisit ses dates et envoie une **demande** : **aucun paiement en ligne**, MTM confirme les nuits et recontacte le client.
 
 ## Les demandes de résiliation
 

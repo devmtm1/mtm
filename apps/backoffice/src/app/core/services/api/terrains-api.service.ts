@@ -63,6 +63,11 @@ export class TerrainsApiService {
     return this.options$;
   }
 
+  /** Matricule que recevra le prochain bien (aperçu du formulaire). */
+  prochaineReference(): Observable<{ reference: string }> {
+    return this.http.get<{ reference: string }>(`${this.baseUrl}/prochaine-reference`);
+  }
+
   getProprietaires(): Observable<ProprietaireSummary[]> {
     this.proprietaires$ ??= this.http
       .get<ProprietaireSummary[]>(`${environment.apiUrl}/proprietaires`)

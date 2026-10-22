@@ -15,6 +15,7 @@
       </p>
     </div>
   </header>
+  <p class="form-legend"><span aria-hidden="true">*</span> champ obligatoire</p>
 
   @if (loading()) {
     <div class="page-card">
@@ -44,7 +45,7 @@
               <mat-form-field appearance="outline">
                 <mat-label>Téléphone</mat-label>
                 <input matInput type="tel" formControlName="telephone" placeholder="77 000 00 00" />
-                <mat-hint>Le numéro sert aussi aux boutons Appeler et WhatsApp de la fiche.</mat-hint>
+                <mat-hint>Sert aux boutons Appeler et WhatsApp.</mat-hint>
               </mat-form-field>
               <div class="form-grid__side">
                 <mat-checkbox formControlName="whatsapp">Ce numéro est joignable sur WhatsApp</mat-checkbox>
@@ -195,7 +196,7 @@
               <mat-form-field appearance="outline" class="wide">
                 <mat-label>Besoin exprimé par le client</mat-label>
                 <textarea matInput rows="3" formControlName="besoins" placeholder="Ex. Terrain 300 m² pour construire une maison familiale, zone Diamniadio, achat d’ici 6 mois"></textarea>
-                <mat-hint>Ses mots à lui : utile pour la relance et pour le collègue qui reprendra le dossier.</mat-hint>
+                <mat-hint>Ses mots, pour la relance et le collègue qui reprend.</mat-hint>
               </mat-form-field>
               <mat-form-field appearance="outline" class="wide">
                 <mat-label>Besoins particuliers</mat-label>

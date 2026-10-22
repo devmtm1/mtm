@@ -229,7 +229,8 @@ export interface TerrainOptions {
 }
 
 export interface CreateTerrainPayload {
-  referenceInterne: string;
+  /** Attribué par le système à la création ; fourni seulement par une reprise de données. */
+  referenceInterne?: string;
   nom: string;
   parcelleMatricule?: string;
   proprietaireId?: string;

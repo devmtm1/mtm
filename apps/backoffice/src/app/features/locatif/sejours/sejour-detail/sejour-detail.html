@@ -25,13 +25,13 @@
             </button>
           }
           @if (s.statut === 'confirmee') {
-            <button mat-flat-button color="primary" type="button" [disabled]="busy()" (click)="avancer('en_cours', 'Voyageur arrivé')">
-              Le voyageur est arrivé
+            <button mat-flat-button color="primary" type="button" [disabled]="busy()" (click)="avancer('en_cours', 'Client arrivé')">
+              Le client est arrivé
             </button>
           }
           @if (s.statut === 'en_cours') {
             <button mat-flat-button color="primary" type="button" [disabled]="busy()" (click)="avancer('terminee', 'Séjour terminé')">
-              Le voyageur est parti
+              Le client est parti
             </button>
           }
           @if (modifiable()) {
@@ -48,7 +48,7 @@
       <aside class="alert-banner" role="status">
         <p>
           Demande reçue {{ s.source === 'site' ? 'du site' : '' }} : elle n’occupe pas encore le calendrier. Confirmez-la
-          après avoir contacté le voyageur{{ s.locataire.phone ? ' (' + s.locataire.phone + ')' : '' }}.
+          après avoir contacté le client{{ s.locataire.phone ? ' (' + s.locataire.phone + ')' : '' }}.
         </p>
       </aside>
     }
@@ -71,7 +71,7 @@
         <div class="detail-section__head"><h2>Le séjour</h2></div>
         <dl class="info-list">
           <div>
-            <dt>Voyageur</dt>
+            <dt>Client</dt>
             <dd>{{ voyageur(s.locataire) }}</dd>
           </div>
           @if (s.locataire.phone) {
@@ -107,7 +107,7 @@
           </div>
           <div>
             <dt>Durée</dt>
-            <dd>{{ s.nuits }} nuit{{ s.nuits > 1 ? 's' : '' }} · {{ s.nombreVoyageurs }} voyageur{{ s.nombreVoyageurs > 1 ? 's' : '' }}</dd>
+            <dd>{{ s.nuits }} nuit{{ s.nuits > 1 ? 's' : '' }} · {{ s.nombreVoyageurs }} personne{{ s.nombreVoyageurs > 1 ? 's' : '' }}</dd>
           </div>
           @if (s.notes) {
             <div class="is-wide">
@@ -228,7 +228,7 @@
                 <dd>{{ s.cautionRetenue | mtmMoney }}</dd>
               </div>
               <div>
-                <dt>Rendue au voyageur</dt>
+                <dt>Rendue au client</dt>
                 <dd>{{ cautionMontant() - montant(s.cautionRetenue) | mtmMoney }}</dd>
               </div>
             }
@@ -332,7 +332,7 @@
                     <svg class="btn-icon" lucideClipboardCheck aria-hidden="true"></svg>Faire l’état des lieux
                   </button>
                 } @else if (type === 'sortie') {
-                  <p class="etat__vide">Disponible une fois le voyageur arrivé.</p>
+                  <p class="etat__vide">Disponible une fois le client arrivé.</p>
                 }
               }
             </article>

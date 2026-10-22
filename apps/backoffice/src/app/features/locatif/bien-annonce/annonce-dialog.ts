@@ -72,7 +72,7 @@ const nombre = (valeur: number | string | null): number | undefined => {
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>Capacité (voyageurs)</mat-label>
+          <mat-label>Capacité (nombre de personnes)</mat-label>
           <input matInput type="number" min="1" max="50" formControlName="capaciteVoyageurs" />
         </mat-form-field>
         <div class="annonce-heures">

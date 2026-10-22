@@ -1,3 +1,4 @@
+import { MatriculeAuto } from '../../../shared/components/matricule-auto/matricule-auto';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
@@ -50,6 +51,7 @@ function toDateInput(value: string | null | undefined): string {
     MatSelectModule,
     MatSlideToggleModule,
     MatTooltipModule,
+    MatriculeAuto,
     LucideArrowLeft,
     LucidePlus,
     LucideSave,
@@ -70,6 +72,8 @@ export class MandatForm implements OnInit {
 
   protected readonly mandatId: string | null = this.route.snapshot.paramMap.get('id');
   protected readonly isEdit = this.mandatId !== null;
+  /** Matricule que recevra le mandat à l'enregistrement (création seulement). */
+  protected readonly matriculePrevu = signal<string | null>(null);
   protected readonly loading = signal(this.isEdit);
   protected readonly saving = signal(false);
   protected readonly options = signal<MandatOptions>({ typeMandat: [], statut: [], statutLot: [], documentTypes: [] });
@@ -81,7 +85,8 @@ export class MandatForm implements OnInit {
 
   protected readonly form = this.formBuilder.nonNullable.group(
     {
-      referenceInterne: ['', [Validators.required, Validators.maxLength(100)]],
+      // Matricule : attribué par le système, jamais saisi (affiché en lecture seule).
+      referenceInterne: [''],
       proprietaireId: ['', Validators.required],
       commercialResponsableId: [''],
       typeMandat: ['', Validators.required],
@@ -122,6 +127,9 @@ export class MandatForm implements OnInit {
       },
     });
     this.api.getProprietaires().subscribe({ next: (list) => this.proprietaires.set(list) });
+    if (!this.isEdit) {
+      this.api.prochaineReference().subscribe({ next: ({ reference }) => this.matriculePrevu.set(reference), error: () => this.matriculePrevu.set(null) });
+    }
     if (this.session.hasPermission('crm:consulter')) {
       this.crmApi
         .getCommercials()
@@ -230,7 +238,6 @@ export class MandatForm implements OnInit {
     if (value.restrictionsAutres.trim()) restrictions['autres'] = value.restrictionsAutres.trim();
     const text = (item: string) => (item.trim() ? item.trim() : undefined);
     return {
-      referenceInterne: value.referenceInterne.trim(),
       proprietaireId: value.proprietaireId,
       commercialResponsableId: value.commercialResponsableId || undefined,
       typeMandat: value.typeMandat,

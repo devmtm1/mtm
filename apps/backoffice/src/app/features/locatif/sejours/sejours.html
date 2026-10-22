@@ -4,7 +4,7 @@
       <p class="eyebrow">Gestion locative</p>
       <h1 class="page-header__title">Séjours à la nuit</h1>
       <p class="page-header__subtitle">
-        Les locations à la nuit (type Airbnb) : demandes reçues du site, réservations, voyageurs sur place et cautions à
+        Les locations à la nuit (type Airbnb) : demandes reçues du site, réservations, clients sur place et cautions à
         rendre. Un bien se met en location à la nuit depuis sa fiche.
       </p>
     </div>
@@ -24,7 +24,7 @@
         <span class="kpi__body">
           <strong>{{ s.aTraiter }}</strong>
           <span>Demande{{ s.aTraiter > 1 ? 's' : '' }} à traiter</span>
-          <small>{{ s.aTraiter > 0 ? 'Voyageurs qui attendent une réponse' : 'Rien en attente' }}</small>
+          <small>{{ s.aTraiter > 0 ? 'Clients qui attendent une réponse' : 'Rien en attente' }}</small>
         </span>
       </button>
       <button type="button" class="kpi" (click)="choisirVue('a_venir')">
@@ -40,7 +40,7 @@
         <span class="kpi__body">
           <strong>{{ s.enCours }}</strong>
           <span>Séjour{{ s.enCours > 1 ? 's' : '' }} en cours</span>
-          <small>Voyageurs sur place</small>
+          <small>Clients sur place</small>
         </span>
       </button>
       <button
@@ -72,7 +72,7 @@
     <div class="filters">
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="filters__search">
         <mat-label>Rechercher</mat-label>
-        <input matInput [formControl]="search" placeholder="Référence, voyageur, téléphone, bien…" />
+        <input matInput [formControl]="search" placeholder="Matricule, client, téléphone, bien…" />
         <svg matSuffix lucideSearch aria-hidden="true"></svg>
       </mat-form-field>
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="filters__statut">
@@ -102,7 +102,7 @@
           <thead>
             <tr>
               <th>Séjour</th>
-              <th>Voyageur</th>
+              <th>Client</th>
               <th>Bien</th>
               <th>Dates</th>
               <th class="is-right">Total</th>
@@ -119,7 +119,7 @@
                 </td>
                 <td>
                   <strong>{{ voyageur(sejour.locataire) }}</strong>
-                  <small>{{ sejour.nombreVoyageurs }} voyageur{{ sejour.nombreVoyageurs > 1 ? 's' : '' }}</small>
+                  <small>{{ sejour.nombreVoyageurs }} personne{{ sejour.nombreVoyageurs > 1 ? 's' : '' }}</small>
                 </td>
                 <td>
                   <strong>{{ bien(sejour.bienLocatif) }}</strong>
