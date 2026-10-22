@@ -8,8 +8,8 @@ interface ModalProps {
   title: string;
   onClose: () => void;
   children: ReactNode;
-  /** Fenêtre large (lecteur vidéo) au lieu de la fenêtre de formulaire. */
-  large?: boolean;
+  /** Fiche de lecture vidéo : haute feuille qui monte du bas, croix flottante, sans barre de titre. */
+  lecteur?: boolean;
 }
 
 const FOCUSABLE =
@@ -24,7 +24,7 @@ const FOCUSABLE =
  * se centrerait dans la page entière, hors écran sur mobile. Sur petit écran,
  * elle s'ancre en bas (feuille) pour rester atteignable au pouce.
  */
-export function Modal({ title, onClose, children, large = false }: ModalProps) {
+export function Modal({ title, onClose, children, lecteur = false }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
 
@@ -87,7 +87,7 @@ export function Modal({ title, onClose, children, large = false }: ModalProps) {
   return createPortal(
     <div
       className={`fixed inset-0 z-50 flex justify-center motion-safe:animate-fade-in ${
-        large ? 'items-center bg-black/80 px-3 py-6 sm:px-4 sm:py-8' : 'items-end bg-black/50 sm:items-center sm:px-4 sm:py-8'
+        lecteur ? 'items-end bg-black/60 backdrop-blur-[2px] sm:items-center sm:px-4 sm:py-8' : 'items-end bg-black/50 sm:items-center sm:px-4 sm:py-8'
       }`}
     >
       <button
@@ -102,27 +102,48 @@ export function Modal({ title, onClose, children, large = false }: ModalProps) {
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={`relative flex max-h-[92dvh] w-full ${large ? 'sm:max-w-4xl' : 'max-w-lg'} flex-col overflow-y-auto overflow-x-hidden bg-mtm-surface shadow-lg outline-none sm:max-h-full sm:rounded-lg sm:p-6 ${
-          large
-            ? 'rounded-2xl p-5 motion-safe:animate-lecteur-in'
-            : 'rounded-t-3xl px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 motion-safe:animate-sheet-in sm:motion-safe:animate-scale-in'
+        className={`relative flex w-full flex-col overflow-y-auto overflow-x-hidden bg-mtm-surface shadow-lg outline-none ${
+          lecteur
+            ? 'max-h-[94dvh] rounded-t-[1.75rem] motion-safe:animate-sheet-in sm:max-h-[90dvh] sm:max-w-3xl sm:rounded-2xl sm:motion-safe:animate-lecteur-in'
+            : 'max-h-[92dvh] max-w-lg rounded-t-3xl px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 motion-safe:animate-sheet-in sm:max-h-full sm:rounded-lg sm:p-6 sm:motion-safe:animate-scale-in'
         }`}
       >
-        {!large && <span className="mx-auto mb-3 h-1.5 w-10 shrink-0 rounded-full bg-mtm-border sm:hidden" aria-hidden="true" />}
-        <div className="mb-4 flex items-center justify-between">
-          <h2 id={titleId} className="font-display text-lg font-bold text-mtm-text">
-            {title}
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Fermer"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-mtm-bg text-mtm-muted transition-colors active:scale-90 hover:text-mtm-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mtm-primary"
-          >
-            <X className="h-5 w-5" aria-hidden="true" />
-          </button>
-        </div>
-        {children}
+        {lecteur ? (
+          <>
+            {/* Fiche de lecture : pas de barre de titre, la croix flotte en haut à droite ; le titre est lu par les lecteurs d'écran. */}
+            <span className="absolute left-1/2 top-2 h-1.5 w-10 -translate-x-1/2 rounded-full bg-mtm-border sm:hidden" aria-hidden="true" />
+            <h2 id={titleId} className="sr-only">
+              {title}
+            </h2>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Fermer"
+              className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-mtm-bg text-mtm-muted shadow-sm transition-colors active:scale-90 hover:text-mtm-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mtm-primary"
+            >
+              <X className="h-5 w-5" aria-hidden="true" />
+            </button>
+            <div className="px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-16 sm:px-6 sm:pt-16">{children}</div>
+          </>
+        ) : (
+          <>
+            <span className="mx-auto mb-3 h-1.5 w-10 shrink-0 rounded-full bg-mtm-border sm:hidden" aria-hidden="true" />
+            <div className="mb-4 flex items-center justify-between">
+              <h2 id={titleId} className="font-display text-lg font-bold text-mtm-text">
+                {title}
+              </h2>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Fermer"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-mtm-bg text-mtm-muted transition-colors active:scale-90 hover:text-mtm-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mtm-primary"
+              >
+                <X className="h-5 w-5" aria-hidden="true" />
+              </button>
+            </div>
+            {children}
+          </>
+        )}
       </div>
     </div>,
     document.body,

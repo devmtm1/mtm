@@ -1,4 +1,5 @@
 import type { Publication, RubriquePublication } from '../types/publication';
+import { ROUTES } from '../routes';
 
 export const RUBRIQUES: { code: RubriquePublication; label: string }[] = [
   { code: 'conseil', label: 'Conseils' },
@@ -42,4 +43,9 @@ export function separerALaUne(publications: Publication[]): { aLaUne: Publicatio
 export function rubriquesPresentes(publications: Publication[]): { code: RubriquePublication; label: string }[] {
   const presentes = new Set(publications.map((publication) => publication.categorie));
   return RUBRIQUES.filter((rubrique) => presentes.has(rubrique.code));
+}
+
+/** Adresse qui rouvre directement cette vidéo sur la page Actualités et conseils (partage, copie du lien). */
+export function lienDeLaVideo(identifiant: string, origine = typeof window === 'undefined' ? '' : window.location.origin): string {
+  return `${origine}${ROUTES.actualites}?video=${encodeURIComponent(identifiant)}`;
 }
