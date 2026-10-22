@@ -78,7 +78,7 @@ export class VenteDocumentsPage implements OnInit {
   }
 
   protected load(): void {
-    this.loading.set(true);
+    if (!this.chargementInitialFait) this.loading.set(true);
     const value = this.filters.getRawValue();
     const context = this.context();
     this.api
@@ -93,12 +93,20 @@ export class VenteDocumentsPage implements OnInit {
       .subscribe({
         next: (documents) => {
           this.documents.set(documents);
-          this.loading.set(false);
+          this.finChargement();
         },
         error: () => {
           this.documents.set([]);
-          this.loading.set(false);
+          this.finChargement();
         },
       });
+  }
+
+  /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place, sans clignoter ni remonter. */
+  private chargementInitialFait = false;
+
+  private finChargement(): void {
+    this.loading.set(false);
+    this.chargementInitialFait = true;
   }
 }

@@ -218,20 +218,28 @@ export class Biens implements OnInit {
   }
 
   private load(): void {
-    this.loading.set(true);
+    if (!this.chargementInitialFait) this.loading.set(true);
     const valeur = this.filters.getRawValue();
     this.hasActiveFilters.set(Object.values(valeur).some((item) => item !== ''));
     this.api.findBiens({ ...valeur, pageSize: 200 }).subscribe({
       next: (page) => {
         this.rowData.set(page.items);
         this.total.set(page.total);
-        this.loading.set(false);
+        this.finChargement();
       },
       error: (error: unknown) => {
-        this.loading.set(false);
+        this.finChargement();
         this.notify.error(error, 'Erreur lors du chargement des biens');
       },
     });
+  }
+
+  /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place, sans clignoter ni remonter. */
+  private chargementInitialFait = false;
+
+  private finChargement(): void {
+    this.loading.set(false);
+    this.chargementInitialFait = true;
   }
 
   private pastille(

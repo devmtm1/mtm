@@ -360,21 +360,29 @@ export class ChantierDetailPage implements OnInit {
 
   protected charger(): void {
     if (!this.chantierId) return;
-    this.loading.set(true);
+    if (!this.chargementInitialFait) this.loading.set(true);
     this.api
       .findOne(this.chantierId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (chantier) => {
           this.chantier.set(chantier);
-          this.loading.set(false);
+          this.finChargement();
         },
         error: () => {
           this.notify.error('Chantier introuvable');
-          this.loading.set(false);
+          this.finChargement();
         },
       });
     this.chargerJournal();
+  }
+
+  /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place, sans clignoter ni remonter. */
+  private chargementInitialFait = false;
+
+  private finChargement(): void {
+    this.loading.set(false);
+    this.chargementInitialFait = true;
   }
 
   private chargerJournal(): void {

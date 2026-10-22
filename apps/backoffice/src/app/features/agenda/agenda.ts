@@ -276,19 +276,27 @@ export class Agenda implements OnInit {
   }
 
   private charger(): void {
-    this.loading.set(true);
+    if (!this.chargementInitialFait) this.loading.set(true);
     const { du, au } = this.fenetre();
     this.api.flux(du, au, this.scope()).subscribe({
       next: (items) => {
         this.items.set(items);
-        this.loading.set(false);
+        this.finChargement();
         this.ouvrirDemande(items);
       },
       error: (error: unknown) => {
-        this.loading.set(false);
+        this.finChargement();
         this.notify.error(error, 'Impossible de charger l’agenda');
       },
     });
+  }
+
+  /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place, sans clignoter ni remonter. */
+  private chargementInitialFait = false;
+
+  private finChargement(): void {
+    this.loading.set(false);
+    this.chargementInitialFait = true;
   }
 
   /** Une notification « /agenda?evenement=… » ouvre l'événement demandé, une fois. */

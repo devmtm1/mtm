@@ -181,7 +181,7 @@ export class Taches implements OnInit {
   }
 
   private charger(): void {
-    this.loading.set(true);
+    if (!this.chargementInitialFait) this.loading.set(true);
     const query: TachesQuery = {
       scope: this.vue(),
       statut: this.statut(),
@@ -195,12 +195,20 @@ export class Taches implements OnInit {
       next: (page) => {
         this.items.set(page.items);
         this.total.set(page.total);
-        this.loading.set(false);
+        this.finChargement();
       },
       error: (error: unknown) => {
-        this.loading.set(false);
+        this.finChargement();
         this.notify.error(error, 'Impossible de charger les tâches');
       },
     });
+  }
+
+  /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place, sans clignoter ni remonter. */
+  private chargementInitialFait = false;
+
+  private finChargement(): void {
+    this.loading.set(false);
+    this.chargementInitialFait = true;
   }
 }

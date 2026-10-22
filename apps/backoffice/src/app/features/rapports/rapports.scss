@@ -5,6 +5,8 @@
 }
 
 .catalogue {
+  // Hauteur réservée : le catalogue arrive après la page, sans la faire descendre d'un coup.
+  min-height: 150px;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 10px;

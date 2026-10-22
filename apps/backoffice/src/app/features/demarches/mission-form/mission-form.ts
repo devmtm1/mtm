@@ -1,3 +1,4 @@
+import type { AvecModifications } from '../../../core/guards/modifications-non-enregistrees.guard';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -40,7 +41,7 @@ import { TYPES_VERIFICATION, URGENCES, label } from '../mission-status';
   templateUrl: './mission-form.html',
   styleUrl: './mission-form.scss',
 })
-export class MissionForm implements OnInit {
+export class MissionForm implements OnInit, AvecModifications {
   private readonly api = inject(DemarchesApiService);
   private readonly crmApi = inject(CrmApiService);
   private readonly terrainsApi = inject(TerrainsApiService);
@@ -88,6 +89,11 @@ export class MissionForm implements OnInit {
     const tarifs = this.options().tarifs ?? {};
     return tarifs[this.form.controls.typeVerification.value] === 0;
   });
+
+  /** Vrai tant que la saisie n'est pas enregistrée : la garde de navigation demande alors confirmation. */
+  aDesModifications(): boolean {
+    return this.form.dirty;
+  }
 
   ngOnInit(): void {
     this.api.getOptions().subscribe({
@@ -154,6 +160,7 @@ export class MissionForm implements OnInit {
       })
       .subscribe({
         next: (mission) => {
+          this.form.markAsPristine();
           this.saving.set(false);
           this.notify.success(
             `Mission ${mission.referenceInterne ?? ''} enregistrée`,

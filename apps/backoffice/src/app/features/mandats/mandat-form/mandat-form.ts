@@ -1,3 +1,4 @@
+import type { AvecModifications } from '../../../core/guards/modifications-non-enregistrees.guard';
 import { MatriculeAuto } from '../../../shared/components/matricule-auto/matricule-auto';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -59,7 +60,7 @@ function toDateInput(value: string | null | undefined): string {
   templateUrl: './mandat-form.html',
   styleUrl: './mandat-form.scss',
 })
-export class MandatForm implements OnInit {
+export class MandatForm implements OnInit, AvecModifications {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly api = inject(MandatsApiService);
@@ -118,6 +119,11 @@ export class MandatForm implements OnInit {
     const remaining = joursRestants(dateFin);
     return { days, months, remaining };
   });
+
+  /** Vrai tant que la saisie n'est pas enregistrée : la garde de navigation demande alors confirmation. */
+  aDesModifications(): boolean {
+    return this.form.dirty;
+  }
 
   ngOnInit(): void {
     this.api.getOptions().subscribe({
@@ -185,6 +191,7 @@ export class MandatForm implements OnInit {
     const request$ = this.mandatId ? this.api.update(this.mandatId, payload) : this.api.create(payload);
     request$.subscribe({
       next: (mandat) => {
+        this.form.markAsPristine();
         this.saving.set(false);
         this.notify.success(this.mandatId ? 'Mandat mis à jour' : 'Mandat créé — rattachez maintenant les biens concernés');
         void this.router.navigate(['/mandats', mandat.id]);

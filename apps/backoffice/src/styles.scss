@@ -2665,3 +2665,35 @@ ag-grid-angular {
   color: var(--mtm-text-muted);
   font-size: 0.8em;
 }
+
+/* ---------------------------------------------------------------------------
+   Stabilité de la mise en page : rien ne doit « sauter » quand les données arrivent.
+   --------------------------------------------------------------------------- */
+
+/* Le squelette d'une carte de chiffres a la hauteur de la vraie carte : la rangée ne grandit pas à l'arrivée des données. */
+.kpi-row .kpi.skeleton {
+  min-height: 112px;
+}
+
+/* Bandeau qui apparaît quand une réponse arrive (demandes du site, tâches en retard…) : il se déploie en
+   douceur au lieu de pousser d'un coup tout ce qui est dessous. Sans effet sur les navigateurs trop anciens. */
+@keyframes bandeau-deploiement {
+  from {
+    height: 0;
+    margin-block: 0;
+    padding-block: 0;
+    opacity: 0;
+    overflow: hidden;
+  }
+}
+
+.alert-banner {
+  interpolate-size: allow-keywords;
+  animation: bandeau-deploiement 0.28s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .alert-banner {
+    animation: none;
+  }
+}

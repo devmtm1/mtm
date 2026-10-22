@@ -147,7 +147,7 @@ export class Sejours implements OnInit {
   }
 
   private charger(): void {
-    this.loading.set(true);
+    if (!this.chargementInitialFait) this.loading.set(true);
     this.api
       .findAll({
         search: this.search.value.trim() || undefined,
@@ -160,12 +160,20 @@ export class Sejours implements OnInit {
         next: (resultat) => {
           this.items.set(resultat.items);
           this.total.set(resultat.total);
-          this.loading.set(false);
+          this.finChargement();
         },
         error: (error: unknown) => {
-          this.loading.set(false);
+          this.finChargement();
           this.notify.error(error, 'Impossible de charger les séjours');
         },
       });
+  }
+
+  /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place, sans clignoter ni remonter. */
+  private chargementInitialFait = false;
+
+  private finChargement(): void {
+    this.loading.set(false);
+    this.chargementInitialFait = true;
   }
 }

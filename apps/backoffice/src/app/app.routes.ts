@@ -4,6 +4,7 @@ import { authGuard } from './core/guards/auth.guard';
 import { passwordChangeGuard } from './core/guards/password-change.guard';
 import { permissionsGuard } from './core/guards/permissions.guard';
 import { twoFactorGuard } from './core/guards/two-factor.guard';
+import { modificationsNonEnregistreesGuard } from './core/guards/modifications-non-enregistrees.guard';
 
 export const routes: Routes = [
   {
@@ -74,6 +75,7 @@ export const routes: Routes = [
       {
         path: 'terrains/:id/modifier',
         title: 'Modifier le bien',
+        canDeactivate: [modificationsNonEnregistreesGuard],
         canActivate: [permissionsGuard(['terrains:modifier'])],
         loadComponent: () =>
           import('./features/terrains/terrain-form/terrain-form').then(
@@ -291,6 +293,7 @@ export const routes: Routes = [
       {
         path: 'mandats/nouveau',
         title: 'Nouveau mandat',
+        canDeactivate: [modificationsNonEnregistreesGuard],
         canActivate: [permissionsGuard(['mandats:creer'])],
         loadComponent: () =>
           import('./features/mandats/mandat-form/mandat-form').then(
@@ -300,6 +303,7 @@ export const routes: Routes = [
       {
         path: 'mandats/:id/modifier',
         title: 'Modifier le mandat',
+        canDeactivate: [modificationsNonEnregistreesGuard],
         canActivate: [permissionsGuard(['mandats:modifier'])],
         loadComponent: () =>
           import('./features/mandats/mandat-form/mandat-form').then(
@@ -347,6 +351,7 @@ export const routes: Routes = [
       {
         path: 'crm/prospects/nouveau',
         title: 'Nouveau prospect',
+        canDeactivate: [modificationsNonEnregistreesGuard],
         canActivate: [permissionsGuard(['crm:creer'])],
         loadComponent: () =>
           import('./features/crm/prospect-form/prospect-form').then(
@@ -403,6 +408,7 @@ export const routes: Routes = [
       {
         path: 'crm/prospects/:id/modifier',
         title: 'Modifier le prospect',
+        canDeactivate: [modificationsNonEnregistreesGuard],
         canActivate: [permissionsGuard(['crm:modifier'])],
         loadComponent: () =>
           import('./features/crm/prospect-form/prospect-form').then(
@@ -424,6 +430,7 @@ export const routes: Routes = [
       {
         path: 'demarches/missions/nouvelle',
         title: 'Nouvelle mission',
+        canDeactivate: [modificationsNonEnregistreesGuard],
         canActivate: [permissionsGuard(['demarches:creer'])],
         loadComponent: () =>
           import('./features/demarches/mission-form/mission-form').then(
@@ -449,6 +456,7 @@ export const routes: Routes = [
       {
         path: 'locatif/biens/nouveau',
         title: 'Nouveau bien locatif',
+        canDeactivate: [modificationsNonEnregistreesGuard],
         canActivate: [permissionsGuard(['locatif:creer'])],
         loadComponent: () =>
           import('./features/locatif/bien-form/bien-form').then((m) => m.BienForm),
@@ -520,6 +528,7 @@ export const routes: Routes = [
       {
         path: 'construction/chantiers/nouveau',
         title: 'Nouveau chantier',
+        canDeactivate: [modificationsNonEnregistreesGuard],
         canActivate: [permissionsGuard(['construction:creer'])],
         loadComponent: () =>
           import('./features/construction/chantier-form/chantier-form').then(

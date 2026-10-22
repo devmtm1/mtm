@@ -195,7 +195,7 @@ export class Mandats implements OnInit {
   }
 
   private load(): void {
-    this.loading.set(true);
+    if (!this.chargementInitialFait) this.loading.set(true);
     const value = this.filters.getRawValue();
     this.hasActiveFilters.set(Object.values(value).some((item) => item !== ''));
     this.mandatsApi.findAll({ search: value.search, statut: value.statut, pageSize: 200 }).subscribe({
@@ -203,13 +203,21 @@ export class Mandats implements OnInit {
         const items = value.typeMandat ? page.items.filter((item) => item.typeMandat === value.typeMandat) : page.items;
         this.rowData.set(items);
         this.total.set(value.typeMandat ? items.length : page.total);
-        this.loading.set(false);
+        this.finChargement();
       },
       error: (error: unknown) => {
-        this.loading.set(false);
+        this.finChargement();
         this.notify.error(error, 'Erreur lors du chargement des mandats');
       },
     });
+  }
+
+  /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place, sans clignoter ni remonter. */
+  private chargementInitialFait = false;
+
+  private finChargement(): void {
+    this.loading.set(false);
+    this.chargementInitialFait = true;
   }
 
   private formatDate(value: string): string {
