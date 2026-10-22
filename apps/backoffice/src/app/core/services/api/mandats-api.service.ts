@@ -44,6 +44,11 @@ export class MandatsApiService {
     return this.options$;
   }
 
+  /** Matricule que recevra le prochain mandat (aperçu du formulaire). */
+  prochaineReference(): Observable<{ reference: string }> {
+    return this.http.get<{ reference: string }>(`${this.baseUrl}/prochaine-reference`);
+  }
+
   getStats(): Observable<MandatStats> {
     return this.http.get<MandatStats>(`${this.baseUrl}/stats`);
   }

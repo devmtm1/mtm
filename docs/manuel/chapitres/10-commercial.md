@@ -124,7 +124,7 @@ Quand vous passez à une étape **active** sans relance prévue, la fenêtre « 
 
 - Les **tuiles** donnent le bilan : biens référencés, disponibles, réservés, vendus, fiches à compléter.
 - **Disponible** = publié sur le site de MTM. Un bien **réservé** ou **vendu** n’y apparaît plus.
-- Filtres (nature, statut, vérification, région…) et **recherche** (référence, nom, commune, vendeur).
+- Filtres (nature, statut, vérification, région…) et **recherche** (matricule, nom, commune, vendeur).
 - **Colonnes** change l’affichage ; l’icône à droite passe en **vue cartes**.
 - L’œil ouvre la **fiche** ; le crayon la **modifie**.
 

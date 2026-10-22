@@ -20,7 +20,12 @@ import { TerrainPointInteretDto } from './terrain-point-interet.dto';
 import { versBooleen } from '../../../common/utils/booleen.transform';
 
 export class CreateTerrainDto {
-  @ApiProperty() @IsString() @Length(1, 100) referenceInterne!: string;
+  /** Matricule interne : attribué automatiquement à la création ; une valeur fournie (import, reprise) est conservée. */
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @Length(1, 100)
+  referenceInterne?: string;
   @ApiProperty() @IsString() @Length(1, 200) nom!: string;
   @ApiPropertyOptional()
   @IsOptional()

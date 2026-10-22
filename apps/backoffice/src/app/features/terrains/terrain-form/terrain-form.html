@@ -14,7 +14,7 @@
           Modifiez les informations puis enregistrez. Les statuts juridique et de vérification se
           changent depuis la fiche (« Changer un statut »).
         } @else {
-          Quatre étapes courtes. Seuls la référence, le nom et les statuts sont obligatoires : le
+          Quatre étapes courtes. Seuls le nom et les statuts sont obligatoires (le matricule est attribué automatiquement) : le
           reste peut être complété plus tard depuis la fiche.
         }
       </p>
@@ -28,6 +28,17 @@
       }
     </div>
   </header>
+  <p class="form-legend"><span aria-hidden="true">*</span> champ obligatoire</p>
+
+  @if (brouillonRetrouve(); as brouillon) {
+    <div class="brouillon" role="status">
+      <span class="brouillon__texte">Un brouillon enregistré le <strong>{{ brouillon.quand }}</strong> a été retrouvé.</span>
+      <span class="brouillon__actions">
+        <button mat-flat-button color="primary" type="button" (click)="reprendreBrouillon()">Reprendre</button>
+        <button mat-stroked-button type="button" (click)="ignorerBrouillon()">Ignorer</button>
+      </span>
+    </div>
+  }
 
   <!-- Étapes -->
   <nav class="stepper" aria-label="Étapes du formulaire">
@@ -69,7 +80,7 @@
         <section class="page-card form-block">
           <div class="form-block__head">
             <h2>Nature et identité</h2>
-            <p>La référence est votre code interne (ex. <code>T-2026-014</code>) ; le nom est celui affiché sur le site.</p>
+            <p>Le matricule (ex. <code>T-2026-0014</code>) est attribué automatiquement ; le nom est celui affiché sur le site.</p>
           </div>
           <div class="form-grid">
             <!-- Posé en premier : le type commande les champs du reste de la
@@ -83,11 +94,11 @@
               </mat-select>
               <mat-hint>{{ typeBienAide(form.controls.typeBien.value) }}</mat-hint>
             </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Référence interne</mat-label>
-              <input matInput formControlName="referenceInterne" placeholder="T-2026-014" autocomplete="off" />
-              <mat-error>La référence est obligatoire.</mat-error>
-            </mat-form-field>
+            <app-matricule-auto
+              [libelle]="'Matricule du ' + motBien()"
+              [valeur]="isEdit ? form.controls.referenceInterne.value : matriculePrevu()"
+              [edition]="isEdit"
+            />
             <mat-form-field appearance="outline" class="wide">
               <mat-label>Nom du {{ motBien() }}</mat-label>
               <input matInput formControlName="nom" [placeholder]="estBati() ? 'Villa F3 Saly, 120 m² habitables' : 'Terrain 300 m² Diamniadio Lot 12'" />
@@ -123,7 +134,7 @@
                     <mat-option [value]="commercial.id">{{ commercial.firstName }} {{ commercial.lastName }}</mat-option>
                   }
                 </mat-select>
-                <mat-hint>Seul ce commercial (et l’encadrement) verra ce {{ motBien() }} dans le back-office.</mat-hint>
+                <mat-hint>Seul lui et l’encadrement voient ce {{ motBien() }}.</mat-hint>
               </mat-form-field>
             }
             <div class="form-grid__side form-grid__side--ligne">
@@ -444,7 +455,7 @@
                     <mat-label>Marge (FCFA)</mat-label>
                     <input matInput type="number" step="1000" formControlName="marge" />
                     @if (computedMargin() !== null && form.controls.marge.value === null) {
-                      <mat-hint>Sera calculée automatiquement : prix public − acquisition.</mat-hint>
+                      <mat-hint>Calculée : prix public − acquisition.</mat-hint>
                     } @else {
                       <mat-hint>Laissez vide pour un calcul automatique.</mat-hint>
                     }
@@ -686,7 +697,12 @@
 
       <footer class="form-footer">
         <button mat-stroked-button type="button" (click)="previousStep()" [disabled]="currentStep() === 1">Précédent</button>
-        <span class="form-footer__step">Étape {{ currentStep() }} sur {{ steps.length }}</span>
+        <span class="form-footer__step">
+          Étape {{ currentStep() }} sur {{ steps.length }}
+          @if (brouillonEnregistreA(); as heure) {
+            <small class="form-footer__brouillon">Brouillon enregistré à {{ heure }}</small>
+          }
+        </span>
         @if (currentStep() < steps.length) {
           <button mat-flat-button color="primary" type="submit">Suivant</button>
         } @else {

@@ -13,6 +13,7 @@
       </p>
     </div>
   </header>
+  <p class="form-legend"><span aria-hidden="true">*</span> champ obligatoire</p>
 
   @if (loading()) {
     <div class="page-card">
@@ -31,12 +32,11 @@
               <p>Qui confie, et qui suit le dossier chez MTM.</p>
             </div>
             <div class="form-grid">
-              <mat-form-field appearance="outline">
-                <mat-label>Référence du mandat</mat-label>
-                <input matInput formControlName="referenceInterne" placeholder="M-2026-007" autocomplete="off" />
-                <mat-hint>Votre numérotation interne, unique.</mat-hint>
-                <mat-error>La référence est obligatoire.</mat-error>
-              </mat-form-field>
+              <app-matricule-auto
+                libelle="Matricule du mandat"
+                [valeur]="isEdit ? form.controls.referenceInterne.value : matriculePrevu()"
+                [edition]="isEdit"
+              />
               <mat-form-field appearance="outline">
                 <mat-label>Propriétaire</mat-label>
                 <mat-select formControlName="proprietaireId">
@@ -144,7 +144,7 @@
               <mat-form-field appearance="outline" class="wide">
                 <mat-label>Commissions</mat-label>
                 <textarea matInput rows="2" formControlName="commissions" placeholder="Ex. 5 % du prix de vente, à la charge de l’acheteur"></textarea>
-                <mat-hint>Le calcul automatique utilise le taux paramétré ; précisez ici les accords particuliers.</mat-hint>
+                <mat-hint>Taux paramétré par défaut ; précisez les accords.</mat-hint>
               </mat-form-field>
               <mat-form-field appearance="outline" class="wide">
                 <mat-label>Clauses particulières</mat-label>

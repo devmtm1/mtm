@@ -12,6 +12,7 @@
       </p>
     </div>
   </header>
+  <p class="form-legend"><span aria-hidden="true">*</span> champ obligatoire</p>
 
   <form class="form-body" [formGroup]="form" (ngSubmit)="submit()">
     <section class="page-card form-block">
@@ -113,7 +114,7 @@
             @if (form.controls.prixNuit.hasError('min')) {
               <mat-error>Le prix ne peut pas être négatif.</mat-error>
             }
-            <mat-hint>Figé à chaque réservation : changer le tarif plus tard ne touche pas aux séjours confirmés.</mat-hint>
+            <mat-hint>Figé à chaque réservation : un changement ne touche pas les séjours confirmés.</mat-hint>
           </mat-form-field>
 
           <mat-form-field appearance="outline">

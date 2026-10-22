@@ -52,6 +52,13 @@ export class MandatsController {
     return this.mandats.findAll(query, user);
   }
 
+  /** Matricule que recevra le prochain mandat : aperçu affiché dans le formulaire. */
+  @Get('prochaine-reference')
+  @RequirePermissions('mandats:creer')
+  async prochaineReference() {
+    return { reference: await this.mandats.prochaineReference() };
+  }
+
   @Get('options') @RequirePermissions('mandats:consulter') getOptions() {
     return this.mandats.getOptions();
   }

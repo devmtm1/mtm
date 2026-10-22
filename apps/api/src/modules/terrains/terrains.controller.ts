@@ -91,6 +91,13 @@ export class TerrainsController {
     return this.terrains.getOptions();
   }
 
+  /** Matricule que recevra le prochain bien : aperçu affiché dans le formulaire. */
+  @Get('prochaine-reference')
+  @RequirePermissions('terrains:creer')
+  async prochaineReference() {
+    return { reference: await this.terrains.prochaineReference() };
+  }
+
   @Get('stats') @RequirePermissions('terrains:consulter') getStats(
     @CurrentUser() user: AuthenticatedUser,
   ) {

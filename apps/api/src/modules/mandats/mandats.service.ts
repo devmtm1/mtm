@@ -14,6 +14,10 @@ import {
 import { DEFAULT_MANDAT_OPTIONS } from './mandats-defaults';
 import { SettingsService } from '../settings/settings.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
+import {
+  estConflitDeReference,
+  referenceSuivante,
+} from '../../common/utils/reference';
 import { CreateMandatDto } from './dto/create-mandat.dto';
 import { UpdateMandatDto } from './dto/update-mandat.dto';
 import { QueryMandatDto } from './dto/query-mandat.dto';
@@ -176,11 +180,15 @@ export class MandatsService {
   }
 
   async create(dto: CreateMandatDto, user: MandatUser) {
-    const existing = await this.prisma.mandat.findUnique({
-      where: { referenceInterne: dto.referenceInterne },
-    });
-    if (existing)
-      throw new ConflictException('Une référence de mandat existe déjà');
+    // Matricule : attribué automatiquement ; une valeur fournie est conservée si elle est libre.
+    const fournie = dto.referenceInterne?.trim() || undefined;
+    if (fournie) {
+      const existing = await this.prisma.mandat.findUnique({
+        where: { referenceInterne: fournie },
+      });
+      if (existing)
+        throw new ConflictException('Une référence de mandat existe déjà');
+    }
 
     this.validateDateRange(dto.dateDebut, dto.dateFin);
 
@@ -195,26 +203,48 @@ export class MandatsService {
         'Vous ne pouvez pas affecter ce mandat à un autre commercial',
       );
     }
-    const mandat = await this.prisma.mandat.create({
-      data: {
-        referenceInterne: dto.referenceInterne,
-        proprietaireId: dto.proprietaireId,
-        commercialResponsableId: dto.commercialResponsableId ?? user.id,
-        typeMandat: dto.typeMandat,
-        dateDebut: new Date(dto.dateDebut),
-        dateFin: new Date(dto.dateFin),
-        exclusivite: dto.exclusivite ?? false,
-        prixConditions: dto.prixConditions,
-        commissions: dto.commissions,
-        clauses: dto.clauses,
-        restrictionsContractuelles: dto.restrictionsContractuelles,
-        objectifsCommercialisation: dto.objectifsCommercialisation,
-        alerteEcheanceJours: dto.alerteEcheanceJours ?? 30,
-        statut: dto.statut,
-      } as Prisma.MandatUncheckedCreateInput,
-      include: mandatInclude,
+    // Deux créations simultanées peuvent calculer le même matricule : on recalcule si la base refuse.
+    for (let tentative = 1; ; tentative += 1) {
+      try {
+        const mandat = await this.prisma.mandat.create({
+          data: {
+            referenceInterne: fournie ?? (await this.prochaineReference()),
+            proprietaireId: dto.proprietaireId,
+            commercialResponsableId: dto.commercialResponsableId ?? user.id,
+            typeMandat: dto.typeMandat,
+            dateDebut: new Date(dto.dateDebut),
+            dateFin: new Date(dto.dateFin),
+            exclusivite: dto.exclusivite ?? false,
+            prixConditions: dto.prixConditions,
+            commissions: dto.commissions,
+            clauses: dto.clauses,
+            restrictionsContractuelles: dto.restrictionsContractuelles,
+            objectifsCommercialisation: dto.objectifsCommercialisation,
+            alerteEcheanceJours: dto.alerteEcheanceJours ?? 30,
+            statut: dto.statut,
+          } as Prisma.MandatUncheckedCreateInput,
+          include: mandatInclude,
+        });
+        return this.toInternal(mandat);
+      } catch (erreur) {
+        if (!fournie && estConflitDeReference(erreur) && tentative < 5)
+          continue;
+        throw erreur;
+      }
+    }
+  }
+
+  /** Matricule du prochain mandat : `M-2026-0007`, le rang repart de 1 chaque année. */
+  async prochaineReference(): Promise<string> {
+    const prefixe = `M-${new Date().getFullYear()}-`;
+    const lignes = await this.prisma.mandat.findMany({
+      where: { referenceInterne: { startsWith: prefixe } },
+      select: { referenceInterne: true },
     });
-    return this.toInternal(mandat);
+    return referenceSuivante(
+      prefixe,
+      lignes.map((ligne) => ligne.referenceInterne),
+    );
   }
 
   async update(id: string, dto: UpdateMandatDto, user: MandatUser) {

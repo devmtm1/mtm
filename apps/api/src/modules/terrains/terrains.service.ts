@@ -7,6 +7,10 @@ import {
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
+import {
+  estConflitDeReference,
+  referenceSuivante,
+} from '../../common/utils/reference';
 import { TerrainsAccessService } from './terrains-access.service';
 import { mediaOrderBy } from './terrain-queries';
 import { CreateTerrainDto } from './dto/create-terrain.dto';
@@ -357,11 +361,16 @@ export class TerrainsService {
     dto: CreateTerrainDto,
     user: { id: string; roles: string[]; permissions: string[] },
   ) {
-    const existing = await this.prisma.terrain.findUnique({
-      where: { referenceInterne: dto.referenceInterne },
-    });
-    if (existing)
-      throw new ConflictException('Une référence de bien existe déjà');
+    // Matricule : attribué automatiquement. Une valeur fournie (import, reprise
+    // d'un ancien fichier) est conservée, à condition d'être libre.
+    const fournie = dto.referenceInterne?.trim() || undefined;
+    if (fournie) {
+      const existing = await this.prisma.terrain.findUnique({
+        where: { referenceInterne: fournie },
+      });
+      if (existing)
+        throw new ConflictException('Une référence de bien existe déjà');
+    }
     await this.validateStatuses(dto);
     await this.assertChampsBatiCoherents(
       dto as unknown as Record<string, unknown>,
@@ -386,11 +395,35 @@ export class TerrainsService {
       data.marge = Number(dto.prixPublic) - Number(dto.prixAcquisition);
     }
 
-    const terrain = await this.prisma.terrain.create({
-      data,
-      include: terrainInclude,
+    // Deux créations simultanées peuvent calculer le même matricule : la base
+    // refuse la seconde, on recalcule au lieu de renvoyer une erreur.
+    for (let tentative = 1; ; tentative += 1) {
+      data.referenceInterne = fournie ?? (await this.prochaineReference());
+      try {
+        const terrain = await this.prisma.terrain.create({
+          data,
+          include: terrainInclude,
+        });
+        return this.toInternal(terrain, user);
+      } catch (erreur) {
+        if (!fournie && estConflitDeReference(erreur) && tentative < 5)
+          continue;
+        throw erreur;
+      }
+    }
+  }
+
+  /** Matricule du prochain bien : `T-2026-0014`, le rang repart de 1 chaque année. */
+  async prochaineReference(): Promise<string> {
+    const prefixe = `T-${new Date().getFullYear()}-`;
+    const lignes = await this.prisma.terrain.findMany({
+      where: { referenceInterne: { startsWith: prefixe } },
+      select: { referenceInterne: true },
     });
-    return this.toInternal(terrain, user);
+    return referenceSuivante(
+      prefixe,
+      lignes.map((ligne) => ligne.referenceInterne),
+    );
   }
 
   async update(

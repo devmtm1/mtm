@@ -14,7 +14,12 @@ import {
 import { versBooleen } from '../../../common/utils/booleen.transform';
 
 export class CreateMandatDto {
-  @ApiProperty() @IsString() @Length(1, 100) referenceInterne!: string;
+  /** Matricule du mandat : attribué automatiquement à la création ; une valeur fournie est conservée. */
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @Length(1, 100)
+  referenceInterne?: string;
   @ApiProperty() @IsUUID() proprietaireId!: string;
   @ApiPropertyOptional()
   @IsOptional()
