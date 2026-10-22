@@ -12,7 +12,7 @@ function renderBar(path = '/') {
 }
 
 describe('MobileTabBar', () => {
-  it('reprend les activités de MTM : accueil, biens, locations, services, à propos', () => {
+  it('reprend les activités de MTM : accueil, biens, locations, services, actualités', () => {
     renderBar();
     const barre = screen.getByRole('navigation', { name: /application/i });
     const onglets = Array.from(barre.querySelectorAll('li > a, li > button'));
@@ -21,7 +21,7 @@ describe('MobileTabBar', () => {
       'Biens',
       'Locations',
       'Services',
-      'À propos',
+      'Actualités',
     ]);
   });
 
@@ -30,12 +30,12 @@ describe('MobileTabBar', () => {
     expect(screen.getByRole('link', { name: 'Accueil' })).toHaveAttribute('href', '/');
     expect(screen.getByRole('link', { name: 'Biens' })).toHaveAttribute('href', '/terrains');
     expect(screen.getByRole('link', { name: 'Locations' })).toHaveAttribute('href', '/locations');
-    expect(screen.getByRole('link', { name: 'À propos' })).toHaveAttribute('href', '/a-propos');
+    expect(screen.getByRole('link', { name: 'Actualités' })).toHaveAttribute('href', '/actualites');
   });
 
-  it('l’onglet À propos est actif sur sa page, et seulement là', () => {
-    renderBar('/a-propos');
-    expect(screen.getByRole('link', { name: 'À propos' })).toHaveAttribute('aria-current', 'page');
+  it('l’onglet Actualités est actif sur sa page, et seulement là', () => {
+    renderBar('/actualites');
+    expect(screen.getByRole('link', { name: 'Actualités' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: 'Accueil' })).not.toHaveAttribute('aria-current');
   });
 
@@ -83,14 +83,14 @@ describe('MobileTabBar', () => {
     it('est marqué actif sur la page d’un service', () => {
       renderBar('/gestion-locative');
       const onglet = screen.getByRole('button', { name: 'Services' });
-      // Le trait sous l'onglet est visible (pleine échelle) sur un service.
-      expect(onglet.querySelector('span[aria-hidden="true"]')).toHaveClass('scale-x-100');
+      // La pastille colorée derrière l'icône marque l'onglet actif sur un service.
+      expect(onglet.firstElementChild).toHaveClass('bg-mtm-primary-subtle');
     });
 
     it('n’est pas actif sur une autre page', () => {
       renderBar('/locations');
       const onglet = screen.getByRole('button', { name: 'Services' });
-      expect(onglet.querySelector('span[aria-hidden="true"]')).toHaveClass('scale-x-0');
+      expect(onglet.firstElementChild).not.toHaveClass('bg-mtm-primary-subtle');
     });
   });
 });

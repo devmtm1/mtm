@@ -181,7 +181,7 @@ export function QuickActionsFab() {
       )}
 
       <div
-        className={`pointer-events-none fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom)+0.9rem)] right-4 z-[46] transition-[transform,opacity] duration-300 lg:hidden ${
+        className={`pointer-events-none fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom)+0.9rem)] right-4 z-[46] transition-[transform,opacity] duration-300 lg:hidden ${
           masque ? 'translate-y-6 opacity-0' : ''
         }`}
         inert={masque}
@@ -308,7 +308,7 @@ export function QuickActionsFab() {
       {toast && (
         <div
           role="status"
-          className="pointer-events-none fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom)+5.2rem)] right-4 z-[47] flex items-center gap-2 rounded-full bg-mtm-primary-dark px-3.5 py-2 text-xs font-semibold text-white shadow-card motion-safe:animate-scale-in lg:hidden"
+          className="pointer-events-none fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom)+5.2rem)] right-4 z-[47] flex items-center gap-2 rounded-full bg-mtm-primary-dark px-3.5 py-2 text-xs font-semibold text-white shadow-card motion-safe:animate-scale-in lg:hidden"
         >
           <span className="flex h-4 w-4 items-center justify-center rounded-full bg-mtm-success">
             <Check className="h-3 w-3" aria-hidden="true" />

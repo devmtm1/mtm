@@ -100,11 +100,28 @@ $motif-fond: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 .login-card {
   width: 100%;
   border-radius: 18px !important;
-  border: 1px solid rgba(255, 255, 255, 0.35) !important;
-  background-color: #ffffff !important;
+  // Effet verre dépoli : la carte laisse deviner le décor, flouté, derrière elle. Opacité assez
+  // haute (76 à 86 %) pour que le texte foncé reste lisible sur les rayures.
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.86) 0%, rgba(255, 255, 255, 0.76) 100%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(1.35);
+  backdrop-filter: blur(14px) saturate(1.35);
+  // Reflet clair en haut et liseré intérieur : l'arête de la glace.
   box-shadow:
     0 28px 60px rgba(4, 14, 30, 0.5),
-    0 2px 0 rgba(255, 255, 255, 0.6) inset !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18) !important;
+
+  // Navigateur sans flou d'arrière-plan : carte blanche pleine, aussi lisible.
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    background: #ffffff !important;
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    background: #ffffff !important;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 
 .login-card-content {
@@ -135,7 +152,8 @@ $motif-fond: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
     margin: 0;
     font-size: 0.86rem;
     line-height: 1.5;
-    color: var(--mtm-text-muted);
+    // Un peu plus foncé que le gris habituel : le fond de la carte est translucide.
+    color: color-mix(in srgb, var(--mtm-text-muted) 72%, black);
   }
 }
 
@@ -155,7 +173,7 @@ $motif-fond: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
     --mat-form-field-outlined-container-shape: 10px;
     --mdc-outlined-text-field-outline-width: 1.5px;
     --mdc-outlined-text-field-focus-outline-width: 2px;
-    --mdc-outlined-text-field-container-color: var(--mtm-card-bg);
+    --mdc-outlined-text-field-container-color: color-mix(in srgb, var(--mtm-card-bg) 94%, transparent);
     --mdc-outlined-text-field-input-text-color: var(--mtm-text-dark);
     --mdc-outlined-text-field-label-text-color: var(--mtm-text-muted);
     --mdc-outlined-text-field-hover-label-text-color: var(--mtm-primary);
@@ -178,7 +196,7 @@ $motif-fond: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
   }
 
   .mdc-floating-label {
-    color: var(--mtm-text-muted) !important;
+    color: color-mix(in srgb, var(--mtm-text-muted) 72%, black) !important;
   }
 
   .mdc-text-field--focused .mdc-floating-label {
