@@ -2325,10 +2325,20 @@ ag-grid-angular {
   }
 }
 
+/* Même règle pour tout champ d'une fenêtre ou d'un formulaire de page : un champ ne s'étire plus
+   en hauteur pour égaler son voisin qui porte une aide ou une erreur. On borne la hauteur du champ
+   (et non l'alignement du conteneur, qui changerait la largeur des champs dans une colonne). */
+:where(.mat-mdc-dialog-content, .form-body, .form-page) .mat-mdc-form-field {
+  height: fit-content;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px 20px;
+  /* Chaque champ garde sa hauteur : sans cela, un champ voisin d'un autre qui porte une aide
+     se gonfle pour l'égaler et sa boîte devient plus haute que les autres. */
+  align-items: start;
 
   @media (max-width: 720px) {
     grid-template-columns: minmax(0, 1fr);
@@ -2342,9 +2352,22 @@ ag-grid-angular {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    align-self: stretch;
     justify-content: center;
     gap: 6px;
     padding-bottom: 22px;
+
+    /* Bouton d'appoint posé sur sa propre ligne, son explication à côté. */
+    &--ligne {
+      grid-column: 1 / -1;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      align-self: start;
+      justify-content: flex-start;
+      gap: 6px 14px;
+      padding-bottom: 0;
+    }
 
     small {
       color: var(--mtm-text-muted);
