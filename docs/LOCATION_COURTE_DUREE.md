@@ -14,9 +14,9 @@ Un bien à la nuit n'a pas de bail : « Nouveau séjour » remplace « Créer un
 | Étape | Ce qui se passe |
 |---|---|
 | **Demande** | Reçue du site (ou saisie par MTM). N'occupe pas le calendrier. MTM est notifié. |
-| **Confirmé** | Les nuits sont réservées : aucun autre séjour ne peut les prendre (le départ d'un voyageur et l'arrivée du suivant peuvent tomber le même jour). |
-| **En cours** | Le voyageur est arrivé : état des lieux d'entrée. |
-| **Terminé** | Le voyageur est parti : état des lieux de sortie, restitution de la caution. |
+| **Confirmé** | Les nuits sont réservées : aucun autre séjour ne peut les prendre (le départ d'un client et l'arrivée du suivant peuvent tomber le même jour). |
+| **En cours** | Le client est arrivé : état des lieux d'entrée. |
+| **Terminé** | Le client est parti : état des lieux de sortie, restitution de la caution. |
 | **Annulé** | Motif obligatoire ; les nuits sont libérées. |
 
 Le prix est **figé à la réservation** : changer le tarif du bien ne modifie pas les séjours déjà enregistrés.

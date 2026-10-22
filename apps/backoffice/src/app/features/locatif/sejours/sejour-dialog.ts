@@ -34,7 +34,7 @@ const nombre = (valeur: number | string | null | undefined): number | null =>
   valeur === null || valeur === undefined || valeur === '' ? null : Number(valeur);
 
 /**
- * Réservation d'un séjour : le voyageur, les dates et le prix. Le tarif part de
+ * Réservation d'un séjour : le client, les dates et le prix. Le tarif part de
  * celui du bien et peut être ajusté pour ce séjour ; il est ensuite figé. Les
  * dates qui chevauchent un autre séjour confirmé sont refusées par le serveur,
  * qui dit lequel les occupe.
@@ -72,7 +72,7 @@ const nombre = (valeur: number | string | null | undefined): number | null =>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="sejour-wide">
-          <mat-label>Voyageur</mat-label>
+          <mat-label>Client</mat-label>
           <input matInput [formControl]="voyageurQuery" [matAutocomplete]="auto" placeholder="Nom ou téléphone" autocomplete="off" />
           <mat-autocomplete #auto="matAutocomplete" [displayWith]="afficherVoyageur" (optionSelected)="choisirVoyageur($event.option.value)">
             @for (voyageur of voyageurs(); track voyageur.id) {
@@ -81,7 +81,7 @@ const nombre = (valeur: number | string | null | undefined): number | null =>
           </mat-autocomplete>
         </mat-form-field>
         <button mat-stroked-button type="button" class="sejour-wide" (click)="ajouterVoyageur()">
-          <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau voyageur
+          <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau client
         </button>
       }
 
@@ -95,7 +95,7 @@ const nombre = (valeur: number | string | null | undefined): number | null =>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
-        <mat-label>Voyageurs</mat-label>
+        <mat-label>Nombre de personnes</mat-label>
         <input matInput type="number" min="1" max="50" formControlName="nombreVoyageurs" />
         @if (capacite() !== null) {
           <mat-hint>Capacité : {{ capacite() }}</mat-hint>
@@ -114,7 +114,7 @@ const nombre = (valeur: number | string | null | undefined): number | null =>
         <mat-form-field appearance="outline">
           <mat-label>Date de la réservation</mat-label>
           <input matInput type="date" formControlName="dateReservation" />
-          <mat-hint>Quand le voyageur a réservé (aujourd’hui par défaut).</mat-hint>
+          <mat-hint>Quand le client a réservé (aujourd’hui par défaut).</mat-hint>
         </mat-form-field>
         <mat-form-field appearance="outline">
           <mat-label>État initial</mat-label>

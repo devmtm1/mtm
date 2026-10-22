@@ -14,7 +14,7 @@ roles: tous
 | **Bien** | Un terrain, une villa ou un appartement suivi par MTM. |
 | **Bien disponible** | Bien publié sur le site et proposable à un client. |
 | **Brouillon** | Fiche enregistrée mais pas encore publiée sur le site. |
-| **Caution** | Somme versée en garantie par un locataire ou un voyageur, restituée à la fin (avec retenue justifiée éventuelle). |
+| **Caution** | Somme versée en garantie par un locataire ou un client en location à la nuit, restituée à la fin (avec retenue justifiée éventuelle). |
 | **Clôture (mensuelle)** | Mois figé en finances : plus aucun mouvement ne peut y être ajouté ou modifié. |
 | **Commission** | Rémunération du commercial sur une vente soldée. |
 | **Commission de gestion** | Part des loyers que MTM garde pour gérer un bien. |

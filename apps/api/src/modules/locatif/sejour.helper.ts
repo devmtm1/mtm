@@ -152,7 +152,7 @@ export function verifierDemandeSejour(
     return 'La date d’arrivée est déjà passée.';
   }
   if (bien.capaciteVoyageurs && demande.voyageurs > bien.capaciteVoyageurs) {
-    return `Ce bien accueille ${bien.capaciteVoyageurs} voyageur${bien.capaciteVoyageurs > 1 ? 's' : ''} au plus.`;
+    return `Ce bien accueille ${bien.capaciteVoyageurs} personne${bien.capaciteVoyageurs > 1 ? 's' : ''} au plus.`;
   }
   return null;
 }

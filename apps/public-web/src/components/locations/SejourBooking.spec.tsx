@@ -86,7 +86,7 @@ describe('SejourBooking (demande de séjour à la nuit)', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('prénom et votre nom');
 
     fireEvent.change(screen.getByLabelText(/Prénom/), { target: { value: 'Marc' } });
-    fireEvent.change(screen.getByLabelText(/^Nom/), { target: { value: 'Dupont' } });
+    fireEvent.change(screen.getByLabelText(/^Nom\s*\*?$/), { target: { value: 'Dupont' } });
     fireEvent.change(screen.getByLabelText(/Téléphone/), { target: { value: '12' } });
     fireEvent.click(screen.getByRole('button', { name: 'Envoyer ma demande' }));
     expect(screen.getByRole('alert')).toHaveTextContent('numéro de téléphone');
@@ -109,7 +109,7 @@ describe('SejourBooking (demande de séjour à la nuit)', () => {
     await screen.findByText('Déjà réservé');
     choisirDates(jour(5), jour(8));
     fireEvent.change(screen.getByLabelText(/Prénom/), { target: { value: 'Marc' } });
-    fireEvent.change(screen.getByLabelText(/^Nom/), { target: { value: 'Dupont' } });
+    fireEvent.change(screen.getByLabelText(/^Nom\s*\*?$/), { target: { value: 'Dupont' } });
     fireEvent.change(screen.getByLabelText(/Téléphone/), { target: { value: '+33699887766' } });
     fireEvent.click(screen.getByRole('button', { name: 'Envoyer ma demande' }));
 

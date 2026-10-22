@@ -127,7 +127,7 @@ export interface RestitutionCautionResultat {
 }
 
 /**
- * Rend la caution au voyageur. Une retenue est toujours justifiée : le
+ * Rend la caution au client. Une retenue est toujours justifiée : le
  * serveur la refuse sans motif, et l'état des lieux de sortie est la preuve.
  */
 @Component({
@@ -151,7 +151,7 @@ export interface RestitutionCautionResultat {
         <input matInput type="number" min="0" [max]="data.caution" formControlName="retenue" />
         <mat-hint>0 : la caution est rendue en totalité.</mat-hint>
       </mat-form-field>
-      <p class="caution-sejour__rendu">À rendre au voyageur : <strong>{{ aRendre() | mtmMoney }}</strong></p>
+      <p class="caution-sejour__rendu">À rendre au client : <strong>{{ aRendre() | mtmMoney }}</strong></p>
       @if (retient()) {
         <mat-form-field appearance="outline">
           <mat-label>Justification de la retenue</mat-label>
@@ -291,7 +291,7 @@ export interface EtatDesLieuxDialogData {
         </mat-form-field>
         <mat-form-field appearance="outline" class="edl__wide">
           <mat-label>Présent lors de l’état des lieux</mat-label>
-          <input matInput formControlName="signataire" maxlength="200" placeholder="Nom du voyageur ou du locataire" />
+          <input matInput formControlName="signataire" maxlength="200" placeholder="Nom du client ou du locataire" />
         </mat-form-field>
         <mat-form-field appearance="outline" class="edl__wide">
           <mat-label>Observations générales</mat-label>

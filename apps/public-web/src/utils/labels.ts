@@ -307,15 +307,15 @@ export const BIEN_LOCATIF_STATUS: Record<string, StatusLabel> = {
 
 /** Un bien loué à la nuit n'a pas de bail : ce qui compte, c'est le séjour. */
 export const OCCUPATION_NUIT: Record<string, StatusLabel> = {
-  occupe: { label: 'Occupé en ce moment', tone: 'success', help: 'Un voyageur est sur place.' },
+  occupe: { label: 'Occupé en ce moment', tone: 'success', help: 'Un client est sur place.' },
   reserve: { label: 'Prochain séjour réservé', tone: 'info', help: 'Un séjour est confirmé.' },
   libre: { label: 'Libre', tone: 'neutral', help: 'Aucun séjour confirmé pour l’instant.' },
 };
 
 export const SEJOUR_STATUS: Record<string, StatusLabel> = {
-  en_cours: { label: 'En cours', tone: 'success', help: 'Le voyageur est arrivé.' },
+  en_cours: { label: 'En cours', tone: 'success', help: 'Le client est arrivé.' },
   confirmee: { label: 'Confirmé', tone: 'info', help: 'Les nuits sont réservées.' },
-  terminee: { label: 'Terminé', tone: 'neutral', help: 'Le voyageur est parti.' },
+  terminee: { label: 'Terminé', tone: 'neutral', help: 'Le client est parti.' },
 };
 
 export function occupationNuit(code: string): StatusLabel {

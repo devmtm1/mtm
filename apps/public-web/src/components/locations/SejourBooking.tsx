@@ -159,7 +159,7 @@ export function SejourBooking({ location }: { location: Location }) {
         </FormField>
       </div>
 
-      <FormField label="Voyageurs" htmlFor="sejour-voyageurs">
+      <FormField label="Nombre de personnes" htmlFor="sejour-voyageurs">
         <select
           id="sejour-voyageurs"
           className={fieldInputClass}
@@ -168,7 +168,7 @@ export function SejourBooking({ location }: { location: Location }) {
         >
           {Array.from({ length: capacite }, (_, index) => index + 1).map((nombre) => (
             <option key={nombre} value={nombre}>
-              {nombre} voyageur{nombre > 1 ? 's' : ''}
+              {nombre} personne{nombre > 1 ? 's' : ''}
             </option>
           ))}
         </select>

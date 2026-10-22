@@ -264,7 +264,7 @@ export class SejoursService {
       where: { id: dto.locataireId },
       select: { id: true },
     });
-    if (!locataire) throw new BadRequestException('Voyageur introuvable');
+    if (!locataire) throw new BadRequestException('Client introuvable');
     await this.options.assertSourceSejour(dto.source);
 
     const arrivee = jourUtc(dto.dateArrivee);
@@ -405,7 +405,7 @@ export class SejoursService {
     if (!['demande', 'confirmee'].includes(sejour.statut)) {
       throw new BadRequestException(
         sejour.statut === 'en_cours'
-          ? 'Le voyageur est arrivé : terminez le séjour au lieu de l’annuler.'
+          ? 'Le client est arrivé : terminez le séjour au lieu de l’annuler.'
           : 'Ce séjour ne peut plus être annulé.',
       );
     }
@@ -822,7 +822,7 @@ export class SejoursService {
         lastName: dto.nom.trim(),
         phone: telephone,
         email: email || null,
-        notes: 'Voyageur : demande reçue depuis le site',
+        notes: 'Client : demande reçue depuis le site',
       },
       select: { id: true },
     });

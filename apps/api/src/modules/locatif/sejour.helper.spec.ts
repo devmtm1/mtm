@@ -142,7 +142,7 @@ describe('séjour — règles de la demande', () => {
 
   it('refuse un trop grand groupe', () => {
     expect(verifier(demande('2026-10-15', '2026-10-18', 6))).toMatch(
-      /4 voyageurs au plus/,
+      /4 personnes au plus/,
     );
   });
 });

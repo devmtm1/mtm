@@ -218,7 +218,7 @@ export class EtatsDesLieuxService {
       throw new BadRequestException(
         type === 'entree'
           ? 'L’état des lieux d’entrée se fait sur un séjour confirmé.'
-          : 'L’état des lieux de sortie se fait une fois le voyageur arrivé.',
+          : 'L’état des lieux de sortie se fait une fois le client arrivé.',
       );
     }
   }
