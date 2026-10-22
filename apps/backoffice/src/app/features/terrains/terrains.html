@@ -146,27 +146,57 @@
         </button>
       </div>
 
-      <!-- Les deux filtres qu'on utilise le plus, en un clic -->
-      <div class="chips" role="group" aria-label="Nature du bien">
-        <span class="chips__label">Nature</span>
-        <button type="button" class="chip" [class.is-actif]="!filters.controls.typeBien.value" [attr.aria-pressed]="!filters.controls.typeBien.value" (click)="choisirNature('')">Tous</button>
-        @for (option of options().typeBien; track option) {
-          <button type="button" class="chip" [class.is-actif]="filters.controls.typeBien.value === option" [attr.aria-pressed]="filters.controls.typeBien.value === option" (click)="choisirNature(option)">
-            {{ typeBienLabel(option) }}
-          </button>
-        }
-      </div>
-      <div class="chips" role="group" aria-label="Disponibilité">
-        <span class="chips__label">Statut</span>
-        <button type="button" class="chip" [class.is-actif]="!filters.controls.statutCommercial.value" [attr.aria-pressed]="!filters.controls.statutCommercial.value" (click)="choisirStatut('')">Tous</button>
-        @for (option of options().statutCommercial; track option) {
-          <button type="button" class="chip" [class.is-actif]="filters.controls.statutCommercial.value === option" [attr.aria-pressed]="filters.controls.statutCommercial.value === option" (click)="choisirStatut(option)">
-            {{ option }}
-            @if (stats(); as s) {
-              <span class="chip__n">{{ s.parStatut[option] ?? 0 }}</span>
+      <!-- Les deux filtres qu'on utilise le plus, en un clic : nature du bien, puis statut. -->
+      <div class="filtres-rapides" role="region" aria-label="Filtres rapides">
+        <div class="filtre-ligne" role="group" aria-label="Nature du bien">
+          <span class="filtre-ligne__titre">Nature</span>
+          <div class="filtre-ligne__choix">
+            <button type="button" class="puce" [class.is-actif]="!filters.controls.typeBien.value" [attr.aria-pressed]="!filters.controls.typeBien.value" (click)="choisirNature('')">
+              <svg lucideLayoutGrid aria-hidden="true"></svg>Tous
+              @if (stats(); as s) {
+                <span class="puce__n">{{ s.total }}</span>
+              }
+            </button>
+            @for (option of options().typeBien; track option) {
+              @let nombre = stats()?.parType?.[option] ?? 0;
+              <button type="button" class="puce" [class.is-actif]="filters.controls.typeBien.value === option" [class.is-vide]="stats() && nombre === 0" [attr.aria-pressed]="filters.controls.typeBien.value === option" (click)="choisirNature(option)">
+                @switch (option) {
+                  @case ('terrain') { <svg lucideLandPlot aria-hidden="true"></svg> }
+                  @case ('villa') { <svg lucideHouse aria-hidden="true"></svg> }
+                  @case ('appartement') { <svg lucideBuilding2 aria-hidden="true"></svg> }
+                  @case ('studio') { <svg lucideDoorOpen aria-hidden="true"></svg> }
+                  @case ('commerce') { <svg lucideStore aria-hidden="true"></svg> }
+                  @case ('bureau') { <svg lucideBriefcase aria-hidden="true"></svg> }
+                  @default { <svg lucideLayoutGrid aria-hidden="true"></svg> }
+                }
+                {{ typeBienLabel(option) }}
+                @if (stats()) {
+                  <span class="puce__n">{{ nombre }}</span>
+                }
+              </button>
             }
-          </button>
-        }
+          </div>
+        </div>
+        <div class="filtre-ligne" role="group" aria-label="Statut commercial">
+          <span class="filtre-ligne__titre">Statut</span>
+          <div class="filtre-ligne__choix">
+            <button type="button" class="puce" [class.is-actif]="!filters.controls.statutCommercial.value" [attr.aria-pressed]="!filters.controls.statutCommercial.value" (click)="choisirStatut('')">
+              Tous
+              @if (stats(); as s) {
+                <span class="puce__n">{{ s.total }}</span>
+              }
+            </button>
+            @for (option of options().statutCommercial; track option) {
+              @let nombre = stats()?.parStatut?.[option] ?? 0;
+              <button type="button" class="puce puce--statut" [class]="'puce puce--statut puce--' + tonStatut(option)" [class.is-actif]="filters.controls.statutCommercial.value === option" [class.is-vide]="stats() && nombre === 0" [attr.aria-pressed]="filters.controls.statutCommercial.value === option" (click)="choisirStatut(option)">
+                <span class="puce__point" aria-hidden="true"></span>{{ option }}
+                @if (stats()) {
+                  <span class="puce__n">{{ nombre }}</span>
+                }
+              </button>
+            }
+          </div>
+        </div>
       </div>
 
       @if (showAdvanced()) {

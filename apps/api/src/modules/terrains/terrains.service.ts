@@ -697,6 +697,7 @@ export class TerrainsService {
     const [
       total,
       parStatut,
+      parType,
       misEnAvant,
       sansGps,
       nonVerifies,
@@ -707,6 +708,11 @@ export class TerrainsService {
         by: ['statutCommercial'],
         where,
         _count: { statutCommercial: true },
+      }),
+      this.prisma.terrain.groupBy({
+        by: ['typeBien'],
+        where,
+        _count: { typeBien: true },
       }),
       this.prisma.terrain.count({ where: { ...where, misEnAvant: true } }),
       this.prisma.terrain.count({
@@ -727,6 +733,11 @@ export class TerrainsService {
       archives,
       parStatut: parStatut.reduce<Record<string, number>>((acc, item) => {
         acc[item.statutCommercial] = item._count.statutCommercial;
+        return acc;
+      }, {}),
+      // Combien de biens de chaque nature : affiché sur les filtres de la liste.
+      parType: parType.reduce<Record<string, number>>((acc, item) => {
+        acc[item.typeBien] = item._count.typeBien;
         return acc;
       }, {}),
       misEnAvant,
