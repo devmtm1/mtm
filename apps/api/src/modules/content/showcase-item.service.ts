@@ -74,7 +74,7 @@ export class ShowcaseItemService {
         location: dto.location,
         date: dto.date ? new Date(dto.date) : undefined,
         ordre: dto.ordre ?? 0,
-        isActive: Boolean(dto.isActive && canPublish),
+        isActive: Boolean((dto.isActive ?? true) && canPublish),
         createdById: user.id,
       },
     });

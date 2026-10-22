@@ -4,13 +4,12 @@
       <p class="eyebrow">Site web</p>
       <h1 class="page-header__title">Contenus du site</h1>
       <p class="page-header__subtitle">
-        Les textes affichés sur le site public, page par page. Un emplacement vide affiche le texte par défaut
-        du site ; ce que vous saisissez ici le remplace dès la publication.
+        Les textes du site public, rubrique par rubrique. Un emplacement non renseigné affiche le texte par défaut du site.
       </p>
     </div>
   </header>
 
-  <section class="kpi-row" aria-label="Synthèse">
+  <section class="kpi-row kpi-row--soigne" aria-label="Synthèse">
     @if (loading()) {
       @for (i of [1, 2, 3]; track i) {
         <div class="kpi skeleton" aria-hidden="true"></div>
@@ -21,7 +20,7 @@
         <span class="kpi__body">
           <strong>{{ filledCount() }}<span class="kpi__of">/ {{ slotCount }}</span></strong>
           <span>Textes personnalisés</span>
-          <small>Les autres emplacements affichent le texte par défaut</small>
+          <small>Les autres affichent le texte par défaut</small>
         </span>
       </div>
       <div class="kpi">
@@ -36,105 +35,132 @@
         <span class="kpi__body">
           <strong>{{ unpublishedCount() }}</strong>
           <span>Contenus masqués</span>
-          <small>{{ unpublishedCount() > 0 ? 'Enregistrés mais non visibles sur le site' : 'Tout ce qui est saisi est visible' }}</small>
+          <small>{{ unpublishedCount() > 0 ? 'Enregistrés mais non visibles' : 'Tout ce qui est saisi est visible' }}</small>
         </span>
       </div>
     }
   </section>
 
   @if (loading()) {
-    <div class="skeleton" style="height: 220px"></div>
+    <div class="skeleton" style="height: 320px"></div>
   } @else {
-    <div class="content-grid">
-      @for (section of sections; track section.id) {
-        <section class="page-card detail-section" [attr.aria-labelledby]="'section-' + section.id">
-          <div class="detail-section__head">
-            <div>
-              <h2 [id]="'section-' + section.id">{{ section.title }}</h2>
-              <p class="detail-section__hint">{{ section.where }}</p>
-            </div>
-          </div>
-          <ul class="slot-list">
-            @for (slot of section.slots; track slot.key) {
-              @let block = blockFor(slot);
-              <li class="slot" [class.is-empty]="!block" [class.is-hidden]="block && !block.isActive">
-                <div class="slot__main">
-                  <div class="slot__head">
-                    <strong>{{ slot.label }}</strong>
-                    @if (block && !block.isActive) {
-                      <span class="status-pill status-pill--warning">Masqué</span>
-                    } @else if (block) {
-                      <span class="status-pill status-pill--success">Publié</span>
-                    } @else {
-                      <span class="status-pill">Texte par défaut</span>
-                    }
-                  </div>
-                  <p class="slot__help">{{ slot.help }}</p>
-                  @if (block) {
-                    <p class="slot__value" [class.is-multiline]="slot.multiline">{{ preview(block, slot.format ? 90 : slot.multiline ? 240 : 120, !!slot.format) }}</p>
-                  } @else {
-                    <p class="slot__value slot__value--empty">Non renseigné : le site affiche son texte par défaut.</p>
-                  }
-                </div>
-                <div class="slot__actions">
-                  @if (canEdit) {
-                    <button mat-stroked-button type="button" (click)="editSlot(slot)" [disabled]="busyKey() === slot.key">
-                      <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>{{ block ? 'Modifier' : 'Renseigner' }}
-                    </button>
-                  }
-                  @if (block && canPublish) {
-                    <button mat-icon-button type="button" (click)="togglePublish(block)" [matTooltip]="block.isActive ? 'Masquer du site (le texte est conservé)' : 'Publier sur le site'" [attr.aria-label]="block.isActive ? 'Masquer' : 'Publier'" [disabled]="busyKey() === slot.key">
-                      @if (block.isActive) {
-                        <svg lucideEyeOff aria-hidden="true"></svg>
-                      } @else {
-                        <svg lucideEye aria-hidden="true"></svg>
-                      }
-                    </button>
-                  }
-                  @if (block && canDelete) {
-                    <button mat-icon-button type="button" class="slot__delete" (click)="remove(block, slot.label)" matTooltip="Supprimer et revenir au texte par défaut" aria-label="Supprimer" [disabled]="busyKey() === slot.key">
-                      <svg lucideTrash2 aria-hidden="true"></svg>
-                    </button>
-                  }
-                </div>
-              </li>
-            }
-          </ul>
-        </section>
+    <!-- Rubriques : une à la fois, plus de page de plusieurs écrans. -->
+    <nav class="rubriques" role="tablist" aria-label="Rubriques du site">
+      @for (tab of tabs(); track tab.id) {
+        <button
+          type="button"
+          role="tab"
+          class="rubrique"
+          [class.is-active]="active() === tab.id"
+          [attr.aria-selected]="active() === tab.id"
+          [attr.aria-controls]="'panneau-' + tab.id"
+          (click)="select(tab.id, $event)"
+        >
+          {{ tab.label }}
+          <span class="rubrique__count" [class.is-warn]="tab.warn" [attr.title]="tab.warn ? 'Contient un contenu masqué' : null">{{ tab.count }}</span>
+        </button>
       }
+    </nav>
 
-      <section class="page-card detail-section" aria-labelledby="section-testimonials">
-        <div class="detail-section__head">
+    <!-- Emplacements d'une page du site -->
+    @if (currentSection(); as section) {
+      <section class="page-card panneau" role="tabpanel" [id]="'panneau-' + section.id" [attr.aria-label]="section.title">
+        <header class="panneau__head">
+          <h2>{{ section.title }}</h2>
+          <p class="panneau__ou"><svg lucideGlobe aria-hidden="true"></svg>Visible sur : {{ section.where }}</p>
+        </header>
+        <ul class="slot-list">
+          @for (slot of section.slots; track slot.key) {
+            @let block = blockFor(slot);
+            <li class="slot" [class.is-empty]="!block" [class.is-hidden]="block && !block.isActive">
+              <div class="slot__top">
+                <strong class="slot__label">{{ slot.label }}</strong>
+                @if (block && !block.isActive) {
+                  <span class="status-pill status-pill--warning">Masqué</span>
+                } @else if (block) {
+                  <span class="status-pill status-pill--success">Publié</span>
+                } @else {
+                  <span class="status-pill">Texte par défaut</span>
+                }
+              </div>
+              @if (block) {
+                <p class="slot__value" [class.is-multiline]="slot.multiline">{{ preview(block, slot.format ? 90 : slot.multiline ? 240 : 120, !!slot.format) }}</p>
+              } @else {
+                <p class="slot__value slot__value--empty">Non renseigné : le site affiche son texte par défaut.</p>
+              }
+              <p class="slot__help"><svg lucideInfo aria-hidden="true"></svg>{{ slot.help }}</p>
+              <div class="slot__actions">
+                @if (canEdit) {
+                  <button mat-stroked-button type="button" (click)="editSlot(slot)" [disabled]="busyKey() === slot.key">
+                    <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>{{ block ? 'Modifier' : 'Renseigner' }}
+                  </button>
+                }
+                <span class="slot__spacer"></span>
+                @if (block && canPublish) {
+                  <button mat-icon-button type="button" (click)="togglePublish(block)" [matTooltip]="block.isActive ? 'Masquer du site (le texte est conservé)' : 'Publier sur le site'" [attr.aria-label]="block.isActive ? 'Masquer' : 'Publier'" [disabled]="busyKey() === slot.key">
+                    @if (block.isActive) {
+                      <svg lucideEyeOff aria-hidden="true"></svg>
+                    } @else {
+                      <svg lucideEye aria-hidden="true"></svg>
+                    }
+                  </button>
+                }
+                @if (block && canDelete) {
+                  <button mat-icon-button type="button" class="slot__delete" (click)="remove(block, slot.label)" matTooltip="Supprimer et revenir au texte par défaut" aria-label="Supprimer" [disabled]="busyKey() === slot.key">
+                    <svg lucideTrash2 aria-hidden="true"></svg>
+                  </button>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    <!-- Témoignages -->
+    @if (active() === 'testimonials') {
+      <section class="page-card panneau" role="tabpanel" id="panneau-testimonials" aria-label="Témoignages">
+        <header class="panneau__head panneau__head--action">
           <div>
-            <h2 id="section-testimonials">Témoignages</h2>
-            <p class="detail-section__hint">Page d’accueil, section « Ce que disent nos clients ». Affichés dans l’ordre indiqué.</p>
+            <h2>Témoignages</h2>
+            <p class="panneau__ou"><svg lucideGlobe aria-hidden="true"></svg>Visible sur : accueil, « Ce que disent nos clients », dans l’ordre indiqué</p>
           </div>
           @if (canCreate) {
             <button mat-flat-button color="primary" type="button" (click)="editTestimonial()">
-              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Ajouter
+              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Ajouter un témoignage
             </button>
           }
-        </div>
+        </header>
         @if (testimonials().length === 0) {
-          <p class="detail-note">Aucun témoignage : la section n’apparaît pas sur le site tant qu’il n’y en a pas.</p>
+          <div class="vide">
+            <svg lucideMessageSquareQuote aria-hidden="true"></svg>
+            <p><strong>Aucun témoignage</strong></p>
+            <p>La section n’apparaît pas sur le site tant qu’il n’y en a pas.</p>
+          </div>
         } @else {
-          <ul class="slot-list">
+          <ul class="temoignages">
             @for (item of testimonials(); track item.id) {
-              <li class="slot" [class.is-hidden]="!item.isActive">
-                <div class="slot__main">
-                  <div class="slot__head">
-                    <strong>{{ item.title || 'Client anonyme' }}</strong>
-                    <span class="status-pill" [class.status-pill--success]="item.isActive" [class.status-pill--warning]="!item.isActive">{{ item.isActive ? 'Publié' : 'Masqué' }}</span>
-                    <small class="slot__order">Ordre {{ item.ordre }}</small>
+              @let auteur = author(item);
+              <li class="temoignage" [class.is-hidden]="!item.isActive">
+                <div class="temoignage__auteur">
+                  <span class="temoignage__avatar" aria-hidden="true">{{ auteur.initiales }}</span>
+                  <div class="temoignage__identite">
+                    <strong>{{ auteur.nom }}</strong>
+                    @if (auteur.pays) {
+                      <small>{{ auteur.pays }}</small>
+                    }
                   </div>
-                  <p class="slot__value is-multiline">« {{ preview(item, 240) }} »</p>
+                  <span class="status-pill" [class.status-pill--success]="item.isActive" [class.status-pill--warning]="!item.isActive">{{ item.isActive ? 'Publié' : 'Masqué' }}</span>
                 </div>
+                <blockquote class="temoignage__texte">{{ preview(item, 240) }}</blockquote>
                 <div class="slot__actions">
                   @if (canModify) {
                     <button mat-stroked-button type="button" (click)="editTestimonial(item)" [disabled]="busyKey() === item.key">
                       <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Modifier
                     </button>
                   }
+                  <small class="slot__order">Ordre {{ item.ordre }}</small>
+                  <span class="slot__spacer"></span>
                   @if (canPublish) {
                     <button mat-icon-button type="button" (click)="togglePublish(item)" [matTooltip]="item.isActive ? 'Masquer du site' : 'Publier sur le site'" [attr.aria-label]="item.isActive ? 'Masquer' : 'Publier'" [disabled]="busyKey() === item.key">
                       @if (item.isActive) {
@@ -145,7 +171,7 @@
                     </button>
                   }
                   @if (canDelete) {
-                    <button mat-icon-button type="button" class="slot__delete" (click)="remove(item, item.title || 'ce témoignage')" matTooltip="Supprimer" aria-label="Supprimer" [disabled]="busyKey() === item.key">
+                    <button mat-icon-button type="button" class="slot__delete" (click)="remove(item, auteur.nom)" matTooltip="Supprimer" aria-label="Supprimer" [disabled]="busyKey() === item.key">
                       <svg lucideTrash2 aria-hidden="true"></svg>
                     </button>
                   }
@@ -155,45 +181,51 @@
           </ul>
         }
       </section>
+    }
 
-      <section class="page-card detail-section" aria-labelledby="section-news">
-        <div class="detail-section__head">
+    <!-- Actualités (articles courts de texte) -->
+    @if (active() === 'news') {
+      <section class="page-card panneau" role="tabpanel" id="panneau-news" aria-label="Actualités">
+        <header class="panneau__head panneau__head--action">
           <div>
-            <h2 id="section-news">Actualités et conseils</h2>
-            <p class="detail-section__hint">Page « Actualités » du site : articles courts (titre, étiquette, résumé).</p>
+            <h2>Actualités (articles courts)</h2>
+            <p class="panneau__ou"><svg lucideGlobe aria-hidden="true"></svg>Visible sur la page « Actualités » tant qu’aucune vidéo n’est publiée. Pour les vidéos, voir Site web › Actualités et conseils.</p>
           </div>
           @if (canCreate) {
             <button mat-flat-button color="primary" type="button" (click)="editNews()">
               <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouvelle actualité
             </button>
           }
-        </div>
+        </header>
         @if (news().length === 0) {
-          <p class="detail-note">Aucune actualité : la page « Actualités » du site indique qu’il n’y a rien à lire pour le moment.</p>
+          <div class="vide">
+            <svg lucideFileText aria-hidden="true"></svg>
+            <p><strong>Aucune actualité</strong></p>
+            <p>Ajoutez un article court (titre, étiquette, résumé) ou publiez plutôt une vidéo.</p>
+          </div>
         } @else {
           <ul class="slot-list">
             @for (group of news(); track group.index) {
               <li class="slot" [class.is-hidden]="!group.isActive">
-                <div class="slot__main">
-                  <div class="slot__head">
-                    @if (group.tag?.content) {
-                      <span class="status-pill status-pill--info">{{ group.tag?.content }}</span>
-                    }
-                    <strong>{{ group.title?.content || 'Actualité sans titre' }}</strong>
-                    <span class="status-pill" [class.status-pill--success]="group.isActive" [class.status-pill--warning]="!group.isActive">{{ group.isActive ? 'Publiée' : 'Masquée' }}</span>
-                  </div>
-                  @if (group.excerpt) {
-                    <p class="slot__value is-multiline">{{ preview(group.excerpt, 240) }}</p>
-                  } @else {
-                    <p class="slot__value slot__value--empty">Pas de résumé.</p>
+                <div class="slot__top">
+                  @if (group.tag?.content) {
+                    <span class="status-pill status-pill--info">{{ group.tag?.content }}</span>
                   }
+                  <strong class="slot__label">{{ group.title?.content || 'Actualité sans titre' }}</strong>
+                  <span class="status-pill" [class.status-pill--success]="group.isActive" [class.status-pill--warning]="!group.isActive">{{ group.isActive ? 'Publiée' : 'Masquée' }}</span>
                 </div>
+                @if (group.excerpt) {
+                  <p class="slot__value is-multiline">{{ preview(group.excerpt, 240) }}</p>
+                } @else {
+                  <p class="slot__value slot__value--empty">Pas de résumé.</p>
+                }
                 <div class="slot__actions">
                   @if (canModify) {
                     <button mat-stroked-button type="button" (click)="editNews(group)" [disabled]="busyKey() === 'news.' + group.index">
                       <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Modifier
                     </button>
                   }
+                  <span class="slot__spacer"></span>
                   @if (canPublish) {
                     <button mat-icon-button type="button" (click)="toggleNewsPublish(group)" [matTooltip]="group.isActive ? 'Masquer du site' : 'Publier sur le site'" [attr.aria-label]="group.isActive ? 'Masquer' : 'Publier'" [disabled]="busyKey() === 'news.' + group.index">
                       @if (group.isActive) {
@@ -214,68 +246,72 @@
           </ul>
         }
       </section>
+    }
 
-      @if (others().length > 0 || canDelete) {
-        <section class="page-card detail-section detail-section--wide" aria-labelledby="section-others">
-          <div class="detail-section__head">
-            <div>
-              <h2 id="section-others">Autres contenus</h2>
-              <p class="detail-section__hint">Blocs techniques hors catalogue. Réservés aux cas convenus avec le développeur : le site ne les affiche que s’il a été prévu pour.</p>
-            </div>
-            @if (canDelete) {
-              <button mat-stroked-button type="button" (click)="editCustom()">
-                <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Bloc libre
-              </button>
-            }
+    <!-- Avancé : blocs techniques hors catalogue -->
+    @if (active() === 'others') {
+      <section class="page-card panneau" role="tabpanel" id="panneau-others" aria-label="Avancé">
+        <header class="panneau__head panneau__head--action">
+          <div>
+            <h2>Contenus avancés</h2>
+            <p class="panneau__ou panneau__ou--alerte"><svg lucideTriangleAlert aria-hidden="true"></svg>Blocs techniques hors catalogue, réservés aux cas convenus avec le développeur : le site ne les affiche que s’il a été prévu pour.</p>
           </div>
-          @if (others().length === 0) {
-            <p class="detail-note">Aucun bloc hors catalogue.</p>
-          } @else {
-            <div class="table-scroll">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Clé technique</th>
-                    <th>Titre</th>
-                    <th>Type</th>
-                    <th>Contenu</th>
-                    <th>État</th>
-                    <th class="is-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (block of others(); track block.id) {
-                    <tr>
-                      <td><code>{{ block.key }}</code></td>
-                      <td>{{ block.title || '—' }}</td>
-                      <td>{{ block.type }}</td>
-                      <td class="cell-muted">{{ preview(block, 80) }}</td>
-                      <td><span class="status-pill" [class.status-pill--success]="block.isActive" [class.status-pill--warning]="!block.isActive">{{ block.isActive ? 'Publié' : 'Masqué' }}</span></td>
-                      <td class="is-right">
-                        @if (canModify) {
-                          <button mat-icon-button type="button" (click)="editCustom(block)" matTooltip="Modifier" aria-label="Modifier"><svg lucidePencil aria-hidden="true"></svg></button>
-                        }
-                        @if (canPublish) {
-                          <button mat-icon-button type="button" (click)="togglePublish(block)" [matTooltip]="block.isActive ? 'Masquer' : 'Publier'" [attr.aria-label]="block.isActive ? 'Masquer' : 'Publier'">
-                            @if (block.isActive) {
-                              <svg lucideEyeOff aria-hidden="true"></svg>
-                            } @else {
-                              <svg lucideEye aria-hidden="true"></svg>
-                            }
-                          </button>
-                        }
-                        @if (canDelete) {
-                          <button mat-icon-button type="button" class="slot__delete" (click)="remove(block, block.key)" matTooltip="Supprimer" aria-label="Supprimer"><svg lucideTrash2 aria-hidden="true"></svg></button>
-                        }
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
+          @if (canDelete) {
+            <button mat-stroked-button type="button" (click)="editCustom()">
+              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Bloc libre
+            </button>
           }
-        </section>
-      }
-    </div>
+        </header>
+        @if (others().length === 0) {
+          <div class="vide">
+            <svg lucideFileText aria-hidden="true"></svg>
+            <p><strong>Aucun bloc hors catalogue</strong></p>
+          </div>
+        } @else {
+          <div class="table-scroll">
+            <table class="data-table data-table--douce">
+              <thead>
+                <tr>
+                  <th>Clé technique</th>
+                  <th>Titre</th>
+                  <th>Type</th>
+                  <th>Contenu</th>
+                  <th>État</th>
+                  <th class="is-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (block of others(); track block.id) {
+                  <tr>
+                    <td><code>{{ block.key }}</code></td>
+                    <td>{{ block.title || '—' }}</td>
+                    <td>{{ block.type }}</td>
+                    <td class="cell-muted">{{ preview(block, 80) }}</td>
+                    <td><span class="status-pill" [class.status-pill--success]="block.isActive" [class.status-pill--warning]="!block.isActive">{{ block.isActive ? 'Publié' : 'Masqué' }}</span></td>
+                    <td class="is-right">
+                      @if (canModify) {
+                        <button mat-icon-button type="button" (click)="editCustom(block)" matTooltip="Modifier" aria-label="Modifier"><svg lucidePencil aria-hidden="true"></svg></button>
+                      }
+                      @if (canPublish) {
+                        <button mat-icon-button type="button" (click)="togglePublish(block)" [matTooltip]="block.isActive ? 'Masquer' : 'Publier'" [attr.aria-label]="block.isActive ? 'Masquer' : 'Publier'">
+                          @if (block.isActive) {
+                            <svg lucideEyeOff aria-hidden="true"></svg>
+                          } @else {
+                            <svg lucideEye aria-hidden="true"></svg>
+                          }
+                        </button>
+                      }
+                      @if (canDelete) {
+                        <button mat-icon-button type="button" class="slot__delete" (click)="remove(block, block.key)" matTooltip="Supprimer" aria-label="Supprimer"><svg lucideTrash2 aria-hidden="true"></svg></button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+    }
   }
 </div>

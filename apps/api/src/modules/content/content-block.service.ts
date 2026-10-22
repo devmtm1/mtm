@@ -87,7 +87,11 @@ export class ContentBlockService {
     const created = await this.prisma.contentBlock.create({
       data: {
         ...dto,
-        isActive: Boolean(dto.isActive && canPublish),
+        // Valeurs par défaut posées ici, et non dans le DTO : une modification hériterait sinon de
+        // ces défauts et réécrirait le type (« testimonial » → « text ») et l'ordre à chaque fois.
+        type: dto.type ?? 'text',
+        ordre: dto.ordre ?? 0,
+        isActive: Boolean((dto.isActive ?? true) && canPublish),
         updatedById: user.id,
       },
     });

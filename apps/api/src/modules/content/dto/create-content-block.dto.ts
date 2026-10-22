@@ -34,18 +34,18 @@ export class CreateContentBlockDto {
   })
   @IsOptional()
   @IsString()
-  type?: string = 'text';
+  type?: string;
 
   @ApiPropertyOptional({ example: 0 })
   @IsOptional()
   @IsInt()
   @Min(0)
   @Max(9999)
-  ordre?: number = 0;
+  ordre?: number;
 
   @ApiPropertyOptional({ example: true })
   @IsOptional()
   @Transform(versBooleen)
   @IsBoolean()
-  isActive?: boolean = true;
+  isActive?: boolean;
 }

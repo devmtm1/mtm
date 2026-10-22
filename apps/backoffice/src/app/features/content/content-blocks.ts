@@ -2,13 +2,36 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { LucideEye, LucideEyeOff, LucideFileText, LucideMessageSquareQuote, LucidePencil, LucidePlus, LucideTrash2 } from '@lucide/angular';
+import {
+  LucideEye,
+  LucideEyeOff,
+  LucideFileText,
+  LucideGlobe,
+  LucideInfo,
+  LucideMessageSquareQuote,
+  LucidePencil,
+  LucidePlus,
+  LucideTrash2,
+  LucideTriangleAlert,
+} from '@lucide/angular';
 import { ContentBlockApiService, type ContentBlock } from '../../core/services/api/content-block-api.service';
 import { SessionService } from '../../core/services/session.service';
 import { NotificationService } from '../../shared/services/notification.service';
 import { ContentEditorDialog } from './content-editor-dialog';
 import { NEWS_KEY_PATTERN, SITE_CONTENT_SECTIONS, TESTIMONIAL_TYPE, slotByKey, type ContentSlot } from './site-content-catalog';
 import { ConfirmService } from '../../shared/dialogs/confirm-dialog';
+
+/** Libellés courts des rubriques, pour que la rangée d'onglets tienne sur un écran. */
+const LIBELLES_ONGLETS: Record<string, string> = { home: 'Accueil', 'espace-client': 'Espace client', demarches: 'Démarches' };
+
+interface Onglet {
+  id: string;
+  label: string;
+  /** « 2/3 » pour les emplacements d'une page, un nombre pour les listes. */
+  count: string;
+  /** Au moins un contenu enregistré mais masqué du site. */
+  warn: boolean;
+}
 
 interface NewsGroup {
   index: number;
@@ -27,7 +50,20 @@ interface NewsGroup {
 @Component({
   selector: 'app-content-blocks',
   standalone: true,
-  imports: [MatButtonModule, MatTooltipModule, LucideEye, LucideEyeOff, LucideFileText, LucideMessageSquareQuote, LucidePencil, LucidePlus, LucideTrash2],
+  imports: [
+    MatButtonModule,
+    MatTooltipModule,
+    LucideEye,
+    LucideEyeOff,
+    LucideFileText,
+    LucideGlobe,
+    LucideInfo,
+    LucideMessageSquareQuote,
+    LucidePencil,
+    LucidePlus,
+    LucideTrash2,
+    LucideTriangleAlert,
+  ],
   templateUrl: './content-blocks.html',
   styleUrl: './content-blocks.scss',
 })
@@ -72,6 +108,50 @@ export class ContentBlocks implements OnInit {
   protected readonly filledCount = computed(() => this.sections.reduce((sum, section) => sum + section.slots.filter((slot) => this.byKey().has(slot.key)).length, 0));
   protected readonly slotCount = this.sections.reduce((sum, section) => sum + section.slots.length, 0);
   protected readonly unpublishedCount = computed(() => this.blocks().filter((block) => !block.isActive).length);
+
+  /** Rubrique affichée : une seule à la fois, au lieu d'une page de plusieurs écrans. */
+  protected readonly active = signal<string>(SITE_CONTENT_SECTIONS[0].id);
+
+  protected readonly currentSection = computed(() => this.sections.find((section) => section.id === this.active()) ?? null);
+
+  protected readonly tabs = computed<Onglet[]>(() => {
+    const parPage: Onglet[] = this.sections.map((section) => {
+      const blocs = section.slots.map((slot) => this.byKey().get(slot.key)).filter((block): block is ContentBlock => !!block);
+      return {
+        id: section.id,
+        label: LIBELLES_ONGLETS[section.id] ?? section.title,
+        count: `${blocs.length}/${section.slots.length}`,
+        warn: blocs.some((block) => !block.isActive),
+      };
+    });
+    const listes: Onglet[] = [
+      { id: 'testimonials', label: 'Témoignages', count: String(this.testimonials().length), warn: this.testimonials().some((item) => !item.isActive) },
+      { id: 'news', label: 'Actualités', count: String(this.news().length), warn: this.news().some((group) => !group.isActive) },
+    ];
+    if (this.others().length > 0 || this.canDelete) {
+      listes.push({ id: 'others', label: 'Avancé', count: String(this.others().length), warn: false });
+    }
+    return [...parPage, ...listes];
+  });
+
+  protected select(id: string, event?: Event): void {
+    this.active.set(id);
+    // Sur petit écran la rangée défile : l'onglet choisi vient se centrer au lieu de rester coupé.
+    (event?.currentTarget as HTMLElement | null)?.scrollIntoView?.({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }
+
+  /** Un témoignage s'écrit « Nom | Pays » : on le sépare pour l'afficher proprement. */
+  protected author(item: ContentBlock): { nom: string; pays: string | null; initiales: string } {
+    const [nom, pays] = (item.title ?? '').split('|').map((part) => part.trim());
+    const affiche = nom || 'Client anonyme';
+    const initiales = affiche
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((mot) => mot[0].toUpperCase())
+      .join('');
+    return { nom: affiche, pays: pays || null, initiales: initiales || '?' };
+  }
 
   ngOnInit(): void {
     this.load();
