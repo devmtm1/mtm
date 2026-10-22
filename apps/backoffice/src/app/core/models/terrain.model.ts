@@ -201,6 +201,8 @@ export interface TerrainStats {
   /** Biens archivés, hors du portefeuille actif. */
   archives?: number;
   parStatut: Partial<Record<string, number>>;
+  /** Nombre de biens de chaque nature (terrain, villa…). */
+  parType?: Partial<Record<string, number>>;
   misEnAvant: number;
   sansGps: number;
   nonVerifies: number;

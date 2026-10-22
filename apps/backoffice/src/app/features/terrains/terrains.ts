@@ -19,7 +19,13 @@ import {
   LucideCircleCheck,
   LucideColumns3,
   LucideFileSpreadsheet,
+  LucideBriefcase,
+  LucideBuilding2,
+  LucideDoorOpen,
   LucideGrid2X2,
+  LucideHouse,
+  LucideLayoutGrid,
+  LucideStore,
   LucideLandPlot,
   LucideList,
   LucideMapPin,
@@ -123,7 +129,13 @@ const OPTIONAL_COLUMNS: { colId: string; label: string }[] = [
     LucideCircleCheck,
     LucideColumns3,
     LucideFileSpreadsheet,
+    LucideBriefcase,
+    LucideBuilding2,
+    LucideDoorOpen,
     LucideGrid2X2,
+    LucideHouse,
+    LucideLayoutGrid,
+    LucideStore,
     LucideLandPlot,
     LucideList,
     LucideMapPin,
@@ -482,6 +494,11 @@ export class Terrains implements OnInit {
   }
 
   protected readonly commercialStatus = COMMERCIAL_STATUS;
+
+  /** Teinte d'un statut commercial (vert, orange, rouge…) : la pastille du filtre la reprend. */
+  protected tonStatut(statut: string): string {
+    return COMMERCIAL_STATUS[statut]?.tone ?? 'neutral';
+  }
   protected readonly legalStatus = LEGAL_STATUS;
   protected readonly verificationStatus = VERIFICATION_STATUS;
   protected readonly typeBienMeanings = TYPE_BIEN;

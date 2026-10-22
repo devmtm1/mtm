@@ -86,65 +86,173 @@
   font-weight: 700;
 }
 
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
+/* Filtres rapides : la nature du bien (avec son icône) puis le statut (avec sa couleur).
+   Chaque choix annonce combien de biens il contient ; un choix vide reste cliquable mais s'efface. */
+.filtres-rapides {
+  display: grid;
   flex: 1 1 100%;
-}
-
-.chips__label {
-  min-width: 56px;
-  color: var(--mtm-text-muted);
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 5px 13px;
+  gap: 12px;
+  padding: 14px 16px;
   border: 1px solid var(--mtm-border);
-  border-radius: 999px;
+  border-radius: var(--mtm-radius-lg);
   background: var(--mtm-card-bg);
-  color: var(--mtm-text-dark);
-  font: inherit;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    color 0.15s ease;
+}
 
-  &:hover {
-    border-color: var(--mtm-primary);
+.filtre-ligne {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px 14px;
+
+  &__titre {
+    color: var(--mtm-text-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
-  &.is-actif {
-    border-color: var(--mtm-primary);
-    background: var(--mtm-primary);
-    color: var(--mat-sys-on-primary);
-    font-weight: 600;
+  &__choix {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
 
-    .chip__n {
-      background: rgba(255, 255, 255, 0.22);
-      color: inherit;
+  // Téléphone : le titre passe au-dessus, les choix défilent au doigt au lieu de s'empiler.
+  @media (max-width: 720px) {
+    grid-template-columns: minmax(0, 1fr);
+
+    &__choix {
+      flex-wrap: nowrap;
+      margin-inline: -16px;
+      padding: 2px 16px 4px;
+      overflow-x: auto;
+      scroll-snap-type: x proximity;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
     }
   }
 }
 
-/* Combien de biens dans ce statut, sans avoir à cliquer. */
-.chip__n {
-  min-width: 20px;
-  padding: 0 6px;
-  border-radius: 999px;
+.puce {
+  --ton: var(--mtm-primary);
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 8px 0 12px;
+  border: 1px solid var(--mtm-border);
+  border-radius: 12px;
+  background: var(--mtm-card-bg);
+  color: var(--mtm-text-dark);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  svg {
+    width: 17px;
+    height: 17px;
+    color: var(--mtm-text-muted);
+    transition: color 0.15s ease;
+  }
+
+  &:hover {
+    border-color: var(--ton);
+    background: color-mix(in srgb, var(--ton) 6%, var(--mtm-card-bg));
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ton);
+    outline-offset: 2px;
+  }
+
+  // Choix actif : teinte du choix, texte plus appuyé, nombre en pastille pleine.
+  &.is-actif {
+    border-color: var(--ton);
+    background: color-mix(in srgb, var(--ton) 12%, var(--mtm-card-bg));
+    color: color-mix(in srgb, var(--ton) 85%, var(--mtm-text-dark));
+    font-weight: 700;
+    box-shadow: 0 0 0 1px var(--ton) inset;
+
+    svg {
+      color: var(--ton);
+    }
+
+    .puce__n {
+      background: var(--ton);
+      color: #ffffff;
+    }
+  }
+
+  // Aucun bien dans ce choix : toujours cliquable, mais discret.
+  &.is-vide:not(.is-actif) {
+    color: var(--mtm-text-muted);
+    border-style: dashed;
+
+    svg {
+      opacity: 0.6;
+    }
+  }
+
+  // Une couleur par statut : c'est la pastille qui la porte, pas tout le bouton.
+  &--statut {
+    padding-left: 12px;
+  }
+
+  &--success {
+    --ton: var(--mtm-success);
+  }
+
+  &--warning {
+    --ton: var(--mtm-warning);
+  }
+
+  &--danger {
+    --ton: var(--mtm-accent);
+  }
+
+  &--primary {
+    --ton: var(--mtm-primary);
+  }
+
+  &--neutral {
+    --ton: var(--mtm-text-muted);
+  }
+
+  &--info {
+    --ton: var(--mtm-info, var(--mtm-primary));
+  }
+}
+
+.puce__point {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--ton);
+}
+
+/* Combien de biens dans ce choix, sans avoir à cliquer. */
+.puce__n {
+  min-width: 24px;
+  padding: 1px 7px;
+  border-radius: 8px;
   background: var(--mtm-bg-hover);
   color: var(--mtm-text-muted);
-  font-size: 0.74rem;
+  font-size: 0.76rem;
   font-weight: 700;
-  line-height: 1.55;
+  line-height: 1.45;
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
@@ -439,5 +547,28 @@
 
   .panneau {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Téléphone : les chiffres du portefeuille tiennent sur deux colonnes, sans phrases, pour que la
+   liste et ses filtres apparaissent sans avoir à défiler six cartes. */
+@media (max-width: 640px) {
+  .kpi-row--soigne {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+
+    .kpi {
+      min-height: 0;
+      padding: 10px 12px;
+
+      .kpi__icon,
+      small {
+        display: none;
+      }
+
+      strong {
+        font-size: 1.35rem;
+      }
+    }
   }
 }
