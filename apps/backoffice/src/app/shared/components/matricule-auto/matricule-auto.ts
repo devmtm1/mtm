@@ -14,17 +14,19 @@ import { LucideLock, LucideSparkles } from '@lucide/angular';
   template: `
     <div class="matricule" role="group" [attr.aria-label]="libelle()">
       <span class="matricule__label">{{ libelle() }}</span>
-      <span class="matricule__valeur" [class.is-attente]="!valeur()">
-        @if (edition()) {
-          <svg lucideLock aria-hidden="true"></svg>
-        } @else {
-          <svg lucideSparkles aria-hidden="true"></svg>
-        }
-        <code>{{ valeur() || 'Calcul en cours…' }}</code>
-      </span>
-      <small class="matricule__aide">
-        {{ edition() ? 'Attribué à la création : il ne change plus.' : 'Attribué automatiquement à l’enregistrement.' }}
-      </small>
+      <div class="matricule__corps">
+        <span class="matricule__valeur" [class.is-attente]="!valeur()">
+          @if (edition()) {
+            <svg lucideLock aria-hidden="true"></svg>
+          } @else {
+            <svg lucideSparkles aria-hidden="true"></svg>
+          }
+          <code>{{ valeur() || 'Calcul en cours…' }}</code>
+        </span>
+        <small class="matricule__aide">
+          {{ edition() ? 'Attribué à la création : il ne change plus.' : 'Attribué automatiquement à l’enregistrement.' }}
+        </small>
+      </div>
     </div>
   `,
   styles: `
@@ -35,6 +37,13 @@ import { LucideLock, LucideSparkles } from '@lucide/angular';
       border: 1px solid var(--mtm-border);
       border-radius: var(--mtm-radius-md);
       background: var(--mtm-bg-surface);
+    }
+    /* Valeur et explication sur une ligne quand la place le permet, l'une sous l'autre sinon. */
+    .matricule__corps {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px 16px;
     }
     .matricule__label {
       color: var(--mtm-text-muted);

@@ -2250,10 +2250,10 @@ ag-grid-angular {
    latéral, pied d'action collant. Identiques dans tous les modules.
    --------------------------------------------------------------------------- */
 
-/* La page de formulaire : une colonne centrée, lisible, qui ne s'étire pas sur un grand écran. */
+/* La page de formulaire : une colonne centrée, qui occupe l'écran sans s'étirer à l'infini sur un très grand écran. */
 .form-page {
   display: grid;
-  width: min(100%, 1080px);
+  width: min(100%, 1360px);
   margin-inline: auto;
   gap: 20px;
 }
