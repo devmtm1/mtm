@@ -88,7 +88,7 @@
               <input matInput formControlName="referenceInterne" placeholder="T-2026-014" autocomplete="off" />
               <mat-error>La référence est obligatoire.</mat-error>
             </mat-form-field>
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="outline" class="wide">
               <mat-label>Nom du {{ motBien() }}</mat-label>
               <input matInput formControlName="nom" [placeholder]="estBati() ? 'Villa F3 Saly, 120 m² habitables' : 'Terrain 300 m² Diamniadio Lot 12'" />
               <mat-hint>Visible par les visiteurs du site.</mat-hint>
@@ -103,15 +103,6 @@
             <p>Personne qui confie le {{ motBien() }} à MTM. Le mandat de vente lui sera rattaché.</p>
           </div>
           <div class="form-grid">
-            <mat-form-field appearance="outline">
-              <mat-label>Vendeur / mandataire du bien</mat-label>
-              <input matInput formControlName="contactVendeurNom" placeholder="Si différent du propriétaire" autocomplete="off" />
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Téléphone du vendeur</mat-label>
-              <input matInput type="tel" inputmode="tel" formControlName="contactVendeurTelephone" placeholder="77 123 45 67" autocomplete="off" />
-              <mat-hint>Active les boutons Appeler et WhatsApp sur la fiche.</mat-hint>
-            </mat-form-field>
             <mat-form-field appearance="outline">
               <mat-label>Propriétaire</mat-label>
               <mat-select formControlName="proprietaireId">
@@ -135,12 +126,21 @@
                 <mat-hint>Seul ce commercial (et l’encadrement) verra ce {{ motBien() }} dans le back-office.</mat-hint>
               </mat-form-field>
             }
-            <div class="form-grid__side">
+            <div class="form-grid__side form-grid__side--ligne">
               <button mat-stroked-button type="button" (click)="addProprietaire()">
                 <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau propriétaire
               </button>
               <small>Si la personne n’est pas encore dans la liste.</small>
             </div>
+            <mat-form-field appearance="outline">
+              <mat-label>Vendeur / mandataire du bien</mat-label>
+              <input matInput formControlName="contactVendeurNom" placeholder="Si différent du propriétaire" autocomplete="off" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Téléphone du vendeur</mat-label>
+              <input matInput type="tel" inputmode="tel" formControlName="contactVendeurTelephone" placeholder="77 123 45 67" autocomplete="off" />
+              <mat-hint>Active les boutons Appeler et WhatsApp sur la fiche.</mat-hint>
+            </mat-form-field>
           </div>
         </section>
 
