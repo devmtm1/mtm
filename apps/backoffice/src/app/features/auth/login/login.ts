@@ -12,6 +12,11 @@ import {
   LucideAlertCircle,
   LucidePhoneCall,
   LucideLogIn,
+  LucideMail,
+  LucideLock,
+  LucideEye,
+  LucideEyeOff,
+  LucideKeyRound,
 } from '@lucide/angular';
 import { AuthService, StaffOnlyError } from '../../../core/services/auth.service';
 
@@ -45,6 +50,11 @@ const SENSITIVE_ROLES = new Set([
     LucideAlertCircle,
     LucidePhoneCall,
     LucideLogIn,
+    LucideMail,
+    LucideLock,
+    LucideEye,
+    LucideEyeOff,
+    LucideKeyRound,
   ],
   templateUrl: './login.html',
   styleUrl: './login.scss',
@@ -53,6 +63,9 @@ export class Login {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+
+  /** Le mot de passe est masqué par défaut ; l'œil le révèle le temps de le vérifier. */
+  protected readonly hidePassword = signal(true);
 
   constructor() {
     // Le lien de réinitialisation envoyé par e-mail pointe sur /login?reset=<jeton> :
