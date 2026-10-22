@@ -1,10 +1,21 @@
+// Fond de la page : bleu MTM profond, avec de grands hexagones translucides et des bandes
+// rayées (motif de fine rayure verticale), comme un décor d'architecture. Le motif est un SVG
+// intégré : aucune image à charger, il s'adapte à toutes les tailles d'écran (`slice`).
+$motif-fond: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900' preserveAspectRatio='xMidYMid slice'%3E%3Cdefs%3E%3Cpattern id='r' width='8' height='8' patternUnits='userSpaceOnUse'%3E%3Crect width='2.5' height='8' fill='%23ffffff' fill-opacity='.09'/%3E%3C/pattern%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ffffff' stop-opacity='.10'/%3E%3Cstop offset='1' stop-color='%23ffffff' stop-opacity='0'/%3E%3C/linearGradient%3E%3ClinearGradient id='h' x1='0' y1='1' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%23000000' stop-opacity='.22'/%3E%3Cstop offset='1' stop-color='%23000000' stop-opacity='0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points='120,330 540,90 960,330 960,790 540,1030 120,790' fill='url(%23g)'/%3E%3Cpolygon points='1080,-40 1560,230 1560,700 1080,960 760,780 760,200' fill='url(%23h)'/%3E%3Cpolygon points='500,0 1060,0 780,320' fill='url(%23r)'/%3E%3Cpolygon points='0,900 780,560 1380,560 600,900' fill='url(%23r)'/%3E%3Cpolygon points='1180,0 1600,0 1600,420' fill='url(%23r)' fill-opacity='.7'/%3E%3Cpolygon points='0,0 380,0 0,210' fill='%23ffffff' fill-opacity='.04'/%3E%3Cpolygon points='1600,560 1600,900 1250,900' fill='%23ffffff' fill-opacity='.05'/%3E%3Cline x1='120' y1='790' x2='540' y2='1030' stroke='%23b52c36' stroke-opacity='.55' stroke-width='3'/%3E%3Cline x1='960' y1='330' x2='960' y2='790' stroke='%23ffffff' stroke-opacity='.10' stroke-width='1.5'/%3E%3C/svg%3E");
+
 .login-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100vh;
-  padding: 16px;
-  background: var(--mtm-primary-dark);
+  // Hauteur minimale (et non fixe) : sur téléphone, la barre d'adresse et le clavier réduisent
+  // l'écran, la page doit pouvoir défiler plutôt que de masquer le bouton.
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 24px 16px;
+  background:
+    radial-gradient(900px 520px at 82% 12%, rgba(44, 100, 153, 0.45), transparent 65%),
+    linear-gradient(135deg, #153a66 0%, var(--mtm-primary-dark) 48%, #081a30 100%);
+  border-top: 4px solid var(--mtm-accent);
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
@@ -12,27 +23,27 @@
   &::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: var(--mtm-accent);
+    inset: 0;
+    background: $motif-fond center / cover no-repeat;
+    pointer-events: none;
   }
 }
 
 .login-container {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
 }
 
 .login-header-branding {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   text-align: center;
 }
 
@@ -40,12 +51,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
-  margin-bottom: 8px;
+  width: 68px;
+  height: 68px;
+  margin-bottom: 10px;
   overflow: hidden;
   border: 3px solid var(--mtm-primary-light);
-  border-radius: 12px;
+  border-radius: 14px;
   background: #ffffff;
   filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
 }
@@ -67,9 +78,9 @@
 }
 
 .login-tagline {
-  margin: 2px 0 8px;
+  margin: 2px 0 10px;
   font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.78);
   font-weight: 500;
 }
 
@@ -85,32 +96,45 @@
   border-radius: 9999px;
 }
 
+// Carte claire, texte foncé : le contraste reste fort quel que soit le décor derrière.
 .login-card {
   width: 100%;
-  border-radius: 14px !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
   background-color: #ffffff !important;
-  box-shadow: 0 18px 42px rgba(13, 38, 58, 0.38) !important;
+  box-shadow:
+    0 28px 60px rgba(4, 14, 30, 0.5),
+    0 2px 0 rgba(255, 255, 255, 0.6) inset !important;
 }
 
 .login-card-content {
-  padding: 22px 20px !important;
+  padding: 30px 28px 26px !important;
+
+  @media (max-width: 420px) {
+    padding: 24px 18px 20px !important;
+  }
 }
 
 .login-card-header {
   text-align: center;
-  margin-bottom: 16px;
+  margin-bottom: 22px;
 
   h2 {
-    margin: 0 0 4px;
-    font-size: 1.15rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 0 0 6px;
+    font-family: var(--mtm-font-display);
+    font-size: 1.32rem;
     font-weight: 700;
     color: var(--mtm-text-dark);
   }
 
   p {
     margin: 0;
-    font-size: 0.8rem;
+    font-size: 0.86rem;
+    line-height: 1.5;
     color: var(--mtm-text-muted);
   }
 }
@@ -118,7 +142,7 @@
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .full-width {
@@ -127,16 +151,20 @@
 
 :host ::ng-deep .login-form {
   .mat-mdc-form-field {
+    --mat-form-field-container-height: 56px;
+    --mat-form-field-outlined-container-shape: 10px;
+    --mdc-outlined-text-field-outline-width: 1.5px;
+    --mdc-outlined-text-field-focus-outline-width: 2px;
     --mdc-outlined-text-field-container-color: var(--mtm-card-bg);
     --mdc-outlined-text-field-input-text-color: var(--mtm-text-dark);
     --mdc-outlined-text-field-label-text-color: var(--mtm-text-muted);
     --mdc-outlined-text-field-hover-label-text-color: var(--mtm-primary);
     --mdc-outlined-text-field-focus-label-text-color: var(--mtm-primary);
-    --mdc-outlined-text-field-outline-color: var(--mtm-border);
+    // Contour assez marqué pour se repérer sur fond blanc (le gris très pâle passait mal).
+    --mdc-outlined-text-field-outline-color: color-mix(in srgb, var(--mtm-text-muted) 48%, white);
     --mdc-outlined-text-field-hover-outline-color: var(--mtm-primary);
     --mdc-outlined-text-field-focus-outline-color: var(--mtm-primary);
-    --mdc-outlined-text-field-input-text-color: var(--mtm-text-dark);
-    --mdc-outlined-text-field-label-text-color: var(--mtm-text-muted);
+    font-size: 1rem;
   }
 
   .mat-mdc-input-element {
@@ -156,39 +184,93 @@
   .mdc-text-field--focused .mdc-floating-label {
     color: var(--mtm-primary) !important;
   }
+
+  // Anneau de focus net autour du champ actif.
+  .mdc-text-field--focused {
+    border-radius: 10px;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--mtm-primary) 16%, transparent);
+  }
+}
+
+.login-field-icon {
+  width: 18px;
+  height: 18px;
+  margin-inline: 16px 2px;
+  color: var(--mtm-text-muted);
+}
+
+:host ::ng-deep .login-eye {
+  color: var(--mtm-text-muted);
+  margin-right: 4px;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
 }
 
 .login-submit {
-  margin-top: 4px;
-  height: 44px;
-  font-size: 0.92rem;
+  margin-top: 6px;
+  height: 52px;
+  font-size: 1rem;
   letter-spacing: 0.02em;
+  border-radius: 10px !important;
+  background: linear-gradient(135deg, var(--mtm-primary-medium) 0%, var(--mtm-primary-dark) 100%) !important;
+  box-shadow: 0 8px 20px rgba(26, 73, 116, 0.32) !important;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease !important;
+
+  &:hover:not([disabled]) {
+    transform: translateY(-1px);
+    filter: brightness(1.07);
+    box-shadow: 0 12px 26px rgba(26, 73, 116, 0.4) !important;
+  }
+
+  &:active:not([disabled]) {
+    transform: translateY(0);
+  }
+
+  &[disabled] {
+    opacity: 0.65;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &:hover:not([disabled]) {
+      transform: none;
+    }
+  }
 }
 
 .login-error-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   background-color: var(--mtm-error-bg);
   border: 1px solid var(--mtm-error);
   color: var(--mtm-error);
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 0.8rem;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.84rem;
   font-weight: 500;
 }
 
 .login-2fa-hint {
-  font-size: 0.82rem;
+  font-size: 0.86rem;
   color: var(--mtm-text-muted);
   margin: 0 0 12px;
 }
 
 .login-footer-info {
-  margin-top: 16px;
+  margin-top: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.74rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
 }
 
 [data-theme='dark'] {

@@ -24,6 +24,7 @@
           >
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Adresse e-mail</mat-label>
+              <svg matPrefix lucideMail class="login-field-icon" aria-hidden="true"></svg>
               <input matInput type="email" formControlName="email" autocomplete="username" placeholder="exemple@mtm-immobilier.sn" />
               @if (credentialsForm.controls.email.hasError('required') && credentialsForm.controls.email.touched) {
                 <mat-error>L'adresse e-mail est requise.</mat-error>
@@ -35,13 +36,29 @@
 
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Mot de passe</mat-label>
+              <svg matPrefix lucideLock class="login-field-icon" aria-hidden="true"></svg>
               <input
                 matInput
-                type="password"
+                [type]="hidePassword() ? 'password' : 'text'"
                 formControlName="password"
                 autocomplete="current-password"
                 placeholder="••••••••••••"
               />
+              <button
+                matSuffix
+                mat-icon-button
+                type="button"
+                class="login-eye"
+                (click)="hidePassword.set(!hidePassword())"
+                [attr.aria-label]="hidePassword() ? 'Afficher le mot de passe' : 'Masquer le mot de passe'"
+                [attr.aria-pressed]="!hidePassword()"
+              >
+                @if (hidePassword()) {
+                  <svg lucideEye aria-hidden="true"></svg>
+                } @else {
+                  <svg lucideEyeOff aria-hidden="true"></svg>
+                }
+              </button>
               @if (credentialsForm.controls.password.hasError('required') && credentialsForm.controls.password.touched) {
                 <mat-error>Le mot de passe est requis.</mat-error>
               }
@@ -87,6 +104,7 @@
           >
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Code de vérification 2FA</mat-label>
+              <svg matPrefix lucideKeyRound class="login-field-icon" aria-hidden="true"></svg>
               <input
                 matInput
                 type="text"
