@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { PageIntro } from '../components/layout/PageIntro';
 import { useContentBlocks } from '../hooks/useContentBlocks';
 import { usePublications } from '../hooks/usePublications';
@@ -6,7 +7,9 @@ import { usePageMetadata } from '../hooks/usePageMetadata';
 import { ArticleListSkeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Badge } from '../components/ui/Badge';
-import { FOCUS, LecteurVideo, VideoALaUne, VideoCarte } from '../components/actualites/VideoParts';
+import { FOCUS, VideoALaUne, VideoCarte } from '../components/actualites/VideoParts';
+import { LecteurVideo } from '../components/actualites/LecteurVideo';
+import { useVideosEnregistrees } from '../hooks/useVideosEnregistrees';
 import type { Publication, RubriquePublication } from '../types/publication';
 import { rubriquesPresentes, separerALaUne } from '../utils/publications';
 
@@ -38,8 +41,28 @@ function buildNewsItems(blocks: { key: string; content: string }[]): NewsItem[] 
 export function ActualitesPage() {
   const { data, loading, error } = useContentBlocks();
   const { publications, loading: videosLoading } = usePublications();
-  const [rubrique, setRubrique] = useState<RubriquePublication | null>(null);
+  const [rubrique, setRubrique] = useState<RubriquePublication | 'enregistrees' | null>(null);
   const [enLecture, setEnLecture] = useState<Publication | null>(null);
+  const [params, setParams] = useSearchParams();
+  const { identifiants: enregistrees } = useVideosEnregistrees();
+  const demandee = params.get('video');
+
+  // Un lien partagé (« …/actualites?video=… ») rouvre directement la vidéo.
+  useEffect(() => {
+    if (!demandee || enLecture || publications.length === 0) return;
+    const trouvee = publications.find((publication) => publication.id === demandee);
+    if (trouvee) setEnLecture(trouvee);
+  }, [demandee, enLecture, publications]);
+
+  function ouvrir(publication: Publication): void {
+    setEnLecture(publication);
+    setParams((precedents) => { const suivants = new URLSearchParams(precedents); suivants.set('video', publication.id); return suivants; }, { replace: true });
+  }
+
+  function fermer(): void {
+    setEnLecture(null);
+    setParams((precedents) => { const suivants = new URLSearchParams(precedents); suivants.delete('video'); return suivants; }, { replace: true });
+  }
   // Les articles de texte ne servent que de repli : dès qu'il y a des vidéos, elles seules font la page.
   const articles = data ? buildNewsItems(data) : [];
 
@@ -49,7 +72,13 @@ export function ActualitesPage() {
   });
 
   const rubriques = rubriquesPresentes(publications);
-  const visibles = rubrique ? publications.filter((publication) => publication.categorie === rubrique) : publications;
+  const nombreEnregistrees = publications.filter((publication) => enregistrees.includes(publication.id)).length;
+  const visibles =
+    rubrique === 'enregistrees'
+      ? publications.filter((publication) => enregistrees.includes(publication.id))
+      : rubrique
+        ? publications.filter((publication) => publication.categorie === rubrique)
+        : publications;
   const { aLaUne, autres } = separerALaUne(visibles);
   const aDesVideos = publications.length > 0;
 
@@ -63,13 +92,13 @@ export function ActualitesPage() {
 
       {aDesVideos && (
         <section className="mx-auto max-w-6xl px-4 pt-8 sm:px-6 sm:pt-12" aria-label="Vidéos">
-          {rubriques.length > 1 && (
+          {(rubriques.length > 1 || nombreEnregistrees > 0) && (
             <div
               className="-mx-4 mb-5 flex snap-x gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:mb-7 sm:flex-wrap sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden"
               role="group"
               aria-label="Filtrer par rubrique"
             >
-              {[{ code: null, label: 'Toutes' }, ...rubriques].map((choix) => {
+              {[{ code: null as RubriquePublication | 'enregistrees' | null, label: 'Toutes' }, ...rubriques, ...(nombreEnregistrees > 0 ? [{ code: 'enregistrees' as const, label: `Enregistrées (${nombreEnregistrees})` }] : [])].map((choix) => {
                 const actif = rubrique === choix.code;
                 return (
                   <button
@@ -91,13 +120,13 @@ export function ActualitesPage() {
           )}
           {aLaUne && (
             <div className="flex flex-col gap-5 sm:gap-7">
-              <VideoALaUne publication={aLaUne} onPlay={() => setEnLecture(aLaUne)} />
+              <VideoALaUne publication={aLaUne} onPlay={() => ouvrir(aLaUne)} />
               {autres.length > 0 && (
                 <>
                   <h2 className="font-display text-lg font-bold text-mtm-text sm:text-xl">Toutes les vidéos</h2>
                   <div className="-mt-2 grid gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
                     {autres.map((publication) => (
-                      <VideoCarte key={publication.id} publication={publication} onPlay={() => setEnLecture(publication)} />
+                      <VideoCarte key={publication.id} publication={publication} onPlay={() => ouvrir(publication)} />
                     ))}
                   </div>
                 </>
@@ -130,7 +159,7 @@ export function ActualitesPage() {
         )}
       </section>
 
-      {enLecture && <LecteurVideo publication={enLecture} onClose={() => setEnLecture(null)} />}
+      {enLecture && <LecteurVideo publication={enLecture} autres={publications.filter((publication) => publication.id !== enLecture.id)} onChoisir={ouvrir} onClose={fermer} />}
     </div>
   );
 }

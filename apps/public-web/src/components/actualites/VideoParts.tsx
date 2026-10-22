@@ -1,6 +1,5 @@
-import { ExternalLink, Play } from 'lucide-react';
+import { Play } from 'lucide-react';
 import { Badge } from '../ui/Badge';
-import { Modal } from '../ui/Modal';
 import type { Publication } from '../../types/publication';
 import { formatDate } from '../../utils/format';
 import { etiquetteRubrique, formaterDureeLecteur } from '../../utils/publications';
@@ -127,55 +126,5 @@ export function VideoCarte({
         </span>
       </button>
     </article>
-  );
-}
-
-/** Lecteur plein cadre d'une vidéo : fichier de MTM ou vidéo YouTube lue sans quitter le site. */
-export function LecteurVideo({ publication, onClose }: { publication: Publication; onClose: () => void }) {
-  return (
-    <Modal title={publication.titre} large onClose={onClose}>
-    {publication.youtubeId ? (
-      <iframe
-        key={publication.id}
-        title={publication.titre}
-        src={`https://www.youtube-nocookie.com/embed/${publication.youtubeId}?autoplay=1&rel=0&playsinline=1`}
-        allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-        allowFullScreen
-        referrerPolicy="strict-origin-when-cross-origin"
-        className="-mx-5 aspect-video w-[calc(100%+2.5rem)] max-w-none border-0 bg-black sm:mx-0 sm:w-full sm:max-w-full sm:rounded-lg"
-      />
-    ) : (
-      <video
-        key={publication.id}
-        src={publication.videoUrl ?? undefined}
-        poster={publication.posterUrl ?? undefined}
-        controls
-        autoPlay
-        playsInline
-        preload="metadata"
-        controlsList="nodownload"
-        className="-mx-5 w-[calc(100%+2.5rem)] max-w-none bg-black sm:mx-0 sm:w-full sm:max-w-full sm:rounded-lg"
-        style={{ maxHeight: '70dvh' }}
-      />
-    )}
-    {publication.youtubeId && (
-      <a
-        href={`https://www.youtube.com/watch?v=${publication.youtubeId}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={`mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-mtm-primary underline-offset-4 hover:underline ${FOCUS}`}
-      >
-        <ExternalLink className="h-4 w-4" aria-hidden="true" />
-        Voir sur YouTube
-      </a>
-    )}
-    <div className="mt-4 flex items-center gap-2">
-      <Badge tone="primary">{etiquetteRubrique(publication.categorie)}</Badge>
-      <time dateTime={publication.datePublication} className="text-xs text-mtm-muted">
-        {formatDate(publication.datePublication)}
-      </time>
-    </div>
-    {publication.resume && <p className="mt-3 text-[15px] leading-relaxed text-mtm-muted">{publication.resume}</p>}
-  </Modal>
   );
 }

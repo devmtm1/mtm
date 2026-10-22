@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { SectionHeading } from '../ui/SectionHeading';
 import { SeeAllLink } from '../ui/SeeAllLink';
-import { LecteurVideo, VideoCarte } from '../actualites/VideoParts';
+import { VideoCarte } from '../actualites/VideoParts';
+import { LecteurVideo } from '../actualites/LecteurVideo';
 import { usePublications } from '../../hooks/usePublications';
 import type { Publication } from '../../types/publication';
 import { ROUTES } from '../../routes';
@@ -47,7 +48,7 @@ export function VideosSection() {
         ))}
       </div>
 
-      {enLecture && <LecteurVideo publication={enLecture} onClose={() => setEnLecture(null)} />}
+      {enLecture && <LecteurVideo publication={enLecture} autres={publications.filter((publication) => publication.id !== enLecture.id)} onChoisir={setEnLecture} onClose={() => setEnLecture(null)} />}
     </section>
   );
 }
