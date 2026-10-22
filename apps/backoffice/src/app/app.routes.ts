@@ -8,15 +8,18 @@ import { twoFactorGuard } from './core/guards/two-factor.guard';
 export const routes: Routes = [
   {
     path: 'login',
+    title: 'Connexion',
     loadComponent: () => import('./features/auth/login/login').then((m) => m.Login),
   },
   {
     path: 'password-reset',
+    title: 'Mot de passe oublié',
     loadComponent: () =>
       import('./features/auth/password-reset/password-reset').then((m) => m.PasswordReset),
   },
   {
     path: 'change-password',
+    title: 'Nouveau mot de passe',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./features/auth/change-password/change-password').then(
@@ -32,22 +35,27 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
         path: 'dashboard',
+        title: 'Tableau de bord',
+        data: { preload: true },
         loadComponent: () =>
           import('./features/dashboard/dashboard').then((m) => m.Dashboard),
       },
       {
         path: 'security',
+        title: 'Sécurité du compte',
         loadComponent: () =>
           import('./features/security/security').then((m) => m.Security),
       },
       {
         path: 'users',
+        title: 'Utilisateurs',
         canActivate: [permissionsGuard(['users:consulter'])],
         loadComponent: () =>
           import('./features/users/users').then((m) => m.Users),
       },
       {
         path: 'terrains/import',
+        title: 'Importer des biens',
         canActivate: [permissionsGuard(['terrains:creer'])],
         loadComponent: () =>
           import('./features/terrains/terrain-import/terrain-import').then(
@@ -56,6 +64,7 @@ export const routes: Routes = [
       },
       {
         path: 'terrains/nouveau',
+        title: 'Nouveau bien',
         canActivate: [permissionsGuard(['terrains:creer'])],
         loadComponent: () =>
           import('./features/terrains/terrain-form/terrain-form').then(
@@ -64,6 +73,7 @@ export const routes: Routes = [
       },
       {
         path: 'terrains/:id/modifier',
+        title: 'Modifier le bien',
         canActivate: [permissionsGuard(['terrains:modifier'])],
         loadComponent: () =>
           import('./features/terrains/terrain-form/terrain-form').then(
@@ -72,6 +82,8 @@ export const routes: Routes = [
       },
       {
         path: 'terrains/:id',
+        title: 'Fiche du bien',
+        data: { preload: true },
         canActivate: [permissionsGuard(['terrains:consulter'])],
         loadComponent: () =>
           import('./features/terrains/terrain-detail/terrain-detail').then(
@@ -80,144 +92,175 @@ export const routes: Routes = [
       },
       {
         path: 'terrains',
+        title: 'Biens à vendre',
+        data: { preload: true },
         canActivate: [permissionsGuard(['terrains:consulter'])],
         loadComponent: () =>
           import('./features/terrains/terrains').then((m) => m.Terrains),
       },
       {
         path: 'roles',
+        title: 'Rôles et accès',
         canActivate: [permissionsGuard(['roles:consulter'])],
         loadComponent: () =>
           import('./features/roles/roles').then((m) => m.Roles),
       },
       {
         path: 'finances/tresorerie',
+        title: 'Trésorerie',
         canActivate: [permissionsGuard(['finances:consulter'])],
         loadComponent: () => import('./features/finances/tresorerie').then((m) => m.Tresorerie),
       },
       {
         path: 'finances/rapprochement',
+        title: 'Rapprochement bancaire',
         canActivate: [permissionsGuard(['finances:consulter'])],
         loadComponent: () => import('./features/finances/rapprochement').then((m) => m.RapprochementBancaire),
       },
       {
         path: 'finances/reversements',
+        title: 'Reversements',
         canActivate: [permissionsGuard(['finances:consulter'])],
         loadComponent: () => import('./features/finances/reversements').then((m) => m.Reversements),
       },
       {
         path: 'finances/remboursements',
+        title: 'Remboursements',
         canActivate: [permissionsGuard(['finances:consulter'])],
         loadComponent: () => import('./features/finances/remboursements').then((m) => m.Remboursements),
       },
       {
         path: 'finances/chantiers/:id',
+        title: 'Finances du chantier',
         canActivate: [permissionsGuard(['finances:consulter'])],
         loadComponent: () => import('./features/finances/chantier-finance-fiche').then((m) => m.ChantierFinanceFiche),
       },
       {
         path: 'finances/chantiers',
+        title: 'Finances des chantiers',
         canActivate: [permissionsGuard(['finances:consulter'])],
         loadComponent: () => import('./features/finances/chantiers-finance').then((m) => m.ChantiersFinance),
       },
       {
         path: 'finances/etats',
+        title: 'États financiers',
         canActivate: [permissionsGuard(['finances:consulter'])],
         loadComponent: () => import('./features/finances/etats').then((m) => m.EtatsFinanciers),
       },
       {
         path: 'finances/rapport-quotidien',
+        title: 'Rapport quotidien',
         canActivate: [permissionsGuard(['finances:consulter'])],
         loadComponent: () => import('./features/finances/rapport-quotidien').then((m) => m.RapportQuotidienPage),
       },
       {
         path: 'finances/journal',
+        title: 'Journal comptable',
         canActivate: [permissionsGuard(['finances:consulter'])],
         loadComponent: () => import('./features/finances/journal').then((m) => m.JournalFinancier),
       },
       {
         path: 'finances/operations',
+        title: 'Opérations',
         canActivate: [permissionsGuard(['finances:consulter'])],
         loadComponent: () => import('./features/finances/operations').then((m) => m.OperationsFinancieres),
       },
       {
         path: 'finances/clotures',
+        title: 'Clôtures',
         canActivate: [permissionsGuard(['finances:consulter'])],
         loadComponent: () => import('./features/finances/clotures').then((m) => m.CloturesFinancieres),
       },
       {
         path: 'finances',
+        title: 'Finances',
         canActivate: [permissionsGuard(['finances:consulter'])],
         loadComponent: () => import('./features/finances/tableau-financier').then((m) => m.TableauFinancierPage),
       },
       {
         path: 'pilotage/reglages',
+        title: 'Réglages du pilotage',
         canActivate: [permissionsGuard(['rapports:administrer'])],
         loadComponent: () => import('./features/pilotage/reglages-pilotage').then((m) => m.ReglagesPilotageComponent),
       },
       {
         path: 'rapports',
+        title: 'Rapports',
         canActivate: [permissionsGuard(['rapports:consulter'])],
         loadComponent: () => import('./features/rapports/rapports').then((m) => m.Rapports),
       },
       {
         path: 'agenda',
+        title: 'Agenda',
+        data: { preload: true },
         canActivate: [permissionsGuard(['agenda:consulter'])],
         loadComponent: () => import('./features/agenda/agenda').then((m) => m.Agenda),
       },
       {
         path: 'taches',
+        title: 'Tâches',
+        data: { preload: true },
         canActivate: [permissionsGuard(['taches:consulter'])],
         loadComponent: () => import('./features/taches/taches').then((m) => m.Taches),
       },
       {
         path: 'notifications/regles',
+        title: 'Règles de notification',
         canActivate: [permissionsGuard(['notifications:administrer'])],
         loadComponent: () =>
           import('./features/notifications/regles-notification').then((m) => m.ReglesNotification),
       },
       {
         path: 'notifications',
+        title: 'Notifications',
+        data: { preload: true },
         loadComponent: () =>
           import('./features/notifications/mes-notifications').then((m) => m.MesNotifications),
       },
       {
         path: 'workflows',
+        title: 'Workflows',
         canActivate: [permissionsGuard(['settings:consulter'])],
         loadComponent: () => import('./features/workflows/workflows').then((m) => m.Workflows),
       },
       {
         path: 'entreprise',
+        title: 'Entreprise',
         canActivate: [permissionsGuard(['settings:consulter'])],
         loadComponent: () =>
           import('./features/entreprise/entreprise').then((m) => m.Entreprise),
       },
       {
         path: 'settings',
+        title: 'Réglages',
         canActivate: [permissionsGuard(['settings:consulter'])],
         loadComponent: () =>
           import('./features/settings/settings').then((m) => m.Settings),
       },
       {
         path: 'contacts',
+        title: 'Demandes du site',
         canActivate: [permissionsGuard(['contact:consulter'])],
         loadComponent: () =>
           import('./features/contacts/contacts').then((m) => m.Contacts),
       },
       {
         path: 'audit',
+        title: 'Journal d’audit',
         canActivate: [permissionsGuard(['audit:consulter'])],
         loadComponent: () =>
           import('./features/audit/audit').then((m) => m.Audit),
       },
       {
         path: 'content',
+        title: 'Contenus du site',
         canActivate: [permissionsGuard(['content:consulter'])],
         loadComponent: () =>
           import('./features/content/content-blocks').then((m) => m.ContentBlocks),
       },
       {
         path: 'content/showcase',
+        title: 'Réalisations et projets',
         canActivate: [permissionsGuard(['content:consulter'])],
         loadComponent: () =>
           import('./features/content/showcase-items/showcase-items').then(
@@ -226,24 +269,28 @@ export const routes: Routes = [
       },
       {
         path: 'content/actualites',
+        title: 'Actualités et conseils',
         canActivate: [permissionsGuard(['content:consulter'])],
         loadComponent: () =>
           import('./features/content/publications/publications').then((m) => m.Publications),
       },
       {
         path: 'content/promotions',
+        title: 'Publicités du bandeau',
         canActivate: [permissionsGuard(['content:consulter'])],
         loadComponent: () =>
           import('./features/content/promotions/promotions').then((m) => m.Promotions),
       },
       {
         path: 'content/equipe',
+        title: 'Équipe du site',
         canActivate: [permissionsGuard(['content:consulter'])],
         loadComponent: () =>
           import('./features/content/team/team').then((m) => m.Team),
       },
       {
         path: 'mandats/nouveau',
+        title: 'Nouveau mandat',
         canActivate: [permissionsGuard(['mandats:creer'])],
         loadComponent: () =>
           import('./features/mandats/mandat-form/mandat-form').then(
@@ -252,6 +299,7 @@ export const routes: Routes = [
       },
       {
         path: 'mandats/:id/modifier',
+        title: 'Modifier le mandat',
         canActivate: [permissionsGuard(['mandats:modifier'])],
         loadComponent: () =>
           import('./features/mandats/mandat-form/mandat-form').then(
@@ -260,6 +308,7 @@ export const routes: Routes = [
       },
       {
         path: 'mandats/:id',
+        title: 'Fiche du mandat',
         canActivate: [permissionsGuard(['mandats:consulter'])],
         loadComponent: () =>
           import('./features/mandats/mandat-detail/mandat-detail').then(
@@ -268,6 +317,8 @@ export const routes: Routes = [
       },
       {
         path: 'mandats',
+        title: 'Mandats',
+        data: { preload: true },
         canActivate: [permissionsGuard(['mandats:consulter'])],
         loadComponent: () =>
           import('./features/mandats/mandats/mandats').then(
@@ -276,6 +327,8 @@ export const routes: Routes = [
       },
       {
         path: 'proprietaires',
+        title: 'Propriétaires',
+        data: { preload: true },
         canActivate: [permissionsGuard(['proprietaires:consulter'])],
         loadComponent: () =>
           import('./features/proprietaires/proprietaires').then(
@@ -284,6 +337,7 @@ export const routes: Routes = [
       },
       {
         path: 'proprietaires/:id',
+        title: 'Fiche du propriétaire',
         canActivate: [permissionsGuard(['proprietaires:consulter'])],
         loadComponent: () =>
           import('./features/proprietaires/proprietaire-detail/proprietaire-detail').then(
@@ -292,6 +346,7 @@ export const routes: Routes = [
       },
       {
         path: 'crm/prospects/nouveau',
+        title: 'Nouveau prospect',
         canActivate: [permissionsGuard(['crm:creer'])],
         loadComponent: () =>
           import('./features/crm/prospect-form/prospect-form').then(
@@ -301,22 +356,26 @@ export const routes: Routes = [
       // Routes fixes d'abord : « ventes/:id » capturerait « objectifs » et « documents ».
       {
         path: 'documents',
+        title: 'Documents',
         loadComponent: () =>
           import('./features/documents/documents').then((m) => m.DocumentsPage),
       },
       {
         path: 'ventes/commissions',
+        title: 'Commissions',
         canActivate: [permissionsGuard(['ventes:consulter'])],
         loadComponent: () => import('./features/ventes/commissions/mes-commissions').then((m) => m.MesCommissionsComponent),
       },
       {
         path: 'ventes/objectifs',
+        title: 'Objectifs de vente',
         canActivate: [permissionsGuard(['ventes:consulter'])],
         loadComponent: () =>
           import('./features/ventes/objectifs/objectifs').then((m) => m.Objectifs),
       },
       {
         path: 'ventes/documents',
+        title: 'Documents de vente',
         canActivate: [permissionsGuard(['ventes:consulter'])],
         loadComponent: () =>
           import('./features/ventes/documents/documents').then(
@@ -325,6 +384,8 @@ export const routes: Routes = [
       },
       {
         path: 'ventes/:id',
+        title: 'Dossier de vente',
+        data: { preload: true },
         canActivate: [permissionsGuard(['ventes:consulter'])],
         loadComponent: () =>
           import('./features/ventes/vente-detail/vente-detail').then(
@@ -333,12 +394,15 @@ export const routes: Routes = [
       },
       {
         path: 'ventes',
+        title: 'Dossiers de vente',
+        data: { preload: true },
         canActivate: [permissionsGuard(['ventes:consulter'])],
         loadComponent: () =>
           import('./features/ventes/ventes').then((m) => m.Ventes),
       },
       {
         path: 'crm/prospects/:id/modifier',
+        title: 'Modifier le prospect',
         canActivate: [permissionsGuard(['crm:modifier'])],
         loadComponent: () =>
           import('./features/crm/prospect-form/prospect-form').then(
@@ -349,6 +413,8 @@ export const routes: Routes = [
       { path: 'crm/prospects/:id/360', redirectTo: 'crm/prospects/:id' },
       {
         path: 'crm/prospects/:id',
+        title: 'Fiche du prospect',
+        data: { preload: true },
         canActivate: [permissionsGuard(['crm:consulter'])],
         loadComponent: () =>
           import('./features/crm/prospect-detail/prospect-detail').then(
@@ -357,6 +423,7 @@ export const routes: Routes = [
       },
       {
         path: 'demarches/missions/nouvelle',
+        title: 'Nouvelle mission',
         canActivate: [permissionsGuard(['demarches:creer'])],
         loadComponent: () =>
           import('./features/demarches/mission-form/mission-form').then(
@@ -365,6 +432,7 @@ export const routes: Routes = [
       },
       {
         path: 'demarches/missions/:id',
+        title: 'Mission de vérification',
         canActivate: [permissionsGuard(['demarches:consulter'])],
         loadComponent: () =>
           import('./features/demarches/mission-detail/mission-detail').then(
@@ -373,18 +441,21 @@ export const routes: Routes = [
       },
       {
         path: 'demarches/missions',
+        title: 'Vérifications et démarches',
         canActivate: [permissionsGuard(['demarches:consulter'])],
         loadComponent: () =>
           import('./features/demarches/missions/missions').then((m) => m.Missions),
       },
       {
         path: 'locatif/biens/nouveau',
+        title: 'Nouveau bien locatif',
         canActivate: [permissionsGuard(['locatif:creer'])],
         loadComponent: () =>
           import('./features/locatif/bien-form/bien-form').then((m) => m.BienForm),
       },
       {
         path: 'locatif/biens/:id',
+        title: 'Fiche du bien locatif',
         canActivate: [permissionsGuard(['locatif:consulter'])],
         loadComponent: () =>
           import('./features/locatif/bien-detail/bien-detail').then(
@@ -393,12 +464,14 @@ export const routes: Routes = [
       },
       {
         path: 'locatif/biens',
+        title: 'Gestion locative',
         canActivate: [permissionsGuard(['locatif:consulter'])],
         loadComponent: () =>
           import('./features/locatif/biens/biens').then((m) => m.Biens),
       },
       {
         path: 'locatif/sejours/:id',
+        title: 'Séjour',
         canActivate: [permissionsGuard(['locatif:consulter'])],
         loadComponent: () =>
           import('./features/locatif/sejours/sejour-detail/sejour-detail').then(
@@ -407,12 +480,14 @@ export const routes: Routes = [
       },
       {
         path: 'locatif/sejours',
+        title: 'Locations à la nuit',
         canActivate: [permissionsGuard(['locatif:consulter'])],
         loadComponent: () =>
           import('./features/locatif/sejours/sejours').then((m) => m.Sejours),
       },
       {
         path: 'locatif/resiliations',
+        title: 'Résiliations',
         canActivate: [permissionsGuard(['locatif:consulter'])],
         loadComponent: () =>
           import('./features/locatif/resiliations/resiliations').then(
@@ -421,12 +496,14 @@ export const routes: Routes = [
       },
       {
         path: 'locatif/relances',
+        title: 'Relances de loyers',
         canActivate: [permissionsGuard(['locatif:consulter'])],
         loadComponent: () =>
           import('./features/locatif/relances/relances').then((m) => m.Relances),
       },
       {
         path: 'locatif/locataires/:id',
+        title: 'Fiche du locataire',
         canActivate: [permissionsGuard(['locatif:consulter'])],
         loadComponent: () =>
           import('./features/locatif/locataires/locataire-detail/locataire-detail').then(
@@ -435,12 +512,14 @@ export const routes: Routes = [
       },
       {
         path: 'locatif/locataires',
+        title: 'Locataires',
         canActivate: [permissionsGuard(['locatif:consulter'])],
         loadComponent: () =>
           import('./features/locatif/locataires/locataires').then((m) => m.Locataires),
       },
       {
         path: 'construction/chantiers/nouveau',
+        title: 'Nouveau chantier',
         canActivate: [permissionsGuard(['construction:creer'])],
         loadComponent: () =>
           import('./features/construction/chantier-form/chantier-form').then(
@@ -449,6 +528,7 @@ export const routes: Routes = [
       },
       {
         path: 'construction/chantiers/:id',
+        title: 'Fiche du chantier',
         canActivate: [permissionsGuard(['construction:consulter'])],
         loadComponent: () =>
           import('./features/construction/chantier-detail/chantier-detail').then(
@@ -457,6 +537,7 @@ export const routes: Routes = [
       },
       {
         path: 'construction/chantiers',
+        title: 'Chantiers',
         canActivate: [permissionsGuard(['construction:consulter'])],
         loadComponent: () =>
           import('./features/construction/chantiers/chantiers').then(
@@ -465,6 +546,8 @@ export const routes: Routes = [
       },
       {
         path: 'crm/prospects',
+        title: 'Prospects',
+        data: { preload: true },
         canActivate: [permissionsGuard(['crm:consulter'])],
         loadComponent: () =>
           import('./features/crm/prospects/prospects').then(

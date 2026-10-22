@@ -7,6 +7,8 @@ import { filter, map } from 'rxjs';
 import { Sidebar } from './sidebar/sidebar';
 import { Header } from './header/header';
 import { SousNavigation } from './sous-navigation/sous-navigation';
+import { BarreProgression } from './barre-progression/barre-progression';
+import { BandeauConnexion } from './bandeau-connexion/bandeau-connexion';
 
 const SIDEBAR_COLLAPSED_KEY = 'mtm.sidebar-collapsed';
 
@@ -21,7 +23,7 @@ const SIDEBAR_COLLAPSED_KEY = 'mtm.sidebar-collapsed';
  */
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, MatSidenavModule, Sidebar, Header, SousNavigation],
+  imports: [RouterOutlet, MatSidenavModule, Sidebar, Header, SousNavigation, BarreProgression, BandeauConnexion],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })
