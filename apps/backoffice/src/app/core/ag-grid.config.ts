@@ -75,6 +75,10 @@ export const AG_GRID_LOCALE_FR: Record<string, string> = {
   last: 'Dernière',
   first: 'Première',
   previous: 'Précédent',
+  firstPage: 'Première page',
+  previousPage: 'Page précédente',
+  nextPage: 'Page suivante',
+  lastPage: 'Dernière page',
   pageSizeSelectorLabel: 'Lignes par page :',
   footerTotal: 'Total',
   // Accessibilité

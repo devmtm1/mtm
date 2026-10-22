@@ -2687,13 +2687,15 @@ ag-grid-angular {
   }
 }
 
-.alert-banner {
+.alert-banner,
+.section-deploiement {
   interpolate-size: allow-keywords;
   animation: bandeau-deploiement 0.28s ease-out;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .alert-banner {
+  .alert-banner,
+  .section-deploiement {
     animation: none;
   }
 }
