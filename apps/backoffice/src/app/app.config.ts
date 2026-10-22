@@ -1,7 +1,7 @@
 import { ApplicationConfig, LOCALE_ID, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { registerLocaleData } from '@angular/common';
 import localeFr from '@angular/common/locales/fr';
-import { PreloadAllModules, provideRouter, withInMemoryScrolling, withPreloading, withViewTransitions } from '@angular/router';
+import { PreloadAllModules, provideRouter, withInMemoryScrolling, withNavigationErrorHandler, withPreloading, withViewTransitions } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
@@ -10,6 +10,7 @@ import { provideEchartsCore } from 'ngx-echarts';
 registerLocaleData(localeFr);
 
 import { routes } from './app.routes';
+import { estErreurDeChargement, rechargerSiVersionPerimee } from './core/version-perimee';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
@@ -29,6 +30,12 @@ export const appConfig: ApplicationConfig = {
       // Fondu court entre deux pages (ignoré si l'utilisateur préfère moins d'animations).
       withViewTransitions({ skipInitialTransition: true }),
       withInMemoryScrolling({ scrollPositionRestoration: 'top', anchorScrolling: 'enabled' }),
+      // Page restée ouverte pendant un déploiement : l'écran demandé n'existe plus sous ce nom.
+      // On recharge pour récupérer la nouvelle version au lieu de laisser un clic sans effet.
+      withNavigationErrorHandler(({ error }) => {
+        if (estErreurDeChargement(error) && rechargerSiVersionPerimee()) return;
+        throw error;
+      }),
     ),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideAnimationsAsync(),
