@@ -6,7 +6,7 @@ import { usePageMetadata } from '../hooks/usePageMetadata';
 import { ArticleListSkeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Badge } from '../components/ui/Badge';
-import { LecteurVideo, VideoALaUne, VideoCarte } from '../components/actualites/VideoParts';
+import { FOCUS, LecteurVideo, VideoALaUne, VideoCarte } from '../components/actualites/VideoParts';
 import type { Publication, RubriquePublication } from '../types/publication';
 import { rubriquesPresentes, separerALaUne } from '../utils/publications';
 
