@@ -158,7 +158,7 @@ export class Objectifs implements OnInit {
 
   protected load(): void {
     const periode = this.periodeValue();
-    this.loading.set(true);
+    if (!this.chargementInitialFait) this.loading.set(true);
     const commercials$ = this.canManage ? this.crmApi.getCommercials() : of([this.ownCommercialSummary()].filter((item): item is CommercialSummary => item !== null));
     forkJoin({
       commercials: commercials$,
@@ -168,7 +168,7 @@ export class Objectifs implements OnInit {
         const progress$ = commercials.map((commercial) => this.objectifsApi.getProgress(commercial.id, periode).pipe(catchError(() => of(null))));
         if (progress$.length === 0) {
           this.rows.set([]);
-          this.loading.set(false);
+          this.finChargement();
           return;
         }
         forkJoin(progress$).subscribe((progressList) => {
@@ -179,16 +179,24 @@ export class Objectifs implements OnInit {
               progress: progressList[index],
             })),
           );
-          this.loading.set(false);
+          this.finChargement();
           this.busy.set(false);
         });
       },
       error: (error: unknown) => {
-        this.loading.set(false);
+        this.finChargement();
         this.busy.set(false);
         this.notify.error(error, 'Impossible de charger les objectifs');
       },
     });
+  }
+
+  /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place, sans clignoter ni remonter. */
+  private chargementInitialFait = false;
+
+  private finChargement(): void {
+    this.loading.set(false);
+    this.chargementInitialFait = true;
   }
 
   protected openDialog(row?: ObjectifRow): void {

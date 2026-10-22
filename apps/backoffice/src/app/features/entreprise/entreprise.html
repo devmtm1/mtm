@@ -19,7 +19,7 @@
     <section class="page-card detail-section logo-section">
       <div class="logo-section__image">
         @if (profil()?.logoUrl; as url) {
-          <img [src]="url" alt="Logo de l’entreprise" />
+          <img [src]="url" alt="Logo de l’entreprise" loading="lazy" decoding="async" />
         } @else {
           <span class="logo-section__defaut">Logo MTM par défaut</span>
         }

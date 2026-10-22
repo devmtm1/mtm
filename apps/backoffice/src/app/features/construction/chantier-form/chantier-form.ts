@@ -1,3 +1,4 @@
+import type { AvecModifications } from '../../../core/guards/modifications-non-enregistrees.guard';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import {
   FormBuilder,
@@ -36,7 +37,7 @@ import { TYPES_PROJET, label } from '../chantier-status';
   templateUrl: './chantier-form.html',
   styleUrl: './chantier-form.scss',
 })
-export class ChantierForm implements OnInit {
+export class ChantierForm implements OnInit, AvecModifications {
   private readonly api = inject(ConstructionApiService);
   private readonly crmApi = inject(CrmApiService);
   private readonly terrainsApi = inject(TerrainsApiService);
@@ -69,6 +70,11 @@ export class ChantierForm implements OnInit {
     avecJalonsType: [true],
     notes: [''],
   });
+
+  /** Vrai tant que la saisie n'est pas enregistrée : la garde de navigation demande alors confirmation. */
+  aDesModifications(): boolean {
+    return this.form.dirty;
+  }
 
   ngOnInit(): void {
     this.api.getOptions().subscribe({
@@ -144,6 +150,7 @@ export class ChantierForm implements OnInit {
       })
       .subscribe({
         next: (chantier) => {
+          this.form.markAsPristine();
           this.saving.set(false);
           this.notify.success(`Chantier ${chantier.referenceInterne} créé`);
           void this.router.navigate([

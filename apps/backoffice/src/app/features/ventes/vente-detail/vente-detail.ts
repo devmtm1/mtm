@@ -462,12 +462,13 @@ export class VenteDetailPage implements OnInit {
   }
 
   private load(id: string): void {
+    // Les échéances ne dépendent que de l'identifiant : on les demande en même temps que le dossier.
+    this.api.getEcheances(id).subscribe({ next: (echeances) => this.echeances.set(echeances), error: () => this.echeances.set([]) });
     this.api.findOne(id).subscribe({
       next: (dossier) => {
         this.dossier.set(dossier);
         this.loading.set(false);
         this.busy.set(false);
-        this.api.getEcheances(id).subscribe({ next: (echeances) => this.echeances.set(echeances), error: () => this.echeances.set([]) });
       },
       error: (error: unknown) => {
         this.loading.set(false);

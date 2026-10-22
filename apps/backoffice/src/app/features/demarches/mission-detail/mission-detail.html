@@ -374,7 +374,7 @@
                                   rel="noopener"
                                   [matTooltip]="photo.title ?? 'Ouvrir la photo en grand'"
                                 >
-                                  <img
+                                  <img loading="lazy" decoding="async"
                                     [src]="vignette(photo.secureUrl)"
                                     [alt]="photo.title ?? 'Photo de la visite ' + constat.titre"
                                     loading="lazy"
@@ -971,7 +971,7 @@
                 rel="noopener"
                 [matTooltip]="photo.title ?? 'Ouvrir la photo en grand'"
               >
-                <img
+                <img loading="lazy" decoding="async"
                   [src]="vignette(photo.secureUrl)"
                   [alt]="photo.title ?? documentLabel(photo.type)"
                   loading="lazy"

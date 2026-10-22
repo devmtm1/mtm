@@ -74,17 +74,25 @@ export class Resiliations implements OnInit {
   }
 
   private charger(): void {
-    this.loading.set(true);
+    if (!this.chargementInitialFait) this.loading.set(true);
     this.api.getResiliationStats().subscribe({ next: (stats) => this.stats.set(stats), error: () => this.stats.set(null) });
     this.api.findResiliations(this.onglet() || undefined).subscribe({
       next: (page) => {
         this.items.set(page.items);
-        this.loading.set(false);
+        this.finChargement();
       },
       error: (error: unknown) => {
-        this.loading.set(false);
+        this.finChargement();
         this.notify.error(error, 'Impossible de charger les demandes');
       },
     });
+  }
+
+  /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place, sans clignoter ni remonter. */
+  private chargementInitialFait = false;
+
+  private finChargement(): void {
+    this.loading.set(false);
+    this.chargementInitialFait = true;
   }
 }

@@ -128,16 +128,24 @@ export class Roles implements OnInit {
   }
 
   private load(): void {
-    this.loading.set(true);
+    if (!this.chargementInitialFait) this.loading.set(true);
     this.rolesApi.findAll().subscribe({
       next: (roles) => {
         this.roles.set(roles);
-        this.loading.set(false);
+        this.finChargement();
       },
       error: (error: unknown) => {
-        this.loading.set(false);
+        this.finChargement();
         this.notify.error(error, 'Erreur lors du chargement des rôles');
       },
     });
+  }
+
+  /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place, sans clignoter ni remonter. */
+  private chargementInitialFait = false;
+
+  private finChargement(): void {
+    this.loading.set(false);
+    this.chargementInitialFait = true;
   }
 }

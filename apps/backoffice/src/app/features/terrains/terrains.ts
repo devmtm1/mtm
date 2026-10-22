@@ -526,7 +526,7 @@ export class Terrains implements OnInit {
   }
 
   private load(): void {
-    this.loading.set(true);
+    if (!this.chargementInitialFait) this.loading.set(true);
     const value = this.filters.getRawValue();
     this.hasActiveFilters.set(Object.values(value).some((item) => item !== ''));
     const dansLePanneau: (keyof typeof EMPTY_FILTERS)[] = [
@@ -553,7 +553,7 @@ export class Terrains implements OnInit {
         const pages = Math.ceil(page.total / page.pageSize);
         if (pages <= 1) {
           this.rowData.set(page.items);
-          this.loading.set(false);
+          this.finChargement();
           return;
         }
         // L'API plafonne une page à 200 biens : le portefeuille repris du
@@ -564,19 +564,27 @@ export class Terrains implements OnInit {
         ).subscribe({
           next: (suite) => {
             this.rowData.set([...page.items, ...suite.flatMap((p) => p.items)]);
-            this.loading.set(false);
+            this.finChargement();
           },
           error: (error: unknown) => {
-            this.loading.set(false);
+            this.finChargement();
             this.notify.error(error, 'Erreur lors du chargement des terrains');
           },
         });
       },
       error: (error: unknown) => {
-        this.loading.set(false);
+        this.finChargement();
         this.notify.error(error, 'Erreur lors du chargement des terrains');
       },
     });
+  }
+
+  /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place, sans clignoter ni remonter. */
+  private chargementInitialFait = false;
+
+  private finChargement(): void {
+    this.loading.set(false);
+    this.chargementInitialFait = true;
   }
 
   private loadStats(): void {

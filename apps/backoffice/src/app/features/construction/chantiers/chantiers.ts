@@ -235,7 +235,7 @@ export class Chantiers implements OnInit {
   }
 
   protected charger(): void {
-    this.loading.set(true);
+    if (!this.chargementInitialFait) this.loading.set(true);
     const filtres = this.filters.getRawValue();
     this.hasActiveFilters.set(
       Object.values(filtres).some((valeur) => valeur !== ''),
@@ -248,13 +248,21 @@ export class Chantiers implements OnInit {
         next: (page) => {
           this.rowData.set(page.items);
           this.total.set(page.total);
-          this.loading.set(false);
+          this.finChargement();
         },
         error: () => {
           this.notify.error('Impossible de charger les chantiers');
-          this.loading.set(false);
+          this.finChargement();
         },
       });
+  }
+
+  /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place, sans clignoter ni remonter. */
+  private chargementInitialFait = false;
+
+  private finChargement(): void {
+    this.loading.set(false);
+    this.chargementInitialFait = true;
   }
 
   private chargerStats(): void {

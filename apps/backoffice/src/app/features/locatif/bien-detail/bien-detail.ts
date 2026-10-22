@@ -703,7 +703,9 @@ export class BienDetailPage implements OnInit {
   private charger(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return;
-    this.loading.set(true);
+    if (!this.chargementInitialFait) this.loading.set(true);
+    // Les baux ne dépendent que de l'identifiant : on les demande en même temps que la fiche.
+    this.chargerBaux(id);
     this.api.findBien(id).subscribe({
       next: (bien) => {
         this.bien.set(bien);
@@ -717,15 +719,22 @@ export class BienDetailPage implements OnInit {
           notes: bien.notes ?? '',
           responsableId: bien.responsable?.id ?? '',
         });
-        this.chargerBaux(bien.id);
         if (bien.modeLocation === 'courte_duree') this.chargerSejours(bien.id);
       },
       error: (error: unknown) => {
-        this.loading.set(false);
+        this.finChargement();
         this.notify.error(error, 'Bien introuvable');
         this.retour();
       },
     });
+  }
+
+  /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place, sans clignoter ni remonter. */
+  private chargementInitialFait = false;
+
+  private finChargement(): void {
+    this.loading.set(false);
+    this.chargementInitialFait = true;
   }
 
   /**

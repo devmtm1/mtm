@@ -261,7 +261,7 @@ export class OperationsFinancieres implements OnInit {
   }
 
   private charger(): void {
-    this.loading.set(true);
+    if (!this.chargementInitialFait) this.loading.set(true);
     const onglet = this.onglet();
     const filtre =
       onglet === 'a_autoriser'
@@ -272,12 +272,20 @@ export class OperationsFinancieres implements OnInit {
     this.api.operations({ ...filtre, page: this.page(), pageSize: 25 }).subscribe({
       next: (resultat) => {
         this.resultat.set(resultat);
-        this.loading.set(false);
+        this.finChargement();
       },
       error: (error: unknown) => {
-        this.loading.set(false);
+        this.finChargement();
         this.notify.error(error, 'Impossible de charger les saisies');
       },
     });
+  }
+
+  /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place, sans clignoter ni remonter. */
+  private chargementInitialFait = false;
+
+  private finChargement(): void {
+    this.loading.set(false);
+    this.chargementInitialFait = true;
   }
 }

@@ -197,11 +197,12 @@ export class TerrainDetail implements OnInit, OnDestroy {
       return;
     }
     this.api.getOptions().subscribe({ next: (options) => this.options.set(options) });
+    // Les notes ne dépendent que de l'identifiant : on les demande en même temps que la fiche.
+    this.loadNotes(id);
     this.api.findOne(id).subscribe({
       next: (terrain) => {
         this.terrain.set(terrain);
         this.loading.set(false);
-        this.loadNotes();
         setTimeout(() => this.renderMap(), 0);
       },
       error: (error: unknown) => {
@@ -355,10 +356,9 @@ export class TerrainDetail implements OnInit, OnDestroy {
     });
   }
 
-  private loadNotes(): void {
-    const terrain = this.terrain();
-    if (!terrain) return;
-    this.api.listNotes(terrain.id).subscribe({
+  private loadNotes(id: string | undefined = this.terrain()?.id): void {
+    if (!id) return;
+    this.api.listNotes(id).subscribe({
       next: (notes) => this.notes.set(notes),
       error: () => this.notes.set([]),
     });
@@ -441,11 +441,16 @@ export class TerrainDetail implements OnInit, OnDestroy {
     if (!terrain) return;
     this.api.findOne(terrain.id).subscribe({
       next: (fresh) => {
+        const ancien = this.terrain();
         this.terrain.set(fresh);
         this.busy.set(false);
-        this.map?.remove();
-        this.map = null;
-        setTimeout(() => this.renderMap(), 0);
+        // La carte n'est redessinée que si la position a changé : un changement de statut ne la fait plus clignoter.
+        const memePosition = !!ancien && this.map !== null && String(ancien.latitude) === String(fresh.latitude) && String(ancien.longitude) === String(fresh.longitude);
+        if (!memePosition) {
+          this.map?.remove();
+          this.map = null;
+          setTimeout(() => this.renderMap(), 0);
+        }
       },
       error: () => this.busy.set(false),
     });

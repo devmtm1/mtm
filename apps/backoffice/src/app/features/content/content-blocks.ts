@@ -279,18 +279,26 @@ export class ContentBlocks implements OnInit {
   }
 
   private load(): void {
-    this.loading.set(true);
+    if (!this.chargementInitialFait) this.loading.set(true);
     this.api.findAllAdmin().subscribe({
       next: (data) => {
         this.blocks.set(data);
-        this.loading.set(false);
+        this.finChargement();
         this.busyKey.set(null);
       },
       error: (error: unknown) => {
-        this.loading.set(false);
+        this.finChargement();
         this.busyKey.set(null);
         this.notify.error(error, 'Erreur lors du chargement des contenus');
       },
     });
+  }
+
+  /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place, sans clignoter ni remonter. */
+  private chargementInitialFait = false;
+
+  private finChargement(): void {
+    this.loading.set(false);
+    this.chargementInitialFait = true;
   }
 }

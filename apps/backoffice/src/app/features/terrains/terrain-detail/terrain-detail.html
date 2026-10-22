@@ -147,7 +147,7 @@
         <div class="page-card gallery">
           <div class="gallery__main">
             @if (mainImage(); as imageUrl) {
-              <img [src]="imageUrl" [alt]="t.nom" />
+              <img [src]="imageUrl" [alt]="t.nom" loading="lazy" decoding="async" />
             } @else {
               <div class="gallery__empty">
                 <svg lucideCamera aria-hidden="true"></svg>

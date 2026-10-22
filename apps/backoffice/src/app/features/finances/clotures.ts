@@ -99,17 +99,25 @@ export class CloturesFinancieres implements OnInit {
   }
 
   private charger(): void {
-    this.loading.set(true);
+    if (!this.chargementInitialFait) this.loading.set(true);
     this.api.clotures().subscribe({
       next: (mois) => {
         this.mois.set(mois);
-        this.loading.set(false);
+        this.finChargement();
         this.occupe.set(null);
       },
       error: (error: unknown) => {
-        this.loading.set(false);
+        this.finChargement();
         this.notify.error(error, 'Impossible de charger les clôtures');
       },
     });
+  }
+
+  /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place, sans clignoter ni remonter. */
+  private chargementInitialFait = false;
+
+  private finChargement(): void {
+    this.loading.set(false);
+    this.chargementInitialFait = true;
   }
 }

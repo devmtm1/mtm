@@ -649,18 +649,26 @@ export class MissionDetail implements OnInit {
   private charger(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return;
-    this.loading.set(true);
+    if (!this.chargementInitialFait) this.loading.set(true);
     this.api.findOne(id).subscribe({
       next: (mission) => {
         this.appliquer(mission);
-        this.loading.set(false);
+        this.finChargement();
       },
       error: (error: unknown) => {
-        this.loading.set(false);
+        this.finChargement();
         this.notify.error(error, 'Mission introuvable');
         this.retour();
       },
     });
+  }
+
+  /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place, sans clignoter ni remonter. */
+  private chargementInitialFait = false;
+
+  private finChargement(): void {
+    this.loading.set(false);
+    this.chargementInitialFait = true;
   }
 
   private appliquer(mission: MissionDetailModel): void {

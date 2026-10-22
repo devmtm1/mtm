@@ -312,20 +312,28 @@ export class Prospects implements OnInit {
   }
 
   private load(): void {
-    this.loading.set(true);
+    if (!this.chargementInitialFait) this.loading.set(true);
     const value = this.filters.getRawValue();
     this.hasActiveFilters.set(Object.values(value).some((item) => item !== ''));
     this.crmApi.findAll({ ...value, pageSize: 200 }).subscribe({
       next: (page) => {
         this.rowData.set(page.items);
         this.total.set(page.total);
-        this.loading.set(false);
+        this.finChargement();
       },
       error: (error: unknown) => {
-        this.loading.set(false);
+        this.finChargement();
         this.notify.error(error, 'Erreur lors du chargement des prospects');
       },
     });
+  }
+
+  /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place, sans clignoter ni remonter. */
+  private chargementInitialFait = false;
+
+  private finChargement(): void {
+    this.loading.set(false);
+    this.chargementInitialFait = true;
   }
 
   private pill(stage: string | null): HTMLElement | string {

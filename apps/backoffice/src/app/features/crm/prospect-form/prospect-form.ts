@@ -1,3 +1,4 @@
+import type { AvecModifications } from '../../../core/guards/modifications-non-enregistrees.guard';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -73,7 +74,7 @@ const INTEREST_SCORE: Record<string, number> = { faible: 25, moyen: 50, fort: 75
   templateUrl: './prospect-form.html',
   styleUrl: './prospect-form.scss',
 })
-export class ProspectForm implements OnInit {
+export class ProspectForm implements OnInit, AvecModifications {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly formBuilder = inject(FormBuilder);
@@ -200,6 +201,11 @@ export class ProspectForm implements OnInit {
     },
   );
 
+  /** Vrai tant que la saisie n'est pas enregistrée : la garde de navigation demande alors confirmation. */
+  aDesModifications(): boolean {
+    return this.form.dirty;
+  }
+
   ngOnInit(): void {
     this.api.getOptions().subscribe({
       next: (options) =>
@@ -252,6 +258,7 @@ export class ProspectForm implements OnInit {
     const request$ = this.prospectId ? this.api.update(this.prospectId, payload) : this.api.create({ ...payload, statutPipeline: 'nouveau' });
     request$.subscribe({
       next: (prospect) => {
+        this.form.markAsPristine();
         this.saving.set(false);
         this.notify.success(this.prospectId ? 'Prospect mis à jour' : 'Prospect créé — programmez maintenant la première action');
         void this.router.navigate(['/crm/prospects', prospect.id]);

@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, forkJoin, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { Observable, defer, forkJoin, of } from 'rxjs';
+import { catchError, finalize, map } from 'rxjs/operators';
+import { ActiviteReseau } from './activite-reseau.service';
 import { ConstructionApiService } from './api/construction-api.service';
 import { LocatifApiService } from './api/locatif-api.service';
 import { ContactApiService } from './api/contact-api.service';
@@ -93,7 +94,17 @@ export class NotificationsFeedService {
   private readonly tachesApi = inject(TachesApiService);
   private readonly agendaApi = inject(AgendaApiService);
 
+  private readonly activite = inject(ActiviteReseau);
+
+  /** Chargement de fond : ses nombreuses requêtes ne font pas bouger la barre de progression. */
   load(): Observable<FeedItem[]> {
+    return defer(() => {
+      this.activite.mettreEnSilence();
+      return this.chargerSources().pipe(finalize(() => this.activite.finDeSilence()));
+    });
+  }
+
+  private chargerSources(): Observable<FeedItem[]> {
     const sources: Observable<FeedItem[]>[] = [];
     const today = new Date();
     today.setHours(23, 59, 59, 999);

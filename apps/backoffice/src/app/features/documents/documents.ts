@@ -169,7 +169,7 @@ export class DocumentsPage implements OnInit {
   }
 
   private load(): void {
-    this.loading.set(true);
+    if (!this.chargementInitialFait) this.loading.set(true);
     this.failed.set(false);
     const value = this.filters.getRawValue();
     this.api
@@ -187,14 +187,22 @@ export class DocumentsPage implements OnInit {
           this.documents.set(result.items);
           this.total.set(result.total);
           this.origines.set(result.origines);
-          this.loading.set(false);
+          this.finChargement();
         },
         error: () => {
           this.documents.set([]);
           this.total.set(0);
           this.failed.set(true);
-          this.loading.set(false);
+          this.finChargement();
         },
       });
+  }
+
+  /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place, sans clignoter ni remonter. */
+  private chargementInitialFait = false;
+
+  private finChargement(): void {
+    this.loading.set(false);
+    this.chargementInitialFait = true;
   }
 }

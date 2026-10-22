@@ -139,11 +139,12 @@ export class MandatDetail implements OnInit {
       return;
     }
     this.api.getOptions().subscribe({ next: (options) => this.options.set(options) });
+    // Le résumé financier ne dépend que de l'identifiant : on le demande en même temps que la fiche.
+    this.loadFinancial(id);
     this.api.findOne(id).subscribe({
       next: (mandat) => {
         this.mandat.set(mandat);
         this.loading.set(false);
-        this.loadFinancial(id);
       },
       error: (error: unknown) => {
         this.loading.set(false);

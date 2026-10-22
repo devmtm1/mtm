@@ -1,3 +1,5 @@
+import { HttpContext } from '@angular/common/http';
+import { EN_ARRIERE_PLAN } from '../core/interceptors/activite.interceptor';
 import { HttpClient } from '@angular/common/http';
 import { DestroyRef, Injectable, inject, signal } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
@@ -50,7 +52,7 @@ export class NavCompteursService {
     const maintenant = Date.now();
     if (!forcer && maintenant - this.derniere < DELAI_MIN_MS) return;
     this.derniere = maintenant;
-    this.http.get<Compteurs>(`${environment.apiUrl}/navigation/compteurs`).subscribe({
+    this.http.get<Compteurs>(`${environment.apiUrl}/navigation/compteurs`, { context: new HttpContext().set(EN_ARRIERE_PLAN, true) }).subscribe({
       next: (compteurs) => this.compteurs.set(compteurs),
       error: () => undefined,
     });

@@ -1,3 +1,4 @@
+import type { AvecModifications } from '../../../core/guards/modifications-non-enregistrees.guard';
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -33,7 +34,7 @@ import { TYPES_PHOTOS, nombreOuUndefined, trierFichiers } from '../locatif-form'
   templateUrl: './bien-form.html',
   styleUrl: './bien-form.scss',
 })
-export class BienForm implements OnInit, OnDestroy {
+export class BienForm implements OnInit, OnDestroy, AvecModifications {
   private readonly api = inject(LocatifApiService);
   private readonly proprietairesApi = inject(ProprietairesApiService);
   private readonly formBuilder = inject(FormBuilder);
@@ -89,6 +90,11 @@ export class BienForm implements OnInit, OnDestroy {
   /** Bien loué à la nuit : on demande son tarif de séjour au lieu du loyer mensuel. */
   protected get courteDuree(): boolean {
     return this.form.controls.modeLocation.value === 'courte_duree';
+  }
+
+  /** Vrai tant que la saisie n'est pas enregistrée : la garde de navigation demande alors confirmation. */
+  aDesModifications(): boolean {
+    return this.form.dirty;
   }
 
   ngOnInit(): void {
@@ -220,6 +226,7 @@ export class BienForm implements OnInit, OnDestroy {
       .createBien(payload)
       .subscribe({
         next: (bien) => {
+          this.form.markAsPristine();
           this.notify.success(`Bien ${bien.referenceInterne} enregistré`);
           this.deposerPhotos(bien.id, [...this.photos()].map((photo) => photo.file));
         },

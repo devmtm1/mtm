@@ -1,3 +1,4 @@
+import type { AvecModifications } from '../../../core/guards/modifications-non-enregistrees.guard';
 import { MatriculeAuto } from '../../../shared/components/matricule-auto/matricule-auto';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -109,7 +110,7 @@ const CHAMPS_BATI = [
   templateUrl: './terrain-form.html',
   styleUrl: './terrain-form.scss',
 })
-export class TerrainForm implements OnInit {
+export class TerrainForm implements OnInit, AvecModifications {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly api = inject(TerrainsApiService);
@@ -345,6 +346,11 @@ export class TerrainForm implements OnInit {
     return this.form.controls.pointsInteret as FormArray;
   }
 
+  /** En création, le brouillon automatique protège la saisie ; en modification, on demande confirmation avant de quitter. */
+  aDesModifications(): boolean {
+    return this.isEdit && this.form.dirty;
+  }
+
   ngOnInit(): void {
     this.api.getOptions().subscribe({ next: (options) => this.options.set(options) });
     if (!this.terrainId) {
@@ -524,6 +530,7 @@ export class TerrainForm implements OnInit {
         forkJoin(uploads.length ? uploads : [of(null)]).subscribe({
           next: () => {
             this.saving.set(false);
+            this.form.markAsPristine();
             this.effacerBrouillon();
             this.notify.success(this.terrainId ? 'Terrain mis à jour' : 'Terrain créé');
             void this.router.navigate(['/terrains', terrain.id]);

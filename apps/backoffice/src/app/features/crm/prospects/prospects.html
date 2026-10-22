@@ -118,7 +118,7 @@
 
 
   @if (stats(); as s) {
-    <section class="page-section" aria-labelledby="pipeline-title">
+    <section class="page-section section-deploiement" aria-labelledby="pipeline-title">
       <div class="list-toolbar">
         <div class="list-toolbar__title">
           <h2 id="pipeline-title">Pipeline commercial</h2>
@@ -151,6 +151,9 @@
         </small>
       </div>
     </section>
+  } @else {
+    <!-- Place réservée au pipeline : la liste ne descend pas d'un coup à son arrivée. -->
+    <div class="skeleton" style="height: 208px" aria-hidden="true"></div>
   }
 
   @if (stats(); as s) {

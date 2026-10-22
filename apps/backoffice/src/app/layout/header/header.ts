@@ -8,8 +8,8 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { Subject, timer } from 'rxjs';
-import { debounceTime, distinctUntilChanged, map, switchMap, tap } from 'rxjs/operators';
+import { Subject, fromEvent, timer } from 'rxjs';
+import { debounceTime, distinctUntilChanged, filter, map, switchMap, tap, throttleTime } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -209,6 +209,18 @@ export class Header {
     // Fil chargé à l'ouverture de session puis rafraîchi toutes les 5 minutes.
     timer(0, 5 * 60_000)
       .pipe(
+        // Onglet caché : inutile de recharger, le fil se met à jour au retour sur l’onglet.
+        filter(() => document.visibilityState === 'visible'),
+        switchMap(() => this.feedService.load()),
+        takeUntilDestroyed(),
+      )
+      .subscribe((items) => this.feed.set(items));
+
+    // Retour sur l'onglet : le fil se met à jour tout de suite, sans attendre le prochain passage.
+    fromEvent(document, 'visibilitychange')
+      .pipe(
+        filter(() => document.visibilityState === 'visible'),
+        throttleTime(60_000),
         switchMap(() => this.feedService.load()),
         takeUntilDestroyed(),
       )

@@ -119,14 +119,14 @@ export class LocataireDetail implements OnInit {
   }
 
   private load(id: string): void {
-    this.loading.set(true);
+    if (!this.chargementInitialFait) this.loading.set(true);
     this.api.findLocataire(id).subscribe({
       next: (locataire) => {
         this.locataire.set(locataire);
-        this.loading.set(false);
+        this.finChargement();
       },
       error: (error: unknown) => {
-        this.loading.set(false);
+        this.finChargement();
         this.notify.error(error, 'Locataire introuvable');
         this.goBack();
       },
@@ -135,5 +135,13 @@ export class LocataireDetail implements OnInit {
       next: (baux) => this.baux.set(baux),
       error: () => this.baux.set([]),
     });
+  }
+
+  /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place, sans clignoter ni remonter. */
+  private chargementInitialFait = false;
+
+  private finChargement(): void {
+    this.loading.set(false);
+    this.chargementInitialFait = true;
   }
 }

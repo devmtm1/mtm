@@ -135,19 +135,27 @@ export class TableauFinancierPage implements OnInit {
   }
 
   private charger(): void {
-    this.loading.set(true);
+    if (!this.chargementInitialFait) this.loading.set(true);
     const { du, au } = this.choix();
     this.api
       .direction({ du, au, activite: this.activiteFiltre() || undefined, mode: this.modeFiltre() || undefined })
       .subscribe({
       next: (donnees) => {
         this.donnees.set(donnees);
-        this.loading.set(false);
+        this.finChargement();
       },
       error: (error: unknown) => {
-        this.loading.set(false);
+        this.finChargement();
         this.notify.error(error, 'Impossible de charger le tableau financier');
       },
     });
+  }
+
+  /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place, sans clignoter ni remonter. */
+  private chargementInitialFait = false;
+
+  private finChargement(): void {
+    this.loading.set(false);
+    this.chargementInitialFait = true;
   }
 }
