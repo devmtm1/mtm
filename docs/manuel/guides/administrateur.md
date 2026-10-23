@@ -245,7 +245,7 @@ Activer l’envoi exige **au moins un rapport et un destinataire**.
 
 ## Le site web
 
-**Administration › Site web** regroupe ce que les visiteurs lisent sur le **site public** : **Contenus du site** (textes page par page), **Réalisations & projets**, **Publicités du bandeau**, **Équipe du site**, **Actualités et conseils** (vidéos : titre, rubrique, fichier MP4 de 100 Mo maximum ou lien YouTube, puis publication).
+**Administration › Site web** regroupe ce que les visiteurs lisent sur le **site public** : **Contenus du site** (textes et images page par page, y compris le bandeau des pages Réalisations et Projets à venir), **Réalisations & projets**, **Publicités du bandeau**, **Équipe du site**, **Actualités et conseils** (vidéos : titre, rubrique, fichier MP4 de 100 Mo maximum ou lien YouTube, puis publication).
 
 ![Contenus du site](img/web-02-contenus.png)
 

@@ -1,21 +1,25 @@
+import { useState } from 'react';
 import type { ShowcaseCategory } from '../../types/showcase';
 import { useShowcase } from '../../hooks/useShowcase';
+import { useEditableContent } from '../../hooks/useEditableContent';
+import { cloudinarySrcSet } from '../../utils/cloudinary';
 import { EmptyState } from '../ui/EmptyState';
 import { Skeleton } from '../ui/Skeleton';
 import { VitrineCard } from './VitrineCard';
 
+/** Photo du bandeau quand aucune image n'a été choisie dans le back-office. */
+const IMAGE_PAR_DEFAUT = '/hero-poster.jpg';
+
 interface ShowcaseVitrineProps {
   category: ShowcaseCategory;
-  /** Petite mention en capitales au-dessus du titre, précédée d'un trait rouge. */
-  eyebrow: string;
-  title: string;
-  /** Phrase d'accroche sous le titre. */
-  subtitle: string;
-  /** Paragraphe de présentation. */
-  texte: string;
+  /**
+   * Début des clés de contenu de la page (« realisations », « projets-a-venir ») : le bandeau lit
+   * `<prefixe>.eyebrow`, `.title`, `.subtitle`, `.texte`, `.legende` et `.image` dans Contenus du site.
+   */
+  prefixe: string;
+  /** Textes utilisés tant que rien n'est saisi dans le back-office. */
+  defauts: { eyebrow: string; title: string; subtitle: string; texte: string };
   emptyLabel: string;
-  /** Mention centrée sous les cartes (visuels indicatifs…), facultative. */
-  legende?: string;
 }
 
 /**
@@ -23,16 +27,38 @@ interface ShowcaseVitrineProps {
  * les projets en cartes qui chevauchent le bas du bandeau. Les projets viennent du back-office
  * (Site web › Réalisations & projets) ; rien n'est affiché en dur.
  */
-export function ShowcaseVitrine({ category, eyebrow, title, subtitle, texte, emptyLabel, legende }: ShowcaseVitrineProps) {
+export function ShowcaseVitrine({ category, prefixe, defauts, emptyLabel }: ShowcaseVitrineProps) {
   const { data, loading, error } = useShowcase(category);
+  const { text, loading: contenuEnCours } = useEditableContent();
+  const [imageMorte, setImageMorte] = useState(false);
+
+  const eyebrow = text(`${prefixe}.eyebrow`, defauts.eyebrow);
+  const title = text(`${prefixe}.title`, defauts.title);
+  const subtitle = text(`${prefixe}.subtitle`, defauts.subtitle);
+  const texte = text(`${prefixe}.texte`, defauts.texte);
+  const legende = text(`${prefixe}.legende`, '');
+  const choisie = text(`${prefixe}.image`, IMAGE_PAR_DEFAUT);
+  const image = imageMorte ? IMAGE_PAR_DEFAUT : choisie;
+  const srcSet = image === IMAGE_PAR_DEFAUT ? '' : cloudinarySrcSet(image);
+  // Les textes se fondent à l'arrivée du contenu : pas de flash du texte par défaut avant le texte choisi.
+  const fondu = `transition-opacity duration-300 ${contenuEnCours ? 'opacity-0' : 'opacity-100'}`;
 
   return (
     <div>
       <section className="relative isolate overflow-hidden bg-mtm-primary-dark text-white">
         {/* Photo du site, assombrie à gauche pour que le texte se lise sur n'importe quelle image. */}
-        <img src="/hero-poster.jpg" alt="" aria-hidden="true" className="absolute inset-0 -z-20 h-full w-full object-cover object-[70%_center]" />
+        <img
+          src={image}
+          srcSet={srcSet || undefined}
+          sizes={srcSet ? '100vw' : undefined}
+          alt=""
+          aria-hidden="true"
+          fetchPriority="high"
+          onError={() => setImageMorte(true)}
+          className={`absolute inset-0 -z-20 h-full w-full object-cover object-[70%_center] ${fondu}`}
+        />
         <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0a2142]/95 via-[#0a2142]/80 to-[#0a2142]/25 max-lg:to-[#0a2142]/55" />
-        <div className="mx-auto max-w-6xl px-4 pb-28 pt-9 sm:px-6 sm:pt-12 lg:pb-40 lg:pt-16">
+        <div className={`mx-auto max-w-6xl px-4 pb-28 pt-9 sm:px-6 sm:pt-12 lg:pb-40 lg:pt-16 ${fondu}`}>
           <p className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/90 sm:text-xs">
             <span aria-hidden="true" className="h-[3px] w-12 rounded-full bg-mtm-accent" />
             {eyebrow}

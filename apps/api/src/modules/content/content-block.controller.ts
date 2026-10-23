@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -7,8 +8,12 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
+import { MAX_ASSET_SIZE } from '../../common/storage/asset-validation';
 import { Public } from '../auth/decorators/public.decorator';
 import { PublicCache } from '../../common/http/public-cache.decorator';
 import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
@@ -43,6 +48,21 @@ export class ContentBlockController {
   @Get(':key')
   findByKey(@Param('key') key: string) {
     return this.content.findByKey(key);
+  }
+
+  /** Envoie l'image d'un emplacement du site (bandeau d'une page…) vers Cloudinary et en garde l'adresse. */
+  @Post('images')
+  @RequirePermissions('content:modifier')
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_ASSET_SIZE } }),
+  )
+  uploadImage(
+    @Body('key') key: string,
+    @UploadedFile() file: Express.Multer.File | undefined,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    if (!file) throw new BadRequestException('Une image est obligatoire');
+    return this.content.uploadImage(key ?? '', file, user);
   }
 
   @Post()

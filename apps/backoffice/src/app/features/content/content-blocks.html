@@ -83,10 +83,12 @@
                   <span class="status-pill">Texte par défaut</span>
                 }
               </div>
-              @if (block) {
+              @if (block && slot.kind === 'image') {
+                <img class="slot__image" [src]="block.content" alt="Image actuelle du bandeau" loading="lazy" />
+              } @else if (block) {
                 <p class="slot__value" [class.is-multiline]="slot.multiline">{{ preview(block, slot.format ? 90 : slot.multiline ? 240 : 120, !!slot.format) }}</p>
               } @else {
-                <p class="slot__value slot__value--empty">Non renseigné : le site affiche son texte par défaut.</p>
+                <p class="slot__value slot__value--empty">Non renseigné : le site affiche {{ slot.kind === 'image' ? 'son image par défaut' : 'son texte par défaut' }}.</p>
               }
               <p class="slot__help"><svg lucideInfo aria-hidden="true"></svg>{{ slot.help }}</p>
               <div class="slot__actions">
