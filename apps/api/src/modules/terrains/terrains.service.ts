@@ -13,6 +13,10 @@ import {
 } from '../../common/utils/reference';
 import { TerrainsAccessService } from './terrains-access.service';
 import { mediaOrderBy } from './terrain-queries';
+import {
+  masquerCoordonneesDeLaFiche,
+  voitCoordonneesProprietaires,
+} from '../proprietaires/coordonnees';
 import { CreateTerrainDto } from './dto/create-terrain.dto';
 import { QueryTerrainDto } from './dto/query-terrain.dto';
 import { UpdateTerrainDto } from './dto/update-terrain.dto';
@@ -34,7 +38,13 @@ const terrainInclude = {
  */
 const terrainListInclude = {
   proprietaire: {
-    select: { id: true, firstName: true, lastName: true, phone: true },
+    select: {
+      id: true,
+      matricule: true,
+      firstName: true,
+      lastName: true,
+      phone: true,
+    },
   },
   commercialResponsable: {
     select: { id: true, firstName: true, lastName: true },
@@ -147,6 +157,8 @@ export class TerrainsService {
     const pageSize = Math.min(query.pageSize > 0 ? query.pageSize : 25, 200);
     const search = query.search?.trim();
     const ownership = this.access.ownershipFilter(user);
+    // Chercher par téléphone révélerait le numéro : réservé à qui voit les coordonnées.
+    const cherchePartelephone = voitCoordonneesProprietaires(user);
     const where = {
       ...ownership,
       ...(search
@@ -181,9 +193,18 @@ export class TerrainsService {
                   mode: 'insensitive' as const,
                 },
               },
+              ...(cherchePartelephone
+                ? [
+                    {
+                      contactVendeurTelephone: {
+                        contains: search.replace(/\s+/g, ''),
+                      },
+                    },
+                  ]
+                : []),
               {
-                contactVendeurTelephone: {
-                  contains: search.replace(/\s+/g, ''),
+                proprietaire: {
+                  matricule: { contains: search, mode: 'insensitive' as const },
                 },
               },
               {
@@ -201,7 +222,9 @@ export class TerrainsService {
                         mode: 'insensitive' as const,
                       },
                     },
-                    { phone: { contains: search.replace(/\s+/g, '') } },
+                    ...(cherchePartelephone
+                      ? [{ phone: { contains: search.replace(/\s+/g, '') } }]
+                      : []),
                   ],
                 },
               },
@@ -1002,6 +1025,6 @@ export class TerrainsService {
         ),
       })),
     };
-    return result;
+    return masquerCoordonneesDeLaFiche(result, user);
   }
 }

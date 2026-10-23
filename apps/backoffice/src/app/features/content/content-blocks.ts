@@ -22,7 +22,7 @@ import { NEWS_KEY_PATTERN, SITE_CONTENT_SECTIONS, TESTIMONIAL_TYPE, slotByKey, t
 import { ConfirmService } from '../../shared/dialogs/confirm-dialog';
 
 /** Libellés courts des rubriques, pour que la rangée d'onglets tienne sur un écran. */
-const LIBELLES_ONGLETS: Record<string, string> = { home: 'Accueil', 'espace-client': 'Espace client', demarches: 'Démarches' };
+const LIBELLES_ONGLETS: Record<string, string> = { home: 'Accueil', realisations: 'Réalisations', 'projets-a-venir': 'Projets à venir', 'espace-client': 'Espace client', demarches: 'Démarches' };
 
 interface Onglet {
   id: string;

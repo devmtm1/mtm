@@ -36,7 +36,7 @@
                 <mat-select formControlName="proprietaireId">
                   @for (proprietaire of proprietaires(); track proprietaire.id) {
                     <mat-option [value]="proprietaire.id">
-                      {{ proprietaire.lastName }} {{ proprietaire.firstName }}{{ proprietaire.phone ? ' · ' + proprietaire.phone : '' }}
+                      {{ proprietaire.lastName }} {{ proprietaire.firstName }}{{ proprietaire.matricule ? ' · ' + proprietaire.matricule : '' }}
                     </mat-option>
                   }
                 </mat-select>

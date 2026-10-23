@@ -5,9 +5,19 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import {
+  estConflitDeReference,
+  referenceSuivante,
+} from '../../common/utils/reference';
+import {
+  masquerCoordonnees,
+  voitCoordonneesProprietaires,
+} from './coordonnees';
 import { ClientAccountsService } from '../client-accounts/client-accounts.service';
 import { CreateProprietaireDto } from './dto/create-proprietaire.dto';
 import { UpdateProprietaireDto } from './dto/update-proprietaire.dto';
+
+type Demandeur = { roles?: string[] };
 
 @Injectable()
 export class ProprietairesService {
@@ -16,10 +26,11 @@ export class ProprietairesService {
     private readonly comptesClient: ClientAccountsService,
   ) {}
 
-  async findAll() {
-    return this.prisma.proprietaire.findMany({
+  async findAll(user?: Demandeur) {
+    const proprietaires = await this.prisma.proprietaire.findMany({
       select: {
         id: true,
+        matricule: true,
         firstName: true,
         lastName: true,
         email: true,
@@ -33,13 +44,19 @@ export class ProprietairesService {
       },
       orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
     });
+    return proprietaires.map((p) => masquerCoordonnees(p, user));
   }
 
-  async findById(id: string) {
+  /**
+   * Fiche complète. Sans `user` (journal d'audit, traitements internes) les coordonnées
+   * sont rendues ; les réponses aux utilisateurs passent par `user`.
+   */
+  async findById(id: string, user?: Demandeur) {
     const proprietaire = await this.prisma.proprietaire.findUnique({
       where: { id },
       select: {
         id: true,
+        matricule: true,
         firstName: true,
         lastName: true,
         email: true,
@@ -55,9 +72,23 @@ export class ProprietairesService {
     if (!proprietaire) {
       throw new NotFoundException('Propriétaire introuvable');
     }
-    return proprietaire;
+    return masquerCoordonnees(proprietaire, user);
   }
 
+  /** Matricule que recevra le prochain propriétaire (PRO-2026-0004). */
+  async prochainMatricule(): Promise<string> {
+    const prefixe = `PRO-${new Date().getFullYear()}-`;
+    const lignes = await this.prisma.proprietaire.findMany({
+      where: { matricule: { startsWith: prefixe } },
+      select: { matricule: true },
+    });
+    return referenceSuivante(
+      prefixe,
+      lignes.map((ligne) => ligne.matricule),
+    );
+  }
+
+  /** Retourne la fiche non masquée : le contrôleur masque la réponse après avoir journalisé. */
   async create(dto: CreateProprietaireDto) {
     if (dto.email) {
       const existing = await this.prisma.proprietaire.findFirst({
@@ -68,12 +99,27 @@ export class ProprietairesService {
           'Un propriétaire avec cet email existe déjà',
         );
     }
-    return this.prisma.proprietaire.create({ data: dto });
+    // Deux créations simultanées peuvent viser le même rang : on relit le dernier et on réessaie.
+    for (let essai = 0; ; essai++) {
+      try {
+        return await this.prisma.proprietaire.create({
+          data: { ...dto, matricule: await this.prochainMatricule() },
+        });
+      } catch (erreur) {
+        if (essai >= 4 || !estConflitDeReference(erreur, 'matricule'))
+          throw erreur;
+      }
+    }
   }
 
-  async update(id: string, dto: UpdateProprietaireDto) {
+  async update(id: string, dto: UpdateProprietaireDto, user?: Demandeur) {
     await this.ensureExists(id);
-    return this.prisma.proprietaire.update({ where: { id }, data: dto });
+    // Qui ne voit pas les coordonnées ne peut pas les réécrire.
+    const { email: _email, phone: _phone, ...sansCoordonnees } = dto;
+    return this.prisma.proprietaire.update({
+      where: { id },
+      data: voitCoordonneesProprietaires(user) ? dto : sansCoordonnees,
+    });
   }
 
   async remove(id: string): Promise<void> {

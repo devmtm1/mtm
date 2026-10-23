@@ -1,7 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { hasAnyRole, PUBLISHER_ROLES } from '../rbac/role-groups';
 import { AuditService } from '../audit/audit.service';
+import { CloudinaryService } from '../../common/storage/cloudinary.service';
+import { validateUploadedAsset } from '../../common/storage/asset-validation';
+import { publicIdDepuisUrl } from '../../common/storage/cloudinary-url';
 import { CreateContentBlockDto } from './dto/create-content-block.dto';
 import { UpdateContentBlockDto } from './dto/update-content-block.dto';
 
@@ -19,6 +26,7 @@ export class ContentBlockService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly cloudinary: CloudinaryService,
   ) {}
 
   async findAll() {
@@ -125,12 +133,83 @@ export class ContentBlockService {
     return updated;
   }
 
+  /**
+   * Image d'un emplacement du site (bandeau d'une page…) : envoyée à Cloudinary, son adresse est gardée
+   * comme contenu du bloc. Remplacer l'image supprime l'ancienne de Cloudinary.
+   */
+  async uploadImage(
+    key: string,
+    file: Express.Multer.File,
+    user: ContentEditor,
+  ) {
+    if (!/^[a-z0-9][a-z0-9.-]{1,198}$/.test(key)) {
+      throw new BadRequestException('Emplacement invalide');
+    }
+    validateUploadedAsset(file, 'media');
+    if (!file.mimetype.startsWith('image/')) {
+      throw new BadRequestException('Choisissez une image (JPEG, PNG ou WebP)');
+    }
+    const envoye = await this.cloudinary.upload(file, 'mtm/pages', true);
+    if (!envoye.secureUrl) {
+      throw new BadRequestException(
+        'L’image n’a pas pu être enregistrée : réessayez',
+      );
+    }
+    const existing = await this.prisma.contentBlock.findUnique({
+      where: { key },
+    });
+    let bloc;
+    if (existing) {
+      bloc = await this.prisma.contentBlock.update({
+        where: { key },
+        data: { content: envoye.secureUrl, updatedById: user.id },
+      });
+      await this.supprimerImage(existing.content);
+    } else {
+      const canPublish =
+        hasAnyRole(user.roles, PUBLISHER_ROLES) ||
+        user.permissions.includes('content:publier');
+      bloc = await this.prisma.contentBlock.create({
+        data: {
+          key,
+          title: 'Image',
+          content: envoye.secureUrl,
+          type: 'text',
+          ordre: 0,
+          isActive: canPublish,
+          updatedById: user.id,
+        },
+      });
+    }
+    await this.audit.record({
+      userId: user.id,
+      action: existing ? 'content.updated' : 'content.created',
+      entityType: 'ContentBlock',
+      entityId: bloc.id,
+      oldValue: existing ? this.snapshot(existing) : undefined,
+      newValue: this.snapshot(bloc),
+    });
+    return bloc;
+  }
+
+  /** Supprime de Cloudinary l'image dont l'adresse est donnée, si c'en est une ; un échec n'empêche rien. */
+  private async supprimerImage(contenu: string | null | undefined) {
+    const publicId = publicIdDepuisUrl(contenu);
+    if (!publicId) return;
+    try {
+      await this.cloudinary.destroy(publicId, 'image', true);
+    } catch {
+      // L'image reste chez Cloudinary : sans conséquence pour le site.
+    }
+  }
+
   async remove(key: string, userId: string) {
     const existing = await this.prisma.contentBlock.findUnique({
       where: { key },
     });
     if (!existing) throw new NotFoundException('Bloc de contenu introuvable');
     await this.prisma.contentBlock.delete({ where: { key } });
+    await this.supprimerImage(existing.content);
     await this.audit.record({
       userId,
       action: 'content.deleted',

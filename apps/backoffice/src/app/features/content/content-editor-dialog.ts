@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -14,7 +14,7 @@ export type ContentEditorKind = 'slot' | 'testimonial' | 'news' | 'custom';
 export interface ContentEditorData {
   kind: ContentEditorKind;
   /** Emplacement du catalogue (kind = slot). */
-  slot?: { key: string; label: string; help: string; multiline?: boolean; type?: string };
+  slot?: { key: string; label: string; help: string; multiline?: boolean; type?: string; kind?: 'image' };
   /** Bloc existant à modifier (slot, testimonial, custom). */
   existing?: ContentBlock | null;
   /** Actualité existante (kind = news) : ses trois blocs. */
@@ -38,7 +38,29 @@ export interface ContentEditorData {
   template: `
     <h2 mat-dialog-title>{{ title() }}</h2>
     <mat-dialog-content class="content-dialog">
-      @if (data.kind === 'slot' && data.slot) {
+      @if (data.kind === 'slot' && data.slot && data.slot.kind === 'image') {
+        <p class="content-dialog__intro">{{ data.slot.help }}</p>
+        <div class="content-dialog__image">
+          @if (apercu(); as url) {
+            <img [src]="url" alt="Aperçu de l’image" />
+          } @else {
+            <div class="content-dialog__vide">Aucune image : le site affiche son image par défaut.</div>
+          }
+          <div class="content-dialog__boutons">
+            <label class="upload-button">
+              {{ apercu() ? 'Changer l’image' : 'Choisir une image' }}
+              <input type="file" accept="image/jpeg,image/png,image/webp" [disabled]="saving()" (change)="choisirImage($event)" />
+            </label>
+            @if (apercu()) {
+              <button mat-stroked-button type="button" [disabled]="saving()" (click)="retirerImage()">Retirer l’image</button>
+            }
+          </div>
+          <small class="content-dialog__aide">JPEG, PNG ou WebP, 10 Mo au maximum.</small>
+          @if (erreurImage()) {
+            <p class="content-dialog__erreur" role="alert">{{ erreurImage() }}</p>
+          }
+        </div>
+      } @else if (data.kind === 'slot' && data.slot) {
         <p class="content-dialog__intro">{{ data.slot.help }} Laissez vide pour revenir au texte par défaut du site.</p>
         <mat-form-field appearance="outline" class="w-full">
           <mat-label>{{ data.slot.label }}</mat-label>
@@ -119,6 +141,12 @@ export interface ContentEditorData {
     .content-dialog { display: grid; gap: 6px; min-width: min(560px, calc(100vw - 96px)); }
     .content-dialog__intro { margin: 0 0 8px; color: var(--mtm-text-muted); font-size: 0.86rem; line-height: 1.5; }
     .w-full { width: 100%; }
+    .content-dialog__image { display: grid; gap: 10px; }
+    .content-dialog__image img { display: block; width: 100%; max-height: 260px; border: 1px solid var(--mtm-border); border-radius: 10px; object-fit: cover; }
+    .content-dialog__vide { display: grid; place-items: center; min-height: 120px; padding: 12px; border: 1px dashed var(--mtm-border); border-radius: 10px; background: var(--mtm-bg-surface); color: var(--mtm-text-muted); font-size: 0.88rem; text-align: center; }
+    .content-dialog__boutons { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .content-dialog__aide { color: var(--mtm-text-muted); }
+    .content-dialog__erreur { margin: 0; color: var(--mtm-accent); font-size: 0.84rem; }
   `,
 })
 export class ContentEditorDialog {
@@ -129,6 +157,55 @@ export class ContentEditorDialog {
   readonly data = inject<ContentEditorData>(MAT_DIALOG_DATA);
 
   protected readonly saving = signal(false);
+
+  /** Image choisie dans l'éditeur (emplacement de type image), pas encore envoyée. */
+  private readonly fichier = signal<File | null>(null);
+  private readonly retiree = signal(false);
+  protected readonly erreurImage = signal<string | null>(null);
+  private urlLocale: string | null = null;
+  protected readonly apercu = computed(() => {
+    const choisi = this.fichier();
+    if (choisi) return this.urlDe(choisi);
+    return this.retiree() ? null : (this.data.existing?.content ?? null);
+  });
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() => this.libererUrl());
+  }
+
+  private urlDe(fichier: File): string {
+    this.libererUrl();
+    this.urlLocale = URL.createObjectURL(fichier);
+    return this.urlLocale;
+  }
+
+  private libererUrl(): void {
+    if (this.urlLocale) URL.revokeObjectURL(this.urlLocale);
+    this.urlLocale = null;
+  }
+
+  protected choisirImage(evenement: Event): void {
+    const entree = evenement.target as HTMLInputElement;
+    const fichier = entree.files?.[0] ?? null;
+    entree.value = '';
+    if (!fichier) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(fichier.type)) {
+      this.erreurImage.set('Choisissez une image JPEG, PNG ou WebP.');
+      return;
+    }
+    if (fichier.size > 10 * 1024 * 1024) {
+      this.erreurImage.set('Cette image dépasse 10 Mo : choisissez-en une plus légère.');
+      return;
+    }
+    this.erreurImage.set(null);
+    this.retiree.set(false);
+    this.fichier.set(fichier);
+  }
+
+  protected retirerImage(): void {
+    this.fichier.set(null);
+    this.retiree.set(true);
+  }
 
   protected readonly form = this.formBuilder.nonNullable.group({
     key: [this.data.existing?.key ?? '', [Validators.minLength(2), Validators.maxLength(200)]],
@@ -179,6 +256,20 @@ export class ContentEditorDialog {
       this.saving.set(false);
       this.notify.error(error, 'Impossible d’enregistrer le contenu');
     };
+
+    if (this.data.kind === 'slot' && this.data.slot?.kind === 'image') {
+      const slot = this.data.slot;
+      const choisi = this.fichier();
+      if (choisi) {
+        this.api.uploadImage(slot.key, choisi).subscribe({ next: done, error: fail });
+      } else if (this.retiree() && this.data.existing) {
+        // Retirer l'image = revenir à l'image par défaut du site : on supprime le bloc.
+        this.api.remove(slot.key).subscribe({ next: done, error: fail });
+      } else {
+        done();
+      }
+      return;
+    }
 
     if (this.data.kind === 'slot' && this.data.slot) {
       const slot = this.data.slot;

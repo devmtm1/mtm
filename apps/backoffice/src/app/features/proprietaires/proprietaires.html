@@ -4,8 +4,9 @@
       <p class="eyebrow">Biens</p>
       <h1 class="page-header__title">Propriétaires</h1>
       <p class="page-header__subtitle">
-        Les personnes qui confient leurs biens à MTM, à vendre ou à gérer. Depuis une fiche, vous retrouvez leurs
-        terrains, leurs biens en gestion locative et leurs mandats, et vous pouvez en créer de nouveaux.
+        Les personnes qui confient leurs biens à MTM, à vendre ou à gérer. Depuis une fiche, vous
+        retrouvez leurs terrains, leurs biens en gestion locative et leurs mandats, et vous pouvez
+        en créer de nouveaux.
       </p>
     </div>
     <div class="page-header__actions">
@@ -45,7 +46,13 @@
           <small>Voir les propriétaires sous mandat</small>
         </span>
       </button>
-      <button type="button" class="kpi" [class.kpi--warning]="stats().sansTerrain > 0" [class.kpi--muted]="stats().sansTerrain === 0" (click)="setScope('sans-terrain')">
+      <button
+        type="button"
+        class="kpi"
+        [class.kpi--warning]="stats().sansTerrain > 0"
+        [class.kpi--muted]="stats().sansTerrain === 0"
+        (click)="setScope('sans-terrain')"
+      >
         <span class="kpi__icon"><svg lucideUserX aria-hidden="true"></svg></span>
         <span class="kpi__body">
           <strong>{{ stats().sansTerrain }}</strong>
@@ -75,7 +82,13 @@
         <mat-form-field appearance="outline" class="list-filters__search" subscriptSizing="dynamic">
           <mat-label>Rechercher</mat-label>
           <svg matPrefix class="list-filters__icon" lucideSearch aria-hidden="true"></svg>
-          <input matInput [value]="searchTerm()" (input)="searchTerm.set($any($event.target).value)" placeholder="Nom, téléphone, e-mail…" autocomplete="off" />
+          <input
+            matInput
+            [value]="searchTerm()"
+            (input)="searchTerm.set($any($event.target).value)"
+            placeholder="Nom, matricule…"
+            autocomplete="off"
+          />
         </mat-form-field>
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Afficher</mat-label>
@@ -100,19 +113,29 @@
         @if (hasActiveFilters()) {
           <h3>Aucun propriétaire ne correspond</h3>
           <p>Modifiez la recherche ou effacez les filtres.</p>
-          <button mat-stroked-button type="button" (click)="resetFilters()">Effacer les filtres</button>
+          <button mat-stroked-button type="button" (click)="resetFilters()">
+            Effacer les filtres
+          </button>
         } @else {
           <h3>Aucun propriétaire pour le moment</h3>
-          <p>Enregistrez d’abord le propriétaire (prénom, nom, téléphone) ; vous lui rattacherez ensuite ses biens et son mandat.</p>
+          <p>
+            Enregistrez d’abord le propriétaire (prénom, nom, téléphone) ; vous lui rattacherez
+            ensuite ses biens et son mandat.
+          </p>
           @if (canCreate()) {
             <button mat-flat-button color="primary" type="button" (click)="openCreate()">
-              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Créer le premier propriétaire
+              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Créer le premier
+              propriétaire
             </button>
           }
         }
       </div>
     } @else if (vue() === 'cartes') {
-      <app-contact-cards [cartes]="cartes()" [chargement]="loading()" (ouvrir)="openDetail($event)" />
+      <app-contact-cards
+        [cartes]="cartes()"
+        [chargement]="loading()"
+        (ouvrir)="openDetail($event)"
+      />
     } @else {
       <ag-grid-angular
         class="list-grid"

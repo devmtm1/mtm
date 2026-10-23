@@ -71,6 +71,7 @@ describeE2e('Locations sur le site public (e2e)', () => {
 
     const proprietaire = await prisma.proprietaire.create({
       data: {
+        matricule: 'PRO-2026-0001',
         firstName: 'Moussa',
         lastName: 'Ndiaye',
         email: 'proprio@exemple.sn',

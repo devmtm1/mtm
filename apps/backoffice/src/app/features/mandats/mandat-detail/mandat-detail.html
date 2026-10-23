@@ -23,6 +23,9 @@
         </h1>
         <p class="detail-header__meta">
           <span><svg lucideCalendarClock aria-hidden="true"></svg>Du {{ m.dateDebut | date: 'dd/MM/yyyy' }} au {{ m.dateFin | date: 'dd/MM/yyyy' }}</span>
+          @if (m.proprietaire.matricule) {
+            <span>{{ m.proprietaire.matricule }}</span>
+          }
           @if (m.proprietaire.phone) {
             <span><svg lucidePhone aria-hidden="true"></svg>{{ m.proprietaire.phone }}</span>
           }

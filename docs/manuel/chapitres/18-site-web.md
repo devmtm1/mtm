@@ -52,7 +52,9 @@ Trois actions :
 
 ![Réalisations et projets](img/web-03-realisations.png)
 
-- **Ajouter** une réalisation (dans la catégorie voulue) : photo, titre, lieu, description.
+**Le grand bandeau en haut des pages « Nos réalisations » et « Projets à venir »** (photo de fond, titre, accroche, texte de présentation, mention sous les cartes) se modifie dans **Site web › Contenus du site**, rubriques **Réalisations** et **Projets à venir** : cliquez **Renseigner** (ou **Modifier**) sur l’emplacement voulu. Pour la **photo**, choisissez une image (JPEG, PNG ou WebP, 10 Mo maximum, format paysage d’au moins 1600 × 900 px) ; **Retirer l’image** rend la photo par défaut du site. Un emplacement laissé vide affiche le texte ou l’image par défaut.
+
+- **Ajouter** une réalisation (dans la catégorie voulue) : photo, titre, lieu, description. Le **lieu** s’affiche en bleu sous le titre : vous pouvez y mettre une courte phrase (« Des terrains viabilisés et bien situés »).
 - **Modifier**, **masquer** ou **retirer** une carte à tout moment.
 
 ## Les publicités du bandeau

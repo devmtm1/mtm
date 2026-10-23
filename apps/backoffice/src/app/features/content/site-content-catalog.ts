@@ -14,6 +14,8 @@ export interface ContentSlot {
   /** Format attendu pour les listes. */
   format?: 'lines' | 'steps';
   type?: 'text' | 'hero' | 'stat';
+  /** `image` : l'emplacement reçoit une image envoyée depuis le poste, pas un texte. */
+  kind?: 'image';
 }
 
 export interface ContentSection {
@@ -33,6 +35,32 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
       { key: 'home.hero.title', label: 'Titre principal', help: 'La phrase la plus visible du site, en grand sur la photo d’accueil. Un retour à la ligne coupe le titre en deux lignes.', multiline: true, type: 'hero' },
       { key: 'home.hero.subtitle', label: 'Sous-titre', help: 'Une ou deux phrases sous le titre : ce que MTM propose.', multiline: true, type: 'hero' },
       { key: 'home.cta.title', label: 'Texte du bouton principal', help: 'Ex. « Découvrir nos biens ».', type: 'stat' },
+    ],
+  },
+  {
+    id: 'realisations',
+    title: 'Page « Nos réalisations »',
+    where: 'Grand bandeau en haut de la page « Nos réalisations » (les projets eux-mêmes se gèrent dans Réalisations & projets)',
+    slots: [
+      { key: 'realisations.image', label: 'Image du bandeau', help: 'Photo en fond du bandeau, assombrie à gauche pour que le texte se lise. Format paysage conseillé (au moins 1600 × 900 px).', kind: 'image' },
+      { key: 'realisations.eyebrow', label: 'Mention au-dessus du titre', help: 'Petit libellé précédé d’un trait rouge, affiché en capitales. Par défaut : « Nos réalisations ».' },
+      { key: 'realisations.title', label: 'Titre', help: 'Le grand titre du bandeau. Par défaut : « Nos projets immobiliers ».' },
+      { key: 'realisations.subtitle', label: 'Phrase d’accroche', help: 'Sous le titre. Par défaut : « Des opportunités foncières et résidentielles au Sénégal ».' },
+      { key: 'realisations.texte', label: 'Texte de présentation', help: 'Un court paragraphe sous l’accroche.', multiline: true },
+      { key: 'realisations.legende', label: 'Mention sous les projets', help: 'Facultatif : une phrase centrée sous les cartes (ex. « Visuels indicatifs »). Vide, rien n’est affiché.' },
+    ],
+  },
+  {
+    id: 'projets-a-venir',
+    title: 'Page « Projets à venir »',
+    where: 'Grand bandeau en haut de la page « Projets à venir » (les projets eux-mêmes se gèrent dans Réalisations & projets)',
+    slots: [
+      { key: 'projets-a-venir.image', label: 'Image du bandeau', help: 'Photo en fond du bandeau, assombrie à gauche pour que le texte se lise. Format paysage conseillé (au moins 1600 × 900 px).', kind: 'image' },
+      { key: 'projets-a-venir.eyebrow', label: 'Mention au-dessus du titre', help: 'Petit libellé précédé d’un trait rouge, affiché en capitales. Par défaut : « Projets à venir ».' },
+      { key: 'projets-a-venir.title', label: 'Titre', help: 'Le grand titre du bandeau. Par défaut : « Nos prochains projets ».' },
+      { key: 'projets-a-venir.subtitle', label: 'Phrase d’accroche', help: 'Sous le titre. Par défaut : « Les programmes que MTM Immobilier prépare pour vous ».' },
+      { key: 'projets-a-venir.texte', label: 'Texte de présentation', help: 'Un court paragraphe sous l’accroche.', multiline: true },
+      { key: 'projets-a-venir.legende', label: 'Mention sous les projets', help: 'Facultatif : une phrase centrée sous les cartes (ex. « Visuels indicatifs — projets présentés à titre d’exemple »). Vide, rien n’est affiché.' },
     ],
   },
   {

@@ -1,5 +1,4 @@
-import { PageIntro } from '../components/layout/PageIntro';
-import { ShowcaseGrid } from '../components/showcase/ShowcaseGrid';
+import { ShowcaseVitrine } from '../components/showcase/ShowcaseVitrine';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 import { CtaBand } from '../components/ui/CtaBand';
 
@@ -11,14 +10,18 @@ export function RealisationsPage() {
 
   return (
     <div>
-      <PageIntro
-        eyebrow="Portfolio"
-        title="Nos réalisations"
-        description="Un aperçu des projets menés à bien par MTM Immobilier."
+      <ShowcaseVitrine
+        category="realisation"
+        prefixe="realisations"
+        defauts={{
+          eyebrow: 'Nos réalisations',
+          title: 'Nos projets immobiliers',
+          subtitle: 'Des opportunités foncières et résidentielles au Sénégal',
+          texte:
+            'MTM IMMOBILIER accompagne les particuliers, les familles et les investisseurs dans la recherche et la valorisation d’opportunités immobilières adaptées aux besoins du marché sénégalais.',
+        }}
+        emptyLabel="Aucune réalisation publiée pour le moment"
       />
-      <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-        <ShowcaseGrid columns={4} category="realisation" emptyLabel="Aucune réalisation publiée pour le moment" />
-      </section>
       <CtaBand />
     </div>
   );

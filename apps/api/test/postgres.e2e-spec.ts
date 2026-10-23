@@ -36,6 +36,7 @@ describeE2e('PostgreSQL réel (e2e)', () => {
   it('ne expose aucun champ interne sur la projection publique des terrains', async () => {
     const proprietaire = await prisma.proprietaire.create({
       data: {
+        matricule: 'PRO-2026-0001',
         firstName: 'Jean',
         lastName: 'Propriétaire',
         email: 'jean@test.sn',

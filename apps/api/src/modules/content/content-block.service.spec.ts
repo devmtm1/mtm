@@ -1,6 +1,7 @@
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import { ContentBlockService } from './content-block.service';
 
 describe('ContentBlockService public contract', () => {
@@ -10,8 +11,10 @@ describe('ContentBlockService public contract', () => {
       findMany: jest.Mock;
       findUnique: jest.Mock;
       update: jest.Mock;
+      create: jest.Mock;
     };
   };
+  let cloudinaryMock: { upload: jest.Mock; destroy: jest.Mock };
 
   beforeEach(() => {
     prismaMock = {
@@ -19,12 +22,23 @@ describe('ContentBlockService public contract', () => {
         findMany: jest.fn(),
         findUnique: jest.fn(),
         update: jest.fn(),
+        create: jest.fn(),
       },
+    };
+    cloudinaryMock = {
+      upload: jest.fn().mockResolvedValue({
+        publicId: 'mtm-prod/mtm/pages/nouveau',
+        resourceType: 'image',
+        secureUrl:
+          'https://res.cloudinary.com/demo/image/upload/f_auto,q_auto/v1/mtm-prod/mtm/pages/nouveau',
+      }),
+      destroy: jest.fn().mockResolvedValue(undefined),
     };
     const auditMock = { record: jest.fn().mockResolvedValue(undefined) };
     service = new ContentBlockService(
       prismaMock as unknown as PrismaService,
       auditMock as unknown as AuditService,
+      cloudinaryMock as unknown as CloudinaryService,
     );
   });
 
@@ -64,6 +78,93 @@ describe('ContentBlockService public contract', () => {
     expect(prismaMock.contentBlock.update).toHaveBeenCalledWith({
       where: { key: 'home.hero' },
       data: { isActive: true, updatedById: 'user-1' },
+    });
+  });
+
+  describe('image d’un emplacement du site', () => {
+    const redacteur = { id: 'u1', roles: ['administrateur'], permissions: [] };
+    const fichier = (type = 'image/jpeg') =>
+      ({
+        buffer: Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0, 0, 0, 0]),
+        mimetype: type,
+        size: 8,
+      }) as unknown as Express.Multer.File;
+
+    it('crée le bloc avec l’adresse de l’image envoyée', async () => {
+      prismaMock.contentBlock.findUnique.mockResolvedValue(null);
+      prismaMock.contentBlock.create.mockImplementation(({ data }) =>
+        Promise.resolve({ id: 'b1', ...data }),
+      );
+      const bloc = await service.uploadImage(
+        'realisations.image',
+        fichier(),
+        redacteur,
+      );
+      expect(cloudinaryMock.upload).toHaveBeenCalledWith(
+        expect.anything(),
+        'mtm/pages',
+        true,
+      );
+      expect(bloc.content).toContain('res.cloudinary.com');
+      expect(prismaMock.contentBlock.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          key: 'realisations.image',
+          isActive: true,
+        }),
+      });
+    });
+
+    it('remplace l’image et supprime l’ancienne de Cloudinary', async () => {
+      prismaMock.contentBlock.findUnique.mockResolvedValue({
+        id: 'b1',
+        key: 'realisations.image',
+        content:
+          'https://res.cloudinary.com/demo/image/upload/f_auto,q_auto/v1/mtm-prod/mtm/pages/ancienne',
+      });
+      prismaMock.contentBlock.update.mockImplementation(({ data }) =>
+        Promise.resolve({ id: 'b1', ...data }),
+      );
+      await service.uploadImage('realisations.image', fichier(), redacteur);
+      expect(cloudinaryMock.destroy).toHaveBeenCalledWith(
+        'mtm-prod/mtm/pages/ancienne',
+        'image',
+        true,
+      );
+    });
+
+    it('refuse un fichier qui n’est pas une image', async () => {
+      const pdf = {
+        buffer: Buffer.from('%PDF-1.4'),
+        mimetype: 'video/mp4',
+        size: 8,
+      } as unknown as Express.Multer.File;
+      await expect(
+        service.uploadImage('realisations.image', pdf, redacteur),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(cloudinaryMock.upload).not.toHaveBeenCalled();
+    });
+
+    it('refuse un nom d’emplacement douteux', async () => {
+      await expect(
+        service.uploadImage('../secret', fichier(), redacteur),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('supprime aussi l’image de Cloudinary quand le bloc est supprimé', async () => {
+      prismaMock.contentBlock.findUnique.mockResolvedValue({
+        id: 'b1',
+        key: 'realisations.image',
+        content:
+          'https://res.cloudinary.com/demo/image/upload/f_auto,q_auto/v1/mtm-prod/mtm/pages/ancienne',
+      });
+      (prismaMock.contentBlock as unknown as { delete: jest.Mock }).delete =
+        jest.fn().mockResolvedValue({});
+      await service.remove('realisations.image', 'u1');
+      expect(cloudinaryMock.destroy).toHaveBeenCalledWith(
+        'mtm-prod/mtm/pages/ancienne',
+        'image',
+        true,
+      );
     });
   });
 });

@@ -56,6 +56,14 @@ export class ContentBlockApiService {
     });
   }
 
+  /** Envoie l'image d'un emplacement du site (bandeau d'une page…) ; remplace l'ancienne. */
+  uploadImage(key: string, fichier: File): Observable<ContentBlock> {
+    const donnees = new FormData();
+    donnees.append('key', key);
+    donnees.append('file', fichier);
+    return this.http.post<ContentBlock>(`${this.baseUrl}/images`, donnees);
+  }
+
   remove(key: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${key}`);
   }

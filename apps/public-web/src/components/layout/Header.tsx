@@ -9,10 +9,10 @@ import { PRIMARY_LINKS, PROJECT_LINKS, SERVICE_LINKS } from './nav-links';
 // Lien actif : couleur + filet sous le libellé, pour que l'état ne repose pas
 // sur la seule couleur (lisibilité, daltonisme).
 function navLinkClass({ isActive }: { isActive: boolean }): string {
-  return `relative whitespace-nowrap py-1 text-sm font-semibold transition-colors after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-mtm-primary after:transition-transform after:duration-200 ${
+  return `relative whitespace-nowrap py-1 text-sm font-semibold transition-colors after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-mtm-accent after:transition-transform after:duration-200 ${
     isActive
-      ? 'text-mtm-primary after:scale-x-100'
-      : 'text-mtm-text hover:text-mtm-primary after:scale-x-0 hover:after:scale-x-100'
+      ? 'text-mtm-accent after:scale-x-100'
+      : 'text-mtm-text hover:text-mtm-accent after:scale-x-0 hover:after:scale-x-100'
   }`;
 }
 
@@ -54,8 +54,8 @@ function NavDropdown({ label, links }: { label: string; links: DropdownLink[] })
     <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
       <button
         type="button"
-        className={`flex items-center gap-1 py-1 text-sm font-semibold transition-colors hover:text-mtm-primary ${
-          active ? 'text-mtm-primary' : 'text-mtm-text'
+        className={`flex items-center gap-1 py-1 text-sm font-semibold transition-colors hover:text-mtm-accent ${
+          active ? 'text-mtm-accent' : 'text-mtm-text'
         }`}
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
@@ -70,7 +70,7 @@ function NavDropdown({ label, links }: { label: string; links: DropdownLink[] })
               key={link.to}
               to={link.to}
               onClick={() => setOpen(false)}
-              className="block px-4 py-2 text-sm text-mtm-text hover:bg-mtm-bg hover:text-mtm-primary"
+              className="block px-4 py-2 text-sm text-mtm-text hover:bg-mtm-bg hover:text-mtm-accent"
             >
               {link.label}
             </NavLink>
@@ -131,7 +131,7 @@ export function Header() {
               </span>
             </NavLink>
           )}
-          <NavLink to={ROUTES.clientPortal} className="flex items-center gap-1.5 text-sm font-semibold text-mtm-text hover:text-mtm-primary">
+          <NavLink to={ROUTES.clientPortal} className="flex items-center gap-1.5 text-sm font-semibold text-mtm-text hover:text-mtm-accent">
             <User className="h-4 w-4" aria-hidden="true" />
             {clientLabel}
           </NavLink>
