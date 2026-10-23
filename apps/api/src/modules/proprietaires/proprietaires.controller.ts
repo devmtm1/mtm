@@ -19,6 +19,7 @@ import { CreateProprietaireDto } from './dto/create-proprietaire.dto';
 import { UpdateProprietaireDto } from './dto/update-proprietaire.dto';
 import { CreateClientAccountDto } from '../client-accounts/dto/create-client-account.dto';
 import { ProprietairesService } from './proprietaires.service';
+import { masquerCoordonnees } from './coordonnees';
 
 @ApiTags('proprietaires')
 @Controller('proprietaires')
@@ -30,14 +31,24 @@ export class ProprietairesController {
 
   @Get()
   @RequirePermissions('proprietaires:consulter')
-  findAll() {
-    return this.proprietaires.findAll();
+  findAll(@CurrentUser() user: AuthenticatedUser) {
+    return this.proprietaires.findAll(user);
+  }
+
+  /** Matricule que recevra le prochain propriétaire : aperçu affiché dans le formulaire. */
+  @Get('prochain-matricule')
+  @RequirePermissions('proprietaires:creer')
+  async prochainMatricule() {
+    return { matricule: await this.proprietaires.prochainMatricule() };
   }
 
   @Get(':id')
   @RequirePermissions('proprietaires:consulter')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.proprietaires.findById(id);
+  findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.proprietaires.findById(id, user);
   }
 
   @Post()
@@ -54,6 +65,7 @@ export class ProprietairesController {
       entityType: 'Proprietaire',
       entityId: proprietaire.id,
       newValue: {
+        matricule: proprietaire.matricule,
         firstName: proprietaire.firstName,
         lastName: proprietaire.lastName,
         email: proprietaire.email,
@@ -62,7 +74,7 @@ export class ProprietairesController {
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });
-    return proprietaire;
+    return masquerCoordonnees(proprietaire, user);
   }
 
   @Patch(':id')
@@ -74,7 +86,7 @@ export class ProprietairesController {
     @Req() req: Request,
   ) {
     const before = await this.proprietaires.findById(id);
-    const proprietaire = await this.proprietaires.update(id, dto);
+    const proprietaire = await this.proprietaires.update(id, dto, user);
     await this.audit.record({
       userId: user.id,
       action: 'proprietaire.updated',
@@ -98,7 +110,7 @@ export class ProprietairesController {
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });
-    return proprietaire;
+    return masquerCoordonnees(proprietaire, user);
   }
 
   @Post(':id/compte-client')

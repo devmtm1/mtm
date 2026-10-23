@@ -8,15 +8,31 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AgGridAngular } from 'ag-grid-angular';
 import type { ColDef, ICellRendererParams } from 'ag-grid-community';
-import { LucideIdCard, LucideLandPlot, LucidePlus, LucideScrollText, LucideSearch, LucideUserX, LucideX } from '@lucide/angular';
+import {
+  LucideIdCard,
+  LucideLandPlot,
+  LucidePlus,
+  LucideScrollText,
+  LucideSearch,
+  LucideUserX,
+  LucideX,
+} from '@lucide/angular';
 import { mtmGridTheme } from '../../core/ag-grid.config';
 import { ProprietairesApiService } from '../../core/services/api/proprietaires-api.service';
 import { SessionService } from '../../core/services/session.service';
 import { ProprietaireDialog } from '../terrains/proprietaire-dialog';
 import type { ProprietaireSummary } from '../../core/models/terrain.model';
 import { NotificationService } from '../../shared/services/notification.service';
-import { type ContactCard, ContactCards } from '../../shared/components/contact-cards/contact-cards';
-import { type Vue, VueToggle, ecrireVue, lireVue } from '../../shared/components/contact-cards/vue-toggle';
+import {
+  type ContactCard,
+  ContactCards,
+} from '../../shared/components/contact-cards/contact-cards';
+import {
+  type Vue,
+  VueToggle,
+  ecrireVue,
+  lireVue,
+} from '../../shared/components/contact-cards/vue-toggle';
 
 type Scope = '' | 'sans-terrain' | 'avec-mandat';
 
@@ -65,8 +81,12 @@ export class Proprietaires implements OnInit {
   protected readonly vue = signal<Vue>(lireVue('proprietaires'));
   protected readonly searchTerm = signal('');
   protected readonly scope = signal<Scope>('');
+  /** Seul l'administrateur voit les coordonnées : les autres reconnaissent le propriétaire à son matricule. */
+  protected readonly voitCoordonnees = this.session.hasRole('administrateur');
   protected readonly canCreate = computed(() => this.session.hasPermission('proprietaires:creer'));
-  protected readonly hasActiveFilters = computed(() => this.searchTerm().trim() !== '' || this.scope() !== '');
+  protected readonly hasActiveFilters = computed(
+    () => this.searchTerm().trim() !== '' || this.scope() !== '',
+  );
 
   protected readonly stats = computed(() => {
     const list = this.proprietaires();
@@ -85,7 +105,9 @@ export class Proprietaires implements OnInit {
       if (scope === 'sans-terrain' && biensConfies(item) > 0) return false;
       if (scope === 'avec-mandat' && (item._count?.mandats ?? 0) === 0) return false;
       if (!term) return true;
-      return `${item.firstName} ${item.lastName} ${item.email ?? ''} ${item.phone ?? ''}`.toLowerCase().includes(term);
+      return `${item.matricule ?? ''} ${item.firstName} ${item.lastName} ${item.email ?? ''} ${item.phone ?? ''}`
+        .toLowerCase()
+        .includes(term);
     });
   });
 
@@ -97,13 +119,28 @@ export class Proprietaires implements OnInit {
       return {
         id: item.id,
         titre: `${item.firstName} ${item.lastName}`.trim(),
+        sousTitre: item.matricule,
         telephone: item.phone,
         email: item.email,
         pastilles: [
           biens > 0
-            ? { label: `${biens} bien${biens > 1 ? 's' : ''} confié${biens > 1 ? 's' : ''}`, classe: 'status-pill status-pill--success' }
-            : { label: 'Sans bien', classe: 'status-pill status-pill--warning', aide: 'Enregistré mais rien de confié : à relancer' },
-          ...(mandats > 0 ? [{ label: `${mandats} mandat${mandats > 1 ? 's' : ''}`, classe: 'status-pill status-pill--primary' }] : []),
+            ? {
+                label: `${biens} bien${biens > 1 ? 's' : ''} confié${biens > 1 ? 's' : ''}`,
+                classe: 'status-pill status-pill--success',
+              }
+            : {
+                label: 'Sans bien',
+                classe: 'status-pill status-pill--warning',
+                aide: 'Enregistré mais rien de confié : à relancer',
+              },
+          ...(mandats > 0
+            ? [
+                {
+                  label: `${mandats} mandat${mandats > 1 ? 's' : ''}`,
+                  classe: 'status-pill status-pill--primary',
+                },
+              ]
+            : []),
         ],
       };
     }),
@@ -123,8 +160,30 @@ export class Proprietaires implements OnInit {
       cellClass: 'cell-strong',
       valueGetter: (p) => (p.data ? `${p.data.lastName} ${p.data.firstName}` : ''),
     },
-    { field: 'phone', headerName: 'Téléphone', flex: 1, minWidth: 130, valueFormatter: (p) => (p.value as string) || '—' },
-    { field: 'email', headerName: 'E-mail', flex: 1.4, minWidth: 180, valueFormatter: (p) => (p.value as string) || '—' },
+    {
+      field: 'matricule',
+      headerName: 'Matricule',
+      width: 150,
+      valueFormatter: (p) => (p.value as string) || '—',
+    },
+    ...(this.voitCoordonnees
+      ? ([
+          {
+            field: 'phone',
+            headerName: 'Téléphone',
+            flex: 1,
+            minWidth: 130,
+            valueFormatter: (p) => (p.value as string) || '—',
+          },
+          {
+            field: 'email',
+            headerName: 'E-mail',
+            flex: 1.4,
+            minWidth: 180,
+            valueFormatter: (p) => (p.value as string) || '—',
+          },
+        ] as ColDef<ProprietaireSummary>[])
+      : []),
     {
       headerName: 'Terrains',
       flex: 0.6,
@@ -157,7 +216,8 @@ export class Proprietaires implements OnInit {
         button.className = 'grid-icon-btn';
         button.title = 'Ouvrir la fiche';
         button.setAttribute('aria-label', 'Ouvrir la fiche');
-        button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.06 12.35a1 1 0 0 1 0-.7C3.5 8.18 7.4 5 12 5s8.5 3.18 9.94 6.65a1 1 0 0 1 0 .7C20.5 15.82 16.6 19 12 19s-8.5-3.18-9.94-6.65Z"/><circle cx="12" cy="12" r="3"/></svg>';
+        button.innerHTML =
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.06 12.35a1 1 0 0 1 0-.7C3.5 8.18 7.4 5 12 5s8.5 3.18 9.94 6.65a1 1 0 0 1 0 .7C20.5 15.82 16.6 19 12 19s-8.5-3.18-9.94-6.65Z"/><circle cx="12" cy="12" r="3"/></svg>';
         button.addEventListener('click', (event) => {
           event.stopPropagation();
           this.openDetail(id);
@@ -195,7 +255,8 @@ export class Proprietaires implements OnInit {
             this.notify.success('Propriétaire créé');
             this.openDetail(created.id);
           },
-          error: (error: unknown) => this.notify.error(error, 'Impossible de créer le propriétaire'),
+          error: (error: unknown) =>
+            this.notify.error(error, 'Impossible de créer le propriétaire'),
         });
       });
   }

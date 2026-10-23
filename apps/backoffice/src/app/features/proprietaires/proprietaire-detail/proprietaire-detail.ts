@@ -12,15 +12,26 @@ import {
   LucideLandPlot,
   LucideMail,
   LucidePencil,
+  LucideLock,
   LucidePhone,
   LucidePlus,
   LucideScrollText,
 } from '@lucide/angular';
-import { ProprietairesApiService, type ProprietaireDetail as ProprietaireDetailModel } from '../../../core/services/api/proprietaires-api.service';
+import {
+  ProprietairesApiService,
+  type ProprietaireDetail as ProprietaireDetailModel,
+} from '../../../core/services/api/proprietaires-api.service';
 import { TerrainsApiService } from '../../../core/services/api/terrains-api.service';
 import { LocatifApiService } from '../../../core/services/api/locatif-api.service';
 import type { BienListItem } from '../../../core/models/locatif.model';
-import { BIEN_STATUTS, label as bienStatutLabel, pillClass as bienPill, help as bienHelp, simpleLabel, TYPES_BIEN } from '../../locatif/locatif-status';
+import {
+  BIEN_STATUTS,
+  label as bienStatutLabel,
+  pillClass as bienPill,
+  help as bienHelp,
+  simpleLabel,
+  TYPES_BIEN,
+} from '../../locatif/locatif-status';
 import { MandatsApiService } from '../../../core/services/api/mandats-api.service';
 import { SessionService } from '../../../core/services/session.service';
 import { ProprietaireDialog } from '../../terrains/proprietaire-dialog';
@@ -29,8 +40,17 @@ import type { ProprietaireSummary, TerrainListItem } from '../../../core/models/
 import type { MandatListItem } from '../../../core/models/mandat.model';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
-import { COMMERCIAL_STATUS, pillClass as terrainPill, statusHelp as terrainHelp } from '../../terrains/terrain-status';
-import { MANDAT_STATUS, echeanceInfo, pillClass as mandatPill, statusHelp as mandatHelp } from '../../mandats/mandat-status';
+import {
+  COMMERCIAL_STATUS,
+  pillClass as terrainPill,
+  statusHelp as terrainHelp,
+} from '../../terrains/terrain-status';
+import {
+  MANDAT_STATUS,
+  echeanceInfo,
+  pillClass as mandatPill,
+  statusHelp as mandatHelp,
+} from '../../mandats/mandat-status';
 import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 
 /**
@@ -52,6 +72,7 @@ import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
     LucideLandPlot,
     LucideMail,
     LucidePencil,
+    LucideLock,
     LucidePhone,
     LucidePlus,
     LucideScrollText,
@@ -87,8 +108,13 @@ export class ProprietaireDetail implements OnInit {
   protected readonly canCreateMandat = this.session.hasPermission('mandats:creer');
   protected readonly canCreateClient = this.session.hasPermission('clients:creer');
 
-  protected readonly activeMandats = computed(() => (this.mandats() ?? []).filter((mandat) => mandat.statut === 'Actif').length);
-  protected readonly terrainsDisponibles = computed(() => (this.terrains() ?? []).filter((terrain) => terrain.statutCommercial === 'Disponible').length);
+  protected readonly activeMandats = computed(
+    () => (this.mandats() ?? []).filter((mandat) => mandat.statut === 'Actif').length,
+  );
+  protected readonly terrainsDisponibles = computed(
+    () =>
+      (this.terrains() ?? []).filter((terrain) => terrain.statutCommercial === 'Disponible').length,
+  );
 
   /** Ce qui manque pour que la relation soit exploitable. */
   protected readonly todo = computed(() => {
@@ -98,10 +124,22 @@ export class ProprietaireDetail implements OnInit {
     const biensLocatifs = this.biensLocatifs();
     if (!proprietaire || terrains === null || mandats === null || biensLocatifs === null) return [];
     const items: { label: string; hint: string }[] = [];
-    if (!proprietaire.phone && !proprietaire.email) items.push({ label: 'Renseigner un moyen de contact', hint: 'Téléphone ou e-mail, pour le joindre.' });
-    if (terrains.length === 0 && biensLocatifs.length === 0) items.push({ label: 'Enregistrer ses biens', hint: 'Créez la fiche de chaque parcelle à vendre, ou de chaque bien à mettre en gestion locative.' });
+    if (!proprietaire.phone && !proprietaire.email)
+      items.push({
+        label: 'Renseigner un moyen de contact',
+        hint: 'Téléphone ou e-mail, pour le joindre.',
+      });
+    if (terrains.length === 0 && biensLocatifs.length === 0)
+      items.push({
+        label: 'Enregistrer ses biens',
+        hint: 'Créez la fiche de chaque parcelle à vendre, ou de chaque bien à mettre en gestion locative.',
+      });
     // Le mandat de vente ne concerne que les terrains : un bien en gestion se suit par son bail ou ses séjours.
-    if (terrains.length > 0 && mandats.length === 0) items.push({ label: 'Formaliser un mandat', hint: 'Sans mandat signé, MTM n’est pas autorisée à commercialiser.' });
+    if (terrains.length > 0 && mandats.length === 0)
+      items.push({
+        label: 'Formaliser un mandat',
+        hint: 'Sans mandat signé, MTM n’est pas autorisée à commercialiser.',
+      });
     return items;
   });
 
@@ -129,7 +167,9 @@ export class ProprietaireDetail implements OnInit {
   }
 
   protected newBienLocatif(): void {
-    void this.router.navigate(['/locatif/biens/nouveau'], { queryParams: { proprietaireId: this.id } });
+    void this.router.navigate(['/locatif/biens/nouveau'], {
+      queryParams: { proprietaireId: this.id },
+    });
   }
 
   protected bienPill(value: string): string {
@@ -181,14 +221,20 @@ export class ProprietaireDetail implements OnInit {
   }
 
   protected location(terrain: TerrainListItem): string {
-    return [terrain.commune, terrain.region].filter(Boolean).join(', ') || 'Localisation non renseignée';
+    return (
+      [terrain.commune, terrain.region].filter(Boolean).join(', ') || 'Localisation non renseignée'
+    );
   }
 
   protected edit(): void {
     const current = this.proprietaire();
     if (!current || !this.id) return;
     this.dialog
-      .open(ProprietaireDialog, { width: '520px', maxWidth: 'calc(100vw - 32px)', data: { proprietaire: current as ProprietaireSummary } })
+      .open(ProprietaireDialog, {
+        width: '520px',
+        maxWidth: 'calc(100vw - 32px)',
+        data: { proprietaire: current as ProprietaireSummary },
+      })
       .afterClosed()
       .subscribe((payload: Omit<ProprietaireSummary, 'id'> | undefined) => {
         if (!payload || !this.id) return;
@@ -197,7 +243,8 @@ export class ProprietaireDetail implements OnInit {
             this.notify.success('Propriétaire mis à jour');
             this.load(this.id!);
           },
-          error: (error: unknown) => this.notify.error(error, 'Impossible de mettre à jour le propriétaire'),
+          error: (error: unknown) =>
+            this.notify.error(error, 'Impossible de mettre à jour le propriétaire'),
         });
       });
   }
@@ -217,16 +264,24 @@ export class ProprietaireDetail implements OnInit {
     const current = this.proprietaire();
     const id = this.id;
     if (!id || !current) return;
-    this.confirmer.ask(`Supprimer ${current.firstName} ${current.lastName} ? Impossible s’il a encore un mandat.`).subscribe((confirme) => {
-      if (!confirme) return;
-      this.api.remove(id).subscribe({
-        next: () => {
-          this.notify.success('Propriétaire supprimé');
-          this.goBack();
-        },
-        error: (error: unknown) => this.notify.error(error, 'Impossible de supprimer : des mandats y sont encore rattachés'),
+    this.confirmer
+      .ask(
+        `Supprimer ${current.firstName} ${current.lastName} ? Impossible s’il a encore un mandat.`,
+      )
+      .subscribe((confirme) => {
+        if (!confirme) return;
+        this.api.remove(id).subscribe({
+          next: () => {
+            this.notify.success('Propriétaire supprimé');
+            this.goBack();
+          },
+          error: (error: unknown) =>
+            this.notify.error(
+              error,
+              'Impossible de supprimer : des mandats y sont encore rattachés',
+            ),
+        });
       });
-    });
   }
 
   private load(id: string): void {

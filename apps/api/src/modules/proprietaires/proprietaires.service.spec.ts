@@ -169,3 +169,98 @@ describe('ProprietairesService : biens confiés', () => {
     expect(requete.select._count.select.biensLocatifs).toBe(true);
   });
 });
+
+describe('ProprietairesService : matricule et coordonnées', () => {
+  const fiche = {
+    id: 'p1',
+    matricule: 'PRO-2026-0002',
+    firstName: 'Aminata',
+    lastName: 'Ndiaye',
+    email: 'a@ex.sn',
+    phone: '770000000',
+    _count: { terrains: 0, biensLocatifs: 0, mandats: 0 },
+  };
+  const prismaMock = {
+    proprietaire: {
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      findFirst: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+    },
+  };
+  const service = new ProprietairesService(prismaMock as never, {} as never);
+  const annee = new Date().getFullYear();
+
+  beforeEach(() => jest.resetAllMocks());
+
+  it('donne le matricule suivant du même millésime', async () => {
+    prismaMock.proprietaire.findMany.mockResolvedValue([
+      { matricule: `PRO-${annee}-0007` },
+      { matricule: `PRO-${annee}-0003` },
+    ]);
+    await expect(service.prochainMatricule()).resolves.toBe(
+      `PRO-${annee}-0008`,
+    );
+  });
+
+  it('crée la fiche avec un matricule généré', async () => {
+    prismaMock.proprietaire.findMany.mockResolvedValue([]);
+    prismaMock.proprietaire.create.mockResolvedValue(fiche);
+    await service.create({ firstName: 'Aminata', lastName: 'Ndiaye' });
+    expect(prismaMock.proprietaire.create.mock.calls[0][0].data.matricule).toBe(
+      `PRO-${annee}-0001`,
+    );
+  });
+
+  it('réessaie quand deux créations visent le même matricule', async () => {
+    prismaMock.proprietaire.findMany.mockResolvedValue([]);
+    prismaMock.proprietaire.create
+      .mockRejectedValueOnce({ code: 'P2002', meta: { target: ['matricule'] } })
+      .mockResolvedValueOnce(fiche);
+    await service.create({ firstName: 'A', lastName: 'B' });
+    expect(prismaMock.proprietaire.create).toHaveBeenCalledTimes(2);
+  });
+
+  it('masque e-mail et téléphone hors administrateur, matricule conservé', async () => {
+    prismaMock.proprietaire.findUnique.mockResolvedValue(fiche);
+    const vue = await service.findById('p1', { roles: ['commercial'] });
+    expect(vue).toMatchObject({
+      matricule: 'PRO-2026-0002',
+      firstName: 'Aminata',
+      email: null,
+      phone: null,
+      coordonneesMasquees: true,
+    });
+    const admin = await service.findById('p1', { roles: ['administrateur'] });
+    expect(admin.email).toBe('a@ex.sn');
+  });
+
+  it('liste sans coordonnées pour un commercial', async () => {
+    prismaMock.proprietaire.findMany.mockResolvedValue([fiche]);
+    const [ligne] = await service.findAll({ roles: ['commercial'] });
+    expect(ligne.phone).toBeNull();
+    expect(ligne.matricule).toBe('PRO-2026-0002');
+  });
+
+  it('ignore les coordonnées envoyées en modification par un non-administrateur', async () => {
+    prismaMock.proprietaire.findUnique.mockResolvedValue({ id: 'p1' });
+    prismaMock.proprietaire.update.mockResolvedValue(fiche);
+    await service.update(
+      'p1',
+      { lastName: 'Diop', email: 'x@ex.sn', phone: '780000000' },
+      { roles: ['manager'] },
+    );
+    expect(prismaMock.proprietaire.update.mock.calls[0][0].data).toEqual({
+      lastName: 'Diop',
+    });
+    await service.update(
+      'p1',
+      { phone: '780000000' },
+      { roles: ['administrateur'] },
+    );
+    expect(prismaMock.proprietaire.update.mock.calls[1][0].data).toEqual({
+      phone: '780000000',
+    });
+  });
+});

@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import * as bcrypt from 'bcrypt';
 import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../src/database/prisma.service';
@@ -103,7 +104,12 @@ export class E2eData {
     partial: Partial<Prisma.ProprietaireUncheckedCreateInput> = {},
   ) {
     return this.prisma.proprietaire.create({
-      data: { firstName: 'Proprietaire', lastName: 'Test', ...partial },
+      data: {
+        matricule: `PRO-TEST-${randomUUID().slice(0, 8)}`,
+        firstName: 'Proprietaire',
+        lastName: 'Test',
+        ...partial,
+      },
     });
   }
 

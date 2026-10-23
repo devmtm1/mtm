@@ -19,6 +19,7 @@ import {
   referenceSuivante,
 } from '../../common/utils/reference';
 import { CreateMandatDto } from './dto/create-mandat.dto';
+import { masquerCoordonneesDeLaFiche } from '../proprietaires/coordonnees';
 import { UpdateMandatDto } from './dto/update-mandat.dto';
 import { QueryMandatDto } from './dto/query-mandat.dto';
 
@@ -26,6 +27,7 @@ const mandatInclude = {
   proprietaire: {
     select: {
       id: true,
+      matricule: true,
       firstName: true,
       lastName: true,
       email: true,
@@ -91,6 +93,11 @@ export class MandatsService {
               },
               {
                 proprietaire: {
+                  matricule: { contains: search, mode: 'insensitive' as const },
+                },
+              },
+              {
+                proprietaire: {
                   lastName: { contains: search, mode: 'insensitive' as const },
                 },
               },
@@ -141,7 +148,7 @@ export class MandatsService {
     ]);
 
     return {
-      items: items.map((item) => this.toInternal(item)),
+      items: items.map((item) => this.toInternal(item, user)),
       total,
       page,
       pageSize,
@@ -154,7 +161,7 @@ export class MandatsService {
       include: mandatInclude,
     });
     if (!mandat) throw new NotFoundException('Mandat introuvable');
-    return this.toInternal(mandat);
+    return this.toInternal(mandat, user);
   }
 
   async getOptions() {
@@ -225,7 +232,7 @@ export class MandatsService {
           } as Prisma.MandatUncheckedCreateInput,
           include: mandatInclude,
         });
-        return this.toInternal(mandat);
+        return this.toInternal(mandat, user);
       } catch (erreur) {
         if (!fournie && estConflitDeReference(erreur) && tentative < 5)
           continue;
@@ -295,7 +302,7 @@ export class MandatsService {
       data,
       include: mandatInclude,
     });
-    return this.toInternal(mandat);
+    return this.toInternal(mandat, user);
   }
 
   async remove(id: string, user: MandatUser): Promise<void> {
@@ -336,12 +343,15 @@ export class MandatsService {
       'Statut de mandat invalide',
     );
   }
-  private toInternal<T extends Record<string, unknown>>(mandat: T): T {
+  private toInternal<T extends Record<string, unknown>>(
+    mandat: T,
+    user: MandatUser,
+  ): T {
     const value: T & {
       lots?: Array<Record<string, unknown>>;
       documents?: Array<Record<string, unknown>>;
     } = mandat;
-    return {
+    const resultat = {
       ...mandat,
       lots: value.lots?.map((lot) => ({
         ...lot,
@@ -358,5 +368,6 @@ export class MandatsService {
         ),
       })),
     };
+    return masquerCoordonneesDeLaFiche(resultat, user);
   }
 }

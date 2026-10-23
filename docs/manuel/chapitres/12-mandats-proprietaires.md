@@ -15,10 +15,12 @@ Ce chapitre couvre la rubrique **Biens** : **Biens à vendre**, **Mandats**, **P
 ![Liste des propriétaires](img/imm-03-proprietaires.png)
 
 - Les **tuiles** : nombre de propriétaires, biens confiés, mandats signés, propriétaires **sans bien** (« enregistrés mais rien de confié : à relancer »).
-- **Nouveau propriétaire** : nom, prénom, téléphone, e-mail, notes.
+- **Nouveau propriétaire** : nom, prénom, téléphone, e-mail, notes. Un **matricule** (par exemple *PRO-2026-0004*) est attribué automatiquement : c’est lui qui permet de reconnaître le propriétaire.
 - L’œil ouvre la **fiche** : ses terrains et ses mandats, avec la possibilité d’en créer de nouveaux.
 
 > Créez le propriétaire **avant** le bien ou le mandat : ils s’y rattachent.
+
+> **Confidentialité** — Le **téléphone** et l’**e-mail** des propriétaires ne sont visibles que par l’**administrateur** (dans la liste, la fiche, les biens et les mandats). Tous les autres rôles voient le reste de la fiche et reconnaissent le propriétaire à son **matricule** ; ils peuvent saisir les coordonnées à la création, sans pouvoir les relire ni les modifier. Cela évite que les coordonnées soient utilisées en dehors du travail.
 
 ## Les mandats
 

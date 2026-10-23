@@ -20,3 +20,11 @@
 .full-width {
   grid-column: 1 / -1;
 }
+
+.coordonnees-note {
+  grid-column: 1 / -1;
+  margin: 0 0 8px;
+  color: var(--mtm-text-muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}

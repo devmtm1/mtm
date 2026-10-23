@@ -2,6 +2,10 @@ export type NumericOrString = number | string | null;
 
 export interface ProprietaireSummary {
   id: string;
+  /** Identifiant lisible (PRO-2026-0004) : ce qui reconnaît le propriétaire quand ses coordonnées sont masquées. */
+  matricule?: string;
+  /** Vrai quand l'e-mail et le téléphone sont réservés à l'administrateur. */
+  coordonneesMasquees?: boolean;
   firstName: string;
   lastName: string;
   email: string | null;

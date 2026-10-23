@@ -352,6 +352,9 @@
               <dd>
                 @if (t.proprietaire) {
                   {{ t.proprietaire.firstName }} {{ t.proprietaire.lastName }}
+                  @if (t.proprietaire.matricule) {
+                    <small>{{ t.proprietaire.matricule }}</small>
+                  }
                   @if (t.proprietaire.phone) {
                     <small>{{ t.proprietaire.phone }}</small>
                   }

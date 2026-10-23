@@ -145,6 +145,9 @@ model User {
 
 model Proprietaire {
   id        String   @id @default(uuid())
+  // Identifiant lisible (PRO-2026-0004) : seul l'administrateur voit les coordonnées,
+  // les autres reconnaissent le propriétaire par ce matricule.
+  matricule String   @unique
   firstName String
   lastName  String
   email     String?

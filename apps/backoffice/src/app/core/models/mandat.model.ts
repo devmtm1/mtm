@@ -2,6 +2,8 @@ export type NumericOrString = number | string | null;
 
 export interface ProprietaireSummary {
   id: string;
+  matricule?: string;
+  coordonneesMasquees?: boolean;
   firstName: string;
   lastName: string;
   email: string | null;

@@ -5,6 +5,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import type { ProprietaireSummary } from '../../core/models/terrain.model';
+import { SessionService } from '../../core/services/session.service';
 
 interface ProprietaireForm {
   firstName: FormControl<string>;
@@ -28,13 +29,28 @@ interface ProprietaireForm {
 })
 export class ProprietaireDialog {
   private readonly dialogRef = inject(MatDialogRef<ProprietaireDialog>);
-  protected readonly dialogData = inject<{ proprietaire?: ProprietaireSummary } | null>(MAT_DIALOG_DATA, { optional: true });
+  protected readonly dialogData = inject<{ proprietaire?: ProprietaireSummary } | null>(
+    MAT_DIALOG_DATA,
+    { optional: true },
+  );
 
   protected readonly isEdit = !!this.dialogData?.proprietaire;
+  /**
+   * Les coordonnées sont réservées à l'administrateur : un autre peut les saisir à la création
+   * (sans pouvoir les relire), mais pas les modifier ensuite.
+   */
+  protected readonly voitCoordonnees = inject(SessionService).hasRole('administrateur');
+  protected readonly coordonneesEditables = this.voitCoordonnees || !this.isEdit;
 
   protected readonly form = new FormGroup<ProprietaireForm>({
-    firstName: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(100)] }),
-    lastName: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(100)] }),
+    firstName: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(100)],
+    }),
+    lastName: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.maxLength(100)],
+    }),
     email: new FormControl('', { nonNullable: true, validators: [Validators.email] }),
     phone: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(30)] }),
     notes: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(500)] }),

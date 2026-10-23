@@ -21,6 +21,11 @@ export class ProprietairesApiService {
     return this.http.get<ProprietaireSummary[]>(this.baseUrl);
   }
 
+  /** Matricule que recevra le prochain propriétaire. */
+  prochainMatricule(): Observable<{ matricule: string }> {
+    return this.http.get<{ matricule: string }>(`${this.baseUrl}/prochain-matricule`);
+  }
+
   findOne(id: string): Observable<ProprietaireDetail> {
     return this.http.get<ProprietaireDetail>(`${this.baseUrl}/${id}`);
   }

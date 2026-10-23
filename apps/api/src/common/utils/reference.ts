@@ -29,7 +29,10 @@ export function referenceSuivante(
 }
 
 /** Erreur « valeur déjà prise » de Prisma sur la colonne du matricule (deux créations simultanées). */
-export function estConflitDeReference(erreur: unknown): boolean {
+export function estConflitDeReference(
+  erreur: unknown,
+  colonne = 'referenceInterne',
+): boolean {
   if (typeof erreur !== 'object' || erreur === null) return false;
   const { code, meta } = erreur as {
     code?: string;
@@ -38,6 +41,6 @@ export function estConflitDeReference(erreur: unknown): boolean {
   if (code !== 'P2002') return false;
   const cible = meta?.target;
   return Array.isArray(cible)
-    ? cible.includes('referenceInterne')
-    : typeof cible === 'string' && cible.includes('referenceInterne');
+    ? cible.includes(colonne)
+    : typeof cible === 'string' && cible.includes(colonne);
 }

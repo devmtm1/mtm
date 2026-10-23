@@ -120,7 +120,7 @@
                 <mat-option value="">Non renseigné pour l’instant</mat-option>
                 @for (proprietaire of proprietaires(); track proprietaire.id) {
                   <mat-option [value]="proprietaire.id">
-                    {{ proprietaire.lastName }} {{ proprietaire.firstName }}{{ proprietaire.phone ? ' · ' + proprietaire.phone : '' }}
+                    {{ proprietaire.lastName }} {{ proprietaire.firstName }}{{ proprietaire.matricule ? ' · ' + proprietaire.matricule : '' }}
                   </mat-option>
                 }
               </mat-select>
