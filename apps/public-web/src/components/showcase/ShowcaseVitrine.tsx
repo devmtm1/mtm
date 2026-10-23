@@ -1,0 +1,92 @@
+import type { ShowcaseCategory } from '../../types/showcase';
+import { useShowcase } from '../../hooks/useShowcase';
+import { EmptyState } from '../ui/EmptyState';
+import { Skeleton } from '../ui/Skeleton';
+import { VitrineCard } from './VitrineCard';
+
+interface ShowcaseVitrineProps {
+  category: ShowcaseCategory;
+  /** Petite mention en capitales au-dessus du titre, précédée d'un trait rouge. */
+  eyebrow: string;
+  title: string;
+  /** Phrase d'accroche sous le titre. */
+  subtitle: string;
+  /** Paragraphe de présentation. */
+  texte: string;
+  emptyLabel: string;
+  /** Mention centrée sous les cartes (visuels indicatifs…), facultative. */
+  legende?: string;
+}
+
+/**
+ * Page vitrine : un grand bandeau photo aux couleurs de MTM (trait rouge, titre blanc, texte), puis
+ * les projets en cartes qui chevauchent le bas du bandeau. Les projets viennent du back-office
+ * (Site web › Réalisations & projets) ; rien n'est affiché en dur.
+ */
+export function ShowcaseVitrine({ category, eyebrow, title, subtitle, texte, emptyLabel, legende }: ShowcaseVitrineProps) {
+  const { data, loading, error } = useShowcase(category);
+
+  return (
+    <div>
+      <section className="relative isolate overflow-hidden bg-mtm-primary-dark text-white">
+        {/* Photo du site, assombrie à gauche pour que le texte se lise sur n'importe quelle image. */}
+        <img src="/hero-poster.jpg" alt="" aria-hidden="true" className="absolute inset-0 -z-20 h-full w-full object-cover object-[70%_center]" />
+        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0a2142]/95 via-[#0a2142]/80 to-[#0a2142]/25 max-lg:to-[#0a2142]/55" />
+        <div className="mx-auto max-w-6xl px-4 pb-28 pt-9 sm:px-6 sm:pt-12 lg:pb-40 lg:pt-16">
+          <p className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/90 sm:text-xs">
+            <span aria-hidden="true" className="h-[3px] w-12 rounded-full bg-mtm-accent" />
+            {eyebrow}
+          </p>
+          <h1 className="mt-4 max-w-3xl font-display text-[2.1rem] font-extrabold leading-[1.1] sm:text-5xl lg:text-6xl">{title}</h1>
+          <p className="mt-3 max-w-2xl text-lg font-light leading-snug text-white/90 sm:text-2xl lg:text-[1.7rem]">{subtitle}</p>
+          <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-white/90 sm:text-base">{texte}</p>
+        </div>
+      </section>
+
+      <section className="relative mx-auto -mt-20 max-w-6xl px-4 pb-14 sm:px-6 lg:-mt-28" aria-label={eyebrow}>
+        {loading && (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
+            {[0, 1, 2].map((index) => (
+              <div key={index} className="overflow-hidden rounded-xl border border-mtm-border bg-mtm-surface shadow-card">
+                <Skeleton className="aspect-[16/10] w-full rounded-none" />
+                <div className="space-y-3 p-6">
+                  <Skeleton className="h-1 w-9" />
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-12 w-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {!loading && error && (
+          <div className="rounded-xl bg-mtm-surface p-4 shadow-card">
+            <EmptyState title="Impossible de charger le contenu" description={error} />
+          </div>
+        )}
+        {!loading && !error && (!data || data.length === 0) && (
+          <div className="rounded-xl bg-mtm-surface p-4 shadow-card">
+            <EmptyState title={emptyLabel} />
+          </div>
+        )}
+        {!loading && !error && data && data.length > 0 && (
+          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {data.map((item) => (
+              <li key={item.id}>
+                <VitrineCard item={item} />
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {legende && (
+          <p className="mt-10 flex items-center justify-center gap-4 text-center text-sm text-mtm-primary-dark">
+            <span aria-hidden="true" className="hidden h-px w-16 bg-mtm-primary-dark/40 sm:block" />
+            {legende}
+            <span aria-hidden="true" className="hidden h-px w-16 bg-mtm-primary-dark/40 sm:block" />
+          </p>
+        )}
+      </section>
+    </div>
+  );
+}

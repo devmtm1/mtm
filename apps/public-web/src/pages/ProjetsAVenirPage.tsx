@@ -1,5 +1,4 @@
-import { PageIntro } from '../components/layout/PageIntro';
-import { ShowcaseGrid } from '../components/showcase/ShowcaseGrid';
+import { ShowcaseVitrine } from '../components/showcase/ShowcaseVitrine';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 import { CtaBand } from '../components/ui/CtaBand';
 
@@ -11,14 +10,15 @@ export function ProjetsAVenirPage() {
 
   return (
     <div>
-      <PageIntro
-        eyebrow="À venir"
-        title="Projets à venir"
-        description="Découvrez les prochains projets et programmes préparés par MTM Immobilier."
+      <ShowcaseVitrine
+        category="projet_a_venir"
+        eyebrow="Projets à venir"
+        title="Nos prochains projets"
+        subtitle="Les programmes que MTM Immobilier prépare pour vous"
+        texte="Terrains aménagés, villas et résidences : découvrez en avant-première les projets en préparation et rapprochez-vous de notre équipe pour réserver votre place."
+        emptyLabel="Aucun projet à venir publié pour le moment"
+        legende="Visuels indicatifs — projets présentés à titre d’exemple"
       />
-      <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-        <ShowcaseGrid columns={4} category="projet_a_venir" emptyLabel="Aucun projet à venir publié pour le moment" />
-      </section>
       <CtaBand />
     </div>
   );
