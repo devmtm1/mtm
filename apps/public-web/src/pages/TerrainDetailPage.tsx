@@ -24,6 +24,7 @@ import { estVendu, venduLabel } from '../utils/venteLabels';
 import { FavoriteButton } from '../components/mobile/FavoriteButton';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 import { descriptionDe, donneesTerrain, premierePhoto } from '../utils/seo';
+import { useVueFiche } from '../hooks/useSuiviVisites';
 import { formatMoney } from '../utils/format';
 import { estBienBati, etatBienLabel, typeBienLabel, vocationLabel } from '../utils/bienLabels';
 
@@ -50,6 +51,7 @@ export function TerrainDetailPage() {
       )
     : undefined;
   const imageFiche = terrain ? premierePhoto(terrain.medias) : null;
+  useVueFiche('terrain', terrain?.id);
   usePageMetadata({
     title: titreFiche,
     description: descriptionFiche,
