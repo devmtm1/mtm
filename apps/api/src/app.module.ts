@@ -19,6 +19,7 @@ import { SettingsModule } from './modules/settings/settings.module';
 import { TerrainsModule } from './modules/terrains/terrains.module';
 import { ProprietairesModule } from './modules/proprietaires/proprietaires.module';
 import { ContactModule } from './modules/contact/contact.module';
+import { VisitesModule } from './modules/visites/visites.module';
 import { ContentBlockModule } from './modules/content/content-block.module';
 import { MandatsModule } from './modules/mandats/mandats.module';
 import { CrmModule } from './modules/crm/crm.module';
@@ -66,6 +67,7 @@ import { NavigationModule } from './modules/navigation/navigation.module';
     TerrainsModule,
     ProprietairesModule,
     ContactModule,
+    VisitesModule,
     ContentBlockModule,
     MandatsModule,
     CrmModule,

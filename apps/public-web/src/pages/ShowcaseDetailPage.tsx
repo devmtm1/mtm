@@ -5,6 +5,7 @@ import { ROUTES } from '../routes';
 import { useShowcase, useShowcaseItem } from '../hooks/useShowcase';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 import { descriptionDe, donneesVitrine } from '../utils/seo';
+import { useVueFiche } from '../hooks/useSuiviVisites';
 import { MediaImage } from '../components/ui/MediaImage';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -53,6 +54,8 @@ export function ShowcaseDetailPage() {
   const [contactOpen, setContactOpen] = useState(false);
 
   const info = categoryInfo(item?.category ?? 'realisation');
+
+  useVueFiche(item?.category === 'projet_a_venir' ? 'projet' : 'realisation', item?.id);
 
   usePageMetadata({
     title: item ? `${item.title} – ${info.label}` : info.label,

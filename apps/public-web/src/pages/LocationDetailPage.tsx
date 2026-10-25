@@ -32,6 +32,7 @@ import { FavoriteButton } from '../components/mobile/FavoriteButton';
 import { LinkButton } from '../components/ui/LinkButton';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 import { descriptionDe, donneesLocation, premierePhoto } from '../utils/seo';
+import { useVueFiche } from '../hooks/useSuiviVisites';
 import { useSiteContact } from '../hooks/useSiteContact';
 import { typeBienLabel } from '../utils/bienLabels';
 import { formatSuperficie } from '../utils/format';
@@ -63,6 +64,7 @@ export function LocationDetailPage() {
     ? descriptionDe(location.description, `${typeLabel || 'Bien'} à louer${place ? ` à ${place}` : ''}`)
     : undefined;
   const imageAnnonce = location ? premierePhoto(location.medias) : null;
+  useVueFiche('location', location?.id);
   usePageMetadata({
     title: titreAnnonce,
     description: descriptionAnnonce,

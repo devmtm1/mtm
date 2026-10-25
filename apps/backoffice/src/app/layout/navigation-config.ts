@@ -2,6 +2,7 @@ import type { LucideIcon } from '@lucide/angular';
 import {
   LucideCalendarDays,
   LucideChartColumn,
+  LucideChartLine,
   LucideClipboardCheck,
   LucideContact,
   LucideFolderOpen,
@@ -169,6 +170,8 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
     title: 'Pilotage et finances',
     items: [
       { label: 'Rapports', route: '/rapports', icon: LucideChartColumn, permission: 'rapports:consulter' },
+      // Qui visite le site et quels biens intéressent le public : sert à relancer ou repositionner un bien.
+      { label: 'Fréquentation du site', route: '/statistiques', icon: LucideChartLine, permission: 'statistiques:consulter' },
       // L'argent du quotidien : ce qui entre, ce qui sort, ce qu'il y a en caisse.
       {
         label: 'Finances',

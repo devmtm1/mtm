@@ -2994,3 +2994,36 @@ model ReleveLigne {
   @@index([mouvementId])
   @@map("releve_lignes")
 }
+
+// ============================================================
+// Fréquentation du site public — compteurs anonymes
+// ============================================================
+
+/// Visites du site public, agrégées par jour. Aucune donnée personnelle : ni adresse IP, ni cookie.
+/// `type` : site | terrain | location | realisation | projet ; `cible` : l'identifiant du bien
+/// (vide pour « site », qui compte le visiteur toutes pages confondues).
+model VisiteQuotidienne {
+  jour      DateTime @db.Date
+  type      String
+  cible     String   @default("")
+  /// Provenance : direct | google | facebook | instagram | whatsapp | tiktok | youtube | autre
+  source    String
+  vues      Int      @default(0)
+  /// Visiteurs distincts ce jour-là (une personne qui recharge la page n'est comptée qu'une fois).
+  visiteurs Int      @default(0)
+
+  @@id([jour, type, cible, source])
+  @@index([type, cible, jour])
+  @@map("visites_quotidiennes")
+}
+
+/// Empreinte jetable d'un visiteur pour un jour (hachage salé, renouvelé chaque jour) : sert
+/// uniquement à ne pas compter deux fois la même personne. Supprimée au bout de deux jours.
+model EmpreinteVisiteur {
+  jour      DateTime @db.Date
+  cle       String
+  empreinte String
+
+  @@id([jour, cle, empreinte])
+  @@map("empreintes_visiteurs")
+}

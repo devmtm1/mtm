@@ -159,6 +159,12 @@ export function ConfidentialitePage() {
           Le site utilise uniquement le stockage nécessaire à son fonctionnement (session de l’espace
           client). Il n’utilise pas de cookies publicitaires ni de mesure d’audience tierce.
         </p>
+        <p>
+          Nous comptons les visites de façon anonyme, sans cookie : seules les pages consultées sont
+          dénombrées par jour, pour savoir quels biens intéressent le public. Ni votre adresse ni un
+          identifiant ne sont conservés. Si votre navigateur envoie le signal « Ne pas me suivre »,
+          votre visite n’est pas comptée.
+        </p>
       </Section>
     </LegalLayout>
   );

@@ -1,0 +1,59 @@
+@if (autorise && !erreur()) {
+  <section class="page-card detail-section consultations" aria-labelledby="consultations-titre">
+    <div class="consultations__tete">
+      <h2 id="consultations-titre">
+        <svg lucideEye aria-hidden="true"></svg>Consultations sur le site
+      </h2>
+      <span class="consultations__periode">30 derniers jours</span>
+    </div>
+
+    @if (loading()) {
+      <div class="skeleton consultations__squelette"></div>
+    } @else if (detail(); as d) {
+      <div class="consultations__chiffres">
+        <div>
+          <strong>{{ d.totaux.visiteurs.toLocaleString('fr-FR') }}</strong>
+          <span>visiteurs</span>
+        </div>
+        <div>
+          <strong>{{ d.totaux.vues.toLocaleString('fr-FR') }}</strong>
+          <span>pages vues</span>
+        </div>
+        <div>
+          <strong>{{ d.septJours.visiteurs.toLocaleString('fr-FR') }}</strong>
+          <span>visiteurs sur 7 jours</span>
+        </div>
+        <div [class.consultations__alerte]="d.totaux.visiteurs >= 5 && d.totaux.demandes === 0">
+          <strong>{{ d.totaux.demandes.toLocaleString('fr-FR') }}</strong>
+          <span
+            >demande{{ d.totaux.demandes > 1 ? 's' : '' }} reçue{{
+              d.totaux.demandes > 1 ? 's' : ''
+            }}</span
+          >
+        </div>
+      </div>
+
+      @if (courbe(); as option) {
+        <div
+          echarts
+          [options]="option"
+          class="consultations__courbe"
+          role="img"
+          aria-label="Visiteurs par jour sur 30 jours"
+        ></div>
+        @if (sourcePrincipale(); as source) {
+          <p class="consultations__note">Principale provenance : {{ source }}.</p>
+        }
+      } @else {
+        <p class="consultations__note">Cette fiche n’a pas encore été consultée sur le site.</p>
+      }
+
+      @if (d.totaux.visiteurs >= 5 && d.totaux.demandes === 0) {
+        <p class="consultations__conseil">
+          Cette fiche est regardée sans qu’aucune demande n’arrive : revoyez les photos, le prix ou
+          la description.
+        </p>
+      }
+    }
+  </section>
+}

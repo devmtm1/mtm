@@ -1,0 +1,293 @@
+<div class="stats-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Pilotage</p>
+      <h1 class="page-header__title">Fréquentation du site</h1>
+      <p class="page-header__subtitle">
+        Combien de personnes visitent le site, d’où elles viennent et quels biens les intéressent.
+        Les visites sont comptées de façon anonyme (ni cookie, ni adresse conservée), et sans les
+        robots des moteurs de recherche.
+      </p>
+    </div>
+    <div class="periode" role="group" aria-label="Période">
+      @for (p of periodes; track p.jours) {
+        <button
+          type="button"
+          class="periode__bouton"
+          [class.is-active]="p.jours === periode()"
+          [attr.aria-pressed]="p.jours === periode()"
+          (click)="choisirPeriode(p.jours)"
+        >
+          {{ p.label }}
+        </button>
+      }
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="stats-squelette" aria-busy="true">
+      <div class="stats-squelette__kpis">
+        @for (n of [1, 2, 3, 4]; track n) {
+          <div class="skeleton skeleton--kpi"></div>
+        }
+      </div>
+      <div class="skeleton skeleton--chart"></div>
+    </div>
+  } @else if (erreur() && !resume()) {
+    <p class="stats-vide">
+      Les statistiques sont momentanément indisponibles. Réessayez dans un instant.
+    </p>
+  } @else if (resume(); as r) {
+    @if (vide()) {
+      <aside class="alert-banner alert-banner--info" role="status">
+        <p>
+          Aucune visite n’a encore été comptée. Le comptage démarre avec la mise en ligne de cette
+          version du site : les chiffres apparaîtront dès les prochaines visites. Pour ne pas
+          fausser les chiffres avec vos propres visites, ouvrez le site une fois avec
+          <strong>?pas-de-suivi=1</strong> à la fin de l’adresse sur chacun de vos appareils (par
+          exemple <em>www.mtm-immobilier.com/?pas-de-suivi=1</em>).
+        </p>
+      </aside>
+    }
+
+    <section class="kpi-row" [attr.aria-label]="'Chiffres clés des ' + periodeLongue()">
+      <article class="kpi kpi--primary">
+        <span class="kpi__icon"><svg lucideUsers aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ nombre(r.totaux.visites) }}</strong>
+          <span>Visiteurs</span>
+          <small
+            [class]="'tendance tendance--' + tendanceDe(r.totaux.visites, r.precedent.visites)"
+            >{{ comparaison(r.totaux.visites, r.precedent.visites) }}</small
+          >
+        </span>
+      </article>
+      <article class="kpi">
+        <span class="kpi__icon"><svg lucideEye aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ nombre(r.totaux.pagesVues) }}</strong>
+          <span>Pages vues</span>
+          <small
+            [class]="'tendance tendance--' + tendanceDe(r.totaux.pagesVues, r.precedent.pagesVues)"
+            >{{ comparaison(r.totaux.pagesVues, r.precedent.pagesVues) }}</small
+          >
+        </span>
+      </article>
+      <article class="kpi">
+        <span class="kpi__icon"><svg lucideFileText aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ nombre(r.totaux.fichesVues) }}</strong>
+          <span>Fiches de biens consultées</span>
+          <small
+            [class]="
+              'tendance tendance--' + tendanceDe(r.totaux.fichesVues, r.precedent.fichesVues)
+            "
+            >{{ comparaison(r.totaux.fichesVues, r.precedent.fichesVues) }}</small
+          >
+        </span>
+      </article>
+      <article class="kpi">
+        <span class="kpi__icon"><svg lucideInbox aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ nombre(r.totaux.demandes) }}</strong>
+          <span>Demandes reçues</span>
+          <small
+            [class]="'tendance tendance--' + tendanceDe(r.totaux.demandes, r.precedent.demandes)"
+            >{{ comparaison(r.totaux.demandes, r.precedent.demandes) }}</small
+          >
+        </span>
+      </article>
+    </section>
+    <p class="stats-note">
+      « Visiteurs » compte chaque personne une fois par jour : quelqu’un qui revient le lendemain
+      est compté de nouveau.
+    </p>
+
+    <section class="stats-grille">
+      <article class="page-card stats-carte stats-carte--large">
+        <h2>Visiteurs par jour</h2>
+        <p class="detail-section__hint">Les {{ periodeLongue() }}.</p>
+        @if (courbe(); as option) {
+          <div
+            echarts
+            [options]="option"
+            class="stats-graphique"
+            role="img"
+            aria-label="Visiteurs et pages vues par jour"
+          ></div>
+        } @else {
+          <p class="stats-carte__vide">Aucune visite sur la période.</p>
+        }
+      </article>
+
+      <article class="page-card stats-carte">
+        <h2>D’où viennent les visiteurs</h2>
+        <p class="detail-section__hint">Part des visiteurs selon leur provenance.</p>
+        @if (sources().length > 0) {
+          <ul class="sources">
+            @for (s of sources(); track s.libelle) {
+              <li>
+                <span class="sources__nom">{{ s.libelle }}</span>
+                <span class="sources__barre"
+                  ><span class="sources__remplissage" [style.width.%]="s.part"></span
+                ></span>
+                <span class="sources__valeur">{{ s.part }} %</span>
+              </li>
+            }
+          </ul>
+          <p class="stats-note stats-note--petite">
+            WhatsApp n’indique pas toujours d’où vient un lien : une partie de ses visites apparaît
+            en « Accès direct ».
+          </p>
+        } @else {
+          <p class="stats-carte__vide">Aucune visite sur la période.</p>
+        }
+      </article>
+    </section>
+
+    <section class="page-card stats-carte">
+      <h2>Biens à vendre les plus consultés</h2>
+      <p class="detail-section__hint">
+        « Demandes » : messages reçus par le site à propos du bien sur la période.
+      </p>
+      @if (r.terrains.length > 0) {
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Bien</th>
+                <th class="is-right">Vues</th>
+                <th class="is-right">Visiteurs</th>
+                <th class="is-right">Demandes</th>
+                <th class="is-right">Demandes / visiteurs</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (l of r.terrains; track l.id) {
+                <tr>
+                  <td>
+                    <a class="lien-bien" [routerLink]="lienFiche(l.type, l.id)">{{ l.titre }}</a>
+                    <small class="lien-bien__detail"
+                      >{{ l.reference }}{{ l.lieu ? ' · ' + l.lieu : '' }}</small
+                    >
+                  </td>
+                  <td class="is-right">{{ nombre(l.vues) }}</td>
+                  <td class="is-right">{{ nombre(l.visiteurs) }}</td>
+                  <td class="is-right">{{ nombre(l.demandes) }}</td>
+                  <td class="is-right">{{ tauxDemande(l) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="stats-carte__vide">Aucun bien consulté sur la période.</p>
+      }
+    </section>
+
+    @if (r.sansDemande.length > 0) {
+      <section class="page-card stats-carte stats-carte--attention">
+        <h2>Regardés, mais sans aucune demande</h2>
+        <p class="detail-section__hint">
+          Ces fiches attirent du monde sans qu’on appelle : photos, prix ou description à revoir, ou
+          bien à relancer auprès des visiteurs.
+        </p>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Fiche</th>
+                <th class="is-right">Vues</th>
+                <th class="is-right">Visiteurs</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (l of r.sansDemande; track l.type + l.id) {
+                <tr>
+                  <td>
+                    <a class="lien-bien" [routerLink]="lienFiche(l.type, l.id)">{{ l.titre }}</a>
+                    <small class="lien-bien__detail"
+                      >{{ l.type === 'terrain' ? 'Bien à vendre' : 'Location' }} · {{ l.reference
+                      }}{{ l.lieu ? ' · ' + l.lieu : '' }}</small
+                    >
+                  </td>
+                  <td class="is-right">{{ nombre(l.vues) }}</td>
+                  <td class="is-right">{{ nombre(l.visiteurs) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+
+    <section class="stats-grille stats-grille--egale">
+      <article class="page-card stats-carte">
+        <h2>Locations les plus consultées</h2>
+        @if (r.locations.length > 0) {
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Annonce</th>
+                  <th class="is-right">Vues</th>
+                  <th class="is-right">Demandes</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (l of r.locations; track l.id) {
+                  <tr>
+                    <td>
+                      <a class="lien-bien" [routerLink]="lienFiche(l.type, l.id)">{{ l.titre }}</a>
+                      <small class="lien-bien__detail"
+                        >{{ l.reference }}{{ l.lieu ? ' · ' + l.lieu : '' }}</small
+                      >
+                    </td>
+                    <td class="is-right">{{ nombre(l.vues) }}</td>
+                    <td class="is-right">{{ nombre(l.demandes) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="stats-carte__vide">Aucune location consultée sur la période.</p>
+        }
+      </article>
+
+      <article class="page-card stats-carte">
+        <h2>Réalisations et projets consultés</h2>
+        @if (r.vitrine.length > 0) {
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Fiche</th>
+                  <th class="is-right">Vues</th>
+                  <th class="is-right">Visiteurs</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (l of r.vitrine; track l.id) {
+                  <tr>
+                    <td>
+                      <a class="lien-bien" [routerLink]="lienFiche(l.type, l.id)">{{ l.titre }}</a>
+                      <small class="lien-bien__detail"
+                        >{{ l.type === 'projet' ? 'Projet à venir' : 'Réalisation'
+                        }}{{ l.lieu ? ' · ' + l.lieu : '' }}</small
+                      >
+                    </td>
+                    <td class="is-right">{{ nombre(l.vues) }}</td>
+                    <td class="is-right">{{ nombre(l.visiteurs) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="stats-carte__vide">Aucune fiche consultée sur la période.</p>
+        }
+      </article>
+    </section>
+  }
+</div>

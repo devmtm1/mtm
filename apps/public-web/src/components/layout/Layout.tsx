@@ -10,6 +10,7 @@ import { MobileTabBar } from '../mobile/MobileTabBar';
 import { QuickActionsFab } from '../mobile/QuickActionsFab';
 import { showsQuickActions, showsTabBar } from '../mobile/mobile-routes';
 import { useIsMobile } from '../../hooks/useMediaQuery';
+import { useSuiviVisites } from '../../hooks/useSuiviVisites';
 
 const MAIN_ID = 'contenu-principal';
 
@@ -21,6 +22,7 @@ export function Layout() {
   // bas, bouton d'actions rapides) ; ordinateur : le site classique.
   const isMobile = useIsMobile();
   const tabBar = isMobile && showsTabBar(pathname);
+  useSuiviVisites();
 
   return (
     <div className="flex min-h-screen flex-col bg-mtm-bg text-mtm-text">

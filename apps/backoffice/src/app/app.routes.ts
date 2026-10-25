@@ -254,6 +254,12 @@ export const routes: Routes = [
           import('./features/audit/audit').then((m) => m.Audit),
       },
       {
+        path: 'statistiques',
+        title: 'Fréquentation du site',
+        canActivate: [permissionsGuard(['statistiques:consulter'])],
+        loadComponent: () => import('./features/statistiques/statistiques').then((m) => m.Statistiques),
+      },
+      {
         path: 'content',
         title: 'Contenus du site',
         canActivate: [permissionsGuard(['content:consulter'])],

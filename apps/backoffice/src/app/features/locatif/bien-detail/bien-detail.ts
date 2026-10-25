@@ -89,6 +89,7 @@ import { PreavisDialog } from './preavis-dialog';
 import { SignalementDialog } from './signalement-dialog';
 import { SortieDialog } from './sortie-dialog';
 import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
+import { ConsultationsBien } from '../../../shared/components/consultations-bien/consultations-bien';
 
 /**
  * Fiche d'un bien locatif : ses informations, le bail en cours (ou son
@@ -100,6 +101,7 @@ import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
   selector: 'app-bien-detail',
   imports: [
     BienAnnonceCard,
+    ConsultationsBien,
     DatePipe,
     MoneyPipe,
     ReactiveFormsModule,
