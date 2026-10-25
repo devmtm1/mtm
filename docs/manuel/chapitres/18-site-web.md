@@ -84,6 +84,28 @@ Trois actions :
 
 > **Conseil** — Préférez des vidéos courtes (1 à 3 minutes), en bonne qualité et avec un titre clair : un visiteur décide en quelques secondes de la regarder ou non.
 
+## La fréquentation du site
+
+**Pilotage et finances › Fréquentation du site** : combien de personnes visitent le site, d’où elles viennent et quels biens les intéressent.
+
+- Choisissez la période : **7**, **30** ou **90 jours**. Chaque chiffre est comparé à la période précédente.
+- Les **tuiles** : *Visiteurs*, *Pages vues*, *Fiches de biens consultées* et *Demandes reçues* par le formulaire du site.
+- La **courbe** montre les visiteurs et les pages vues, jour par jour.
+- **D’où viennent les visiteurs** : Google, Facebook, WhatsApp, Instagram, TikTok, YouTube, accès direct ou autres sites. WhatsApp n’indique pas toujours la provenance d’un lien : une partie de ses visites apparaît en « Accès direct ».
+- **Biens à vendre les plus consultés** : vues, visiteurs, demandes reçues et part de visiteurs qui ont écrit. Un clic sur le nom ouvre la fiche.
+- **Regardés, mais sans aucune demande** : les fiches qui attirent du monde sans qu’on appelle. C’est la liste à traiter en priorité : photos, prix ou description à revoir, ou visiteurs à relancer.
+- Les **locations**, les **réalisations** et les **projets à venir** ont leur classement.
+
+Sur la **fiche d’un bien** (bien à vendre ou location), le bloc **Consultations sur le site** donne les visiteurs et les pages vues des 30 derniers jours, les visiteurs des 7 derniers jours, une courbe et le nombre de demandes reçues.
+
+> **Un visiteur** est compté **une fois par jour** : quelqu’un qui recharge la page dans la journée n’ajoute qu’une vue ; s’il revient le lendemain, il est compté de nouveau. Les robots des moteurs de recherche et les aperçus de liens (WhatsApp, Facebook) ne sont pas comptés.
+
+> **Ne pas fausser les chiffres** — Vos propres visites comptent comme celles du public. Sur chacun de vos appareils, ouvrez une fois le site avec **?pas-de-suivi=1** à la fin de l’adresse (par exemple *www.mtm-immobilier.com/?pas-de-suivi=1*) : ce navigateur n’est plus compté. **?pas-de-suivi=0** le remet dans le décompte.
+
+> **Vie privée** — Le comptage est anonyme : aucun cookie, aucun nom, aucune adresse enregistrée (seulement une empreinte illisible, effacée au bout de deux jours, qui évite de compter deux fois la même personne). Une personne dont le navigateur envoie « Ne pas me suivre » n’est pas comptée. La page *Confidentialité* du site l’explique aux visiteurs.
+
+Les chiffres démarrent à la mise en ligne de cette fonction : il n’y a pas d’historique avant.
+
 ## Qui peut quoi
 
-La **consultation** des contenus est ouverte aux rôles qui ont la permission « contenu : consulter » ; **créer, modifier, publier et supprimer** sont réservés à la direction, aux managers (et aux administrateurs). Un commercial voit les **demandes web** et peut les traiter (consulter, modifier), mais pas les contenus du site.
+La **fréquentation du site** (écran et blocs sur les fiches) est visible par la direction, les managers, les responsables commerciaux, les commerciaux et le responsable de gestion locative (permission « statistiques : consulter »). La **consultation** des contenus est ouverte aux rôles qui ont la permission « contenu : consulter » ; **créer, modifier, publier et supprimer** sont réservés à la direction, aux managers (et aux administrateurs). Un commercial voit les **demandes web** et peut les traiter (consulter, modifier), mais pas les contenus du site.

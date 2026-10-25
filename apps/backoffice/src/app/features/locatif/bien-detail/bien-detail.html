@@ -192,6 +192,9 @@
       (changed)="rafraichirBien()"
     />
 
+    <!-- Combien de visiteurs ont ouvert l'annonce sur le site, et combien de demandes en sont venues. -->
+    <app-consultations-bien type="location" [bienId]="b.id" />
+
     @if (courte()) {
       <section class="page-card detail-section" aria-labelledby="sejours-bien">
         <div class="detail-section__head">

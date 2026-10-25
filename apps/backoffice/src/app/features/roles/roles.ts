@@ -20,7 +20,7 @@ interface ModuleSummary {
 }
 
 /** Ordre d'affichage des modules dans le résumé d'un rôle. */
-const RESOURCE_ORDER = ['terrains', 'proprietaires', 'mandats', 'crm', 'ventes', 'contact', 'content', 'clients', 'users', 'roles', 'settings', 'audit'];
+const RESOURCE_ORDER = ['terrains', 'proprietaires', 'mandats', 'crm', 'ventes', 'contact', 'content', 'statistiques', 'clients', 'users', 'roles', 'settings', 'audit'];
 
 /**
  * Rôles et droits d’accès (Phase 0, section 24 CDC). Un rôle regroupe des

@@ -60,6 +60,7 @@ export const RESOURCE_LABELS: Record<string, string> = {
   clients: 'Espace client',
   contact: 'Demandes du site',
   content: 'Contenus du site',
+  statistiques: 'Fréquentation du site',
 };
 
 export function resourceLabel(resource: string): string {

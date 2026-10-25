@@ -57,6 +57,7 @@ import {
 import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 import { FilDiscussion } from '../../../shared/components/fil-discussion/fil-discussion';
 import { TachesDossier } from '../../../shared/components/taches-dossier/taches-dossier';
+import { ConsultationsBien } from '../../../shared/components/consultations-bien/consultations-bien';
 
 /**
  * Fiche terrain (J1.1 / J1.3). Tout ce qu'un commercial doit savoir sur une
@@ -66,6 +67,7 @@ import { TachesDossier } from '../../../shared/components/taches-dossier/taches-
 @Component({
   selector: 'app-terrain-detail',
   imports: [
+    ConsultationsBien,
     FilDiscussion,
     TachesDossier,
     MoneyPipe,
