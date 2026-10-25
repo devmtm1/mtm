@@ -207,6 +207,19 @@ async function main(): Promise<void> {
     },
   });
 
+  // --- Statistiques de fréquentation du site public ---
+  await prisma.permission.upsert({
+    where: { name: 'statistiques:consulter' },
+    update: {},
+    create: {
+      name: 'statistiques:consulter',
+      resource: 'statistiques',
+      action: 'consulter',
+      description:
+        'Consulter les statistiques de visites du site public et les vues par bien',
+    },
+  });
+
   // --- Rôles ---
   for (const role of INITIAL_ROLES) {
     await prisma.role.upsert({
@@ -824,6 +837,34 @@ async function main(): Promise<void> {
     }
   }
   console.log('  Permissions contenu / demandes web attribuées');
+
+  // Les chiffres de fréquentation sont lus par l'équipe commerciale et son encadrement
+  // (ils servent à relancer ou à repositionner un bien) ; l'administrateur a déjà tout.
+  const statistiquesPermission = await prisma.permission.findUniqueOrThrow({
+    where: { name: 'statistiques:consulter' },
+  });
+  for (const roleName of [
+    'direction',
+    'manager',
+    'responsable_commercial',
+    'commercial',
+    'responsable_gestion_locative',
+  ]) {
+    const role = await prisma.role.findUniqueOrThrow({
+      where: { name: roleName },
+    });
+    await prisma.rolePermission.upsert({
+      where: {
+        roleId_permissionId: {
+          roleId: role.id,
+          permissionId: statistiquesPermission.id,
+        },
+      },
+      update: {},
+      create: { roleId: role.id, permissionId: statistiquesPermission.id },
+    });
+  }
+  console.log('  Permission statistiques de visites attribuée');
 
   // --- Journal d'audit : la direction le consulte et l'exporte (tracé) ---
   const directionRole = await prisma.role.findUniqueOrThrow({
