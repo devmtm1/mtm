@@ -12,6 +12,7 @@ import { ContactCtaSection } from '../components/home/ContactCtaSection';
 import { TrustBand } from '../components/home/TrustBand';
 import { Reveal } from '../components/ui/Reveal';
 import { usePageMetadata } from '../hooks/usePageMetadata';
+import { donneesAgence } from '../utils/seo';
 import { MobileHome } from '../components/home/MobileHome';
 import { useIsMobile } from '../hooks/useMediaQuery';
 
@@ -21,6 +22,7 @@ export function HomePage() {
     title: 'Terrains et villas vérifiés, gestion locative et construction au Sénégal',
     description:
       "MTM Immobilier accompagne particuliers et diaspora dans l'achat de terrains et de villas vérifiés, la vérification foncière, la gestion locative et la construction au Sénégal.",
+    jsonLd: donneesAgence(),
   });
 
   // Téléphone : l'accueil de l'application, pas la page du site.
