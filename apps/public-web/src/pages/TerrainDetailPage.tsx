@@ -23,6 +23,7 @@ import { LinkButton } from '../components/ui/LinkButton';
 import { estVendu, venduLabel } from '../utils/venteLabels';
 import { FavoriteButton } from '../components/mobile/FavoriteButton';
 import { usePageMetadata } from '../hooks/usePageMetadata';
+import { descriptionDe, donneesTerrain, premierePhoto } from '../utils/seo';
 import { formatMoney } from '../utils/format';
 import { estBienBati, etatBienLabel, typeBienLabel, vocationLabel } from '../utils/bienLabels';
 
@@ -41,9 +42,19 @@ export function TerrainDetailPage() {
 
   // Titre dynamique : le nom du bien (et sa localisation) identifie la
   // fiche dans les onglets, l'historique et les résultats de recherche.
+  const titreFiche = terrain ? [vendu ? `${terrain.nom} (vendu)` : terrain.nom, location].filter(Boolean).join(' – ') : 'Fiche du bien';
+  const descriptionFiche = terrain
+    ? descriptionDe(
+        terrain.description,
+        [typeBienLabel(terrain.typeBien), vendu ? 'vendu' : 'à vendre', location && `à ${location}`].filter(Boolean).join(' '),
+      )
+    : undefined;
+  const imageFiche = terrain ? premierePhoto(terrain.medias) : null;
   usePageMetadata({
-    title: terrain ? [vendu ? `${terrain.nom} (vendu)` : terrain.nom, location].filter(Boolean).join(' – ') : 'Fiche du bien',
-    description: terrain?.description?.slice(0, 160) ?? undefined,
+    title: titreFiche,
+    description: descriptionFiche,
+    image: imageFiche,
+    jsonLd: terrain && descriptionFiche ? donneesTerrain(terrain, titreFiche, descriptionFiche, imageFiche) : undefined,
   });
 
   if (loading) return <TerrainDetailSkeleton />;

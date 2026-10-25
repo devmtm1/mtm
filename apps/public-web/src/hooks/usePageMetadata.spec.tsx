@@ -2,8 +2,8 @@ import { render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { PAGE_METADATA_EVENT, usePageMetadata } from './usePageMetadata';
 
-function Page({ title, description }: { title?: string; description?: string }) {
-  usePageMetadata({ title, description });
+function Page(props: Parameters<typeof usePageMetadata>[0]) {
+  usePageMetadata(props);
   return null;
 }
 
@@ -36,5 +36,30 @@ describe('usePageMetadata', () => {
     expect(listener).toHaveBeenCalledTimes(1);
     expect(listener).toHaveReturnedWith('À propos · MTM Immobilier');
     window.removeEventListener(PAGE_METADATA_EVENT, listener);
+  });
+
+  it("pose l'adresse canonique sans paramètres et l'aperçu de partage", () => {
+    window.history.pushState({}, '', '/terrains/abc/?utm=x#haut');
+    render(<Page title="Villa" description="Belle villa" image="https://res.cloudinary.com/x/v.jpg" />);
+    expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(
+      'https://www.mtm-immobilier.com/terrains/abc',
+    );
+    expect(document.querySelector('meta[property="og:image"]')?.getAttribute('content')).toBe(
+      'https://res.cloudinary.com/x/v.jpg',
+    );
+    expect(document.querySelector('meta[property="og:title"]')?.getAttribute('content')).toBe('Villa · MTM Immobilier');
+    expect(document.querySelector('meta[name="robots"]')?.getAttribute('content')).toBe('index, follow');
+  });
+
+  it('demande de ne pas indexer une page privée', () => {
+    render(<Page title="Mes favoris" noindex />);
+    expect(document.querySelector('meta[name="robots"]')?.getAttribute('content')).toBe('noindex, nofollow');
+  });
+
+  it('ajoute les données structurées puis les retire en quittant la page', () => {
+    const { unmount } = render(<Page title="Bien" jsonLd={{ '@type': 'Product', name: 'Villa' }} />);
+    expect(document.querySelector('script[data-page-jsonld]')?.textContent).toContain('"Product"');
+    unmount();
+    expect(document.querySelector('script[data-page-jsonld]')).toBeNull();
   });
 });

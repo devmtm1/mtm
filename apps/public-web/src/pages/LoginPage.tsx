@@ -14,7 +14,7 @@ type ViewMode = 'login' | 'twoFactor' | 'forgotPassword';
 
 export function LoginPage() {
   const { user, bootstrapping } = useAuth();
-  usePageMetadata({ title: 'Connexion à l’espace client' });
+  usePageMetadata({ title: 'Connexion à l’espace client', noindex: true });
   // Lien de réinitialisation reçu par e-mail : ouvre directement le formulaire.
   const [searchParams] = useSearchParams();
   const resetToken = searchParams.get('reset') ?? undefined;

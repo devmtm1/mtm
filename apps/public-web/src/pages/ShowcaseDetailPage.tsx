@@ -4,6 +4,7 @@ import { ArrowLeft, CalendarDays, MapPin, MessageSquare } from 'lucide-react';
 import { ROUTES } from '../routes';
 import { useShowcase, useShowcaseItem } from '../hooks/useShowcase';
 import { usePageMetadata } from '../hooks/usePageMetadata';
+import { descriptionDe, donneesVitrine } from '../utils/seo';
 import { MediaImage } from '../components/ui/MediaImage';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -55,7 +56,18 @@ export function ShowcaseDetailPage() {
 
   usePageMetadata({
     title: item ? `${item.title} – ${info.label}` : info.label,
-    description: item?.description?.slice(0, 160) ?? undefined,
+    description: item
+      ? descriptionDe(item.description, `${info.label} de MTM Immobilier${item.location ? ` – ${item.location}` : ''}`)
+      : undefined,
+    image: item?.imageUrl,
+    jsonLd: item
+      ? donneesVitrine(
+          item,
+          ROUTES.showcaseDetail(item.category, item.id),
+          info.label,
+          item.category === 'projet_a_venir' ? ROUTES.projetsAVenir : ROUTES.realisations,
+        )
+      : undefined,
   });
 
   if (loading) {
