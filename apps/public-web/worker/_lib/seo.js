@@ -1,4 +1,4 @@
-// Aide commune aux fonctions Cloudflare Pages du site public.
+// Aide commune au worker Cloudflare Pages du site public (voir worker/index.js).
 //
 // Le site est une application React : sans JavaScript, une fiche de bien n'a ni titre, ni description,
 // ni photo. Ces fonctions lisent la fiche dans l'API et l'écrivent dans l'en-tête de la page avant de
