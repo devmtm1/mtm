@@ -32,7 +32,7 @@ const TABS: { kind: FavoriteKind; label: string }[] = [
  * catalogue est signalé comme tel au lieu de disparaître sans explication.
  */
 export function FavorisPage() {
-  usePageMetadata({ title: 'Mes favoris', description: 'Les biens et locations que vous avez mis de côté.' });
+  usePageMetadata({ title: 'Mes favoris', description: 'Les biens et locations que vous avez mis de côté.', noindex: true });
   const { entries } = useFavorites();
   const [tab, setTab] = useState<FavoriteKind>('terrain');
   const [loaded, setLoaded] = useState<Record<string, Loaded>>({});

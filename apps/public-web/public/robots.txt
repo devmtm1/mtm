@@ -1,3 +1,5 @@
 User-agent: *
 Allow: /
 Disallow: /espace-client
+
+Sitemap: https://www.mtm-immobilier.com/sitemap.xml

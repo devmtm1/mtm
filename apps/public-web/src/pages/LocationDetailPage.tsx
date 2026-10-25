@@ -31,6 +31,7 @@ import { DetailActionBar } from '../components/mobile/DetailActionBar';
 import { FavoriteButton } from '../components/mobile/FavoriteButton';
 import { LinkButton } from '../components/ui/LinkButton';
 import { usePageMetadata } from '../hooks/usePageMetadata';
+import { descriptionDe, donneesLocation, premierePhoto } from '../utils/seo';
 import { useSiteContact } from '../hooks/useSiteContact';
 import { typeBienLabel } from '../utils/bienLabels';
 import { formatSuperficie } from '../utils/format';
@@ -57,9 +58,16 @@ export function LocationDetailPage() {
   const titre = location ? locationTitle(location, typeLabel) : 'Annonce';
   const place = location ? locationPlace(location) : '';
 
+  const titreAnnonce = location ? [titre, place].filter(Boolean).join(' – ') : 'Annonce de location';
+  const descriptionAnnonce = location
+    ? descriptionDe(location.description, `${typeLabel || 'Bien'} à louer${place ? ` à ${place}` : ''}`)
+    : undefined;
+  const imageAnnonce = location ? premierePhoto(location.medias) : null;
   usePageMetadata({
-    title: location ? [titre, place].filter(Boolean).join(' – ') : 'Annonce de location',
-    description: location?.description?.slice(0, 160) ?? undefined,
+    title: titreAnnonce,
+    description: descriptionAnnonce,
+    image: imageAnnonce,
+    jsonLd: location && descriptionAnnonce ? donneesLocation(location, titreAnnonce, descriptionAnnonce, imageAnnonce) : undefined,
   });
 
   if (loading) return <TerrainDetailSkeleton />;

@@ -3,7 +3,7 @@ import { usePageMetadata } from '../hooks/usePageMetadata';
 import { ROUTES } from '../routes';
 
 export function NotFoundPage() {
-  usePageMetadata({ title: 'Page introuvable' });
+  usePageMetadata({ title: 'Page introuvable', noindex: true });
 
   return (
     <div className="mx-auto flex max-w-md flex-col items-center gap-4 px-4 py-24 text-center sm:px-6">
