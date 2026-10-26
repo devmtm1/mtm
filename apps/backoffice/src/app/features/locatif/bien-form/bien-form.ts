@@ -3,10 +3,11 @@ import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { LucideArrowLeft, LucideImagePlus, LucideSave, LucideX } from '@lucide/angular';
+import { LucideArrowLeft, LucideImagePlus, LucidePlus, LucideSave, LucideX } from '@lucide/angular';
 import { SessionService } from '../../../core/services/session.service';
 import { LocatifApiService } from '../../../core/services/api/locatif-api.service';
 import { ProprietairesApiService } from '../../../core/services/api/proprietaires-api.service';
@@ -15,6 +16,7 @@ import type { ProprietaireSummary } from '../../../core/models/terrain.model';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { TYPES_BIEN, nomPersonne, simpleLabel } from '../locatif-status';
 import { MODES_LOCATION } from '../sejours/sejour-status';
+import { ProprietaireDialog } from '../../terrains/proprietaire-dialog';
 import { TYPES_PHOTOS, nombreOuUndefined, trierFichiers } from '../locatif-form';
 
 /** Fiche bien locatif (section 15 du cahier des charges, étape 1 de J2.1). */
@@ -28,6 +30,7 @@ import { TYPES_PHOTOS, nombreOuUndefined, trierFichiers } from '../locatif-form'
     MatSelectModule,
     LucideArrowLeft,
     LucideImagePlus,
+    LucidePlus,
     LucideSave,
     LucideX,
   ],
@@ -42,6 +45,7 @@ export class BienForm implements OnInit, OnDestroy, AvecModifications {
   private readonly route = inject(ActivatedRoute);
   private readonly notify = inject(NotificationService);
   private readonly sessionService = inject(SessionService);
+  private readonly dialog = inject(MatDialog);
 
   protected readonly saving = signal(false);
   protected readonly accept = TYPES_PHOTOS;
@@ -54,6 +58,8 @@ export class BienForm implements OnInit, OnDestroy, AvecModifications {
   protected readonly types = computed(() => this.options().typesBien ?? Object.keys(TYPES_BIEN));
   /** Désigner un autre responsable que soi relève de la modification des biens. */
   protected readonly peutAssigner = computed(() => this.sessionService.hasPermission('locatif:modifier'));
+  /** Ajouter un propriétaire depuis le formulaire relève de la création de propriétaires. */
+  protected readonly peutAjouterProprietaire = computed(() => this.sessionService.hasPermission('proprietaires:creer'));
 
   protected readonly form = this.formBuilder.nonNullable.group({
     proprietaireId: ['', Validators.required],
@@ -120,7 +126,30 @@ export class BienForm implements OnInit, OnDestroy, AvecModifications {
   }
 
   protected nomProprietaire(proprietaire: ProprietaireSummary): string {
-    return [proprietaire.firstName, proprietaire.lastName].filter(Boolean).join(' ');
+    const nom = [proprietaire.firstName, proprietaire.lastName].filter(Boolean).join(' ');
+    // Le matricule (PRO-2026-0004) distingue deux homonymes sans montrer de coordonnées.
+    return proprietaire.matricule ? `${nom} · ${proprietaire.matricule}` : nom;
+  }
+
+  /** Crée le propriétaire dans une fenêtre, l'ajoute à la liste et le sélectionne : plus besoin de quitter le formulaire. */
+  protected ajouterProprietaire(): void {
+    this.dialog
+      .open(ProprietaireDialog, { width: '520px', maxWidth: 'calc(100vw - 32px)' })
+      .afterClosed()
+      .subscribe((payload: Omit<ProprietaireSummary, 'id'> | undefined) => {
+        if (!payload) return;
+        this.proprietairesApi.create(payload).subscribe({
+          next: (proprietaire) => {
+            this.proprietaires.update((liste) =>
+              [...liste, proprietaire].sort((a, b) => `${a.lastName}${a.firstName}`.localeCompare(`${b.lastName}${b.firstName}`)),
+            );
+            this.form.controls.proprietaireId.setValue(proprietaire.id);
+            this.form.controls.proprietaireId.markAsDirty();
+            this.notify.success('Propriétaire ajouté et sélectionné');
+          },
+          error: (error: unknown) => this.notify.error(error, 'Impossible d’ajouter le propriétaire'),
+        });
+      });
   }
 
   ngOnDestroy(): void {
