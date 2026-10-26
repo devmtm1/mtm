@@ -18,6 +18,9 @@ import { AuditService } from '../audit/audit.service';
 import { TwoFactorService } from './two-factor.service';
 import { JwtPayload, LoginResponse } from './auth.types';
 
+/** Durée pendant laquelle un token de renouvellement tout juste remplacé reste accepté (renouvellements simultanés). */
+export const REFRESH_GRACE_MS = 20_000;
+
 export interface RequestContext {
   ipAddress?: string;
   userAgent?: string;
@@ -160,7 +163,19 @@ export class AuthService {
       where: { tokenHash },
     });
 
-    if (!existing || existing.revokedAt || existing.expiresAt < new Date()) {
+    if (!existing || existing.expiresAt < new Date()) {
+      throw new UnauthorizedException(
+        'Session invalide, veuillez vous reconnecter',
+      );
+    }
+    // Un token remplacé à l'instant reste valable quelques secondes : deux renouvellements simultanés (deux
+    // onglets, plusieurs requêtes refusées en même temps) partent avec le même cookie, et le second ne doit pas
+    // fermer la session. Une déconnexion ou une révocation (sans rotation) n'est jamais tolérée.
+    const dejaRemplace =
+      existing.revokedAt !== null &&
+      existing.rotatedAt instanceof Date &&
+      Date.now() - existing.rotatedAt.getTime() <= REFRESH_GRACE_MS;
+    if (existing.revokedAt && !dejaRemplace) {
       throw new UnauthorizedException(
         'Session invalide, veuillez vous reconnecter',
       );
@@ -176,11 +191,17 @@ export class AuthService {
     // entre les deux étapes laissait l'utilisateur sans aucun token valide.
     const accessToken = this.generateAccessToken(user);
     const rawToken = randomBytes(64).toString('hex');
+    const maintenant = new Date();
     await this.prisma.$transaction([
-      this.prisma.refreshToken.update({
-        where: { id: existing.id },
-        data: { revokedAt: new Date() },
-      }),
+      // Déjà remplacé (tolérance) : on ne touche plus à l'ancien token, on en émet simplement un nouveau.
+      ...(dejaRemplace
+        ? []
+        : [
+            this.prisma.refreshToken.update({
+              where: { id: existing.id },
+              data: { revokedAt: maintenant, rotatedAt: maintenant },
+            }),
+          ]),
       this.prisma.refreshToken.create({
         data: this.refreshTokenData(user.id, rawToken, context),
       }),

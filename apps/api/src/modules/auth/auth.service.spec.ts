@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { AuthService } from './auth.service';
+import { AuthService, REFRESH_GRACE_MS } from './auth.service';
 import { TwoFactorService } from './two-factor.service';
 import { UsersService } from '../users/users.service';
 import { MailService } from '../../common/mail/mail.service';
@@ -312,7 +312,51 @@ describe('AuthService', () => {
       expect(result.refreshToken).toEqual(expect.any(String));
       expect(prismaMock.refreshToken.update).toHaveBeenCalledWith({
         where: { id: 'rt-1' },
-        data: { revokedAt: expect.any(Date) },
+        data: { revokedAt: expect.any(Date), rotatedAt: expect.any(Date) },
+      });
+    });
+
+    describe('renouvellements simultanés', () => {
+      const jetonRemplace = (ilYaMs: number, rotated = true) => ({
+        id: 'rt-1',
+        userId: baseUser.id,
+        revokedAt: new Date(Date.now() - ilYaMs),
+        rotatedAt: rotated ? new Date(Date.now() - ilYaMs) : null,
+        expiresAt: new Date(Date.now() + 60_000),
+      });
+
+      it('accepte un token remplacé à l’instant et en émet un nouveau, sans toucher à l’ancien', async () => {
+        prismaMock.refreshToken.findUnique.mockResolvedValue(
+          jetonRemplace(3_000),
+        );
+        usersService.findById.mockResolvedValue(baseUser);
+
+        const result = await service.refresh('deja-remplace', {});
+
+        expect(result.accessToken).toBe('signed.jwt.token');
+        expect(result.refreshToken).toEqual(expect.any(String));
+        expect(prismaMock.refreshToken.update).not.toHaveBeenCalled();
+        expect(prismaMock.refreshToken.create).toHaveBeenCalled();
+      });
+
+      it('refuse un token remplacé depuis plus longtemps que la tolérance', async () => {
+        prismaMock.refreshToken.findUnique.mockResolvedValue(
+          jetonRemplace(REFRESH_GRACE_MS + 5_000),
+        );
+
+        await expect(service.refresh('trop-ancien', {})).rejects.toThrow(
+          UnauthorizedException,
+        );
+      });
+
+      it('ne tolère jamais un token révoqué autrement que par rotation (déconnexion, révocation)', async () => {
+        prismaMock.refreshToken.findUnique.mockResolvedValue(
+          jetonRemplace(1_000, false),
+        );
+
+        await expect(service.refresh('deconnecte', {})).rejects.toThrow(
+          UnauthorizedException,
+        );
       });
     });
   });

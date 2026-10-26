@@ -80,7 +80,15 @@ export class Login {
   }
 
   protected readonly loading = signal(false);
-  protected readonly errorMessage = signal<string | null>(null);
+  /**
+   * Arrivée depuis une panne passagère (voir authGuard) : la session n'est pas perdue, le serveur ne répondait
+   * simplement pas. On le dit, pour que personne ne croie avoir été déconnecté sans raison.
+   */
+  protected readonly errorMessage = signal<string | null>(
+    this.route.snapshot.queryParamMap.get('raison') === 'serveur'
+      ? 'Le serveur ne répond pas pour le moment. Votre session n’est pas perdue : patientez quelques secondes, puis rechargez la page ou reconnectez-vous.'
+      : null,
+  );
   /** true une fois les identifiants validés, en attente du code 2FA */
   protected readonly awaitingTwoFactor = signal(false);
 

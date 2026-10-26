@@ -9,6 +9,7 @@ import { Header } from './header/header';
 import { SousNavigation } from './sous-navigation/sous-navigation';
 import { BarreProgression } from './barre-progression/barre-progression';
 import { BandeauConnexion } from './bandeau-connexion/bandeau-connexion';
+import { RenouvellementSessionService } from '../core/services/renouvellement-session.service';
 
 const SIDEBAR_COLLAPSED_KEY = 'mtm.sidebar-collapsed';
 
@@ -30,6 +31,8 @@ const SIDEBAR_COLLAPSED_KEY = 'mtm.sidebar-collapsed';
 export class Shell {
   private readonly breakpointObserver = inject(BreakpointObserver);
   private readonly router = inject(Router);
+  // Renouvelle le jeton d'accès avant son expiration : les requêtes partent presque toujours avec un jeton valide.
+  private readonly renouvellement = inject(RenouvellementSessionService);
 
   /** Sidebar compact (icônes seules) — persisté entre les sessions. */
   readonly collapsed = signal(Shell.readStoredCollapsed());
