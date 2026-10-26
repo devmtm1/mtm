@@ -1,7 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { BandeauDemarches, IMAGE_BANDEAU_DEMARCHES } from './BandeauDemarches';
+import { IMAGE_BANDEAU_DEMARCHES, decouperEngagement } from '../../utils/demarches';
+import { BandeauDemarches } from './BandeauDemarches';
 
 function afficher(surcharges: Partial<Parameters<typeof BandeauDemarches>[0]> = {}) {
   const onDemande = vi.fn();
@@ -28,8 +29,11 @@ describe('BandeauDemarches', () => {
     expect(titre.querySelectorAll('span')).toHaveLength(2);
     expect(titre.querySelectorAll('span')[1]).toHaveTextContent('administratives');
     expect(screen.getByText("Vous envisagez d'acheter un terrain ?")).toBeInTheDocument();
-    expect(screen.getByText('Réponse sous 24 à 48h')).toBeInTheDocument();
-    expect(screen.getByText('Devis gratuit, sans engagement')).toBeInTheDocument();
+    // Chaque engagement est coupé en deux lignes, la fin en rouge.
+    expect(screen.getByText('Réponse sous')).toBeInTheDocument();
+    expect(screen.getByText('24 à 48h')).toHaveClass('text-mtm-accent');
+    expect(screen.getByText('Devis gratuit,')).toBeInTheDocument();
+    expect(screen.getByText('sans engagement')).toHaveClass('text-mtm-accent');
   });
 
   it('garde un titre d’un seul mot sur une seule ligne', () => {
@@ -46,5 +50,16 @@ describe('BandeauDemarches', () => {
     const onDemande = afficher({ bouton: 'Déposer ma demande' });
     await userEvent.click(screen.getByRole('button', { name: 'Déposer ma demande' }));
     expect(onDemande).toHaveBeenCalledTimes(1);
+  });
+
+  it('coupe les engagements sans jamais changer le texte saisi', () => {
+    expect(decouperEngagement('Réponse sous 24 à 48h')).toEqual({ haut: 'Réponse sous', bas: '24 à 48h', rouge: true });
+    expect(decouperEngagement('Devis gratuit, sans engagement')).toEqual({ haut: 'Devis gratuit,', bas: 'sans engagement', rouge: true });
+    expect(decouperEngagement("Tarif adapté à la nature et à l'urgence de la vérification")).toEqual({
+      haut: 'Tarif adapté',
+      bas: "à la nature et à l'urgence de la vérification",
+      rouge: false,
+    });
+    expect(decouperEngagement('Suivi à distance')).toEqual({ haut: 'Suivi à distance', bas: null, rouge: false });
   });
 });

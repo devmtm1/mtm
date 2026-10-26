@@ -48,7 +48,12 @@ Trois actions :
 
 ### Le bandeau de la page « Démarches administratives »
 
-Dans **Site web › Contenus du site**, rubrique **Démarches administratives**, tout le bandeau du haut de la page se modifie : la **photo de fond** (paysage, au moins 1600 × 900 px, **sans texte dessus** : elle s’affiche à droite, fondue dans le blanc), la **mention** au-dessus du titre, le **titre** (le premier mot s’affiche en bleu, la suite en rouge), le **texte d’introduction**, les **engagements** (une ligne chacun, trois au plus) et le **texte du bouton** rouge, qui ouvre le formulaire de demande. Un emplacement laissé vide affiche le texte ou la photo par défaut. Ne figez jamais un tarif dans ces textes : les prix se donnent sur devis.
+Dans **Site web › Contenus du site**, rubrique **Démarches administratives**, tout le bandeau du haut de la page se modifie : la **photo de fond** (cliquez sur **Renseigner** puis choisissez une image JPEG, PNG ou WebP, 10 Mo maximum ; **Retirer l’image** rend la photo par défaut), la **mention** au-dessus du titre, le **titre**, le **texte d’introduction**, les **engagements** et le **texte du bouton** rouge, qui ouvre le formulaire de demande.
+
+- **Photo** : format paysage, au moins 1600 × 900 px, **sans texte dessus**. Le bandeau est pleine largeur ; le texte est à gauche sur un fondu blanc, donc les sujets de la photo se placent de préférence **à droite** (comme les documents et la maquette de villa de la photo par défaut).
+- **Titre** : le premier mot s’affiche en bleu, la suite en rouge.
+- **Engagements** : une ligne chacun, trois au plus. Chaque ligne est coupée en deux : à la virgule (« Devis gratuit, **sans engagement** »), sinon avant le premier chiffre (« Réponse sous **24 à 48h** ») ; la seconde partie s’affiche alors en rouge. Sans virgule ni chiffre, la fin s’affiche en petit gris (« Tarif adapté — à la nature et à l’urgence… »).
+- N’y figez jamais un tarif : les prix se donnent sur devis. Un emplacement laissé vide affiche le texte ou la photo par défaut.
 
 ## Les réalisations et projets
 

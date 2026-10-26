@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { BandeauDemarches, IMAGE_BANDEAU_DEMARCHES } from '../components/demarches/BandeauDemarches';
+import { BandeauDemarches } from '../components/demarches/BandeauDemarches';
+import { IMAGE_BANDEAU_DEMARCHES } from '../utils/demarches';
 import { ContactForm } from '../components/contact/ContactForm';
 import { ContactModal } from '../components/contact/ContactModal';
 import { DemandeWhatsAppCta } from '../components/contact/DemandeWhatsAppCta';
