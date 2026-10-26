@@ -260,7 +260,7 @@ export class ImmeublesService {
     await this.access.ensureImmeubleAccessible(id, user);
     const actuel = await this.prisma.immeubleLocatif.findUniqueOrThrow({
       where: { id },
-      select: { proprietaireId: true },
+      select: { proprietaireId: true, tauxGestion: true },
     });
 
     let proprietaireChange = false;
@@ -309,6 +309,24 @@ export class ImmeublesService {
           ...(dto.notes !== undefined ? { notes: dto.notes } : {}),
         },
       });
+      // Les reversements lisent le taux de chaque logement : la propriété le leur transmet, sauf à ceux qui ont reçu un
+      // taux propre (différent de l'ancien taux de la propriété).
+      const ancienTaux =
+        actuel.tauxGestion === null || actuel.tauxGestion === undefined
+          ? null
+          : Number(actuel.tauxGestion);
+      if (dto.tauxGestion !== undefined && dto.tauxGestion !== ancienTaux) {
+        await tx.bienLocatif.updateMany({
+          where: {
+            immeubleId: id,
+            OR: [
+              { tauxGestion: null },
+              ...(ancienTaux === null ? [] : [{ tauxGestion: ancienTaux }]),
+            ],
+          },
+          data: { tauxGestion: dto.tauxGestion },
+        });
+      }
       if (proprietaireChange) {
         await tx.bienLocatif.updateMany({
           where: { immeubleId: id },

@@ -396,6 +396,11 @@ doivent être validées avant d’être considérées comme acceptées.
 | Import des biens depuis un tableur | `lecture-tableur.spec.ts`, `docs/IMPORT_TABLEUR.md` | Import d’un vrai fichier | ☐ |
 | Identité de l’entreprise sur tous les PDF (logo, NINEA, RCCM, capital, banque) | `test/entreprise.e2e-spec.ts`, `societe.spec.ts` | Saisie des vraies mentions, aperçu PDF contrôlé, logo téléversé | ☐ |
 | Boîtes de confirmation communes du back-office | `confirm-dialog.spec.ts` | Suppression d’une pièce : message clair, bouton nommé | ☐ |
+| Propriétés (villa divisée, immeuble, résidence) : plusieurs logements, synthèse d’occupation et de loyers, rattachement d’un bien, taux de gestion transmis aux logements, lien sur le site public | `immeubles.service.spec.ts`, `immeubles.helper.spec.ts`, `biens.service.spec.ts`, `AutresLogements.spec.tsx` | Créer une vraie villa avec ses appartements, vérifier la fiche, l’annonce publique et un relevé de gestion | ☐ |
+| Coordonnées des propriétaires réservées à l’administrateur, matricule PRO-AAAA-NNNN | `coordonnees.spec.ts`, `proprietaires.service.spec.ts` | Vérifier ce que voit chaque rôle sur une fiche propriétaire | ☐ |
+| Suivi anonyme des visites du site et fréquentation par bien (sans cookie, équipe exclue) | `visites.service.spec.ts` | Comparer les chiffres à Cloudflare Analytics sur une semaine | ☐ |
+| Session du back-office : fin des déconnexions intempestives (renouvellement unique, tolérance de rotation) | `auth.service.spec.ts`, `renouvellement-session.service.spec.ts` | Travailler une journée entière sans retour à la page de connexion | ☐ |
+| Refonte des pages Démarches, Locations, Réalisations et Projets à venir, FAQ, référencement (plan du site, aperçus, données structurées) | `BandeauDemarches.spec.tsx`, `CarteDemarche.spec.tsx`, `FaqDemarches.spec.tsx`, `LocationCard.spec.tsx` | Relire les textes et les photos sur téléphone ; contrôler dans Search Console | ☐ |
 
 ---
 
