@@ -70,6 +70,25 @@ chaque application, `docs/DOCKER.md` pour l'usage détaillé de Docker, et
 et `docs/CI.md` pour le détail du pipeline d'intégration continue, et
 `docs/BACKUP.md` pour les sauvegardes et la procédure de restauration. Le **guide d’utilisation de l’équipe** (une page web, `/manuel/` sur le back-office) se maintient dans `docs/manuel/` — voir `docs/manuel/README.md`.
 
+### Tester le site sans rien pousser
+
+```bash
+npm run dev:local
+```
+
+Une seule commande démarre, **sur ce poste seulement**, une base PostgreSQL jetable avec des données
+fictives (biens, locations…), l'API et le site public qui se rafraîchit à chaque enregistrement d'un
+fichier (adresse affichée à la fin, en général `http://localhost:5173`). `Ctrl+C` arrête tout et détruit
+la base fictive. Rien n'est envoyé en production : ni base réelle, ni e-mail ; les images envoyées vont dans
+un dossier Cloudflare/Cloudinary de test (`mtm-local-test`).
+
+Pour essayer aussi le back-office sur la même API, ouvrir un second terminal : `npm run backoffice:dev`
+(`http://localhost:4200`), compte `fatou.diop@mtm.test` / `Captures-2026!x` (commercial de démonstration).
+
+Si le port 3000 est déjà pris (une API lancée à la main), l'arrêter d'abord. Le suivi des visites est
+désactivé en local, et les fonctions Cloudflare (plan du site, aperçus de partage) ne tournent pas ici : elles
+ne se testent qu'une fois déployé.
+
 ## Environnements
 
 Trois environnements, conformément à la section 27 du cahier des charges :

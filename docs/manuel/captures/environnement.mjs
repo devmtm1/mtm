@@ -122,8 +122,8 @@ function servirDossier(dossier, port) {
  * @param {{ reconstruireFront?: boolean }} options
  * @returns {Promise<{ urlApi: string, urlFront: string, urlBase: string, arreter: () => Promise<void> }>}
  */
-export async function demarrer({ reconstruireFront = true } = {}) {
-  for (const port of [PORT_API, PORT_FRONT]) {
+export async function demarrer({ reconstruireFront = true, sansFront = false, reconstruireApi = false, envSupplementaire = {} } = {}) {
+  for (const port of sansFront ? [PORT_API] : [PORT_API, PORT_FRONT]) {
     if (await portOccupe(port)) {
       throw new Error(`Le port ${port} est déjà utilisé : arrêtez l'API ou le back-office lancés à la main.`);
     }
@@ -175,6 +175,7 @@ export async function demarrer({ reconstruireFront = true } = {}) {
       LOGIN_RATE_LIMIT_MAX: '1000',
       GLOBAL_RATE_LIMIT_MAX: '100000',
       CONTACT_RATE_LIMIT_MAX: '1000',
+      ...envSupplementaire,
     };
 
     // 2. Migrations et données de base (rôles, droits, compte administrateur).
@@ -184,13 +185,15 @@ export async function demarrer({ reconstruireFront = true } = {}) {
     if ((await lancer('npm', ['run', 'prisma:seed'], { cwd: API, env })) !== 0) throw new Error('Initialisation en échec');
 
     // 3. API.
-    if (!existsSync(join(API, 'dist', 'main.js'))) {
+    if (reconstruireApi || !existsSync(join(API, 'dist', 'main.js'))) {
       console.log("[captures] Compilation de l'API…");
       if ((await lancer('npm', ['run', 'build'], { cwd: API, env })) !== 0) throw new Error("Compilation de l'API en échec");
     }
     console.log(`[captures] API sur le port ${PORT_API}…`);
     enfantApi = spawn('node', ['dist/main.js'], { cwd: API, env: { ...process.env, ...env }, stdio: process.env.CAPTURES_DEBUG ? 'inherit' : 'ignore', shell: false });
-    await attendre(`http://localhost:${PORT_API}/api/health/live`, 40_000);
+    await attendre(`http://localhost:${PORT_API}/api/health/live`, 120_000);
+
+    if (sansFront) return { urlApi: `http://localhost:${PORT_API}/api`, urlFront: null, urlBase, arreter };
 
     // 4. Back-office (build de développement : il parle à l'API locale).
     // Dossier à part : le build de développement ne doit jamais écraser le build de production.
