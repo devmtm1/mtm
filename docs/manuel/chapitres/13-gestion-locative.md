@@ -44,6 +44,11 @@ Quand un propriétaire confie **une villa divisée en appartements, un immeuble 
 2. Dans *Les logements*, indiquez « 4 logements, repères A » puis **Générer les lignes** : A1 à A4 apparaissent, à compléter (type, chambres, surface, loyer). Vous pouvez aussi les ajouter plus tard.
 3. La **fiche de la propriété** affiche le nombre de logements, le **taux d’occupation**, les **loyers attendus** par mois, les **impayés**, puis la liste des logements avec leur statut et leur locataire. **Ajouter un logement** crée le suivant ; un clic sur une ligne ouvre la fiche du logement.
 
+Ensuite, depuis la fiche de la propriété :
+- **Modifier** corrige le nom, l’adresse, le taux de gestion ou le responsable. Le **propriétaire** ne peut plus changer dès qu’un bail existe sur l’un des logements.
+- **Rattacher un bien existant** range dans la propriété un bien déjà créé du même propriétaire (avec son repère).
+- Sur la fiche du **propriétaire**, chaque bien en gestion indique la propriété et le repère dont il fait partie.
+
 À savoir :
 - Un logement porte le **même propriétaire** que sa propriété. On peut aussi rattacher un bien en le créant (champ *Propriété*, visible quand le propriétaire en possède une).
 - Sur le **site public**, l’annonce d’un logement indique « Logement A2 · Villa Fall » et propose les **autres logements libres** de la même propriété. L’adresse exacte n’est jamais publiée.

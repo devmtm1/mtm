@@ -37,6 +37,8 @@ export class Immeubles implements OnInit {
   protected readonly premierChargement = signal(true);
   protected readonly immeubles = signal<ImmeubleResume[]>([]);
   protected readonly total = signal(0);
+  /** Le chargement a échoué : on le dit, au lieu d'afficher une liste vide trompeuse. */
+  protected readonly erreurChargement = signal(false);
   protected readonly recherche = new FormControl('', { nonNullable: true });
   protected readonly canCreate = computed(() => this.session.hasPermission('locatif:creer'));
 
@@ -55,6 +57,10 @@ export class Immeubles implements OnInit {
     return nomPropre(immeuble.proprietaire);
   }
 
+  protected recharger(): void {
+    this.charger();
+  }
+
   protected ouvrir(immeuble: ImmeubleResume): void {
     void this.router.navigate(['/locatif/immeubles', immeuble.id]);
   }
@@ -68,10 +74,12 @@ export class Immeubles implements OnInit {
       next: (page) => {
         this.immeubles.set(page.items);
         this.total.set(page.total);
+        this.erreurChargement.set(false);
         this.premierChargement.set(false);
       },
       error: (error: unknown) => {
         this.premierChargement.set(false);
+        this.erreurChargement.set(true);
         this.notify.error(error, 'Impossible de charger les propriétés');
       },
     });

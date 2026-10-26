@@ -12,6 +12,16 @@
   }
 }
 
+.card-head__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ajout__bien {
+  min-width: min(420px, 100%);
+}
+
 .ajout {
   display: flex;
   flex-wrap: wrap;

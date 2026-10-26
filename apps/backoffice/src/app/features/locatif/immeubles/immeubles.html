@@ -25,6 +25,11 @@
 
     @if (premierChargement()) {
       <div class="skeleton" style="height: 180px"></div>
+    } @else if (erreurChargement()) {
+      <p class="vide">
+        Impossible de charger les propriétés pour le moment.
+        <button mat-button type="button" (click)="recharger()">Réessayer</button>
+      </p>
     } @else if (immeubles().length === 0) {
       <p class="vide">
         @if (recherche.value) {

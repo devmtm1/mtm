@@ -17,6 +17,11 @@
           {{ i.adresse }}{{ i.commune ? ', ' + i.commune : '' }} · {{ proprietaire(i) }}
         </p>
       </div>
+      @if (canEdit()) {
+        <div class="detail-header__actions">
+          <button mat-stroked-button type="button" (click)="modifier()">Modifier</button>
+        </div>
+      }
     </header>
 
     <section class="kpi-row" aria-label="Synthèse de la propriété">
@@ -73,12 +78,45 @@
     <section class="page-card">
       <div class="card-head">
         <h2>Logements</h2>
-        @if (canCreate()) {
-          <button mat-stroked-button type="button" (click)="ajoutOuvert.set(!ajoutOuvert())">
-            <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Ajouter un logement
-          </button>
-        }
+        <div class="card-head__actions">
+          @if (canEdit()) {
+            <button mat-stroked-button type="button" (click)="basculerRattachement()">
+              Rattacher un bien existant
+            </button>
+          }
+          @if (canCreate()) {
+            <button mat-stroked-button type="button" (click)="ajoutOuvert.set(!ajoutOuvert())">
+              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Ajouter un logement
+            </button>
+          }
+        </div>
       </div>
+
+      @if (rattachementOuvert()) {
+        <form class="ajout" [formGroup]="rattachement" (ngSubmit)="rattacher()">
+          <mat-form-field appearance="outline" class="ajout__bien">
+            <mat-label>Bien du propriétaire</mat-label>
+            <mat-select formControlName="bienId">
+              @for (bien of rattachables(); track bien.id) {
+                <mat-option [value]="bien.id">{{ libelleBien(bien) }}</mat-option>
+              }
+            </mat-select>
+            @if (rattachables().length === 0) {
+              <mat-hint
+                >Aucun autre bien de ce propriétaire n’est libre de tout rattachement.</mat-hint
+              >
+            }
+            <mat-error>Choisissez le bien.</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Repère</mat-label>
+            <input matInput formControlName="numeroLot" placeholder="A5, 2e étage…" />
+          </mat-form-field>
+          <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+            Rattacher
+          </button>
+        </form>
+      }
 
       @if (ajoutOuvert()) {
         <form class="ajout" [formGroup]="ajout" (ngSubmit)="ajouterLogement()">
