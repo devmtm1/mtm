@@ -139,7 +139,6 @@ export async function peuplerSite({ api, urlBase, donnees }) {
         }),
       );
       if (!bien) continue;
-      louees++;
       for (const [rang, cle] of PHOTOS[jeu].entries()) {
         await bd.query(
           `INSERT INTO biens_locatifs_medias (id, "bienLocatifId", type, "storageKey", "resourceType", title, "sortOrder")
@@ -147,6 +146,9 @@ export async function peuplerSite({ api, urlBase, donnees }) {
           [bien.id, cle, `Photo ${rang + 1}`, rang],
         );
       }
+      // Un bien n'est jamais publié à la création : la publication exige un loyer et au moins une photo. On publie
+      // donc une fois les photos posées, comme le ferait le back-office.
+      if (await essayer(`publication ${titre}`, () => api.patch(`/locatif/biens/${bien.id}`, { publie: true, misEnAvant: enAvant }))) louees++;
     }
     compte.locations = `${louees} annonces`;
 
