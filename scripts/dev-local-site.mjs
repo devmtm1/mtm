@@ -152,6 +152,38 @@ export async function peuplerSite({ api, urlBase, donnees }) {
     }
     compte.locations = `${louees} annonces`;
 
+    // 2 bis. Une villa divisée en quatre appartements : la propriété et ses logements, deux d'entre eux publiés.
+    const villa = await essayer('propriété démo', () =>
+      api.post('/locatif/immeubles', {
+        nom: 'Villa Fall',
+        type: 'villa',
+        proprietaireId: proprietaires[0].id,
+        adresse: 'Sacré-Cœur 3, Dakar',
+        commune: 'Sacré-Cœur',
+        region: 'Dakar',
+        logements: [
+          { numeroLot: 'A1', type: 'appartement', nombreChambres: 2, nombrePieces: 3, superficie: 70, loyerMensuel: 250000 },
+          { numeroLot: 'A2', type: 'appartement', nombreChambres: 2, nombrePieces: 3, superficie: 70, loyerMensuel: 250000 },
+          { numeroLot: 'A3', type: 'appartement', nombreChambres: 1, nombrePieces: 2, superficie: 45, loyerMensuel: 180000 },
+          { numeroLot: 'A4', type: 'studio', nombreChambres: 0, nombrePieces: 1, superficie: 28, loyerMensuel: 120000 },
+        ],
+      }),
+    );
+    if (villa) {
+      const logements = await bd.query('SELECT id FROM biens_locatifs WHERE "immeubleId" = $1 ORDER BY "numeroLot"', [villa.id]);
+      for (const [rang, logement] of logements.rows.slice(0, 3).entries()) {
+        for (const [ordre, cle] of PHOTOS.appartement?.entries() ?? PHOTOS[LOCATIONS[0][10]].entries()) {
+          await bd.query(
+            `INSERT INTO biens_locatifs_medias (id, "bienLocatifId", type, "storageKey", "resourceType", title, "sortOrder")
+             VALUES (gen_random_uuid(), $1, 'photo', $2, 'image', $3, $4)`,
+            [logement.id, cle, `Photo ${ordre + 1}`, ordre],
+          );
+        }
+        await essayer(`publication logement ${rang + 1}`, () => api.patch(`/locatif/biens/${logement.id}`, { publie: true }));
+      }
+      compte.propriete = 'Villa Fall, 4 logements (3 publiés)';
+    }
+
     // 3. Réalisations et projets à venir.
     let vitrine = 0;
     for (const [categorie, liste] of [['realisation', REALISATIONS], ['projet_a_venir', PROJETS]]) {
