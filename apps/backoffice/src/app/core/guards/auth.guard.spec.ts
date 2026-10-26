@@ -20,7 +20,10 @@ const UTILISATEUR = {
   twoFactorEnabled: false,
 };
 
-type UrlFactice = { commandes: string[]; extras: unknown };
+interface UrlFactice {
+  commandes: string[];
+  extras: unknown;
+}
 
 describe('authGuard : restauration de la session', () => {
   let controle: HttpTestingController;
