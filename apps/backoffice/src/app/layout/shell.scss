@@ -18,7 +18,8 @@
 
 .shell__sidenav {
   width: var(--sidebar-width);
-  border-right: 1px solid var(--mtm-border);
+  border-right: 1px solid var(--mtm-sb-sep);
+  background-color: var(--mtm-sb-bg);
   transition: width 0.2s ease;
   box-shadow: none;
 }

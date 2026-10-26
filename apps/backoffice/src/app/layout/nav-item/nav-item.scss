@@ -1,6 +1,6 @@
 /* ==========================================================================
-   Ligne du menu latéral — état actif discret :
-   fond très clair, texte et icône dans la couleur principale.
+   Ligne du menu latéral — texte ardoise, icônes gris-bleu ;
+   la page courante : fond bleu très clair, texte et icône en bleu doux.
    ========================================================================== */
 
 :host {
@@ -18,7 +18,7 @@
   border: none;
   border-radius: 12px;
   background: transparent;
-  color: var(--mtm-text-muted);
+  color: var(--mtm-sb-text);
   font-family: inherit;
   font-size: 0.9rem;
   font-weight: 500;
@@ -31,37 +31,32 @@
     color 0.15s ease;
 
   &:hover {
-    background-color: var(--mtm-bg-hover);
-    color: var(--mtm-text-dark);
+    background-color: var(--mtm-sb-hover);
+    color: var(--mtm-sb-text);
+
+    .nav-item__icon {
+      color: var(--mtm-sb-active);
+    }
   }
 
   &:focus-visible {
-    outline: 2px solid var(--mtm-primary-light);
+    outline: 2px solid var(--mtm-sb-active);
     outline-offset: -2px;
   }
 }
 
 .nav-item--active {
-  background-color: var(--mtm-primary-subtle);
-  color: var(--mtm-primary);
+  background-color: var(--mtm-sb-active-bg);
+  color: var(--mtm-sb-active);
   font-weight: 600;
 
-  /* Une barre franche à gauche : la page courante se repère d'un coup d'œil,
-     même quand le fond clair se confond avec celui du menu. */
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 9px;
-    bottom: 9px;
-    width: 3px;
-    border-radius: 0 3px 3px 0;
-    background-color: var(--mtm-primary);
+  .nav-item__icon {
+    color: var(--mtm-sb-active);
   }
 
   &:hover {
-    background-color: var(--mtm-primary-subtle);
-    color: var(--mtm-primary);
+    background-color: var(--mtm-sb-active-bg);
+    color: var(--mtm-sb-active);
   }
 }
 
@@ -69,6 +64,8 @@
   width: 20px;
   height: 20px;
   flex-shrink: 0;
+  color: var(--mtm-sb-icon);
+  transition: color 0.15s ease;
 }
 
 .nav-item__label {
@@ -108,7 +105,7 @@
   right: 14px;
   width: 9px;
   height: 9px;
-  border: 2px solid var(--mtm-card-bg);
+  border: 2px solid var(--mtm-sb-bg);
   border-radius: 50%;
   background: var(--mtm-accent);
 }
