@@ -55,6 +55,10 @@ Dans **Site web › Contenus du site**, rubrique **Démarches administratives**,
 - **Engagements** : une ligne chacun, trois au plus. Chaque ligne est coupée en deux : à la virgule (« Devis gratuit, **sans engagement** »), sinon avant le premier chiffre (« Réponse sous **24 à 48h** ») ; la seconde partie s’affiche alors en rouge. Sans virgule ni chiffre, la fin s’affiche en petit gris (« Tarif adapté — à la nature et à l’urgence… »).
 - N’y figez jamais un tarif : les prix se donnent sur devis. Un emplacement laissé vide affiche le texte ou la photo par défaut.
 
+### Le corps de la page « Démarches administratives »
+
+Sous le bandeau, la page présente chaque **démarche** sur une carte (icône, titre, description) avec un bouton **Faire une demande** : le visiteur qui clique voit le formulaire s’ouvrir avec cette démarche déjà choisie. Viennent ensuite la **frise des étapes** de la vérification avant achat, puis la section **Parlons de votre projet** (engagements, accès WhatsApp de la direction, formulaire). Dans **Contenus du site**, rubrique **Démarches administratives**, vous modifiez : les **prestations** et les **services techniques** (une ligne « Titre | Description » chacune ; l’icône est choisie d’après le titre), les **étapes** (même format, la dernière s’affiche en rouge) et le **texte de la section « Parlons de votre projet »**.
+
 ## Les réalisations et projets
 
 **Site web › Réalisations & projets** : le **portfolio illustré** du site. Chaque carte montre une **photo**, un **titre**, un **lieu** et une **courte description** ; elle n’apparaît sur le site **qu’une fois publiée**.
