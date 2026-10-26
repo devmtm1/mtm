@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BandeauDemarches } from '../components/demarches/BandeauDemarches';
+import { BandeauDemarches, IMAGE_BANDEAU_DEMARCHES } from '../components/demarches/BandeauDemarches';
 import { ContactForm } from '../components/contact/ContactForm';
 import { ContactModal } from '../components/contact/ContactModal';
 import { DemandeWhatsAppCta } from '../components/contact/DemandeWhatsAppCta';
@@ -8,7 +8,7 @@ import { usePageMetadata } from '../hooks/usePageMetadata';
 import { useSiteContact } from '../hooks/useSiteContact';
 
 const FALLBACK_INTRO =
-  "Vous envisagez d'acheter un terrain ou une villa, notamment depuis l'étranger ? Notre équipe se déplace pour vérifier le bien avant votre engagement. Tarif communiqué sur devis selon la nature du dossier.";
+  "Vous envisagez d'acheter un terrain ou une villa, notamment depuis l'étranger ? Notre équipe se déplace pour vérifier le bien avant votre engagement.";
 
 const FALLBACK_STEPS: EditableStep[] = [
   { title: 'Demande', description: 'Vous nous transmettez le bien concerné et vos pièces disponibles.' },
@@ -87,7 +87,7 @@ const WHATSAPP_MESSAGE =
   'Bonjour, je souhaite faire une demande auprès de MTM.';
 
 export function DemarchesPage() {
-  const { text, lines, steps } = useEditableContent();
+  const { text, lines, steps, loading: contenuEnCours } = useEditableContent();
   const { whatsappDemarches } = useSiteContact();
   const [demandeOuverte, setDemandeOuverte] = useState(false);
 
@@ -110,12 +110,16 @@ export function DemarchesPage() {
 
   return (
     <div>
-      {/* Le bandeau est l'image de la marque (titre, engagements et bouton compris) : celui qui clique sur
-          « Faire une demande » a déjà décidé, on lui ouvre la fenêtre plutôt que de le faire défiler.
-          La section de bas de page reste en place pour celui qui lit tout et arrive convaincu. */}
+      {/* Celui qui clique sur « Faire une demande » a déjà décidé : on lui ouvre la fenêtre plutôt que de le
+          faire défiler. La section de bas de page reste en place pour celui qui lit tout et arrive convaincu. */}
       <BandeauDemarches
+        eyebrow={text('demarches.eyebrow', 'Nos services')}
+        title={text('demarches.title', 'Démarches administratives')}
         description={text('demarches.intro', FALLBACK_INTRO)}
-        reassurance={lines('demarches.reassurance', FALLBACK_REASSURANCE)}
+        points={lines('demarches.reassurance', FALLBACK_REASSURANCE)}
+        bouton={text('demarches.bouton', 'Faire une demande')}
+        image={text('demarches.image', IMAGE_BANDEAU_DEMARCHES)}
+        chargement={contenuEnCours}
         onDemande={() => setDemandeOuverte(true)}
       />
 

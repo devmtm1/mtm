@@ -46,6 +46,10 @@ Trois actions :
 2. Écrivez le texte (un retour à la ligne coupe le titre en deux lignes, par exemple).
 3. **Publier**.
 
+### Le bandeau de la page « Démarches administratives »
+
+Dans **Site web › Contenus du site**, rubrique **Démarches administratives**, tout le bandeau du haut de la page se modifie : la **photo de fond** (paysage, au moins 1600 × 900 px, **sans texte dessus** : elle s’affiche à droite, fondue dans le blanc), la **mention** au-dessus du titre, le **titre** (le premier mot s’affiche en bleu, la suite en rouge), le **texte d’introduction**, les **engagements** (une ligne chacun, trois au plus) et le **texte du bouton** rouge, qui ouvre le formulaire de demande. Un emplacement laissé vide affiche le texte ou la photo par défaut. Ne figez jamais un tarif dans ces textes : les prix se donnent sur devis.
+
 ## Les réalisations et projets
 
 **Site web › Réalisations & projets** : le **portfolio illustré** du site. Chaque carte montre une **photo**, un **titre**, un **lieu** et une **courte description** ; elle n’apparaît sur le site **qu’une fois publiée**.

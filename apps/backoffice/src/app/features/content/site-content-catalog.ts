@@ -125,7 +125,12 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
     title: 'Démarches administratives',
     where: 'Page « Démarches administratives »',
     slots: [
-      { key: 'demarches.intro', label: 'Texte d’introduction', help: 'Présentation du service de vérification foncière.', multiline: true },
+      { key: 'demarches.image', label: 'Image du bandeau', help: 'Photo en fond du bandeau, à droite (le texte se lit sur un fondu blanc à gauche). Format paysage conseillé (au moins 1600 × 900 px), sans texte dessus. Laisser vide pour la photo par défaut.', kind: 'image' },
+      { key: 'demarches.eyebrow', label: 'Mention au-dessus du titre', help: 'Petit libellé souligné de rouge, affiché en capitales. Par défaut : « Nos services ».' },
+      { key: 'demarches.title', label: 'Titre', help: 'Le grand titre du bandeau : le premier mot s’affiche en bleu, la suite en rouge. Par défaut : « Démarches administratives ».' },
+      { key: 'demarches.intro', label: 'Texte d’introduction', help: 'Présentation du service de vérification foncière, sous le titre.', multiline: true },
+      { key: 'demarches.reassurance', label: 'Engagements du bandeau', help: 'Jusqu’à trois lignes courtes, une par engagement (ex. « Réponse sous 24 à 48h »). Ne jamais y figer un montant : les tarifs se donnent sur devis.', multiline: true },
+      { key: 'demarches.bouton', label: 'Texte du bouton', help: 'Le bouton rouge du bandeau, qui ouvre le formulaire de demande. Par défaut : « Faire une demande ».' },
       { key: 'demarches.prestations', label: 'Prestations administratives', help: 'Une prestation par ligne, au format « Titre | Description ». C’est la liste des services annoncés aux visiteurs.', multiline: true, format: 'steps' },
       { key: 'demarches.prestations-techniques', label: 'Services techniques', help: 'Plans d’architecte, de géomètre… Même format « Titre | Description », une par ligne.', multiline: true, format: 'steps' },
       { key: 'demarches.etapes', label: 'Étapes de la vérification', help: 'Une étape par ligne, au format « Titre | Description ». Ne décrit que la vérification avant achat.', multiline: true, format: 'steps' },
