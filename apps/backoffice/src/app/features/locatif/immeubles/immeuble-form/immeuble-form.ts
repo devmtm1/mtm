@@ -50,6 +50,9 @@ export class ImmeubleForm implements OnInit, AvecModifications {
   private readonly dialog = inject(MatDialog);
 
   protected readonly saving = signal(false);
+  /** Fiche ouverte depuis « Modifier » : on corrige la propriété, ses logements se gèrent depuis sa fiche. */
+  protected readonly immeubleId = this.route.snapshot.paramMap.get('id');
+  protected readonly modification = this.immeubleId !== null;
   protected readonly proprietaires = signal<ProprietaireSummary[]>([]);
   protected readonly collaborateurs = signal<LocatifPersonne[]>([]);
   protected readonly typesImmeuble = Object.entries(TYPES_IMMEUBLE);
@@ -90,6 +93,25 @@ export class ImmeubleForm implements OnInit, AvecModifications {
   }
 
   ngOnInit(): void {
+    if (this.immeubleId) {
+      this.api.findImmeuble(this.immeubleId).subscribe({
+        next: (immeuble) => {
+          this.form.patchValue({
+            nom: immeuble.nom,
+            type: immeuble.type,
+            proprietaireId: immeuble.proprietaire.id,
+            adresse: immeuble.adresse,
+            commune: immeuble.commune ?? '',
+            region: immeuble.region ?? '',
+            tauxGestion: immeuble.tauxGestion === null ? null : Number(immeuble.tauxGestion),
+            responsableId: immeuble.responsable?.id ?? '',
+            notes: immeuble.notes ?? '',
+          });
+          this.form.markAsPristine();
+        },
+        error: (error: unknown) => this.notify.error(error, 'Propriété introuvable'),
+      });
+    }
     const proprietaireId = this.route.snapshot.queryParamMap.get('proprietaireId');
     if (proprietaireId) this.form.controls.proprietaireId.setValue(proprietaireId);
     this.api.getCollaborateurs().subscribe({
@@ -165,7 +187,9 @@ export class ImmeubleForm implements OnInit, AvecModifications {
   }
 
   protected retour(): void {
-    void this.router.navigate(['/locatif/immeubles']);
+    void this.router.navigate(
+      this.immeubleId ? ['/locatif/immeubles', this.immeubleId] : ['/locatif/immeubles'],
+    );
   }
 
   protected submit(): void {
@@ -175,6 +199,33 @@ export class ImmeubleForm implements OnInit, AvecModifications {
     }
     const valeur = this.form.getRawValue();
     const texte = (item: string) => (item.trim() ? item.trim() : undefined);
+    if (this.immeubleId) {
+      this.saving.set(true);
+      this.api
+        .updateImmeuble(this.immeubleId, {
+          nom: valeur.nom.trim(),
+          type: valeur.type,
+          proprietaireId: valeur.proprietaireId,
+          adresse: valeur.adresse.trim(),
+          commune: texte(valeur.commune),
+          region: texte(valeur.region),
+          tauxGestion: nombreOuUndefined(valeur.tauxGestion),
+          responsableId: valeur.responsableId || undefined,
+          notes: texte(valeur.notes),
+        })
+        .subscribe({
+          next: () => {
+            this.form.markAsPristine();
+            this.notify.success('Propriété mise à jour');
+            void this.router.navigate(['/locatif/immeubles', this.immeubleId]);
+          },
+          error: (error: unknown) => {
+            this.saving.set(false);
+            this.notify.error(error, 'Modification impossible');
+          },
+        });
+      return;
+    }
     const logements: LogementInitial[] = (valeur.logements as Record<string, unknown>[]).map(
       (ligne) => ({
         numeroLot: texte(String(ligne['numeroLot'] ?? '')),

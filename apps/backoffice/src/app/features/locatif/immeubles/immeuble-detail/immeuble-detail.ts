@@ -8,7 +8,11 @@ import { MatSelectModule } from '@angular/material/select';
 import { LucideArrowLeft, LucidePlus } from '@lucide/angular';
 import { LocatifApiService } from '../../../../core/services/api/locatif-api.service';
 import { SessionService } from '../../../../core/services/session.service';
-import type { ImmeubleDetail, LogementImmeuble } from '../../../../core/models/locatif.model';
+import type {
+  BienListItem,
+  ImmeubleDetail,
+  LogementImmeuble,
+} from '../../../../core/models/locatif.model';
 import { MoneyPipe } from '../../../../shared/pipes/money.pipe';
 import { NotificationService } from '../../../../shared/services/notification.service';
 import {
@@ -53,6 +57,14 @@ export class ImmeubleDetailPage implements OnInit {
   protected readonly saving = signal(false);
   protected readonly typesBien = Object.entries(TYPES_BIEN);
   protected readonly canCreate = computed(() => this.session.hasPermission('locatif:creer'));
+  protected readonly canEdit = computed(() => this.session.hasPermission('locatif:modifier'));
+  /** Biens du même propriétaire qui ne sont dans aucune propriété : candidats au rattachement. */
+  protected readonly rattachables = signal<BienListItem[]>([]);
+  protected readonly rattachementOuvert = signal(false);
+  protected readonly rattachement = this.formBuilder.nonNullable.group({
+    bienId: ['', Validators.required],
+    numeroLot: [''],
+  });
 
   protected readonly ajout = this.formBuilder.nonNullable.group({
     numeroLot: ['', Validators.required],
@@ -92,6 +104,55 @@ export class ImmeubleDetailPage implements OnInit {
 
   protected ouvrirLogement(logement: LogementImmeuble): void {
     void this.router.navigate(['/locatif/biens', logement.id]);
+  }
+
+  protected modifier(): void {
+    const immeuble = this.immeuble();
+    if (immeuble) void this.router.navigate(['/locatif/immeubles', immeuble.id, 'modifier']);
+  }
+
+  /** Ouvre le panneau et charge les biens de ce propriétaire qui ne sont encore dans aucune propriété. */
+  protected basculerRattachement(): void {
+    const immeuble = this.immeuble();
+    if (!immeuble) return;
+    const ouvert = !this.rattachementOuvert();
+    this.rattachementOuvert.set(ouvert);
+    if (!ouvert) return;
+    this.api.findBiens({ proprietaireId: immeuble.proprietaire.id, pageSize: 200 }).subscribe({
+      next: (page) => this.rattachables.set(page.items.filter((bien) => !bien.immeuble)),
+      error: (error: unknown) =>
+        this.notify.error(error, 'Impossible de charger les biens du propriétaire'),
+    });
+  }
+
+  protected rattacher(): void {
+    const immeuble = this.immeuble();
+    if (!immeuble) return;
+    if (this.rattachement.invalid) {
+      this.rattachement.markAllAsTouched();
+      return;
+    }
+    const { bienId, numeroLot } = this.rattachement.getRawValue();
+    this.saving.set(true);
+    this.api
+      .updateBien(bienId, { immeubleId: immeuble.id, numeroLot: numeroLot.trim() || null })
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.rattachement.reset({ bienId: '', numeroLot: '' });
+          this.rattachementOuvert.set(false);
+          this.notify.success('Bien rattaché à la propriété');
+          this.charger();
+        },
+        error: (error: unknown) => {
+          this.saving.set(false);
+          this.notify.error(error, 'Rattachement impossible');
+        },
+      });
+  }
+
+  protected libelleBien(bien: BienListItem): string {
+    return `${bien.referenceInterne} · ${simpleLabel(TYPES_BIEN, bien.type)} · ${bien.adresse}`;
   }
 
   protected retour(): void {

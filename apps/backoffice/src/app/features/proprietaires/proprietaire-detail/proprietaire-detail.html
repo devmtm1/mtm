@@ -258,6 +258,9 @@
                       <td>
                         <strong>{{ bien.referenceInterne }}</strong> — {{ bien.adresse }}
                         <small>{{ typeBien(bien.type) }}</small>
+                        @if (bien.immeuble) {
+                          <small>Logement{{ bien.numeroLot ? ' ' + bien.numeroLot : '' }} · {{ bien.immeuble.nom }}</small>
+                        }
                       </td>
                       <td>{{ bien.commune || bien.region || '—' }}</td>
                       <td>{{ bien.modeLocation === 'courte_duree' ? 'À la nuit' : 'Au mois' }}</td>

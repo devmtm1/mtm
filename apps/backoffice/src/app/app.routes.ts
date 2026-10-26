@@ -468,6 +468,14 @@ export const routes: Routes = [
           import('./features/locatif/immeubles/immeuble-form/immeuble-form').then((m) => m.ImmeubleForm),
       },
       {
+        path: 'locatif/immeubles/:id/modifier',
+        title: 'Modifier la propriété',
+        canDeactivate: [modificationsNonEnregistreesGuard],
+        canActivate: [permissionsGuard(['locatif:modifier'])],
+        loadComponent: () =>
+          import('./features/locatif/immeubles/immeuble-form/immeuble-form').then((m) => m.ImmeubleForm),
+      },
+      {
         path: 'locatif/immeubles/:id',
         title: 'Fiche de la propriété',
         canActivate: [permissionsGuard(['locatif:consulter'])],
