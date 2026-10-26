@@ -326,6 +326,24 @@ describe('ImmeublesService', () => {
       expect(ctx.prismaMock.immeubleLocatif.update).not.toHaveBeenCalled();
     });
 
+    it('transmet un nouveau taux aux logements qui suivaient celui de la propriété, pas à ceux qui ont le leur', async () => {
+      ctx.prismaMock.immeubleLocatif.findUniqueOrThrow.mockResolvedValue({
+        proprietaireId: 'prop-1',
+        tauxGestion: 8,
+      });
+      ctx.prismaMock.immeubleLocatif.update.mockResolvedValue({ id: 'imm-1' });
+
+      await ctx.immeubles.update('imm-1', { tauxGestion: 10 }, gestionnaire);
+
+      expect(ctx.prismaMock.bienLocatif.updateMany).toHaveBeenCalledWith({
+        where: {
+          immeubleId: 'imm-1',
+          OR: [{ tauxGestion: null }, { tauxGestion: 8 }],
+        },
+        data: { tauxGestion: 10 },
+      });
+    });
+
     it('ne touche pas aux logements quand le propriétaire ne change pas', async () => {
       ctx.prismaMock.immeubleLocatif.update.mockResolvedValue({ id: 'imm-1' });
       await ctx.immeubles.update(

@@ -46,6 +46,7 @@ Quand un propriétaire confie **une villa divisée en appartements, un immeuble 
 
 Ensuite, depuis la fiche de la propriété :
 - **Modifier** corrige le nom, l’adresse, le taux de gestion ou le responsable. Le **propriétaire** ne peut plus changer dès qu’un bail existe sur l’un des logements.
+- Un nouveau **taux de gestion** s’applique aussitôt aux logements qui suivaient celui de la propriété ; un logement auquel on a donné un taux particulier le garde.
 - **Rattacher un bien existant** range dans la propriété un bien déjà créé du même propriétaire (avec son repère).
 - Sur la fiche du **propriétaire**, chaque bien en gestion indique la propriété et le repère dont il fait partie.
 
