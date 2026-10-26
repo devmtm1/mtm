@@ -14,6 +14,7 @@ import {
 import { LocatifOptionsService } from './locatif-options.service';
 import { CreateBienDto, QueryBienDto, UpdateBienDto } from './dto/bien.dto';
 import { annonceData, verifierPublication } from './annonce.helper';
+import { referenceSuivante } from '../../common/utils/reference';
 
 const bailActifInclude = {
   where: { statut: { in: ['actif', 'preavis'] } },
@@ -28,6 +29,8 @@ const bailActifInclude = {
 
 const bienListInclude = {
   proprietaire: { select: { id: true, firstName: true, lastName: true } },
+  // Un logement se reconnaît à sa propriété : « Villa Fall · A2 ».
+  immeuble: { select: { id: true, nom: true, referenceInterne: true } },
   responsable: { select: { id: true, firstName: true, lastName: true } },
   baux: bailActifInclude,
   // Le nombre de photos suffit à la liste : il dit si l'annonce peut se publier.
@@ -75,10 +78,13 @@ export class BiensService {
       ...(query.modeLocation ? { modeLocation: query.modeLocation } : {}),
       ...(query.proprietaireId ? { proprietaireId: query.proprietaireId } : {}),
       ...(query.responsableId ? { responsableId: query.responsableId } : {}),
+      ...(query.immeubleId ? { immeubleId: query.immeubleId } : {}),
       ...(search
         ? {
             OR: [
               { referenceInterne: contains(search) },
+              { numeroLot: contains(search) },
+              { immeuble: { nom: contains(search) } },
               { adresse: contains(search) },
               { commune: contains(search) },
               { proprietaire: { firstName: contains(search) } },
@@ -174,11 +180,16 @@ export class BiensService {
       dto.responsableId,
       user,
     );
+    if (dto.immeubleId) {
+      await this.verifierImmeuble(dto.immeubleId, dto.proprietaireId, user);
+    }
 
     const bien = await this.prisma.bienLocatif.create({
       data: {
         referenceInterne: await this.nextReference(),
         proprietaireId: dto.proprietaireId,
+        immeubleId: dto.immeubleId,
+        numeroLot: dto.numeroLot,
         type: dto.type,
         adresse: dto.adresse,
         commune: dto.commune,
@@ -215,6 +226,7 @@ export class BiensService {
       if (!proprietaire)
         throw new BadRequestException('Propriétaire introuvable');
     }
+    await this.verifierRattachement(id, dto, user);
     const responsableId =
       dto.responsableId === undefined
         ? undefined
@@ -230,6 +242,8 @@ export class BiensService {
         ...(dto.proprietaireId !== undefined
           ? { proprietaireId: dto.proprietaireId }
           : {}),
+        ...(dto.immeubleId !== undefined ? { immeubleId: dto.immeubleId } : {}),
+        ...(dto.numeroLot !== undefined ? { numeroLot: dto.numeroLot } : {}),
         ...(dto.type !== undefined ? { type: dto.type } : {}),
         ...(dto.adresse !== undefined ? { adresse: dto.adresse } : {}),
         ...(dto.commune !== undefined ? { commune: dto.commune } : {}),
@@ -453,6 +467,82 @@ export class BiensService {
         Number(soldeAgg._sum.montantPrevu ?? 0) -
         Number(soldeAgg._sum.montantPaye ?? 0),
     };
+  }
+
+  /**
+   * Un logement appartient à la propriété de SON propriétaire : on ne rattache pas le bien de Mme Fall à la villa de
+   * M. Ndiaye. L'utilisateur doit aussi avoir accès à la propriété.
+   */
+  async verifierImmeuble(
+    immeubleId: string,
+    proprietaireId: string,
+    user: LocatifUser,
+  ): Promise<void> {
+    const immeuble = await this.prisma.immeubleLocatif.findFirst({
+      where: { id: immeubleId, ...this.access.immeubleOwnershipFilter(user) },
+      select: { proprietaireId: true },
+    });
+    if (!immeuble) throw new NotFoundException('Propriété introuvable');
+    if (immeuble.proprietaireId !== proprietaireId) {
+      throw new BadRequestException(
+        'Le propriétaire du logement doit être celui de la propriété',
+      );
+    }
+  }
+
+  /**
+   * Règles de rattachement d'un bien existant à une propriété (ou de sa sortie) : même propriétaire, et un
+   * logement ne change pas de propriétaire tout seul — c'est celui de la propriété qui fait foi.
+   */
+  private async verifierRattachement(
+    id: string,
+    dto: UpdateBienDto,
+    user: LocatifUser,
+  ): Promise<void> {
+    if (dto.immeubleId === undefined && dto.proprietaireId === undefined) {
+      return;
+    }
+    const actuel = await this.prisma.bienLocatif.findUnique({
+      where: { id },
+      select: { proprietaireId: true, immeubleId: true },
+    });
+    if (!actuel) throw new NotFoundException('Bien locatif introuvable');
+    const immeubleVoulu =
+      dto.immeubleId === undefined ? actuel.immeubleId : dto.immeubleId;
+    const proprietaireVoulu = dto.proprietaireId ?? actuel.proprietaireId;
+    if (!immeubleVoulu) return;
+    if (
+      dto.immeubleId === undefined &&
+      dto.proprietaireId !== undefined &&
+      dto.proprietaireId !== actuel.proprietaireId
+    ) {
+      throw new BadRequestException(
+        'Ce logement fait partie d’une propriété : changez le propriétaire de la propriété, ou sortez d’abord le logement de la propriété',
+      );
+    }
+    await this.verifierImmeuble(immeubleVoulu, proprietaireVoulu, user);
+  }
+
+  /**
+   * Les `nombre` prochaines références de biens (`L-2026-0007`, `L-2026-0008`…), pour créer plusieurs logements
+   * d'un coup sans que chacun relise la même base.
+   */
+  async referencesSuivantes(nombre: number): Promise<string[]> {
+    const annee = new Date().getFullYear();
+    const prefixe = `L-${annee}-`;
+    const emises = await this.prisma.bienLocatif.findMany({
+      where: { referenceInterne: { startsWith: prefixe } },
+      select: { referenceInterne: true },
+    });
+    const premiere = referenceSuivante(
+      prefixe,
+      emises.map((ligne) => ligne.referenceInterne),
+    );
+    const rang = Number(premiere.slice(prefixe.length));
+    return Array.from(
+      { length: nombre },
+      (_, index) => `${prefixe}${String(rang + index).padStart(4, '0')}`,
+    );
   }
 
   /**

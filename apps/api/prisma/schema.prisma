@@ -98,6 +98,8 @@ model User {
   contactsRepondus          Contact[]          @relation("ContactReponduPar")
   biensLocatifsResponsable  BienLocatif[]      @relation("BienLocatifResponsable")
   biensLocatifsCrees        BienLocatif[]      @relation("BienLocatifCreatedBy")
+  immeublesResponsable      ImmeubleLocatif[]  @relation("ImmeubleLocatifResponsable")
+  immeublesCrees            ImmeubleLocatif[]  @relation("ImmeubleLocatifCreatedBy")
   bauxLocatifsCrees         BailLocatif[]      @relation("BailLocatifCreatedBy")
   paiementsLoyerEnregistres PaiementLoyer[]    @relation("PaiementLoyerRecorder")
   paiementsLoyerValides     PaiementLoyer[]    @relation("PaiementLoyerValidator")
@@ -159,6 +161,7 @@ model Proprietaire {
   terrains      Terrain[]
   mandats       Mandat[]
   biensLocatifs BienLocatif[]
+  immeubles     ImmeubleLocatif[]
   clientUser    User?                     @relation("ProprietaireClientUser")
   reversements  ReversementProprietaire[]
 
@@ -1466,6 +1469,12 @@ model BienLocatif {
   responsableId    String?
   responsable      User?        @relation("BienLocatifResponsable", fields: [responsableId], references: [id], onDelete: SetNull)
 
+  /// Propriété (villa, immeuble, résidence) dont ce bien est un logement ; vide pour un bien seul.
+  immeubleId String?
+  immeuble   ImmeubleLocatif? @relation(fields: [immeubleId], references: [id], onDelete: Restrict)
+  /// Repère du logement dans sa propriété (A1, Rez-de-chaussée, Appartement 2…).
+  numeroLot  String?
+
   type       String
   adresse    String
   commune    String?
@@ -1561,6 +1570,7 @@ model BienLocatif {
   @@index([responsableId])
   @@index([statut])
   @@index([publie, statut])
+  @@index([immeubleId])
   @@map("biens_locatifs")
 }
 
@@ -3029,4 +3039,44 @@ model EmpreinteVisiteur {
 
   @@id([jour, cle, empreinte])
   @@map("empreintes_visiteurs")
+}
+
+// ============================================================
+// Gestion locative — propriétés (villa divisée, immeuble, résidence)
+// ============================================================
+
+/// Une propriété regroupe plusieurs logements louables (les `BienLocatif`) : une villa divisée en appartements, un
+/// immeuble, une résidence. Le propriétaire, l'adresse et la position sont communs ; chaque logement garde son loyer,
+/// son bail, son locataire, ses photos et son annonce. Un bien seul n'a pas de propriété.
+model ImmeubleLocatif {
+  id               String       @id @default(uuid())
+  /// IM-2026-0001
+  referenceInterne String       @unique
+  nom              String
+  /// villa | immeuble | residence | autre
+  type             String       @default("immeuble")
+  proprietaireId   String
+  proprietaire     Proprietaire @relation(fields: [proprietaireId], references: [id], onDelete: Restrict)
+  responsableId    String?
+  responsable      User?        @relation("ImmeubleLocatifResponsable", fields: [responsableId], references: [id], onDelete: SetNull)
+
+  adresse   String
+  commune   String?
+  region    String?
+  latitude  Decimal? @db.Decimal(9, 6)
+  longitude Decimal? @db.Decimal(9, 6)
+  /// Taux de gestion par défaut des logements de la propriété (en %).
+  tauxGestion Decimal? @db.Decimal(5, 2)
+  notes     String?
+
+  createdById String?
+  createdBy   User?    @relation("ImmeubleLocatifCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  logements BienLocatif[]
+
+  @@index([proprietaireId])
+  @@index([responsableId])
+  @@map("immeubles_locatifs")
 }

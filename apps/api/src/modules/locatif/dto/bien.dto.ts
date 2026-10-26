@@ -22,6 +22,10 @@ export class CreateBienDto extends AnnonceBienFields {
   @IsOptional() @Type(() => Number) @IsNumber() @Min(0) superficie?: number;
   @IsOptional() @IsString() @MaxLength(2000) notes?: string;
   @IsOptional() @IsUUID() responsableId?: string;
+  /** Propriété (villa, immeuble, résidence) dont ce bien est un logement ; son propriétaire doit être celui du bien. */
+  @IsOptional() @IsUUID() immeubleId?: string;
+  /** Repère du logement dans sa propriété (A1, Rez-de-chaussée…). */
+  @IsOptional() @IsString() @MaxLength(40) numeroLot?: string;
   /** Commission de gestion de MTM, en % des loyers encaissés (0 à 100). */
   @IsOptional()
   @Type(() => Number)
@@ -41,6 +45,10 @@ export class UpdateBienDto extends AnnonceBienFields {
   @IsOptional() @IsString() @MaxLength(40) statut?: string;
   @IsOptional() @IsString() @MaxLength(2000) notes?: string;
   @IsOptional() @IsUUID() responsableId?: string;
+  /** `null` : sortir le bien de sa propriété. */
+  @IsOptional() @IsUUID() immeubleId?: string | null;
+  /** `null` : effacer le repère. */
+  @IsOptional() @IsString() @MaxLength(40) numeroLot?: string | null;
   /** `null` : revenir au taux par défaut. */
   @IsOptional() @Type(() => Number) @IsNumber() @Min(0) @Max(100) tauxGestion?:
     number | null;
@@ -54,6 +62,8 @@ export class QueryBienDto {
   @IsOptional() @IsIn(['longue_duree', 'courte_duree']) modeLocation?: string;
   @IsOptional() @IsUUID() proprietaireId?: string;
   @IsOptional() @IsUUID() responsableId?: string;
+  /** Les logements d'une propriété. */
+  @IsOptional() @IsUUID() immeubleId?: string;
   /**
    * Vues rapides : biens loués, disponibles, sans responsable, en retard de
    * loyer, ou en impayé prolongé (cas particulier de la section 15).

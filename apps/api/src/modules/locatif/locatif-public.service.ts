@@ -14,6 +14,33 @@ const publicSelect = {
   id: true,
   referenceInterne: true,
   type: true,
+  // Le logement dans sa propriété (villa divisée, résidence) : le nom et les autres logements encore libres, jamais
+  // le propriétaire ni l'adresse exacte.
+  numeroLot: true,
+  immeuble: {
+    select: {
+      nom: true,
+      type: true,
+      logements: {
+        where: { publie: true, statut: 'disponible' },
+        orderBy: [
+          { numeroLot: 'asc' as const },
+          { referenceInterne: 'asc' as const },
+        ],
+        take: 9,
+        select: {
+          id: true,
+          titre: true,
+          type: true,
+          numeroLot: true,
+          loyerMensuel: true,
+          prixNuit: true,
+          modeLocation: true,
+          nombreChambres: true,
+        },
+      },
+    },
+  },
   commune: true,
   region: true,
   superficie: true,
@@ -292,6 +319,26 @@ export class LocatifPublicService {
       latitude: arrondir(bien.latitude),
       longitude: arrondir(bien.longitude),
       disponibleLe: bien.disponibleLe,
+      numeroLot: bien.numeroLot,
+      immeuble: bien.immeuble
+        ? {
+            nom: bien.immeuble.nom,
+            type: bien.immeuble.type,
+            autresLogements: bien.immeuble.logements
+              .filter((logement) => logement.id !== bien.id)
+              .slice(0, 8)
+              .map((logement) => ({
+                id: logement.id,
+                titre: logement.titre,
+                type: logement.type,
+                numeroLot: logement.numeroLot,
+                modeLocation: logement.modeLocation,
+                nombreChambres: logement.nombreChambres,
+                loyerMensuel: nombre(logement.loyerMensuel),
+                prixNuit: nombre(logement.prixNuit),
+              })),
+          }
+        : null,
       misEnAvant: bien.misEnAvant,
       publieLe: bien.publieLe,
       medias: bien.medias.map((media) => ({
