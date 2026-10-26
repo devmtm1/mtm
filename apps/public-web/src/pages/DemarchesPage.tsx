@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { BadgeCheck, Clock, Coins } from 'lucide-react';
-import { PageIntro } from '../components/layout/PageIntro';
+import { BandeauDemarches } from '../components/demarches/BandeauDemarches';
 import { ContactForm } from '../components/contact/ContactForm';
 import { ContactModal } from '../components/contact/ContactModal';
 import { DemandeWhatsAppCta } from '../components/contact/DemandeWhatsAppCta';
@@ -35,8 +34,6 @@ const FALLBACK_REASSURANCE = [
   'Devis gratuit, sans engagement',
   "Tarif adapté à la nature et à l'urgence de la vérification",
 ];
-
-const REASSURANCE_ICONS = [Clock, BadgeCheck, Coins];
 
 /**
  * Prestations annoncées par la direction. Elles vivent dans des blocs de
@@ -113,38 +110,14 @@ export function DemarchesPage() {
 
   return (
     <div>
-      <PageIntro
-        eyebrow="Nos services"
-        title="Démarches administratives"
+      {/* Le bandeau est l'image de la marque (titre, engagements et bouton compris) : celui qui clique sur
+          « Faire une demande » a déjà décidé, on lui ouvre la fenêtre plutôt que de le faire défiler.
+          La section de bas de page reste en place pour celui qui lit tout et arrive convaincu. */}
+      <BandeauDemarches
         description={text('demarches.intro', FALLBACK_INTRO)}
-      >
-        {/* La page annonce sept prestations et décrit un parcours : le
-            formulaire est à trois écrans d'ici. Celui qui clique a déjà
-            décidé, on lui ouvre la fenêtre plutôt que de le faire défiler.
-            La section de bas de page reste en place pour celui qui lit tout
-            et arrive convaincu. */}
-        <button
-          type="button"
-          onClick={() => setDemandeOuverte(true)}
-          className="mt-6 inline-flex items-center justify-center rounded-md bg-mtm-primary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-mtm-primary-dark"
-        >
-          Faire une demande
-        </button>
-      </PageIntro>
-
-      <section className="border-b border-mtm-border bg-mtm-bg">
-        <ul className="mx-auto flex max-w-4xl flex-col gap-2.5 px-4 py-5 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-8 sm:gap-y-2 sm:px-6">
-          {lines('demarches.reassurance', FALLBACK_REASSURANCE).map((item, index) => {
-            const Icon = REASSURANCE_ICONS[index] ?? BadgeCheck;
-            return (
-              <li key={item} className="flex items-center gap-2 text-sm font-medium text-mtm-text">
-                <Icon className="h-4 w-4 shrink-0 text-mtm-primary" aria-hidden="true" />
-                {item}
-              </li>
-            );
-          })}
-        </ul>
-      </section>
+        reassurance={lines('demarches.reassurance', FALLBACK_REASSURANCE)}
+        onDemande={() => setDemandeOuverte(true)}
+      />
 
       <section className="mx-auto max-w-4xl px-4 pt-14 sm:px-6">
         <h2 className="font-display text-xl font-bold text-mtm-text">Nos prestations</h2>
