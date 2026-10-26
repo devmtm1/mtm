@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { BandeauDemarches } from '../components/demarches/BandeauDemarches';
 import { IMAGE_BANDEAU_DEMARCHES } from '../utils/demarches';
+import { donneesFaq } from '../utils/seo';
 import { ContactModal } from '../components/contact/ContactModal';
 import { DemandeWhatsAppCta } from '../components/contact/DemandeWhatsAppCta';
 import { CarteDemarche } from '../components/demarches/CarteDemarche';
 import { ParcoursVerification } from '../components/demarches/ParcoursVerification';
 import { SectionDemande } from '../components/demarches/SectionDemande';
+import { FaqDemarches } from '../components/demarches/FaqDemarches';
 import { useEditableContent, type EditableStep } from '../hooks/useEditableContent';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 import { useSiteContact } from '../hooks/useSiteContact';
@@ -15,6 +17,47 @@ const FALLBACK_INTRO =
 
 const FALLBACK_CONTACT_INTRO =
   'Dites-nous ce dont vous avez besoin : nous vous répondons rapidement et vous disons ce que nous pouvons faire pour vous.';
+
+/**
+ * Réponses de départ : elles ne reprennent que ce que la page annonce déjà (délai, devis gratuit, tarif sur devis,
+ * contenu du rapport, démarches prises en charge). La direction les complète ou les remplace au back-office ;
+ * aucun délai de traitement ni aucun montant n'est promis ici.
+ */
+const FALLBACK_FAQ: EditableStep[] = [
+  {
+    title: 'Puis-je faire une demande depuis l’étranger ?',
+    description:
+      'Oui. Notre équipe se déplace pour vérifier le bien avant votre engagement : vous n’avez pas besoin d’être sur place. Vous pouvez aussi échanger avec nous directement sur WhatsApp.',
+  },
+  {
+    title: 'Sous quel délai répondez-vous à une demande ?',
+    description: 'Nous répondons sous 24 à 48h.',
+  },
+  {
+    title: 'Le devis est-il payant ?',
+    description: 'Non. Le devis est gratuit et sans engagement.',
+  },
+  {
+    title: 'Comment le tarif est-il fixé ?',
+    description:
+      'Le tarif est adapté à la nature et à l’urgence de la démarche. Il vous est communiqué sur devis : aucun montant n’est affiché sur le site.',
+  },
+  {
+    title: 'Que dois-je vous transmettre pour commencer ?',
+    description:
+      'Le bien concerné et les pièces dont vous disposez. Si certaines manquent, nous vous disons lesquelles réunir.',
+  },
+  {
+    title: 'Que contient le rapport de vérification ?',
+    description:
+      'Une conclusion structurée et une recommandation : favorable, défavorable ou à compléter.',
+  },
+  {
+    title: 'Ma démarche n’est pas dans la liste, pouvez-vous la traiter ?',
+    description:
+      'Décrivez votre besoin dans le formulaire : nous vous disons si nous pouvons le traiter.',
+  },
+];
 
 const FALLBACK_STEPS: EditableStep[] = [
   { title: 'Demande', description: 'Vous nous transmettez le bien concerné et vos pièces disponibles.' },
@@ -114,8 +157,10 @@ export function DemarchesPage() {
   const sujets = [...prestations, ...prestationsTechniques].map(
     (presta) => presta.title,
   );
+  const faq = steps('demarches.faq', FALLBACK_FAQ);
   usePageMetadata({
     title: 'Démarches administratives et vérification foncière',
+    jsonLd: donneesFaq(faq),
     description:
       'Faites vérifier un terrain au Sénégal avant d’acheter : visite sur site, contrôle administratif et rapport structuré par MTM Immobilier.',
   });
@@ -184,6 +229,29 @@ export function DemarchesPage() {
           </div>
         </div>
       </section>
+
+      {faq.length > 0 && (
+        <section id="faq" className="scroll-mt-20 bg-[#F5F8FB] py-14 lg:py-20">
+          <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.4fr] lg:gap-16">
+            <div>
+              <p className="text-[14px] font-bold uppercase tracking-wide text-[#C8102E]">Questions fréquentes</p>
+              <h2 className="mt-3 text-[28px] font-extrabold leading-tight text-[#12365A] sm:text-[34px]">
+                Vous vous posez une question ?
+              </h2>
+              <p className="mt-3 text-[16px] leading-relaxed text-[#34465A]">
+                Les réponses aux questions que l’on nous pose le plus. Vous ne trouvez pas la vôtre ? Écrivez-nous, nous vous répondons.
+              </p>
+              <a
+                href="#demande-verification"
+                className="mt-5 inline-flex items-center gap-1.5 text-[15px] font-semibold text-[#C8102E] hover:underline"
+              >
+                Poser ma question
+              </a>
+            </div>
+            <FaqDemarches questions={faq} />
+          </div>
+        </section>
+      )}
 
       <SectionDemande
         intro={text('demarches.contact-intro', FALLBACK_CONTACT_INTRO)}
