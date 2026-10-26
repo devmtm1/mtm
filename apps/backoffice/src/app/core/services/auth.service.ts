@@ -1,6 +1,6 @@
 import { HttpBackend, HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable, catchError, map, switchMap, tap, throwError } from 'rxjs';
+import { Observable, catchError, finalize, map, shareReplay, switchMap, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import type { AuthenticatedUser, LoginResponse } from '../models/auth.model';
 import { SessionService } from './session.service';
@@ -70,12 +70,24 @@ export class AuthService {
       );
   }
 
+  /** Renouvellement en cours : partagé entre tous ceux qui le demandent (voir `refresh`). */
+  private renouvellementEnCours$: Observable<{ accessToken: string }> | null = null;
+
+  /**
+   * Renouvelle le jeton d'accès avec le cookie de session. **Un seul appel à la fois** : quand le jeton expire, plusieurs
+   * requêtes sont refusées en même temps et chacune demande un renouvellement avec le même cookie. Le serveur ne
+   * l'accepte qu'une fois : sans ce partage, la première réussissait et les autres fermaient la session. Tous ceux qui
+   * arrivent pendant le renouvellement attendent désormais le même résultat.
+   */
   refresh(): Observable<{ accessToken: string }> {
-    return this.rawHttp.post<{ accessToken: string }>(
-      `${environment.apiUrl}/auth/refresh`,
-      {},
-      { withCredentials: true },
-    );
+    this.renouvellementEnCours$ ??= this.rawHttp
+      .post<{ accessToken: string }>(`${environment.apiUrl}/auth/refresh`, {}, { withCredentials: true })
+      .pipe(
+        tap(({ accessToken }) => this.sessionService.updateAccessToken(accessToken)),
+        finalize(() => (this.renouvellementEnCours$ = null)),
+        shareReplay({ bufferSize: 1, refCount: false }),
+      );
+    return this.renouvellementEnCours$;
   }
 
   logout(): Observable<{ success: boolean }> {

@@ -58,7 +58,17 @@ export function ShowcaseVitrine({ category, prefixe, defauts, emptyLabel }: Show
           className={`absolute inset-0 -z-20 h-full w-full object-cover object-[70%_center] ${fondu}`}
         />
         <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0a2142]/95 via-[#0a2142]/80 to-[#0a2142]/25 max-lg:to-[#0a2142]/55" />
-        <div className={`mx-auto max-w-6xl px-4 pb-28 pt-9 sm:px-6 sm:pt-12 lg:pb-40 lg:pt-16 ${fondu}`}>
+        {/* Vague en bas du bandeau : il se fond dans le fond de la page, sous les cartes qui le chevauchent. */}
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 1440 90"
+          preserveAspectRatio="none"
+          className="absolute inset-x-0 bottom-0 h-10 w-full text-mtm-bg sm:h-14 lg:h-20"
+          fill="currentColor"
+        >
+          <path d="M0,46 C180,92 360,88 560,52 C760,16 940,6 1140,38 C1270,58 1360,70 1440,52 L1440,90 L0,90 Z" />
+        </svg>
+        <div className={`relative mx-auto max-w-7xl px-4 pb-28 pt-9 sm:px-6 sm:pt-12 lg:pb-40 lg:pt-16 ${fondu}`}>
           <p className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/90 sm:text-xs">
             <span aria-hidden="true" className="h-[3px] w-12 rounded-full bg-mtm-accent" />
             {eyebrow}
@@ -69,10 +79,10 @@ export function ShowcaseVitrine({ category, prefixe, defauts, emptyLabel }: Show
         </div>
       </section>
 
-      <section className="relative mx-auto -mt-20 max-w-6xl px-4 pb-14 sm:px-6 lg:-mt-28" aria-label={eyebrow}>
+      <section className="relative mx-auto -mt-20 max-w-7xl px-4 pb-14 sm:px-6 lg:-mt-28" aria-label={eyebrow}>
         {loading && (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
-            {[0, 1, 2].map((index) => (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" aria-hidden="true">
+            {[0, 1, 2, 3].map((index) => (
               <div key={index} className="overflow-hidden rounded-xl border border-mtm-border bg-mtm-surface shadow-card">
                 <Skeleton className="aspect-[16/10] w-full rounded-none" />
                 <div className="space-y-3 p-6">
@@ -96,7 +106,7 @@ export function ShowcaseVitrine({ category, prefixe, defauts, emptyLabel }: Show
           </div>
         )}
         {!loading && !error && data && data.length > 0 && (
-          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {data.map((item) => (
               <li key={item.id}>
                 <VitrineCard item={item} />

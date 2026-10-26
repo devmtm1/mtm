@@ -8,7 +8,9 @@ import { SessionService } from '../services/session.service';
 /**
  * Attache le token d'accès (Bearer) à chaque requête vers l'API. Sur un
  * 401 (access token expiré), tente un refresh silencieux via le cookie
- * httpOnly puis rejoue la requête initiale avec le nouveau token. Si le
+ * httpOnly (un seul à la fois, voir AuthService.refresh) puis rejoue la
+ * requête initiale avec le nouveau token. Si le jeton a déjà été renouvelé
+ * par une autre requête entre-temps, elle est simplement rejouée. Si le
  * refresh est refusé (401/403), nettoie la session et redirige vers /login ;
  * une erreur technique du refresh ne déconnecte pas.
  *
@@ -46,19 +48,21 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         error.status === 401 &&
         !isAuthEndpoint
       ) {
+        // Une autre requête a déjà renouvelé le jeton pendant que celle-ci attendait sa réponse : on la rejoue avec
+        // le jeton actuel, sans redemander de renouvellement.
+        const actuel = sessionService.accessToken;
+        if (actuel && actuel !== token) {
+          return next(
+            req.clone({ setHeaders: { Authorization: `Bearer ${actuel}` }, withCredentials: true }),
+          );
+        }
         return authService.refresh().pipe(
-          switchMap(({ accessToken }) => {
-            sessionService.updateAccessToken(accessToken);
-            const retryReq = req.clone({
-              setHeaders: { Authorization: `Bearer ${accessToken}` },
-              withCredentials: true,
-            });
-            return next(retryReq);
-          }),
+          // Seul un refus du RENOUVELLEMENT lui-même ferme la session. Ce `catchError` est placé avant le rejeu : une
+          // requête rejouée qui reçoit à son tour un 401 ou un 403 (droit insuffisant par exemple) est une erreur de
+          // cette requête, pas une session expirée, et ne doit jamais déconnecter.
           catchError((refreshError: unknown) => {
-            // Seul un refus explicite (session révoquée ou expirée) ferme la
-            // session ; une panne passagère (5xx, réseau) ne doit pas
-            // déconnecter l'utilisateur, la prochaine requête retentera.
+            // Une panne passagère (5xx, réseau) ne doit pas déconnecter l'utilisateur, la prochaine requête
+            // retentera.
             const refused =
               refreshError instanceof HttpErrorResponse &&
               (refreshError.status === 401 || refreshError.status === 403);
@@ -67,6 +71,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
               void router.navigate(['/login']);
             }
             return throwError(() => refreshError);
+          }),
+          switchMap(({ accessToken }) => {
+            sessionService.updateAccessToken(accessToken);
+            const retryReq = req.clone({
+              setHeaders: { Authorization: `Bearer ${accessToken}` },
+              withCredentials: true,
+            });
+            return next(retryReq);
           }),
         );
       }

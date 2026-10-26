@@ -28,9 +28,16 @@
               <mat-option [value]="proprietaire.id">{{ nomProprietaire(proprietaire) }}</mat-option>
             }
           </mat-select>
-          <mat-hint>Créez d’abord la fiche dans Propriétaires si elle n’existe pas.</mat-hint>
+          <mat-hint>{{ peutAjouterProprietaire() ? 'Si la personne n’est pas encore dans la liste, ajoutez-la avec le bouton ci-dessous.' : 'Si la personne n’est pas dans la liste, demandez à un collègue habilité de créer sa fiche dans Propriétaires.' }}</mat-hint>
           <mat-error>Choisissez le propriétaire du bien.</mat-error>
         </mat-form-field>
+        @if (peutAjouterProprietaire()) {
+          <div class="ajout-proprietaire">
+            <button mat-stroked-button type="button" (click)="ajouterProprietaire()">
+              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau propriétaire
+            </button>
+          </div>
+        }
 
         <mat-form-field appearance="outline">
           <mat-label>Type de bien</mat-label>

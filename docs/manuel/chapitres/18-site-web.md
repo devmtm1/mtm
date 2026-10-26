@@ -46,6 +46,23 @@ Trois actions :
 2. Écrivez le texte (un retour à la ligne coupe le titre en deux lignes, par exemple).
 3. **Publier**.
 
+### Le bandeau de la page « Démarches administratives »
+
+Dans **Site web › Contenus du site**, rubrique **Démarches administratives**, tout le bandeau du haut de la page se modifie : la **photo de fond** (cliquez sur **Renseigner** puis choisissez une image JPEG, PNG ou WebP, 10 Mo maximum ; **Retirer l’image** rend la photo par défaut), la **mention** au-dessus du titre, le **titre**, le **texte d’introduction**, les **engagements** et le **texte du bouton** rouge, qui ouvre le formulaire de demande.
+
+- **Photo** : format paysage, au moins 1600 × 900 px, **sans texte dessus**. Le bandeau est pleine largeur ; le texte est à gauche sur un fondu blanc, donc les sujets de la photo se placent de préférence **à droite** (comme les documents et la maquette de villa de la photo par défaut).
+- **Titre** : le premier mot s’affiche en bleu, la suite en rouge.
+- **Engagements** : une ligne chacun, trois au plus. Chaque ligne est coupée en deux : à la virgule (« Devis gratuit, **sans engagement** »), sinon avant le premier chiffre (« Réponse sous **24 à 48h** ») ; la seconde partie s’affiche alors en rouge. Sans virgule ni chiffre, la fin s’affiche en petit gris (« Tarif adapté — à la nature et à l’urgence… »).
+- N’y figez jamais un tarif : les prix se donnent sur devis. Un emplacement laissé vide affiche le texte ou la photo par défaut.
+
+### Le corps de la page « Démarches administratives »
+
+Sous le bandeau, la page présente chaque **démarche** sur une carte (icône, titre, description) avec un bouton **Faire une demande** : le visiteur qui clique voit le formulaire s’ouvrir avec cette démarche déjà choisie. Viennent ensuite la **frise des étapes** de la vérification avant achat, puis la section **Parlons de votre projet** (engagements, accès WhatsApp de la direction, formulaire). Dans **Contenus du site**, rubrique **Démarches administratives**, vous modifiez : les **prestations** et les **services techniques** (une ligne « Titre | Description » chacune ; l’icône est choisie d’après le titre), les **étapes** (même format, la dernière s’affiche en rouge) les **questions fréquentes** (une ligne « Question | Réponse » chacune, affichées en liste dépliante, la première ouverte ; elles sont aussi transmises à Google, qui peut les afficher dans ses résultats) et le **texte de la section « Parlons de votre projet »**. Les réponses de départ ne reprennent que ce que la page annonce déjà ; **si vous changez un engagement (délai, devis…), mettez aussi la question correspondante à jour** pour que la page ne se contredise pas.
+
+### Le bandeau de la page « Locations »
+
+Dans **Site web › Contenus du site**, rubrique **Page « Locations »**, vous modifiez la **photo de fond** (paysage, au moins 1600 × 900 px ; elle passe sous un voile bleu marine, le texte blanc reste lisible quelle que soit l’image), la **mention**, le **titre**, le **texte de présentation** et les **engagements** (une ligne chacun, trois au plus). Les annonces elles-mêmes se gèrent dans **Gestion locative**. Sur le site, le panneau de recherche garde quatre critères visibles (type de bien, commune, chambres, loyer maximum) ; les autres (région, loyer minimum, surface, ameublement) s’ouvrent avec **Plus de filtres**.
+
 ## Les réalisations et projets
 
 **Site web › Réalisations & projets** : le **portfolio illustré** du site. Chaque carte montre une **photo**, un **titre**, un **lieu** et une **courte description** ; elle n’apparaît sur le site **qu’une fois publiée**.

@@ -49,71 +49,112 @@ export function Portrait({
   );
 }
 
+/** Met « MTM IMMOBILIER » en rouge dans l'accroche, sans toucher au reste du texte saisi au back-office. */
+function AccrocheColoree({ texte }: { texte: string }) {
+  const morceaux = texte.split(/(MTM\s+IMMOBILIER)/i);
+  return (
+    <>
+      {morceaux.map((morceau, index) =>
+        /^MTM\s+IMMOBILIER$/i.test(morceau) ? (
+          <span key={index} className="text-mtm-accent">
+            {morceau}
+          </span>
+        ) : (
+          morceau
+        ),
+      )}
+    </>
+  );
+}
+
 function MotDuDirecteur({ directeur }: { directeur: TeamPerson }) {
   const paragraphes = (directeur.message ?? '')
     .split(/\n{2,}|\n/)
     .map((p) => p.trim())
     .filter(Boolean);
-  // Une première ligne courte (« Bienvenue chez MTM IMMOBILIER ») sert d'accroche, pas de paragraphe.
+  // Une première ligne courte (« Bienvenue chez MTM IMMOBILIER ») sert de titre, pas de paragraphe.
   const [premier, ...suite] = paragraphes;
   const accroche = premier && premier.length <= 80 ? premier : null;
   const corps = accroche ? suite : paragraphes;
 
   return (
-    <section aria-labelledby="mot-directeur" className="bg-mtm-primary-subtle">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[minmax(0,340px)_1fr] md:items-start lg:gap-16 lg:py-20">
-        {/* Un long texte à côté d'une photo : la photo reste en haut de l'écran pendant la lecture, au lieu de flotter au milieu. */}
-        <figure className="mx-auto w-full max-w-[280px] sm:max-w-[340px] md:sticky md:top-28 md:mx-0">
-          <div className="relative">
+    <section
+      aria-labelledby="mot-directeur"
+      className="relative isolate overflow-x-clip bg-gradient-to-br from-white via-mtm-primary-subtle/50 to-mtm-primary-subtle"
+    >
+      {/* Décor : immeubles en filigrane, en bas à droite. */}
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 320 300"
+        className="pointer-events-none absolute -bottom-2 right-0 -z-10 hidden h-72 w-72 text-mtm-primary opacity-[0.07] lg:block"
+        fill="currentColor"
+      >
+        <rect x="40" y="120" width="70" height="180" rx="4" />
+        <rect x="120" y="40" width="80" height="260" rx="4" />
+        <rect x="210" y="90" width="90" height="210" rx="4" />
+      </svg>
+
+      <div className="mx-auto grid max-w-6xl gap-12 px-4 py-14 sm:px-6 md:grid-cols-[minmax(0,430px)_1fr] md:items-start lg:gap-20 lg:py-20">
+        {/* Un long texte à côté d'une photo : la photo reste en haut de l'écran pendant la lecture. */}
+        <figure className="mx-auto w-full max-w-[300px] sm:max-w-[400px] md:sticky md:top-28 md:mx-0 md:max-w-none">
+          <div className="relative ml-6 mt-6">
+            {/* Pan de couleur derrière la photo, qui dépasse en haut à gauche. */}
             <span
               aria-hidden="true"
-              className="absolute -bottom-3 -right-3 h-full w-full rounded-3xl border-2 border-mtm-accent/40"
+              className="absolute -left-6 -top-6 h-[46%] w-[62%] rounded-tl-[2.5rem] bg-gradient-to-br from-mtm-primary-medium to-[#5EA8C7]"
             />
-            <Portrait
-              src={directeur.imageUrl}
-              nom={directeur.nom}
-              sizes="(min-width: 640px) 340px, 280px"
-              className="relative aspect-[4/5] w-full rounded-3xl object-[center_15%] shadow-card-hover"
+            {/* Grille de points, en bas à gauche. */}
+            <span
+              aria-hidden="true"
+              className="absolute -bottom-8 -left-10 h-28 w-28 bg-[radial-gradient(circle,#9DB9D4_2px,transparent_2.5px)] [background-size:18px_18px]"
             />
+            <div className="relative rounded-[2rem] border-[6px] border-white bg-white shadow-card-hover">
+              <Portrait
+                src={directeur.imageUrl}
+                nom={directeur.nom}
+                sizes="(min-width: 768px) 430px, 300px"
+                className="aspect-[4/5] w-full rounded-[1.5rem] object-[center_15%]"
+              />
+            </div>
           </div>
         </figure>
 
         <div className="max-w-2xl">
-          <span className="flex items-center gap-3 text-xs font-bold uppercase tracking-wider text-mtm-accent">
-            <span aria-hidden="true" className="h-[3px] w-10 rounded-full bg-mtm-accent" />
+          <span className="inline-flex items-center gap-2.5 rounded-full bg-mtm-accent-subtle px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-mtm-accent">
+            <span aria-hidden="true" className="h-4 w-[3px] rounded-full bg-mtm-accent" />
             Le mot du directeur
           </span>
           <h2 id="mot-directeur" className="sr-only">
             Le mot du directeur
           </h2>
           <Quote
-            className="mt-5 h-9 w-9 text-mtm-accent/30"
+            className="mt-6 h-10 w-10 text-mtm-primary-medium"
             fill="currentColor"
             aria-hidden="true"
           />
           {accroche && (
-            <p className="mt-2 font-display text-2xl font-bold leading-snug text-mtm-primary sm:text-3xl">
-              {accroche}
+            <p className="mt-1 font-display text-3xl font-bold leading-tight text-mtm-primary-dark sm:text-[2.1rem]">
+              <AccrocheColoree texte={accroche} />
             </p>
           )}
           {corps.length > 0 && (
-            <blockquote className="mt-6 space-y-5 text-[17px] leading-8 text-mtm-text">
+            <blockquote className="mt-6 space-y-4 text-base leading-7 text-slate-700">
               {corps.map((paragraphe, index) => (
                 <p key={index}>{paragraphe}</p>
               ))}
             </blockquote>
           )}
-          <p className="mt-8 flex items-center gap-3 border-t border-mtm-primary/15 pt-6">
-            <span aria-hidden="true" className="h-10 w-1 rounded-full bg-mtm-accent" />
-            <span>
-              <span className="block font-display text-lg font-bold text-mtm-primary">
-                {directeur.nom}
-              </span>
-              {directeur.poste && (
-                <span className="block text-sm text-mtm-muted">{directeur.poste}</span>
-              )}
-            </span>
-          </p>
+          <div className="mt-8">
+            <span aria-hidden="true" className="block h-[3px] w-12 rounded-full bg-mtm-accent" />
+            <p className="mt-4 font-display text-xl font-bold text-mtm-primary-dark">
+              <span>{directeur.nom}</span>
+            </p>
+            {directeur.poste && (
+              <p className="mt-0.5 text-sm uppercase tracking-wide text-mtm-muted">
+                {directeur.poste}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </section>

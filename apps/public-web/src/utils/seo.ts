@@ -66,6 +66,21 @@ export function donneesAgence(): Record<string, unknown>[] {
   ];
 }
 
+/** Questions fréquentes : Google peut les afficher directement dans le résultat de recherche. */
+export function donneesFaq(questions: { title: string; description?: string }[]): Record<string, unknown> | undefined {
+  const valides = questions.filter((question) => question.description);
+  if (valides.length === 0) return undefined;
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: valides.map((question) => ({
+      '@type': 'Question',
+      name: question.title,
+      acceptedAnswer: { '@type': 'Answer', text: question.description },
+    })),
+  };
+}
+
 /** Fiche d'un bien à vendre, avec son prix quand il est public. */
 export function donneesTerrain(terrain: Terrain, titre: string, description: string, image: string | null): Record<string, unknown>[] {
   const chemin = `/terrains/${terrain.id}`;

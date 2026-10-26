@@ -5,6 +5,19 @@
 @use '@angular/material' as mat;
 
 :root {
+  /* Menu latéral : clair, doux, sans contraste agressif. */
+  --mtm-sb-bg: #F8FAFC;
+  --mtm-sb-text: #334155;
+  --mtm-sb-icon: #64748B;
+  --mtm-sb-titre: #64748B;
+  --mtm-sb-hover: #EFF3F8;
+  --mtm-sb-active-bg: #FFFFFF;
+  /* Relief : le menu passe au-dessus de la page, la page active ressort en pastille. */
+  --mtm-sb-ombre: 10px 0 34px -8px rgba(18, 54, 90, 0.26), 2px 0 6px rgba(18, 54, 90, 0.08);
+  --mtm-sb-ombre-marque: 0 8px 18px -12px rgba(18, 54, 90, 0.28);
+  --mtm-sb-ombre-active: 0 6px 14px -6px rgba(36, 90, 133, 0.38);
+  --mtm-sb-active: #245A85;
+  --mtm-sb-sep: #E8EDF3;
   // Couleurs de marque — valeurs mesurées sur le logo MTM Immobilier (logomtm.jpeg)
   // Bleu marine du cube et du mot IMMOBILIER : couleur principale de l'interface.
   --mtm-primary-dark: #233D5B;
@@ -82,6 +95,17 @@
 }
 
 [data-theme='dark'] {
+  --mtm-sb-bg: #15171C;
+  --mtm-sb-text: #D4D4D8;
+  --mtm-sb-icon: #A1A1AA;
+  --mtm-sb-titre: #A1A1AA;
+  --mtm-sb-hover: #23262E;
+  --mtm-sb-active-bg: #243447;
+  --mtm-sb-ombre: 10px 0 34px -8px rgba(0, 0, 0, 0.55), 2px 0 6px rgba(0, 0, 0, 0.3);
+  --mtm-sb-ombre-marque: 0 8px 18px -12px rgba(0, 0, 0, 0.6);
+  --mtm-sb-ombre-active: 0 6px 14px -6px rgba(0, 0, 0, 0.6);
+  --mtm-sb-active: #8DBBE8;
+  --mtm-sb-sep: #2A2D36;
   color-scheme: dark;
 
   --mtm-primary-dark: #E3EEF8;

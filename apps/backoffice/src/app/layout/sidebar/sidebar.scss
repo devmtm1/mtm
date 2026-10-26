@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Sidebar MTM Immobilier — surface blanche unie, bordure fine, sobre.
+   Sidebar MTM Immobilier — fond clair bleuté, texte ardoise, rubrique active en bleu doux.
    Largeur pilotée par le shell (--sidebar-width : 248px / 72px replié).
    ========================================================================== */
 
@@ -9,7 +9,7 @@
   height: 100%;
   min-height: 0;
   min-width: 0;
-  background-color: var(--mtm-card-bg);
+  background-color: var(--mtm-sb-bg);
 }
 
 /* --------------------------------------------------------------------------
@@ -22,6 +22,10 @@
   min-height: 72px;
   padding: 16px 18px;
   flex-shrink: 0;
+  /* Une ombre sous le logo plutôt qu'un filet : l'en-tête se détache de la liste. */
+  box-shadow: var(--mtm-sb-ombre-marque);
+  position: relative;
+  z-index: 1;
 }
 
 .sidebar__logo {
@@ -53,7 +57,7 @@
   font-size: 1rem;
   font-weight: 800;
   letter-spacing: 0.03em;
-  color: var(--mtm-primary);
+  color: var(--mtm-sb-active);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -63,7 +67,7 @@
 .sidebar__brand-subtext {
   font-size: 0.72rem;
   font-weight: 500;
-  color: var(--mtm-text-muted);
+  color: var(--mtm-sb-icon);
   margin-top: 2px;
   white-space: nowrap;
   overflow: hidden;
@@ -82,11 +86,13 @@
 
   /* Scrollbar discrète */
   scrollbar-width: thin;
-  scrollbar-color: var(--mtm-border) transparent;
+  scrollbar-color: var(--mtm-sb-sep) transparent;
 }
 
 .sidebar__section + .sidebar__section {
-  margin-top: 10px;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid var(--mtm-sb-sep);
 }
 
 /* Titre de rubrique : casse normale (les majuscules se lisent plus lentement),
@@ -97,7 +103,7 @@
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.01em;
-  color: var(--mtm-text-muted);
+  color: var(--mtm-sb-titre);
 }
 
 /* Titre d'une rubrique repliable : un bouton qui ressemble à un titre. */
@@ -118,11 +124,11 @@
   }
 
   &:hover {
-    color: var(--mtm-text-dark);
+    color: var(--mtm-sb-text);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--mtm-primary-light);
+    outline: 2px solid var(--mtm-sb-active);
     outline-offset: -2px;
   }
 }

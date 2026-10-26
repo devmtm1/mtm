@@ -1,15 +1,63 @@
 import { useState } from 'react';
-import { BadgeCheck, Clock, Coins } from 'lucide-react';
-import { PageIntro } from '../components/layout/PageIntro';
-import { ContactForm } from '../components/contact/ContactForm';
+import { BandeauDemarches } from '../components/demarches/BandeauDemarches';
+import { IMAGE_BANDEAU_DEMARCHES } from '../utils/demarches';
+import { donneesFaq } from '../utils/seo';
 import { ContactModal } from '../components/contact/ContactModal';
 import { DemandeWhatsAppCta } from '../components/contact/DemandeWhatsAppCta';
+import { CarteDemarche } from '../components/demarches/CarteDemarche';
+import { ParcoursVerification } from '../components/demarches/ParcoursVerification';
+import { SectionDemande } from '../components/demarches/SectionDemande';
+import { FaqDemarches } from '../components/demarches/FaqDemarches';
 import { useEditableContent, type EditableStep } from '../hooks/useEditableContent';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 import { useSiteContact } from '../hooks/useSiteContact';
 
 const FALLBACK_INTRO =
-  "Vous envisagez d'acheter un terrain ou une villa, notamment depuis l'étranger ? Notre équipe se déplace pour vérifier le bien avant votre engagement. Tarif communiqué sur devis selon la nature du dossier.";
+  "Vous envisagez d'acheter un terrain ou une villa, notamment depuis l'étranger ? Notre équipe se déplace pour vérifier le bien avant votre engagement.";
+
+const FALLBACK_CONTACT_INTRO =
+  'Dites-nous ce dont vous avez besoin : nous vous répondons rapidement et vous disons ce que nous pouvons faire pour vous.';
+
+/**
+ * Réponses de départ : elles ne reprennent que ce que la page annonce déjà (délai, devis gratuit, tarif sur devis,
+ * contenu du rapport, démarches prises en charge). La direction les complète ou les remplace au back-office ;
+ * aucun délai de traitement ni aucun montant n'est promis ici.
+ */
+const FALLBACK_FAQ: EditableStep[] = [
+  {
+    title: 'Puis-je faire une demande depuis l’étranger ?',
+    description:
+      'Oui. Notre équipe se déplace pour vérifier le bien avant votre engagement : vous n’avez pas besoin d’être sur place. Vous pouvez aussi échanger avec nous directement sur WhatsApp.',
+  },
+  {
+    title: 'Sous quel délai répondez-vous à une demande ?',
+    description: 'Nous répondons sous 24 à 48h.',
+  },
+  {
+    title: 'Le devis est-il payant ?',
+    description: 'Non. Le devis est gratuit et sans engagement.',
+  },
+  {
+    title: 'Comment le tarif est-il fixé ?',
+    description:
+      'Le tarif est adapté à la nature et à l’urgence de la démarche. Il vous est communiqué sur devis : aucun montant n’est affiché sur le site.',
+  },
+  {
+    title: 'Que dois-je vous transmettre pour commencer ?',
+    description:
+      'Le bien concerné et les pièces dont vous disposez. Si certaines manquent, nous vous disons lesquelles réunir.',
+  },
+  {
+    title: 'Que contient le rapport de vérification ?',
+    description:
+      'Une conclusion structurée et une recommandation : favorable, défavorable ou à compléter.',
+  },
+  {
+    title: 'Ma démarche n’est pas dans la liste, pouvez-vous la traiter ?',
+    description:
+      'Décrivez votre besoin dans le formulaire : nous vous disons si nous pouvons le traiter.',
+  },
+];
 
 const FALLBACK_STEPS: EditableStep[] = [
   { title: 'Demande', description: 'Vous nous transmettez le bien concerné et vos pièces disponibles.' },
@@ -35,8 +83,6 @@ const FALLBACK_REASSURANCE = [
   'Devis gratuit, sans engagement',
   "Tarif adapté à la nature et à l'urgence de la vérification",
 ];
-
-const REASSURANCE_ICONS = [Clock, BadgeCheck, Coins];
 
 /**
  * Prestations annoncées par la direction. Elles vivent dans des blocs de
@@ -90,9 +136,15 @@ const WHATSAPP_MESSAGE =
   'Bonjour, je souhaite faire une demande auprès de MTM.';
 
 export function DemarchesPage() {
-  const { text, lines, steps } = useEditableContent();
+  const { text, lines, steps, loading: contenuEnCours } = useEditableContent();
   const { whatsappDemarches } = useSiteContact();
   const [demandeOuverte, setDemandeOuverte] = useState(false);
+  // La démarche sur laquelle le visiteur a cliqué : la demande s'ouvre avec ce sujet déjà choisi.
+  const [sujetChoisi, setSujetChoisi] = useState<string | undefined>(undefined);
+  const demander = (sujet?: string) => {
+    setSujetChoisi(sujet);
+    setDemandeOuverte(true);
+  };
 
   const prestations = steps('demarches.prestations', FALLBACK_PRESTATIONS);
   const prestationsTechniques = steps(
@@ -105,139 +157,114 @@ export function DemarchesPage() {
   const sujets = [...prestations, ...prestationsTechniques].map(
     (presta) => presta.title,
   );
+  const faq = steps('demarches.faq', FALLBACK_FAQ);
   usePageMetadata({
     title: 'Démarches administratives et vérification foncière',
+    jsonLd: donneesFaq(faq),
     description:
       'Faites vérifier un terrain au Sénégal avant d’acheter : visite sur site, contrôle administratif et rapport structuré par MTM Immobilier.',
   });
 
   return (
-    <div>
-      <PageIntro
-        eyebrow="Nos services"
-        title="Démarches administratives"
+    <div className="font-['Poppins',ui-sans-serif,system-ui,sans-serif]">
+      {/* Celui qui clique sur « Faire une demande » a déjà décidé : on lui ouvre la fenêtre plutôt que de le
+          faire défiler. La section de bas de page reste en place pour celui qui lit tout et arrive convaincu. */}
+      <BandeauDemarches
+        eyebrow={text('demarches.eyebrow', 'Nos services')}
+        title={text('demarches.title', 'Démarches administratives')}
         description={text('demarches.intro', FALLBACK_INTRO)}
-      >
-        {/* La page annonce sept prestations et décrit un parcours : le
-            formulaire est à trois écrans d'ici. Celui qui clique a déjà
-            décidé, on lui ouvre la fenêtre plutôt que de le faire défiler.
-            La section de bas de page reste en place pour celui qui lit tout
-            et arrive convaincu. */}
-        <button
-          type="button"
-          onClick={() => setDemandeOuverte(true)}
-          className="mt-6 inline-flex items-center justify-center rounded-md bg-mtm-primary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-mtm-primary-dark"
-        >
-          Faire une demande
-        </button>
-      </PageIntro>
+        points={lines('demarches.reassurance', FALLBACK_REASSURANCE)}
+        bouton={text('demarches.bouton', 'Faire une demande')}
+        image={text('demarches.image', IMAGE_BANDEAU_DEMARCHES)}
+        chargement={contenuEnCours}
+        onDemande={() => demander()}
+      />
 
-      <section className="border-b border-mtm-border bg-mtm-bg">
-        <ul className="mx-auto flex max-w-4xl flex-col gap-2.5 px-4 py-5 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-8 sm:gap-y-2 sm:px-6">
-          {lines('demarches.reassurance', FALLBACK_REASSURANCE).map((item, index) => {
-            const Icon = REASSURANCE_ICONS[index] ?? BadgeCheck;
-            return (
-              <li key={item} className="flex items-center gap-2 text-sm font-medium text-mtm-text">
-                <Icon className="h-4 w-4 shrink-0 text-mtm-primary" aria-hidden="true" />
-                {item}
-              </li>
-            );
-          })}
-        </ul>
-      </section>
-
-      <section className="mx-auto max-w-4xl px-4 pt-14 sm:px-6">
-        <h2 className="font-display text-xl font-bold text-mtm-text">Nos prestations</h2>
-        <p className="mt-2 text-sm text-mtm-muted">
-          Au Sénégal ou depuis l’étranger, nous prenons en charge vos démarches auprès
-          des administrations.
-        </p>
-        <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-          {prestations.map((presta) => (
-            <li
-              key={presta.title}
-              className="rounded-lg border border-mtm-border bg-mtm-surface p-4 shadow-card"
-            >
-              <h3 className="font-display text-sm font-bold text-mtm-text">{presta.title}</h3>
-              {presta.description && (
-                <p className="mt-1 text-sm text-mtm-muted">{presta.description}</p>
-              )}
-            </li>
-          ))}
-        </ul>
-
-        <h2 className="mt-10 font-display text-xl font-bold text-mtm-text">
-          Services techniques
-        </h2>
-        <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-          {prestationsTechniques.map(
-            (presta) => (
-              <li
-                key={presta.title}
-                className="rounded-lg border border-mtm-border bg-mtm-surface p-4 shadow-card"
-              >
-                <h3 className="font-display text-sm font-bold text-mtm-text">{presta.title}</h3>
-                {presta.description && (
-                  <p className="mt-1 text-sm text-mtm-muted">{presta.description}</p>
-                )}
-              </li>
-            ),
-          )}
-        </ul>
-      </section>
-
-      {/* Le parcours en cinq étapes ne décrit que la vérification avant achat :
-          un dépôt de mutation ne suit pas ces étapes. Le titre le dit, pour ne
-          pas laisser croire que toute demande passe par une visite de terrain. */}
-      <section className="mx-auto max-w-4xl px-4 py-14 sm:px-6">
-        <h2 className="mb-6 font-display text-xl font-bold text-mtm-text">
-          Comment se déroule une vérification avant achat
-        </h2>
-        <ol className="flex flex-col gap-4">
-          {steps('demarches.etapes', FALLBACK_STEPS).map((step, index) => (
-            <li
-              key={step.title}
-              className="flex items-start gap-4 rounded-lg border border-mtm-border bg-mtm-surface p-4 shadow-card"
-            >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-mtm-primary-subtle font-display text-sm font-bold text-mtm-primary">
-                {index + 1}
-              </span>
-              <div>
-                <h3 className="font-display text-base font-bold text-mtm-text">{step.title}</h3>
-                {step.description && <p className="mt-1 text-sm text-mtm-muted">{step.description}</p>}
-              </div>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      {/* L'ancre garde son nom d'origine bien que la section couvre désormais
-          toutes les prestations : des liens « #demande-verification » ont pu
-          être partagés, les renommer les casserait pour rien. */}
-      <section id="demande-verification" className="scroll-mt-20 bg-mtm-surface py-14">
-        <div className="mx-auto max-w-xl px-4 sm:px-6">
-          <h2 className="text-center font-display text-xl font-bold text-mtm-text">
-            Faire une demande
-          </h2>
-          <p className="mt-2 text-center text-sm text-mtm-muted">
-            Dites-nous ce dont vous avez besoin, nous revenons vers vous rapidement.
-          </p>
-
-          {/* Les démarches administratives sont suivies directement par la
-              direction : ce bouton pointe sur son numéro, distinct du numéro
-              général, en plus de la bulle flottante présente sur tout le site. */}
-          <div className="mt-6">
-            <DemandeWhatsAppCta numero={whatsappDemarches} message={WHATSAPP_MESSAGE} />
+      {/* Une seule police et une seule palette sur toute la page, celles du bandeau. */}
+      <section id="prestations" className="scroll-mt-20 bg-[#F5F8FB] py-14 lg:py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-[14px] font-bold uppercase tracking-wide text-[#C8102E]">Nos prestations</p>
+            <h2 className="mt-3 text-[28px] font-extrabold leading-tight text-[#12365A] sm:text-[34px]">
+              Quelle démarche vous concerne ?
+            </h2>
+            <p className="mt-3 text-[16px] leading-relaxed text-[#34465A]">
+              Au Sénégal ou depuis l’étranger, nous prenons en charge vos démarches auprès des administrations.
+              Choisissez la vôtre : la demande s’ouvre déjà préremplie.
+            </p>
           </div>
 
-          <ContactForm initialSujet={sujets[0]} sujetOptions={sujets} />
+          <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {prestations.map((presta) => (
+              <CarteDemarche key={presta.title} titre={presta.title} description={presta.description} onDemande={demander} />
+            ))}
+          </ul>
+
+          {prestationsTechniques.length > 0 && (
+            <>
+              <h3 className="mt-14 text-[20px] font-bold text-[#12365A]">Services techniques</h3>
+              <p className="mt-1 text-[15px] text-[#34465A]">Les plans et relevés dont votre dossier peut avoir besoin.</p>
+              <ul className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {prestationsTechniques.map((presta) => (
+                  <CarteDemarche key={presta.title} titre={presta.title} description={presta.description} onDemande={demander} />
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       </section>
+
+      {/* Le parcours en étapes ne décrit que la vérification avant achat : un dépôt de mutation ne suit pas ces
+          étapes. Le titre le dit, pour ne pas laisser croire que toute demande passe par une visite de terrain. */}
+      <section id="parcours" className="bg-white py-14 lg:py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-[14px] font-bold uppercase tracking-wide text-[#C8102E]">Comment ça se passe</p>
+            <h2 className="mt-3 text-[28px] font-extrabold leading-tight text-[#12365A] sm:text-[34px]">
+              La vérification avant achat, étape par étape
+            </h2>
+          </div>
+          <div className="mt-12">
+            <ParcoursVerification etapes={steps('demarches.etapes', FALLBACK_STEPS)} />
+          </div>
+        </div>
+      </section>
+
+      {faq.length > 0 && (
+        <section id="faq" className="scroll-mt-20 bg-[#F5F8FB] py-14 lg:py-20">
+          <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.4fr] lg:gap-16">
+            <div>
+              <p className="text-[14px] font-bold uppercase tracking-wide text-[#C8102E]">Questions fréquentes</p>
+              <h2 className="mt-3 text-[28px] font-extrabold leading-tight text-[#12365A] sm:text-[34px]">
+                Vous vous posez une question ?
+              </h2>
+              <p className="mt-3 text-[16px] leading-relaxed text-[#34465A]">
+                Les réponses aux questions que l’on nous pose le plus. Vous ne trouvez pas la vôtre ? Écrivez-nous, nous vous répondons.
+              </p>
+              <a
+                href="#demande-verification"
+                className="mt-5 inline-flex items-center gap-1.5 text-[15px] font-semibold text-[#C8102E] hover:underline"
+              >
+                Poser ma question
+              </a>
+            </div>
+            <FaqDemarches questions={faq} />
+          </div>
+        </section>
+      )}
+
+      <SectionDemande
+        intro={text('demarches.contact-intro', FALLBACK_CONTACT_INTRO)}
+        engagements={lines('demarches.reassurance', FALLBACK_REASSURANCE)}
+        sujets={sujets}
+        numeroWhatsapp={whatsappDemarches}
+        messageWhatsapp={WHATSAPP_MESSAGE}
+      />
 
       {demandeOuverte && (
         <ContactModal
           title="Faire une demande"
-          initialSujet={sujets[0]}
+          initialSujet={sujetChoisi ?? sujets[0]}
           sujetOptions={sujets}
           intro={
             <DemandeWhatsAppCta numero={whatsappDemarches} message={WHATSAPP_MESSAGE} />

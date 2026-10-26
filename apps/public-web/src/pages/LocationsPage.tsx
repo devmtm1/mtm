@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ArrowUpDown, Home, KeyRound, Search, ShieldCheck, SlidersHorizontal, Wallet } from 'lucide-react';
+import { ArrowUpDown, Building2, Search, SlidersHorizontal } from 'lucide-react';
+import { BandeauLocations, IMAGE_BANDEAU_LOCATIONS } from '../components/locations/BandeauLocations';
 import { LocationFilters } from '../components/locations/LocationFilters';
 import { LocationCard } from '../components/locations/LocationCard';
 import { activeLocationChips, type LocationChip } from '../components/locations/location-filter-chips';
@@ -12,6 +13,7 @@ import { Button } from '../components/ui/Button';
 import { LinkButton } from '../components/ui/LinkButton';
 import { Modal } from '../components/ui/Modal';
 import { fieldInputClass } from '../components/ui/FormField';
+import { useEditableContent } from '../hooks/useEditableContent';
 import { useLocationFilterOptions, useLocationsCatalog } from '../hooks/useLocations';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 import { ROUTES } from '../routes';
@@ -55,11 +57,10 @@ function criteriaKey(filters: LocationFiltersValue): string {
   return JSON.stringify(rest);
 }
 
-const REASSURANCES = [
-  { icon: ShieldCheck, label: 'Biens contrôlés par nos équipes' },
-  { icon: Wallet, label: 'Loyer, charges et caution annoncés' },
-  { icon: KeyRound, label: 'Visite et suivi, même à distance' },
-];
+const REASSURANCES_DEFAUT = ['Biens contrôlés par nos équipes', 'Loyer, charges et caution annoncés', 'Visite et suivi, même à distance'];
+
+const INTRO_DEFAUT =
+  'Appartements, villas, studios et bureaux gérés par MTM Immobilier. Comparez les loyers, regardez les photos et demandez une visite en quelques clics — même depuis l’étranger.';
 
 export function LocationsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -68,6 +69,7 @@ export function LocationsPage() {
   const [sheetDraft, setSheetDraft] = useState<LocationFiltersValue>(filters);
   const { data, loading, error } = useLocationsCatalog(filters);
   const { data: options } = useLocationFilterOptions();
+  const { text, lines, loading: contenuEnCours } = useEditableContent();
   // Le choix « Au mois / À la nuit » n'a de sens que s'il y a des annonces des deux sortes.
   const proposerModes = (options?.sejours ?? 0) > 0 && (options?.longueDuree ?? 0) > 0;
 
@@ -188,95 +190,89 @@ export function LocationsPage() {
     </label>
   );
 
+  // « Toutes / Au mois / À la nuit » : un sélecteur discret, au-dessus de la recherche.
+  const modeSelect = proposerModes ? (
+    <div role="group" aria-label="Type de location" className="inline-flex rounded-full bg-mtm-bg p-1">
+      {[
+        { value: undefined, label: 'Toutes' },
+        { value: 'longue_duree', label: 'Au mois' },
+        { value: 'courte_duree', label: 'À la nuit' },
+      ].map(({ value, label }) => (
+        <button
+          key={label}
+          type="button"
+          aria-pressed={filters.mode === value}
+          onClick={() =>
+            commitFilters({ ...filters, mode: value, page: 1, ...(value === 'courte_duree' ? { loyerMin: undefined, loyerMax: undefined } : {}) })
+          }
+          className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
+            filters.mode === value ? 'bg-mtm-primary text-white shadow-sm' : 'text-mtm-muted hover:text-mtm-primary'
+          }`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  ) : null;
+
   return (
     <div>
-      {/* Bandeau d'en-tête : la page se reconnaît d'un coup d'œil et dit tout
-          de suite ce qu'on y trouve. */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-mtm-primary-dark via-mtm-primary to-mtm-primary-medium">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/10 blur-2xl"
-        />
-        <div className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
-            <Home className="h-3.5 w-3.5" aria-hidden="true" />
-            Locations
-          </span>
-          <h1 className="mt-3 max-w-2xl font-display text-3xl font-bold leading-tight text-white sm:text-4xl">
-            Trouvez votre prochain logement au Sénégal
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm text-white/85 sm:text-base">
-            Appartements, villas, studios et bureaux gérés par MTM Immobilier. Comparez les loyers, regardez les
-            photos et demandez une visite en quelques clics — même depuis l’étranger.
-          </p>
-          <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium text-white/90">
-            {REASSURANCES.map(({ icon: Icon, label }) => (
-              <li key={label} className="inline-flex items-center gap-2">
-                <Icon className="h-4 w-4 text-white/80" aria-hidden="true" />
-                {label}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      <BandeauLocations
+        eyebrow={text('locations.eyebrow', 'Locations')}
+        title={text('locations.title', 'Trouvez votre prochain logement au Sénégal')}
+        description={text('locations.intro', INTRO_DEFAUT)}
+        points={lines('locations.reassurance', REASSURANCES_DEFAUT)}
+        image={text('locations.image', IMAGE_BANDEAU_LOCATIONS)}
+        chargement={contenuEnCours}
+      />
 
-      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
-        {/* Mobile : recherche + bouton Filtres, critères en feuille. */}
-        <div className="flex gap-2 lg:hidden">
-          <div className="relative min-w-0 flex-1">
-            <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mtm-muted"
-              aria-hidden="true"
-            />
-            <input
-              type="search"
-              aria-label="Recherche libre"
-              placeholder="Quartier, commune, mot-clé…"
-              className={`${fieldInputClass} pl-9`}
-              value={draft.search ?? ''}
-              onChange={(event) => handleFiltersChange({ ...draft, search: event.target.value || undefined, page: 1 })}
-            />
-          </div>
-          <button
-            type="button"
-            onClick={openSheet}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-mtm-border bg-mtm-surface px-3 py-2 text-sm font-semibold text-mtm-text hover:border-mtm-primary hover:text-mtm-primary"
-            aria-haspopup="dialog"
-          >
-            <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
-            Filtres
-            {filterChipsCount > 0 && (
-              <span className="ml-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-mtm-primary px-1.5 text-[11px] font-bold text-white">
-                {filterChipsCount}
-              </span>
-            )}
-          </button>
-        </div>
-
-        {proposerModes && (
-          <div role="group" aria-label="Type de location" className="mt-3 inline-flex rounded-full border border-mtm-border bg-mtm-surface p-1 lg:mt-0 lg:mb-4">
-            {[
-              { value: undefined, label: 'Toutes' },
-              { value: 'longue_duree', label: 'Au mois' },
-              { value: 'courte_duree', label: 'À la nuit' },
-            ].map(({ value, label }) => (
+      <div className="mx-auto max-w-6xl px-4 pb-10 sm:px-6 sm:pb-14">
+        {/* Le panneau de recherche chevauche le bandeau, comme les cartes de « Nos réalisations ». */}
+        <div className="relative z-10 -mt-14 sm:-mt-16 lg:-mt-20">
+          {/* Mobile : recherche + bouton Filtres, critères en feuille. */}
+          <div className="rounded-2xl border border-mtm-border/70 bg-white p-3 shadow-[0_24px_60px_-28px_rgba(10,33,66,0.45)] lg:hidden">
+            <div className="flex gap-2">
+              <div className="relative min-w-0 flex-1">
+                <Search
+                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mtm-muted"
+                  aria-hidden="true"
+                />
+                <input
+                  type="search"
+                  aria-label="Recherche libre"
+                  placeholder="Quartier, commune, mot-clé…"
+                  className={`${fieldInputClass} pl-9`}
+                  value={draft.search ?? ''}
+                  onChange={(event) => handleFiltersChange({ ...draft, search: event.target.value || undefined, page: 1 })}
+                />
+              </div>
               <button
-                key={label}
                 type="button"
-                aria-pressed={filters.mode === value}
-                onClick={() => commitFilters({ ...filters, mode: value, page: 1, ...(value === 'courte_duree' ? { loyerMin: undefined, loyerMax: undefined } : {}) })}
-                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
-                  filters.mode === value ? 'bg-mtm-primary text-white' : 'text-mtm-muted hover:text-mtm-primary'
-                }`}
+                onClick={openSheet}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-mtm-border bg-white px-3 py-2 text-sm font-semibold text-mtm-text hover:border-mtm-primary hover:text-mtm-primary"
+                aria-haspopup="dialog"
               >
-                {label}
+                <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+                Filtres
+                {filterChipsCount > 0 && (
+                  <span className="ml-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-mtm-primary px-1.5 text-[11px] font-bold text-white">
+                    {filterChipsCount}
+                  </span>
+                )}
               </button>
-            ))}
+            </div>
+            {modeSelect && <div className="mt-3">{modeSelect}</div>}
           </div>
-        )}
 
-        <div className="hidden lg:block">
-          <LocationFilters value={draft} onChange={handleFiltersChange} onSubmit={() => commitFilters(draft)} />
+          <div className="hidden lg:block">
+            <LocationFilters
+              value={draft}
+              onChange={handleFiltersChange}
+              onSubmit={() => commitFilters(draft)}
+              onReset={() => commitFilters({})}
+              header={modeSelect}
+            />
+          </div>
         </div>
 
         {hasActiveFilters && (
@@ -285,18 +281,23 @@ export function LocationsPage() {
           </div>
         )}
 
-        <div className="mt-4 sm:mt-6">
+        <div className="mt-6 sm:mt-8">
           <div className="sticky top-16 z-20 -mx-4 mb-3 flex items-center justify-between gap-3 border-b border-mtm-border bg-mtm-bg/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 lg:static lg:mx-0 lg:mb-4 lg:border-0 lg:bg-transparent lg:px-0 lg:py-0">
             <p className="text-sm text-mtm-muted" aria-live="polite">
-              {loading && !data
-                ? 'Recherche…'
-                : data
-                  ? data.total === 0
-                    ? 'Aucune annonce'
-                    : data.total === 1
-                      ? '1 annonce'
-                      : `${data.total} annonces`
-                  : ''}
+              {loading && !data ? (
+                'Recherche…'
+              ) : data ? (
+                data.total === 0 ? (
+                  'Aucune annonce'
+                ) : (
+                  <>
+                    <strong className="font-display text-base font-bold text-mtm-primary-dark">{data.total}</strong>{' '}
+                    {data.total === 1 ? 'annonce' : 'annonces'}
+                  </>
+                )
+              ) : (
+                ''
+              )}
             </p>
             {sortSelect}
           </div>
@@ -353,13 +354,18 @@ export function LocationsPage() {
         </div>
 
         {/* Propriétaire : la même page recrute les biens de demain. */}
-        <section className="mt-12 flex flex-col items-start gap-4 rounded-xl border border-mtm-border bg-mtm-surface p-6 shadow-card sm:flex-row sm:items-center sm:justify-between">
-          <div className="max-w-xl">
-            <h2 className="font-display text-lg font-bold text-mtm-text">Vous avez un bien à louer ?</h2>
-            <p className="mt-1 text-sm text-mtm-muted">
-              Confiez-le à MTM : recherche de locataires, encaissement des loyers, suivi et rapports réguliers,
-              même depuis l’étranger.
-            </p>
+        <section className="mt-14 flex flex-col items-start gap-5 rounded-2xl border border-mtm-border bg-white p-6 shadow-card sm:flex-row sm:items-center sm:justify-between sm:p-8">
+          <div className="flex items-start gap-4">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-mtm-primary-subtle text-mtm-primary">
+              <Building2 className="h-6 w-6" strokeWidth={1.7} aria-hidden="true" />
+            </span>
+            <div className="max-w-xl">
+              <h2 className="font-display text-lg font-bold text-mtm-primary-dark">Vous avez un bien à louer ?</h2>
+              <p className="mt-1 text-sm leading-relaxed text-mtm-muted">
+                Confiez-le à MTM : recherche de locataires, encaissement des loyers, suivi et rapports réguliers,
+                même depuis l’étranger.
+              </p>
+            </div>
           </div>
           <LinkButton to={ROUTES.gestionLocative} variant="secondary" className="shrink-0">
             Découvrir la gestion locative

@@ -474,6 +474,9 @@ model RefreshToken {
 
   expiresAt DateTime
   revokedAt DateTime? // révocation explicite (logout, rotation, compromission)
+  /// Posé seulement quand le token est remplacé par un nouveau (rotation) : pendant un court délai, il reste
+  /// accepté pour que deux renouvellements simultanés (deux onglets, plusieurs requêtes) ne s'excluent pas.
+  rotatedAt DateTime?
 
   userAgent String?
   ipAddress String?

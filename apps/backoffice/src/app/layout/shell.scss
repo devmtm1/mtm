@@ -18,9 +18,14 @@
 
 .shell__sidenav {
   width: var(--sidebar-width);
-  border-right: 1px solid var(--mtm-border);
+  /* Trait rouge de la charte à la limite du menu. */
+  border-right: 2px solid var(--mtm-accent);
+  border-radius: 0;
+  /* Le menu se détache de la page : ombre portée à droite, au-dessus du contenu. */
+  box-shadow: var(--mtm-sb-ombre);
+  z-index: 6;
+  background-color: var(--mtm-sb-bg);
   transition: width 0.2s ease;
-  box-shadow: none;
 }
 
 .shell__content {
