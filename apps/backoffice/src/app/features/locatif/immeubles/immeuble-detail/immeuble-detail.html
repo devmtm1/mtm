@@ -1,0 +1,172 @@
+@if (loading()) {
+  <div class="detail-page">
+    <div class="skeleton" style="height: 20px; width: 180px"></div>
+    <div class="skeleton" style="height: 36px; width: 45%"></div>
+    <div class="skeleton" style="height: 220px"></div>
+  </div>
+} @else if (immeuble(); as i) {
+  <div class="detail-page immeuble-detail">
+    <header class="detail-header">
+      <div>
+        <button mat-button type="button" class="back-link" (click)="retour()">
+          <svg class="btn-icon" lucideArrowLeft aria-hidden="true"></svg>Retour aux propriétés
+        </button>
+        <p class="eyebrow">{{ i.referenceInterne }} · {{ typeLabel(i.type) }}</p>
+        <h1>{{ i.nom }}</h1>
+        <p class="detail-header__location">
+          {{ i.adresse }}{{ i.commune ? ', ' + i.commune : '' }} · {{ proprietaire(i) }}
+        </p>
+      </div>
+    </header>
+
+    <section class="kpi-row" aria-label="Synthèse de la propriété">
+      <div class="kpi">
+        <span class="kpi__body">
+          <strong>{{ i.synthese.logements }}</strong>
+          <span>Logements</span>
+          <small
+            >{{ i.synthese.loues }} loué{{ i.synthese.loues > 1 ? 's' : '' }} ·
+            {{ i.synthese.disponibles }} disponible{{
+              i.synthese.disponibles > 1 ? 's' : ''
+            }}</small
+          >
+        </span>
+      </div>
+      <div class="kpi">
+        <span class="kpi__body">
+          <strong>{{ i.synthese.logements ? i.synthese.tauxOccupation + ' %' : '—' }}</strong>
+          <span>Taux d’occupation</span>
+          @if (i.synthese.horsMarche > 0) {
+            <small>{{ i.synthese.horsMarche }} hors marché</small>
+          }
+        </span>
+      </div>
+      <div class="kpi">
+        <span class="kpi__body">
+          <strong>{{ i.synthese.loyerMensuelAttendu | mtmMoney }}</strong>
+          <span>Loyers attendus / mois</span>
+          <small>Potentiel : {{ i.synthese.loyerMensuelPotentiel | mtmMoney }}</small>
+        </span>
+      </div>
+      <div
+        class="kpi"
+        [class.kpi--danger]="i.synthese.impayes > 0"
+        [class.kpi--muted]="i.synthese.impayes === 0"
+      >
+        <span class="kpi__body">
+          <strong>{{ i.synthese.impayes | mtmMoney }}</strong>
+          <span>Impayés</span>
+          <small>
+            @if (i.synthese.logementsEnRetard > 0) {
+              {{ i.synthese.logementsEnRetard }} logement{{
+                i.synthese.logementsEnRetard > 1 ? 's' : ''
+              }}
+              en retard
+            } @else {
+              Tout est à jour
+            }
+          </small>
+        </span>
+      </div>
+    </section>
+
+    <section class="page-card">
+      <div class="card-head">
+        <h2>Logements</h2>
+        @if (canCreate()) {
+          <button mat-stroked-button type="button" (click)="ajoutOuvert.set(!ajoutOuvert())">
+            <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Ajouter un logement
+          </button>
+        }
+      </div>
+
+      @if (ajoutOuvert()) {
+        <form class="ajout" [formGroup]="ajout" (ngSubmit)="ajouterLogement()">
+          <mat-form-field appearance="outline">
+            <mat-label>Repère</mat-label>
+            <input matInput formControlName="numeroLot" placeholder="A5, Rez-de-chaussée…" />
+            <mat-error>Indiquez un repère.</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Type</mat-label>
+            <mat-select formControlName="type">
+              @for (type of typesBien; track type[0]) {
+                <mat-option [value]="type[0]">{{ type[1] }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Chambres</mat-label>
+            <input matInput type="number" min="0" formControlName="nombreChambres" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Surface (m²)</mat-label>
+            <input matInput type="number" min="0" formControlName="superficie" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Loyer mensuel</mat-label>
+            <input matInput type="number" min="0" formControlName="loyerMensuel" />
+          </mat-form-field>
+          <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+            Ajouter
+          </button>
+        </form>
+      }
+
+      @if (i.logements.length === 0) {
+        <p class="vide">Aucun logement pour l’instant.</p>
+      } @else {
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Repère</th>
+                <th>Logement</th>
+                <th>Statut</th>
+                <th>Locataire</th>
+                <th class="is-right">Loyer</th>
+                <th class="is-right">Impayé</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (logement of i.logements; track logement.id) {
+                <tr
+                  class="is-clickable"
+                  tabindex="0"
+                  (click)="ouvrirLogement(logement)"
+                  (keydown.enter)="ouvrirLogement(logement)"
+                >
+                  <td>
+                    <strong>{{ logement.numeroLot || '—' }}</strong>
+                  </td>
+                  <td>
+                    {{ typeBienLabel(logement.type)
+                    }}{{ logement.nombreChambres ? ' · ' + logement.nombreChambres + ' ch.' : '' }}
+                    <div class="sous-texte">{{ logement.referenceInterne }}</div>
+                  </td>
+                  <td>
+                    <span [class]="statutPill(logement.statut)">{{
+                      statutLabel(logement.statut)
+                    }}</span>
+                  </td>
+                  <td>{{ locataire(logement) }}</td>
+                  <td class="is-right">
+                    {{
+                      (logement.bail ? logement.bail.loyerMensuel : logement.loyerMensuel)
+                        | mtmMoney
+                    }}
+                  </td>
+                  <td class="is-right" [class.negatif]="(logement.bail?.impaye ?? 0) > 0">
+                    {{
+                      (logement.bail?.impaye ?? 0) > 0 ? (logement.bail?.impaye | mtmMoney) : '—'
+                    }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  </div>
+}

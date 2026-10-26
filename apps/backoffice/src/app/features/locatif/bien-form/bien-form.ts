@@ -1,4 +1,5 @@
 import type { AvecModifications } from '../../../core/guards/modifications-non-enregistrees.guard';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -11,7 +12,7 @@ import { LucideArrowLeft, LucideImagePlus, LucidePlus, LucideSave, LucideX } fro
 import { SessionService } from '../../../core/services/session.service';
 import { LocatifApiService } from '../../../core/services/api/locatif-api.service';
 import { ProprietairesApiService } from '../../../core/services/api/proprietaires-api.service';
-import type { CreateBienPayload, LocatifOptions, LocatifPersonne } from '../../../core/models/locatif.model';
+import type { CreateBienPayload, ImmeubleResume, LocatifOptions, LocatifPersonne } from '../../../core/models/locatif.model';
 import type { ProprietaireSummary } from '../../../core/models/terrain.model';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { TYPES_BIEN, nomPersonne, simpleLabel } from '../locatif-status';
@@ -54,6 +55,7 @@ export class BienForm implements OnInit, OnDestroy, AvecModifications {
   protected readonly options = signal<Partial<LocatifOptions>>({});
   protected readonly proprietaires = signal<ProprietaireSummary[]>([]);
   protected readonly collaborateurs = signal<LocatifPersonne[]>([]);
+  protected readonly immeubles = signal<ImmeubleResume[]>([]);
   /** Types proposés : ceux du serveur, ou la liste connue si le chargement échoue. */
   protected readonly types = computed(() => this.options().typesBien ?? Object.keys(TYPES_BIEN));
   /** Désigner un autre responsable que soi relève de la modification des biens. */
@@ -63,6 +65,9 @@ export class BienForm implements OnInit, OnDestroy, AvecModifications {
 
   protected readonly form = this.formBuilder.nonNullable.group({
     proprietaireId: ['', Validators.required],
+    // Propriété dont le bien est un logement (villa divisée, résidence) et son repère : A2, 2e étage…
+    immeubleId: [''],
+    numeroLot: [''],
     type: ['appartement', Validators.required],
     adresse: ['', Validators.required],
     commune: [''],
@@ -90,6 +95,14 @@ export class BienForm implements OnInit, OnDestroy, AvecModifications {
     heureDepart: [''],
   });
 
+  /** Les propriétés du propriétaire choisi : un logement ne peut appartenir qu'à la propriété de son propriétaire. */
+  protected readonly proprietaireChoisi = toSignal(this.form.controls.proprietaireId.valueChanges, {
+    initialValue: this.form.controls.proprietaireId.value,
+  });
+  protected readonly immeublesDuProprietaire = computed(() =>
+    this.immeubles().filter((immeuble) => immeuble.proprietaire.id === this.proprietaireChoisi()),
+  );
+
   protected readonly modes = MODES_LOCATION;
   protected readonly modesProposes = computed(() => this.options().modesLocation ?? Object.keys(MODES_LOCATION));
 
@@ -107,6 +120,24 @@ export class BienForm implements OnInit, OnDestroy, AvecModifications {
     // Arrivé depuis la fiche d'un propriétaire : le bien est déjà à son nom.
     const proprietaireId = this.route.snapshot.queryParamMap.get('proprietaireId');
     if (proprietaireId) this.form.controls.proprietaireId.setValue(proprietaireId);
+    this.api.findImmeubles({ pageSize: 200 }).subscribe({
+      next: (page) => {
+        this.immeubles.set(page.items);
+        // Arrivé depuis la fiche d'une propriété : le bien est déjà un de ses logements.
+        const immeubleId = this.route.snapshot.queryParamMap.get('immeubleId');
+        const immeuble = page.items.find((item) => item.id === immeubleId);
+        if (immeuble) {
+          this.form.patchValue({
+            proprietaireId: immeuble.proprietaire.id,
+            immeubleId: immeuble.id,
+            adresse: immeuble.adresse,
+            commune: immeuble.commune ?? '',
+            region: immeuble.region ?? '',
+          });
+        }
+      },
+      error: () => this.immeubles.set([]),
+    });
     this.api.getOptions().subscribe({
       next: (options) => this.options.set(options),
       error: () => this.options.set({}),
@@ -222,6 +253,8 @@ export class BienForm implements OnInit, OnDestroy, AvecModifications {
     this.saving.set(true);
     const payload: CreateBienPayload = {
       proprietaireId: valeur.proprietaireId,
+      immeubleId: valeur.immeubleId || undefined,
+      numeroLot: valeur.immeubleId ? texte(valeur.numeroLot) : undefined,
       type: valeur.type,
       adresse: valeur.adresse.trim(),
       commune: texte(valeur.commune),

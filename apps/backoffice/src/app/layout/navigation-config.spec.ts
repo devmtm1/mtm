@@ -120,7 +120,7 @@ describe('repérage de la page dans le menu', () => {
     const contenus = sujet('Site web').children?.[0] as NavLeaf;
     expect(entreeCorrespond(contenus, '/content')).toBe(true);
     expect(entreeCorrespond(contenus, '/content/showcase')).toBe(false);
-    const locataires = sujet('Gestion locative').children?.[1] as NavLeaf;
+    const locataires = sujet('Gestion locative').children?.find((enfant) => enfant.label === 'Locataires') as NavLeaf;
     expect(entreeCorrespond(locataires, '/locatif/locataires/42')).toBe(true);
   });
 

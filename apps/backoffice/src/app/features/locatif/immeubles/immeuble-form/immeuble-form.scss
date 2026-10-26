@@ -1,0 +1,26 @@
+/* Les blocs, la grille et le pied d'action viennent des styles communs des formulaires (styles.scss). */
+.generateur {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+
+  button {
+    margin-top: 6px;
+  }
+}
+
+.lignes .cellule {
+  width: 100%;
+  min-width: 90px;
+  padding: 6px 8px;
+  border: 1px solid var(--mtm-border);
+  border-radius: 6px;
+  background: var(--mtm-surface);
+  color: inherit;
+  font: inherit;
+
+  &--court {
+    min-width: 64px;
+  }
+}

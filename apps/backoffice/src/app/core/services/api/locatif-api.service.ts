@@ -12,6 +12,11 @@ import type {
   ChangerLocatairePayload,
   CreateBailPayload,
   CreateBienPayload,
+  CreateImmeublePayload,
+  ImmeubleDetail,
+  ImmeublePage,
+  LogementInitial,
+  UpdateImmeublePayload,
   CreateIncidentPayload,
   CreateLocatairePayload,
   CreateMouvementCautionPayload,
@@ -50,6 +55,32 @@ export class LocatifApiService {
   private readonly baseUrl = `${environment.apiUrl}/locatif`;
 
   private options$?: Observable<LocatifOptions>;
+
+  // --- Propriétés (villa divisée, immeuble, résidence) ---
+
+  findImmeubles(query: { search?: string; proprietaireId?: string; page?: number; pageSize?: number } = {}): Observable<ImmeublePage> {
+    let params = new HttpParams();
+    for (const [cle, valeur] of Object.entries(query)) {
+      if (valeur !== undefined && valeur !== '') params = params.set(cle, String(valeur));
+    }
+    return this.http.get<ImmeublePage>(`${this.baseUrl}/immeubles`, { params });
+  }
+
+  findImmeuble(id: string): Observable<ImmeubleDetail> {
+    return this.http.get<ImmeubleDetail>(`${this.baseUrl}/immeubles/${id}`);
+  }
+
+  createImmeuble(payload: CreateImmeublePayload): Observable<ImmeubleDetail> {
+    return this.http.post<ImmeubleDetail>(`${this.baseUrl}/immeubles`, payload);
+  }
+
+  updateImmeuble(id: string, payload: UpdateImmeublePayload): Observable<ImmeubleDetail> {
+    return this.http.patch<ImmeubleDetail>(`${this.baseUrl}/immeubles/${id}`, payload);
+  }
+
+  ajouterLogements(id: string, logements: LogementInitial[]): Observable<{ id: string; referenceInterne: string }[]> {
+    return this.http.post<{ id: string; referenceInterne: string }[]>(`${this.baseUrl}/immeubles/${id}/logements`, { logements });
+  }
 
   // --- Biens ---
 
