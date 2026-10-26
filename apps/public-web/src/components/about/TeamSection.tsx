@@ -54,11 +54,16 @@ function MotDuDirecteur({ directeur }: { directeur: TeamPerson }) {
     .split(/\n{2,}|\n/)
     .map((p) => p.trim())
     .filter(Boolean);
+  // Une première ligne courte (« Bienvenue chez MTM IMMOBILIER ») sert d'accroche, pas de paragraphe.
+  const [premier, ...suite] = paragraphes;
+  const accroche = premier && premier.length <= 80 ? premier : null;
+  const corps = accroche ? suite : paragraphes;
 
   return (
     <section aria-labelledby="mot-directeur" className="bg-mtm-primary-subtle">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-14 sm:px-6 md:grid-cols-[minmax(0,400px)_1fr] md:items-center lg:gap-14 lg:py-16">
-        <figure className="mx-auto w-full max-w-[300px] sm:max-w-[400px] md:mx-0">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[minmax(0,340px)_1fr] md:items-start lg:gap-16 lg:py-20">
+        {/* Un long texte à côté d'une photo : la photo reste en haut de l'écran pendant la lecture, au lieu de flotter au milieu. */}
+        <figure className="mx-auto w-full max-w-[280px] sm:max-w-[340px] md:sticky md:top-28 md:mx-0">
           <div className="relative">
             <span
               aria-hidden="true"
@@ -67,32 +72,38 @@ function MotDuDirecteur({ directeur }: { directeur: TeamPerson }) {
             <Portrait
               src={directeur.imageUrl}
               nom={directeur.nom}
-              sizes="(min-width: 640px) 400px, 300px"
+              sizes="(min-width: 640px) 340px, 280px"
               className="relative aspect-[4/5] w-full rounded-3xl object-[center_15%] shadow-card-hover"
             />
           </div>
         </figure>
 
-        <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-mtm-accent">
+        <div className="max-w-2xl">
+          <span className="flex items-center gap-3 text-xs font-bold uppercase tracking-wider text-mtm-accent">
+            <span aria-hidden="true" className="h-[3px] w-10 rounded-full bg-mtm-accent" />
             Le mot du directeur
           </span>
           <h2 id="mot-directeur" className="sr-only">
             Le mot du directeur
           </h2>
           <Quote
-            className="mt-3 h-9 w-9 text-mtm-primary/25"
+            className="mt-5 h-9 w-9 text-mtm-accent/30"
             fill="currentColor"
             aria-hidden="true"
           />
-          {paragraphes.length > 0 && (
-            <blockquote className="mt-2 space-y-4 text-base leading-relaxed text-mtm-text sm:text-lg">
-              {paragraphes.map((paragraphe, index) => (
+          {accroche && (
+            <p className="mt-2 font-display text-2xl font-bold leading-snug text-mtm-primary sm:text-3xl">
+              {accroche}
+            </p>
+          )}
+          {corps.length > 0 && (
+            <blockquote className="mt-6 space-y-5 text-[17px] leading-8 text-mtm-text">
+              {corps.map((paragraphe, index) => (
                 <p key={index}>{paragraphe}</p>
               ))}
             </blockquote>
           )}
-          <p className="mt-6 flex items-center gap-3">
+          <p className="mt-8 flex items-center gap-3 border-t border-mtm-primary/15 pt-6">
             <span aria-hidden="true" className="h-10 w-1 rounded-full bg-mtm-accent" />
             <span>
               <span className="block font-display text-lg font-bold text-mtm-primary">
