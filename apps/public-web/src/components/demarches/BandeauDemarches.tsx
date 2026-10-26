@@ -37,20 +37,24 @@ export function BandeauDemarches({ eyebrow, title, description, points, bouton, 
 
   return (
     <header className="relative isolate overflow-hidden bg-white">
-      <img
-        src={source}
-        srcSet={srcSet || undefined}
-        sizes={srcSet ? '100vw' : undefined}
-        alt=""
-        aria-hidden="true"
-        fetchPriority="high"
-        onError={() => setImageMorte(true)}
-        className={`absolute inset-0 -z-20 h-full w-full object-cover object-[78%_center] saturate-[1.08] lg:object-[72%_center] ${fondu}`}
-      />
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-white/80 lg:bg-transparent lg:bg-gradient-to-r lg:from-white lg:via-white/90 lg:via-[26%] lg:to-transparent lg:to-[50%]"
-      />
+      {/* La photo occupe la droite du bandeau et se fond dans le blanc vers la gauche : le texte reste sur la
+          zone claire, et les sujets de la photo (documents, maquette) restent à droite du texte. */}
+      <div className="absolute inset-y-0 right-0 -z-20 w-full lg:w-[82%]">
+        <img
+          src={source}
+          srcSet={srcSet || undefined}
+          sizes={srcSet ? '(min-width: 1024px) 82vw, 100vw' : undefined}
+          alt=""
+          aria-hidden="true"
+          fetchPriority="high"
+          onError={() => setImageMorte(true)}
+          className={`h-full w-full object-cover object-[72%_center] lg:object-center ${fondu}`}
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-white/80 lg:bg-transparent lg:bg-gradient-to-r lg:from-white lg:via-white/70 lg:via-[9%] lg:to-transparent lg:to-[26%]"
+        />
+      </div>
 
       <div className={`mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-10 lg:py-10 ${fondu}`}>
         <div className="max-w-[33rem]">
