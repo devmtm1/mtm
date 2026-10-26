@@ -22,7 +22,10 @@
   min-height: 72px;
   padding: 16px 18px;
   flex-shrink: 0;
-  border-bottom: 1px solid var(--mtm-sb-sep);
+  /* Une ombre sous le logo plutôt qu'un filet : l'en-tête se détache de la liste. */
+  box-shadow: var(--mtm-sb-ombre-marque);
+  position: relative;
+  z-index: 1;
 }
 
 .sidebar__logo {
