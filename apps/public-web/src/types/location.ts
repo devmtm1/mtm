@@ -6,6 +6,25 @@ export interface LocationMedia {
   secureUrl: string;
 }
 
+/** Un autre logement libre de la même propriété. */
+export interface AutreLogement {
+  id: string;
+  titre: string | null;
+  type: string;
+  numeroLot: string | null;
+  modeLocation: 'longue_duree' | 'courte_duree';
+  nombreChambres: number | null;
+  loyerMensuel: number | null;
+  prixNuit: number | null;
+}
+
+/** La propriété (villa divisée, résidence) dont l'annonce est un logement : son nom, jamais son adresse exacte. */
+export interface ImmeubleAnnonce {
+  nom: string;
+  type: string;
+  autresLogements: AutreLogement[];
+}
+
 /**
  * Annonce de location telle que le site public la reçoit. L'API ne renvoie
  * ni l'adresse exacte, ni le propriétaire, ni les notes internes : la
@@ -19,6 +38,9 @@ export interface Location {
   description: string | null;
   commune: string | null;
   region: string | null;
+  /** Repère du logement dans sa propriété (A2, 2e étage…) et la propriété elle-même, s'il y en a une. */
+  numeroLot?: string | null;
+  immeuble?: ImmeubleAnnonce | null;
   superficie: number | null;
   loyerMensuel: number | null;
   charges: number | null;

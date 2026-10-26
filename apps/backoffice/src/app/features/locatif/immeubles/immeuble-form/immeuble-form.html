@@ -1,0 +1,207 @@
+<section class="form-page immeuble-form-page" aria-labelledby="immeuble-form-title">
+  <header class="page-header">
+    <div>
+      <button mat-button type="button" class="back-link" (click)="retour()">
+        <svg class="btn-icon" lucideArrowLeft aria-hidden="true"></svg>Retour aux propriétés
+      </button>
+      <p class="eyebrow">Gestion locative</p>
+      <h1 id="immeuble-form-title" class="page-header__title">Nouvelle propriété</h1>
+      <p class="page-header__subtitle">
+        Une villa divisée, un immeuble ou une résidence confiés par un propriétaire. Chaque logement
+        garde son propre loyer, son bail et son annonce.
+      </p>
+    </div>
+  </header>
+  <p class="form-legend"><span aria-hidden="true">*</span> champ obligatoire</p>
+
+  <form class="form-body" [formGroup]="form" (ngSubmit)="submit()">
+    <section class="page-card form-block">
+      <div class="form-block__head">
+        <h2>La propriété</h2>
+        <p>Son nom, son propriétaire et son adresse : les logements les reprennent.</p>
+      </div>
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Nom</mat-label>
+          <input matInput formControlName="nom" placeholder="Villa Fall, Résidence Les Palmiers…" />
+          <mat-error>Donnez un nom à la propriété.</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Nature</mat-label>
+          <mat-select formControlName="type">
+            @for (type of typesImmeuble; track type[0]) {
+              <mat-option [value]="type[0]">{{ type[1] }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="wide">
+          <mat-label>Propriétaire</mat-label>
+          <mat-select formControlName="proprietaireId">
+            @for (proprietaire of proprietaires(); track proprietaire.id) {
+              <mat-option [value]="proprietaire.id">{{ nomProprietaire(proprietaire) }}</mat-option>
+            }
+          </mat-select>
+          <mat-error>Choisissez le propriétaire.</mat-error>
+        </mat-form-field>
+        @if (peutAjouterProprietaire()) {
+          <div class="ajout-proprietaire">
+            <button mat-stroked-button type="button" (click)="ajouterProprietaire()">
+              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau propriétaire
+            </button>
+          </div>
+        }
+        <mat-form-field appearance="outline" class="wide">
+          <mat-label>Adresse</mat-label>
+          <input matInput formControlName="adresse" />
+          <mat-error>Indiquez l’adresse.</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Commune</mat-label>
+          <input matInput formControlName="commune" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Région</mat-label>
+          <input matInput formControlName="region" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Taux de gestion (%)</mat-label>
+          <input
+            matInput
+            type="number"
+            min="0"
+            max="100"
+            step="0.5"
+            formControlName="tauxGestion"
+          />
+          <mat-hint>Vide : taux par défaut.</mat-hint>
+        </mat-form-field>
+        @if (peutAssigner()) {
+          <mat-form-field appearance="outline">
+            <mat-label>Responsable</mat-label>
+            <mat-select formControlName="responsableId">
+              <mat-option value="">Moi</mat-option>
+              @for (collaborateur of collaborateurs(); track collaborateur.id) {
+                <mat-option [value]="collaborateur.id">{{ personne(collaborateur) }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+        <mat-form-field appearance="outline" class="wide">
+          <mat-label>Notes</mat-label>
+          <textarea matInput rows="2" formControlName="notes"></textarea>
+        </mat-form-field>
+      </div>
+    </section>
+
+    <section class="page-card form-block">
+      <div class="form-block__head">
+        <h2>Les logements</h2>
+        <p>Facultatif : vous pouvez aussi les ajouter plus tard depuis la fiche de la propriété.</p>
+      </div>
+
+      <div class="generateur" [formGroup]="generateur">
+        <mat-form-field appearance="outline">
+          <mat-label>Nombre</mat-label>
+          <input matInput type="number" min="1" max="50" formControlName="nombre" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Repères</mat-label>
+          <input matInput formControlName="prefixe" maxlength="10" />
+          <mat-hint>A donne A1, A2, A3…</mat-hint>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Type</mat-label>
+          <mat-select formControlName="type">
+            @for (type of typesBien; track type[0]) {
+              <mat-option [value]="type[0]">{{ type[1] }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <button mat-stroked-button type="button" (click)="generer()">Générer les lignes</button>
+      </div>
+
+      @if (logements.length > 0) {
+        <div class="table-scroll" formArrayName="logements">
+          <table class="data-table lignes">
+            <thead>
+              <tr>
+                <th>Repère</th>
+                <th>Type</th>
+                <th>Chambres</th>
+                <th>Surface (m²)</th>
+                <th>Loyer mensuel</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (ligne of logements.controls; track ligne; let i = $index) {
+                <tr [formGroupName]="i">
+                  <td><input class="cellule" formControlName="numeroLot" aria-label="Repère" /></td>
+                  <td>
+                    <select class="cellule" formControlName="type" aria-label="Type">
+                      @for (type of typesBien; track type[0]) {
+                        <option [value]="type[0]">{{ type[1] }}</option>
+                      }
+                    </select>
+                  </td>
+                  <td>
+                    <input
+                      class="cellule cellule--court"
+                      type="number"
+                      min="0"
+                      formControlName="nombreChambres"
+                      aria-label="Chambres"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      class="cellule cellule--court"
+                      type="number"
+                      min="0"
+                      formControlName="superficie"
+                      aria-label="Surface"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      class="cellule"
+                      type="number"
+                      min="0"
+                      formControlName="loyerMensuel"
+                      aria-label="Loyer mensuel"
+                    />
+                  </td>
+                  <td class="is-right">
+                    <button
+                      mat-icon-button
+                      type="button"
+                      aria-label="Retirer ce logement"
+                      (click)="retirerLigne(i)"
+                    >
+                      <svg lucideTrash2 aria-hidden="true"></svg>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+      <div>
+        <button mat-button type="button" (click)="ajouterLigne()">
+          <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Ajouter un logement
+        </button>
+      </div>
+    </section>
+
+    <footer class="form-footer">
+      <div class="form-footer__actions">
+        <button mat-stroked-button type="button" (click)="retour()">Annuler</button>
+        <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+          <svg class="btn-icon" lucideSave aria-hidden="true"></svg>
+          {{ saving() ? 'Enregistrement…' : 'Enregistrer la propriété' }}
+        </button>
+      </div>
+    </footer>
+  </form>
+</section>

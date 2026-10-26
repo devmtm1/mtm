@@ -16,6 +16,12 @@
         <p class="detail-header__location">
           {{ typeLabel(b.type) }}{{ localisation(b) }} · {{ personne(b.proprietaire) }}
         </p>
+        @if (b.immeuble) {
+          <p class="detail-header__location">
+            Logement{{ b.numeroLot ? ' ' + b.numeroLot : '' }} de
+            <a [routerLink]="['/locatif/immeubles', b.immeuble.id]">{{ b.immeuble.nom }}</a>
+          </p>
+        }
         <div class="status-line">
           <span [class]="bienStatutPill(b.statut)">{{ bienStatutLabel(b.statut) }}</span>
           @if (bailActuel(); as bail) {

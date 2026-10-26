@@ -228,3 +228,11 @@ export function typeSignalementLabel(nature: string, type: string): string {
     ? simpleLabel(TYPES_DEMANDE, type)
     : simpleLabel(TYPES_INCIDENT, type);
 }
+
+/** Natures d'une propriété qui regroupe plusieurs logements. */
+export const TYPES_IMMEUBLE: Record<string, string> = {
+  villa: 'Villa',
+  immeuble: 'Immeuble',
+  residence: 'Résidence',
+  autre: 'Autre',
+};

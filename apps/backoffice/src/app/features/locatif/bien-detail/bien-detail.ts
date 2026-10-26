@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -100,6 +100,7 @@ import { ConsultationsBien } from '../../../shared/components/consultations-bien
 @Component({
   selector: 'app-bien-detail',
   imports: [
+    RouterLink,
     BienAnnonceCard,
     ConsultationsBien,
     DatePipe,

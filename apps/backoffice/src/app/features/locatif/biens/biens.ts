@@ -109,7 +109,13 @@ export class Biens implements OnInit {
       cellRenderer: (p: ICellRendererParams<BienListItem>) =>
         this.cellulePrincipale(
           p.data?.adresse ?? '—',
-          [p.data?.commune, p.data?.region].filter(Boolean).join(', '),
+          [
+            p.data?.immeuble ? [p.data.immeuble.nom, p.data.numeroLot].filter(Boolean).join(' · ') : null,
+            p.data?.commune,
+            p.data?.region,
+          ]
+            .filter(Boolean)
+            .join(', '),
         ),
     },
     {

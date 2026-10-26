@@ -44,6 +44,9 @@ export interface BienListItem {
   statut: string;
   notes: string | null;
   proprietaire: BienProprietaire;
+  /** Propriété (villa, immeuble, résidence) dont le bien est un logement, avec son repère (A1, 2e étage…). */
+  immeuble?: { id: string; nom: string; referenceInterne: string } | null;
+  numeroLot?: string | null;
   responsable: LocatifPersonne | null;
   baux: BailResume[];
   /** Annonce visible sur le site public (tant que le bien est disponible). */
@@ -341,6 +344,7 @@ export interface BienQuery {
   modeLocation?: string;
   proprietaireId?: string;
   responsableId?: string;
+  immeubleId?: string;
   vue?: string;
   page?: number;
   pageSize?: number;
@@ -408,6 +412,8 @@ export interface LocatifStats {
  */
 export interface CreateBienPayload extends Omit<AnnoncePayload, 'publie' | 'misEnAvant'> {
   proprietaireId: string;
+  immeubleId?: string | null;
+  numeroLot?: string | null;
   type: string;
   adresse: string;
   commune?: string;
@@ -534,3 +540,98 @@ export interface CreateLocatairePayload {
 }
 
 export type UpdateLocatairePayload = Partial<CreateLocatairePayload>;
+
+// --- Propriétés (villa divisée, immeuble, résidence) et leurs logements ---
+
+export interface SyntheseImmeuble {
+  logements: number;
+  loues: number;
+  disponibles: number;
+  horsMarche: number;
+  tauxOccupation: number;
+  loyerMensuelAttendu: number;
+  loyerMensuelPotentiel: number;
+  logementsEnRetard: number;
+  impayes: number;
+}
+
+export interface ImmeubleResume {
+  id: string;
+  referenceInterne: string;
+  nom: string;
+  type: string;
+  adresse: string;
+  commune: string | null;
+  region: string | null;
+  tauxGestion: number | string | null;
+  notes: string | null;
+  proprietaire: { id: string; firstName: string; lastName: string; matricule: string | null };
+  responsable: LocatifPersonne | null;
+  synthese: SyntheseImmeuble;
+}
+
+export interface LogementImmeuble {
+  id: string;
+  referenceInterne: string;
+  numeroLot: string | null;
+  titre: string | null;
+  type: string;
+  statut: string;
+  superficie: number | string | null;
+  nombrePieces: number | null;
+  nombreChambres: number | null;
+  loyerMensuel: number | string | null;
+  modeLocation: string;
+  prixNuit: number | string | null;
+  publie: boolean;
+  responsable: LocatifPersonne | null;
+  bail: {
+    id: string;
+    statut: string;
+    loyerMensuel: number;
+    impaye: number;
+    locataire: BailLocataireResume;
+  } | null;
+}
+
+export interface ImmeubleDetail extends Omit<ImmeubleResume, 'synthese'> {
+  latitude: number | string | null;
+  longitude: number | string | null;
+  logements: LogementImmeuble[];
+  synthese: SyntheseImmeuble;
+}
+
+export interface ImmeublePage {
+  items: ImmeubleResume[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface LogementInitial {
+  numeroLot?: string;
+  titre?: string;
+  type: string;
+  superficie?: number;
+  nombrePieces?: number;
+  nombreChambres?: number;
+  nombreSallesEau?: number;
+  loyerMensuel?: number;
+  charges?: number;
+  meuble?: boolean;
+}
+
+export interface CreateImmeublePayload {
+  nom: string;
+  type?: string;
+  proprietaireId: string;
+  responsableId?: string;
+  adresse: string;
+  commune?: string;
+  region?: string;
+  tauxGestion?: number;
+  notes?: string;
+  logements?: LogementInitial[];
+}
+
+export type UpdateImmeublePayload = Partial<Omit<CreateImmeublePayload, 'logements'>>;

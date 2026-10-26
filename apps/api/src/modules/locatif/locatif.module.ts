@@ -4,6 +4,8 @@ import { SettingsModule } from '../settings/settings.module';
 import { ClientAccountsModule } from '../client-accounts/client-accounts.module';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import { BiensController } from './biens.controller';
+import { ImmeublesController } from './immeubles.controller';
+import { ImmeublesService } from './immeubles.service';
 import { BauxController } from './baux.controller';
 import { LocatairesController } from './locataires.controller';
 import { RelancesController } from './relances.controller';
@@ -36,6 +38,7 @@ import { ResiliationsService } from './resiliations.service';
   imports: [AuditModule, SettingsModule, ClientAccountsModule],
   controllers: [
     BiensController,
+    ImmeublesController,
     BauxController,
     LocatairesController,
     RelancesController,
@@ -50,6 +53,7 @@ import { ResiliationsService } from './resiliations.service';
     LocatifOptionsService,
     LocatairesService,
     BiensService,
+    ImmeublesService,
     BienMediasService,
     LocatifPublicService,
     BauxService,

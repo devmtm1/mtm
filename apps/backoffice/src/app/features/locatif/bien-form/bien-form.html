@@ -62,6 +62,24 @@
           <mat-hint>Interne : l’adresse exacte n’est jamais publiée sur le site.</mat-hint>
           <mat-error>L’adresse est nécessaire pour localiser le bien.</mat-error>
         </mat-form-field>
+        @if (immeublesDuProprietaire().length > 0) {
+          <mat-form-field appearance="outline">
+            <mat-label>Propriété (facultatif)</mat-label>
+            <mat-select formControlName="immeubleId">
+              <mat-option value="">Bien indépendant</mat-option>
+              @for (immeuble of immeublesDuProprietaire(); track immeuble.id) {
+                <mat-option [value]="immeuble.id">{{ immeuble.nom }}</mat-option>
+              }
+            </mat-select>
+            <mat-hint>Si le bien est un logement d’une villa ou d’une résidence déjà enregistrée.</mat-hint>
+          </mat-form-field>
+          @if (form.controls.immeubleId.value) {
+            <mat-form-field appearance="outline">
+              <mat-label>Repère du logement</mat-label>
+              <input matInput formControlName="numeroLot" placeholder="A2, 2e étage…" />
+            </mat-form-field>
+          }
+        }
 
         <mat-form-field appearance="outline">
           <mat-label>Commune</mat-label>

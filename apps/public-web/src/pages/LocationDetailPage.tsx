@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { ROUTES } from '../routes';
 import { useLocation } from '../hooks/useLocations';
+import { AutresLogements } from '../components/locations/AutresLogements';
 import { LocationGallery } from '../components/locations/LocationGallery';
 import { SejourBooking } from '../components/locations/SejourBooking';
 import { TerrainMap } from '../components/terrains/TerrainMap';
@@ -132,6 +133,12 @@ export function LocationDetailPage() {
               {location.referenceInterne}
             </span>
             <h1 className="mt-1 font-display text-2xl font-bold text-mtm-text sm:text-3xl">{titre}</h1>
+            {location.immeuble && (
+              <p className="mt-1 text-sm font-semibold text-mtm-primary">
+                {location.numeroLot ? `Logement ${location.numeroLot} · ` : ''}
+                {location.immeuble.nom}
+              </p>
+            )}
             {place && (
               <p className="mt-2 flex items-center gap-1.5 text-sm text-mtm-muted">
                 <MapPin className="h-4 w-4" aria-hidden="true" />
@@ -163,6 +170,8 @@ export function LocationDetailPage() {
           />
 
           <div className="order-3 flex flex-col gap-6 lg:gap-8">
+
+          {location.immeuble && <AutresLogements immeuble={location.immeuble} />}
 
           {faits.length > 0 && (
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="L’essentiel">

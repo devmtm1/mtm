@@ -1,0 +1,87 @@
+<div class="immeubles-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Gestion locative</p>
+      <h1 class="page-header__title">Propriétés</h1>
+      <p class="page-header__subtitle">
+        Villas divisées, immeubles et résidences : un propriétaire, une adresse, plusieurs logements
+        loués séparément.
+      </p>
+    </div>
+    <div class="page-header__actions">
+      @if (canCreate()) {
+        <button mat-flat-button color="primary" type="button" (click)="nouvelle()">
+          <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouvelle propriété
+        </button>
+      }
+    </div>
+  </header>
+
+  <section class="page-card">
+    <mat-form-field appearance="outline" class="recherche">
+      <mat-label>Rechercher</mat-label>
+      <input matInput [formControl]="recherche" placeholder="Nom, adresse, propriétaire…" />
+    </mat-form-field>
+
+    @if (premierChargement()) {
+      <div class="skeleton" style="height: 180px"></div>
+    } @else if (immeubles().length === 0) {
+      <p class="vide">
+        @if (recherche.value) {
+          Aucune propriété ne correspond à cette recherche.
+        } @else {
+          Aucune propriété pour l’instant. Créez-en une quand un propriétaire confie une villa ou un
+          immeuble à plusieurs logements ; un bien seul se crée directement dans « Biens en gestion
+          ».
+        }
+      </p>
+    } @else {
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Propriété</th>
+              <th>Propriétaire</th>
+              <th class="is-right">Logements</th>
+              <th class="is-right">Occupation</th>
+              <th class="is-right">Loyers attendus / mois</th>
+              <th class="is-right">Impayés</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (immeuble of immeubles(); track immeuble.id) {
+              <tr
+                class="is-clickable"
+                tabindex="0"
+                (click)="ouvrir(immeuble)"
+                (keydown.enter)="ouvrir(immeuble)"
+              >
+                <td>
+                  <strong>{{ immeuble.nom }}</strong>
+                  <div class="sous-texte">
+                    {{ immeuble.referenceInterne }} · {{ typeLabel(immeuble.type)
+                    }}{{ immeuble.commune ? ' · ' + immeuble.commune : '' }}
+                  </div>
+                </td>
+                <td>{{ proprietaire(immeuble) }}</td>
+                <td class="is-right">
+                  {{ immeuble.synthese.logements }}
+                  <div class="sous-texte">
+                    {{ immeuble.synthese.loues }} loué{{ immeuble.synthese.loues > 1 ? 's' : '' }}
+                  </div>
+                </td>
+                <td class="is-right">
+                  {{ immeuble.synthese.logements ? immeuble.synthese.tauxOccupation + ' %' : '—' }}
+                </td>
+                <td class="is-right">{{ immeuble.synthese.loyerMensuelAttendu | mtmMoney }}</td>
+                <td class="is-right" [class.negatif]="immeuble.synthese.impayes > 0">
+                  {{ immeuble.synthese.impayes > 0 ? (immeuble.synthese.impayes | mtmMoney) : '—' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</div>

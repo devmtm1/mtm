@@ -7,6 +7,7 @@ import { createCloudinaryMock } from '../../../test/helpers/cloudinary-mock';
 import { LocatifAccessService } from './locatif-access.service';
 import { LocatifOptionsService } from './locatif-options.service';
 import { BiensService } from './biens.service';
+import { ImmeublesService } from './immeubles.service';
 import { BauxService } from './baux.service';
 import { PaiementsLoyerService } from './paiements.service';
 import { CautionService } from './caution.service';
@@ -31,6 +32,7 @@ export function createLocatifTestContext() {
   const configMock = { get: jest.fn() };
   const mailMock = { send: jest.fn().mockResolvedValue(true) };
   const auditMock = { record: jest.fn().mockResolvedValue(undefined) };
+  const biensService = new BiensService(prisma, access, options);
   const comptesClient = new ClientAccountsService(
     prisma,
     configMock as never,
@@ -62,7 +64,8 @@ export function createLocatifTestContext() {
     auditMock,
     access,
     options,
-    biens: new BiensService(prisma, access, options),
+    biens: biensService,
+    immeubles: new ImmeublesService(prisma, access, options, biensService),
     baux: new BauxService(prisma, access, options),
     paiements: new PaiementsLoyerService(
       prisma,

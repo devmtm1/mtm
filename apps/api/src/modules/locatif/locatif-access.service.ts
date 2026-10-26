@@ -52,6 +52,31 @@ export class LocatifAccessService {
     return { responsableId: user.id };
   }
 
+  /**
+   * Périmètre des propriétés : tout le portefeuille pour l'encadrement ; sinon les propriétés qu'on porte, ou
+   * dans lesquelles on porte au moins un logement.
+   */
+  immeubleOwnershipFilter(user: LocatifUser) {
+    if (this.isManager(user)) return {};
+    return {
+      OR: [
+        { responsableId: user.id },
+        { logements: { some: { responsableId: user.id } } },
+      ],
+    };
+  }
+
+  async ensureImmeubleAccessible(
+    immeubleId: string,
+    user: LocatifUser,
+  ): Promise<void> {
+    const immeuble = await this.prisma.immeubleLocatif.findFirst({
+      where: { id: immeubleId, ...this.immeubleOwnershipFilter(user) },
+      select: { id: true },
+    });
+    if (!immeuble) throw new NotFoundException('Propriété introuvable');
+  }
+
   async ensureBienAccessible(
     bienLocatifId: string,
     user: LocatifUser,

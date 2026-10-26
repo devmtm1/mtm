@@ -460,6 +460,30 @@ export const routes: Routes = [
           import('./features/demarches/missions/missions').then((m) => m.Missions),
       },
       {
+        path: 'locatif/immeubles/nouveau',
+        title: 'Nouvelle propriété',
+        canDeactivate: [modificationsNonEnregistreesGuard],
+        canActivate: [permissionsGuard(['locatif:creer'])],
+        loadComponent: () =>
+          import('./features/locatif/immeubles/immeuble-form/immeuble-form').then((m) => m.ImmeubleForm),
+      },
+      {
+        path: 'locatif/immeubles/:id',
+        title: 'Fiche de la propriété',
+        canActivate: [permissionsGuard(['locatif:consulter'])],
+        loadComponent: () =>
+          import('./features/locatif/immeubles/immeuble-detail/immeuble-detail').then(
+            (m) => m.ImmeubleDetailPage,
+          ),
+      },
+      {
+        path: 'locatif/immeubles',
+        title: 'Propriétés',
+        canActivate: [permissionsGuard(['locatif:consulter'])],
+        loadComponent: () =>
+          import('./features/locatif/immeubles/immeubles').then((m) => m.Immeubles),
+      },
+      {
         path: 'locatif/biens/nouveau',
         title: 'Nouveau bien locatif',
         canDeactivate: [modificationsNonEnregistreesGuard],
