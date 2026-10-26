@@ -1,5 +1,5 @@
 /** Photo du bandeau quand aucune image n'a été choisie dans le back-office. */
-export const IMAGE_BANDEAU_DEMARCHES = '/bandeaux/demarches-fond.jpg';
+export const IMAGE_BANDEAU_DEMARCHES = '/bandeaux/demarches-hero.jpg';
 
 /**
  * Coupe un engagement en deux lignes, comme sur la maquette : « Réponse sous / 24 à 48h »,

@@ -21,7 +21,7 @@ interface BandeauDemarchesProps {
 
 /**
  * Grand bandeau de la page « Démarches administratives », pleine largeur comme ceux de « Nos réalisations » :
- * une photo en fond et, par-dessus, des textes réels — marque, mention, titre, présentation, engagements et
+ * une photo en fond et, par-dessus, des textes réels — mention, titre, présentation, engagements et
  * bouton — tous modifiables dans Contenus du site (la photo aussi). Un fondu blanc à gauche garde le texte
  * lisible quelle que soit la photo choisie.
  */
@@ -45,31 +45,21 @@ export function BandeauDemarches({ eyebrow, title, description, points, bouton, 
         aria-hidden="true"
         fetchPriority="high"
         onError={() => setImageMorte(true)}
-        className={`absolute inset-0 -z-20 h-full w-full object-cover object-[78%_center] lg:object-center ${fondu}`}
+        className={`absolute inset-0 -z-20 h-full w-full object-cover object-[78%_center] saturate-[1.08] lg:object-[72%_center] ${fondu}`}
       />
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-white/80 lg:bg-transparent lg:bg-gradient-to-r lg:from-white lg:via-white/60 lg:via-[34%] lg:to-transparent lg:to-[58%]"
+        className="absolute inset-0 -z-10 bg-white/80 lg:bg-transparent lg:bg-gradient-to-r lg:from-white lg:via-white/90 lg:via-[26%] lg:to-transparent lg:to-[50%]"
       />
 
-      <div className={`mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-10 lg:py-14 ${fondu}`}>
+      <div className={`mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-10 lg:py-10 ${fondu}`}>
         <div className="max-w-[33rem]">
-          <div className="flex items-center gap-3">
-            <img src="/logomtm-mark.png" alt="" aria-hidden="true" className="h-12 w-12 object-contain lg:h-14 lg:w-14" />
-            <div className="leading-none">
-              <p className="font-display text-2xl font-extrabold lg:text-[1.7rem]">
-                <span className="text-mtm-accent">MTM</span> <span className="text-mtm-primary-dark">Immobilier</span>
-              </p>
-              <p className="mt-1.5 text-[0.62rem] font-semibold uppercase tracking-[0.32em] text-mtm-primary-dark">Construire vos projets</p>
-            </div>
-          </div>
-
-          <p className="mt-9 text-sm font-extrabold uppercase tracking-wide text-mtm-primary-dark">
+          <p className="text-sm font-extrabold uppercase tracking-wide text-mtm-primary-dark">
             {eyebrow}
             <span aria-hidden="true" className="mt-1 block h-[3px] w-12 rounded-full bg-mtm-accent" />
           </p>
 
-          <h1 className="mt-4 font-display text-[2.6rem] font-extrabold leading-[1.02] tracking-tight text-mtm-primary-dark sm:text-6xl lg:text-[4.1rem]">
+          <h1 className="mt-3 font-display text-[2.4rem] font-extrabold leading-[1.02] tracking-tight text-mtm-primary-dark sm:text-5xl lg:text-[3.5rem]">
             <span className="block">{premier}</span>
             {suite && (
               <>
@@ -79,10 +69,10 @@ export function BandeauDemarches({ eyebrow, title, description, points, bouton, 
             )}
           </h1>
 
-          <p className="mt-5 max-w-[30rem] text-base leading-relaxed text-slate-700 lg:text-[1.08rem]">{description}</p>
+          <p className="mt-4 max-w-[30rem] text-base leading-relaxed text-slate-700">{description}</p>
 
           {points.length > 0 && (
-            <ul className="mt-7 grid gap-4 sm:grid-cols-3 sm:gap-5">
+            <ul className="mt-5 grid gap-3.5 sm:grid-cols-3 sm:gap-5">
               {points.map((point, index) => {
                 const Icone = ICONES[index % ICONES.length];
                 const { haut, bas, rouge } = decouperEngagement(point);
@@ -104,7 +94,7 @@ export function BandeauDemarches({ eyebrow, title, description, points, bouton, 
           <button
             type="button"
             onClick={onDemande}
-            className="mt-9 inline-flex w-full items-center justify-center gap-4 rounded-xl bg-mtm-accent px-9 py-4 text-lg font-bold text-white shadow-card-hover transition-colors hover:bg-mtm-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mtm-accent sm:w-auto sm:min-w-[19rem]"
+            className="mt-6 inline-flex w-full items-center justify-center gap-4 rounded-xl bg-mtm-accent px-8 py-3.5 text-base font-bold text-white shadow-card-hover transition-colors hover:bg-mtm-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mtm-accent sm:w-auto sm:min-w-[17rem]"
           >
             {bouton}
             <ArrowRight className="h-5 w-5" aria-hidden="true" />
