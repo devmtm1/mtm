@@ -9,7 +9,8 @@
  *   - le site public sur http://localhost:5173, qui se met à jour à chaque enregistrement d'un fichier.
  *
  * Aucune base réelle n'est utilisée : l'adresse de la base est fabriquée ici. Les images envoyées vont
- * dans un dossier Cloudinary de test (`mtm-local-test`), pas dans celui du site. Ctrl+C arrête tout.
+ * ne partent nulle part (les photos de démonstration viennent du compte public « demo » de Cloudinary).
+ * Ctrl+C arrête tout.
  *
  * Pour essayer aussi le back-office sur cette même API, ouvrir un second terminal :
  *   npm run backoffice:dev        (http://localhost:4200)
@@ -23,6 +24,7 @@ import { creerUtilisateurs, preparerAdministrateur } from '../docs/manuel/captur
 import { MOT_DE_PASSE } from '../docs/manuel/captures/comptes.mjs';
 import { demarrer, PORT_API } from '../docs/manuel/captures/environnement.mjs';
 import { peuplerDonnees } from '../docs/manuel/captures/jeu-donnees.mjs';
+import { CLOUD_DEMO, peuplerSite } from './dev-local-site.mjs';
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SITE = join(RACINE, 'apps', 'public-web');
@@ -53,6 +55,11 @@ const env = await demarrer({
   reconstruireApi: true,
   // Les images envoyées pendant les essais ne se mélangent pas à celles du vrai site.
   envSupplementaire: {
+    // Photos de démonstration du compte public « demo » de Cloudinary : le compte de MTM n'est jamais utilisé
+    // (les clés sont factices : aucun envoi ne peut aboutir).
+    CLOUDINARY_CLOUD_NAME: CLOUD_DEMO,
+    CLOUDINARY_API_KEY: 'local-sans-cle',
+    CLOUDINARY_API_SECRET: 'local-sans-cle',
     CLOUDINARY_FOLDER: 'mtm-local-test',
     // L'API accepte le site sur le port choisi, et le back-office lancé à la main (4200).
     CORS_ORIGIN: `http://localhost:${PORT_SITE},http://localhost:4200`,
@@ -79,7 +86,10 @@ try {
   console.log('Données de démonstration…');
   const { api } = await preparerAdministrateur(env.urlApi);
   const clients = await creerUtilisateurs(env.urlApi, api);
-  await peuplerDonnees({ admin: api, clients });
+  const donnees = await peuplerDonnees({ admin: api, clients });
+  console.log('Contenu du site (photos, locations, réalisations, équipe, vidéos)…');
+  const remplis = await peuplerSite({ api, urlBase: env.urlBase, donnees });
+  console.log('  ' + Object.entries(remplis).map(([cle, v]) => `${cle} : ${v}`).join(' · '));
 
   site = spawn('npm', ['run', 'dev', '--', '--port', String(PORT_SITE), '--strictPort', '--host', 'localhost'], {
     cwd: SITE,

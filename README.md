@@ -79,8 +79,13 @@ npm run dev:local
 Une seule commande démarre, **sur ce poste seulement**, une base PostgreSQL jetable avec des données
 fictives (biens, locations…), l'API et le site public qui se rafraîchit à chaque enregistrement d'un
 fichier (adresse affichée à la fin, en général `http://localhost:5173`). `Ctrl+C` arrête tout et détruit
-la base fictive. Rien n'est envoyé en production : ni base réelle, ni e-mail ; les images envoyées vont dans
-un dossier Cloudflare/Cloudinary de test (`mtm-local-test`).
+la base fictive. Rien n'est envoyé en production : ni base réelle, ni e-mail, et le compte Cloudinary de MTM
+n'est pas utilisé (les clés sont factices : aucun envoi de photo ne peut aboutir en local).
+
+Toutes les parties du site sont remplies de contenus de démonstration (`scripts/dev-local-site.mjs`) :
+biens à vendre avec photos, locations, réalisations, projets à venir, équipe et mot du directeur, vidéos
+d'actualités, témoignages, une publicité de bandeau. Les photos viennent du compte public de démonstration
+de Cloudinary (`demo`), les vidéos sont des liens YouTube de films libres : leurs titres sont fictifs.
 
 Pour essayer aussi le back-office sur la même API, ouvrir un second terminal : `npm run backoffice:dev`
 (`http://localhost:4200`), compte `fatou.diop@mtm.test` / `Captures-2026!x` (commercial de démonstration).
