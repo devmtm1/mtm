@@ -31,9 +31,9 @@ describe('BandeauDemarches', () => {
     expect(screen.getByText("Vous envisagez d'acheter un terrain ?")).toBeInTheDocument();
     // Chaque engagement est coupé en deux lignes, la fin en rouge.
     expect(screen.getByText('Réponse sous')).toBeInTheDocument();
-    expect(screen.getByText('24 à 48h')).toHaveClass('text-mtm-accent');
+    expect(screen.getByText('24 à 48h')).toHaveClass('text-[#C8102E]');
     expect(screen.getByText('Devis gratuit,')).toBeInTheDocument();
-    expect(screen.getByText('sans engagement')).toHaveClass('text-mtm-accent');
+    expect(screen.getByText('sans engagement')).toHaveClass('text-[#C8102E]');
   });
 
   it('garde un titre d’un seul mot sur une seule ligne', () => {

@@ -36,7 +36,7 @@ export function BandeauDemarches({ eyebrow, title, description, points, bouton, 
   const suite = reste.join(' ');
 
   return (
-    <header className="relative isolate overflow-hidden bg-white">
+    <header className="relative isolate overflow-hidden bg-white font-['Poppins',ui-sans-serif,system-ui,sans-serif]">
       {/* La photo occupe la droite du bandeau et se fond dans le blanc vers la gauche : le texte reste sur la
           zone claire, et les sujets de la photo (documents, maquette) restent à droite du texte. */}
       <div className="absolute inset-y-0 right-0 -z-20 w-full lg:w-[82%]">
@@ -57,36 +57,36 @@ export function BandeauDemarches({ eyebrow, title, description, points, bouton, 
       </div>
 
       <div className={`mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-10 lg:py-10 ${fondu}`}>
-        <div className="max-w-[33rem]">
-          <p className="text-sm font-extrabold uppercase tracking-wide text-mtm-primary-dark">
+        <div className="max-w-[37rem]">
+          <p className="text-[14px] font-bold uppercase tracking-wide text-[#12365A]">
             {eyebrow}
-            <span aria-hidden="true" className="mt-1 block h-[3px] w-12 rounded-full bg-mtm-accent" />
+            <span aria-hidden="true" className="mt-1 block h-[3px] w-12 rounded-full bg-[#C8102E]" />
           </p>
 
-          <h1 className="mt-3 font-display text-[2.4rem] font-extrabold leading-[1.02] tracking-tight text-mtm-primary-dark sm:text-5xl lg:text-[3.5rem]">
+          <h1 className="mt-3 text-[34px] font-extrabold leading-[1.08] tracking-tight text-[#12365A] sm:text-[40px] lg:text-[48px]">
             <span className="block">{premier}</span>
             {suite && (
               <>
                 {' '}
-                <span className="block text-mtm-accent">{suite}</span>
+                <span className="block text-[#C8102E]">{suite}</span>
               </>
             )}
           </h1>
 
-          <p className="mt-4 max-w-[30rem] text-base leading-relaxed text-slate-700">{description}</p>
+          <p className="mt-4 max-w-[31rem] text-[15px] leading-relaxed text-[#34465A] sm:text-base lg:text-[17px]">{description}</p>
 
           {points.length > 0 && (
-            <ul className="mt-5 grid gap-3.5 sm:grid-cols-3 sm:gap-5">
+            <ul className="mt-5 flex flex-wrap gap-x-6 gap-y-3.5">
               {points.map((point, index) => {
                 const Icone = ICONES[index % ICONES.length];
                 const { haut, bas, rouge } = decouperEngagement(point);
                 return (
-                  <li key={point} className="flex items-start gap-2.5">
-                    <Icone className="mt-0.5 h-8 w-8 shrink-0 text-mtm-primary-dark" strokeWidth={1.5} aria-hidden="true" />
-                    <span className="text-[0.82rem] leading-snug">
-                      <span className="block font-bold text-mtm-primary-dark">{haut}</span>
+                  <li key={point} className="flex max-w-[12.5rem] items-start gap-2.5">
+                    <Icone className="mt-0.5 h-8 w-8 shrink-0 text-[#12365A]" strokeWidth={1.5} aria-hidden="true" />
+                    <span className="text-[13px] leading-snug">
+                      <span className="block whitespace-nowrap font-semibold text-[#12365A]">{haut}</span>
                       {bas && (
-                        <span className={`block ${rouge ? 'font-bold text-mtm-accent' : 'text-[0.72rem] font-medium text-slate-600'}`}>{bas}</span>
+                        <span className={`block ${rouge ? 'whitespace-nowrap font-semibold text-[#C8102E]' : 'text-[12px] font-medium text-[#34465A]'}`}>{bas}</span>
                       )}
                     </span>
                   </li>
@@ -98,7 +98,7 @@ export function BandeauDemarches({ eyebrow, title, description, points, bouton, 
           <button
             type="button"
             onClick={onDemande}
-            className="mt-6 inline-flex w-full items-center justify-center gap-4 rounded-xl bg-mtm-accent px-8 py-3.5 text-base font-bold text-white shadow-card-hover transition-colors hover:bg-mtm-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mtm-accent sm:w-auto sm:min-w-[17rem]"
+            className="mt-6 inline-flex w-full items-center justify-center gap-4 rounded-xl bg-[#C8102E] px-8 py-3.5 text-[18px] font-semibold text-white shadow-card-hover transition-colors hover:bg-[#A60D26] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C8102E] sm:w-auto sm:min-w-[17rem] lg:text-[20px]"
           >
             {bouton}
             <ArrowRight className="h-5 w-5" aria-hidden="true" />
