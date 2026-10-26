@@ -80,7 +80,7 @@ function MotDuDirecteur({ directeur }: { directeur: TeamPerson }) {
   return (
     <section
       aria-labelledby="mot-directeur"
-      className="relative isolate overflow-hidden bg-gradient-to-br from-white via-mtm-primary-subtle/50 to-mtm-primary-subtle"
+      className="relative isolate overflow-x-clip bg-gradient-to-br from-white via-mtm-primary-subtle/50 to-mtm-primary-subtle"
     >
       {/* Décor : immeubles en filigrane, en bas à droite. */}
       <svg
