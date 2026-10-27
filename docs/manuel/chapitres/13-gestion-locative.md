@@ -2,11 +2,11 @@
 id: gestion-locative
 titre: La gestion locative
 groupe: metier
-resume: Biens loués, baux, loyers et quittances, impayés, locations à la nuit, résiliations.
+resume: Biens loués, baux, loyers et quittances, impayés, locations de courte durée, résiliations.
 roles: commercial responsable_commercial gestion_locative direction administrateur
 ---
 
-La **gestion locative** suit les biens que les propriétaires confient à MTM pour la location : **baux, loyers, cautions, impayés, séjours à la nuit, résiliations**. **La location est portée par les commerciaux** : chacun crée et suit **ses propres biens** (fiche, bail, séjours, locataires, loyers) et ne voit que ceux-là ; le responsable de la gestion locative, le manager et la direction voient tout le portefeuille. La **publication sur le site**, la **validation** (résiliations, versements) et les **sorties d’argent** (restitution de caution) restent à la gestion locative. La ligne **Gestion locative** du menu (rubrique *Location et services*) ouvre un écran à **onglets** : *Biens en gestion*, *Propriétés*, *Locataires*, *Séjours à la nuit*, *Résiliations*, *Relances d’impayés*.
+La **gestion locative** suit les biens que les propriétaires confient à MTM pour la location : **baux, loyers, cautions, impayés, séjours de courte durée, résiliations**. **La location est portée par les commerciaux** : chacun crée et suit **ses propres biens** (fiche, bail, séjours, locataires, loyers) et ne voit que ceux-là ; le responsable de la gestion locative, le manager et la direction voient tout le portefeuille. La **publication sur le site**, la **validation** (résiliations, versements) et les **sorties d’argent** (restitution de caution) restent à la gestion locative. La ligne **Gestion locative** du menu (rubrique *Location et services*) ouvre un écran à **onglets** : *Biens en gestion*, *Propriétés*, *Locataires*, *Séjours*, *Résiliations*, *Relances d’impayés*.
 
 ## Les biens locatifs
 
@@ -21,7 +21,7 @@ La **gestion locative** suit les biens que les propriétaires confient à MTM po
 
 1. **Biens en gestion › Nouveau bien.**
 2. Choisissez le **propriétaire** (créez-le d’abord s’il n’existe pas), le **type** (appartement, villa…), l’**adresse**, la **commune** et la **région**.
-3. Pour une location **au mois**, laissez le mode par défaut ; pour une location **à la nuit**, voir plus bas.
+3. Pour une location **au mois**, laissez le mode par défaut ; pour une location **courte durée**, voir plus bas.
 4. **Enregistrer** : le bien reçoit une référence lisible (« L-2026-0001 ») et le statut *Disponible*.
 
 ![Nouveau bien locatif](img/loc-08-nouveau-bien.png)
@@ -93,16 +93,16 @@ Sur la ligne d’une échéance payée, le bouton **Quittance** produit le PDF �
 - Vous les **envoyez** depuis la liste (bouton **Envoyer**, par e-mail), et l’envoi est consigné.
 - Le tableau de bord de la direction signale les **impayés prolongés** (plus de 30 jours de retard).
 
-## Les locations à la nuit (type Airbnb)
+## Les séjours de courte durée
 
-### Mettre un bien à la nuit
+### Mettre un bien en courte durée
 
 1. **Biens en gestion › Nouveau bien** (ou la fiche d’un bien existant › *Annonce*).
-2. **Mode de location : « Location à la nuit »**.
+2. **Mode de location : « Courte durée »**.
 3. Renseignez le **prix de la nuit**, les **frais de ménage** (une fois par séjour), la **caution**, la **durée minimale**, la **capacité** et les **heures d’arrivée et de départ**.
 4. Ajoutez des photos puis **publiez** : le bien apparaît sur la page « Locations » avec son prix par nuit.
 
-Un bien à la nuit n’a **pas de bail** : **Nouveau séjour** remplace « Créer un bail ». Un bien ne change de mode que s’il n’a ni bail en cours ni séjour à venir.
+Un bien en courte durée n’a **pas de bail** : **Nouveau séjour** remplace « Créer un bail ». Un bien ne change de mode que s’il n’a ni bail en cours ni séjour à venir.
 
 ### Le déroulé d’un séjour
 

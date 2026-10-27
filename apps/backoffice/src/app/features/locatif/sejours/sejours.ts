@@ -37,7 +37,7 @@ const VUES = [
 ];
 
 /**
- * Séjours de courte durée (location type Airbnb) : les demandes reçues du site,
+ * Séjours de courte durée : les demandes reçues du site,
  * les réservations à venir, les clients sur place, et les cautions à rendre.
  */
 @Component({

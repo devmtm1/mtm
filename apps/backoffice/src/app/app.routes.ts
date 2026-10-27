@@ -526,7 +526,7 @@ export const routes: Routes = [
       },
       {
         path: 'locatif/sejours',
-        title: 'Locations à la nuit',
+        title: 'Séjours de courte durée',
         canActivate: [permissionsGuard(['locatif:consulter'])],
         loadComponent: () =>
           import('./features/locatif/sejours/sejours').then((m) => m.Sejours),

@@ -118,7 +118,7 @@ export class BauxService {
     if (!bien) throw new NotFoundException('Bien locatif introuvable');
     if (bien.modeLocation === 'courte_duree') {
       throw new BadRequestException(
-        'Ce bien se loue à la nuit : enregistrez un séjour, pas un bail.',
+        'Ce bien est en courte durée : enregistrez un séjour, pas un bail.',
       );
     }
     const bailActif = await transaction.bailLocatif.findFirst({

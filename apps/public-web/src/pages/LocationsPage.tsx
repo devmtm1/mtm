@@ -70,7 +70,7 @@ export function LocationsPage() {
   const { data, loading, error } = useLocationsCatalog(filters);
   const { data: options } = useLocationFilterOptions();
   const { text, lines, loading: contenuEnCours } = useEditableContent();
-  // Le choix « Au mois / À la nuit » n'a de sens que s'il y a des annonces des deux sortes.
+  // Le choix « Au mois / Courte durée » n'a de sens que s'il y a des annonces des deux sortes.
   const proposerModes = (options?.sejours ?? 0) > 0 && (options?.longueDuree ?? 0) > 0;
 
   usePageMetadata({
@@ -190,13 +190,13 @@ export function LocationsPage() {
     </label>
   );
 
-  // « Toutes / Au mois / À la nuit » : un sélecteur discret, au-dessus de la recherche.
+  // « Toutes / Au mois / Courte durée » : un sélecteur discret, au-dessus de la recherche.
   const modeSelect = proposerModes ? (
     <div role="group" aria-label="Type de location" className="inline-flex rounded-full bg-mtm-bg p-1">
       {[
         { value: undefined, label: 'Toutes' },
         { value: 'longue_duree', label: 'Au mois' },
-        { value: 'courte_duree', label: 'À la nuit' },
+        { value: 'courte_duree', label: 'Courte durée' },
       ].map(({ value, label }) => (
         <button
           key={label}

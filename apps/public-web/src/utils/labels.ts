@@ -305,7 +305,7 @@ export const BIEN_LOCATIF_STATUS: Record<string, StatusLabel> = {
   indisponible: { label: 'Indisponible', tone: 'neutral', help: 'Retiré de la location.' },
 };
 
-/** Un bien loué à la nuit n'a pas de bail : ce qui compte, c'est le séjour. */
+/** Un bien en courte durée n'a pas de bail : ce qui compte, c'est le séjour. */
 export const OCCUPATION_NUIT: Record<string, StatusLabel> = {
   occupe: { label: 'Occupé en ce moment', tone: 'success', help: 'Un client est sur place.' },
   reserve: { label: 'Prochain séjour réservé', tone: 'info', help: 'Un séjour est confirmé.' },

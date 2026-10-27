@@ -17,7 +17,7 @@ import { Button } from '../ui/Button';
 import { FormField, fieldInputClass } from '../ui/FormField';
 
 /**
- * Demande de séjour pour un bien loué à la nuit : dates, voyageurs, estimation du
+ * Demande de séjour pour un bien en courte durée : dates, voyageurs, estimation du
  * prix, puis coordonnées. Rien n'est réservé ni payé à l'envoi : MTM reçoit la
  * demande, confirme les nuits et recontacte le voyageur. Les nuits déjà prises
  * sont indiquées, et les dates qui les recouvrent refusées avant l'envoi.

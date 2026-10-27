@@ -1,5 +1,5 @@
 /**
- * Calculs d'un séjour de courte durée (location type Airbnb) : nuits, prix,
+ * Calculs d'un séjour de courte durée : nuits, prix,
  * chevauchement de dates, règlement. Purs, sans accès à la base : c'est ce qui
  * rend les règles faciles à tester.
  *

@@ -203,7 +203,7 @@ export class FluxFinanciersService {
       });
     }
 
-    // --- Séjours à la nuit ---
+    // --- Séjours ---
     const sejours = await this.prisma.paiementSejour.findMany({
       where: { datePaiement: periode },
       select: {

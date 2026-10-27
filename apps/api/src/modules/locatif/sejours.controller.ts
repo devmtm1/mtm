@@ -27,7 +27,7 @@ import {
 } from './dto/sejour.dto';
 
 /**
- * Séjours de courte durée (location type Airbnb). Les routes littérales
+ * Séjours de courte durée. Les routes littérales
  * (`stats`) sont déclarées avant celles à paramètre. Encaisser un règlement ou
  * rendre une caution relève de la permission « payer », comme pour les loyers.
  */

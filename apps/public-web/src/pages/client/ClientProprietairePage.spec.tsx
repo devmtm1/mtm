@@ -64,14 +64,14 @@ const afficher = () =>
     </MemoryRouter>,
   );
 
-describe('ClientProprietairePage — location à la nuit', () => {
-  it('ne dit pas « aucun bail » d’un bien loué à la nuit : il montre ses séjours', () => {
+describe('ClientProprietairePage — courte durée', () => {
+  it('ne dit pas « aucun bail » d’un bien en courte durée : il montre ses séjours', () => {
     donnees.valeur.proprietaireBiens = [bienALaNuit()];
     donnees.valeur.proprietaireSynthese = synthese();
     afficher();
 
     expect(screen.queryByText(/Aucun bail en cours/)).toBeNull();
-    expect(screen.getByText('Location à la nuit')).toBeTruthy();
+    expect(screen.getByText('Courte durée')).toBeTruthy();
     expect(screen.getByText('Occupé en ce moment')).toBeTruthy();
     expect(screen.getByText('Aïssatou B.')).toBeTruthy();
     expect(screen.getByText(/4 nuits/)).toBeTruthy();
@@ -88,7 +88,7 @@ describe('ClientProprietairePage — location à la nuit', () => {
     expect(screen.getByText('Séjours encaissés')).toBeTruthy();
   });
 
-  it('dit qu’un bien à la nuit sans séjour est libre', () => {
+  it('dit qu’un bien en courte durée sans séjour est libre', () => {
     donnees.valeur.proprietaireBiens = [
       bienALaNuit({ occupation: 'libre', sejours: [], sejoursEncaisses: 0 }),
     ];
@@ -107,6 +107,6 @@ describe('ClientProprietairePage — location à la nuit', () => {
     afficher();
 
     expect(screen.getByText('Aucun bail en cours sur ce bien.')).toBeTruthy();
-    expect(screen.queryByText('Location à la nuit')).toBeNull();
+    expect(screen.queryByText('Courte durée')).toBeNull();
   });
 });

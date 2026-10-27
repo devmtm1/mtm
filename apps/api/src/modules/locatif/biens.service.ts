@@ -319,7 +319,7 @@ export class BiensService {
       });
       if (baux > 0) {
         throw new ConflictException(
-          'Ce bien a un bail en cours : clôturez-le avant de le passer en location à la nuit.',
+          'Ce bien a un bail en cours : clôturez-le avant de le passer en courte durée.',
         );
       }
       return;

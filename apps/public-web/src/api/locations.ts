@@ -21,7 +21,7 @@ export function fetchLocationFilterOptions(): Promise<LocationFilterOptions> {
   return apiClient.get<LocationFilterOptions>('/locatif/public/biens/options');
 }
 
-/** Nuits déjà prises d'un bien loué à la nuit. */
+/** Nuits déjà prises d'un bien en courte durée. */
 export function fetchDisponibilites(id: string): Promise<PeriodeIndisponible[]> {
   return apiClient.get<PeriodeIndisponible[]>(`/locatif/public/biens/${id}/disponibilites`);
 }

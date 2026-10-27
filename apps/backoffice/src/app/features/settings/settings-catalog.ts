@@ -97,7 +97,7 @@ export const SETTING_GROUPS: SettingGroup[] = [
   {
     id: 'locatif',
     title: 'Gestion locative : séjours et résiliations',
-    help: 'Location à la nuit (type Airbnb) et demandes de résiliation des locataires.',
+    help: 'Courte durée (séjours) et demandes de résiliation des locataires.',
     slots: [
       {
         key: 'locatif.preavisJours',

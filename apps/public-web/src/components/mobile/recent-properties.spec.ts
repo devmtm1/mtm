@@ -73,7 +73,7 @@ describe('cartes de l’accueil mobile', () => {
     expect(card.priceSuffix).toBeUndefined();
   });
 
-  it('une location à la nuit affiche le prix de la nuit, pas un loyer mensuel', () => {
+  it('une courte durée affiche le prix de la nuit, pas un loyer mensuel', () => {
     const card = locationCard(
       location('l9', null, { modeLocation: 'courte_duree', prixNuit: 45000, loyerMensuel: null }),
     );

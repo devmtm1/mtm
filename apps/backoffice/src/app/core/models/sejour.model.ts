@@ -1,4 +1,4 @@
-/** Séjours de courte durée (location type Airbnb), états des lieux et demandes de résiliation. */
+/** Séjours de courte durée, états des lieux et demandes de résiliation. */
 
 export type StatutSejour = 'demande' | 'confirmee' | 'en_cours' | 'terminee' | 'annulee';
 

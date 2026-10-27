@@ -95,7 +95,7 @@ export class ProprietaireDetail implements OnInit {
   protected readonly proprietaire = signal<ProprietaireDetailModel | null>(null);
   protected readonly terrains = signal<TerrainListItem[] | null>(null);
   protected readonly mandats = signal<MandatListItem[] | null>(null);
-  /** Biens que MTM gère en location (au mois ou à la nuit) pour ce propriétaire. */
+  /** Biens que MTM gère en location (au mois ou en courte durée) pour ce propriétaire. */
   protected readonly biensLocatifs = signal<BienListItem[] | null>(null);
   protected readonly loading = signal(true);
   protected readonly canModify = this.session.hasPermission('proprietaires:modifier');

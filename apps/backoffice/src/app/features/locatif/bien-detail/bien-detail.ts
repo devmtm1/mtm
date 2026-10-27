@@ -141,7 +141,7 @@ export class BienDetailPage implements OnInit {
   protected readonly bien = signal<BienDetail | null>(null);
   protected readonly bauxHistorique = signal<BailDetail[]>([]);
   protected readonly bailActuel = signal<BailDetail | null>(null);
-  /** Bien loué à la nuit : on y réserve des séjours au lieu d'y signer un bail. */
+  /** Bien en courte durée : on y réserve des séjours au lieu d'y signer un bail. */
   protected readonly courte = computed(() => this.bien()?.modeLocation === 'courte_duree');
   protected readonly sejours = signal<SejourListItem[]>([]);
   protected readonly statutsSejour = STATUTS_SEJOUR;
@@ -438,7 +438,7 @@ export class BienDetailPage implements OnInit {
     });
   }
 
-  // --- Séjours (location à la nuit) ---
+  // --- Séjours (courte durée) ---
 
   protected nouveauSejour(): void {
     const bien = this.bien();

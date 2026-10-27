@@ -116,7 +116,7 @@ export function ClientProprietairePage() {
 
       {biens.map((bien) => {
         const nuit = bien.modeLocation === 'courte_duree';
-        // À la nuit, le bien reste « disponible » faute de bail : on dit plutôt s'il est occupé.
+        // En courte durée, le bien reste « disponible » faute de bail : on dit plutôt s'il est occupé.
         const statutBien = nuit && bien.occupation ? occupationNuit(bien.occupation) : bienLocatifStatus(bien.statut);
         const situation = bien.bail ? situationPaiement(bien.bail.situationPaiement) : null;
         return (
@@ -135,7 +135,7 @@ export function ClientProprietairePage() {
                   </p>
                 </div>
                 <div className="flex flex-none flex-wrap gap-2">
-                  {nuit && <Badge tone="neutral">Location à la nuit</Badge>}
+                  {nuit && <Badge tone="neutral">Courte durée</Badge>}
                   <Badge tone={statutBien.tone}>{statutBien.label}</Badge>
                   {situation && <Badge tone={situation.tone}>{situation.label}</Badge>}
                 </div>

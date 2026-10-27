@@ -76,7 +76,7 @@ export function ClientHomePage() {
   // ne lui dirait que « aucun » et sa salutation « bienvenue » serait fausse.
   const aUnEspaceDeGestion = (biens?.length ?? 0) > 0 || bailActif !== null;
   const sansDossierDeVente = list.length === 0 && aUnEspaceDeGestion;
-  // Un bien loué à la nuit n'a pas de bail : ses séjours comptent comme son revenu.
+  // Un bien en courte durée n'a pas de bail : ses séjours comptent comme son revenu.
   const biensRapportant = (biens ?? []).filter((bien) => bien.bail || bien.sejours.length > 0);
   const loyersEncaissesTotal = (biens ?? []).reduce(
     (sum, bien) => sum + (bien.bail?.loyersEncaisses ?? 0) + bien.sejoursEncaisses,

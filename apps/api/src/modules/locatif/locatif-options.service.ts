@@ -63,7 +63,7 @@ export const LOCATIF_DEFAULTS = {
     'rapport',
     'autre',
   ],
-  /** longue_duree : bail et loyer mensuel ; courte_duree : séjours à la nuit (type Airbnb). */
+  /** longue_duree : bail et loyer mensuel ; courte_duree : séjours de courte durée. */
   modesLocation: ['longue_duree', 'courte_duree'],
   /** Cycle d'un séjour de courte durée. */
   statutsSejour: ['demande', 'confirmee', 'en_cours', 'terminee', 'annulee'],

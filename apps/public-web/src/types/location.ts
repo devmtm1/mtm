@@ -57,7 +57,7 @@ export interface Location {
   misEnAvant: boolean;
   publieLe: string | null;
   medias: LocationMedia[];
-  /** « longue_duree » : loyer mensuel et bail ; « courte_duree » : séjours à la nuit (type Airbnb). */
+  /** « longue_duree » : loyer mensuel et bail ; « courte_duree » : séjours de courte durée. */
   modeLocation: 'longue_duree' | 'courte_duree';
   prixNuit: number | null;
   fraisMenage: number | null;
@@ -81,7 +81,7 @@ export interface LocationFilters {
   superficieMin?: number;
   meuble?: boolean;
   misEnAvant?: boolean;
-  /** « courte_duree » : seulement les biens loués à la nuit. */
+  /** « courte_duree » : seulement les biens en courte durée. */
   mode?: string;
   sortBy?: 'createdAt' | 'loyerMensuel' | 'prixNuit' | 'superficie';
   sortOrder?: 'asc' | 'desc';
@@ -105,14 +105,14 @@ export interface LocationFilterOptions {
   loyerMin: number | null;
   loyerMax: number | null;
   total: number;
-  /** Nombre d'annonces à la nuit et au mois : le sélecteur n'apparaît que s'il y a le choix. */
+  /** Nombre d'annonces de courte durée et au mois : le sélecteur n'apparaît que s'il y a le choix. */
   sejours: number;
   longueDuree: number;
   prixNuitMin: number | null;
   prixNuitMax: number | null;
 }
 
-/** Nuits déjà prises d'un bien loué à la nuit : « debut » est l'arrivée, « fin » le départ (jour libre). */
+/** Nuits déjà prises d'un bien en courte durée : « debut » est l'arrivée, « fin » le départ (jour libre). */
 export interface PeriodeIndisponible {
   debut: string;
   fin: string;
