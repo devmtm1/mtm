@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { PageIntro } from '../components/layout/PageIntro';
+import { BandeauPage, IMAGE_BANDEAU_PAGE } from '../components/layout/BandeauPage';
 import { useContentBlocks } from '../hooks/useContentBlocks';
+import { useEditableContent } from '../hooks/useEditableContent';
 import { usePublications } from '../hooks/usePublications';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 import { ArticleListSkeleton } from '../components/ui/Skeleton';
@@ -71,6 +72,7 @@ export function ActualitesPage() {
     description: 'Vidéos, conseils et actualités de MTM Immobilier pour acheter, construire et investir sereinement au Sénégal.',
   });
 
+  const contenu = useEditableContent();
   const rubriques = rubriquesPresentes(publications);
   const nombreEnregistrees = publications.filter((publication) => enregistrees.includes(publication.id)).length;
   const visibles =
@@ -84,10 +86,13 @@ export function ActualitesPage() {
 
   return (
     <div>
-      <PageIntro
+      <BandeauPage
+        chevauche={false}
         eyebrow="Actualités"
         title="Actualités et conseils"
         description="Nos vidéos et conseils pour acheter, construire et investir sereinement dans l'immobilier au Sénégal."
+        image={contenu.text('actualites.image', IMAGE_BANDEAU_PAGE)}
+        chargement={contenu.loading}
       />
 
       {aDesVideos && (

@@ -1,4 +1,4 @@
-import { PageIntro } from '../components/layout/PageIntro';
+import { BandeauPage, IMAGE_BANDEAU_PAGE } from '../components/layout/BandeauPage';
 import { ContactCtaSection } from '../components/home/ContactCtaSection';
 import { useEditableContent } from '../hooks/useEditableContent';
 import { usePageMetadata } from '../hooks/usePageMetadata';
@@ -17,7 +17,7 @@ const FALLBACK_POINTS = [
 ];
 
 export function GestionLocativePage() {
-  const { text, lines } = useEditableContent();
+  const { text, lines, loading: contenuEnCours } = useEditableContent();
   usePageMetadata({
     title: 'Gestion locative',
     description:
@@ -26,10 +26,13 @@ export function GestionLocativePage() {
 
   return (
     <div>
-      <PageIntro
+      <BandeauPage
+        chevauche={false}
         eyebrow="Nos services"
         title="Gestion locative"
         description={text('gestion-locative.intro', FALLBACK_INTRO)}
+        image={text('gestion-locative.image', IMAGE_BANDEAU_PAGE)}
+        chargement={contenuEnCours}
       />
       <section className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
         <ul className="flex flex-col gap-3">

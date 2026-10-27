@@ -16,7 +16,7 @@ import { CardGridSkeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
-import { BandeauLocations, IMAGE_BANDEAU_LOCATIONS } from '../components/locations/BandeauLocations';
+import { BandeauPage, IMAGE_BANDEAU_PAGE } from '../components/layout/BandeauPage';
 import { useEditableContent } from '../hooks/useEditableContent';
 import { fieldInputClass } from '../components/ui/FormField';
 import type { Terrain, TerrainFilters as TerrainFiltersValue } from '../types/terrain';
@@ -226,12 +226,12 @@ export function CatalogPage() {
 
   return (
     <div>
-      <BandeauLocations
+      <BandeauPage
         eyebrow={text('catalogue.eyebrow', 'Catalogue')}
         title={text('catalogue.title', 'Nos biens')}
         description={text('catalogue.intro', INTRO_DEFAUT)}
         points={lines('catalogue.reassurance', REASSURANCES_DEFAUT)}
-        image={text('catalogue.image', IMAGE_BANDEAU_LOCATIONS)}
+        image={text('catalogue.image', IMAGE_BANDEAU_PAGE)}
         chargement={contenuEnCours}
       />
 

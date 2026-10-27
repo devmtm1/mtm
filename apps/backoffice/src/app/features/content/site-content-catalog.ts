@@ -92,6 +92,7 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
     title: 'À propos',
     where: 'Page « À propos »',
     slots: [
+      { key: 'about.image', label: 'Image du bandeau', help: 'Photo en fond du bandeau, sous un voile bleu marine : le texte blanc se lit sur n’importe quelle image. Format paysage conseillé (au moins 1600 × 900 px). Laisser vide pour la photo par défaut.', kind: 'image' },
       { key: 'about.title', label: 'Accroche', help: 'Phrase d’introduction en haut de la page.' },
       { key: 'about.text', label: 'Présentation de MTM', help: 'Histoire, valeurs, équipe. Un paragraphe par ligne.', multiline: true },
     ],
@@ -101,6 +102,7 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
     title: 'Coordonnées',
     where: 'Pied de page, page Contact (avec la carte), bouton « + » de l’application mobile, bouton WhatsApp et page Démarches',
     slots: [
+      { key: 'contact.image', label: 'Image du bandeau', help: 'Photo en fond du bandeau, sous un voile bleu marine : le texte blanc se lit sur n’importe quelle image. Format paysage conseillé (au moins 1600 × 900 px). Laisser vide pour la photo par défaut.', kind: 'image' },
       { key: 'contact.adresse', label: 'Adresse', help: 'Adresse de l’agence, telle qu’affichée aux visiteurs.' },
       { key: 'contact.telephone', label: 'Téléphone', help: 'Numéro affiché (ex. +221 78 366 26 51).' },
       { key: 'contact.email', label: 'E-mail', help: 'Adresse de contact publique.' },
@@ -110,6 +112,14 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
       { key: 'contact.latitude', label: 'Position de l’agence — latitude', help: 'Pour la carte et l’itinéraire (ex. 14.7753). Dans Google Maps, un clic droit sur l’agence donne les deux nombres.' },
       { key: 'contact.longitude', label: 'Position de l’agence — longitude', help: 'Ex. -17.4081 (le signe moins compte).' },
       { key: 'contact.whatsapp.demarches', label: 'Numéro WhatsApp — démarches administratives', help: 'Numéro joint depuis la page « Démarches administratives », suivi par la direction. Même format, sans espaces. Laisser vide pour réutiliser le numéro WhatsApp général.' },
+    ],
+  },
+  {
+    id: 'actualites',
+    title: 'Page « Actualités et conseils »',
+    where: 'Bandeau en haut de la page « Actualités et conseils » (les vidéos se gèrent dans Actualités et conseils)',
+    slots: [
+      { key: 'actualites.image', label: 'Image du bandeau', help: 'Photo en fond du bandeau, sous un voile bleu marine : le texte blanc se lit sur n’importe quelle image. Format paysage conseillé (au moins 1600 × 900 px). Laisser vide pour la photo par défaut.', kind: 'image' },
     ],
   },
   {
@@ -131,6 +141,7 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
     title: 'Gestion locative',
     where: 'Page « Gestion locative »',
     slots: [
+      { key: 'gestion-locative.image', label: 'Image du bandeau', help: 'Photo en fond du bandeau, sous un voile bleu marine : le texte blanc se lit sur n’importe quelle image. Format paysage conseillé (au moins 1600 × 900 px). Laisser vide pour la photo par défaut.', kind: 'image' },
       { key: 'gestion-locative.intro', label: 'Texte d’introduction', help: 'Présentation du service.', multiline: true },
       { key: 'gestion-locative.points', label: 'Points forts', help: 'Une ligne par point (ex. « Encaissement des loyers »).', multiline: true, format: 'lines' },
     ],
@@ -140,6 +151,7 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
     title: 'Construction',
     where: 'Page « Construction »',
     slots: [
+      { key: 'construction.image', label: 'Image du bandeau', help: 'Photo en fond du bandeau, sous un voile bleu marine : le texte blanc se lit sur n’importe quelle image. Format paysage conseillé (au moins 1600 × 900 px). Laisser vide pour la photo par défaut.', kind: 'image' },
       { key: 'construction.intro', label: 'Texte d’introduction', help: 'Présentation du service.', multiline: true },
       { key: 'construction.etapes', label: 'Étapes du projet', help: 'Une étape par ligne, au format « Titre | Description ».', multiline: true, format: 'steps' },
     ],

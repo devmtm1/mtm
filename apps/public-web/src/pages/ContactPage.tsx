@@ -1,5 +1,6 @@
 import { Mail, MapPin, MessageCircle, Navigation, Phone } from 'lucide-react';
-import { PageIntro } from '../components/layout/PageIntro';
+import { BandeauPage, IMAGE_BANDEAU_PAGE } from '../components/layout/BandeauPage';
+import { useEditableContent } from '../hooks/useEditableContent';
 import { ContactForm } from '../components/contact/ContactForm';
 import { TerrainMap } from '../components/terrains/TerrainMap';
 import { toMapsHref, toTelHref, useSiteContact } from '../hooks/useSiteContact';
@@ -7,6 +8,7 @@ import { usePageMetadata } from '../hooks/usePageMetadata';
 
 export function ContactPage() {
   const contact = useSiteContact();
+  const { text, loading: contenuEnCours } = useEditableContent();
   usePageMetadata({
     title: 'Contact',
     description:
@@ -15,10 +17,13 @@ export function ContactPage() {
 
   return (
     <div>
-      <PageIntro
+      <BandeauPage
+        chevauche={false}
         eyebrow="Contact"
         title="Parlons de votre projet"
         description="Une question, une visite à planifier, un dossier à vérifier ? Notre équipe vous répond rapidement."
+        image={text('contact.image', IMAGE_BANDEAU_PAGE)}
+        chargement={contenuEnCours}
       />
 
       <section className="mx-auto grid max-w-5xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1fr_1.3fr]">

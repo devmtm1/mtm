@@ -1,4 +1,4 @@
-import { PageIntro } from '../components/layout/PageIntro';
+import { BandeauPage, IMAGE_BANDEAU_PAGE } from '../components/layout/BandeauPage';
 import { ContactCtaSection } from '../components/home/ContactCtaSection';
 import { useEditableContent, type EditableStep } from '../hooks/useEditableContent';
 import { usePageMetadata } from '../hooks/usePageMetadata';
@@ -14,7 +14,7 @@ const FALLBACK_STEPS: EditableStep[] = [
 ];
 
 export function ConstructionPage() {
-  const { text, steps } = useEditableContent();
+  const { text, steps, loading: contenuEnCours } = useEditableContent();
   usePageMetadata({
     title: 'Construction',
     description:
@@ -23,10 +23,13 @@ export function ConstructionPage() {
 
   return (
     <div>
-      <PageIntro
+      <BandeauPage
+        chevauche={false}
         eyebrow="Nos services"
         title="Construction"
         description={text('construction.intro', FALLBACK_INTRO)}
+        image={text('construction.image', IMAGE_BANDEAU_PAGE)}
+        chargement={contenuEnCours}
       />
       <section className="mx-auto max-w-4xl px-4 py-14 sm:px-6">
         <ol className="grid grid-cols-1 gap-6 sm:grid-cols-2">
