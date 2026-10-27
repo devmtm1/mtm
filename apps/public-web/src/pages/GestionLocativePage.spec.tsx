@@ -1,0 +1,55 @@
+import { fireEvent, render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { describe, expect, it, vi } from 'vitest';
+import { GestionLocativePage } from './GestionLocativePage';
+
+vi.mock('../hooks/useSiteContact', () => ({
+  useSiteContact: () => ({
+    adresse: 'Dakar, Sénégal',
+    telephone: '+221 78 000 00 00',
+    email: 'contact@exemple.sn',
+    whatsapp: '221780000000',
+    whatsappDemarches: '221780000000',
+  }),
+}));
+
+// Visiteur non connecté : le formulaire de contact se remplit à la main.
+vi.mock('../contexts/auth-context-store', () => ({
+  useAuth: () => ({ user: null, accessToken: null }),
+  useClientSession: () => null,
+}));
+
+// Aucun contenu saisi au back-office : la page affiche ses textes par défaut.
+vi.mock('../hooks/useContentBlocks', () => ({
+  useContentBlocks: () => ({ data: [], loading: false, error: null }),
+}));
+
+describe('GestionLocativePage', () => {
+  function afficher() {
+    render(
+      <MemoryRouter>
+        <GestionLocativePage />
+      </MemoryRouter>,
+    );
+  }
+
+  it('présente ce que MTM prend en charge, les étapes, les biens acceptés, le suivi et les questions', () => {
+    afficher();
+    expect(screen.getByRole('heading', { level: 1, name: 'Gestion locative' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Recherche de locataires' })).toBeTruthy();
+    expect(screen.getByText('Vous nous confiez votre bien')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Immeubles et villas divisées' })).toBeTruthy();
+    expect(screen.getByText('Combien coûte la gestion ?')).toBeTruthy();
+  });
+
+  it('ne fige aucun taux ni montant', () => {
+    afficher();
+    expect(document.body.textContent).not.toMatch(/\d+\s*%|FCFA/);
+  });
+
+  it('ouvre la demande « Confier mon bien » depuis le bandeau', () => {
+    afficher();
+    fireEvent.click(screen.getAllByRole('button', { name: /Confier mon bien/ })[0]);
+    expect(screen.getByRole('dialog')).toBeTruthy();
+  });
+});

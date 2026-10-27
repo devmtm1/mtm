@@ -2285,14 +2285,6 @@ async function main(): Promise<void> {
       ordre: 50,
     },
     {
-      key: 'gestion-locative.points',
-      title: 'Gestion locative — prestations (une par ligne)',
-      content:
-        'Recherche et sélection de locataires\nEncaissement des loyers et suivi des impayés\nÉtats des lieux d’entrée et de sortie\nGestion des cautions et des incidents\nRapports réguliers transmis au propriétaire',
-      type: 'text',
-      ordre: 51,
-    },
-    {
       key: 'construction.intro',
       title: 'Construction — introduction',
       content:
