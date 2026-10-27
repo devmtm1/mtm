@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { KeyRound, ShieldCheck, Wallet } from 'lucide-react';
 import { cloudinarySrcSet } from '../../utils/cloudinary';
+import { VAGUES, type FormeVague } from '../../utils/vagues';
 
 /** Photo du bandeau quand aucune image n'a été choisie dans le back-office. */
 export const IMAGE_BANDEAU_PAGE = '/hero-poster.jpg';
@@ -22,6 +23,8 @@ interface BandeauPageProps {
    * le bandeau se referme plus court sur sa vague.
    */
   chevauche?: boolean;
+  /** Forme de la vague du bas : « ample » (présentation), « douce » (services, par défaut) ou « discrete » (recherche). */
+  vague?: FormeVague;
   /** Boutons d'action sous les engagements (ex. « Confier mon bien »). */
   actions?: ReactNode;
 }
@@ -32,7 +35,7 @@ interface BandeauPageProps {
  * et une vague en bas. Un panneau (recherche, faits clés) peut le chevaucher. Tous les textes et la photo se modifient dans
  * Contenus du site.
  */
-export function BandeauPage({ eyebrow, title, description, points = [], image, chargement = false, chevauche = true, actions }: BandeauPageProps) {
+export function BandeauPage({ eyebrow, title, description, points = [], image, chargement = false, chevauche = true, vague = 'douce', actions }: BandeauPageProps) {
   const [imageMorte, setImageMorte] = useState(false);
   const source = imageMorte ? IMAGE_BANDEAU_PAGE : image;
   const srcSet = source === IMAGE_BANDEAU_PAGE ? '' : cloudinarySrcSet(source);
@@ -62,7 +65,7 @@ export function BandeauPage({ eyebrow, title, description, points = [], image, c
         className="absolute inset-x-0 bottom-0 h-10 w-full text-mtm-bg sm:h-14 lg:h-16"
         fill="currentColor"
       >
-        <path d="M0,46 C180,92 360,88 560,52 C760,16 940,6 1140,38 C1270,58 1360,70 1440,52 L1440,90 L0,90 Z" />
+        <path d={VAGUES[vague]} />
       </svg>
 
       <div className={`relative mx-auto w-full max-w-6xl px-4 [text-shadow:0_1px_14px_rgba(10,33,66,0.5)] pt-9 sm:px-6 sm:pt-12 lg:pt-14 ${

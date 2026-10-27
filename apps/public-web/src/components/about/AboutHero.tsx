@@ -18,7 +18,7 @@ const FAITS = [
 export function AboutHero({ accroche, image = IMAGE_BANDEAU_PAGE, chargement = false }: { accroche: string; image?: string; chargement?: boolean }) {
   return (
     <header>
-      <BandeauPage eyebrow="À propos" title="MTM Immobilier" description={accroche} image={image} chargement={chargement} />
+      <BandeauPage vague="ample" eyebrow="À propos" title="MTM Immobilier" description={accroche} image={image} chargement={chargement} />
 
       <div className="relative z-10 mx-auto -mt-12 max-w-5xl px-4 sm:px-6 lg:-mt-14">
         <ul className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-mtm-border/70 bg-mtm-border shadow-card-hover lg:grid-cols-4 lg:rounded-lg">

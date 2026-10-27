@@ -227,6 +227,7 @@ export function CatalogPage() {
   return (
     <div>
       <BandeauPage
+        vague="discrete"
         eyebrow={text('catalogue.eyebrow', 'Catalogue')}
         title={text('catalogue.title', 'Nos biens')}
         description={text('catalogue.intro', INTRO_DEFAUT)}
