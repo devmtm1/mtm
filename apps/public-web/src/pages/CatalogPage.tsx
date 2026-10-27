@@ -16,7 +16,8 @@ import { CardGridSkeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
-import { SectionHeading } from '../components/ui/SectionHeading';
+import { BandeauLocations, IMAGE_BANDEAU_LOCATIONS } from '../components/locations/BandeauLocations';
+import { useEditableContent } from '../hooks/useEditableContent';
 import { fieldInputClass } from '../components/ui/FormField';
 import type { Terrain, TerrainFilters as TerrainFiltersValue } from '../types/terrain';
 
@@ -43,6 +44,10 @@ const NUMBER_FILTERS = [
 const TYPED_FILTERS = ['search', 'superficieMin', 'superficieMax', 'prixPublicMin', 'prixPublicMax'] as const;
 const TYPING_DEBOUNCE_MS = 350;
 const PAGE_SIZE = 12;
+
+const REASSURANCES_DEFAUT = ['Titres et documents vérifiés', 'Prix et surfaces annoncés', 'Visite et suivi, même à distance'];
+const INTRO_DEFAUT =
+  'Terrains, villas et appartements vérifiés à vendre, et nos références vendues : filtrez par type de bien, zone, superficie et budget.';
 
 function parseFilters(params: URLSearchParams): TerrainFiltersValue {
   const filters: TerrainFiltersValue = {};
@@ -93,6 +98,7 @@ export function CatalogPage() {
     [filters, viewMode],
   );
   const { data, loading, error } = useTerrainsCatalog(queryFilters);
+  const { text, lines, loading: contenuEnCours } = useEditableContent();
 
   usePageMetadata({
     title: 'Terrains et villas à vendre',
@@ -209,52 +215,74 @@ export function CatalogPage() {
     </div>
   );
 
+  const filterChipsCount = chips.filter((chip) => chip.key !== 'search').length;
+  const statutSwitch = (
+    <CatalogStatutSwitch
+      className=""
+      value={(filters.statut ?? 'tous') as CatalogStatut}
+      onChange={(statut) => commitFilters({ ...filters, statut: statut === 'tous' ? undefined : statut, page: 1 })}
+    />
+  );
+
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
-      <SectionHeading
-        eyebrow="Catalogue"
-        title="Nos biens"
-        description="Terrains, villas et appartements vérifiés à vendre, et nos références vendues : filtrez par type de bien, zone, superficie et budget."
-      />
-      <CatalogStatutSwitch
-        value={(filters.statut ?? 'tous') as CatalogStatut}
-        onChange={(statut) => commitFilters({ ...filters, statut: statut === 'tous' ? undefined : statut, page: 1 })}
+    <div>
+      <BandeauLocations
+        eyebrow={text('catalogue.eyebrow', 'Catalogue')}
+        title={text('catalogue.title', 'Nos biens')}
+        description={text('catalogue.intro', INTRO_DEFAUT)}
+        points={lines('catalogue.reassurance', REASSURANCES_DEFAUT)}
+        image={text('catalogue.image', IMAGE_BANDEAU_LOCATIONS)}
+        chargement={contenuEnCours}
       />
 
-      {/* Mobile / tablette : recherche + bouton Filtres (critères en feuille).
-          Les résultats sont visibles dès l'arrivée, sans traverser 7 champs. */}
-      <div className="mt-4 flex gap-2 lg:hidden">
-        <div className="relative min-w-0 flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mtm-muted" aria-hidden="true" />
-          <input
-            type="search"
-            aria-label="Recherche libre"
-            placeholder="Référence, nom, commune…"
-            className={`${fieldInputClass} pl-9`}
-            value={draft.search ?? ''}
-            onChange={(event) => handleFiltersChange({ ...draft, search: event.target.value || undefined, page: 1 })}
-          />
+      <div className="mx-auto max-w-6xl px-4 pb-10 sm:px-6 sm:pb-14">
+        {/* Le panneau de recherche chevauche le bandeau, comme sur « Locations » et « Nos réalisations ». */}
+        <div className="relative z-10 -mt-14 sm:-mt-16 lg:-mt-20">
+          {/* Mobile / tablette : recherche + bouton Filtres (critères en feuille).
+              Les résultats sont visibles dès l'arrivée, sans traverser 7 champs. */}
+          <div className="rounded-2xl border border-mtm-border/70 bg-white p-3 shadow-[0_24px_60px_-28px_rgba(10,33,66,0.45)] lg:hidden">
+            <div className="flex gap-2">
+              <div className="relative min-w-0 flex-1">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-mtm-muted" aria-hidden="true" />
+                <input
+                  type="search"
+                  aria-label="Recherche libre"
+                  placeholder="Chercher un bien…"
+                  className={`${fieldInputClass} pl-9`}
+                  value={draft.search ?? ''}
+                  onChange={(event) => handleFiltersChange({ ...draft, search: event.target.value || undefined, page: 1 })}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={openSheet}
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-mtm-border bg-white px-3 py-2 text-sm font-semibold text-mtm-text hover:border-mtm-primary hover:text-mtm-primary"
+                aria-haspopup="dialog"
+              >
+                <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+                Filtres
+                {filterChipsCount > 0 && (
+                  <span className="ml-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-mtm-primary px-1.5 text-[11px] font-bold text-white">
+                    {filterChipsCount}
+                  </span>
+                )}
+              </button>
+            </div>
+            <div className="mt-3 empty:hidden">{statutSwitch}</div>
+          </div>
+
+          {/* Ordinateur : recherche, quatre critères essentiels, le reste sous « Plus de filtres ». */}
+          <div className="hidden lg:block">
+            <TerrainFilters
+              panel
+              value={draft}
+              onChange={handleFiltersChange}
+              onSubmit={() => commitFilters(draft)}
+              onReset={() => commitFilters({})}
+              header={statutSwitch}
+            />
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={openSheet}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-mtm-border bg-mtm-surface px-3 py-2 text-sm font-semibold text-mtm-text hover:border-mtm-primary hover:text-mtm-primary"
-          aria-haspopup="dialog"
-        >
-          <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
-          Filtres
-          {chips.filter((chip) => chip.key !== 'search').length > 0 && (
-            <span className="ml-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-mtm-primary px-1.5 text-[11px] font-bold text-white">
-              {chips.filter((chip) => chip.key !== 'search').length}
-            </span>
-          )}
-        </button>
-      </div>
-
-      {/* Ordinateur : formulaire complet en ligne, inchangé. */}
-      <div className="mt-6 hidden lg:block">
-        <TerrainFilters value={draft} onChange={handleFiltersChange} onSubmit={() => commitFilters(draft)} />
-      </div>
 
       {hasActiveFilters && (
         <div className="mt-3 lg:mt-4">
@@ -334,6 +362,7 @@ export function CatalogPage() {
           </div>
         </Modal>
       )}
+      </div>
     </div>
   );
 }

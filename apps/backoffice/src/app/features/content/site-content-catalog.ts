@@ -38,6 +38,18 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
     ],
   },
   {
+    id: 'catalogue',
+    title: 'Page « Nos biens »',
+    where: 'Bandeau en haut de la page « Nos biens » (les biens eux-mêmes se gèrent dans Biens à vendre)',
+    slots: [
+      { key: 'catalogue.image', label: 'Image du bandeau', help: 'Photo en fond du bandeau, sous un voile bleu marine : le texte blanc se lit sur n’importe quelle image. Format paysage conseillé (au moins 1600 × 900 px).', kind: 'image' },
+      { key: 'catalogue.eyebrow', label: 'Mention au-dessus du titre', help: 'Petit libellé précédé d’un trait rouge, affiché en capitales. Par défaut : « Catalogue ».' },
+      { key: 'catalogue.title', label: 'Titre', help: 'Le grand titre du bandeau. Par défaut : « Nos biens ».' },
+      { key: 'catalogue.intro', label: 'Texte de présentation', help: 'Un court paragraphe sous le titre.', multiline: true },
+      { key: 'catalogue.reassurance', label: 'Engagements du bandeau', help: 'Jusqu’à trois lignes courtes, une par engagement (ex. « Titres et documents vérifiés »).', multiline: true },
+    ],
+  },
+  {
     id: 'locations',
     title: 'Page « Locations »',
     where: 'Bandeau en haut de la page « Locations » (les annonces elles-mêmes se gèrent dans Gestion locative)',
