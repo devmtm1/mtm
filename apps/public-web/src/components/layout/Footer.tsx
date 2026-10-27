@@ -82,7 +82,7 @@ export function Footer() {
 
           {/* Contact : en premier sur mobile, en boutons tactiles. */}
           <div className="order-first sm:order-none sm:col-span-2 lg:col-span-1 lg:col-start-4 lg:row-start-1">
-            <h3 className="hidden text-sm font-semibold uppercase tracking-wide text-white/70 sm:block">Contact</h3>
+            <h2 className="hidden text-sm font-semibold uppercase tracking-wide text-white/70 sm:block">Contact</h2>
             <ul className="grid grid-cols-3 gap-2 sm:mt-4 sm:flex sm:flex-col sm:gap-3">
               {contactActions.map(({ href, icon: Icon, label, external }) => (
                 <li key={label}>
@@ -104,7 +104,7 @@ export function Footer() {
               href={toMapsHref(contact)}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 flex items-start gap-2 text-sm text-white/75 transition-colors hover:text-white"
+              className="mt-3 flex min-h-11 items-start gap-2 text-sm text-white/75 transition-colors hover:text-white"
             >
               <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
               <span>
@@ -158,13 +158,13 @@ export function Footer() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 text-center text-xs text-white/60 sm:flex-row sm:px-6 sm:text-left">
           <span>© {year} MTM Immobilier. Tous droits réservés.</span>
           <nav aria-label="Informations légales" className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-            <Link to={ROUTES.mentionsLegales} className="hover:text-white">
+            <Link to={ROUTES.mentionsLegales} className="inline-flex min-h-11 items-center hover:text-white">
               Mentions légales
             </Link>
-            <Link to={ROUTES.confidentialite} className="hover:text-white">
+            <Link to={ROUTES.confidentialite} className="inline-flex min-h-11 items-center hover:text-white">
               Confidentialité
             </Link>
-            <Link to={ROUTES.clientPortal} className="font-semibold text-white/85 hover:text-white">
+            <Link to={ROUTES.clientPortal} className="inline-flex min-h-11 items-center font-semibold text-white/85 hover:text-white">
               Espace client
             </Link>
           </nav>

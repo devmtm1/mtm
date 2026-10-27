@@ -197,8 +197,10 @@ export function PromoBanner({ promotions, variant = 'hero' }: PromoBannerProps) 
                     onClick={() => setIndex(position)}
                     aria-label={`Publicité ${position + 1} sur ${total}`}
                     aria-current={position === index ? 'true' : undefined}
-                    className={`h-2 rounded-full transition-all ${position === index ? 'w-6 bg-white' : 'w-2 bg-white/50 hover:bg-white/80'}`}
-                  />
+                    className="flex h-11 min-w-6 items-center justify-center"
+                  >
+                    <span className={`block h-2 rounded-full transition-all ${position === index ? 'w-6 bg-white' : 'w-2 bg-white/50 hover:bg-white/80'}`} />
+                  </button>
                 </li>
               ))}
             </ul>

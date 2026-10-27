@@ -57,7 +57,7 @@ export function AboutStory({ texte }: { texte: string }) {
               <li key={titre}>
                 <Link
                   to={to}
-                  className="inline-flex items-center gap-1 rounded-full border border-mtm-border bg-mtm-surface px-3.5 py-2 text-xs font-semibold text-mtm-primary transition-colors active:scale-95 hover:border-mtm-primary-light hover:bg-mtm-primary-subtle focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mtm-primary sm:text-sm"
+                  className="inline-flex min-h-11 items-center gap-1 rounded-full border border-mtm-border bg-mtm-surface px-3.5 py-2 text-xs font-semibold text-mtm-primary transition-colors active:scale-95 hover:border-mtm-primary-light hover:bg-mtm-primary-subtle focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mtm-primary sm:text-sm"
                 >
                   {titre}
                   <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />

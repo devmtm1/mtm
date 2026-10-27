@@ -44,7 +44,7 @@ export function MobileAppBar() {
               <ChevronLeft className="h-6 w-6" aria-hidden="true" />
             </button>
           ) : (
-            <Link to={ROUTES.home} className="flex min-w-0 items-center gap-2.5" aria-label="MTM Immobilier, accueil">
+            <Link to={ROUTES.home} className="flex min-h-11 min-w-0 items-center gap-2.5" aria-label="MTM Immobilier, accueil">
               <img src="/logomtm-mark.png" alt="" className="h-9 w-9 object-contain" />
               <span className="truncate font-display text-[17px] font-bold leading-none">
                 <span className="text-mtm-accent">MTM</span> <span className="text-mtm-primary">Immobilier</span>

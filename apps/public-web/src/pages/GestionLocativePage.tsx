@@ -102,7 +102,7 @@ export function GestionLocativePage() {
               <button
                 type="button"
                 onClick={() => setDemandeOuverte(true)}
-                className="mt-5 inline-flex items-center gap-1.5 text-[15px] font-semibold text-mtm-accent hover:underline"
+                className="mt-5 inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold text-mtm-accent hover:underline"
               >
                 Poser ma question
               </button>

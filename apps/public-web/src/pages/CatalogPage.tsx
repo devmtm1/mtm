@@ -204,7 +204,7 @@ export function CatalogPage() {
           type="button"
           onClick={() => setViewMode(mode)}
           aria-pressed={viewMode === mode}
-          className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-sm font-semibold capitalize transition-colors ${
+          className={`flex items-center gap-1.5 rounded px-3 py-1.5 max-lg:min-h-11 text-sm font-semibold capitalize transition-colors ${
             viewMode === mode ? 'bg-mtm-primary text-white' : 'text-mtm-muted hover:text-mtm-primary'
           }`}
         >
@@ -292,6 +292,7 @@ export function CatalogPage() {
       )}
 
       <div className="mt-4 sm:mt-6">
+        <h2 className="sr-only">Biens à vendre</h2>
         {/* Barre de résultats collante : le compteur et la bascule Liste / Carte
             restent sous la main pendant le défilement. */}
         <div className="sticky top-16 z-20 -mx-4 mb-3 flex items-center justify-between gap-3 border-b border-mtm-border bg-mtm-bg/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 lg:static lg:mx-0 lg:mb-4 lg:border-0 lg:bg-transparent lg:px-0 lg:py-0">

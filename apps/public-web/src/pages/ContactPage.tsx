@@ -43,7 +43,7 @@ export function ContactPage() {
             </span>
             <div>
               <p className="text-sm font-semibold text-mtm-text">Téléphone</p>
-              <a href={toTelHref(contact.telephone)} className="text-sm text-mtm-muted transition-colors hover:text-mtm-primary">
+              <a href={toTelHref(contact.telephone)} className="inline-flex min-h-11 items-center text-sm text-mtm-muted transition-colors hover:text-mtm-primary">
                 {contact.telephone}
               </a>
             </div>
@@ -56,7 +56,7 @@ export function ContactPage() {
               <p className="text-sm font-semibold text-mtm-text">E-mail</p>
               <a
                 href={`mailto:${contact.email}`}
-                className="text-sm text-mtm-muted transition-colors hover:text-mtm-primary"
+                className="inline-flex min-h-11 items-center text-sm text-mtm-muted transition-colors hover:text-mtm-primary"
               >
                 {contact.email}
               </a>
@@ -72,7 +72,7 @@ export function ContactPage() {
                 href={`https://wa.me/${contact.whatsapp}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-mtm-muted transition-colors hover:text-mtm-primary"
+                className="inline-flex min-h-11 items-center text-sm text-mtm-muted transition-colors hover:text-mtm-primary"
               >
                 Écrire directement à un conseiller
               </a>

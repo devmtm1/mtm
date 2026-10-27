@@ -138,7 +138,7 @@ export function FormulaireDevis() {
           aria-expanded={detailsOuverts}
           aria-controls="devis-details"
           onClick={() => setDetailsOuverts((etat) => !etat)}
-          className="inline-flex items-center gap-1.5 rounded-md text-sm font-semibold text-mtm-primary hover:text-mtm-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mtm-primary"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-md text-sm font-semibold text-mtm-primary hover:text-mtm-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mtm-primary"
         >
           {detailsOuverts ? 'Moins de détails' : 'Plus de détails (facultatif)'}
           <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${detailsOuverts ? 'rotate-180' : ''}`} aria-hidden="true" />

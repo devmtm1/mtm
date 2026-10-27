@@ -135,15 +135,19 @@ export function Carousel({ children, ariaLabel, itemClassName, lgClassName = '',
           >
             <ChevronLeft className="h-4 w-4" aria-hidden="true" />
           </button>
-          <div className="flex items-center gap-1.5" aria-hidden="true">
+          <div className="flex items-center" role="group" aria-label="Choisir une diapositive">
             {items.map((_, index) => (
               <button
                 key={index}
                 type="button"
-                tabIndex={-1}
                 onClick={() => goTo(index)}
-                className={`h-2 rounded-full transition-all ${index === active ? `w-5 ${dotActive}` : `w-2 ${dotIdle}`}`}
-              />
+                aria-label={`Diapositive ${index + 1} sur ${count}`}
+                aria-current={index === active ? 'true' : undefined}
+                // Le point reste petit (8 px) ; le bouton, lui, mesure 44 px de haut pour un doigt.
+                className="flex h-11 min-w-6 items-center justify-center"
+              >
+                <span className={`block h-2 rounded-full transition-all ${index === active ? `w-5 ${dotActive}` : `w-2 ${dotIdle}`}`} />
+              </button>
             ))}
           </div>
           <button

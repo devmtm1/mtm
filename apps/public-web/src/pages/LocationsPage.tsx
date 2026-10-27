@@ -176,7 +176,7 @@ export function LocationsPage() {
       <ArrowUpDown className="h-4 w-4" aria-hidden="true" />
       <span className="sr-only sm:not-sr-only">Trier par</span>
       <select
-        className="rounded-md border border-mtm-border bg-mtm-surface px-2.5 py-1.5 text-sm font-semibold text-mtm-text focus:border-mtm-primary focus:outline-none focus:ring-1 focus:ring-mtm-primary"
+        className="rounded-md border border-mtm-border bg-mtm-surface px-2.5 py-1.5 max-lg:min-h-11 text-sm font-semibold text-mtm-text focus:border-mtm-primary focus:outline-none focus:ring-1 focus:ring-mtm-primary"
         value={sortKey}
         onChange={(event) => commitFilters({ ...filters, page: 1 }, event.target.value as LocationSortKey)}
         aria-label="Trier les annonces"
@@ -205,7 +205,7 @@ export function LocationsPage() {
           onClick={() =>
             commitFilters({ ...filters, mode: value, page: 1, ...(value === 'courte_duree' ? { loyerMin: undefined, loyerMax: undefined } : {}) })
           }
-          className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
+          className={`rounded-full px-4 py-1.5 max-lg:min-h-11 text-sm font-semibold transition-colors ${
             filters.mode === value ? 'bg-mtm-primary text-white shadow-sm' : 'text-mtm-muted hover:text-mtm-primary'
           }`}
         >
@@ -283,6 +283,7 @@ export function LocationsPage() {
         )}
 
         <div className="mt-6 sm:mt-8">
+          <h2 className="sr-only">Annonces de location</h2>
           <div className="sticky top-16 z-20 -mx-4 mb-3 flex items-center justify-between gap-3 border-b border-mtm-border bg-mtm-bg/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 lg:static lg:mx-0 lg:mb-4 lg:border-0 lg:bg-transparent lg:px-0 lg:py-0">
             <p className="text-sm text-mtm-muted" aria-live="polite">
               {loading && !data ? (
