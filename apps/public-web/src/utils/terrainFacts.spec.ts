@@ -98,9 +98,11 @@ describe('faitsEssentiels', () => {
 describe('caracteristiques', () => {
   it('ne montre aucune ligne vide ni aucun groupe vide', () => {
     expect(caracteristiques({ ...base, superficie: null })).toEqual([]);
-    const [groupe] = caracteristiques(base);
+    // La superficie d'une parcelle est déjà dans les repères du haut de la fiche : seule, elle ne fait pas une carte.
+    expect(caracteristiques(base)).toEqual([]);
+    const [groupe] = caracteristiques({ ...base, accesRoutier: 'Route goudronnée' });
     expect(groupe.titre).toBe('La parcelle');
-    expect(groupe.lignes).toHaveLength(1);
+    expect(groupe.lignes).toEqual([{ label: 'Accès routier', value: 'Route goudronnée' }]);
   });
 
   it('regroupe : le bien, le terrain, les équipements', () => {

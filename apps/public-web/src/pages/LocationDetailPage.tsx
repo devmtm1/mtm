@@ -21,6 +21,7 @@ import { useLocation } from '../hooks/useLocations';
 import { AutresLogements } from '../components/locations/AutresLogements';
 import { LocationGallery } from '../components/locations/LocationGallery';
 import { SejourBooking } from '../components/locations/SejourBooking';
+import { SimilarLocations } from '../components/locations/SimilarLocations';
 import { TerrainMap } from '../components/terrains/TerrainMap';
 import { ContactModal } from '../components/contact/ContactModal';
 import { DemandeWhatsAppCta } from '../components/contact/DemandeWhatsAppCta';
@@ -307,6 +308,8 @@ export function LocationDetailPage() {
           </ul>
         </aside>
       </div>
+
+      <SimilarLocations location={location} />
 
       {/* Mobile : le loyer et l'action principale restent sous le pouce. */}
       <DetailActionBar label={courte ? 'Prix / nuit' : 'Loyer / mois'} price={prix.montant}>

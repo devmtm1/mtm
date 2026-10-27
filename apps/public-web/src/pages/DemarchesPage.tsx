@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import { BandeauDemarches } from '../components/demarches/BandeauDemarches';
+import { ArrowRight } from 'lucide-react';
+import { BandeauPage } from '../components/layout/BandeauPage';
+import { EnTeteSection } from '../components/gestion/GestionBlocs';
+import { buttonClassName } from '../components/ui/button-styles';
 import { IMAGE_BANDEAU_DEMARCHES } from '../utils/demarches';
 import { donneesFaq } from '../utils/seo';
 import { ContactModal } from '../components/contact/ContactModal';
@@ -166,35 +169,35 @@ export function DemarchesPage() {
   });
 
   return (
-    <div className="font-['Poppins',ui-sans-serif,system-ui,sans-serif]">
-      {/* Celui qui clique sur « Faire une demande » a déjà décidé : on lui ouvre la fenêtre plutôt que de le
-          faire défiler. La section de bas de page reste en place pour celui qui lit tout et arrive convaincu. */}
-      <BandeauDemarches
+    <div>
+      {/* Même bandeau que les autres pages de services. Celui qui clique sur « Faire une demande » a déjà décidé :
+          on lui ouvre la fenêtre plutôt que de le faire défiler. La section de bas de page reste en place pour
+          celui qui lit tout et arrive convaincu. */}
+      <BandeauPage
+        chevauche={false}
         eyebrow={text('demarches.eyebrow', 'Nos services')}
         title={text('demarches.title', 'Démarches administratives')}
         description={text('demarches.intro', FALLBACK_INTRO)}
         points={lines('demarches.reassurance', FALLBACK_REASSURANCE)}
-        bouton={text('demarches.bouton', 'Faire une demande')}
         image={text('demarches.image', IMAGE_BANDEAU_DEMARCHES)}
         chargement={contenuEnCours}
-        onDemande={() => demander()}
+        actions={
+          <button type="button" onClick={() => demander()} className={buttonClassName('accent', 'px-6 py-3 text-[15px]')}>
+            {text('demarches.bouton', 'Faire une demande')}
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </button>
+        }
       />
 
-      {/* Une seule police et une seule palette sur toute la page, celles du bandeau. */}
-      <section id="prestations" className="scroll-mt-20 bg-[#F5F8FB] py-14 lg:py-20">
+      <section id="prestations" className="scroll-mt-20 bg-white py-12 lg:py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="text-[14px] font-bold uppercase tracking-wide text-[#C8102E]">Nos prestations</p>
-            <h2 className="mt-3 text-[28px] font-extrabold leading-tight text-[#12365A] sm:text-[34px]">
-              Quelle démarche vous concerne ?
-            </h2>
-            <p className="mt-3 text-[16px] leading-relaxed text-[#34465A]">
-              Au Sénégal ou depuis l’étranger, nous prenons en charge vos démarches auprès des administrations.
-              Choisissez la vôtre : la demande s’ouvre déjà préremplie.
-            </p>
-          </div>
+          <EnTeteSection
+            mention="Nos prestations"
+            titre="Quelle démarche vous concerne ?"
+            texte="Au Sénégal ou depuis l’étranger, nous prenons en charge vos démarches auprès des administrations. Choisissez la vôtre : la demande s’ouvre déjà préremplie."
+          />
 
-          <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
             {prestations.map((presta) => (
               <CarteDemarche key={presta.title} titre={presta.title} description={presta.description} onDemande={demander} />
             ))}
@@ -202,9 +205,9 @@ export function DemarchesPage() {
 
           {prestationsTechniques.length > 0 && (
             <>
-              <h3 className="mt-14 text-[20px] font-bold text-[#12365A]">Services techniques</h3>
-              <p className="mt-1 text-[15px] text-[#34465A]">Les plans et relevés dont votre dossier peut avoir besoin.</p>
-              <ul className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              <h3 className="mt-12 font-display text-lg font-bold text-mtm-text">Services techniques</h3>
+              <p className="mt-1 text-sm text-mtm-muted">Les plans et relevés dont votre dossier peut avoir besoin.</p>
+              <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
                 {prestationsTechniques.map((presta) => (
                   <CarteDemarche key={presta.title} titre={presta.title} description={presta.description} onDemande={demander} />
                 ))}
@@ -216,34 +219,29 @@ export function DemarchesPage() {
 
       {/* Le parcours en étapes ne décrit que la vérification avant achat : un dépôt de mutation ne suit pas ces
           étapes. Le titre le dit, pour ne pas laisser croire que toute demande passe par une visite de terrain. */}
-      <section id="parcours" className="bg-white py-14 lg:py-20">
+      <section id="parcours" className="bg-mtm-bg py-12 lg:py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="mx-auto max-w-3xl text-center">
-            <p className="text-[14px] font-bold uppercase tracking-wide text-[#C8102E]">Comment ça se passe</p>
-            <h2 className="mt-3 text-[28px] font-extrabold leading-tight text-[#12365A] sm:text-[34px]">
-              La vérification avant achat, étape par étape
-            </h2>
-          </div>
-          <div className="mt-12">
+          <EnTeteSection mention="Comment ça se passe" titre="La vérification avant achat, étape par étape" />
+          <div className="mt-10">
             <ParcoursVerification etapes={steps('demarches.etapes', FALLBACK_STEPS)} />
           </div>
         </div>
       </section>
 
       {faq.length > 0 && (
-        <section id="faq" className="scroll-mt-20 bg-[#F5F8FB] py-14 lg:py-20">
+        <section id="faq" className="scroll-mt-20 bg-white py-12 lg:py-16">
           <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.4fr] lg:gap-16">
             <div>
-              <p className="text-[14px] font-bold uppercase tracking-wide text-[#C8102E]">Questions fréquentes</p>
-              <h2 className="mt-3 text-[28px] font-extrabold leading-tight text-[#12365A] sm:text-[34px]">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-mtm-accent">Questions fréquentes</p>
+              <h2 className="mt-3 font-display text-[1.65rem] font-extrabold leading-tight text-mtm-text sm:text-3xl">
                 Vous vous posez une question ?
               </h2>
-              <p className="mt-3 text-[16px] leading-relaxed text-[#34465A]">
+              <p className="mt-3 text-[15px] leading-relaxed text-mtm-muted sm:text-base">
                 Les réponses aux questions que l’on nous pose le plus. Vous ne trouvez pas la vôtre ? Écrivez-nous, nous vous répondons.
               </p>
               <a
                 href="#demande-verification"
-                className="mt-5 inline-flex items-center gap-1.5 text-[15px] font-semibold text-[#C8102E] hover:underline"
+                className="mt-5 inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold text-mtm-accent hover:underline"
               >
                 Poser ma question
               </a>

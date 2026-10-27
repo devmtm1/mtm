@@ -17,21 +17,21 @@ interface SectionDemandeProps {
  */
 export function SectionDemande({ intro, engagements, sujets, numeroWhatsapp, messageWhatsapp }: SectionDemandeProps) {
   return (
-    <section id="demande-verification" className="scroll-mt-20 bg-[#12365A] py-14 text-white lg:py-20">
+    <section id="demande-verification" className="scroll-mt-20 bg-mtm-primary-dark py-12 text-white lg:py-16">
       <div className="mx-auto grid max-w-6xl items-start gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
         <div>
-          <p className="text-[14px] font-bold uppercase tracking-wide text-white/80">
+          <p className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-white/85">
+            <span aria-hidden="true" className="h-[3px] w-12 rounded-full bg-mtm-accent" />
             Faire une demande
-            <span aria-hidden="true" className="mt-1 block h-[3px] w-12 rounded-full bg-[#C8102E]" />
           </p>
-          <h2 className="mt-4 text-[28px] font-extrabold leading-tight sm:text-[34px]">Parlons de votre projet</h2>
-          <p className="mt-4 max-w-md text-[16px] leading-relaxed text-white/85">{intro}</p>
+          <h2 className="mt-4 font-display text-[1.65rem] font-extrabold leading-tight sm:text-3xl">Parlons de votre projet</h2>
+          <p className="mt-4 max-w-md text-[15px] leading-relaxed text-white/85 sm:text-base">{intro}</p>
 
           {engagements.length > 0 && (
             <ul className="mt-6 space-y-3">
               {engagements.map((engagement) => (
                 <li key={engagement} className="flex items-start gap-3 text-[15px] font-medium text-white">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#C8102E]">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-mtm-accent">
                     <Check className="h-3 w-3" strokeWidth={3} aria-hidden="true" />
                   </span>
                   {engagement}
@@ -46,16 +46,16 @@ export function SectionDemande({ intro, engagements, sujets, numeroWhatsapp, mes
             href={`https://wa.me/${numeroWhatsapp}?text=${encodeURIComponent(messageWhatsapp)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-8 inline-flex items-center gap-3 rounded-xl border border-white/40 px-6 py-3.5 text-[16px] font-semibold text-white transition-colors hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="mt-8 inline-flex min-h-11 items-center gap-3 rounded-xl border border-white/40 px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             <MessageCircle className="h-5 w-5" aria-hidden="true" />
             Discuter directement sur WhatsApp
           </a>
         </div>
 
-        <div className="rounded-2xl bg-white p-6 text-mtm-text shadow-[0_24px_60px_-24px_rgba(0,0,0,0.5)] sm:p-8">
-          <h3 className="text-[20px] font-bold text-[#12365A]">Écrivez-nous</h3>
-          <p className="mt-1 text-[14px] text-[#34465A]">Dites-nous ce dont vous avez besoin, nous revenons vers vous rapidement.</p>
+        <div className="rounded-3xl bg-white p-5 text-mtm-text shadow-[0_24px_60px_-24px_rgba(0,0,0,0.5)] sm:p-8">
+          <h3 className="font-display text-xl font-bold text-mtm-text">Écrivez-nous</h3>
+          <p className="mt-1 text-sm text-mtm-muted">Dites-nous ce dont vous avez besoin, nous revenons vers vous rapidement.</p>
           <ContactForm initialSujet={sujets[0]} sujetOptions={sujets} />
         </div>
       </div>
