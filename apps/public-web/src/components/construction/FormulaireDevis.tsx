@@ -92,7 +92,7 @@ export function FormulaireDevis() {
         void envoyer();
       }}
     >
-      <fieldset className="grid gap-4 sm:grid-cols-2">
+      <fieldset className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <legend className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-mtm-accent">Vous</legend>
         <FormField label="Nom complet" htmlFor="devis-nom" error={errors.nom} required>
           <input id="devis-nom" type="text" autoComplete="name" className={fieldInputClass} value={values.nom} onChange={(e) => set('nom', e.target.value)} />
@@ -105,7 +105,7 @@ export function FormulaireDevis() {
         </FormField>
       </fieldset>
 
-      <fieldset className="grid gap-4 sm:grid-cols-2">
+      <fieldset className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <legend className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-mtm-accent">Votre projet</legend>
         <FormField label="Nature du projet" htmlFor="devis-type" error={errors.typeProjet} required>
           <select id="devis-type" className={fieldInputClass} value={values.typeProjet} onChange={(e) => set('typeProjet', e.target.value)}>

@@ -7,15 +7,15 @@ interface QuestionReponse {
 
 /**
  * Questions fréquentes : une liste dépliante (éléments `details`, accessibles au clavier et sans JavaScript).
- * Les questions viennent du back-office ; la première est ouverte pour montrer qu'on peut déplier.
+ * Les questions viennent du back-office ; elles sont toutes repliées au départ, pour que la liste tienne en peu de place.
  * Partagée par les pages Démarches, Gestion locative et Construction.
  */
 export function FaqDemarches({ questions }: { questions: QuestionReponse[] }) {
   return (
     <ul className="divide-y divide-mtm-border overflow-hidden rounded-2xl border border-mtm-border/70 bg-white shadow-card">
-      {questions.map((question, index) => (
+      {questions.map((question) => (
         <li key={question.title}>
-          <details className="group" open={index === 0}>
+          <details className="group">
             <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-base font-semibold text-mtm-text transition-colors hover:bg-mtm-bg focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-mtm-accent sm:px-6 [&::-webkit-details-marker]:hidden">
               {question.title}
               <ChevronDown

@@ -17,7 +17,7 @@ interface SectionDemandeProps {
  */
 export function SectionDemande({ intro, engagements, sujets, numeroWhatsapp, messageWhatsapp }: SectionDemandeProps) {
   return (
-    <section id="demande-verification" className="scroll-mt-20 bg-mtm-primary-dark py-12 text-white lg:py-16">
+    <section id="demande-verification" className="scroll-mt-20 bg-mtm-primary-dark py-12 text-white lg:py-12">
       <div className="mx-auto grid max-w-6xl items-start gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
         <div>
           <p className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-white/85">
