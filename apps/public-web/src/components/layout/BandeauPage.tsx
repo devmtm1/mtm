@@ -39,7 +39,7 @@ export function BandeauPage({ eyebrow, title, description, points = [], image, c
   const fondu = `transition-opacity duration-300 ${chargement ? 'opacity-0' : 'opacity-100'}`;
 
   return (
-    <header className="relative isolate overflow-hidden bg-mtm-primary-dark text-white">
+    <header className="relative isolate flex min-h-[340px] items-center overflow-hidden bg-mtm-primary-dark text-white sm:min-h-[400px] lg:min-h-[460px]">
       <img
         src={source}
         srcSet={srcSet || undefined}
@@ -52,7 +52,7 @@ export function BandeauPage({ eyebrow, title, description, points = [], image, c
       />
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0a2142]/95 via-[#0a2142]/75 to-[#0a2142]/30 max-lg:to-[#0a2142]/60"
+        className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0a2142]/90 via-[#0a2142]/40 to-transparent max-lg:via-[#0a2142]/70 max-lg:to-[#0a2142]/50"
       />
       {/* Vague en bas : le bandeau se fond dans le fond de la page, sous le panneau de recherche qui le chevauche. */}
       <svg
@@ -65,7 +65,7 @@ export function BandeauPage({ eyebrow, title, description, points = [], image, c
         <path d="M0,46 C180,92 360,88 560,52 C760,16 940,6 1140,38 C1270,58 1360,70 1440,52 L1440,90 L0,90 Z" />
       </svg>
 
-      <div className={`relative mx-auto max-w-6xl px-4 pt-9 sm:px-6 sm:pt-12 lg:pt-14 ${
+      <div className={`relative mx-auto w-full max-w-6xl px-4 [text-shadow:0_1px_14px_rgba(10,33,66,0.5)] pt-9 sm:px-6 sm:pt-12 lg:pt-14 ${
           chevauche ? 'pb-24 sm:pb-28 lg:pb-32' : 'pb-16 sm:pb-20 lg:pb-24'
         } ${fondu}`}>
         <p className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/90 sm:text-xs">
