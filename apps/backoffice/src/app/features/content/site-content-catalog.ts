@@ -148,8 +148,6 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
       { key: 'gestion-locative.reassurance', label: 'Engagements du bandeau', help: 'Jusqu’à trois lignes courtes, une par engagement (ex. « Un interlocuteur dédié »). Ne jamais y figer un taux ou un montant.', multiline: true },
       { key: 'gestion-locative.prestations', label: 'Ce que nous prenons en charge', help: 'Une prestation par ligne, au format « Titre | Description ». Six cartes s’affichent bien.', multiline: true, format: 'steps' },
       { key: 'gestion-locative.etapes', label: 'Les étapes de la gestion', help: 'Une étape par ligne, au format « Titre | Description ». Quatre étapes s’affichent bien.', multiline: true, format: 'steps' },
-      { key: 'gestion-locative.biens', label: 'Les biens que nous gérons', help: 'Un type de bien par ligne, au format « Titre | Description ».', multiline: true, format: 'steps' },
-      { key: 'gestion-locative.suivi', label: 'Suivi transparent', help: 'Ce que le propriétaire reçoit ou peut consulter, une ligne par point.', multiline: true, format: 'lines' },
       { key: 'gestion-locative.faq', label: 'Questions fréquentes', help: 'Une question par ligne, au format « Question | Réponse ». Ne promettez ni délai ni montant que MTM ne peut pas tenir (le coût se donne sur devis).', multiline: true, format: 'steps' },
     ],
   },

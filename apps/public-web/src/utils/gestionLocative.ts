@@ -27,25 +27,9 @@ export const ETAPES_GESTION: EditableStep[] = [
   { title: 'Vous suivez, où que vous soyez', description: 'Relevé de gestion et espace propriétaire en ligne pour garder la main à distance.' },
 ];
 
-export const BIENS_GESTION: EditableStep[] = [
-  { title: 'Appartements, studios et villas', description: 'Location au mois, avec bail, loyer et échéances suivis pour chaque logement.' },
-  { title: 'Immeubles et villas divisées', description: 'Plusieurs logements sous une même adresse : une vue d’ensemble de l’occupation, des loyers attendus et des impayés.' },
-  { title: 'Séjours de courte durée', description: 'Réservations, prix de la nuit, caution et ménage gérés pour les biens meublés loués au séjour.' },
-  { title: 'Bureaux et locaux commerciaux', description: 'Baux professionnels et commerciaux suivis avec la même rigueur.' },
-];
-
-export const SUIVI_GESTION = [
-  'Relevé de gestion détaillé : loyers encaissés, charges, commission, montant reversé',
-  'État de chaque logement : loué, disponible ou en travaux',
-  'Impayés et incidents signalés sans attendre le relevé',
-  'Documents du bien (bail, états des lieux, quittances) retrouvés en ligne',
-];
-
 export const FAQ_GESTION: EditableStep[] = [
-  { title: 'Quels biens pouvez-vous gérer ?', description: 'Appartements, studios, villas, immeubles ou villas divisées en plusieurs logements, bureaux et locaux commerciaux, ainsi que des biens meublés loués au séjour. Dites-nous ce que vous possédez et nous vous disons comment nous pouvons le gérer.' },
-  { title: 'Comment suis-je informé de la vie de mon bien ?', description: 'Vous recevez un relevé de gestion détaillé et vous pouvez suivre votre bien dans votre espace propriétaire en ligne. En cas d’incident ou d’impayé, votre interlocuteur vous prévient.' },
+  { title: 'Quels biens pouvez-vous gérer ?', description: 'Appartements, studios, villas, immeubles ou villas divisées en plusieurs logements, bureaux, locaux commerciaux, et biens meublés loués au séjour. Chaque logement garde son loyer et son locataire, et vous gardez une vue d’ensemble.' },
+  { title: 'Comment suis-je informé, depuis l’étranger ?', description: 'Tout se fait à distance : échanges par WhatsApp, téléphone ou e-mail, relevé de gestion détaillé et espace propriétaire en ligne. En cas d’incident ou d’impayé, votre interlocuteur vous prévient.' },
   { title: 'Combien coûte la gestion ?', description: 'La rémunération de MTM est présentée avant tout engagement, selon le type de bien. Contactez-nous : nous vous répondons sur devis.' },
   { title: 'Que se passe-t-il si un locataire ne paie pas ?', description: 'Nous relançons le locataire dès le retard et suivons la situation jusqu’à la régularisation. Vous êtes tenu informé à chaque étape.' },
-  { title: 'Puis-je confier mon bien depuis l’étranger ?', description: 'Oui. Tout se fait à distance : échanges par WhatsApp, téléphone ou e-mail, visites et états des lieux avec photos, relevés et documents en ligne.' },
-  { title: 'Je possède une villa divisée en plusieurs appartements : est-ce possible ?', description: 'Oui. La villa est suivie comme une seule propriété, et chaque appartement garde son loyer, son locataire et son annonce.' },
 ];

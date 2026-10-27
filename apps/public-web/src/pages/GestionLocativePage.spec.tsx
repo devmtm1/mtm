@@ -33,12 +33,12 @@ describe('GestionLocativePage', () => {
     );
   }
 
-  it('présente ce que MTM prend en charge, les étapes, les biens acceptés, le suivi et les questions', () => {
+  it('présente ce que MTM prend en charge, les étapes et les questions', () => {
     afficher();
     expect(screen.getByRole('heading', { level: 1, name: 'Gestion locative' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Recherche de locataires' })).toBeTruthy();
     expect(screen.getByText('Vous nous confiez votre bien')).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Immeubles et villas divisées' })).toBeTruthy();
+    expect(screen.getByText('Quels biens pouvez-vous gérer ?')).toBeTruthy();
     expect(screen.getByText('Combien coûte la gestion ?')).toBeTruthy();
   });
 
