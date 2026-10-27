@@ -20,6 +20,8 @@ export default {
         'mtm-primary-subtle': '#EAF1F7',
         'mtm-accent': '#B52C36',
         'mtm-accent-dark': '#83191D',
+        // Le rouge de la marque est trop sombre sur le bleu marine du pied de page : cette version claire sert au survol des liens sur fond sombre.
+        'mtm-accent-clair': '#FF8A93',
         'mtm-accent-subtle': '#F8E8E9',
         'mtm-info': '#5EA8C7',
         'mtm-info-bg': '#E9F4F9',
