@@ -13,7 +13,7 @@ const regles = { nuitsMinimum: 2, capaciteVoyageurs: 4 };
 const maintenant = new Date('2026-10-12T10:00:00Z');
 const prises = [{ debut: '2026-10-20', fin: '2026-10-23' }];
 
-describe('séjour à la nuit — calculs', () => {
+describe('séjour de courte durée — calculs', () => {
   it('compte les nuits et décale les jours sans fuseau horaire', () => {
     expect(nombreNuits('2026-10-15', '2026-10-18')).toBe(3);
     expect(nombreNuits('2026-10-30', '2026-11-02')).toBe(3);

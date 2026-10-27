@@ -2,7 +2,7 @@ import type { Location, PeriodeIndisponible } from '../types/location';
 import { groupDigits } from './format';
 
 /**
- * Calculs d'un séjour à la nuit, côté visiteur. Les dates sont des jours
+ * Calculs d'un séjour de courte durée, côté visiteur. Les dates sont des jours
  * « AAAA-MM-JJ » comparés en UTC : aucun fuseau horaire ne décale une nuit. Le
  * serveur refait les mêmes contrôles — ici, ils servent à dire tout de suite au
  * visiteur ce qui ne va pas, sans attendre l'envoi.

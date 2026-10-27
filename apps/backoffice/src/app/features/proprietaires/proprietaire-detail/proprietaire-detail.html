@@ -53,7 +53,7 @@
             mat-stroked-button
             type="button"
             (click)="newBienLocatif()"
-            matTooltip="Mettre un bien de ce propriétaire en gestion locative (au mois ou à la nuit)"
+            matTooltip="Mettre un bien de ce propriétaire en gestion locative (au mois ou en courte durée)"
           >
             <svg class="btn-icon" lucideKeyRound aria-hidden="true"></svg>Nouveau bien en gestion
           </button>
@@ -225,7 +225,7 @@
             <div>
               <h2>Biens en gestion locative</h2>
               <p class="detail-section__hint">
-                Biens que MTM loue pour ce propriétaire, au mois ou à la nuit.
+                Biens que MTM loue pour ce propriétaire, au mois ou en courte durée.
               </p>
             </div>
             @if (canCreateBienLocatif) {
@@ -263,7 +263,7 @@
                         }
                       </td>
                       <td>{{ bien.commune || bien.region || '—' }}</td>
-                      <td>{{ bien.modeLocation === 'courte_duree' ? 'À la nuit' : 'Au mois' }}</td>
+                      <td>{{ bien.modeLocation === 'courte_duree' ? 'Courte durée' : 'Au mois' }}</td>
                       <td>
                         <span
                           [class]="bienPill(bien.statut)"

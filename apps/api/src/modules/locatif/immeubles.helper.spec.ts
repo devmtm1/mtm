@@ -49,7 +49,7 @@ describe('syntheseImmeuble', () => {
     expect(resume.tauxOccupation).toBe(50);
   });
 
-  it('ne compte pas les séjours à la nuit dans les loyers mensuels, mais dans les logements', () => {
+  it('ne compte pas les séjours de courte durée dans les loyers mensuels, mais dans les logements', () => {
     const resume = syntheseImmeuble([
       loue(300000),
       {

@@ -89,12 +89,12 @@ describe('LocationCard', () => {
     expect(screen.queryByText('Meublé')).not.toBeInTheDocument();
   });
 
-  it('un bien à la nuit affiche le prix de la nuit et la durée minimale', () => {
+  it('un bien en courte durée affiche le prix de la nuit et la durée minimale', () => {
     renderCard({ ...base, modeLocation: 'courte_duree', prixNuit: 45000, nuitsMinimum: 2, loyerMensuel: null });
     expect(screen.getByText(/45\s000 FCFA/)).toBeInTheDocument();
     expect(screen.getByText('/ nuit')).toBeInTheDocument();
     expect(screen.queryByText('/ mois')).not.toBeInTheDocument();
-    expect(screen.getByText('À la nuit')).toBeInTheDocument();
+    expect(screen.getByText('Courte durée')).toBeInTheDocument();
     expect(screen.getByText('2 nuits minimum')).toBeInTheDocument();
     expect(screen.queryByText('Disponible immédiatement')).not.toBeInTheDocument();
   });

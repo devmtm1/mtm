@@ -65,7 +65,7 @@ export const TYPES_PAIEMENT_SEJOUR: Record<string, string> = { acompte: 'Acompte
 
 export const MODES_LOCATION: Record<string, string> = {
   longue_duree: 'Location au mois (bail)',
-  courte_duree: 'Location à la nuit (type Airbnb)',
+  courte_duree: 'Courte durée (séjours)',
 };
 
 export const ETATS_PIECE: Record<EtatPiece, { label: string; ordre: number }> = {

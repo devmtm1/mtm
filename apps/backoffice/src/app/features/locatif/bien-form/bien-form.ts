@@ -84,7 +84,7 @@ export class BienForm implements OnInit, OnDestroy, AvecModifications {
     nombreChambres: [null as number | null, [Validators.min(0), Validators.max(30)]],
     nombreSallesEau: [null as number | null, [Validators.min(0), Validators.max(30)]],
     meuble: [false],
-    // Location à la nuit (type Airbnb) : le prix de la nuit remplace le loyer mensuel.
+    // Courte durée (séjours) : le prix de la nuit remplace le loyer mensuel.
     modeLocation: ['longue_duree'],
     prixNuit: [null as number | null, [Validators.min(0)]],
     fraisMenage: [null as number | null, [Validators.min(0)]],
@@ -106,7 +106,7 @@ export class BienForm implements OnInit, OnDestroy, AvecModifications {
   protected readonly modes = MODES_LOCATION;
   protected readonly modesProposes = computed(() => this.options().modesLocation ?? Object.keys(MODES_LOCATION));
 
-  /** Bien loué à la nuit : on demande son tarif de séjour au lieu du loyer mensuel. */
+  /** Bien en courte durée : on demande son tarif de séjour au lieu du loyer mensuel. */
   protected get courteDuree(): boolean {
     return this.form.controls.modeLocation.value === 'courte_duree';
   }

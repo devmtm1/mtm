@@ -119,7 +119,7 @@ export class ProprietairePortalService {
               sejour.statut === 'confirmee' && sejour.dateArrivee > aujourdhui,
           )
           .sort((a, b) => a.dateArrivee.getTime() - b.dateArrivee.getTime());
-        // À la nuit, le bien reste « disponible » à la vente comme à la
+        // En courte durée, le bien reste « disponible » à la vente comme à la
         // réservation : ce qui compte pour le propriétaire, c'est le séjour.
         const occupation = !nuit
           ? null
@@ -205,7 +205,7 @@ export class ProprietairePortalService {
         this.prisma.bienLocatif.count({
           where: { proprietaireId, statut: 'loue' },
         }),
-        // Un bien loué à la nuit est « occupé » le temps d'un séjour en cours.
+        // Un bien en courte durée est « occupé » le temps d'un séjour en cours.
         this.prisma.bienLocatif.count({
           where: {
             proprietaireId,

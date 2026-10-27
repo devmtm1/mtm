@@ -1,13 +1,13 @@
-# Location à la nuit (type Airbnb) et demandes de résiliation
+# Courte durée (séjours) et demandes de résiliation
 
-## Mettre un bien en location à la nuit
+## Mettre un bien en courte durée
 
 1. Gestion locative → Biens → **Nouveau bien**, ou la fiche d'un bien existant → « Annonce ».
-2. **Mode de location** : « Location à la nuit (type Airbnb) ».
+2. **Mode de location** : « Courte durée (séjours) ».
 3. Renseigner le tarif : **prix de la nuit**, frais de ménage (une fois par séjour), caution, durée minimale, capacité, heures d'arrivée et de départ.
 4. Ajouter des photos, puis publier : le bien apparaît sur la page « Locations » avec son prix par nuit.
 
-Un bien à la nuit n'a pas de bail : « Nouveau séjour » remplace « Créer un bail ». Un bien ne passe d'un mode à l'autre que s'il n'a ni bail en cours ni séjour à venir.
+Un bien en courte durée n'a pas de bail : « Nouveau séjour » remplace « Créer un bail ». Un bien ne passe d'un mode à l'autre que s'il n'a ni bail en cours ni séjour à venir.
 
 ## Le déroulé d'un séjour
 
@@ -31,7 +31,7 @@ Le prix est **figé à la réservation** : changer le tarif du bien ne modifie p
 
 ## Sur le site
 
-La fiche d'une location à la nuit montre le prix par nuit, le ménage, la caution, la durée minimale, la capacité et les heures. Le visiteur voit les **nuits déjà prises**, choisit ses dates (refusées si elles recouvrent une réservation), lit l'estimation du séjour, puis envoie une demande avec ses coordonnées. **Aucun paiement en ligne** : MTM confirme les nuits et recontacte le voyageur. Une même demande envoyée deux fois ne crée pas de doublon.
+La fiche d'une courte durée montre le prix par nuit, le ménage, la caution, la durée minimale, la capacité et les heures. Le visiteur voit les **nuits déjà prises**, choisit ses dates (refusées si elles recouvrent une réservation), lit l'estimation du séjour, puis envoie une demande avec ses coordonnées. **Aucun paiement en ligne** : MTM confirme les nuits et recontacte le voyageur. Une même demande envoyée deux fois ne crée pas de doublon.
 
 ## Demande de résiliation de bail
 

@@ -243,7 +243,7 @@ export class LocatifPublicService {
     ).length;
 
     return {
-      // Le site n'affiche le sélecteur « À la nuit » que s'il y a de quoi montrer.
+      // Le site n'affiche le sélecteur « Courte durée » que s'il y a de quoi montrer.
       sejours,
       longueDuree: visibles.length - sejours,
       prixNuitMin: prixNuits.length ? Math.min(...prixNuits) : null,

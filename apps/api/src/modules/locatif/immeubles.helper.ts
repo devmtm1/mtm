@@ -30,7 +30,7 @@ export interface SyntheseImmeuble {
 }
 
 /**
- * Les séjours à la nuit n'entrent pas dans les loyers mensuels : leur revenu dépend de l'occupation, il ne se
+ * Les séjours de courte durée n'entrent pas dans les loyers mensuels : leur revenu dépend de l'occupation, il ne se
  * « attend » pas. Ils comptent en revanche dans les logements et le taux d'occupation.
  */
 export function syntheseImmeuble(

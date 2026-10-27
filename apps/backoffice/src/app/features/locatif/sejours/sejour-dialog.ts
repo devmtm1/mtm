@@ -58,7 +58,7 @@ const nombre = (valeur: number | string | null | undefined): number | null =>
     <mat-dialog-content [formGroup]="form" class="sejour-grid">
       @if (!editing) {
         <mat-form-field appearance="outline" class="sejour-wide">
-          <mat-label>Bien loué à la nuit</mat-label>
+          <mat-label>Bien en courte durée</mat-label>
           <mat-select formControlName="bienLocatifId" (selectionChange)="bienChoisi($event.value)">
             @for (bien of biens(); track bien.id) {
               <mat-option [value]="bien.id">{{ nomBien(bien) }} — {{ bien.referenceInterne }}</mat-option>
@@ -66,7 +66,7 @@ const nombre = (valeur: number | string | null | undefined): number | null =>
           </mat-select>
           @if (biens().length === 0 && !chargement()) {
             <mat-hint>
-              Aucun bien n’est loué à la nuit. Passez un bien en « location à la nuit » depuis sa fiche.
+              Aucun bien n’est en courte durée. Passez un bien en « courte durée » depuis sa fiche.
             </mat-hint>
           }
         </mat-form-field>

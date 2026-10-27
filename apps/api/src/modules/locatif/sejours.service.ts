@@ -90,7 +90,7 @@ const TRANSITIONS: Record<string, string[]> = {
 };
 
 /**
- * Séjours de courte durée (location type Airbnb) : réservation d'un bien à la
+ * Séjours de courte durée : réservation d'un bien à la
  * nuit, sans bail ni loyer mensuel. Le service garantit qu'un bien n'est jamais
  * réservé deux fois sur les mêmes nuits, fige le prix à la réservation, suit les
  * règlements et la caution, et reçoit les demandes déposées sur le site.
@@ -735,7 +735,7 @@ export class SejoursService {
     if (!bien) throw new NotFoundException('Bien locatif introuvable');
     if (bien.modeLocation !== 'courte_duree') {
       throw new BadRequestException(
-        'Ce bien est loué au mois : créez un bail. Pour des séjours à la nuit, passez-le en « courte durée ».',
+        'Ce bien est loué au mois : créez un bail. Pour des séjours de courte durée, passez-le en « courte durée ».',
       );
     }
     return bien;

@@ -13,7 +13,7 @@
 </head>
 <body>
 <header class="entete">
-<a class="entete__marque" href="#bienvenue"><img src="../logomtm.jpeg" alt="MTM Immobilier"><span><strong>Guide d’utilisation</strong><span>MTM Immobilier · mis à jour le 23 octobre 2026</span></span></a>
+<a class="entete__marque" href="#bienvenue"><img src="../logomtm.jpeg" alt="MTM Immobilier"><span><strong>Guide d’utilisation</strong><span>MTM Immobilier · mis à jour le 27 octobre 2026</span></span></a>
 <div class="entete__outils">
 <div class="recherche"><input id="recherche" type="search" placeholder="Rechercher dans le guide…  ( / )" aria-label="Rechercher dans le guide" autocomplete="off"></div>
 <div class="profil"><select id="profil" aria-label="Je suis">
@@ -142,7 +142,7 @@
 <li><a href="#commercial"><strong>Le travail du commercial</strong><span>Prospects, relances, visites, réservations et dossiers de vente : le quotidien d’un commercial.</span></a></li>
 <li><a href="#responsable-commercial"><strong>Piloter l’équipe commerciale</strong><span>Suivre l’activité de chaque commercial, fixer les objectifs, débloquer les dossiers, valider les commissions.</span></a></li>
 <li><a href="#mandats-proprietaires"><strong>Mandats, propriétaires et biens</strong><span>Enregistrer les propriétaires, signer et suivre les mandats, tenir les fiches de biens à jour.</span></a></li>
-<li><a href="#gestion-locative"><strong>La gestion locative</strong><span>Biens loués, baux, loyers et quittances, impayés, locations à la nuit, résiliations.</span></a></li>
+<li><a href="#gestion-locative"><strong>La gestion locative</strong><span>Biens loués, baux, loyers et quittances, impayés, locations de courte durée, résiliations.</span></a></li>
 <li><a href="#verifications"><strong>Les vérifications et démarches</strong><span>Vérifier un terrain pour un client, suivre les démarches administratives, facturer et rendre le rapport.</span></a></li>
 <li><a href="#chantiers"><strong>Les chantiers</strong><span>Suivre un chantier de la préparation à la réception : planning, journal, budget, dépenses, rapports au client.</span></a></li>
 <li><a href="#comptabilite"><strong>Comptabilité et finances</strong><span>Encaissements, revenu réel de MTM, dépenses et seuils d’autorisation, trésorerie et clôture de caisse, rapprochement bancaire, reversements aux propriétaires, désistements, chantiers, rapport du soir.</span></a></li>
@@ -933,10 +933,12 @@
 <p><a href="img/imm-03-proprietaires.png" target="_blank" rel="noopener"><img src="img/imm-03-proprietaires.png" alt="Liste des propriétaires" loading="lazy"></a></p>
 <ul>
 <li>Les <strong>tuiles</strong> : nombre de propriétaires, biens confiés, mandats signés, propriétaires <strong>sans bien</strong> (« enregistrés mais rien de confié : à relancer »).</li>
-<li><strong>Nouveau propriétaire</strong> : nom, prénom, téléphone, e-mail, notes.</li>
+<li><strong>Nouveau propriétaire</strong> : nom, prénom, téléphone, e-mail, notes. Un <strong>matricule</strong> (par exemple <em>PRO-2026-0004</em>) est attribué automatiquement : c’est lui qui permet de reconnaître le propriétaire.</li>
 <li>L’œil ouvre la <strong>fiche</strong> : ses terrains et ses mandats, avec la possibilité d’en créer de nouveaux.</li>
 </ul>
 <blockquote><p>Créez le propriétaire <strong>avant</strong> le bien ou le mandat : ils s’y rattachent.</p>
+</blockquote>
+<blockquote><p><strong>Confidentialité</strong> — Le <strong>téléphone</strong> et l’<strong>e-mail</strong> des propriétaires ne sont visibles que par l’<strong>administrateur</strong> (dans la liste, la fiche, les biens et les mandats). Tous les autres rôles voient le reste de la fiche et reconnaissent le propriétaire à son <strong>matricule</strong> ; ils peuvent saisir les coordonnées à la création, sans pouvoir les relire ni les modifier. Cela évite que les coordonnées soient utilisées en dehors du travail.</p>
 </blockquote>
 <h2 id="mandats-proprietaires--les-mandats">Les mandats</h2>
 <p>Un <strong>mandat</strong> est l’autorisation donnée par un propriétaire de vendre (ou de gérer) ses biens. <strong>Immobilier › Mandats</strong> les liste.</p>
@@ -996,10 +998,10 @@
 <header class="chapitre__entete">
 <p class="chapitre__ligne">Par métier</p>
 <h1>La gestion locative</h1>
-<p class="chapitre__resume">Biens loués, baux, loyers et quittances, impayés, locations à la nuit, résiliations.</p>
+<p class="chapitre__resume">Biens loués, baux, loyers et quittances, impayés, locations de courte durée, résiliations.</p>
 </header>
-<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#gestion-locative--les-biens-locatifs">Les biens locatifs</a></li><li><a href="#gestion-locative--les-locataires">Les locataires</a></li><li><a href="#gestion-locative--creer-un-bail">Créer un bail</a></li><li><a href="#gestion-locative--encaisser-un-loyer">Encaisser un loyer</a></li><li><a href="#gestion-locative--les-relances-d-impayes">Les relances d’impayés</a></li><li><a href="#gestion-locative--les-locations-a-la-nuit-type-airbnb">Les locations à la nuit (type Airbnb)</a></li><li><a href="#gestion-locative--les-demandes-de-resiliation">Les demandes de résiliation</a></li><li><a href="#gestion-locative--le-releve-de-gestion">Le relevé de gestion</a></li><li><a href="#gestion-locative--une-routine">Une routine</a></li></ul></nav>
-<p>La <strong>gestion locative</strong> suit les biens que les propriétaires confient à MTM pour la location : <strong>baux, loyers, cautions, impayés, séjours à la nuit, résiliations</strong>. <strong>La location est portée par les commerciaux</strong> : chacun crée et suit <strong>ses propres biens</strong> (fiche, bail, séjours, locataires, loyers) et ne voit que ceux-là ; le responsable de la gestion locative, le manager et la direction voient tout le portefeuille. La <strong>publication sur le site</strong>, la <strong>validation</strong> (résiliations, versements) et les <strong>sorties d’argent</strong> (restitution de caution) restent à la gestion locative. La ligne <strong>Gestion locative</strong> du menu (rubrique <em>Location et services</em>) ouvre un écran à <strong>onglets</strong> : <em>Biens en gestion</em>, <em>Locataires</em>, <em>Séjours à la nuit</em>, <em>Résiliations</em>, <em>Relances d’impayés</em>.</p>
+<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#gestion-locative--les-biens-locatifs">Les biens locatifs</a></li><li><a href="#gestion-locative--les-proprietes-une-villa-un-immeuble-plusieurs-logements">Les propriétés : une villa, un immeuble, plusieurs logements</a></li><li><a href="#gestion-locative--les-locataires">Les locataires</a></li><li><a href="#gestion-locative--creer-un-bail">Créer un bail</a></li><li><a href="#gestion-locative--encaisser-un-loyer">Encaisser un loyer</a></li><li><a href="#gestion-locative--les-relances-d-impayes">Les relances d’impayés</a></li><li><a href="#gestion-locative--les-sejours-de-courte-duree">Les séjours de courte durée</a></li><li><a href="#gestion-locative--les-demandes-de-resiliation">Les demandes de résiliation</a></li><li><a href="#gestion-locative--le-releve-de-gestion">Le relevé de gestion</a></li><li><a href="#gestion-locative--une-routine">Une routine</a></li></ul></nav>
+<p>La <strong>gestion locative</strong> suit les biens que les propriétaires confient à MTM pour la location : <strong>baux, loyers, cautions, impayés, séjours de courte durée, résiliations</strong>. <strong>La location est portée par les commerciaux</strong> : chacun crée et suit <strong>ses propres biens</strong> (fiche, bail, séjours, locataires, loyers) et ne voit que ceux-là ; le responsable de la gestion locative, le manager et la direction voient tout le portefeuille. La <strong>publication sur le site</strong>, la <strong>validation</strong> (résiliations, versements) et les <strong>sorties d’argent</strong> (restitution de caution) restent à la gestion locative. La ligne <strong>Gestion locative</strong> du menu (rubrique <em>Location et services</em>) ouvre un écran à <strong>onglets</strong> : <em>Biens en gestion</em>, <em>Propriétés</em>, <em>Locataires</em>, <em>Séjours</em>, <em>Résiliations</em>, <em>Relances d’impayés</em>.</p>
 <h2 id="gestion-locative--les-biens-locatifs">Les biens locatifs</h2>
 <p><a href="img/loc-01-biens.png" target="_blank" rel="noopener"><img src="img/loc-01-biens.png" alt="Liste des biens locatifs" loading="lazy"></a></p>
 <ul>
@@ -1012,7 +1014,7 @@
 <ol>
 <li><strong>Biens en gestion › Nouveau bien.</strong></li>
 <li>Choisissez le <strong>propriétaire</strong> (créez-le d’abord s’il n’existe pas), le <strong>type</strong> (appartement, villa…), l’<strong>adresse</strong>, la <strong>commune</strong> et la <strong>région</strong>.</li>
-<li>Pour une location <strong>au mois</strong>, laissez le mode par défaut ; pour une location <strong>à la nuit</strong>, voir plus bas.</li>
+<li>Pour une location <strong>au mois</strong>, laissez le mode par défaut ; pour une location <strong>courte durée</strong>, voir plus bas.</li>
 <li><strong>Enregistrer</strong> : le bien reçoit une référence lisible (« L-2026-0001 ») et le statut <em>Disponible</em>.</li>
 </ol>
 <p><a href="img/loc-08-nouveau-bien.png" target="_blank" rel="noopener"><img src="img/loc-08-nouveau-bien.png" alt="Nouveau bien locatif" loading="lazy"></a></p>
@@ -1024,6 +1026,26 @@
 <li><strong>Annonce sur le site</strong> : tant qu’un bien est <strong>publié et disponible</strong>, les visiteurs le voient sur la page « Locations ». Pour publier, il faut un <strong>loyer affiché</strong> et <strong>au moins une photo</strong>. Dès qu’un bail est créé, le bien <strong>disparaît tout seul</strong> du site.</li>
 <li><strong>Photos et vidéos</strong> : jusqu’à 20 (JPEG, PNG, WebP, vidéo MP4 ; 10 Mo maximum chacune). La première photo sert de couverture.</li>
 <li>Le <strong>menu ⌄</strong> à droite du bouton principal : mouvement de caution, incident ou demande, demande de résiliation, états des lieux d’entrée et de sortie, préavis de départ, clôture du bail, changement de locataire, résiliation sans préavis, <strong>relevé de gestion</strong>, suppression.</li>
+</ul>
+<h2 id="gestion-locative--les-proprietes-une-villa-un-immeuble-plusieurs-logements">Les propriétés : une villa, un immeuble, plusieurs logements</h2>
+<p>Quand un propriétaire confie <strong>une villa divisée en appartements, un immeuble ou une résidence</strong>, on crée <strong>une propriété</strong> qui regroupe ses <strong>logements</strong>. Chaque logement reste un bien à part entière (son loyer, son bail, son locataire, ses photos, son annonce) ; la propriété apporte la <strong>vue d’ensemble</strong>.</p>
+<ol>
+<li><strong>Propriétés › Nouvelle propriété</strong> : nom (« Villa Fall »), nature, <strong>propriétaire</strong>, adresse, taux de gestion éventuel.</li>
+<li>Dans <em>Les logements</em>, indiquez « 4 logements, repères A » puis <strong>Générer les lignes</strong> : A1 à A4 apparaissent, à compléter (type, chambres, surface, loyer). Vous pouvez aussi les ajouter plus tard.</li>
+<li>La <strong>fiche de la propriété</strong> affiche le nombre de logements, le <strong>taux d’occupation</strong>, les <strong>loyers attendus</strong> par mois, les <strong>impayés</strong>, puis la liste des logements avec leur statut et leur locataire. <strong>Ajouter un logement</strong> crée le suivant ; un clic sur une ligne ouvre la fiche du logement.</li>
+</ol>
+<p>Ensuite, depuis la fiche de la propriété :</p>
+<ul>
+<li><strong>Modifier</strong> corrige le nom, l’adresse, le taux de gestion ou le responsable. Le <strong>propriétaire</strong> ne peut plus changer dès qu’un bail existe sur l’un des logements.</li>
+<li>Un nouveau <strong>taux de gestion</strong> s’applique aussitôt aux logements qui suivaient celui de la propriété ; un logement auquel on a donné un taux particulier le garde.</li>
+<li><strong>Rattacher un bien existant</strong> range dans la propriété un bien déjà créé du même propriétaire (avec son repère).</li>
+<li>Sur la fiche du <strong>propriétaire</strong>, chaque bien en gestion indique la propriété et le repère dont il fait partie.</li>
+</ul>
+<p>À savoir :</p>
+<ul>
+<li>Un logement porte le <strong>même propriétaire</strong> que sa propriété. On peut aussi rattacher un bien en le créant (champ <em>Propriété</em>, visible quand le propriétaire en possède une).</li>
+<li>Sur le <strong>site public</strong>, l’annonce d’un logement indique « Logement A2 · Villa Fall » et propose les <strong>autres logements libres</strong> de la même propriété. L’adresse exacte n’est jamais publiée.</li>
+<li>Un collaborateur voit les propriétés dont il porte <strong>au moins un logement</strong> ; le responsable de la gestion locative voit tout.</li>
 </ul>
 <h2 id="gestion-locative--les-locataires">Les locataires</h2>
 <p><strong>Gestion locative › Locataires</strong> : les personnes qui louent un bien géré par MTM. Depuis une fiche, retrouvez <strong>l’historique complet de ses baux</strong>. <strong>Nouveau locataire</strong> : nom, prénom, téléphone, e-mail.</p>
@@ -1055,15 +1077,15 @@
 <li>Vous les <strong>envoyez</strong> depuis la liste (bouton <strong>Envoyer</strong>, par e-mail), et l’envoi est consigné.</li>
 <li>Le tableau de bord de la direction signale les <strong>impayés prolongés</strong> (plus de 30 jours de retard).</li>
 </ul>
-<h2 id="gestion-locative--les-locations-a-la-nuit-type-airbnb">Les locations à la nuit (type Airbnb)</h2>
-<h3 id="gestion-locative--mettre-un-bien-a-la-nuit">Mettre un bien à la nuit</h3>
+<h2 id="gestion-locative--les-sejours-de-courte-duree">Les séjours de courte durée</h2>
+<h3 id="gestion-locative--mettre-un-bien-en-courte-duree">Mettre un bien en courte durée</h3>
 <ol>
 <li><strong>Biens en gestion › Nouveau bien</strong> (ou la fiche d’un bien existant › <em>Annonce</em>).</li>
-<li><strong>Mode de location : « Location à la nuit »</strong>.</li>
+<li><strong>Mode de location : « Courte durée »</strong>.</li>
 <li>Renseignez le <strong>prix de la nuit</strong>, les <strong>frais de ménage</strong> (une fois par séjour), la <strong>caution</strong>, la <strong>durée minimale</strong>, la <strong>capacité</strong> et les <strong>heures d’arrivée et de départ</strong>.</li>
 <li>Ajoutez des photos puis <strong>publiez</strong> : le bien apparaît sur la page « Locations » avec son prix par nuit.</li>
 </ol>
-<p>Un bien à la nuit n’a <strong>pas de bail</strong> : <strong>Nouveau séjour</strong> remplace « Créer un bail ». Un bien ne change de mode que s’il n’a ni bail en cours ni séjour à venir.</p>
+<p>Un bien en courte durée n’a <strong>pas de bail</strong> : <strong>Nouveau séjour</strong> remplace « Créer un bail ». Un bien ne change de mode que s’il n’a ni bail en cours ni séjour à venir.</p>
 <h3 id="gestion-locative--le-deroule-d-un-sejour">Le déroulé d’un séjour</h3>
 <p><a href="img/loc-04-sejours.png" target="_blank" rel="noopener"><img src="img/loc-04-sejours.png" alt="Séjours" loading="lazy"></a></p>
 <table>
@@ -1708,7 +1730,7 @@
 <h1>Le site public et les demandes web</h1>
 <p class="chapitre__resume">Répondre aux messages du site, gérer les textes, réalisations, publicités et l’équipe affichés sur le site.</p>
 </header>
-<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#site-web--les-demandes-web">Les demandes web</a></li><li><a href="#site-web--les-contenus-du-site">Les contenus du site</a></li><li><a href="#site-web--les-realisations-et-projets">Les réalisations et projets</a></li><li><a href="#site-web--les-publicites-du-bandeau">Les publicités du bandeau</a></li><li><a href="#site-web--l-equipe">L’équipe</a></li><li><a href="#site-web--actualites-et-conseils-videos">Actualités et conseils (vidéos)</a></li><li><a href="#site-web--qui-peut-quoi">Qui peut quoi</a></li></ul></nav>
+<nav class="surcette" aria-label="Sur cette page"><strong>Sur cette page</strong><ul><li><a href="#site-web--les-demandes-web">Les demandes web</a></li><li><a href="#site-web--les-contenus-du-site">Les contenus du site</a></li><li><a href="#site-web--les-realisations-et-projets">Les réalisations et projets</a></li><li><a href="#site-web--les-publicites-du-bandeau">Les publicités du bandeau</a></li><li><a href="#site-web--l-equipe">L’équipe</a></li><li><a href="#site-web--actualites-et-conseils-videos">Actualités et conseils (vidéos)</a></li><li><a href="#site-web--la-frequentation-du-site">La fréquentation du site</a></li><li><a href="#site-web--qui-peut-quoi">Qui peut quoi</a></li></ul></nav>
 <p>La ligne <strong>Site web</strong> (rubrique <strong>Administration</strong>, repliée par défaut, avec des <strong>onglets</strong> pour chaque contenu) et, côté ventes, <strong>Demandes du site</strong> gèrent ce qui concerne le <strong>site public de MTM</strong> : les <strong>demandes</strong> que les visiteurs envoient, et les <strong>contenus</strong> qu’ils lisent.</p>
 <h2 id="site-web--les-demandes-web">Les demandes web</h2>
 <p><strong>Commercial › Demandes du site</strong> : les messages envoyés depuis le <strong>formulaire de contact</strong> du site (et depuis les fiches de biens et les annonces de location).</p>
@@ -1756,6 +1778,18 @@
 <li>Écrivez le texte (un retour à la ligne coupe le titre en deux lignes, par exemple).</li>
 <li><strong>Publier</strong>.</li>
 </ol>
+<h3 id="site-web--le-bandeau-de-la-page-demarches-administratives">Le bandeau de la page « Démarches administratives »</h3>
+<p>Dans <strong>Site web › Contenus du site</strong>, rubrique <strong>Démarches administratives</strong>, tout le bandeau du haut de la page se modifie : la <strong>photo de fond</strong> (cliquez sur <strong>Renseigner</strong> puis choisissez une image JPEG, PNG ou WebP, 10 Mo maximum ; <strong>Retirer l’image</strong> rend la photo par défaut), la <strong>mention</strong> au-dessus du titre, le <strong>titre</strong>, le <strong>texte d’introduction</strong>, les <strong>engagements</strong> et le <strong>texte du bouton</strong> rouge, qui ouvre le formulaire de demande.</p>
+<ul>
+<li><strong>Photo</strong> : format paysage, au moins 1600 × 900 px, <strong>sans texte dessus</strong>. Le bandeau est pleine largeur ; le texte est à gauche sur un fondu blanc, donc les sujets de la photo se placent de préférence <strong>à droite</strong> (comme les documents et la maquette de villa de la photo par défaut).</li>
+<li><strong>Titre</strong> : le premier mot s’affiche en bleu, la suite en rouge.</li>
+<li><strong>Engagements</strong> : une ligne chacun, trois au plus. Chaque ligne est coupée en deux : à la virgule (« Devis gratuit, <strong>sans engagement</strong> »), sinon avant le premier chiffre (« Réponse sous <strong>24 à 48h</strong> ») ; la seconde partie s’affiche alors en rouge. Sans virgule ni chiffre, la fin s’affiche en petit gris (« Tarif adapté — à la nature et à l’urgence… »).</li>
+<li>N’y figez jamais un tarif : les prix se donnent sur devis. Un emplacement laissé vide affiche le texte ou la photo par défaut.</li>
+</ul>
+<h3 id="site-web--le-corps-de-la-page-demarches-administratives">Le corps de la page « Démarches administratives »</h3>
+<p>Sous le bandeau, la page présente chaque <strong>démarche</strong> sur une carte (icône, titre, description) avec un bouton <strong>Faire une demande</strong> : le visiteur qui clique voit le formulaire s’ouvrir avec cette démarche déjà choisie. Viennent ensuite la <strong>frise des étapes</strong> de la vérification avant achat, puis la section <strong>Parlons de votre projet</strong> (engagements, accès WhatsApp de la direction, formulaire). Dans <strong>Contenus du site</strong>, rubrique <strong>Démarches administratives</strong>, vous modifiez : les <strong>prestations</strong> et les <strong>services techniques</strong> (une ligne « Titre | Description » chacune ; l’icône est choisie d’après le titre), les <strong>étapes</strong> (même format, la dernière s’affiche en rouge) les <strong>questions fréquentes</strong> (une ligne « Question | Réponse » chacune, affichées en liste dépliante, la première ouverte ; elles sont aussi transmises à Google, qui peut les afficher dans ses résultats) et le <strong>texte de la section « Parlons de votre projet »</strong>. Les réponses de départ ne reprennent que ce que la page annonce déjà ; <strong>si vous changez un engagement (délai, devis…), mettez aussi la question correspondante à jour</strong> pour que la page ne se contredise pas.</p>
+<h3 id="site-web--le-bandeau-de-la-page-locations">Le bandeau de la page « Locations »</h3>
+<p>Dans <strong>Site web › Contenus du site</strong>, rubrique <strong>Page « Locations »</strong>, vous modifiez la <strong>photo de fond</strong> (paysage, au moins 1600 × 900 px ; elle passe sous un voile bleu marine, le texte blanc reste lisible quelle que soit l’image), la <strong>mention</strong>, le <strong>titre</strong>, le <strong>texte de présentation</strong> et les <strong>engagements</strong> (une ligne chacun, trois au plus). Les annonces elles-mêmes se gèrent dans <strong>Gestion locative</strong>. Sur le site, le panneau de recherche garde quatre critères visibles (type de bien, commune, chambres, loyer maximum) ; les autres (région, loyer minimum, surface, ameublement) s’ouvrent avec <strong>Plus de filtres</strong>.</p>
 <h2 id="site-web--les-realisations-et-projets">Les réalisations et projets</h2>
 <p><strong>Site web › Réalisations &amp; projets</strong> : le <strong>portfolio illustré</strong> du site. Chaque carte montre une <strong>photo</strong>, un <strong>titre</strong>, un <strong>lieu</strong> et une <strong>courte description</strong> ; elle n’apparaît sur le site <strong>qu’une fois publiée</strong>.</p>
 <p><a href="img/web-03-realisations.png" target="_blank" rel="noopener"><img src="img/web-03-realisations.png" alt="Réalisations et projets" loading="lazy"></a></p>
@@ -1785,8 +1819,27 @@
 </ol>
 <blockquote><p><strong>Conseil</strong> — Préférez des vidéos courtes (1 à 3 minutes), en bonne qualité et avec un titre clair : un visiteur décide en quelques secondes de la regarder ou non.</p>
 </blockquote>
+<h2 id="site-web--la-frequentation-du-site">La fréquentation du site</h2>
+<p><strong>Pilotage et finances › Fréquentation du site</strong> : combien de personnes visitent le site, d’où elles viennent et quels biens les intéressent.</p>
+<ul>
+<li>Choisissez la période : <strong>7</strong>, <strong>30</strong> ou <strong>90 jours</strong>. Chaque chiffre est comparé à la période précédente.</li>
+<li>Les <strong>tuiles</strong> : <em>Visiteurs</em>, <em>Pages vues</em>, <em>Fiches de biens consultées</em> et <em>Demandes reçues</em> par le formulaire du site.</li>
+<li>La <strong>courbe</strong> montre les visiteurs et les pages vues, jour par jour.</li>
+<li><strong>D’où viennent les visiteurs</strong> : Google, Facebook, WhatsApp, Instagram, TikTok, YouTube, accès direct ou autres sites. WhatsApp n’indique pas toujours la provenance d’un lien : une partie de ses visites apparaît en « Accès direct ».</li>
+<li><strong>Biens à vendre les plus consultés</strong> : vues, visiteurs, demandes reçues et part de visiteurs qui ont écrit. Un clic sur le nom ouvre la fiche.</li>
+<li><strong>Regardés, mais sans aucune demande</strong> : les fiches qui attirent du monde sans qu’on appelle. C’est la liste à traiter en priorité : photos, prix ou description à revoir, ou visiteurs à relancer.</li>
+<li>Les <strong>locations</strong>, les <strong>réalisations</strong> et les <strong>projets à venir</strong> ont leur classement.</li>
+</ul>
+<p>Sur la <strong>fiche d’un bien</strong> (bien à vendre ou location), le bloc <strong>Consultations sur le site</strong> donne les visiteurs et les pages vues des 30 derniers jours, les visiteurs des 7 derniers jours, une courbe et le nombre de demandes reçues.</p>
+<blockquote><p><strong>Un visiteur</strong> est compté <strong>une fois par jour</strong> : quelqu’un qui recharge la page dans la journée n’ajoute qu’une vue ; s’il revient le lendemain, il est compté de nouveau. Les robots des moteurs de recherche et les aperçus de liens (WhatsApp, Facebook) ne sont pas comptés.</p>
+</blockquote>
+<blockquote><p><strong>Ne pas fausser les chiffres</strong> — Vos propres visites comptent comme celles du public. Sur chacun de vos appareils, ouvrez une fois le site avec <strong>?pas-de-suivi=1</strong> à la fin de l’adresse (par exemple <em><a href="http://www.mtm-immobilier.com/?pas-de-suivi=1">www.mtm-immobilier.com/?pas-de-suivi=1</a></em>) : ce navigateur n’est plus compté. <strong>?pas-de-suivi=0</strong> le remet dans le décompte.</p>
+</blockquote>
+<blockquote><p><strong>Vie privée</strong> — Le comptage est anonyme : aucun cookie, aucun nom, aucune adresse enregistrée (seulement une empreinte illisible, effacée au bout de deux jours, qui évite de compter deux fois la même personne). Une personne dont le navigateur envoie « Ne pas me suivre » n’est pas comptée. La page <em>Confidentialité</em> du site l’explique aux visiteurs.</p>
+</blockquote>
+<p>Les chiffres démarrent à la mise en ligne de cette fonction : il n’y a pas d’historique avant.</p>
 <h2 id="site-web--qui-peut-quoi">Qui peut quoi</h2>
-<p>La <strong>consultation</strong> des contenus est ouverte aux rôles qui ont la permission « contenu : consulter » ; <strong>créer, modifier, publier et supprimer</strong> sont réservés à la direction, aux managers (et aux administrateurs). Un commercial voit les <strong>demandes web</strong> et peut les traiter (consulter, modifier), mais pas les contenus du site.</p>
+<p>La <strong>fréquentation du site</strong> (écran et blocs sur les fiches) est visible par la direction, les managers, les responsables commerciaux, les commerciaux et le responsable de gestion locative (permission « statistiques : consulter »). La <strong>consultation</strong> des contenus est ouverte aux rôles qui ont la permission « contenu : consulter » ; <strong>créer, modifier, publier et supprimer</strong> sont réservés à la direction, aux managers (et aux administrateurs). Un commercial voit les <strong>demandes web</strong> et peut les traiter (consulter, modifier), mais pas les contenus du site.</p>
 
 <nav class="pagination" aria-label="Chapitres voisins"><a href="#direction" rel="prev"><small>Précédent</small>La direction : chiffres et rapports</a><a href="#administration" rel="next"><small>Suivant</small>Administration du back-office</a></nav>
 </article>
@@ -2466,7 +2519,7 @@ Cliquez sur le <strong>point d’interrogation</strong> en haut à droite, ou su
 </tr>
 <tr>
 <td><strong>Caution</strong></td>
-<td>Somme versée en garantie par un locataire ou un client en location à la nuit, restituée à la fin (avec retenue justifiée éventuelle).</td>
+<td>Somme versée en garantie par un locataire ou un client en courte durée, restituée à la fin (avec retenue justifiée éventuelle).</td>
 </tr>
 <tr>
 <td><strong>Clôture (mensuelle)</strong></td>
@@ -2602,7 +2655,7 @@ Cliquez sur le <strong>point d’interrogation</strong> en haut à droite, ou su
 </tr>
 <tr>
 <td><strong>Séjour</strong></td>
-<td>Location à la nuit d’un bien.</td>
+<td>Courte durée d’un bien.</td>
 </tr>
 <tr>
 <td><strong>Soldé</strong></td>

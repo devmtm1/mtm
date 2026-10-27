@@ -20,7 +20,7 @@ import type {
 } from '../../models/sejour.model';
 
 /**
- * Séjours de courte durée (location type Airbnb), états des lieux et demandes
+ * Séjours de courte durée, états des lieux et demandes
  * de résiliation de bail : les écrans de la gestion locative qui s'ajoutent aux
  * baux au mois.
  */

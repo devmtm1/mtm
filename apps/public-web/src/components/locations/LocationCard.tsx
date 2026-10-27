@@ -74,7 +74,7 @@ export function LocationCard({ location, compact = false }: LocationCardProps) {
                 compact ? 'px-2 py-0.5 text-[11px] sm:text-xs' : 'px-2.5 py-0.5 text-xs'
               }`}
             >
-              <Moon className="h-3 w-3" aria-hidden="true" />À la nuit
+              <Moon className="h-3 w-3" aria-hidden="true" />Courte durée
             </span>
           )}
           {location.meuble && !courte && (

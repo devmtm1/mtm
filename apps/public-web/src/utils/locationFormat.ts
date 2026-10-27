@@ -7,7 +7,7 @@ export function formatLoyerMontant(value: number | null | undefined): string {
   return `${groupDigits(Math.round(value))} FCFA`;
 }
 
-/** Bien loué à la nuit (type Airbnb) plutôt qu'au mois. */
+/** Bien en courte durée plutôt qu'au mois. */
 export function estCourteDuree(location: Pick<Location, 'modeLocation'>): boolean {
   return location.modeLocation === 'courte_duree';
 }

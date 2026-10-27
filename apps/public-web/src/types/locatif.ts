@@ -30,9 +30,9 @@ export interface ClientBienLocatif {
   commune: string | null;
   region: string | null;
   statut: string;
-  /** longue_duree | courte_duree : à la nuit, il n'y a pas de bail mais des séjours. */
+  /** longue_duree | courte_duree : en courte durée, il n'y a pas de bail mais des séjours. */
   modeLocation: string;
-  /** Pour un bien à la nuit : occupe | reserve | libre (null au mois). */
+  /** Pour un bien en courte durée : occupe | reserve | libre (null au mois). */
   occupation: 'occupe' | 'reserve' | 'libre' | null;
   /** Séjours engagés : en cours et à venir d'abord, puis les plus récents. */
   sejours: ClientSejourResume[];
@@ -59,7 +59,7 @@ export interface ClientSejourResume {
 /** Synthèse du portefeuille du propriétaire (section 15 : loyers et solde). */
 export interface ClientSyntheseProprietaire {
   biens: number;
-  /** Biens sous bail, plus biens à la nuit occupés en ce moment. */
+  /** Biens sous bail, plus biens en courte durée occupés en ce moment. */
   loues: number;
   biensALaNuit: number;
   sejoursAVenir: number;

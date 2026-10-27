@@ -14,7 +14,7 @@ interface LocationFiltersProps {
    * recherche libre et les boutons sont portés par la page.
    */
   sheet?: boolean;
-  /** Au-dessus de la recherche (panneau seulement) : le choix « Au mois / À la nuit » quand il a un sens. */
+  /** Au-dessus de la recherche (panneau seulement) : le choix « Au mois / Courte durée » quand il a un sens. */
   header?: ReactNode;
   /** Remet tous les critères à zéro (panneau seulement). */
   onReset?: () => void;

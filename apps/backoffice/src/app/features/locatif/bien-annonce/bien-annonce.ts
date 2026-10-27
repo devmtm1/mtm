@@ -62,7 +62,7 @@ export class BienAnnonceCard {
   protected readonly busy = signal(false);
   protected readonly accept = TYPES_ACCEPTES;
 
-  /** Bien loué à la nuit : son tarif est le prix de la nuit, pas un loyer mensuel. */
+  /** Bien en courte durée : son tarif est le prix de la nuit, pas un loyer mensuel. */
   protected readonly courte = computed(() => this.bien().modeLocation === 'courte_duree');
   /** Le tarif d'annonce est renseigné (prix de la nuit ou loyer mensuel selon le mode). */
   protected readonly hasLoyer = computed(() =>

@@ -10,8 +10,8 @@ import { createE2eApp, type E2eContext } from './helpers/e2e-app';
 import { describeE2e } from './helpers/e2e-database';
 
 /**
- * Location de courte durée (type Airbnb) et demandes de résiliation :
- *  - un bien se loue à la nuit : prix, ménage, caution, durée minimale ;
+ * Location de courte durée et demandes de résiliation :
+ *  - un bien se loue en courte durée : prix, ménage, caution, durée minimale ;
  *  - un séjour fige son prix, ne chevauche jamais un autre séjour confirmé ;
  *  - règlements, caution (retenue justifiée) et états des lieux d'entrée et de sortie ;
  *  - le site publie les dates prises et reçoit des demandes sans les confirmer ;
@@ -151,7 +151,7 @@ describeE2e('Séjours de courte durée et résiliation (e2e)', () => {
   });
 
   // ---------------------------------------------------------------------
-  // Le bien loué à la nuit
+  // Le bien en courte durée
   // ---------------------------------------------------------------------
 
   it('crée un bien en courte durée, avec prix de la nuit, ménage et caution', async () => {
@@ -198,13 +198,13 @@ describeE2e('Séjours de courte durée et résiliation (e2e)', () => {
     expect(heure.status).toBe(400);
   });
 
-  it('refuse un bail sur un bien loué à la nuit', async () => {
+  it('refuse un bail sur un bien en courte durée', async () => {
     const reponse = await api()
       .post(`/api/locatif/biens/${bienNuitId}/baux`)
       .set(auth(jetonAgent))
       .send({ locataireId, loyerMensuel: 150000, dateDebut: jour(1) });
     expect(reponse.status).toBe(400);
-    expect(reponse.body.message).toMatch(/à la nuit/);
+    expect(reponse.body.message).toMatch(/courte durée/);
   });
 
   it('refuse un séjour sur un bien loué au mois', async () => {
@@ -601,7 +601,7 @@ describeE2e('Séjours de courte durée et résiliation (e2e)', () => {
   // Le site public
   // ---------------------------------------------------------------------
 
-  it('un bien sans photo ne se publie pas ; une fois publié, le site voit son tarif à la nuit', async () => {
+  it('un bien sans photo ne se publie pas ; une fois publié, le site voit son tarif par nuit', async () => {
     const sansPhoto = await api()
       .patch(`/api/locatif/biens/${bienNuitId}`)
       .set(auth(jetonAgent))

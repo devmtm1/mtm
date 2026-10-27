@@ -73,8 +73,8 @@ export class AnnonceBienFields {
   longitude?: number;
   @IsOptional() @IsDateString() disponibleLe?: string;
 
-  // --- Courte durée (type Airbnb) ---
-  /** « longue_duree » (bail, loyer mensuel) ou « courte_duree » (séjours à la nuit). */
+  // --- Courte durée ---
+  /** « longue_duree » (bail, loyer mensuel) ou « courte_duree » (séjours de courte durée). */
   @IsOptional() @IsString() @MaxLength(30) modeLocation?: string;
   @IsOptional() @Type(() => Number) @IsNumber() @Min(0) prixNuit?: number;
   /** Caution demandée au voyageur, en FCFA. */
@@ -130,7 +130,7 @@ export class QueryLocationPublicDto {
   @IsOptional() @IsString() @MaxLength(120) commune?: string;
   @IsOptional() @Type(() => Number) @IsNumber() @Min(0) loyerMin?: number;
   @IsOptional() @Type(() => Number) @IsNumber() @Min(0) loyerMax?: number;
-  /** Mode de location : « courte_duree » (séjours à la nuit) ou « longue_duree ». */
+  /** Mode de location : « courte_duree » (séjours de courte durée) ou « longue_duree ». */
   @IsOptional() @IsIn(['longue_duree', 'courte_duree']) mode?: string;
   /** Prix de la nuit : ne s'applique qu'aux séjours de courte durée. */
   @IsOptional() @Type(() => Number) @IsNumber() @Min(0) prixNuitMax?: number;

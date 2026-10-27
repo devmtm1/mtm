@@ -50,7 +50,7 @@ export class LocatifPublicController {
     return this.publicLocations.findPublicOne(id);
   }
 
-  /** Nuits déjà prises d'un bien loué à la nuit : le voyageur choisit des dates libres. */
+  /** Nuits déjà prises d'un bien en courte durée : le voyageur choisit des dates libres. */
   @Public()
   @PublicCache()
   @Get('biens/:id/disponibilites')

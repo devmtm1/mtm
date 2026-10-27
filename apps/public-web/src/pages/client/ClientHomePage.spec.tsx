@@ -89,7 +89,7 @@ describe('ClientHomePage — compte propriétaire', () => {
     expect(screen.getByText('Tout est à jour')).toBeTruthy();
   });
 
-  it('compte les séjours d’un bien à la nuit dans les revenus encaissés', () => {
+  it('compte les séjours d’un bien en courte durée dans les revenus encaissés', () => {
     compteProprietaire();
     afficher();
 

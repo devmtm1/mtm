@@ -157,7 +157,7 @@ export function LocationDetailPage() {
                   Meublé
                 </Badge>
               )}
-              {courte ? <Badge tone="success"><Moon className="mr-1 h-3.5 w-3.5" aria-hidden="true" />À la nuit</Badge> : <Badge tone="success">{libre}</Badge>}
+              {courte ? <Badge tone="success"><Moon className="mr-1 h-3.5 w-3.5" aria-hidden="true" />Courte durée</Badge> : <Badge tone="success">{libre}</Badge>}
               {location.misEnAvant && <Badge tone="accent">À la une</Badge>}
             </div>
           </div>

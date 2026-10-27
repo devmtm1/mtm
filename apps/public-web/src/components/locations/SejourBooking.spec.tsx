@@ -30,7 +30,7 @@ function choisirDates(arrivee: string, depart: string) {
   fireEvent.change(screen.getByLabelText('Départ'), { target: { value: depart } });
 }
 
-describe('SejourBooking (demande de séjour à la nuit)', () => {
+describe('SejourBooking (demande de séjour de courte durée)', () => {
   beforeEach(() => {
     api.fetchDisponibilites.mockReset().mockResolvedValue([{ debut: jour(20), fin: jour(23) }]);
     api.postDemandeSejour.mockReset();

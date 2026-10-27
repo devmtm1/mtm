@@ -201,7 +201,7 @@ export class AnnonceDialog {
     misEnAvant: [this.data.bien.misEnAvant],
   });
 
-  /** Bien loué à la nuit : le tarif de séjour remplace le loyer mensuel. */
+  /** Bien en courte durée : le tarif de séjour remplace le loyer mensuel. */
   protected get courteDuree(): boolean {
     return this.data.bien.modeLocation === 'courte_duree';
   }

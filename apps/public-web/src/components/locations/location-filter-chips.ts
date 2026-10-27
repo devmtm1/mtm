@@ -19,7 +19,7 @@ function range(min: number | undefined, max: number | undefined, fmt: (n: number
 export function activeLocationChips(filters: LocationFilters): LocationChip[] {
   const chips: LocationChip[] = [];
   if (filters.mode) {
-    chips.push({ key: 'mode', label: filters.mode === 'courte_duree' ? 'À la nuit' : 'Au mois', clears: ['mode'] });
+    chips.push({ key: 'mode', label: filters.mode === 'courte_duree' ? 'Courte durée' : 'Au mois', clears: ['mode'] });
   }
   if (filters.type) chips.push({ key: 'type', label: typeBienLabel(filters.type), clears: ['type'] });
   if (filters.region) chips.push({ key: 'region', label: filters.region, clears: ['region'] });

@@ -52,7 +52,7 @@ export interface BienListItem {
   /** Annonce visible sur le site public (tant que le bien est disponible). */
   publie: boolean;
   misEnAvant: boolean;
-  /** longue_duree (bail au mois) ou courte_duree (séjours à la nuit, type Airbnb). */
+  /** longue_duree (bail au mois) ou courte_duree (séjours). */
   modeLocation: string;
   /** Nombre de photos et vidéos d'annonce. */
   _count?: { medias: number };
@@ -340,7 +340,7 @@ export interface BienQuery {
   search?: string;
   statut?: string;
   type?: string;
-  /** « courte_duree » : seuls les biens loués à la nuit. */
+  /** « courte_duree » : seuls les biens en courte durée. */
   modeLocation?: string;
   proprietaireId?: string;
   responsableId?: string;

@@ -220,7 +220,7 @@ interne exposée, filtres, bien loué masqué, demande), `annonce.helper.spec.ts
 | Demande de visite faite depuis l’annonce : réception par les gestionnaires (cloche et e-mail) | ☐ | |
 | Création d’un bail : l’annonce disparaît du site | ☐ | |
 
-**Location à la nuit** (ajout) : séjours de courte durée avec prix par nuit, caution, date de
+**Courte durée** (ajout) : séjours de courte durée avec prix par nuit, caution, date de
 réservation, durée, règlements, états des lieux d’arrivée et de départ avec photos, et demandes de
 résiliation depuis l’espace locataire. Preuves : `test/sejours-resiliation.e2e-spec.ts` (conflits de dates,
 demandes simultanées, droits), `src/modules/locatif/sejour*.spec.ts`, `etats-des-lieux*.spec.ts`,

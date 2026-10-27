@@ -6,11 +6,11 @@ import { createE2eApp, type E2eContext } from './helpers/e2e-app';
 import { describeE2e } from './helpers/e2e-database';
 
 /**
- * L'espace propriétaire doit tenir compte des locations à la nuit : un bien
+ * L'espace propriétaire doit tenir compte des locations de courte durée : un bien
  * loué en courte durée n'a pas de bail, et son statut reste « disponible » —
  * mais il est occupé, réservé, et il rapporte.
  */
-describeE2e('Espace propriétaire : séjours à la nuit (e2e)', () => {
+describeE2e('Espace propriétaire : séjours de courte durée (e2e)', () => {
   let app: INestApplication;
   let context: E2eContext;
   let jeton = '';
@@ -121,7 +121,7 @@ describeE2e('Espace propriétaire : séjours à la nuit (e2e)', () => {
     await context.close();
   });
 
-  it('un bien à la nuit sans séjour est libre, et non « loué »', async () => {
+  it('un bien en courte durée sans séjour est libre, et non « loué »', async () => {
     const biens = await lire('biens');
     expect(biens.status).toBe(200);
     expect(biens.body[0]).toMatchObject({

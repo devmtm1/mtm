@@ -58,7 +58,7 @@ export class QueryBienDto {
   @IsOptional() @IsString() search?: string;
   @IsOptional() @IsString() statut?: string;
   @IsOptional() @IsString() type?: string;
-  /** longue_duree ou courte_duree : les séjours ne concernent que les biens loués à la nuit. */
+  /** longue_duree ou courte_duree : les séjours ne concernent que les biens en courte durée. */
   @IsOptional() @IsIn(['longue_duree', 'courte_duree']) modeLocation?: string;
   @IsOptional() @IsUUID() proprietaireId?: string;
   @IsOptional() @IsUUID() responsableId?: string;
