@@ -1,3 +1,4 @@
+import { VAGUES } from '../../utils/vagues';
 import { useId, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown, Facebook, Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
@@ -64,8 +65,24 @@ export function Footer() {
   ];
 
   return (
-    <footer className="border-t border-mtm-border bg-mtm-primary-dark text-white">
-      <div className="mx-auto max-w-6xl px-4 pb-6 pt-8 sm:px-6 sm:py-12">
+    <footer className="relative bg-mtm-primary-dark text-white">
+      {/* Bord supérieur en vague : le pied de page remonte dans la section qui le précède, quelle que soit sa couleur
+          (la forme est de la couleur du pied de page, posée juste au-dessus de lui). Même tracé que les bandeaux. */}
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 1440 90"
+        preserveAspectRatio="none"
+        className="pointer-events-none absolute inset-x-0 bottom-[calc(100%-1px)] h-6 w-full text-mtm-primary-dark sm:h-9 lg:h-12"
+        fill="currentColor"
+      >
+        <path d={VAGUES.douce} />
+      </svg>
+      {/* Motif très léger de courbes de niveau (le relief d'un terrain), à droite : de la matière sans gêner la lecture. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 overflow-hidden bg-[url('/motifs/courbes-niveau.svg')] bg-cover bg-right bg-no-repeat opacity-[0.07]"
+      />
+      <div className="relative mx-auto max-w-6xl px-4 pb-6 pt-8 sm:px-6 sm:py-12">
         <div className="grid gap-6 sm:grid-cols-2 sm:gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
           {/* Marque */}
           <div className="sm:col-span-2 lg:col-span-1">
@@ -154,7 +171,9 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-white/10 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
+      <div className="relative border-t border-white/10 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
+        {/* Petit trait rouge sur le filet : la couleur de la marque, sans rien ajouter de lourd. */}
+        <span aria-hidden="true" className="absolute -top-px left-4 h-[2px] w-14 bg-mtm-accent sm:left-[max(1.5rem,calc((100%-72rem)/2+1.5rem))]" />
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 text-center text-xs text-white/60 sm:flex-row sm:px-6 sm:text-left">
           <span>© {year} MTM Immobilier. Tous droits réservés.</span>
           <nav aria-label="Informations légales" className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
