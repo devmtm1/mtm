@@ -44,7 +44,7 @@ function LinkColumn({ title, links }: { title: string; links: { to: string; labe
       <ul id={listId} className={`${open ? 'flex' : 'hidden'} flex-col gap-1 pb-3 sm:mt-4 sm:flex sm:gap-2 sm:pb-0`}>
         {links.map((link) => (
           <li key={link.to}>
-            <Link to={link.to} className="block py-1.5 text-[15px] text-white/85 transition-colors hover:text-mtm-accent-clair focus-visible:text-mtm-accent-clair sm:py-0 sm:text-sm">
+            <Link to={link.to} className="-mx-2 inline-block rounded-md px-2 py-1.5 text-[15px] text-white/85 transition-colors hover:bg-white hover:text-mtm-accent focus-visible:bg-white focus-visible:text-mtm-accent sm:py-1 sm:text-sm">
               {link.label}
             </Link>
           </li>
@@ -111,7 +111,7 @@ export function Footer() {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label="MTM Immobilier sur Facebook"
-                      className="flex h-11 w-11 items-center justify-center rounded-full border border-white/25 text-white transition-colors hover:border-mtm-accent-clair hover:bg-white/10 hover:text-mtm-accent-clair"
+                      className="flex h-11 w-11 items-center justify-center rounded-full border border-white/25 text-white transition-colors hover:border-white hover:bg-white hover:text-mtm-accent"
                     >
                       <Facebook className="h-[18px] w-[18px]" aria-hidden="true" />
                     </a>
@@ -124,7 +124,7 @@ export function Footer() {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label="MTM Immobilier sur TikTok"
-                      className="flex h-11 w-11 items-center justify-center rounded-full border border-white/25 text-white transition-colors hover:border-mtm-accent-clair hover:bg-white/10 hover:text-mtm-accent-clair"
+                      className="flex h-11 w-11 items-center justify-center rounded-full border border-white/25 text-white transition-colors hover:border-white hover:bg-white hover:text-mtm-accent"
                     >
                       <TikTokIcon className="h-[18px] w-[18px]" />
                     </a>
@@ -143,9 +143,9 @@ export function Footer() {
                   <a
                     href={href}
                     {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                    className="flex min-h-11 flex-col items-center justify-center gap-1 rounded-md border border-white/20 bg-white/5 px-2 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/10 hover:text-mtm-accent-clair sm:min-h-0 sm:flex-row sm:justify-start sm:gap-3 sm:border-0 sm:bg-transparent sm:p-0 sm:text-sm sm:font-normal sm:text-white/85 sm:hover:bg-transparent sm:hover:text-mtm-accent-clair"
+                    className="group flex min-h-11 flex-col items-center justify-center gap-1 rounded-md border border-white/20 bg-white/5 px-2 py-2 text-xs font-semibold text-white transition-colors hover:bg-white hover:text-mtm-accent sm:-mx-2 sm:min-h-0 sm:w-fit sm:flex-row sm:justify-start sm:gap-3 sm:rounded-lg sm:border-0 sm:bg-transparent sm:px-2 sm:py-1 sm:text-sm sm:font-normal sm:text-white/85 sm:hover:bg-white sm:hover:text-mtm-accent"
                   >
-                    <span className="inline-flex shrink-0 sm:h-8 sm:w-8 sm:items-center sm:justify-center sm:rounded-lg sm:bg-white/10">
+                    <span className="inline-flex shrink-0 transition-colors sm:h-8 sm:w-8 sm:items-center sm:justify-center sm:rounded-lg sm:bg-white/10 sm:group-hover:bg-mtm-accent-subtle">
                       <Icon className="h-4 w-4" aria-hidden="true" />
                     </span>
                     <span className="sm:hidden">{label}</span>
@@ -160,9 +160,9 @@ export function Footer() {
               href={toMapsHref(contact)}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 flex min-h-11 items-start gap-3 text-sm text-white/75 transition-colors hover:text-mtm-accent-clair focus-visible:text-mtm-accent-clair sm:min-h-0"
+              className="group mt-3 flex min-h-11 items-start gap-3 text-sm text-white/75 transition-colors hover:bg-white hover:text-mtm-accent focus-visible:bg-white focus-visible:text-mtm-accent sm:-mx-2 sm:min-h-0 sm:w-fit sm:rounded-lg sm:px-2 sm:py-1"
             >
-              <span className="inline-flex shrink-0 sm:h-8 sm:w-8 sm:items-center sm:justify-center sm:rounded-lg sm:bg-white/10">
+              <span className="inline-flex shrink-0 transition-colors sm:h-8 sm:w-8 sm:items-center sm:justify-center sm:rounded-lg sm:bg-white/10 sm:group-hover:bg-mtm-accent-subtle">
                 <MapPin className="mt-0.5 h-4 w-4 sm:mt-0" aria-hidden="true" />
               </span>
               <span>
@@ -188,13 +188,13 @@ export function Footer() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 text-center text-xs text-white/60 sm:flex-row sm:px-6 sm:text-left max-[1320px]:sm:!pr-20">
           <span>© {year} MTM Immobilier. Tous droits réservés.</span>
           <nav aria-label="Informations légales" className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-            <Link to={ROUTES.mentionsLegales} className="inline-flex min-h-11 items-center transition-colors hover:text-mtm-accent-clair focus-visible:text-mtm-accent-clair">
+            <Link to={ROUTES.mentionsLegales} className="inline-flex min-h-11 items-center rounded-md px-2 transition-colors hover:bg-white hover:text-mtm-accent focus-visible:bg-white focus-visible:text-mtm-accent">
               Mentions légales
             </Link>
-            <Link to={ROUTES.confidentialite} className="inline-flex min-h-11 items-center transition-colors hover:text-mtm-accent-clair focus-visible:text-mtm-accent-clair">
+            <Link to={ROUTES.confidentialite} className="inline-flex min-h-11 items-center rounded-md px-2 transition-colors hover:bg-white hover:text-mtm-accent focus-visible:bg-white focus-visible:text-mtm-accent">
               Confidentialité
             </Link>
-            <Link to={ROUTES.clientPortal} className="inline-flex min-h-11 items-center font-semibold text-white/85 transition-colors hover:text-mtm-accent-clair focus-visible:text-mtm-accent-clair">
+            <Link to={ROUTES.clientPortal} className="inline-flex min-h-11 items-center rounded-md px-2 font-semibold text-white/85 transition-colors hover:bg-white hover:text-mtm-accent focus-visible:bg-white focus-visible:text-mtm-accent">
               Espace client
             </Link>
           </nav>
