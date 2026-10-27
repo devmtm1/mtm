@@ -17,7 +17,7 @@ export function FeaturedTerrainsSection() {
   const items = data ? data.items.slice(0, data.items.length < 3 ? data.items.length : data.items.length - (data.items.length % 3)) : [];
 
   return (
-    <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
+    <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12 lg:py-16">
       <div className="flex items-end justify-between gap-4">
         <SectionHeading
           eyebrow="Sélection MTM"
@@ -40,7 +40,7 @@ export function FeaturedTerrainsSection() {
             {/* Mobile : rangée à faire défiler (1,3 carte visible) ; grille dès lg. */}
             <Carousel ariaLabel="Biens en vedette" itemClassName="w-[72%] sm:w-[46%] lg:w-auto" lgClassName="lg:grid lg:grid-cols-3 lg:gap-6">
               {items.map((terrain) => (
-                <TerrainCard key={terrain.id} terrain={terrain} compact />
+                <TerrainCard key={terrain.id} terrain={terrain} compact masquerMisEnAvant />
               ))}
             </Carousel>
           </>

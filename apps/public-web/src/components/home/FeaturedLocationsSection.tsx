@@ -21,7 +21,7 @@ export function FeaturedLocationsSection() {
   if (!loading && (error || !data || data.items.length === 0)) return null;
 
   return (
-    <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
+    <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12 lg:py-16">
       <div className="flex items-end justify-between gap-4">
         <SectionHeading
           eyebrow="À louer"

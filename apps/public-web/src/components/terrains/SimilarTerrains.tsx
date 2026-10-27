@@ -15,16 +15,19 @@ import { TerrainCard } from './TerrainCard';
  * catalogue. La section n'apparaît que s'il y a au moins un autre bien à montrer.
  */
 export function SimilarTerrains({ terrain }: { terrain: Terrain }) {
-  const lieu = terrain.commune ?? terrain.region;
-  const filters = useMemo(
-    () => (terrain.commune ? { commune: terrain.commune, pageSize: 7 } : terrain.region ? { region: terrain.region, pageSize: 7 } : { pageSize: 7 }),
-    [terrain.commune, terrain.region],
-  );
+  // On cherche dans la région (assez large pour qu'il y ait toujours quelque chose à montrer), puis on met d'abord les
+  // biens de la même commune : un acheteur compare d'abord autour de lui.
+  const filters = useMemo(() => (terrain.region ? { region: terrain.region, pageSize: 12 } : terrain.commune ? { commune: terrain.commune, pageSize: 12 } : { pageSize: 12 }), [terrain.commune, terrain.region]);
   const { data } = useTerrainsCatalog(filters);
-  const autres = (data?.items ?? []).filter((item) => item.id !== terrain.id).slice(0, 6);
+  const autres = (data?.items ?? [])
+    .filter((item) => item.id !== terrain.id)
+    .sort((a, b) => Number(b.commune === terrain.commune) - Number(a.commune === terrain.commune))
+    .slice(0, 6);
 
   if (autres.length === 0) return null;
-  const titre = lieu ? `Autres biens à ${lieu}` : 'Autres biens';
+  const sameCommune = autres.every((item) => item.commune === terrain.commune);
+  const lieu = sameCommune ? terrain.commune : terrain.region;
+  const titre = lieu ? `Autres biens ${sameCommune ? 'à' : 'en région de'} ${lieu}` : 'Autres biens';
 
   return (
     <>

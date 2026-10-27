@@ -2,13 +2,12 @@ import { HeroSection } from '../components/home/HeroSection';
 import { QuickSearchSection } from '../components/home/QuickSearchSection';
 import { FeaturedTerrainsSection } from '../components/home/FeaturedTerrainsSection';
 import { FeaturedLocationsSection } from '../components/home/FeaturedLocationsSection';
-import { UpcomingProjectsSection } from '../components/home/UpcomingProjectsSection';
-import { RealisationsPreviewSection } from '../components/home/RealisationsPreviewSection';
+import { ProjetsSection } from '../components/home/ProjetsSection';
 import { VideosSection } from '../components/home/VideosSection';
 import { AboutPreviewSection } from '../components/home/AboutPreviewSection';
 import { ServicesSection } from '../components/home/ServicesSection';
 import { TestimonialsSection } from '../components/home/TestimonialsSection';
-import { ContactCtaSection } from '../components/home/ContactCtaSection';
+import { CtaBand } from '../components/ui/CtaBand';
 import { TrustBand } from '../components/home/TrustBand';
 import { Reveal } from '../components/ui/Reveal';
 import { usePageMetadata } from '../hooks/usePageMetadata';
@@ -56,10 +55,7 @@ export function HomePage() {
         <ServicesSection />
       </Reveal>
       <Reveal>
-        <UpcomingProjectsSection />
-      </Reveal>
-      <Reveal>
-        <RealisationsPreviewSection />
+        <ProjetsSection />
       </Reveal>
       <Reveal>
         <TestimonialsSection />
@@ -67,9 +63,9 @@ export function HomePage() {
       <Reveal>
         <AboutPreviewSection />
       </Reveal>
-      <Reveal>
-        <ContactCtaSection />
-      </Reveal>
+      {/* Le formulaire complet vit sur la page Contact : l'accueil se termine sur un appel à l'action, pas sur un
+          second formulaire. */}
+      <CtaBand />
     </div>
   );
 }

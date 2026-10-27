@@ -15,16 +15,19 @@ import { LocationCard } from './LocationCard';
  * défiler ; sur ordinateur, une grille de trois cartes. La section n'apparaît que s'il y a au moins une autre annonce.
  */
 export function SimilarLocations({ location }: { location: Location }) {
-  const lieu = location.commune ?? location.region;
-  const filters = useMemo(
-    () => (location.commune ? { commune: location.commune, pageSize: 7 } : location.region ? { region: location.region, pageSize: 7 } : { pageSize: 7 }),
-    [location.commune, location.region],
-  );
+  // Région d'abord (assez large pour qu'il y ait toujours quelque chose à montrer), puis les annonces de la même commune
+  // en tête : un locataire compare d'abord autour de lui.
+  const filters = useMemo(() => (location.region ? { region: location.region, pageSize: 12 } : location.commune ? { commune: location.commune, pageSize: 12 } : { pageSize: 12 }), [location.commune, location.region]);
   const { data } = useLocationsCatalog(filters);
-  const autres = (data?.items ?? []).filter((item) => item.id !== location.id).slice(0, 6);
+  const autres = (data?.items ?? [])
+    .filter((item) => item.id !== location.id)
+    .sort((a, b) => Number(b.commune === location.commune) - Number(a.commune === location.commune))
+    .slice(0, 6);
 
   if (autres.length === 0) return null;
-  const titre = lieu ? `Autres locations à ${lieu}` : 'Autres locations';
+  const sameCommune = autres.every((item) => item.commune === location.commune);
+  const lieu = sameCommune ? location.commune : location.region;
+  const titre = lieu ? `Autres locations ${sameCommune ? 'à' : 'en région de'} ${lieu}` : 'Autres locations';
 
   return (
     <>
