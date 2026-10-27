@@ -154,11 +154,16 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
   {
     id: 'construction',
     title: 'Construction',
-    where: 'Page « Construction »',
+    where: 'Page « Construction » (les chantiers eux-mêmes se gèrent dans Chantiers)',
     slots: [
       { key: 'construction.image', label: 'Image du bandeau', help: 'Photo en fond du bandeau, sous un voile bleu marine : le texte blanc se lit sur n’importe quelle image. Format paysage conseillé (au moins 1600 × 900 px). Laisser vide pour la photo par défaut.', kind: 'image' },
-      { key: 'construction.intro', label: 'Texte d’introduction', help: 'Présentation du service.', multiline: true },
-      { key: 'construction.etapes', label: 'Étapes du projet', help: 'Une étape par ligne, au format « Titre | Description ».', multiline: true, format: 'steps' },
+      { key: 'construction.eyebrow', label: 'Mention au-dessus du titre', help: 'Petit libellé précédé d’un trait rouge. Par défaut : « Nos services ».' },
+      { key: 'construction.title', label: 'Titre', help: 'Le grand titre du bandeau. Par défaut : « Construction ».' },
+      { key: 'construction.intro', label: 'Texte d’introduction', help: 'Présentation du service, sous le titre.', multiline: true },
+      { key: 'construction.reassurance', label: 'Engagements du bandeau', help: 'Jusqu’à trois lignes courtes, une par engagement. Ne jamais y figer un prix ou un délai.', multiline: true },
+      { key: 'construction.prestations', label: 'Ce que nous faisons', help: 'Une prestation par ligne, au format « Titre | Description ». Quatre cartes s’affichent bien.', multiline: true, format: 'steps' },
+      { key: 'construction.etapes', label: 'Étapes du projet', help: 'Une étape par ligne, au format « Titre | Description ». Quatre étapes s’affichent bien.', multiline: true, format: 'steps' },
+      { key: 'construction.faq', label: 'Questions fréquentes', help: 'Une question par ligne, au format « Question | Réponse ». Ne promettez ni délai ni montant que MTM ne peut pas tenir (le coût se donne sur devis).', multiline: true, format: 'steps' },
     ],
   },
   {

@@ -115,3 +115,34 @@ export function validateConfierBien(values: ConfierBienValues): FieldErrors {
   if (!values.consentement) errors.consentement = 'Acceptez le traitement de vos données pour être rappelé.';
   return errors;
 }
+
+export interface DevisConstructionValues {
+  nom: string;
+  email: string;
+  telephone: string;
+  pays: string;
+  typeProjet: string;
+  terrain: string;
+  commune: string;
+  budget: string;
+  precisions: string;
+  consentement: boolean;
+}
+
+/** Reflet de DevisConstructionDto (API) : retour immédiat au visiteur, le serveur reste l'autorité. */
+export function validateDevisConstruction(values: DevisConstructionValues): FieldErrors {
+  const errors: FieldErrors = {};
+  if (values.nom.trim().length < 2 || values.nom.trim().length > 200) errors.nom = 'Indiquez votre nom.';
+  if (!isValidEmail(values.email)) errors.email = 'Adresse e-mail invalide.';
+  const telephone = values.telephone.trim();
+  if (telephone.length < 4 || telephone.length > 30) {
+    errors.telephone = 'Indiquez un numéro pour vous rappeler (WhatsApp ou appel).';
+  }
+  if (!values.typeProjet) errors.typeProjet = 'Choisissez la nature du projet.';
+  if (!values.terrain) errors.terrain = 'Dites-nous où vous en êtes pour le terrain.';
+  if (values.commune.trim().length < 2) errors.commune = 'Indiquez la commune ou le quartier.';
+  if (values.budget && !(Number(values.budget) >= 0)) errors.budget = 'Montant invalide.';
+  if (values.precisions.length > 1500) errors.precisions = '1500 caractères au maximum.';
+  if (!values.consentement) errors.consentement = 'Acceptez le traitement de vos données pour être rappelé.';
+  return errors;
+}

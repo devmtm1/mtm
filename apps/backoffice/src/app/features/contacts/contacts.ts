@@ -1,3 +1,4 @@
+import { MoneyPipe } from '../../shared/pipes/money.pipe';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
@@ -27,7 +28,7 @@ type Scope = 'all' | 'unread' | 'read';
  */
 @Component({
   selector: 'app-contacts',
-  imports: [DatePipe, MatButtonModule, MatFormFieldModule, MatInputModule, MatMenuModule, MatTooltipModule, LucideCheck, LucideUserCheck, LucideChevronLeft, LucideChevronRight, LucideClock, LucideEllipsisVertical, LucideInbox, LucideKeyRound, LucideLandPlot, LucideMail, LucideMessageSquare, LucidePhone, LucideSearch, LucideUserPlus, LucideX],
+  imports: [DatePipe, MoneyPipe, MatButtonModule, MatFormFieldModule, MatInputModule, MatMenuModule, MatTooltipModule, LucideCheck, LucideUserCheck, LucideChevronLeft, LucideChevronRight, LucideClock, LucideEllipsisVertical, LucideInbox, LucideKeyRound, LucideLandPlot, LucideMail, LucideMessageSquare, LucidePhone, LucideSearch, LucideUserPlus, LucideX],
   templateUrl: './contacts.html',
   styleUrl: './contacts.scss',
 })
@@ -105,6 +106,17 @@ export class Contacts implements OnInit {
       autre: 'Autre bien',
     };
     return (type && libelles[type]) || 'Bien';
+  }
+
+  protected projet(type?: string): string {
+    const libelles: Record<string, string> = {
+      villa: 'Villa ou maison',
+      immeuble: 'Immeuble',
+      renovation: 'Rénovation ou extension',
+      amenagement: 'Aménagement',
+      autre: 'Autre projet',
+    };
+    return (type && libelles[type]) || 'Projet';
   }
 
   protected situation(situation?: string): string {

@@ -1,22 +1,40 @@
+import { Eye, FileText, Hammer, HardHat } from 'lucide-react';
 import { BandeauPage, IMAGE_BANDEAU_PAGE } from '../components/layout/BandeauPage';
-import { ContactCtaSection } from '../components/home/ContactCtaSection';
-import { useEditableContent, type EditableStep } from '../hooks/useEditableContent';
+import { EnTeteSection, GrilleServices, type Icone } from '../components/gestion/GestionBlocs';
+import { FormulaireDevis } from '../components/construction/FormulaireDevis';
+import { ParcoursVerification } from '../components/demarches/ParcoursVerification';
+import { FaqDemarches } from '../components/demarches/FaqDemarches';
+import { buttonClassName } from '../components/ui/button-styles';
+import { LinkButton } from '../components/ui/LinkButton';
+import { useEditableContent } from '../hooks/useEditableContent';
+import { useSiteContact } from '../hooks/useSiteContact';
 import { usePageMetadata } from '../hooks/usePageMetadata';
+import { donneesFaq } from '../utils/seo';
+import {
+  ETAPES_CONSTRUCTION,
+  FAQ_CONSTRUCTION,
+  INTRO_CONSTRUCTION,
+  PRESTATIONS_CONSTRUCTION,
+  REASSURANCE_CONSTRUCTION,
+} from '../utils/construction';
+import { ROUTES } from '../routes';
 
-const FALLBACK_INTRO =
-  'Du devis à la livraison, MTM Immobilier accompagne vos projets de construction avec un suivi rigoureux et transparent.';
+const ICONES_CONSTRUCTION: Icone[] = [HardHat, Hammer, Eye, FileText];
+const MESSAGE_WHATSAPP = 'Bonjour, je souhaite un devis pour un projet de construction.';
 
-const FALLBACK_STEPS: EditableStep[] = [
-  { title: 'Étude et devis', description: 'Analyse de votre terrain et de votre programme, chiffrage détaillé.' },
-  { title: 'Planification', description: 'Planning de chantier avec jalons et points de contrôle réguliers.' },
-  { title: 'Suivi de chantier', description: 'Journal de chantier, photos et rapports partagés avec vous.' },
-  { title: 'Livraison', description: 'Réception des travaux et remise des documents du projet.' },
-];
-
+/**
+ * La page « Construction » s'adresse à celui qui veut bâtir ou rénover, souvent à distance : ce que MTM construit,
+ * comment se déroule un projet, les trois questions qu'il se pose, puis la demande de devis. Chaque bloc de texte se
+ * modifie dans Contenus du site › Construction.
+ */
 export function ConstructionPage() {
-  const { text, steps, loading: contenuEnCours } = useEditableContent();
+  const { text, lines, steps, loading: contenuEnCours } = useEditableContent();
+  const { whatsapp } = useSiteContact();
+
+  const faq = steps('construction.faq', FAQ_CONSTRUCTION);
   usePageMetadata({
     title: 'Construction',
+    jsonLd: donneesFaq(faq),
     description:
       'Du devis à la livraison, MTM Immobilier suit vos projets de construction au Sénégal avec un suivi de chantier transparent et partagé à distance.',
   });
@@ -25,26 +43,89 @@ export function ConstructionPage() {
     <div>
       <BandeauPage
         chevauche={false}
-        eyebrow="Nos services"
-        title="Construction"
-        description={text('construction.intro', FALLBACK_INTRO)}
+        eyebrow={text('construction.eyebrow', 'Nos services')}
+        title={text('construction.title', 'Construction')}
+        description={text('construction.intro', INTRO_CONSTRUCTION)}
+        points={lines('construction.reassurance', REASSURANCE_CONSTRUCTION)}
         image={text('construction.image', IMAGE_BANDEAU_PAGE)}
         chargement={contenuEnCours}
+        actions={
+          <>
+            <a href="#devis" className={buttonClassName('accent', 'px-6 py-3 text-[15px]')}>
+              <HardHat className="h-4 w-4" aria-hidden="true" />
+              Demander un devis
+            </a>
+            <LinkButton to={ROUTES.realisations} variant="onDarkOutline">
+              Voir nos réalisations
+            </LinkButton>
+          </>
+        }
       />
-      <section className="mx-auto max-w-4xl px-4 py-14 sm:px-6">
-        <ol className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          {steps('construction.etapes', FALLBACK_STEPS).map((step, index) => (
-            <li key={step.title} className="rounded-lg border border-mtm-border bg-mtm-surface p-6 shadow-card">
-              <span className="font-display text-xl font-bold text-mtm-primary">
-                {String(index + 1).padStart(2, '0')}
-              </span>
-              <h2 className="mt-2 font-display text-base font-bold text-mtm-text">{step.title}</h2>
-              {step.description && <p className="mt-1 text-sm text-mtm-muted">{step.description}</p>}
-            </li>
-          ))}
-        </ol>
+
+      <section id="prestations" className="scroll-mt-20 bg-white py-12 lg:py-16">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <EnTeteSection
+            mention="Ce que nous faisons pour vous"
+            titre="Votre projet, de l’étude à la remise des clés"
+            texte="Que vous construisiez ou rénoviez, nous prenons en charge votre chantier et vous en tenons informé."
+          />
+          <div className="mt-10">
+            <GrilleServices services={steps('construction.prestations', PRESTATIONS_CONSTRUCTION)} icones={ICONES_CONSTRUCTION} />
+          </div>
+        </div>
       </section>
-      <ContactCtaSection />
+
+      <section id="parcours" className="bg-mtm-bg py-12 lg:py-16">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <EnTeteSection mention="Comment ça se passe" titre="En quatre étapes" />
+          <div className="mt-10">
+            <ParcoursVerification etapes={steps('construction.etapes', ETAPES_CONSTRUCTION)} />
+          </div>
+        </div>
+      </section>
+
+      {faq.length > 0 && (
+        <section id="faq" className="scroll-mt-20 bg-white py-12 lg:py-16">
+          <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.4fr] lg:gap-16">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-mtm-accent">Questions fréquentes</p>
+              <h2 className="mt-3 font-display text-[1.65rem] font-extrabold leading-tight text-mtm-text sm:text-3xl">
+                Vous vous posez une question ?
+              </h2>
+              <p className="mt-3 text-[15px] leading-relaxed text-mtm-muted sm:text-base">
+                Les réponses à ce que l’on nous demande le plus. Vous ne trouvez pas la vôtre ? Écrivez-nous dans le formulaire ci-dessous.
+              </p>
+            </div>
+            <FaqDemarches questions={faq} />
+          </div>
+        </section>
+      )}
+
+      <section id="devis" className="scroll-mt-20 bg-mtm-bg py-12 lg:py-16">
+        <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.4fr] lg:gap-14">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-mtm-accent">Demander un devis</p>
+            <h2 className="mt-3 font-display text-[1.65rem] font-extrabold leading-tight text-mtm-text sm:text-3xl">
+              Parlez-nous de votre projet
+            </h2>
+            <p className="mt-3 text-[15px] leading-relaxed text-mtm-muted sm:text-base">
+              Quelques informations suffisent : un conseiller vous rappelle, sans engagement, pour étudier votre projet et
+              préparer votre devis.
+            </p>
+            <a
+              href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(MESSAGE_WHATSAPP)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex items-center gap-2 rounded-md border border-mtm-success bg-mtm-success/5 px-4 py-2.5 text-sm font-semibold text-mtm-success transition-colors hover:bg-mtm-success/10"
+            >
+              Discuter directement sur WhatsApp
+            </a>
+          </div>
+          <div className="rounded-3xl border border-mtm-border/70 bg-white p-5 shadow-card sm:p-8">
+            <FormulaireDevis />
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

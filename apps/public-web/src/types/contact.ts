@@ -47,3 +47,32 @@ export interface ConfierBienPayload {
   /** Piège à robots : toujours vide pour un visiteur. */
   siteWeb?: string;
 }
+
+export const TYPES_PROJET_CONSTRUCTION = [
+  { value: 'villa', label: 'Construction d’une villa ou d’une maison' },
+  { value: 'immeuble', label: 'Construction d’un immeuble' },
+  { value: 'renovation', label: 'Rénovation ou extension' },
+  { value: 'amenagement', label: 'Aménagement ou finitions' },
+  { value: 'autre', label: 'Autre projet' },
+] as const;
+
+export const SITUATIONS_TERRAIN = [
+  { value: 'possede', label: 'J’ai déjà un terrain' },
+  { value: 'a_trouver', label: 'Je cherche un terrain' },
+] as const;
+
+/** Demande de devis pour un projet de construction (page « Construction »). */
+export interface DevisConstructionPayload {
+  nom: string;
+  email: string;
+  telephone: string;
+  pays?: string;
+  typeProjet: string;
+  terrain: string;
+  commune: string;
+  budget?: number;
+  precisions?: string;
+  consentement: boolean;
+  /** Piège à robots : toujours vide pour un visiteur. */
+  siteWeb?: string;
+}

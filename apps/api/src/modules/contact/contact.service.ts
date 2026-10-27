@@ -17,6 +17,7 @@ import {
 } from '../rbac/role-groups';
 import { CreateContactDto } from './dto/create-contact.dto';
 import type { ConfierBienDto } from './dto/confier-bien.dto';
+import type { DevisConstructionDto } from './dto/devis-construction.dto';
 import type { Contact, Prisma } from '@prisma/client';
 
 const LIBELLES_TYPE_BIEN: Record<string, string> = {
@@ -37,6 +38,27 @@ const LIBELLES_SITUATION: Record<string, string> = {
 
 /** Le sujet sous lequel une proposition de bien apparaît dans « Demandes du site ». */
 export const SUJET_CONFIER_BIEN = 'Confier un bien en gestion locative';
+export const SUJET_DEVIS_CONSTRUCTION = 'Demande de devis de construction';
+
+const LIBELLES_PROJET: Record<string, string> = {
+  villa: 'Construction d’une villa ou d’une maison',
+  immeuble: 'Construction d’un immeuble',
+  renovation: 'Rénovation ou extension',
+  amenagement: 'Aménagement ou finitions',
+  autre: 'Autre projet',
+};
+
+const LIBELLES_TERRAIN: Record<string, string> = {
+  possede: 'Le client possède déjà un terrain',
+  a_trouver: 'Le client cherche un terrain',
+};
+
+/** Quelle équipe est prévenue d'une demande structurée du site, et comment. */
+interface AlerteDemande {
+  permission: string;
+  type: string;
+  titre: string;
+}
 
 @Injectable()
 export class ContactService {
@@ -89,7 +111,65 @@ export class ContactService {
         sujet: SUJET_CONFIER_BIEN,
         message,
       },
-      { type: 'confier_bien', details, gestion: true },
+      {
+        type: 'confier_bien',
+        details,
+        alerte: {
+          permission: 'locatif:modifier',
+          type: 'demande_gestion',
+          titre: 'Un propriétaire propose un bien à la gestion',
+        },
+      },
+    );
+    return { enregistre: true };
+  }
+
+  /**
+   * Un visiteur demande un devis de construction. Même principe que `confierBien` : la demande rejoint les messages du
+   * site avec ses champs et prévient l'équipe construction, qui rappelle.
+   */
+  async demanderDevis(
+    dto: DevisConstructionDto,
+  ): Promise<{ enregistre: boolean }> {
+    if (dto.siteWeb?.trim()) return { enregistre: false };
+
+    const details = {
+      pays: dto.pays ?? null,
+      typeProjet: dto.typeProjet,
+      terrain: dto.terrain,
+      commune: dto.commune,
+      budget: dto.budget ?? null,
+    };
+    const message = [
+      `Projet : ${LIBELLES_PROJET[dto.typeProjet] ?? dto.typeProjet}`,
+      `Lieu : ${dto.commune}`,
+      LIBELLES_TERRAIN[dto.terrain] ?? '',
+      dto.budget
+        ? `Budget indicatif : ${dto.budget.toLocaleString('fr-FR')} FCFA`
+        : '',
+      dto.pays ? `Réside en : ${dto.pays}` : '',
+      dto.precisions?.trim() ? `\nPrécisions : ${dto.precisions.trim()}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    await this.create(
+      {
+        nom: dto.nom,
+        email: dto.email,
+        telephone: dto.telephone,
+        sujet: SUJET_DEVIS_CONSTRUCTION,
+        message,
+      },
+      {
+        type: 'devis_construction',
+        details,
+        alerte: {
+          permission: 'construction:modifier',
+          type: 'demande_devis_construction',
+          titre: 'Demande de devis de construction',
+        },
+      },
     );
     return { enregistre: true };
   }
@@ -99,8 +179,8 @@ export class ContactService {
     extras: {
       type?: string;
       details?: Prisma.InputJsonValue;
-      /** Une proposition de bien prévient les gestionnaires locatifs. */
-      gestion?: boolean;
+      /** Une demande structurée prévient l'équipe concernée (cloche), comme une demande de visite sur une annonce. */
+      alerte?: AlerteDemande;
     } = {},
   ): Promise<Contact> {
     let terrainLabel: string | undefined;
@@ -179,16 +259,19 @@ export class ContactService {
 
     // Une proposition de bien attend un rappel rapide : la cloche des gestionnaires locatifs, comme une demande de
     // visite sur une annonce.
-    if (extras.gestion) {
-      void this.notificationsInternes.notifierPermission('locatif:modifier', {
-        type: 'demande_gestion',
-        titre: 'Un propriétaire propose un bien à la gestion',
-        message: `${dto.nom}${dto.telephone ? ` · ${dto.telephone}` : ''}`,
-        lien: '/contacts',
-        entityType: 'Contact',
-        entityId: contact.id,
-        dedupeKey: `demande-gestion:${contact.id}`,
-      });
+    if (extras.alerte) {
+      void this.notificationsInternes.notifierPermission(
+        extras.alerte.permission,
+        {
+          type: extras.alerte.type,
+          titre: extras.alerte.titre,
+          message: `${dto.nom}${dto.telephone ? ` · ${dto.telephone}` : ''}`,
+          lien: '/contacts',
+          entityType: 'Contact',
+          entityId: contact.id,
+          dedupeKey: `${extras.alerte.type}:${contact.id}`,
+        },
+      );
     }
 
     // --- Génération automatique de prospect CRM ---

@@ -158,3 +158,58 @@ describe('ContactService.confierBien', () => {
     expect(notificationsInternes.notifierPermission).not.toHaveBeenCalled();
   });
 });
+
+describe('ContactService.demanderDevis', () => {
+  const demande = {
+    nom: 'Awa Diop',
+    email: 'awa@exemple.sn',
+    telephone: '+221 77 000 00 00',
+    pays: 'France',
+    typeProjet: 'villa',
+    terrain: 'possede',
+    commune: 'Saly',
+    budget: 40000000,
+    precisions: 'Villa de plain-pied, quatre chambres.',
+    consentement: true,
+  };
+
+  it('enregistre le projet avec ses champs et prévient l’équipe construction', async () => {
+    const { service, prisma, notificationsInternes } = creer();
+    prisma.contact.create.mockResolvedValue({ id: 'c7', nom: 'Awa Diop' });
+    prisma.prospect.findFirst.mockResolvedValue(null);
+    prisma.prospect.create.mockResolvedValue({ id: 'p2' });
+
+    const resultat = await service.demanderDevis(demande);
+
+    expect(resultat.enregistre).toBe(true);
+    const donnees = prisma.contact.create.mock.calls[0][0].data;
+    expect(donnees).toMatchObject({
+      sujet: 'Demande de devis de construction',
+      type: 'devis_construction',
+      details: expect.objectContaining({
+        typeProjet: 'villa',
+        terrain: 'possede',
+        commune: 'Saly',
+      }),
+    });
+    expect(donnees.message).toContain('Le client possède déjà un terrain');
+    expect(donnees.message).toContain('Budget indicatif : 40');
+    expect(notificationsInternes.notifierPermission).toHaveBeenCalledWith(
+      'construction:modifier',
+      expect.objectContaining({
+        type: 'demande_devis_construction',
+        entityId: 'c7',
+      }),
+    );
+  });
+
+  it('ignore sans rien enregistrer un robot qui remplit le champ piège', async () => {
+    const { service, prisma } = creer();
+    const resultat = await service.demanderDevis({
+      ...demande,
+      siteWeb: 'http://spam.example',
+    });
+    expect(resultat.enregistre).toBe(false);
+    expect(prisma.contact.create).not.toHaveBeenCalled();
+  });
+});

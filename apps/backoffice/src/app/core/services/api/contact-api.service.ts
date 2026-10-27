@@ -10,9 +10,9 @@ export interface ContactMessage {
   telephone?: string | null;
   sujet?: string | null;
   message: string;
-  /** « message » (contact libre) ou « confier_bien » (un propriétaire propose un bien à la gestion). */
+  /** « message » (contact libre), « confier_bien » (un propriétaire propose un bien) ou « devis_construction ». */
   type?: string;
-  /** Pour « confier_bien » : champs saisis dans le formulaire de la page Gestion locative. */
+  /** Pour « confier_bien » et « devis_construction » : champs saisis dans le formulaire du site. */
   details?: {
     pays?: string | null;
     typeBien?: string;
@@ -21,6 +21,9 @@ export interface ContactMessage {
     nombreLogements?: number | null;
     situation?: string;
     loyerSouhaite?: number | null;
+    typeProjet?: string;
+    terrain?: string;
+    budget?: number | null;
   } | null;
   lu: boolean;
   /** Réponse de l'équipe, une fois donnée : elle part par e-mail et s'affiche dans l'espace client. */

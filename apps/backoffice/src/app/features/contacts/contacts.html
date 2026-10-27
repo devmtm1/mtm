@@ -125,11 +125,19 @@
                   </div>
                 </td>
                 <td>
-                  <span class="status-pill" [class.status-pill--info]="contact.type !== 'confier_bien'" [class.status-pill--success]="contact.type === 'confier_bien'">
-                    {{ contact.type === 'confier_bien' ? 'Bien à confier' : (contact.sujet || 'Contact') }}
+                  <span class="status-pill" [class.status-pill--info]="!contact.type || contact.type === 'message'" [class.status-pill--success]="contact.type === 'confier_bien'" [class.status-pill--warning]="contact.type === 'devis_construction'">
+                    {{ contact.type === 'confier_bien' ? 'Bien à confier' : contact.type === 'devis_construction' ? 'Devis construction' : (contact.sujet || 'Contact') }}
                   </span>
                 </td>
                 <td class="message-cell">
+                  @if (contact.type === 'devis_construction' && contact.details; as d) {
+                    <p class="message-cell__details">
+                      <strong>{{ projet(d.typeProjet) }}</strong>
+                      · {{ d.commune }}
+                      · {{ d.terrain === 'possede' ? 'Terrain acquis' : 'Terrain à trouver' }}
+                      @if (d.budget) { · {{ d.budget | mtmMoney }} }
+                    </p>
+                  }
                   @if (contact.type === 'confier_bien' && contact.details; as d) {
                     <p class="message-cell__details">
                       <strong>{{ typeBien(d.typeBien) }}</strong>

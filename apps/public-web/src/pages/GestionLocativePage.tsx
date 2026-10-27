@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { CheckCircle2, KeyRound } from 'lucide-react';
 import { BandeauPage, IMAGE_BANDEAU_PAGE } from '../components/layout/BandeauPage';
-import { GrilleServices } from '../components/gestion/GestionBlocs';
+import { EnTeteSection, GrilleServices } from '../components/gestion/GestionBlocs';
 import { ParcoursVerification } from '../components/demarches/ParcoursVerification';
 import { FaqDemarches } from '../components/demarches/FaqDemarches';
 import { ContactModal } from '../components/contact/ContactModal';
@@ -24,17 +24,6 @@ import { ROUTES } from '../routes';
 
 const SUJET_DEMANDE = 'Confier mon bien en gestion locative';
 const MESSAGE_WHATSAPP = 'Bonjour, je souhaite confier un bien en gestion locative à MTM.';
-
-/** Titre de section : mention rouge, titre, texte d'appui. */
-function EnTete({ mention, titre, texte }: { mention: string; titre: string; texte?: string }) {
-  return (
-    <div className="mx-auto max-w-2xl text-center">
-      <p className="text-xs font-bold uppercase tracking-[0.2em] text-mtm-accent">{mention}</p>
-      <h2 className="mt-3 font-display text-[1.65rem] font-extrabold leading-tight text-mtm-text sm:text-3xl">{titre}</h2>
-      {texte && <p className="mt-3 text-[15px] leading-relaxed text-mtm-muted sm:text-base">{texte}</p>}
-    </div>
-  );
-}
 
 /**
  * La page « Gestion locative » s'adresse au propriétaire qui hésite à confier son bien : ce que MTM prend en charge,
@@ -79,7 +68,7 @@ export function GestionLocativePage() {
 
       <section id="prestations" className="scroll-mt-20 bg-white py-12 lg:py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <EnTete
+          <EnTeteSection
             mention="Ce que nous faisons pour vous"
             titre="Tout ce qu’un propriétaire n’a pas envie de gérer"
             texte="Appartement, villa, immeuble, bureau ou séjour de courte durée : de la recherche du locataire au reversement des loyers, nous prenons tout en charge."
@@ -92,7 +81,7 @@ export function GestionLocativePage() {
 
       <section id="parcours" className="bg-mtm-bg py-12 lg:py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <EnTete mention="Comment ça se passe" titre="En quatre étapes" />
+          <EnTeteSection mention="Comment ça se passe" titre="En quatre étapes" />
           <div className="mt-10">
             <ParcoursVerification etapes={steps('gestion-locative.etapes', ETAPES_GESTION)} />
           </div>

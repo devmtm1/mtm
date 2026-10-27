@@ -10,12 +10,26 @@ type Icone = ComponentType<{ className?: string; strokeWidth?: number; 'aria-hid
 
 const ICONES_SERVICES: Icone[] = [UserSearch, FileSignature, Wallet, BellRing, KeyRound, FileText];
 
-/** Ce que MTM prend en charge : une carte par prestation, avec son pictogramme. */
-export function GrilleServices({ services }: { services: Element[] }) {
+export type { Icone };
+
+/** Titre de section des pages de services : mention rouge, titre, texte d'appui. */
+export function EnTeteSection({ mention, titre, texte }: { mention: string; titre: string; texte?: string }) {
   return (
-    <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
+    <div className="mx-auto max-w-2xl text-center">
+      <p className="text-xs font-bold uppercase tracking-[0.2em] text-mtm-accent">{mention}</p>
+      <h2 className="mt-3 font-display text-[1.65rem] font-extrabold leading-tight text-mtm-text sm:text-3xl">{titre}</h2>
+      {texte && <p className="mt-3 text-[15px] leading-relaxed text-mtm-muted sm:text-base">{texte}</p>}
+    </div>
+  );
+}
+
+/** Ce que MTM prend en charge : une carte par prestation, avec son pictogramme (ceux de la page par défaut). */
+export function GrilleServices({ services, icones = ICONES_SERVICES }: { services: Element[]; icones?: Icone[] }) {
+  return (
+    // Trois colonnes pour 3 ou 6 cartes ; deux pour les autres nombres (4 cartes : 2 × 2, pas une carte seule en bas).
+    <ul className={`grid gap-3 sm:grid-cols-2 lg:gap-4 ${services.length % 3 === 0 ? 'lg:grid-cols-3' : ''}`}>
       {services.map((service, index) => {
-        const Icone = ICONES_SERVICES[index % ICONES_SERVICES.length];
+        const Icone = icones[index % icones.length];
         return (
           <li
             key={service.title}

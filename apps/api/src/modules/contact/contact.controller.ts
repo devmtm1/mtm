@@ -18,6 +18,7 @@ import type { AuthenticatedUser } from '../auth/auth.types';
 import { ContactService } from './contact.service';
 import { ConfierBienDto } from './dto/confier-bien.dto';
 import { CreateContactDto } from './dto/create-contact.dto';
+import { DevisConstructionDto } from './dto/devis-construction.dto';
 import { RepondreContactDto } from './dto/repondre-contact.dto';
 
 @ApiTags('contacts')
@@ -71,6 +72,32 @@ export class ContactController {
         newValue: {
           nom: dto.nom,
           typeBien: dto.typeBien,
+          commune: dto.commune,
+        },
+      });
+    }
+    return { success: true };
+  }
+
+  /** Un visiteur demande un devis de construction (page « Construction »). Mêmes limites de débit. */
+  @Public()
+  @Throttle({
+    default: {
+      limit: Number.parseInt(process.env.CONTACT_RATE_LIMIT_MAX ?? '5', 10),
+      ttl:
+        Number.parseInt(process.env.CONTACT_RATE_LIMIT_TTL ?? '60', 10) * 1000,
+    },
+  })
+  @Post('devis-construction')
+  async devisConstruction(@Body() dto: DevisConstructionDto) {
+    const { enregistre } = await this.contacts.demanderDevis(dto);
+    if (enregistre) {
+      await this.audit.record({
+        action: 'contact.devis_construction',
+        entityType: 'Contact',
+        newValue: {
+          nom: dto.nom,
+          typeProjet: dto.typeProjet,
           commune: dto.commune,
         },
       });
