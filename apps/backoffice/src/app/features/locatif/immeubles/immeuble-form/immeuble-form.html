@@ -15,6 +15,12 @@
       </p>
     </div>
   </header>
+  @if (demande(); as d) {
+    <p class="form-legend">
+      Préparé d’après la demande de <strong>{{ d.nom }}</strong> reçue du site : vérifiez les informations, complétez
+      l’adresse exacte, puis enregistrez.
+    </p>
+  }
   <p class="form-legend"><span aria-hidden="true">*</span> champ obligatoire</p>
 
   <form class="form-body" [formGroup]="form" (ngSubmit)="submit()">

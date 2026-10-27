@@ -1,3 +1,4 @@
+import { cheminCreation } from '../locatif/demande-gestion';
 import { MoneyPipe } from '../../shared/pipes/money.pipe';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
@@ -46,6 +47,7 @@ export class Contacts implements OnInit {
   protected readonly scope = signal<Scope>('all');
   protected readonly search = signal('');
   protected readonly canConvert = this.session.hasPermission('crm:creer');
+  protected readonly canCreateFiche = this.session.hasPermission('locatif:creer');
   protected readonly canReply = this.session.hasPermission('contact:modifier');
   protected readonly canSeeTerrain = this.session.hasPermission('terrains:consulter');
   protected readonly canSeeBien = this.session.hasPermission('locatif:consulter');
@@ -195,6 +197,11 @@ export class Contacts implements OnInit {
 
   protected openTerrain(contact: ContactMessage): void {
     if (contact.terrain) void this.router.navigate(['/terrains', contact.terrain.id]);
+  }
+
+  /** Ouvre le formulaire de création (propriété ou bien) déjà rempli d'après la demande du propriétaire. */
+  protected creerFiche(contact: ContactMessage): void {
+    void this.router.navigate(cheminCreation(contact), { queryParams: { contactId: contact.id } });
   }
 
   protected openBien(contact: ContactMessage): void {

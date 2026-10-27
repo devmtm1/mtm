@@ -29,10 +29,11 @@ interface ProprietaireForm {
 })
 export class ProprietaireDialog {
   private readonly dialogRef = inject(MatDialogRef<ProprietaireDialog>);
-  protected readonly dialogData = inject<{ proprietaire?: ProprietaireSummary } | null>(
-    MAT_DIALOG_DATA,
-    { optional: true },
-  );
+  protected readonly dialogData = inject<{
+    proprietaire?: ProprietaireSummary;
+    /** Valeurs de départ d'un nouveau propriétaire (ex. une demande reçue du site). */
+    prefill?: { firstName: string; lastName: string; email: string; phone: string };
+  } | null>(MAT_DIALOG_DATA, { optional: true });
 
   protected readonly isEdit = !!this.dialogData?.proprietaire;
   /**
@@ -58,6 +59,7 @@ export class ProprietaireDialog {
 
   constructor() {
     const proprietaire = this.dialogData?.proprietaire;
+    if (!proprietaire && this.dialogData?.prefill) this.form.patchValue(this.dialogData.prefill);
     if (proprietaire) {
       this.form.patchValue({
         firstName: proprietaire.firstName,

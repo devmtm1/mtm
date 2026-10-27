@@ -42,7 +42,7 @@ La page **Gestion locative** du site public comporte un formulaire **« Confier 
 
 - La demande arrive dans **Demandes du site** avec la pastille verte **Bien à confier** et un résumé du bien (type, lieu, logements, situation).
 - Les personnes qui gèrent la location reçoivent une **notification** (« Un propriétaire propose un bien à la gestion »), et la personne est ajoutée au **CRM** comme prospect.
-- Rien n'est créé automatiquement : **un collaborateur rappelle la personne**, puis crée le propriétaire et la propriété (voir ci-dessous) si l'affaire se conclut.
+- Rien n'est créé automatiquement : **un collaborateur rappelle la personne**. Si l'affaire se conclut, le bouton **Créer la fiche** (sur la ligne de la demande) ouvre le formulaire de **propriété** (pour un immeuble ou une villa divisée) ou de **bien** (pour les autres cas), déjà rempli d'après la demande : nature, commune, région, nombre de logements, loyer souhaité. La fenêtre **Nouveau propriétaire** s'ouvre aussitôt avec le nom, le téléphone et l'e-mail ; **Annuler** permet de choisir un propriétaire déjà enregistré. La demande passe en « lue » une fois la fiche enregistrée.
 - Les robots sont arrêtés par un champ piège et une limite de débit.
 
 ## Les propriétés : une villa, un immeuble, plusieurs logements

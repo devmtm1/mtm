@@ -187,6 +187,11 @@
                         <svg class="btn-icon" lucideMessageSquare aria-hidden="true"></svg>{{ contact.reponse ? 'Modifier la réponse' : 'Répondre' }}
                       </button>
                     }
+                    @if (contact.type === 'confier_bien' && canCreateFiche) {
+                      <button mat-flat-button color="primary" type="button" (click)="creerFiche(contact)" matTooltip="Ouvre la création du bien ou de la propriété, déjà remplie d’après la demande">
+                        <svg class="btn-icon" lucideKeyRound aria-hidden="true"></svg>Créer la fiche
+                      </button>
+                    }
                     @if (contact.prospect) {
                       <button mat-stroked-button type="button" (click)="openProspect(contact)" [disabled]="!canSeeProspect" matTooltip="Ce contact est déjà dans le CRM : ouvrir la fiche">
                         <svg class="btn-icon" lucideUserCheck aria-hidden="true"></svg>Voir le prospect

@@ -11,6 +11,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { LucideArrowLeft, LucideImagePlus, LucidePlus, LucideSave, LucideX } from '@lucide/angular';
 import { SessionService } from '../../../core/services/session.service';
 import { LocatifApiService } from '../../../core/services/api/locatif-api.service';
+import { ContactApiService, type ContactMessage } from '../../../core/services/api/contact-api.service';
+import { preparerDepuisDemande, type PreparationDepuisDemande } from '../demande-gestion';
 import { ProprietairesApiService } from '../../../core/services/api/proprietaires-api.service';
 import type { CreateBienPayload, ImmeubleResume, LocatifOptions, LocatifPersonne } from '../../../core/models/locatif.model';
 import type { ProprietaireSummary } from '../../../core/models/terrain.model';
@@ -40,6 +42,7 @@ import { TYPES_PHOTOS, nombreOuUndefined, trierFichiers } from '../locatif-form'
 })
 export class BienForm implements OnInit, OnDestroy, AvecModifications {
   private readonly api = inject(LocatifApiService);
+  private readonly contactApi = inject(ContactApiService);
   private readonly proprietairesApi = inject(ProprietairesApiService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly router = inject(Router);
@@ -49,6 +52,8 @@ export class BienForm implements OnInit, OnDestroy, AvecModifications {
   private readonly dialog = inject(MatDialog);
 
   protected readonly saving = signal(false);
+  /** Demande du site d'où part la création : le formulaire est déjà rempli d'après ce que le propriétaire a écrit. */
+  protected readonly demande = signal<ContactMessage | null>(null);
   protected readonly accept = TYPES_PHOTOS;
   /** Photos choisies, déposées après l'enregistrement du bien (il faut son identifiant). */
   protected readonly photos = signal<{ file: File; apercu: string | null }[]>([]);
@@ -120,6 +125,8 @@ export class BienForm implements OnInit, OnDestroy, AvecModifications {
     // Arrivé depuis la fiche d'un propriétaire : le bien est déjà à son nom.
     const proprietaireId = this.route.snapshot.queryParamMap.get('proprietaireId');
     if (proprietaireId) this.form.controls.proprietaireId.setValue(proprietaireId);
+    const contactId = this.route.snapshot.queryParamMap.get('contactId');
+    if (contactId) this.preparerDepuisDemande(contactId);
     this.api.findImmeubles({ pageSize: 200 }).subscribe({
       next: (page) => {
         this.immeubles.set(page.items);
@@ -152,6 +159,31 @@ export class BienForm implements OnInit, OnDestroy, AvecModifications {
     });
   }
 
+  /** Remplit le formulaire d'après la demande, puis propose de créer le propriétaire (déjà prérempli). */
+  private preparerDepuisDemande(contactId: string): void {
+    this.contactApi.findAll().subscribe({
+      next: (demandes) => {
+        const demande = demandes.find((item) => item.id === contactId);
+        if (!demande) return;
+        const prepa = preparerDepuisDemande(demande);
+        this.demande.set(demande);
+        this.form.patchValue({
+          type: prepa.typeBien,
+          adresse: prepa.adresse,
+          commune: prepa.commune,
+          region: prepa.region,
+          notes: prepa.notes,
+          ...(prepa.courteDuree
+            ? { modeLocation: 'courte_duree' }
+            : { loyerMensuel: prepa.loyerSouhaite }),
+        });
+        this.form.markAsDirty();
+        if (this.peutAjouterProprietaire()) this.ajouterProprietaire(prepa);
+      },
+      error: () => this.notify.info('Demande introuvable : remplissez le formulaire à la main.'),
+    });
+  }
+
   protected typeLabel(type: string): string {
     return simpleLabel(TYPES_BIEN, type);
   }
@@ -163,9 +195,13 @@ export class BienForm implements OnInit, OnDestroy, AvecModifications {
   }
 
   /** Crée le propriétaire dans une fenêtre, l'ajoute à la liste et le sélectionne : plus besoin de quitter le formulaire. */
-  protected ajouterProprietaire(): void {
+  protected ajouterProprietaire(depuisDemande?: PreparationDepuisDemande): void {
     this.dialog
-      .open(ProprietaireDialog, { width: '520px', maxWidth: 'calc(100vw - 32px)' })
+      .open(ProprietaireDialog, {
+        width: '520px',
+        maxWidth: 'calc(100vw - 32px)',
+        data: depuisDemande ? { prefill: depuisDemande.proprietaire } : undefined,
+      })
       .afterClosed()
       .subscribe((payload: Omit<ProprietaireSummary, 'id'> | undefined) => {
         if (!payload) return;
@@ -290,6 +326,9 @@ export class BienForm implements OnInit, OnDestroy, AvecModifications {
         next: (bien) => {
           this.form.markAsPristine();
           this.notify.success(`Bien ${bien.referenceInterne} enregistré`);
+          const demande = this.demande();
+          // La demande est traitée : elle sort des messages à lire (sans bloquer la suite si le droit manque).
+          if (demande && !demande.lu) this.contactApi.markRead(demande.id).subscribe({ error: () => undefined });
           this.deposerPhotos(bien.id, [...this.photos()].map((photo) => photo.file));
         },
         error: (error: unknown) => {
