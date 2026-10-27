@@ -14,6 +14,15 @@ Le module **Chantiers** suit les projets de **construction** de MTM, **de la pr�
 - Les **pastilles** : *Chantiers actifs*, *En retard*, *Budget dépassé*, *Sans responsable*, *À réceptionner*.
 - La **barre d’avancement** passe en **orange** dès qu’un chantier prend du retard ou dépasse son budget.
 
+## Les demandes de devis du site
+
+La page **Construction** du site public comporte un formulaire **« Demander un devis »** : le visiteur indique la nature du projet (villa ou maison, immeuble, rénovation ou extension, aménagement), s'il possède déjà un terrain, la commune, un budget indicatif (facultatif) et des précisions.
+
+- La demande arrive dans **Demandes du site** avec la pastille orange **Devis construction** et un résumé du projet.
+- Les personnes qui gèrent la construction reçoivent une **notification** (« Demande de devis de construction »), et la personne est ajoutée au **CRM** comme prospect.
+- Un conseiller **rappelle le demandeur** ; si le projet démarre, il crée ensuite le chantier (voir ci-dessous).
+- Le budget indicatif n'engage à rien et le devis n'est jamais chiffré en ligne.
+
 ## Créer un chantier
 
 1. **Chantiers › Nouveau chantier.**

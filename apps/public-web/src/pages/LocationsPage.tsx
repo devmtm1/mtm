@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ArrowUpDown, Building2, Search, SlidersHorizontal } from 'lucide-react';
-import { BandeauLocations, IMAGE_BANDEAU_LOCATIONS } from '../components/locations/BandeauLocations';
+import { BandeauPage, IMAGE_BANDEAU_PAGE } from '../components/layout/BandeauPage';
 import { LocationFilters } from '../components/locations/LocationFilters';
 import { LocationCard } from '../components/locations/LocationCard';
 import { activeLocationChips, type LocationChip } from '../components/locations/location-filter-chips';
@@ -217,12 +217,12 @@ export function LocationsPage() {
 
   return (
     <div>
-      <BandeauLocations
+      <BandeauPage
         eyebrow={text('locations.eyebrow', 'Locations')}
         title={text('locations.title', 'Trouvez votre prochain logement au Sénégal')}
         description={text('locations.intro', INTRO_DEFAUT)}
         points={lines('locations.reassurance', REASSURANCES_DEFAUT)}
-        image={text('locations.image', IMAGE_BANDEAU_LOCATIONS)}
+        image={text('locations.image', IMAGE_BANDEAU_PAGE)}
         chargement={contenuEnCours}
       />
 

@@ -1,4 +1,6 @@
 import { useContentBlocks } from '../hooks/useContentBlocks';
+import { useEditableContent } from '../hooks/useEditableContent';
+import { IMAGE_BANDEAU_PAGE } from '../components/layout/BandeauPage';
 import { useTeam } from '../hooks/useTeam';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 import { AboutHero } from '../components/about/AboutHero';
@@ -20,6 +22,7 @@ const DEFAULT_TEXT =
 export function AboutPage() {
   const { data } = useContentBlocks();
   const { data: team } = useTeam();
+  const { text: contenu, loading: contenuEnCours } = useEditableContent();
   usePageMetadata({
     title: 'À propos',
     description:
@@ -30,7 +33,7 @@ export function AboutPage() {
 
   return (
     <div>
-      <AboutHero accroche={tagline} />
+      <AboutHero accroche={tagline} image={contenu('about.image', IMAGE_BANDEAU_PAGE)} chargement={contenuEnCours} />
       <AboutStory texte={text} />
       <TeamSection team={team} />
       <AboutProcess />

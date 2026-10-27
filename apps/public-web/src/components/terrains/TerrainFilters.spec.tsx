@@ -80,3 +80,29 @@ describe('TerrainFilters — usage du sol et typologie', () => {
     expect(onChange.mock.calls[0][0]).not.toHaveProperty('nombrePieces');
   });
 });
+
+describe('TerrainFilters — panneau du catalogue', () => {
+  function renderPanel(value: TerrainFiltersValue = {}) {
+    render(
+      <MemoryRouter>
+        <TerrainFilters panel value={value} onChange={vi.fn()} />
+      </MemoryRouter>,
+    );
+  }
+
+  it('montre les critères essentiels et range les autres sous « Plus de filtres »', () => {
+    renderPanel();
+    expect(screen.getByLabelText('Type de bien')).toBeTruthy();
+    expect(screen.getByLabelText('Budget maximum (FCFA)')).toBeTruthy();
+    expect(screen.queryByLabelText('Statut juridique')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: /Plus de filtres/ }));
+    expect(screen.getByLabelText('Statut juridique')).toBeTruthy();
+    expect(screen.getByLabelText('Budget minimum (FCFA)')).toBeTruthy();
+  });
+
+  it('ouvre d’emblée les critères avancés déjà utilisés', () => {
+    renderPanel({ statutJuridique: 'Titre foncier' });
+    expect(screen.getByLabelText('Statut juridique')).toBeTruthy();
+  });
+});

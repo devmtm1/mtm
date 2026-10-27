@@ -36,6 +36,15 @@ La **gestion locative** suit les biens que les propriétaires confient à MTM po
 - **Photos et vidéos** : jusqu’à 20 (JPEG, PNG, WebP, vidéo MP4 ; 10 Mo maximum chacune). La première photo sert de couverture.
 - Le **menu ⌄** à droite du bouton principal : mouvement de caution, incident ou demande, demande de résiliation, états des lieux d’entrée et de sortie, préavis de départ, clôture du bail, changement de locataire, résiliation sans préavis, **relevé de gestion**, suppression.
 
+## Les propriétaires qui proposent un bien depuis le site
+
+La page **Gestion locative** du site public comporte un formulaire **« Confier mon bien »** : le propriétaire indique son nom, son téléphone ou WhatsApp, son e-mail, le type de bien, la commune, la situation (libre, loué, en travaux), le nombre de logements pour un immeuble ou une villa divisée, un loyer souhaité (facultatif) et des précisions.
+
+- La demande arrive dans **Demandes du site** avec la pastille verte **Bien à confier** et un résumé du bien (type, lieu, logements, situation).
+- Les personnes qui gèrent la location reçoivent une **notification** (« Un propriétaire propose un bien à la gestion »), et la personne est ajoutée au **CRM** comme prospect.
+- Rien n'est créé automatiquement : **un collaborateur rappelle la personne**. Si l'affaire se conclut, le bouton **Créer la fiche** (sur la ligne de la demande) ouvre le formulaire de **propriété** (pour un immeuble ou une villa divisée) ou de **bien** (pour les autres cas), déjà rempli d'après la demande : nature, commune, région, nombre de logements, loyer souhaité. La fenêtre **Nouveau propriétaire** s'ouvre aussitôt avec le nom, le téléphone et l'e-mail ; **Annuler** permet de choisir un propriétaire déjà enregistré. La demande passe en « lue » une fois la fiche enregistrée.
+- Les robots sont arrêtés par un champ piège et une limite de débit.
+
 ## Les propriétés : une villa, un immeuble, plusieurs logements
 
 Quand un propriétaire confie **une villa divisée en appartements, un immeuble ou une résidence**, on crée **une propriété** qui regroupe ses **logements**. Chaque logement reste un bien à part entière (son loyer, son bail, son locataire, ses photos, son annonce) ; la propriété apporte la **vue d’ensemble**.

@@ -9,6 +9,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { LucideArrowLeft, LucidePlus, LucideSave, LucideTrash2 } from '@lucide/angular';
 import { LocatifApiService } from '../../../../core/services/api/locatif-api.service';
+import { ContactApiService, type ContactMessage } from '../../../../core/services/api/contact-api.service';
+import { preparerDepuisDemande, type PreparationDepuisDemande } from '../../demande-gestion';
 import { ProprietairesApiService } from '../../../../core/services/api/proprietaires-api.service';
 import { SessionService } from '../../../../core/services/session.service';
 import type {
@@ -41,6 +43,7 @@ import { nombreOuUndefined } from '../../locatif-form';
 })
 export class ImmeubleForm implements OnInit, AvecModifications {
   private readonly api = inject(LocatifApiService);
+  private readonly contactApi = inject(ContactApiService);
   private readonly proprietairesApi = inject(ProprietairesApiService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly router = inject(Router);
@@ -50,6 +53,8 @@ export class ImmeubleForm implements OnInit, AvecModifications {
   private readonly dialog = inject(MatDialog);
 
   protected readonly saving = signal(false);
+  /** Demande du site d'où part la création : le formulaire est déjà rempli d'après ce que le propriétaire a écrit. */
+  protected readonly demande = signal<ContactMessage | null>(null);
   /** Fiche ouverte depuis « Modifier » : on corrige la propriété, ses logements se gèrent depuis sa fiche. */
   protected readonly immeubleId = this.route.snapshot.paramMap.get('id');
   protected readonly modification = this.immeubleId !== null;
@@ -122,6 +127,38 @@ export class ImmeubleForm implements OnInit, AvecModifications {
       next: (items) => this.proprietaires.set(items),
       error: () => this.proprietaires.set([]),
     });
+    const contactId = this.route.snapshot.queryParamMap.get('contactId');
+    if (contactId && !this.immeubleId) this.preparerDepuisDemande(contactId);
+  }
+
+  /** Remplit le formulaire d'après la demande, puis propose de créer le propriétaire (déjà prérempli). */
+  private preparerDepuisDemande(contactId: string): void {
+    this.contactApi.findAll().subscribe({
+      next: (demandes) => {
+        const demande = demandes.find((item) => item.id === contactId);
+        if (!demande) return;
+        const prepa = preparerDepuisDemande(demande);
+        this.demande.set(demande);
+        this.form.patchValue({
+          nom: ['Immeuble', prepa.commune].filter(Boolean).join(' · '),
+          type: prepa.typeImmeuble,
+          adresse: prepa.adresse,
+          commune: prepa.commune,
+          region: prepa.region,
+          notes: prepa.notes,
+        });
+        if (prepa.nombreLogements) {
+          this.generateur.patchValue({ nombre: prepa.nombreLogements });
+          this.generer();
+          if (prepa.loyerSouhaite) {
+            this.logements.controls.forEach((ligne) => ligne.patchValue({ loyerMensuel: prepa.loyerSouhaite }));
+          }
+        }
+        this.form.markAsDirty();
+        if (this.peutAjouterProprietaire()) this.ajouterProprietaire(prepa);
+      },
+      error: () => this.notify.info('Demande introuvable : remplissez le formulaire à la main.'),
+    });
   }
 
   protected nomProprietaire(proprietaire: ProprietaireSummary): string {
@@ -137,9 +174,13 @@ export class ImmeubleForm implements OnInit, AvecModifications {
     return simpleLabel(TYPES_BIEN, type);
   }
 
-  protected ajouterProprietaire(): void {
+  protected ajouterProprietaire(depuisDemande?: PreparationDepuisDemande): void {
     this.dialog
-      .open(ProprietaireDialog, { width: '520px', maxWidth: 'calc(100vw - 32px)' })
+      .open(ProprietaireDialog, {
+        width: '520px',
+        maxWidth: 'calc(100vw - 32px)',
+        data: depuisDemande ? { prefill: depuisDemande.proprietaire } : undefined,
+      })
       .afterClosed()
       .subscribe((payload: Omit<ProprietaireSummary, 'id'> | undefined) => {
         if (!payload) return;
@@ -252,6 +293,9 @@ export class ImmeubleForm implements OnInit, AvecModifications {
       next: (immeuble) => {
         this.form.markAsPristine();
         this.notify.success(`Propriété ${immeuble.referenceInterne} enregistrée`);
+        const demande = this.demande();
+        // La demande est traitée : elle sort des messages à lire (sans bloquer la suite si le droit manque).
+        if (demande && !demande.lu) this.contactApi.markRead(demande.id).subscribe({ error: () => undefined });
         void this.router.navigate(['/locatif/immeubles', immeuble.id]);
       },
       error: (error: unknown) => {

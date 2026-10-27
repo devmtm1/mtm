@@ -1,4 +1,5 @@
 import { FolderOpen, Globe2, Layers, ShieldCheck } from 'lucide-react';
+import { BandeauPage, IMAGE_BANDEAU_PAGE } from '../layout/BandeauPage';
 
 const FAITS = [
   { icon: Layers, titre: '4 métiers', texte: 'Vente, location, construction, démarches' },
@@ -14,33 +15,12 @@ const FAITS = [
  * et les appels à l'action sont en fin de page. Même composition sur téléphone et ordinateur ; seules les
  * proportions changent.
  */
-export function AboutHero({ accroche }: { accroche: string }) {
+export function AboutHero({ accroche, image = IMAGE_BANDEAU_PAGE, chargement = false }: { accroche: string; image?: string; chargement?: boolean }) {
   return (
     <header>
-      <div className="relative overflow-hidden rounded-b-3xl bg-gradient-to-br from-mtm-primary via-mtm-primary to-mtm-primary-dark text-white lg:rounded-none">
-        {/* Décor : deux cercles discrets, sans effet sur la lecture. */}
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/5 lg:h-96 lg:w-96"
-        />
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute -bottom-32 left-1/4 h-64 w-64 rounded-full bg-mtm-accent/10"
-        />
-        <div className="relative mx-auto max-w-5xl px-5 pb-14 pt-7 sm:px-6 lg:pb-24 lg:pt-16">
-          <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white/75">
-            <span aria-hidden="true" className="h-0.5 w-6 rounded-full bg-mtm-accent" />À propos
-          </span>
-          <h1 className="mt-3 font-display text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
-            MTM Immobilier
-          </h1>
-          <p className="mt-4 max-w-2xl whitespace-pre-line font-display text-lg font-semibold leading-snug text-white/95 sm:text-xl lg:text-2xl">
-            {accroche}
-          </p>
-        </div>
-      </div>
+      <BandeauPage eyebrow="À propos" title="MTM Immobilier" description={accroche} image={image} chargement={chargement} />
 
-      <div className="relative z-10 mx-auto -mt-9 max-w-5xl px-4 sm:px-6 lg:-mt-12">
+      <div className="relative z-10 mx-auto -mt-12 max-w-5xl px-4 sm:px-6 lg:-mt-14">
         <ul className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-mtm-border/70 bg-mtm-border shadow-card-hover lg:grid-cols-4 lg:rounded-lg">
           {FAITS.map(({ icon: Icon, titre, texte }) => (
             <li key={titre} className="flex items-center gap-3 bg-mtm-surface p-3.5 sm:items-start lg:p-5">

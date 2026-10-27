@@ -38,6 +38,18 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
     ],
   },
   {
+    id: 'catalogue',
+    title: 'Page « Nos biens »',
+    where: 'Bandeau en haut de la page « Nos biens » (les biens eux-mêmes se gèrent dans Biens à vendre)',
+    slots: [
+      { key: 'catalogue.image', label: 'Image du bandeau', help: 'Photo en fond du bandeau, sous un voile bleu marine : le texte blanc se lit sur n’importe quelle image. Format paysage conseillé (au moins 1600 × 900 px).', kind: 'image' },
+      { key: 'catalogue.eyebrow', label: 'Mention au-dessus du titre', help: 'Petit libellé précédé d’un trait rouge, affiché en capitales. Par défaut : « Catalogue ».' },
+      { key: 'catalogue.title', label: 'Titre', help: 'Le grand titre du bandeau. Par défaut : « Nos biens ».' },
+      { key: 'catalogue.intro', label: 'Texte de présentation', help: 'Un court paragraphe sous le titre.', multiline: true },
+      { key: 'catalogue.reassurance', label: 'Engagements du bandeau', help: 'Jusqu’à trois lignes courtes, une par engagement (ex. « Titres et documents vérifiés »).', multiline: true },
+    ],
+  },
+  {
     id: 'locations',
     title: 'Page « Locations »',
     where: 'Bandeau en haut de la page « Locations » (les annonces elles-mêmes se gèrent dans Gestion locative)',
@@ -80,6 +92,7 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
     title: 'À propos',
     where: 'Page « À propos »',
     slots: [
+      { key: 'about.image', label: 'Image du bandeau', help: 'Photo en fond du bandeau, sous un voile bleu marine : le texte blanc se lit sur n’importe quelle image. Format paysage conseillé (au moins 1600 × 900 px). Laisser vide pour la photo par défaut.', kind: 'image' },
       { key: 'about.title', label: 'Accroche', help: 'Phrase d’introduction en haut de la page.' },
       { key: 'about.text', label: 'Présentation de MTM', help: 'Histoire, valeurs, équipe. Un paragraphe par ligne.', multiline: true },
     ],
@@ -89,6 +102,7 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
     title: 'Coordonnées',
     where: 'Pied de page, page Contact (avec la carte), bouton « + » de l’application mobile, bouton WhatsApp et page Démarches',
     slots: [
+      { key: 'contact.image', label: 'Image du bandeau', help: 'Photo en fond du bandeau, sous un voile bleu marine : le texte blanc se lit sur n’importe quelle image. Format paysage conseillé (au moins 1600 × 900 px). Laisser vide pour la photo par défaut.', kind: 'image' },
       { key: 'contact.adresse', label: 'Adresse', help: 'Adresse de l’agence, telle qu’affichée aux visiteurs.' },
       { key: 'contact.telephone', label: 'Téléphone', help: 'Numéro affiché (ex. +221 78 366 26 51).' },
       { key: 'contact.email', label: 'E-mail', help: 'Adresse de contact publique.' },
@@ -98,6 +112,14 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
       { key: 'contact.latitude', label: 'Position de l’agence — latitude', help: 'Pour la carte et l’itinéraire (ex. 14.7753). Dans Google Maps, un clic droit sur l’agence donne les deux nombres.' },
       { key: 'contact.longitude', label: 'Position de l’agence — longitude', help: 'Ex. -17.4081 (le signe moins compte).' },
       { key: 'contact.whatsapp.demarches', label: 'Numéro WhatsApp — démarches administratives', help: 'Numéro joint depuis la page « Démarches administratives », suivi par la direction. Même format, sans espaces. Laisser vide pour réutiliser le numéro WhatsApp général.' },
+    ],
+  },
+  {
+    id: 'actualites',
+    title: 'Page « Actualités et conseils »',
+    where: 'Bandeau en haut de la page « Actualités et conseils » (les vidéos se gèrent dans Actualités et conseils)',
+    slots: [
+      { key: 'actualites.image', label: 'Image du bandeau', help: 'Photo en fond du bandeau, sous un voile bleu marine : le texte blanc se lit sur n’importe quelle image. Format paysage conseillé (au moins 1600 × 900 px). Laisser vide pour la photo par défaut.', kind: 'image' },
     ],
   },
   {
@@ -119,17 +141,29 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
     title: 'Gestion locative',
     where: 'Page « Gestion locative »',
     slots: [
-      { key: 'gestion-locative.intro', label: 'Texte d’introduction', help: 'Présentation du service.', multiline: true },
-      { key: 'gestion-locative.points', label: 'Points forts', help: 'Une ligne par point (ex. « Encaissement des loyers »).', multiline: true, format: 'lines' },
+      { key: 'gestion-locative.image', label: 'Image du bandeau', help: 'Photo en fond du bandeau, sous un voile bleu marine : le texte blanc se lit sur n’importe quelle image. Format paysage conseillé (au moins 1600 × 900 px). Laisser vide pour la photo par défaut.', kind: 'image' },
+      { key: 'gestion-locative.eyebrow', label: 'Mention au-dessus du titre', help: 'Petit libellé précédé d’un trait rouge. Par défaut : « Nos services ».' },
+      { key: 'gestion-locative.title', label: 'Titre', help: 'Le grand titre du bandeau. Par défaut : « Gestion locative ».' },
+      { key: 'gestion-locative.intro', label: 'Texte d’introduction', help: 'Présentation du service, sous le titre.', multiline: true },
+      { key: 'gestion-locative.reassurance', label: 'Engagements du bandeau', help: 'Jusqu’à trois lignes courtes, une par engagement (ex. « Un interlocuteur dédié »). Ne jamais y figer un taux ou un montant.', multiline: true },
+      { key: 'gestion-locative.prestations', label: 'Ce que nous prenons en charge', help: 'Une prestation par ligne, au format « Titre | Description ». Six cartes s’affichent bien.', multiline: true, format: 'steps' },
+      { key: 'gestion-locative.etapes', label: 'Les étapes de la gestion', help: 'Une étape par ligne, au format « Titre | Description ». Quatre étapes s’affichent bien.', multiline: true, format: 'steps' },
+      { key: 'gestion-locative.faq', label: 'Questions fréquentes', help: 'Une question par ligne, au format « Question | Réponse ». Ne promettez ni délai ni montant que MTM ne peut pas tenir (le coût se donne sur devis).', multiline: true, format: 'steps' },
     ],
   },
   {
     id: 'construction',
     title: 'Construction',
-    where: 'Page « Construction »',
+    where: 'Page « Construction » (les chantiers eux-mêmes se gèrent dans Chantiers)',
     slots: [
-      { key: 'construction.intro', label: 'Texte d’introduction', help: 'Présentation du service.', multiline: true },
-      { key: 'construction.etapes', label: 'Étapes du projet', help: 'Une étape par ligne, au format « Titre | Description ».', multiline: true, format: 'steps' },
+      { key: 'construction.image', label: 'Image du bandeau', help: 'Photo en fond du bandeau, sous un voile bleu marine : le texte blanc se lit sur n’importe quelle image. Format paysage conseillé (au moins 1600 × 900 px). Laisser vide pour la photo par défaut.', kind: 'image' },
+      { key: 'construction.eyebrow', label: 'Mention au-dessus du titre', help: 'Petit libellé précédé d’un trait rouge. Par défaut : « Nos services ».' },
+      { key: 'construction.title', label: 'Titre', help: 'Le grand titre du bandeau. Par défaut : « Construction ».' },
+      { key: 'construction.intro', label: 'Texte d’introduction', help: 'Présentation du service, sous le titre.', multiline: true },
+      { key: 'construction.reassurance', label: 'Engagements du bandeau', help: 'Jusqu’à trois lignes courtes, une par engagement. Ne jamais y figer un prix ou un délai.', multiline: true },
+      { key: 'construction.prestations', label: 'Ce que nous faisons', help: 'Une prestation par ligne, au format « Titre | Description ». Quatre cartes s’affichent bien.', multiline: true, format: 'steps' },
+      { key: 'construction.etapes', label: 'Étapes du projet', help: 'Une étape par ligne, au format « Titre | Description ». Quatre étapes s’affichent bien.', multiline: true, format: 'steps' },
+      { key: 'construction.faq', label: 'Questions fréquentes', help: 'Une question par ligne, au format « Question | Réponse ». Ne promettez ni délai ni montant que MTM ne peut pas tenir (le coût se donne sur devis).', multiline: true, format: 'steps' },
     ],
   },
   {

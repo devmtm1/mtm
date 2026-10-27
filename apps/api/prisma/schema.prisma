@@ -635,6 +635,12 @@ model Contact {
   telephone     String?
   sujet         String? // "Acquérir un terrain" / "Vérification foncière" / "Gestion locative" / ...
   message       String
+  /**
+   * Nature du message : « message » (contact libre) ou « confier_bien » (un propriétaire propose un bien à la gestion).
+   * `details` garde alors les champs saisis (type de bien, lieu, nombre de logements…) pour l'équipe.
+   */
+  type          String       @default("message")
+  details       Json?
   lu            Boolean      @default(false)
   /**
    * Réponse de l'équipe, envoyée par e-mail au demandeur et affichée dans son
@@ -649,6 +655,7 @@ model Contact {
   @@index([terrainId])
   @@index([bienLocatifId])
   @@index([lu])
+  @@index([type])
   @@index([createdAt])
   @@map("contacts")
 }

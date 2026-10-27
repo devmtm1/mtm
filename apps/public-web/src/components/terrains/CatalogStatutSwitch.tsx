@@ -13,13 +13,21 @@ const CHOIX: { valeur: CatalogStatut; label: string }[] = [
  * mêle par défaut (les biens à vendre d'abord) ; cet interrupteur n'existe que
  * si MTM affiche au moins une référence vendue.
  */
-export function CatalogStatutSwitch({ value, onChange }: { value: CatalogStatut; onChange: (statut: CatalogStatut) => void }) {
+export function CatalogStatutSwitch({
+  value,
+  onChange,
+  className = 'mt-4',
+}: {
+  value: CatalogStatut;
+  onChange: (statut: CatalogStatut) => void;
+  className?: string;
+}) {
   const { data } = useTerrainFilterOptions();
   const vendus = data?.vendus ?? 0;
   if (vendus === 0) return null;
 
   return (
-    <div role="group" aria-label="Biens à afficher" className="mt-4 inline-flex rounded-full border border-mtm-border bg-mtm-surface p-1">
+    <div role="group" aria-label="Biens à afficher" className={`${className} inline-flex rounded-full border border-mtm-border bg-mtm-surface p-1`}>
       {CHOIX.map(({ valeur, label }) => (
         <button
           key={valeur}
