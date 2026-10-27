@@ -183,3 +183,9 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+.message-cell__details {
+  margin: 0 0 4px;
+  color: var(--mtm-text);
+  font-size: 0.82rem;
+}

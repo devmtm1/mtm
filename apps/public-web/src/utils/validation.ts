@@ -73,3 +73,45 @@ export function validateClientMessage(message: string): FieldErrors {
 export function hasErrors(errors: FieldErrors): boolean {
   return Object.values(errors).some((message) => Boolean(message));
 }
+
+export interface ConfierBienValues {
+  nom: string;
+  email: string;
+  telephone: string;
+  pays: string;
+  typeBien: string;
+  commune: string;
+  region: string;
+  nombreLogements: string;
+  situation: string;
+  loyerSouhaite: string;
+  precisions: string;
+  consentement: boolean;
+}
+
+/** Reflet de ConfierBienDto (API) : retour immédiat au visiteur, le serveur reste l'autorité. */
+export function validateConfierBien(values: ConfierBienValues): FieldErrors {
+  const errors: FieldErrors = {};
+  if (values.nom.trim().length < 2 || values.nom.trim().length > 200) {
+    errors.nom = 'Indiquez votre nom.';
+  }
+  if (!isValidEmail(values.email)) {
+    errors.email = 'Adresse e-mail invalide.';
+  }
+  const telephone = values.telephone.trim();
+  if (telephone.length < 4 || telephone.length > 30) {
+    errors.telephone = 'Indiquez un numéro pour vous rappeler (WhatsApp ou appel).';
+  }
+  if (!values.typeBien) errors.typeBien = 'Choisissez le type de bien.';
+  if (values.commune.trim().length < 2) errors.commune = 'Indiquez la commune ou le quartier.';
+  if (!values.situation) errors.situation = 'Précisez la situation du bien.';
+  if (values.nombreLogements && !(Number(values.nombreLogements) >= 1 && Number(values.nombreLogements) <= 200)) {
+    errors.nombreLogements = 'Entre 1 et 200 logements.';
+  }
+  if (values.loyerSouhaite && !(Number(values.loyerSouhaite) >= 0)) {
+    errors.loyerSouhaite = 'Montant invalide.';
+  }
+  if (values.precisions.length > 1500) errors.precisions = '1500 caractères au maximum.';
+  if (!values.consentement) errors.consentement = 'Acceptez le traitement de vos données pour être rappelé.';
+  return errors;
+}

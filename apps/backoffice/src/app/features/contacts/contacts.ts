@@ -93,6 +93,25 @@ export class Contacts implements OnInit {
     this.load();
   }
 
+  /** Libellés de la proposition d'un bien (formulaire « Confier mon bien » du site). */
+  protected typeBien(type?: string): string {
+    const libelles: Record<string, string> = {
+      appartement: 'Appartement',
+      villa: 'Villa',
+      immeuble: 'Immeuble ou villa divisée',
+      bureau: 'Bureau',
+      commerce: 'Local commercial',
+      courte_duree: 'Bien en courte durée',
+      autre: 'Autre bien',
+    };
+    return (type && libelles[type]) || 'Bien';
+  }
+
+  protected situation(situation?: string): string {
+    const libelles: Record<string, string> = { libre: 'Libre', loue: 'Déjà loué', en_travaux: 'En travaux' };
+    return (situation && libelles[situation]) || '—';
+  }
+
   protected initials(name: string): string {
     const parts = name.trim().split(/\s+/).filter(Boolean);
     return ((parts[0]?.[0] ?? '?') + (parts.length > 1 ? (parts[parts.length - 1][0] ?? '') : '')).toUpperCase();

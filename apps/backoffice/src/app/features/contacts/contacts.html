@@ -124,8 +124,20 @@
                     }
                   </div>
                 </td>
-                <td><span class="status-pill status-pill--info">{{ contact.sujet || 'Contact' }}</span></td>
+                <td>
+                  <span class="status-pill" [class.status-pill--info]="contact.type !== 'confier_bien'" [class.status-pill--success]="contact.type === 'confier_bien'">
+                    {{ contact.type === 'confier_bien' ? 'Bien à confier' : (contact.sujet || 'Contact') }}
+                  </span>
+                </td>
                 <td class="message-cell">
+                  @if (contact.type === 'confier_bien' && contact.details; as d) {
+                    <p class="message-cell__details">
+                      <strong>{{ typeBien(d.typeBien) }}</strong>
+                      · {{ d.commune }}{{ d.region ? ', ' + d.region : '' }}
+                      @if (d.nombreLogements) { · {{ d.nombreLogements }} logement{{ d.nombreLogements > 1 ? 's' : '' }} }
+                      · {{ situation(d.situation) }}
+                    </p>
+                  }
                   <p [matTooltip]="contact.message">{{ contact.message }}</p>
                   @if (contact.terrain) {
                     <button type="button" class="link-button message-cell__terrain" (click)="openTerrain(contact)" [disabled]="!canSeeTerrain">

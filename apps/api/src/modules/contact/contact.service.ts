@@ -16,7 +16,27 @@ import {
   hasSupervisionScope,
 } from '../rbac/role-groups';
 import { CreateContactDto } from './dto/create-contact.dto';
-import type { Contact } from '@prisma/client';
+import type { ConfierBienDto } from './dto/confier-bien.dto';
+import type { Contact, Prisma } from '@prisma/client';
+
+const LIBELLES_TYPE_BIEN: Record<string, string> = {
+  appartement: 'Appartement',
+  villa: 'Villa',
+  immeuble: 'Immeuble ou villa divisée en plusieurs logements',
+  bureau: 'Bureau',
+  commerce: 'Local commercial',
+  courte_duree: 'Bien meublé en courte durée',
+  autre: 'Autre',
+};
+
+const LIBELLES_SITUATION: Record<string, string> = {
+  libre: 'Libre',
+  loue: 'Déjà loué',
+  en_travaux: 'En travaux',
+};
+
+/** Le sujet sous lequel une proposition de bien apparaît dans « Demandes du site ». */
+export const SUJET_CONFIER_BIEN = 'Confier un bien en gestion locative';
 
 @Injectable()
 export class ContactService {
@@ -30,7 +50,59 @@ export class ContactService {
     private readonly mail: MailService,
   ) {}
 
-  async create(dto: CreateContactDto): Promise<Contact> {
+  /**
+   * Un propriétaire propose un bien à la gestion. La demande rejoint les messages du site (avec sa nature et ses
+   * champs) et prévient les gestionnaires locatifs : un collaborateur la valide avant toute création de fiche.
+   * Un robot (champ piège rempli) reçoit la même réponse, sans rien enregistrer.
+   */
+  async confierBien(dto: ConfierBienDto): Promise<{ enregistre: boolean }> {
+    if (dto.siteWeb?.trim()) return { enregistre: false };
+
+    const details = {
+      pays: dto.pays ?? null,
+      typeBien: dto.typeBien,
+      commune: dto.commune,
+      region: dto.region ?? null,
+      nombreLogements: dto.nombreLogements ?? null,
+      situation: dto.situation,
+      loyerSouhaite: dto.loyerSouhaite ?? null,
+    };
+    const message = [
+      `Type de bien : ${LIBELLES_TYPE_BIEN[dto.typeBien] ?? dto.typeBien}`,
+      `Lieu : ${[dto.commune, dto.region].filter(Boolean).join(', ')}`,
+      dto.nombreLogements ? `Nombre de logements : ${dto.nombreLogements}` : '',
+      `Situation : ${LIBELLES_SITUATION[dto.situation] ?? dto.situation}`,
+      dto.loyerSouhaite
+        ? `Loyer souhaité : ${dto.loyerSouhaite.toLocaleString('fr-FR')} FCFA par logement`
+        : '',
+      dto.pays ? `Réside en : ${dto.pays}` : '',
+      dto.precisions?.trim() ? `\nPrécisions : ${dto.precisions.trim()}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    await this.create(
+      {
+        nom: dto.nom,
+        email: dto.email,
+        telephone: dto.telephone,
+        sujet: SUJET_CONFIER_BIEN,
+        message,
+      },
+      { type: 'confier_bien', details, gestion: true },
+    );
+    return { enregistre: true };
+  }
+
+  async create(
+    dto: CreateContactDto,
+    extras: {
+      type?: string;
+      details?: Prisma.InputJsonValue;
+      /** Une proposition de bien prévient les gestionnaires locatifs. */
+      gestion?: boolean;
+    } = {},
+  ): Promise<Contact> {
     let terrainLabel: string | undefined;
     if (dto.terrainId) {
       const terrain = await this.prisma.terrain.findUnique({
@@ -60,6 +132,8 @@ export class ContactService {
         message: dto.message,
         terrainId: dto.terrainId,
         bienLocatifId: dto.bienLocatifId,
+        ...(extras.type ? { type: extras.type } : {}),
+        ...(extras.details ? { details: extras.details } : {}),
       },
     });
 
@@ -100,6 +174,20 @@ export class ContactService {
         entityType: 'Contact',
         entityId: contact.id,
         dedupeKey: `demande-location:${contact.id}`,
+      });
+    }
+
+    // Une proposition de bien attend un rappel rapide : la cloche des gestionnaires locatifs, comme une demande de
+    // visite sur une annonce.
+    if (extras.gestion) {
+      void this.notificationsInternes.notifierPermission('locatif:modifier', {
+        type: 'demande_gestion',
+        titre: 'Un propriétaire propose un bien à la gestion',
+        message: `${dto.nom}${dto.telephone ? ` · ${dto.telephone}` : ''}`,
+        lien: '/contacts',
+        entityType: 'Contact',
+        entityId: contact.id,
+        dedupeKey: `demande-gestion:${contact.id}`,
       });
     }
 

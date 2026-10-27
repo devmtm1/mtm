@@ -100,6 +100,15 @@ export const EVENEMENTS_NOTIFICATION: EvenementNotification[] = [
     emailParDefaut: false,
   },
   {
+    cle: 'demande_gestion',
+    famille: 'Gestion locative',
+    libelle: 'Bien proposé à la gestion',
+    description: 'Un propriétaire propose un bien depuis la page Gestion locative du site.',
+    destinataire: 'permission',
+    permission: 'locatif:modifier',
+    emailParDefaut: false,
+  },
+  {
     cle: 'sejour_demande',
     famille: 'Gestion locative',
     libelle: 'Demande de séjour',

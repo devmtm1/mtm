@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import { GestionLocativePage } from './GestionLocativePage';
@@ -42,14 +42,15 @@ describe('GestionLocativePage', () => {
     expect(screen.getByText('Combien coûte la gestion ?')).toBeTruthy();
   });
 
-  it('ne fige aucun taux ni montant', () => {
+  it('ne fige aucun taux de gestion', () => {
     afficher();
-    expect(document.body.textContent).not.toMatch(/\d+\s*%|FCFA/);
+    expect(document.body.textContent).not.toMatch(/\d+\s*%/);
   });
 
-  it('ouvre la demande « Confier mon bien » depuis le bandeau', () => {
+  it('mène du bandeau au formulaire « Confier mon bien », sur la même page', () => {
     afficher();
-    fireEvent.click(screen.getAllByRole('button', { name: /Confier mon bien/ })[0]);
-    expect(screen.getByRole('dialog')).toBeTruthy();
+    const lien = screen.getAllByRole('link', { name: /Confier mon bien/ })[0];
+    expect(lien.getAttribute('href')).toBe('#confier');
+    expect(screen.getByRole('form', { name: 'Confier mon bien à MTM' })).toBeTruthy();
   });
 });

@@ -16,6 +16,7 @@ import { AuditService } from '../audit/audit.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { ContactService } from './contact.service';
+import { ConfierBienDto } from './dto/confier-bien.dto';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { RepondreContactDto } from './dto/repondre-contact.dto';
 
@@ -48,6 +49,32 @@ export class ContactController {
         sujet: contact.sujet,
       },
     });
+    return { success: true };
+  }
+
+  /** Un propriétaire propose un bien à la gestion (page « Gestion locative »). Mêmes limites de débit que le contact. */
+  @Public()
+  @Throttle({
+    default: {
+      limit: Number.parseInt(process.env.CONTACT_RATE_LIMIT_MAX ?? '5', 10),
+      ttl:
+        Number.parseInt(process.env.CONTACT_RATE_LIMIT_TTL ?? '60', 10) * 1000,
+    },
+  })
+  @Post('confier-bien')
+  async confierBien(@Body() dto: ConfierBienDto) {
+    const { enregistre } = await this.contacts.confierBien(dto);
+    if (enregistre) {
+      await this.audit.record({
+        action: 'contact.confier_bien',
+        entityType: 'Contact',
+        newValue: {
+          nom: dto.nom,
+          typeBien: dto.typeBien,
+          commune: dto.commune,
+        },
+      });
+    }
     return { success: true };
   }
 

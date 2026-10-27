@@ -6,7 +6,8 @@ import { ParcoursVerification } from '../components/demarches/ParcoursVerificati
 import { FaqDemarches } from '../components/demarches/FaqDemarches';
 import { ContactModal } from '../components/contact/ContactModal';
 import { DemandeWhatsAppCta } from '../components/contact/DemandeWhatsAppCta';
-import { Button } from '../components/ui/Button';
+import { buttonClassName } from '../components/ui/button-styles';
+import { FormulaireConfierBien } from '../components/gestion/FormulaireConfierBien';
 import { CtaBand } from '../components/ui/CtaBand';
 import { LinkButton } from '../components/ui/LinkButton';
 import { useEditableContent } from '../hooks/useEditableContent';
@@ -68,10 +69,10 @@ export function GestionLocativePage() {
         chargement={contenuEnCours}
         actions={
           <>
-            <Button variant="accent" onClick={() => setDemandeOuverte(true)} className="px-6 py-3 text-[15px]">
+            <a href="#confier" className={buttonClassName('accent', 'px-6 py-3 text-[15px]')}>
               <KeyRound className="h-4 w-4" aria-hidden="true" />
               Confier mon bien
-            </Button>
+            </a>
             <LinkButton to={ROUTES.locations} variant="onDarkOutline">
               Voir nos locations
             </LinkButton>
@@ -163,7 +164,41 @@ export function GestionLocativePage() {
         </section>
       )}
 
-      <section className="bg-mtm-bg py-10 sm:py-14">
+      <section id="confier" className="scroll-mt-20 bg-mtm-bg py-14 lg:py-20">
+        <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.4fr] lg:gap-14">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-mtm-accent">Confier mon bien</p>
+            <h2 className="mt-3 font-display text-[1.65rem] font-extrabold leading-tight text-mtm-text sm:text-3xl">
+              Parlez-nous de votre bien
+            </h2>
+            <p className="mt-3 text-[15px] leading-relaxed text-mtm-muted sm:text-base">
+              Quelques informations suffisent : un conseiller vous rappelle, sans engagement, pour étudier votre bien et vous
+              présenter nos conditions.
+            </p>
+            <ul className="mt-5 flex flex-col gap-2.5 text-sm text-mtm-text">
+              {['Réponse d’un conseiller MTM', 'Aucune obligation de votre part', 'Un échange possible par WhatsApp'].map((point) => (
+                <li key={point} className="flex items-center gap-2.5">
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-mtm-success" aria-hidden="true" />
+                  {point}
+                </li>
+              ))}
+            </ul>
+            <a
+              href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(MESSAGE_WHATSAPP)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex items-center gap-2 rounded-md border border-mtm-success bg-mtm-success/5 px-4 py-2.5 text-sm font-semibold text-mtm-success transition-colors hover:bg-mtm-success/10"
+            >
+              Discuter directement sur WhatsApp
+            </a>
+          </div>
+          <div className="rounded-3xl border border-mtm-border/70 bg-white p-5 shadow-card sm:p-8">
+            <FormulaireConfierBien />
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white py-10 sm:py-14">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="flex flex-col items-start gap-4 rounded-3xl border border-mtm-border/70 bg-white p-5 shadow-card sm:flex-row sm:items-center sm:justify-between sm:p-6">
             <div>
