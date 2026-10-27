@@ -61,8 +61,8 @@ const env = await demarrer({
     CLOUDINARY_API_KEY: 'local-sans-cle',
     CLOUDINARY_API_SECRET: 'local-sans-cle',
     CLOUDINARY_FOLDER: 'mtm-local-test',
-    // L'API accepte le site sur le port choisi, et le back-office lancé à la main (4200).
-    CORS_ORIGIN: `http://localhost:${PORT_SITE},http://localhost:4200`,
+    // L'API accepte le site sur le port choisi, et le back-office lancé à la main (4200, ou 4201 quand le 4200 est pris).
+    CORS_ORIGIN: `http://localhost:${PORT_SITE},http://localhost:4200,http://localhost:4201`,
   },
 });
 

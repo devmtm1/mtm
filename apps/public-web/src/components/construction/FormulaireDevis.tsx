@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CheckCircle2, Send } from 'lucide-react';
+import { CheckCircle2, ChevronDown, Send } from 'lucide-react';
 import { sendDevisConstruction } from '../../api/contact';
 import { ApiError } from '../../api/client';
 import { SITUATIONS_TERRAIN, TYPES_PROJET_CONSTRUCTION } from '../../types/contact';
@@ -32,6 +32,8 @@ export function FormulaireDevis() {
   const [erreurEnvoi, setErreurEnvoi] = useState<string | null>(null);
   // Piège à robots : un visiteur ne voit pas ce champ, un robot le remplit.
   const [piege, setPiege] = useState('');
+  // Les champs facultatifs restent rangés ; ils s'ouvrent d'eux-mêmes si l'un d'eux est en erreur.
+  const [detailsOuverts, setDetailsOuverts] = useState(false);
 
   // Corriger un champ efface son message d'erreur : il ne doit pas rester affiché une fois la saisie valide.
   const set = <K extends keyof DevisConstructionValues>(champ: K, valeur: DevisConstructionValues[K]): void => {
@@ -42,6 +44,7 @@ export function FormulaireDevis() {
   async function envoyer(): Promise<void> {
     const erreurs = validateDevisConstruction(values);
     setErrors(erreurs);
+    if (erreurs.pays || erreurs.budget) setDetailsOuverts(true);
     if (hasErrors(erreurs)) return;
     setEnvoi(true);
     setErreurEnvoi(null);
@@ -100,9 +103,6 @@ export function FormulaireDevis() {
         <FormField label="E-mail" htmlFor="devis-email" error={errors.email} required>
           <input id="devis-email" type="email" autoComplete="email" className={fieldInputClass} value={values.email} onChange={(e) => set('email', e.target.value)} />
         </FormField>
-        <FormField label="Pays de résidence" htmlFor="devis-pays" error={errors.pays}>
-          <input id="devis-pays" type="text" autoComplete="country-name" placeholder="Sénégal, France…" className={fieldInputClass} value={values.pays} onChange={(e) => set('pays', e.target.value)} />
-        </FormField>
       </fieldset>
 
       <fieldset className="grid gap-4 sm:grid-cols-2">
@@ -130,10 +130,30 @@ export function FormulaireDevis() {
         <FormField label="Commune ou quartier" htmlFor="devis-commune" error={errors.commune} required>
           <input id="devis-commune" type="text" className={fieldInputClass} value={values.commune} onChange={(e) => set('commune', e.target.value)} />
         </FormField>
-        <FormField label="Budget indicatif (FCFA)" htmlFor="devis-budget" error={errors.budget}>
-          <input id="devis-budget" type="number" min={0} step={1000000} inputMode="numeric" placeholder="Facultatif" className={fieldInputClass} value={values.budget} onChange={(e) => set('budget', e.target.value)} />
-        </FormField>
       </fieldset>
+
+      <div>
+        <button
+          type="button"
+          aria-expanded={detailsOuverts}
+          aria-controls="devis-details"
+          onClick={() => setDetailsOuverts((etat) => !etat)}
+          className="inline-flex items-center gap-1.5 rounded-md text-sm font-semibold text-mtm-primary hover:text-mtm-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mtm-primary"
+        >
+          {detailsOuverts ? 'Moins de détails' : 'Plus de détails (facultatif)'}
+          <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${detailsOuverts ? 'rotate-180' : ''}`} aria-hidden="true" />
+        </button>
+        {detailsOuverts && (
+          <div id="devis-details" className="mt-4 grid gap-4 sm:grid-cols-2">
+          <FormField label="Pays de résidence" htmlFor="devis-pays" error={errors.pays}>
+            <input id="devis-pays" type="text" autoComplete="country-name" placeholder="Sénégal, France…" className={fieldInputClass} value={values.pays} onChange={(e) => set('pays', e.target.value)} />
+          </FormField>
+          <FormField label="Budget indicatif (FCFA)" htmlFor="devis-budget" error={errors.budget}>
+            <input id="devis-budget" type="number" min={0} step={1000000} inputMode="numeric" placeholder="Facultatif" className={fieldInputClass} value={values.budget} onChange={(e) => set('budget', e.target.value)} />
+          </FormField>
+          </div>
+        )}
+      </div>
 
       <FormField label="Précisions" htmlFor="devis-precisions" error={errors.precisions}>
         <textarea

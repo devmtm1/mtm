@@ -48,6 +48,7 @@ describe('FormulaireDevis', () => {
   it('envoie le projet structuré et remercie le visiteur', async () => {
     render(<FormulaireDevis />);
     remplirLeNecessaire();
+    fireEvent.click(screen.getByRole('button', { name: /Plus de détails/ }));
     remplir('Budget indicatif', '40000000');
     fireEvent.click(screen.getByRole('button', { name: /Demander mon devis/ }));
 
@@ -61,5 +62,13 @@ describe('FormulaireDevis', () => {
       consentement: true,
     });
     expect(await screen.findByText(/votre demande est bien reçue/)).toBeTruthy();
+  });
+
+  it('garde les champs facultatifs rangés jusqu’à ce qu’on les ouvre', () => {
+    render(<FormulaireDevis />);
+    expect(screen.queryByLabelText(/Budget indicatif/)).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /Plus de détails/ }));
+    expect(screen.getByLabelText(/Budget indicatif/)).toBeTruthy();
+    expect(screen.getByLabelText(/Pays de résidence/)).toBeTruthy();
   });
 });
