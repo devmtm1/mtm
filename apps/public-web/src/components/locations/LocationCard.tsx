@@ -20,6 +20,8 @@ interface LocationCardProps {
   location: Location;
   /** Mise en page resserrée sous 640 px (deux colonnes sur téléphone). */
   compact?: boolean;
+  /** Dans une section déjà consacrée aux annonces à la une, l'étiquette « À la une » n'apprend rien. */
+  masquerALaUne?: boolean;
 }
 
 /**
@@ -27,7 +29,7 @@ interface LocationCardProps {
  * critère d'un locataire), puis le titre, le lieu et les trois chiffres qui
  * décident d'ouvrir ou non la fiche — chambres, salles d'eau, surface.
  */
-export function LocationCard({ location, compact = false }: LocationCardProps) {
+export function LocationCard({ location, compact = false, masquerALaUne = false }: LocationCardProps) {
   const photos = location.medias.filter((media) => media.type === 'photo');
   const covers = (photos.length > 0 ? photos : location.medias).map((media) => media.secureUrl);
   const typeLabel = typeBienLabel(location.type);
@@ -59,7 +61,7 @@ export function LocationCard({ location, compact = false }: LocationCardProps) {
         <FavoriteButton kind="location" id={location.id} label={titre} className="absolute right-2.5 top-2.5" />
 
         <div className="absolute left-2.5 top-2.5 flex flex-wrap gap-1.5">
-          {location.misEnAvant && (
+          {location.misEnAvant && !masquerALaUne && (
             <span
               className={`rounded-full bg-mtm-accent font-semibold text-white shadow-card ${
                 compact ? 'px-2 py-0.5 text-[11px] sm:px-2.5 sm:text-xs' : 'px-2.5 py-0.5 text-xs'
