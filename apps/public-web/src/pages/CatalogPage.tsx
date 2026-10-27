@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { LayoutGrid, Map as MapIcon, Search, SlidersHorizontal } from 'lucide-react';
+import { ArrowUpDown, LayoutGrid, Map as MapIcon, Search, SlidersHorizontal } from 'lucide-react';
 import { TerrainFilters } from '../components/terrains/TerrainFilters';
 import { ActiveFilterChips } from '../components/terrains/ActiveFilterChips';
 import { activeFilterChips, type FilterChip } from '../components/terrains/active-filter-chips';
@@ -45,6 +45,18 @@ const TYPED_FILTERS = ['search', 'superficieMin', 'superficieMax', 'prixPublicMi
 const TYPING_DEBOUNCE_MS = 350;
 const PAGE_SIZE = 12;
 
+/** Tris proposés : le même choix que sur la page Locations. « Plus récents » est le tri par défaut de l'API. */
+const TRIS: { cle: string; libelle: string; sortBy?: TerrainFiltersValue['sortBy']; sortOrder?: TerrainFiltersValue['sortOrder'] }[] = [
+  { cle: 'recent', libelle: 'Plus récents' },
+  { cle: 'prix_asc', libelle: 'Prix croissant', sortBy: 'prixPublic', sortOrder: 'asc' },
+  { cle: 'prix_desc', libelle: 'Prix décroissant', sortBy: 'prixPublic', sortOrder: 'desc' },
+  { cle: 'superficie_desc', libelle: 'Superficie la plus grande', sortBy: 'superficie', sortOrder: 'desc' },
+];
+
+function triDe(filters: TerrainFiltersValue): string {
+  return TRIS.find((tri) => tri.sortBy && tri.sortBy === filters.sortBy && tri.sortOrder === filters.sortOrder)?.cle ?? 'recent';
+}
+
 const REASSURANCES_DEFAUT = ['Titres et documents vérifiés', 'Prix et surfaces annoncés', 'Visite et suivi, même à distance'];
 const INTRO_DEFAUT =
   'Terrains, villas et appartements vérifiés à vendre, et nos références vendues : filtrez par type de bien, zone, superficie et budget.';
@@ -59,6 +71,12 @@ function parseFilters(params: URLSearchParams): TerrainFiltersValue {
   for (const key of NUMBER_FILTERS) {
     const value = params.get(key);
     if (value && !Number.isNaN(Number(value))) filters[key] = Number(value);
+  }
+
+  const tri = TRIS.find((choix) => choix.cle === params.get('tri'));
+  if (tri?.sortBy) {
+    filters.sortBy = tri.sortBy;
+    filters.sortOrder = tri.sortOrder;
   }
 
   const statut = params.get('statut');
@@ -122,8 +140,10 @@ export function CatalogPage() {
       if (debounceRef.current !== null) window.clearTimeout(debounceRef.current);
       const params = new URLSearchParams();
       for (const [key, value] of Object.entries(next)) {
-        if (value !== undefined && value !== '' && key !== 'pageSize') params.set(key, String(value));
+        if (value !== undefined && value !== '' && key !== 'pageSize' && key !== 'sortBy' && key !== 'sortOrder') params.set(key, String(value));
       }
+      const tri = triDe(next);
+      if (tri !== 'recent') params.set('tri', tri);
       // `replace` : affiner une recherche ne doit pas empiler des entrées
       // que le bouton Retour devrait ensuite dérouler une à une.
       setSearchParams(params, { replace: true });
@@ -196,6 +216,28 @@ export function CatalogPage() {
     setSheetOpen(false);
   }
 
+  const sortSelect = (
+    <label className="inline-flex items-center gap-2 text-sm text-mtm-muted">
+      <ArrowUpDown className="h-4 w-4" aria-hidden="true" />
+      <span className="sr-only sm:not-sr-only">Trier par</span>
+      <select
+        className="rounded-md border border-mtm-border bg-mtm-surface px-2.5 py-1.5 text-sm font-semibold text-mtm-text focus:border-mtm-primary focus:outline-none focus:ring-1 focus:ring-mtm-primary max-lg:min-h-11"
+        value={triDe(filters)}
+        onChange={(event) => {
+          const choix = TRIS.find((tri) => tri.cle === event.target.value);
+          commitFilters({ ...filters, page: 1, sortBy: choix?.sortBy, sortOrder: choix?.sortOrder });
+        }}
+        aria-label="Trier les biens"
+      >
+        {TRIS.map((tri) => (
+          <option key={tri.cle} value={tri.cle}>
+            {tri.libelle}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+
   const viewSwitch = (
     <div className="flex rounded-md border border-mtm-border bg-mtm-surface p-0.5" role="group" aria-label="Mode d'affichage">
       {(['liste', 'carte'] as const).map((mode) => (
@@ -204,7 +246,7 @@ export function CatalogPage() {
           type="button"
           onClick={() => setViewMode(mode)}
           aria-pressed={viewMode === mode}
-          className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-sm font-semibold capitalize transition-colors ${
+          className={`flex items-center gap-1.5 rounded px-3 py-1.5 max-lg:min-h-11 text-sm font-semibold capitalize transition-colors ${
             viewMode === mode ? 'bg-mtm-primary text-white' : 'text-mtm-muted hover:text-mtm-primary'
           }`}
         >
@@ -292,6 +334,7 @@ export function CatalogPage() {
       )}
 
       <div className="mt-4 sm:mt-6">
+        <h2 className="sr-only">Biens à vendre</h2>
         {/* Barre de résultats collante : le compteur et la bascule Liste / Carte
             restent sous la main pendant le défilement. */}
         <div className="sticky top-16 z-20 -mx-4 mb-3 flex items-center justify-between gap-3 border-b border-mtm-border bg-mtm-bg/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 lg:static lg:mx-0 lg:mb-4 lg:border-0 lg:bg-transparent lg:px-0 lg:py-0">
@@ -304,7 +347,10 @@ export function CatalogPage() {
                   : `${data.total} biens trouvés`
                 : ''}
           </p>
-          {viewSwitch}
+          <div className="flex items-center gap-3">
+            {sortSelect}
+            {viewSwitch}
+          </div>
         </div>
 
         {(loadingFresh || (loading && viewMode === 'carte')) && <CardGridSkeleton count={8} gridClassName={CATALOG_GRID} compact />}

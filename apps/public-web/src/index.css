@@ -78,6 +78,19 @@
     outline: 2px solid #5ea8c7;
     outline-offset: 1px;
   }
+
+  /* Au doigt : commandes des cartes agrandies à 40 px (Plan / Satellite, zoom +/−). */
+  @media (pointer: coarse) {
+    .mtm-layer-switch button {
+      min-height: 40px;
+      padding: 4px 14px;
+    }
+    .leaflet-touch .leaflet-bar a {
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+    }
+  }
 }
 
 @layer base {

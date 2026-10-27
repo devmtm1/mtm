@@ -79,7 +79,7 @@ export function BandeauPage({ eyebrow, title, description, points = [], image, c
         <p className="mt-4 max-w-xl whitespace-pre-line text-[15px] leading-relaxed text-white/85 sm:text-base">{description}</p>
 
         {points.length > 0 && (
-          <ul className="mt-6 flex flex-wrap gap-x-7 gap-y-2.5">
+          <ul className="mt-6 flex max-w-2xl flex-wrap gap-x-7 gap-y-2.5">
             {points.map((point, index) => {
               const Icone = ICONES[index % ICONES.length];
               return (

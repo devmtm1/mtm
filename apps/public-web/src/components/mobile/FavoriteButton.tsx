@@ -17,6 +17,8 @@ interface FavoriteButtonProps {
 export function FavoriteButton({ kind, id, label, className = '' }: FavoriteButtonProps) {
   const { isFavorite, toggle } = useFavorites();
   const active = isFavorite(kind, id);
+  // Le cercle reste de 32 px ; sa zone de clic déborde de 6 px de chaque côté (44 px au total, la norme tactile).
+  const positionne = className.split(/\s+/).some((classe) => ['absolute', 'fixed', 'relative', 'sticky'].includes(classe));
 
   return (
     <button
@@ -28,7 +30,7 @@ export function FavoriteButton({ kind, id, label, className = '' }: FavoriteButt
         event.stopPropagation();
         toggle(kind, id);
       }}
-      className={`flex h-8 w-8 items-center justify-center rounded-full bg-white/95 shadow-card backdrop-blur transition-transform active:scale-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-mtm-primary ${className}`}
+      className={`${positionne ? '' : 'relative'} flex h-8 w-8 items-center justify-center rounded-full bg-white/95 shadow-card backdrop-blur transition-transform after:absolute after:-inset-1.5 after:content-[''] active:scale-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-mtm-primary ${className}`}
     >
       <Heart
         className={`h-4 w-4 transition-colors ${active ? 'fill-mtm-accent text-mtm-accent' : 'text-mtm-muted'}`}

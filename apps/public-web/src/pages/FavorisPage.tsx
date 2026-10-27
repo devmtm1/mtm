@@ -101,7 +101,7 @@ export function FavorisPage() {
             role="tab"
             aria-selected={tab === kind}
             onClick={() => setTab(kind)}
-            className={`rounded-xl px-3 py-2 text-sm font-semibold transition-all active:scale-[0.98] ${
+            className={`min-h-11 rounded-xl px-3 py-2 text-sm font-semibold transition-all active:scale-[0.98] ${
               tab === kind ? 'bg-mtm-surface text-mtm-primary shadow-card' : 'text-mtm-muted'
             }`}
           >

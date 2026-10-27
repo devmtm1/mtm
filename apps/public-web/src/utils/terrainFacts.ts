@@ -119,7 +119,9 @@ export function caracteristiques(terrain: Terrain): GroupeCaracteristiques[] {
   }
 
   ajouter(bati ? 'Le terrain' : 'La parcelle', [
-    terrain.superficie !== null ? { label: bati ? 'Superficie du terrain' : 'Superficie', value: formatSuperficie(terrain.superficie, terrain.uniteSuperficie) } : null,
+    // Pour une parcelle, la superficie figure déjà dans les repères du haut de la fiche : la répéter ici ne ferait qu'une
+    // carte d'une seule ligne. Pour un bien bâti, elle se distingue de la surface habitable et reste donnée.
+    bati && terrain.superficie !== null ? { label: 'Superficie du terrain', value: formatSuperficie(terrain.superficie, terrain.uniteSuperficie) } : null,
     terrain.accesRoutier ? { label: 'Accès routier', value: terrain.accesRoutier } : null,
     terrain.voisinage ? { label: 'Voisinage', value: terrain.voisinage } : null,
     terrain.proximiteAxes ? { label: 'Proximité des axes', value: terrain.proximiteAxes } : null,

@@ -5,6 +5,7 @@ import { HeroQuickSearch } from './HeroQuickSearch';
 import { HeroBackdrop } from './HeroBackdrop';
 import { PromoBanner } from './PromoBanner';
 import { useHeroPromotions } from '../../hooks/useHeroPromotions';
+import { VAGUES } from '../../utils/vagues';
 
 export function HeroSection() {
   const { title, subtitle, ctaLabel } = useHeroContent();
@@ -23,21 +24,27 @@ export function HeroSection() {
   }
 
   return (
-    <section className="relative overflow-hidden bg-mtm-primary-dark">
+    <section className="relative flex min-h-[420px] items-center overflow-hidden bg-mtm-primary-dark sm:min-h-[500px] lg:min-h-[540px]">
       {/* Tant que l'on ignore s'il y a des publicités, la vidéo n'est pas lancée :
           elle ne se lirait que pour être remplacée aussitôt. */}
       <HeroBackdrop lecture={!loading} />
-      {/* Voile sombre neutre : il garantit le contraste du texte blanc sans
-          teinter l'image. Une couche de marque très légère par-dessus
-          conserve l'identité MTM — un aplat rouge opaque, lui, délavait
-          complètement le visuel. Plus dense sur mobile où le texte couvre
-          toute la largeur. */}
+      {/* Même voile que les bandeaux des autres pages : bleu marine fort à gauche, là où se lit le texte, qui s'efface
+          vers la droite pour laisser voir l'image. Plus dense sur mobile, où le texte couvre toute la largeur. */}
       <div
-        className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/60 to-black/70 sm:bg-gradient-to-r sm:from-black/80 sm:via-black/55 sm:to-black/25"
+        className="absolute inset-0 bg-gradient-to-r from-[#0a2142]/90 via-[#0a2142]/40 to-transparent max-sm:bg-gradient-to-b max-sm:from-[#0a2142]/80 max-sm:via-[#0a2142]/60 max-sm:to-[#0a2142]/70"
         aria-hidden="true"
       />
-      <div className="absolute inset-0 bg-mtm-primary-dark/20 mix-blend-multiply" aria-hidden="true" />
-      <div className="relative mx-auto flex max-w-6xl flex-col items-start gap-4 px-4 py-10 sm:gap-6 sm:px-6 sm:py-28">
+      {/* Vague en bas : le hero se fond dans la page, sous la recherche rapide qui le chevauche. */}
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 1440 90"
+        preserveAspectRatio="none"
+        className="absolute inset-x-0 bottom-0 h-10 w-full text-mtm-bg sm:h-14 lg:h-16"
+        fill="currentColor"
+      >
+        <path d={VAGUES.discrete} />
+      </svg>
+      <div className="relative mx-auto flex w-full max-w-6xl flex-col items-start gap-4 px-4 py-10 [text-shadow:0_1px_14px_rgba(10,33,66,0.5)] sm:gap-6 sm:px-6 sm:pb-32 sm:pt-24">
         <span className="hidden rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white sm:inline-block">
           Terrains · Gestion locative · Construction
         </span>

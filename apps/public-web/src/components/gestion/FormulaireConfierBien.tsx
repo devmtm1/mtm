@@ -99,7 +99,7 @@ export function FormulaireConfierBien() {
         void envoyer();
       }}
     >
-      <fieldset className="grid gap-4 sm:grid-cols-2">
+      <fieldset className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <legend className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-mtm-accent">Vous</legend>
         <FormField label="Nom complet" htmlFor="confier-nom" error={errors.nom} required>
           <input id="confier-nom" type="text" autoComplete="name" className={fieldInputClass} value={values.nom} onChange={(e) => set('nom', e.target.value)} />
@@ -112,7 +112,7 @@ export function FormulaireConfierBien() {
         </FormField>
       </fieldset>
 
-      <fieldset className="grid gap-4 sm:grid-cols-2">
+      <fieldset className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <legend className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-mtm-accent">Votre bien</legend>
         <FormField label="Type de bien" htmlFor="confier-type" error={errors.typeBien} required>
           <select id="confier-type" className={fieldInputClass} value={values.typeBien} onChange={(e) => set('typeBien', e.target.value)}>
@@ -150,7 +150,7 @@ export function FormulaireConfierBien() {
           aria-expanded={detailsOuverts}
           aria-controls="confier-details"
           onClick={() => setDetailsOuverts((etat) => !etat)}
-          className="inline-flex items-center gap-1.5 rounded-md text-sm font-semibold text-mtm-primary hover:text-mtm-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mtm-primary"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-md text-sm font-semibold text-mtm-primary hover:text-mtm-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mtm-primary"
         >
           {detailsOuverts ? 'Moins de détails' : 'Plus de détails (facultatif)'}
           <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${detailsOuverts ? 'rotate-180' : ''}`} aria-hidden="true" />

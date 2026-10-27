@@ -1,15 +1,17 @@
 import { useState } from 'react';
-import { BandeauDemarches } from '../components/demarches/BandeauDemarches';
-import { IMAGE_BANDEAU_DEMARCHES } from '../utils/demarches';
+import { ArrowRight } from 'lucide-react';
+import { BandeauPage } from '../components/layout/BandeauPage';
+import { AppelFinal, EnTeteSection, EtapesCourtes, ListeCompacte, NavigationPage } from '../components/services/ServicesBlocs';
+import { buttonClassName } from '../components/ui/button-styles';
+import { IMAGE_BANDEAU_DEMARCHES, iconeDemarche } from '../utils/demarches';
 import { donneesFaq } from '../utils/seo';
 import { ContactModal } from '../components/contact/ContactModal';
 import { DemandeWhatsAppCta } from '../components/contact/DemandeWhatsAppCta';
-import { CarteDemarche } from '../components/demarches/CarteDemarche';
-import { ParcoursVerification } from '../components/demarches/ParcoursVerification';
 import { SectionDemande } from '../components/demarches/SectionDemande';
 import { FaqDemarches } from '../components/demarches/FaqDemarches';
 import { useEditableContent, type EditableStep } from '../hooks/useEditableContent';
 import { usePageMetadata } from '../hooks/usePageMetadata';
+import { useIsMobile } from '../hooks/useMediaQuery';
 import { useSiteContact } from '../hooks/useSiteContact';
 
 const FALLBACK_INTRO =
@@ -30,10 +32,6 @@ const FALLBACK_FAQ: EditableStep[] = [
       'Oui. Notre équipe se déplace pour vérifier le bien avant votre engagement : vous n’avez pas besoin d’être sur place. Vous pouvez aussi échanger avec nous directement sur WhatsApp.',
   },
   {
-    title: 'Sous quel délai répondez-vous à une demande ?',
-    description: 'Nous répondons sous 24 à 48h.',
-  },
-  {
     title: 'Le devis est-il payant ?',
     description: 'Non. Le devis est gratuit et sans engagement.',
   },
@@ -51,11 +49,6 @@ const FALLBACK_FAQ: EditableStep[] = [
     title: 'Que contient le rapport de vérification ?',
     description:
       'Une conclusion structurée et une recommandation : favorable, défavorable ou à compléter.',
-  },
-  {
-    title: 'Ma démarche n’est pas dans la liste, pouvez-vous la traiter ?',
-    description:
-      'Décrivez votre besoin dans le formulaire : nous vous disons si nous pouvons le traiter.',
   },
 ];
 
@@ -138,6 +131,7 @@ const WHATSAPP_MESSAGE =
 export function DemarchesPage() {
   const { text, lines, steps, loading: contenuEnCours } = useEditableContent();
   const { whatsappDemarches } = useSiteContact();
+  const mobile = useIsMobile();
   const [demandeOuverte, setDemandeOuverte] = useState(false);
   // La démarche sur laquelle le visiteur a cliqué : la demande s'ouvre avec ce sujet déjà choisi.
   const [sujetChoisi, setSujetChoisi] = useState<string | undefined>(undefined);
@@ -154,9 +148,8 @@ export function DemarchesPage() {
   // Le visiteur choisit son sujet parmi les prestations réellement annoncées :
   // la liste suit le catalogue édité en back-office au lieu d'une énumération
   // figée qui finirait par mentir sur ce que MTM propose.
-  const sujets = [...prestations, ...prestationsTechniques].map(
-    (presta) => presta.title,
-  );
+  const toutes = [...prestations, ...prestationsTechniques];
+  const sujets = toutes.map((presta) => presta.title);
   const faq = steps('demarches.faq', FALLBACK_FAQ);
   usePageMetadata({
     title: 'Démarches administratives et vérification foncière',
@@ -166,100 +159,100 @@ export function DemarchesPage() {
   });
 
   return (
-    <div className="font-['Poppins',ui-sans-serif,system-ui,sans-serif]">
-      {/* Celui qui clique sur « Faire une demande » a déjà décidé : on lui ouvre la fenêtre plutôt que de le
-          faire défiler. La section de bas de page reste en place pour celui qui lit tout et arrive convaincu. */}
-      <BandeauDemarches
+    <div>
+      {/* Même bandeau que les autres pages de services. Celui qui clique sur « Faire une demande » a déjà décidé :
+          on lui ouvre la fenêtre plutôt que de le faire défiler. La section de bas de page reste en place pour
+          celui qui lit tout et arrive convaincu. */}
+      <BandeauPage
+        chevauche={false}
         eyebrow={text('demarches.eyebrow', 'Nos services')}
         title={text('demarches.title', 'Démarches administratives')}
         description={text('demarches.intro', FALLBACK_INTRO)}
         points={lines('demarches.reassurance', FALLBACK_REASSURANCE)}
-        bouton={text('demarches.bouton', 'Faire une demande')}
         image={text('demarches.image', IMAGE_BANDEAU_DEMARCHES)}
         chargement={contenuEnCours}
-        onDemande={() => demander()}
+        actions={
+          <button type="button" onClick={() => demander()} className={buttonClassName('accent', 'px-6 py-3 text-[15px]')}>
+            {text('demarches.bouton', 'Faire une demande')}
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </button>
+        }
       />
 
-      {/* Une seule police et une seule palette sur toute la page, celles du bandeau. */}
-      <section id="prestations" className="scroll-mt-20 bg-[#F5F8FB] py-14 lg:py-20">
+      <NavigationPage
+        liens={[
+          { libelle: 'Nos démarches', href: '#prestations' },
+          { libelle: 'Étapes', href: '#parcours' },
+          { libelle: 'Questions', href: '#faq' },
+          ...(mobile ? [] : [{ libelle: 'Faire une demande', href: '#demande-verification' }]),
+        ]}
+      />
+
+      <section id="prestations" className="scroll-mt-32 bg-white py-12 lg:py-12">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="text-[14px] font-bold uppercase tracking-wide text-[#C8102E]">Nos prestations</p>
-            <h2 className="mt-3 text-[28px] font-extrabold leading-tight text-[#12365A] sm:text-[34px]">
-              Quelle démarche vous concerne ?
-            </h2>
-            <p className="mt-3 text-[16px] leading-relaxed text-[#34465A]">
-              Au Sénégal ou depuis l’étranger, nous prenons en charge vos démarches auprès des administrations.
-              Choisissez la vôtre : la demande s’ouvre déjà préremplie.
-            </p>
+          <EnTeteSection
+            mention="Nos prestations"
+            titre="Quelle démarche vous concerne ?"
+            texte="Au Sénégal ou depuis l’étranger, nous prenons en charge vos démarches auprès des administrations, ainsi que les plans et relevés dont votre dossier a besoin. Choisissez la vôtre : la demande s’ouvre déjà préremplie."
+          />
+          <div className="mt-8 lg:mt-10">
+            <ListeCompacte elements={toutes} icone={(titre) => iconeDemarche(titre)} action={{ libelle: 'Faire une demande', surClic: demander }} />
           </div>
-
-          <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {prestations.map((presta) => (
-              <CarteDemarche key={presta.title} titre={presta.title} description={presta.description} onDemande={demander} />
-            ))}
-          </ul>
-
-          {prestationsTechniques.length > 0 && (
-            <>
-              <h3 className="mt-14 text-[20px] font-bold text-[#12365A]">Services techniques</h3>
-              <p className="mt-1 text-[15px] text-[#34465A]">Les plans et relevés dont votre dossier peut avoir besoin.</p>
-              <ul className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {prestationsTechniques.map((presta) => (
-                  <CarteDemarche key={presta.title} titre={presta.title} description={presta.description} onDemande={demander} />
-                ))}
-              </ul>
-            </>
-          )}
         </div>
       </section>
 
       {/* Le parcours en étapes ne décrit que la vérification avant achat : un dépôt de mutation ne suit pas ces
           étapes. Le titre le dit, pour ne pas laisser croire que toute demande passe par une visite de terrain. */}
-      <section id="parcours" className="bg-white py-14 lg:py-20">
+      <section id="parcours" className="scroll-mt-32 bg-mtm-bg py-12 lg:py-12">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="mx-auto max-w-3xl text-center">
-            <p className="text-[14px] font-bold uppercase tracking-wide text-[#C8102E]">Comment ça se passe</p>
-            <h2 className="mt-3 text-[28px] font-extrabold leading-tight text-[#12365A] sm:text-[34px]">
-              La vérification avant achat, étape par étape
-            </h2>
-          </div>
-          <div className="mt-12">
-            <ParcoursVerification etapes={steps('demarches.etapes', FALLBACK_STEPS)} />
+          <EnTeteSection mention="Comment ça se passe" titre="La vérification avant achat, étape par étape" />
+          <div className="mt-8 lg:mt-10">
+            <EtapesCourtes etapes={steps('demarches.etapes', FALLBACK_STEPS)} />
           </div>
         </div>
       </section>
 
       {faq.length > 0 && (
-        <section id="faq" className="scroll-mt-20 bg-[#F5F8FB] py-14 lg:py-20">
+        <section id="faq" className="scroll-mt-32 bg-white py-12 lg:py-12">
           <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.4fr] lg:gap-16">
             <div>
-              <p className="text-[14px] font-bold uppercase tracking-wide text-[#C8102E]">Questions fréquentes</p>
-              <h2 className="mt-3 text-[28px] font-extrabold leading-tight text-[#12365A] sm:text-[34px]">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-mtm-accent">Questions fréquentes</p>
+              <h2 className="mt-3 font-display text-[1.65rem] font-extrabold leading-tight text-mtm-text sm:text-3xl">
                 Vous vous posez une question ?
               </h2>
-              <p className="mt-3 text-[16px] leading-relaxed text-[#34465A]">
+              <p className="mt-3 text-[15px] leading-relaxed text-mtm-muted sm:text-base">
                 Les réponses aux questions que l’on nous pose le plus. Vous ne trouvez pas la vôtre ? Écrivez-nous, nous vous répondons.
               </p>
-              <a
-                href="#demande-verification"
-                className="mt-5 inline-flex items-center gap-1.5 text-[15px] font-semibold text-[#C8102E] hover:underline"
+              <button
+                type="button"
+                onClick={() => (mobile ? demander() : document.getElementById('demande-verification')?.scrollIntoView({ behavior: 'smooth' }))}
+                className="mt-5 inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold text-mtm-accent hover:underline"
               >
                 Poser ma question
-              </a>
+              </button>
             </div>
             <FaqDemarches questions={faq} />
           </div>
         </section>
       )}
 
-      <SectionDemande
-        intro={text('demarches.contact-intro', FALLBACK_CONTACT_INTRO)}
-        engagements={lines('demarches.reassurance', FALLBACK_REASSURANCE)}
-        sujets={sujets}
-        numeroWhatsapp={whatsappDemarches}
-        messageWhatsapp={WHATSAPP_MESSAGE}
-      />
+      {mobile ? (
+        <AppelFinal
+          titre="Parlons de votre projet"
+          texte={text('demarches.contact-intro', FALLBACK_CONTACT_INTRO)}
+          libelleBouton="Faire une demande"
+          surClic={() => demander()}
+          whatsappHref={`https://wa.me/${whatsappDemarches}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`}
+        />
+      ) : (
+        <SectionDemande
+          intro={text('demarches.contact-intro', FALLBACK_CONTACT_INTRO)}
+          engagements={lines('demarches.reassurance', FALLBACK_REASSURANCE)}
+          sujets={sujets}
+          numeroWhatsapp={whatsappDemarches}
+          messageWhatsapp={WHATSAPP_MESSAGE}
+        />
+      )}
 
       {demandeOuverte && (
         <ContactModal

@@ -10,11 +10,11 @@ const questions = [
 ];
 
 describe('FaqDemarches', () => {
-  it('liste les questions, la première ouverte, les autres repliées', () => {
+  it('liste les questions, toutes repliées au départ', () => {
     render(<FaqDemarches questions={questions} />);
     expect(screen.getAllByRole('listitem')).toHaveLength(2);
     const volets = document.querySelectorAll('details');
-    expect(volets[0]).toHaveAttribute('open');
+    expect(volets[0]).not.toHaveAttribute('open');
     expect(volets[1]).not.toHaveAttribute('open');
   });
 

@@ -20,8 +20,8 @@ export function AboutPreviewSection() {
     .filter(Boolean);
 
   return (
-    <section className="px-4 py-6 sm:px-6 lg:py-16" aria-labelledby="accueil-apropos-titre">
-      <div className="mx-auto max-w-6xl overflow-hidden rounded-[1.75rem] bg-mtm-primary-subtle p-5 sm:p-8 lg:grid lg:grid-cols-[minmax(0,320px)_1fr] lg:items-center lg:gap-12 lg:p-12">
+    <section className="px-4 py-6 sm:px-6 lg:py-12" aria-labelledby="accueil-apropos-titre">
+      <div className="mx-auto max-w-6xl overflow-hidden rounded-[1.75rem] bg-mtm-primary-subtle p-5 sm:p-8 lg:grid lg:grid-cols-[minmax(0,240px)_1fr] lg:items-center lg:gap-10 lg:p-8">
         <figure className="flex items-center gap-4 lg:block">
           <div className="relative shrink-0">
             <span
@@ -31,7 +31,7 @@ export function AboutPreviewSection() {
             <Portrait
               src={directeur.imageUrl}
               nom={directeur.nom}
-              sizes="(min-width: 1024px) 320px, 88px"
+              sizes="(min-width: 1024px) 240px, 88px"
               className="relative aspect-square w-[5.5rem] rounded-full shadow-card ring-4 ring-white sm:w-28 lg:aspect-[4/5] lg:w-full lg:rounded-3xl lg:object-[center_15%] lg:shadow-card-hover lg:ring-0"
             />
           </div>

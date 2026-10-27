@@ -144,7 +144,7 @@ export function MobileHome() {
             <Link
               to={ROUTES.catalog}
               aria-label="Filtrer les biens"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-mtm-primary-subtle text-mtm-primary active:scale-90"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-mtm-primary-subtle text-mtm-primary active:scale-90"
             >
               <SlidersHorizontal className="h-[18px] w-[18px]" aria-hidden="true" />
             </Link>

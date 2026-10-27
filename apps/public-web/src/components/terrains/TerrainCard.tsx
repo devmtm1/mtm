@@ -16,6 +16,8 @@ interface TerrainCardProps {
    * empilés. À partir de `sm`, la carte est identique à la version normale.
    */
   compact?: boolean;
+  /** Dans une section déjà consacrée aux biens en vedette, l'étiquette « Mis en avant » n'apprend rien. */
+  masquerMisEnAvant?: boolean;
 }
 
 /**
@@ -24,7 +26,7 @@ interface TerrainCardProps {
  * nom, localisation et un pied superficie / prix. Tout le reste est sur la
  * fiche.
  */
-export function TerrainCard({ terrain, compact = false }: TerrainCardProps) {
+export function TerrainCard({ terrain, compact = false, masquerMisEnAvant = false }: TerrainCardProps) {
   // Toutes les photos servent de candidates : si la première URL est morte
   // (asset supprimé du stockage), la carte affiche la suivante plutôt qu'un
   // visuel cassé.
@@ -45,24 +47,36 @@ export function TerrainCard({ terrain, compact = false }: TerrainCardProps) {
           alt={terrain.nom}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
+        {/* Le prix se lit sur la photo, comme sur les cartes de location : le premier critère d'un acheteur. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/65 to-transparent"
+        />
         <FavoriteButton kind="terrain" id={terrain.id} label={terrain.nom} className="absolute right-2.5 top-2.5" />
-        {terrain.misEnAvant && (
+        <div className="absolute left-2.5 top-2.5 flex flex-wrap gap-1.5">
+          {terrain.misEnAvant && !masquerMisEnAvant && (
+            <span
+              className={`rounded-full bg-mtm-accent font-semibold text-white shadow-card ${
+                compact ? 'px-2 py-0.5 text-[11px] sm:px-2.5 sm:text-xs' : 'px-2.5 py-0.5 text-xs'
+              }`}
+            >
+              Mis en avant
+            </span>
+          )}
           <span
-            className={`absolute left-2.5 top-2.5 rounded-full bg-mtm-accent font-semibold text-white shadow-card ${
-              compact ? 'px-2 py-0.5 text-[11px] sm:px-2.5 sm:text-xs' : 'px-2.5 py-0.5 text-xs'
-            }`}
+            className={`inline-flex items-center gap-1 rounded-full bg-white/95 font-semibold shadow-card ${
+              verified ? 'text-mtm-success' : 'text-mtm-muted'
+            } ${compact ? 'px-2 py-0.5 text-[11px] sm:text-xs' : 'px-2.5 py-0.5 text-xs'}`}
           >
-            Mis en avant
+            <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+            {terrain.niveauVerification}
           </span>
-        )}
-        <span
-          className={`absolute bottom-2.5 left-2.5 inline-flex items-center gap-1 rounded-full bg-white/95 font-semibold shadow-card ${
-            verified ? 'text-mtm-success' : 'text-mtm-muted'
-          } ${compact ? 'px-2 py-0.5 text-[11px] sm:text-xs' : 'px-2.5 py-0.5 text-xs'}`}
-        >
-          <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
-          {terrain.niveauVerification}
-        </span>
+        </div>
+        <p className="absolute bottom-2.5 left-3 right-3 text-white">
+          <span className={`font-display font-bold drop-shadow ${compact ? 'text-base sm:text-xl' : 'text-xl'}`}>
+            {formatMoney(terrain.prixPublic)}
+          </span>
+        </p>
       </div>
 
       <div className={`flex flex-1 flex-col ${compact ? 'gap-1 p-2.5 sm:gap-1.5 sm:p-3.5' : 'gap-1.5 p-3.5'}`}>
@@ -111,9 +125,6 @@ export function TerrainCard({ terrain, compact = false }: TerrainCardProps) {
             ) : (
               formatSuperficie(terrain.superficie, terrain.uniteSuperficie)
             )}
-          </span>
-          <span className={`font-display font-bold text-mtm-primary ${compact ? 'text-sm sm:text-[15px]' : 'text-[15px]'}`}>
-            {formatMoney(terrain.prixPublic)}
           </span>
         </div>
       </div>
