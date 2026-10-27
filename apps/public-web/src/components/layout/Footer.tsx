@@ -54,6 +54,9 @@ function LinkColumn({ title, links }: { title: string; links: { to: string; labe
   );
 }
 
+/** La seule courbe de la vague (sans la fermeture vers le bas) : elle sert au trait rouge qui en marque la limite. */
+const COURBE_VAGUE = VAGUES.douce.replace(/ L1440,90 L0,90 Z$/, '');
+
 export function Footer() {
   const year = new Date().getFullYear();
   const contact = useSiteContact();
@@ -67,20 +70,23 @@ export function Footer() {
   return (
     <footer className="relative bg-mtm-primary-dark text-white">
       {/* Bord supérieur en vague : le pied de page remonte dans la section qui le précède, quelle que soit sa couleur
-          (la forme est de la couleur du pied de page, posée juste au-dessus de lui). Même tracé que les bandeaux. */}
+          (la forme est de la couleur du pied de page, posée juste au-dessus de lui). Même tracé que les bandeaux ; un
+          trait rouge en souligne la limite. */}
       <svg
         aria-hidden="true"
         viewBox="0 0 1440 90"
         preserveAspectRatio="none"
-        className="pointer-events-none absolute inset-x-0 bottom-[calc(100%-1px)] h-6 w-full text-mtm-primary-dark sm:h-9 lg:h-12"
+        className="pointer-events-none absolute inset-x-0 bottom-[calc(100%-1px)] h-6 w-full overflow-visible text-mtm-primary-dark sm:h-9 lg:h-12"
         fill="currentColor"
       >
         <path d={VAGUES.douce} />
+        <path d={COURBE_VAGUE} fill="none" strokeWidth="3" vectorEffect="non-scaling-stroke" className="stroke-mtm-accent" />
       </svg>
-      {/* Motif très léger de courbes de niveau (le relief d'un terrain), à droite : de la matière sans gêner la lecture. */}
+      {/* Motif très léger de pictogrammes d'immobilier (chambre, canapé, maison, clé, immeuble, salle de bain…), répété
+          sur tout le pied de page : une ambiance d'agence, sans gêner la lecture. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 overflow-hidden bg-[url('/motifs/courbes-niveau.svg')] bg-cover bg-right bg-no-repeat opacity-[0.07]"
+        className="pointer-events-none absolute inset-0 overflow-hidden bg-[url('/motifs/immobilier.svg')] bg-[length:520px_340px] bg-repeat opacity-[0.08]"
       />
       <div className="relative mx-auto max-w-6xl px-4 pb-6 pt-8 sm:px-6 sm:py-12">
         <div className="grid gap-6 sm:grid-cols-2 sm:gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
