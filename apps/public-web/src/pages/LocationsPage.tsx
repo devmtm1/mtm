@@ -218,6 +218,7 @@ export function LocationsPage() {
   return (
     <div>
       <BandeauPage
+        vague="discrete"
         eyebrow={text('locations.eyebrow', 'Locations')}
         title={text('locations.title', 'Trouvez votre prochain logement au Sénégal')}
         description={text('locations.intro', INTRO_DEFAUT)}

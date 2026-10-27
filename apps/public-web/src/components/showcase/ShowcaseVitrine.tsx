@@ -1,3 +1,4 @@
+import { VAGUES } from '../../utils/vagues';
 import { useState } from 'react';
 import type { ShowcaseCategory } from '../../types/showcase';
 import { useShowcase } from '../../hooks/useShowcase';
@@ -57,7 +58,7 @@ export function ShowcaseVitrine({ category, prefixe, defauts, emptyLabel }: Show
           onError={() => setImageMorte(true)}
           className={`absolute inset-0 -z-20 h-full w-full object-cover object-[70%_center] ${fondu}`}
         />
-        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0a2142]/95 via-[#0a2142]/80 to-[#0a2142]/25 max-lg:to-[#0a2142]/55" />
+        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0a2142]/90 via-[#0a2142]/40 to-transparent max-lg:via-[#0a2142]/70 max-lg:to-[#0a2142]/50" />
         {/* Vague en bas du bandeau : il se fond dans le fond de la page, sous les cartes qui le chevauchent. */}
         <svg
           aria-hidden="true"
@@ -66,7 +67,7 @@ export function ShowcaseVitrine({ category, prefixe, defauts, emptyLabel }: Show
           className="absolute inset-x-0 bottom-0 h-10 w-full text-mtm-bg sm:h-14 lg:h-20"
           fill="currentColor"
         >
-          <path d="M0,46 C180,92 360,88 560,52 C760,16 940,6 1140,38 C1270,58 1360,70 1440,52 L1440,90 L0,90 Z" />
+          <path d={VAGUES.ample} />
         </svg>
         <div className={`relative mx-auto max-w-7xl px-4 pb-28 pt-9 sm:px-6 sm:pt-12 lg:pb-40 lg:pt-16 ${fondu}`}>
           <p className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/90 sm:text-xs">

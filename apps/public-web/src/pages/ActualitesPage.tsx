@@ -88,6 +88,7 @@ export function ActualitesPage() {
     <div>
       <BandeauPage
         chevauche={false}
+        vague="ample"
         eyebrow="Actualités"
         title="Actualités et conseils"
         description="Nos vidéos et conseils pour acheter, construire et investir sereinement dans l'immobilier au Sénégal."
