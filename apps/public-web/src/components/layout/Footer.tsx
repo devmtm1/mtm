@@ -185,7 +185,7 @@ export function Footer() {
       <div className="relative border-t border-white/10 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
         {/* Petit trait rouge sur le filet : la couleur de la marque, sans rien ajouter de lourd. */}
         <span aria-hidden="true" className="absolute -top-px left-4 h-[2px] w-14 bg-mtm-accent sm:left-[max(1.5rem,calc((100%-72rem)/2+1.5rem))]" />
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 text-center text-xs text-white/60 sm:flex-row sm:px-6 sm:text-left">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 text-center text-xs text-white/60 sm:flex-row sm:px-6 sm:text-left max-[1320px]:sm:!pr-20">
           <span>© {year} MTM Immobilier. Tous droits réservés.</span>
           <nav aria-label="Informations légales" className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
             <Link to={ROUTES.mentionsLegales} className="inline-flex min-h-11 items-center hover:text-white">
