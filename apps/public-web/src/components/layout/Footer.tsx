@@ -36,7 +36,7 @@ function LinkColumn({ title, links }: { title: string; links: { to: string; labe
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
         aria-controls={listId}
-        className="flex min-h-11 w-full items-center justify-between py-3 text-left text-sm font-semibold uppercase tracking-wide text-white/70 sm:pointer-events-none sm:min-h-0 sm:py-0"
+        className="flex min-h-11 w-full items-center justify-between py-3 text-left text-sm font-semibold uppercase tracking-wide text-white/70 sm:pointer-events-none sm:min-h-0 sm:py-0 sm:relative sm:pb-3 sm:after:absolute sm:after:bottom-0 sm:after:left-0 sm:after:h-0.5 sm:after:w-8 sm:after:rounded-full sm:after:bg-mtm-accent"
       >
         {title}
         <ChevronDown className={`h-4 w-4 transition-transform sm:hidden ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
@@ -96,47 +96,14 @@ export function Footer() {
               <img src="/logomtm.jpeg" alt="MTM Immobilier" className="h-10 w-10 rounded-full object-cover sm:h-11 sm:w-11" />
               <span className="font-display text-lg font-bold"><span className="text-mtm-info">MTM</span> Immobilier</span>
             </div>
+            <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/50">Construire vos projets</p>
             {/* Mobile : le logo suffit ; la phrase de présentation reprend ce que dit la page. */}
-            <p className="mt-3 hidden max-w-sm text-sm text-white/75 sm:mt-4 sm:block">
+            <p className="mt-3 hidden max-w-sm text-sm leading-relaxed text-white/75 sm:mt-4 sm:block">
               Terrains et villas vérifiés, gestion locative, construction et démarches
               foncières — un accompagnement fiable et transparent, y compris à distance.
             </p>
-          </div>
-
-          {/* Contact : en premier sur mobile, en boutons tactiles. */}
-          <div className="order-first sm:order-none sm:col-span-2 lg:col-span-1 lg:col-start-4 lg:row-start-1">
-            <h2 className="hidden text-sm font-semibold uppercase tracking-wide text-white/70 sm:block">Contact</h2>
-            <ul className="grid grid-cols-3 gap-2 sm:mt-4 sm:flex sm:flex-col sm:gap-3">
-              {contactActions.map(({ href, icon: Icon, label, external }) => (
-                <li key={label}>
-                  <a
-                    href={href}
-                    {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                    className="flex min-h-11 flex-col items-center justify-center gap-1 rounded-md border border-white/20 bg-white/5 px-2 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/10 sm:flex-row sm:justify-start sm:gap-2 sm:border-0 sm:bg-transparent sm:p-0 sm:text-sm sm:font-normal sm:text-white/85 sm:hover:bg-transparent sm:hover:text-white"
-                  >
-                    <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    <span className="sm:hidden">{label}</span>
-                    <span className="hidden sm:inline">
-                      {label === 'Appeler' ? contact.telephone : label === 'E-mail' ? contact.email : 'WhatsApp'}
-                    </span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-            <a
-              href={toMapsHref(contact)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 flex min-h-11 items-start gap-2 text-sm text-white/75 transition-colors hover:text-white"
-            >
-              <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-              <span>
-                {contact.adresse}
-                <span className="block text-xs text-white/60 underline">Voir sur la carte</span>
-              </span>
-            </a>
             {(contact.facebook || contact.tiktok) && (
-              <ul className="mt-3 flex gap-2" aria-label="Réseaux sociaux">
+              <ul className="mt-4 flex gap-2 sm:mt-6" aria-label="Réseaux sociaux">
                 {contact.facebook && (
                   <li>
                     <a
@@ -144,7 +111,7 @@ export function Footer() {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label="MTM Immobilier sur Facebook"
-                      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/25 text-white transition-colors hover:bg-white/10"
+                      className="flex h-11 w-11 items-center justify-center rounded-full border border-white/25 text-white transition-colors hover:border-white/60 hover:bg-white/10"
                     >
                       <Facebook className="h-[18px] w-[18px]" aria-hidden="true" />
                     </a>
@@ -157,7 +124,7 @@ export function Footer() {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label="MTM Immobilier sur TikTok"
-                      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/25 text-white transition-colors hover:bg-white/10"
+                      className="flex h-11 w-11 items-center justify-center rounded-full border border-white/25 text-white transition-colors hover:border-white/60 hover:bg-white/10"
                     >
                       <TikTokIcon className="h-[18px] w-[18px]" />
                     </a>
@@ -165,6 +132,44 @@ export function Footer() {
                 )}
               </ul>
             )}
+          </div>
+
+          {/* Contact : en premier sur mobile, en boutons tactiles. */}
+          <div className="order-first sm:order-none sm:col-span-2 lg:col-span-1 lg:col-start-4 lg:row-start-1">
+            <h2 className="hidden text-sm font-semibold uppercase tracking-wide text-white/70 sm:block sm:relative sm:pb-3 sm:after:absolute sm:after:bottom-0 sm:after:left-0 sm:after:h-0.5 sm:after:w-8 sm:after:rounded-full sm:after:bg-mtm-accent">Contact</h2>
+            <ul className="grid grid-cols-3 gap-2 sm:mt-5 sm:flex sm:flex-col sm:gap-3">
+              {contactActions.map(({ href, icon: Icon, label, external }) => (
+                <li key={label}>
+                  <a
+                    href={href}
+                    {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                    className="flex min-h-11 flex-col items-center justify-center gap-1 rounded-md border border-white/20 bg-white/5 px-2 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/10 sm:min-h-0 sm:flex-row sm:justify-start sm:gap-3 sm:border-0 sm:bg-transparent sm:p-0 sm:text-sm sm:font-normal sm:text-white/85 sm:hover:bg-transparent sm:hover:text-white"
+                  >
+                    <span className="inline-flex shrink-0 sm:h-8 sm:w-8 sm:items-center sm:justify-center sm:rounded-lg sm:bg-white/10">
+                      <Icon className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                    <span className="sm:hidden">{label}</span>
+                    <span className="hidden sm:inline">
+                      {label === 'Appeler' ? contact.telephone : label === 'E-mail' ? contact.email : 'WhatsApp'}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <a
+              href={toMapsHref(contact)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 flex min-h-11 items-start gap-3 text-sm text-white/75 transition-colors hover:text-white sm:min-h-0"
+            >
+              <span className="inline-flex shrink-0 sm:h-8 sm:w-8 sm:items-center sm:justify-center sm:rounded-lg sm:bg-white/10">
+                <MapPin className="mt-0.5 h-4 w-4 sm:mt-0" aria-hidden="true" />
+              </span>
+              <span>
+                {contact.adresse}
+                <span className="block text-xs text-white/60 underline">Voir sur la carte</span>
+              </span>
+            </a>
           </div>
 
           {/* Mobile : ces liens sont dans la barre d'onglets et le menu, inutile de les répéter ici. */}

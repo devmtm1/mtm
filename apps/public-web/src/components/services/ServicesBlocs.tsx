@@ -174,7 +174,7 @@ interface AppelFinalProps {
 /** Fin de page sur mobile : un court appel à l'action à la place du formulaire complet, qui s'ouvre dans une feuille. */
 export function AppelFinal({ titre, texte, libelleBouton, surClic, whatsappHref }: AppelFinalProps) {
   return (
-    <section className="bg-mtm-primary-dark px-4 py-10 text-white">
+    <section className="bg-mtm-primary px-4 py-10 text-white">
       <div className="mx-auto max-w-md text-center">
         <h2 className="font-display text-2xl font-extrabold leading-tight">{titre}</h2>
         <p className="mt-2 text-[15px] leading-relaxed text-white/85">{texte}</p>
