@@ -129,6 +129,14 @@ export function ClientChantiersPage() {
   }
 
   const statut = detail ? chantierStatus(detail.statut) : null;
+  const faits: [string, string][] = detail
+    ? [
+        ...(detail.montantDevis !== null ? [['Montant du devis', formatMoney(detail.montantDevis)] as [string, string]] : []),
+        ...(detail.dateDebutReelle ?? detail.dateDebutPrevue ? [['Début', formatDate(detail.dateDebutReelle ?? detail.dateDebutPrevue)] as [string, string]] : []),
+        ...(detail.dateFinReelle ?? detail.dateFinPrevue ? [['Fin prévue', formatDate(detail.dateFinReelle ?? detail.dateFinPrevue)] as [string, string]] : []),
+        ...(detail.surfaceBatie !== null ? [['Surface bâtie', `${detail.surfaceBatie} m²`] as [string, string]] : []),
+      ]
+    : [];
   const journalVisible = detail ? (journalComplet ? detail.journal : detail.journal.slice(0, 3)) : [];
 
   return (
@@ -186,24 +194,14 @@ export function ClientChantiersPage() {
 
               <Avancement valeur={detail.avancement} />
 
-              <dl className="grid grid-cols-2 gap-x-4 gap-y-3.5 sm:grid-cols-4">
-                <Fait
-                  label="Montant du devis"
-                  value={detail.montantDevis === null ? '—' : formatMoney(detail.montantDevis)}
-                />
-                <Fait
-                  label="Début"
-                  value={formatDate(detail.dateDebutReelle ?? detail.dateDebutPrevue)}
-                />
-                <Fait
-                  label="Fin prévue"
-                  value={formatDate(detail.dateFinReelle ?? detail.dateFinPrevue)}
-                />
-                <Fait
-                  label="Surface bâtie"
-                  value={detail.surfaceBatie === null ? '—' : `${detail.surfaceBatie} m²`}
-                />
-              </dl>
+              {/* Seuls les faits connus s'affichent : un chantier qui démarre n'a pas encore de devis ni de dates. */}
+              {faits.length > 0 && (
+                <dl className="grid grid-cols-2 gap-x-4 gap-y-3.5 sm:grid-cols-4">
+                  {faits.map(([label, value]) => (
+                    <Fait key={label} label={label} value={value} />
+                  ))}
+                </dl>
+              )}
 
               {detail.programme && (
                 <p className="text-sm leading-relaxed text-mtm-text">{detail.programme}</p>

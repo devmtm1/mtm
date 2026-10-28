@@ -183,7 +183,7 @@ export function ClientHomePage() {
 
       {/* Mes espaces : un toucher pour y aller, l'état en une ligne. */}
       <nav aria-label="Mes espaces">
-        <ul className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+        <ul className={`grid grid-cols-2 gap-3 ${COLONNES_BUREAU[Math.min(espaces.length, 6)]}`}>
           {espaces.map((espace) => (
             <li key={espace.to} className="max-sm:odd:last:col-span-2">
               <EspaceTile {...espace} />
@@ -195,8 +195,8 @@ export function ClientHomePage() {
       {/* Situation financière des ventes, seulement s'il y en a. */}
       {!dossiersLoading && !dossiersError && list.length > 0 && (
         <section aria-label="Mes paiements" className="grid grid-cols-2 gap-3">
-          <StatTile icon={Wallet} value={formatMoney(totalPaid)} label="Déjà payé" tone="success" />
-          <StatTile icon={Wallet} value={formatMoney(totalRemaining)} label="Reste à payer" tone="warning" />
+          <StatTile compact icon={Wallet} value={formatMoney(totalPaid)} label="Déjà payé" tone="success" />
+          <StatTile compact icon={Wallet} value={formatMoney(totalRemaining)} label="Reste à payer" tone="warning" />
         </section>
       )}
 
@@ -261,6 +261,17 @@ export function ClientHomePage() {
     </div>
   );
 }
+
+/** Colonnes de la grille des espaces sur ordinateur : autant que d'espaces jusqu'à cinq, pour qu'aucune tuile ne reste seule. */
+const COLONNES_BUREAU: Record<number, string> = {
+  0: 'lg:grid-cols-1',
+  1: 'lg:grid-cols-1',
+  2: 'lg:grid-cols-2',
+  3: 'lg:grid-cols-3',
+  4: 'lg:grid-cols-4',
+  5: 'lg:grid-cols-5',
+  6: 'lg:grid-cols-3',
+};
 
 interface EspaceProps {
   to: string;

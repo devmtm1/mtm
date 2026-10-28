@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   Bell,
   Building2,
+  FileText,
   FolderOpen,
   Home,
   KeyRound,
@@ -45,6 +46,7 @@ const ONGLET_ACCUEIL: ClientTab = { to: ROUTES.clientPortal, label: 'Accueil', i
 const ONGLETS_COMMUNS: ClientTab[] = [
   { to: ROUTES.clientDossiers, label: 'Dossiers', icon: FolderOpen, end: false },
   { to: ROUTES.clientDemandes, label: 'Demandes', icon: MessageSquare, end: false },
+  { to: ROUTES.clientDocuments, label: 'Documents', icon: FileText, end: false },
   { to: ROUTES.clientMissions, label: 'Vérifications', icon: ShieldCheck, end: false },
   { to: ROUTES.clientCompte, label: 'Compte', icon: UserRound, end: false },
 ];
@@ -101,6 +103,10 @@ export function ClientLayout() {
     }
     // « Dossiers » et « Vérifications » concernent les acheteurs : un propriétaire ou un locataire ne les voit pas au
     // même rang que son bien (« Vérifications » reste accessible depuis l'accueil dès qu'il en a demandé une).
+    const aDesDocuments =
+      (dossiers.data ?? []).some((dossier) => dossier.documents.length > 0) ||
+      (locataireBaux.data ?? []).some((bail) => bail.documents.length > 0) ||
+      (proprietaireDocuments.data?.length ?? 0) > 0;
     const profil = profilClient({
       chargement: dossiers.loading || proprietaireBiens.loading || locataireBaux.loading,
       nbDossiers: dossiers.data?.length ?? 0,
@@ -112,11 +118,12 @@ export function ClientLayout() {
       ...ONGLETS_COMMUNS.filter((tab) => {
         if (tab.to === ROUTES.clientDossiers) return profil.dossiers;
         if (tab.to === ROUTES.clientMissions) return profil.verifications;
+        if (tab.to === ROUTES.clientDocuments) return aDesDocuments;
         return true;
       }).map((tab) => (tab.to === ROUTES.clientDossiers ? { ...tab, alerte: retardVente } : tab)),
     );
     return tabs;
-  }, [estProprietaire, estLocataire, suitUnChantier, retardLoyer, retardVente, dossiers.loading, dossiers.data, proprietaireBiens.loading, locataireBaux.loading, missions.data]);
+  }, [estProprietaire, estLocataire, suitUnChantier, retardLoyer, retardVente, dossiers.loading, dossiers.data, proprietaireBiens.loading, locataireBaux.loading, locataireBaux.data, proprietaireDocuments.data, missions.data]);
 
   const refetchNotifications = notificationsData.refetch;
   const marquerNotificationLue = useCallback(

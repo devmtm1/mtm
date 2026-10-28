@@ -309,11 +309,6 @@ export function ClientLocatairePage() {
         onChanged={() => resiliations.refetch({ silent: true })}
       />
 
-      {/* Messages de MTM sur le bail, avec réponse possible. */}
-      <ClientCard>
-        <ClientEchanges type="bail" dossierId={bailActif.id} titre="Messages sur mon bail" chargerDirectement />
-      </ClientCard>
-
       {/* Incidents et demandes : un seul fil, chacun étiqueté. */}
       <ClientCard title="Mes échanges avec MTM">
         {echanges.length === 0 ? (
@@ -351,6 +346,11 @@ export function ClientLocatairePage() {
             })}
           </ul>
         )}
+      </ClientCard>
+
+      {/* Messages de MTM sur le bail, avec réponse possible : la conversation vient après les signalements. */}
+      <ClientCard>
+        <ClientEchanges type="bail" dossierId={bailActif.id} titre="Messages sur mon bail" chargerDirectement />
       </ClientCard>
 
       {signalement && (

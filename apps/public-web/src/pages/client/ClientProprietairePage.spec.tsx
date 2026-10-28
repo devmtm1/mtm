@@ -107,7 +107,7 @@ describe('ClientProprietairePage — courte durée', () => {
     afficher();
 
     expect(screen.queryByText(/Aucun bail en cours/)).toBeNull();
-    expect(screen.getByText('Disponible')).toBeTruthy();
+    expect(screen.getByText('À louer')).toBeTruthy();
     expect(screen.queryByText('Courte durée')).toBeNull();
   });
 });

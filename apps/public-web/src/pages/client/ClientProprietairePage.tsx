@@ -102,10 +102,12 @@ function EtatsBien({ bien }: { bien: ClientBienLocatif }) {
   // En courte durée, le bien reste « disponible » faute de bail : on dit plutôt s'il est occupé.
   const statut = courteDuree && bien.occupation ? occupationNuit(bien.occupation) : bienLocatifStatus(bien.statut);
   const situation = bien.bail ? situationPaiement(bien.bail.situationPaiement) : null;
+  // Pour un propriétaire, « disponible » veut dire « à louer » : c'est ce qu'il attend de MTM.
+  const etiquette = !courteDuree && bien.statut === 'disponible' ? 'À louer' : statut.label;
   return (
     <div className="flex flex-none flex-wrap gap-2">
       {courteDuree && <Badge tone="neutral">Courte durée</Badge>}
-      <Badge tone={statut.tone}>{statut.label}</Badge>
+      <Badge tone={statut.tone}>{etiquette}</Badge>
       {situation && <Badge tone={situation.tone}>{situation.label}</Badge>}
     </div>
   );
