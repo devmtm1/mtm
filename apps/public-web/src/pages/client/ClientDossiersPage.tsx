@@ -48,8 +48,8 @@ export function ClientDossiersPage() {
       {!dossiersLoading && !dossiersError && list.length > 0 && (
         <div className="flex flex-col gap-4">
           <section aria-label="Résumé de mes paiements" className="grid grid-cols-2 gap-3">
-            <StatTile icon={Wallet} value={formatMoney(totalPaid)} label="Déjà payé" tone="success" />
-            <StatTile icon={Wallet} value={formatMoney(totalRemaining)} label="Reste à payer" tone={totalRemaining > 0 ? 'warning' : 'neutral'} />
+            <StatTile compact icon={Wallet} value={formatMoney(totalPaid)} label="Déjà payé" tone="success" />
+            <StatTile compact icon={Wallet} value={formatMoney(totalRemaining)} label="Reste à payer" tone={totalRemaining > 0 ? 'warning' : 'neutral'} />
           </section>
           {list.map((dossier) => (
             <ClientDossierCard key={dossier.id} dossier={dossier} defaultOpen={list.length === 1} />

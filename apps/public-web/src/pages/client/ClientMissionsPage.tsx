@@ -32,10 +32,13 @@ export function ClientMissionsPage() {
             : undefined
         }
         action={
-          <Button className="w-full sm:w-auto" onClick={() => setDemandeOuverte(true)}>
-            <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-            Demander une vérification
-          </Button>
+          // Sans mission, l'état vide porte déjà le bouton : pas de second bouton juste au-dessus.
+          list.length > 0 ? (
+            <Button className="w-full sm:w-auto" onClick={() => setDemandeOuverte(true)}>
+              <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+              Demander une vérification
+            </Button>
+          ) : undefined
         }
       />
       {missionsLoading && (

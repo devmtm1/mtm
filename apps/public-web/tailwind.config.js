@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  future: { hoverOnlyWhenSupported: true },
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
@@ -27,9 +28,9 @@ export default {
         'mtm-surface': '#FFFFFF',
         'mtm-border': '#E5E7EB',
         'mtm-text': '#1F2937',
-        'mtm-muted': '#6B7280',
+        'mtm-muted': '#5F6673',
         'mtm-success': '#047857',
-        'mtm-warning': '#B45309',
+        'mtm-warning': '#A34A07',
         'mtm-error': '#B52C36',
       },
       fontFamily: {

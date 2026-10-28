@@ -56,7 +56,8 @@ async function request<T>(path: string, init?: RequestInit, options?: RequestOpt
     credentials: 'include',
     headers: {
       Accept: 'application/json',
-      ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
+      // Un envoi de fichier (FormData) fixe lui-même son Content-Type, avec la frontière du multipart.
+      ...(init?.body && !(init.body instanceof FormData) ? { 'Content-Type': 'application/json' } : {}),
       ...(options?.token ? { Authorization: `Bearer ${options.token}` } : {}),
       ...init?.headers,
     },
@@ -79,6 +80,16 @@ export const apiClient = {
     return request<T>(
       path,
       { method: 'POST', body: body !== undefined ? JSON.stringify(body) : undefined },
+      options,
+    );
+  },
+  postForm<T>(path: string, body: FormData, options?: RequestOptions): Promise<T> {
+    return request<T>(path, { method: 'POST', body }, options);
+  },
+  put<T>(path: string, body?: unknown, options?: RequestOptions): Promise<T> {
+    return request<T>(
+      path,
+      { method: 'PUT', body: body !== undefined ? JSON.stringify(body) : undefined },
       options,
     );
   },

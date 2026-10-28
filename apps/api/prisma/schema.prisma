@@ -2063,6 +2063,16 @@ model DocumentLocatif {
   visibleProprietaire Boolean @default(false)
   version             Int     @default(1)
 
+  /// Pièce déposée par le locataire lui-même depuis son espace (attestation d'assurance) : MTM la contrôle.
+  deposeParLocataire Boolean   @default(false)
+  /// en_attente | valide | rejete ; vide pour un document qui n'est pas soumis à contrôle.
+  controleStatut     String?
+  /// Fin de validité du justificatif (ex. échéance de l'assurance).
+  dateExpiration     DateTime? @db.Date
+  motifRejet         String?
+  controleLe         DateTime?
+  controleParId      String?
+
   createdById String?
   createdBy   User?    @relation("DocumentLocatifCreator", fields: [createdById], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
@@ -3082,8 +3092,53 @@ model ImmeubleLocatif {
   updatedAt   DateTime @updatedAt
 
   logements BienLocatif[]
+  charges   ChargeImmeuble[]
+  releves   ReleveImmeuble[]
 
   @@index([proprietaireId])
   @@index([responsableId])
   @@map("immeubles_locatifs")
+}
+
+/// Charge commune d'une propriété (eau et électricité des parties communes, gardien, entretien). Elle reste à la charge
+/// du propriétaire, déduite de son reversement ; la répartition ne sert qu'à montrer la part de chaque logement.
+model ChargeImmeuble {
+  id          String          @id @default(uuid())
+  immeubleId  String
+  immeuble    ImmeubleLocatif @relation(fields: [immeubleId], references: [id], onDelete: Cascade)
+  libelle     String
+  montant     Decimal         @db.Decimal(15, 2)
+  dateCharge  DateTime        @db.Date
+  /// egale (parts égales) | surface (au prorata des m²) | loyer (au prorata du loyer) | globale (non répartie)
+  repartition String          @default("egale")
+  notes       String?
+  createdById String?
+  createdAt   DateTime        @default(now())
+
+  @@index([immeubleId, dateCharge])
+  @@map("charges_immeubles")
+}
+
+/// Relevé de gestion unique d'une propriété : un document pour toute la villa, avec le détail par logement.
+model ReleveImmeuble {
+  id                  String          @id @default(uuid())
+  immeubleId          String
+  immeuble            ImmeubleLocatif @relation(fields: [immeubleId], references: [id], onDelete: Cascade)
+  /// R-IM-2026-0001-202610
+  reference           String          @unique
+  periodeDebut        DateTime        @db.Date
+  periodeFin          DateTime        @db.Date
+  totalDu             Decimal         @db.Decimal(15, 2)
+  totalEncaisse       Decimal         @db.Decimal(15, 2)
+  totalCharges        Decimal         @db.Decimal(15, 2)
+  /// Encaissé moins les charges communes : ce qui revient au propriétaire avant la commission de gestion.
+  net                 Decimal         @db.Decimal(15, 2)
+  storageKey          String
+  resourceType        String          @default("raw")
+  visibleProprietaire Boolean         @default(true)
+  createdById         String?
+  createdAt           DateTime        @default(now())
+
+  @@index([immeubleId, createdAt])
+  @@map("releves_immeubles")
 }

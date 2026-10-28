@@ -86,6 +86,7 @@ import { CautionDialog } from './caution-dialog';
 import { ChangementLocataireDialog } from './changement-locataire-dialog';
 import { PaiementDialog } from './paiement-dialog';
 import { PreavisDialog } from './preavis-dialog';
+import { RefusDocumentDialog } from './refus-document-dialog';
 import { SignalementDialog } from './signalement-dialog';
 import { SortieDialog } from './sortie-dialog';
 import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
@@ -690,6 +691,24 @@ export class BienDetailPage implements OnInit {
         ? 'Pièce retirée de l’espace propriétaire'
         : 'Pièce visible par le propriétaire',
     );
+  }
+
+  /** Attestations déposées par les locataires et pas encore contrôlées : le gestionnaire doit les traiter. */
+  protected readonly piecesAControler = computed(() => this.documents().filter((piece) => piece.controleStatut === 'en_attente'));
+
+  protected validerPiece(piece: DocumentLocatif): void {
+    const bail = this.bailActuel();
+    if (!bail) return;
+    this.executer(this.api.controlerDocument(bail.id, piece.id, { decision: 'valide' }), 'Attestation validée : le locataire est prévenu');
+  }
+
+  protected refuserPiece(piece: DocumentLocatif): void {
+    const bail = this.bailActuel();
+    if (!bail) return;
+    RefusDocumentDialog.open(this.dialog).subscribe((motif) => {
+      if (!motif) return;
+      this.executer(this.api.controlerDocument(bail.id, piece.id, { decision: 'rejete', motif }), 'Attestation refusée : le locataire est prévenu');
+    });
   }
 
   protected supprimerDocument(document: DocumentLocatif): void {

@@ -7,7 +7,10 @@ import {
   ParseUUIDPipe,
   Post,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Throttle } from '@nestjs/throttler';
 import { ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -19,6 +22,8 @@ import { ResiliationsService } from './resiliations.service';
 import { DemandeResiliationDto } from './dto/resiliation.dto';
 import { AuditService } from '../audit/audit.service';
 import { Authenticated } from '../auth/decorators/authenticated.decorator';
+import { MAX_ASSET_SIZE } from '../../common/storage/asset-validation';
+import { DepotAssuranceDto } from './dto/assurance.dto';
 
 /**
  * Espaces propriétaire et locataire (J2.1, sections 4 et 15 du cahier des
@@ -106,6 +111,38 @@ export class LocatifPortailController {
       },
     });
     return incident;
+  }
+
+  /**
+   * Le locataire dépose son attestation d'assurance habitation (fichier + date de fin de validité). Même garde-fou
+   * que les autres envois depuis l'espace client : le fichier est vérifié et l'envoi plafonné.
+   */
+  @Authenticated()
+  @Post('locataire/assurance')
+  @Throttle({
+    default: {
+      limit: Number.parseInt(process.env.RESERVATION_RATE_LIMIT_MAX ?? '5', 10),
+      ttl:
+        Number.parseInt(process.env.RESERVATION_RATE_LIMIT_TTL ?? '60', 10) *
+        1000,
+    },
+  })
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_ASSET_SIZE } }),
+  )
+  async deposerAssurance(
+    @Body() dto: DepotAssuranceDto,
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const assurance = await this.locataire.deposerAssurance(user.id, file, dto);
+    await this.audit.record({
+      userId: user.id,
+      action: 'locataire.assurance.deposee',
+      entityType: 'DocumentLocatif',
+      newValue: { dateExpiration: dto.dateExpiration },
+    });
+    return assurance;
   }
 
   /** Demandes de résiliation du locataire, avec le préavis qui s'applique. */

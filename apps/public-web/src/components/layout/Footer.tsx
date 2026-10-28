@@ -1,6 +1,6 @@
 import { VAGUES } from '../../utils/vagues';
 import { useId, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ChevronDown, Facebook, Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
 import { ROUTES } from '../../routes';
 import { toMapsHref, toTelHref, useSiteContact } from '../../hooks/useSiteContact';
@@ -60,6 +60,8 @@ const COURBE_VAGUE = VAGUES.douce.replace(/ L1440,90 L0,90 Z$/, '');
 export function Footer() {
   const year = new Date().getFullYear();
   const contact = useSiteContact();
+  // Sur l'accueil mobile, la carte de contact juste au-dessus propose déjà Appeler / WhatsApp / E-mail.
+  const accueil = useLocation().pathname === ROUTES.home;
 
   const contactActions = [
     { href: toTelHref(contact.telephone), icon: Phone, label: 'Appeler', external: false },
@@ -137,7 +139,7 @@ export function Footer() {
           {/* Contact : en premier sur mobile, en boutons tactiles. */}
           <div className="order-first sm:order-none sm:col-span-2 lg:col-span-1 lg:col-start-4 lg:row-start-1">
             <h2 className="hidden text-sm font-semibold uppercase tracking-wide text-white/70 sm:block sm:relative sm:pb-3 sm:after:absolute sm:after:bottom-0 sm:after:left-0 sm:after:h-0.5 sm:after:w-8 sm:after:rounded-full sm:after:bg-mtm-accent">Contact</h2>
-            <ul className="grid grid-cols-3 gap-2 sm:mt-5 sm:flex sm:flex-col sm:gap-3">
+            <ul className={`grid-cols-3 gap-2 sm:mt-5 sm:flex sm:flex-col sm:gap-3 ${accueil ? 'hidden sm:flex' : 'grid'}`}>
               {contactActions.map(({ href, icon: Icon, label, external }) => (
                 <li key={label}>
                   <a

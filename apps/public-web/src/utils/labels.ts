@@ -293,6 +293,8 @@ export const LOCATIF_DOCUMENT_TYPES: Record<string, string> = {
   etat_lieux_entree: 'État des lieux d’entrée',
   etat_lieux_sortie: 'État des lieux de sortie',
   releve_gestion: 'Relevé de gestion',
+  assurance_habitation: 'Attestation d’assurance',
+  releve_consolide: 'Relevé de la propriété',
   rapport: 'Rapport',
   autre: 'Document',
 };

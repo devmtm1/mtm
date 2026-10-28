@@ -198,7 +198,9 @@ export function ClientDossierCard({ dossier, defaultOpen = false }: { dossier: C
           </ul>
         )}
       </Section>
-      <ClientEchanges type="vente" dossierId={dossier.id} />
+      <div className="mt-5">
+        <ClientEchanges type="vente" dossierId={dossier.id} />
+      </div>
     </ClientDisclosure>
   );
 }

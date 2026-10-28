@@ -60,6 +60,7 @@ export const LOCATIF_DEFAULTS = {
     'etat_lieux_entree',
     'etat_lieux_sortie',
     'releve_gestion',
+    'assurance_habitation',
     'rapport',
     'autre',
   ],

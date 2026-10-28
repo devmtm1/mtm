@@ -11,6 +11,7 @@ import { etatPaiementIcone } from '../../components/client/shell/etat-paiement';
 import { NewIncidentModal } from '../../components/client/NewIncidentModal';
 import { ClientEchanges } from '../../components/client/ClientEchanges';
 import { ResiliationCard } from '../../components/client/ResiliationCard';
+import { AssuranceCard } from '../../components/client/AssuranceCard';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -88,18 +89,38 @@ export function ClientLocatairePage() {
   }
 
   const statut = bailStatus(bailActif.statut);
-  const situation = situationPaiement(bailActif.situationPaiement);
   const caution = cautionStatus(bailActif.caution.statut);
   const { solde } = bailActif;
 
-  // Un bail de deux ans compte vingt-quatre échéances : on montre ce qui reste
-  // dû et les trois dernières réglées, le reste se déplie.
-  const reglees = bailActif.echeances.filter((echeance) => echeance.statut === 'payee');
+  // Le statut d'une échéance est mis à jour chaque nuit côté serveur : en attendant, une échéance dont la date est
+  // passée ne doit pas s'afficher « À venir » (ni la situation « À jour » alors que le solde est dû).
+  const maintenant = Date.now();
+  const echeances = bailActif.echeances.map((echeance) =>
+    echeance.statut === 'a_venir' && new Date(echeance.dateEcheance).getTime() < maintenant
+      ? { ...echeance, statut: 'impayee' }
+      : echeance,
+  );
+  const enRetard = echeances.some((echeance) => echeance.statut === 'impayee' || echeance.statut === 'en_retard');
+  const situation = situationPaiement(
+    bailActif.situationPaiement === 'a_jour' && enRetard && solde.resteADevoir > 0 ? 'retard' : bailActif.situationPaiement,
+  );
+
+  // Les échéances sont générées d'avance (un an, parfois deux) : on montre ce qui est échu et non réglé, les deux
+  // prochaines à venir et les trois dernières réglées ; le reste se déplie.
+  const reglees = echeances.filter((echeance) => echeance.statut === 'payee');
   const recentesReglees = new Set(reglees.slice(-3).map((echeance) => echeance.id));
+  const prochaines = new Set(
+    echeances
+      .filter((echeance) => echeance.statut === 'a_venir')
+      .slice(0, 2)
+      .map((echeance) => echeance.id),
+  );
   const echeancesVisibles = toutesEcheances
-    ? bailActif.echeances
-    : bailActif.echeances.filter((echeance) => echeance.statut !== 'payee' || recentesReglees.has(echeance.id));
-  const echeancesMasquees = bailActif.echeances.length - echeancesVisibles.length;
+    ? echeances
+    : echeances.filter((echeance) =>
+        echeance.statut === 'payee' ? recentesReglees.has(echeance.id) : echeance.statut === 'a_venir' ? prochaines.has(echeance.id) : true,
+      );
+  const echeancesMasquees = echeances.length - echeancesVisibles.length;
   const reglementsVisibles = tousReglements ? paiements : paiements.slice(0, 4);
 
   return (
@@ -206,6 +227,9 @@ export function ClientLocatairePage() {
         </div>
       </ClientCard>
 
+      {/* Une attestation d'assurance valide fait partie du dossier du locataire : il la dépose et suit son contrôle. */}
+      {(bailActif.statut === 'actif' || bailActif.statut === 'preavis') && <AssuranceCard assurance={bailActif.assurance} />}
+
       {solde.resteADevoir > 0 && (
         <CommentRegler reference={`mon bail ${bailActif.referenceInterne ?? ''}`.trim()} montant={solde.resteADevoir} />
       )}
@@ -289,11 +313,6 @@ export function ClientLocatairePage() {
         onChanged={() => resiliations.refetch({ silent: true })}
       />
 
-      {/* Messages de MTM sur le bail, avec réponse possible. */}
-      <ClientCard>
-        <ClientEchanges type="bail" dossierId={bailActif.id} titre="Messages sur mon bail" chargerDirectement />
-      </ClientCard>
-
       {/* Incidents et demandes : un seul fil, chacun étiqueté. */}
       <ClientCard title="Mes échanges avec MTM">
         {echanges.length === 0 ? (
@@ -331,6 +350,11 @@ export function ClientLocatairePage() {
             })}
           </ul>
         )}
+      </ClientCard>
+
+      {/* Messages de MTM sur le bail, avec réponse possible : la conversation vient après les signalements. */}
+      <ClientCard>
+        <ClientEchanges type="bail" dossierId={bailActif.id} titre="Messages sur mon bail" chargerDirectement />
       </ClientCard>
 
       {signalement && (

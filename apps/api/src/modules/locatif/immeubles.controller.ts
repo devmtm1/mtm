@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseUUIDPipe,
@@ -16,6 +17,13 @@ import { RequirePermissions } from '../auth/decorators/require-permissions.decor
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AuditService } from '../audit/audit.service';
 import { ImmeublesService } from './immeubles.service';
+import { ImmeubleRelevesService } from './immeuble-releves.service';
+import { CreateChargeImmeubleDto } from './dto/immeuble-releve.dto';
+import { GenererReleveDto } from './dto/releve.dto';
+import {
+  REPARTITIONS_CHARGE,
+  LIBELLES_REPARTITION,
+} from './releve-immeuble.helper';
 import {
   AjouterLogementsDto,
   CreateImmeubleDto,
@@ -33,6 +41,7 @@ import {
 export class ImmeublesController {
   constructor(
     private readonly immeubles: ImmeublesService,
+    private readonly releves: ImmeubleRelevesService,
     private readonly audit: AuditService,
   ) {}
 
@@ -40,7 +49,13 @@ export class ImmeublesController {
   @Get('options')
   @RequirePermissions('locatif:consulter')
   options() {
-    return { types: [...TYPES_IMMEUBLE] };
+    return {
+      types: [...TYPES_IMMEUBLE],
+      repartitions: REPARTITIONS_CHARGE.map((valeur) => ({
+        valeur,
+        libelle: LIBELLES_REPARTITION[valeur],
+      })),
+    };
   }
 
   @Get()
@@ -50,6 +65,83 @@ export class ImmeublesController {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.immeubles.findAll(query, user);
+  }
+
+  @Get(':id/charges')
+  @RequirePermissions('locatif:consulter')
+  listerCharges(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.releves.listerCharges(id, user);
+  }
+
+  @Post(':id/charges')
+  @RequirePermissions('locatif:modifier')
+  async ajouterCharge(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateChargeImmeubleDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const charge = await this.releves.ajouterCharge(id, dto, user);
+    await this.audit.record({
+      userId: user.id,
+      action: 'immeuble.charge_ajoutee',
+      entityType: 'ImmeubleLocatif',
+      entityId: id,
+      newValue: {
+        libelle: dto.libelle,
+        montant: dto.montant,
+        repartition: charge.repartition,
+      },
+    });
+    return charge;
+  }
+
+  @Delete(':id/charges/:chargeId')
+  @RequirePermissions('locatif:modifier')
+  async supprimerCharge(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('chargeId', ParseUUIDPipe) chargeId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    await this.releves.supprimerCharge(id, chargeId, user);
+    await this.audit.record({
+      userId: user.id,
+      action: 'immeuble.charge_supprimee',
+      entityType: 'ImmeubleLocatif',
+      entityId: id,
+      oldValue: { chargeId },
+    });
+    return { success: true };
+  }
+
+  @Get(':id/releves')
+  @RequirePermissions('locatif:consulter')
+  listerReleves(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.releves.listerReleves(id, user);
+  }
+
+  /** Relevé unique de la propriété : un document pour toute la villa, publié d'office au propriétaire. */
+  @Post(':id/releve')
+  @RequirePermissions('locatif:publier')
+  async genererReleve(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: GenererReleveDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const releve = await this.releves.genererReleve(id, dto, user);
+    await this.audit.record({
+      userId: user.id,
+      action: 'immeuble.releve_genere',
+      entityType: 'ImmeubleLocatif',
+      entityId: id,
+      newValue: { reference: releve.reference, net: releve.net },
+    });
+    return releve;
   }
 
   @Get(':id')

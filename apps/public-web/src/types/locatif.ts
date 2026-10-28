@@ -32,6 +32,9 @@ export interface ClientBienLocatif {
   statut: string;
   /** longue_duree | courte_duree : en courte durée, il n'y a pas de bail mais des séjours. */
   modeLocation: string;
+  /** Logement d'une propriété (villa, immeuble, résidence) : son numéro de lot et la propriété ; vides pour un bien seul. */
+  numeroLot?: string | null;
+  immeuble?: { id: string; nom: string; type: string } | null;
   /** Pour un bien en courte durée : occupe | reserve | libre (null au mois). */
   occupation: 'occupe' | 'reserve' | 'libre' | null;
   /** Séjours engagés : en cours et à venir d'abord, puis les plus récents. */
@@ -115,6 +118,16 @@ export interface ClientCautionLocataire {
   mouvements: ClientMouvementCaution[];
 }
 
+/** en_attente : déposée, MTM ne l'a pas encore contrôlée ; valide ; rejete : refusée, avec son motif. */
+export interface ClientAssurance {
+  statut: 'en_attente' | 'valide' | 'rejete';
+  dateExpiration: string | null;
+  motifRejet: string | null;
+  deposeLe: string;
+  /** La date de fin de validité est passée : à renouveler. */
+  expiree: boolean;
+}
+
 export interface ClientBailLocataire {
   id: string;
   referenceInterne: string | null;
@@ -138,6 +151,8 @@ export interface ClientBailLocataire {
   };
   solde: ClientSoldeLocataire;
   caution: ClientCautionLocataire;
+  /** Attestation d'assurance habitation : la plus récente fait foi ; `null` tant qu'aucune n'a été déposée. */
+  assurance?: ClientAssurance | null;
   echeances: ClientEcheanceLoyer[];
   documents: ClientDocumentLocatif[];
 }

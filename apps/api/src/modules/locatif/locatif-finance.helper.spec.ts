@@ -67,6 +67,35 @@ describe('calculerSoldeBail', () => {
   });
 });
 
+describe('calculerSoldeBail — échéances générées d’avance', () => {
+  it('ne compte pas comme dus ni impayés les loyers pas encore échus', async () => {
+    const prismaMock = createPrismaMock();
+    prismaMock.echeanceLoyer.findMany.mockResolvedValue([
+      { montantPrevu: 100000, montantPaye: 100000, dateEcheance: new Date('2026-09-05T00:00:00Z'), statut: 'payee' },
+      { montantPrevu: 100000, montantPaye: 0, dateEcheance: new Date('2026-11-05T00:00:00Z'), statut: 'a_venir' },
+      { montantPrevu: 100000, montantPaye: 0, dateEcheance: new Date('2026-12-05T00:00:00Z'), statut: 'a_venir' },
+    ]);
+    prismaMock.paiementLoyer.aggregate.mockResolvedValue({ _sum: { montant: null } });
+
+    const solde = await calculerSoldeBail(prismaMock as never, 'bail-1', new Date('2026-10-20T00:00:00Z'));
+
+    expect(solde).toMatchObject({ loyersDus: 100000, loyersEncaisses: 100000, solde: 0, echeancesImpayees: 0, joursRetardMax: 0 });
+  });
+
+  it('garde un règlement fait par avance : il vient en déduction, il ne disparaît pas', async () => {
+    const prismaMock = createPrismaMock();
+    prismaMock.echeanceLoyer.findMany.mockResolvedValue([
+      { montantPrevu: 100000, montantPaye: 0, dateEcheance: new Date('2026-10-05T00:00:00Z'), statut: 'impayee' },
+      { montantPrevu: 100000, montantPaye: 100000, dateEcheance: new Date('2026-11-05T00:00:00Z'), statut: 'payee' },
+    ]);
+    prismaMock.paiementLoyer.aggregate.mockResolvedValue({ _sum: { montant: null } });
+
+    const solde = await calculerSoldeBail(prismaMock as never, 'bail-1', new Date('2026-10-20T00:00:00Z'));
+
+    expect(solde).toMatchObject({ loyersDus: 100000, loyersEncaisses: 100000, solde: 0, echeancesImpayees: 1 });
+  });
+});
+
 describe('calculerRegularisation', () => {
   it('impute l’avance puis la caution, et propose le solde de sortie', async () => {
     const prismaMock = createPrismaMock();

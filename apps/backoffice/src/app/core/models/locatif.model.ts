@@ -251,6 +251,17 @@ export interface DocumentLocatif {
   createdAt: string;
   createdBy: LocatifPersonne | null;
   secureUrl: string;
+  /** Pièce déposée par le locataire depuis son espace (attestation d'assurance) : MTM la contrôle. */
+  deposeParLocataire?: boolean;
+  /** en_attente | valide | rejete ; absent pour un document qui n'est pas soumis à contrôle. */
+  controleStatut?: 'en_attente' | 'valide' | 'rejete' | null;
+  dateExpiration?: string | null;
+  motifRejet?: string | null;
+}
+
+export interface ControleDocumentPayload {
+  decision: 'valide' | 'rejete';
+  motif?: string;
 }
 
 export interface Locataire {
@@ -592,6 +603,40 @@ export interface LogementImmeuble {
     impaye: number;
     locataire: BailLocataireResume;
   } | null;
+}
+
+/** Charge commune d'une propriété (gardien, eau des parties communes…) : à la charge du propriétaire. */
+export type RepartitionCharge = 'egale' | 'surface' | 'loyer' | 'globale';
+
+export interface ChargeImmeuble {
+  id: string;
+  libelle: string;
+  montant: number;
+  dateCharge: string;
+  repartition: RepartitionCharge;
+  notes: string | null;
+}
+
+export interface CreateChargeImmeublePayload {
+  libelle: string;
+  montant: number;
+  dateCharge: string;
+  repartition: RepartitionCharge;
+  notes?: string;
+}
+
+/** Relevé de gestion unique d'une propriété : un document pour toute la villa, publié au propriétaire. */
+export interface ReleveImmeuble {
+  id: string;
+  reference: string;
+  periodeDebut: string;
+  periodeFin: string;
+  totalDu: number;
+  totalEncaisse: number;
+  totalCharges: number;
+  net: number;
+  createdAt: string;
+  secureUrl: string;
 }
 
 export interface ImmeubleDetail extends Omit<ImmeubleResume, 'synthese'> {

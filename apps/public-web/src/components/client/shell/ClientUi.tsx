@@ -150,19 +150,32 @@ export function StatTile({
   label,
   tone = 'primary',
   to,
+  compact = false,
 }: {
   icon: LucideIcon;
   value: string;
   label: string;
   tone?: ClientTone;
   to?: string;
+  /** Icône à gauche du chiffre : pour une rangée de deux ou trois tuiles qui ne doivent pas dominer la page. */
+  compact?: boolean;
 }) {
-  const body = (
+  const body = compact ? (
+    <span className="flex items-center gap-3">
+      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${ICON_TONES[tone]}`}>
+        <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
+      </span>
+      <span className="min-w-0">
+        <span className="block break-words font-display text-lg font-bold leading-tight text-mtm-text">{value}</span>
+        <span className="block text-xs font-semibold text-mtm-muted">{label}</span>
+      </span>
+    </span>
+  ) : (
     <>
       <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${ICON_TONES[tone]}`}>
         <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
       </span>
-      <span className="mt-2 block truncate font-display text-lg font-bold leading-tight text-mtm-text">{value}</span>
+      <span className="mt-2 block break-words font-display text-lg font-bold leading-tight text-mtm-text">{value}</span>
       <span className="block text-xs font-semibold text-mtm-muted">{label}</span>
     </>
   );

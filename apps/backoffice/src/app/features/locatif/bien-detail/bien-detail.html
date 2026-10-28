@@ -662,6 +662,11 @@
                 </label>
               }
             </div>
+            @if (piecesAControler().length) {
+              <p class="doc-alert" role="status">
+                {{ piecesAControler().length }} attestation{{ piecesAControler().length > 1 ? 's' : '' }} d’assurance à contrôler : ouvrez la pièce, puis validez ou refusez.
+              </p>
+            }
             @if (piecesAffichees().length) {
               <ul class="doc-list">
                 @for (piece of piecesAffichees(); track piece.id) {
@@ -677,6 +682,16 @@
                         @if (piece.visibleProprietaire) {
                           · Propriétaire
                         }
+                        @if (piece.controleStatut === 'en_attente') {
+                          · <strong class="doc-item__etat doc-item__etat--attente">À contrôler</strong>
+                        } @else if (piece.controleStatut === 'valide') {
+                          · <span class="doc-item__etat doc-item__etat--ok">Validée</span>
+                        } @else if (piece.controleStatut === 'rejete') {
+                          · <span class="doc-item__etat doc-item__etat--refus">Refusée</span>
+                        }
+                        @if (piece.dateExpiration) {
+                          · valable jusqu’au {{ piece.dateExpiration | date: 'dd/MM/yyyy' }}
+                        }
                       </small>
                     </a>
                     @if (canPublish() || canModify()) {
@@ -689,6 +704,10 @@
                         <svg class="btn-icon" lucideChevronDown aria-hidden="true"></svg>
                       </button>
                       <mat-menu #pieceMenu="matMenu" xPosition="before">
+                        @if (canModify() && piece.controleStatut === 'en_attente') {
+                          <button mat-menu-item type="button" (click)="validerPiece(piece)">Valider l’attestation</button>
+                          <button mat-menu-item type="button" (click)="refuserPiece(piece)">Refuser l’attestation…</button>
+                        }
                         @if (canPublish()) {
                           <button mat-menu-item type="button" (click)="basculerVisibiliteLocataire(piece)">
                             {{ piece.visibleLocataire ? 'Retirer au locataire' : 'Publier au locataire' }}

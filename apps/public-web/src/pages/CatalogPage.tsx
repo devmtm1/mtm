@@ -217,11 +217,11 @@ export function CatalogPage() {
   }
 
   const sortSelect = (
-    <label className="inline-flex items-center gap-2 text-sm text-mtm-muted">
+    <label className="inline-flex min-w-0 items-center gap-2 text-sm text-mtm-muted">
       <ArrowUpDown className="h-4 w-4" aria-hidden="true" />
       <span className="sr-only sm:not-sr-only">Trier par</span>
       <select
-        className="rounded-md border border-mtm-border bg-mtm-surface px-2.5 py-1.5 text-sm font-semibold text-mtm-text focus:border-mtm-primary focus:outline-none focus:ring-1 focus:ring-mtm-primary max-lg:min-h-11"
+        className="min-w-0 max-w-[8.5rem] rounded-md border border-mtm-border bg-mtm-surface px-2.5 py-1.5 text-sm font-semibold sm:max-w-none text-mtm-text focus:border-mtm-primary focus:outline-none focus:ring-1 focus:ring-mtm-primary max-lg:min-h-11"
         value={triDe(filters)}
         onChange={(event) => {
           const choix = TRIS.find((tri) => tri.cle === event.target.value);
@@ -246,12 +246,13 @@ export function CatalogPage() {
           type="button"
           onClick={() => setViewMode(mode)}
           aria-pressed={viewMode === mode}
+          aria-label={mode === 'liste' ? 'Afficher la liste' : 'Afficher la carte'}
           className={`flex items-center gap-1.5 rounded px-3 py-1.5 max-lg:min-h-11 text-sm font-semibold capitalize transition-colors ${
             viewMode === mode ? 'bg-mtm-primary text-white' : 'text-mtm-muted hover:text-mtm-primary'
           }`}
         >
           {mode === 'liste' ? <LayoutGrid className="h-4 w-4" aria-hidden="true" /> : <MapIcon className="h-4 w-4" aria-hidden="true" />}
-          {mode}
+          <span className="max-[420px]:sr-only">{mode}</span>
         </button>
       ))}
     </div>
@@ -347,7 +348,7 @@ export function CatalogPage() {
                   : `${data.total} biens trouvés`
                 : ''}
           </p>
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             {sortSelect}
             {viewSwitch}
           </div>

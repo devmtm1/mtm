@@ -11,6 +11,7 @@ import type {
   ClientResiliationPayload,
   ClientResiliations,
   ClientSyntheseProprietaire,
+  ClientAssurance,
 } from '../types/locatif';
 import type {
   ClientChantier,
@@ -223,4 +224,15 @@ export function fetchClientChantier(
     undefined,
     { token },
   );
+}
+
+/**
+ * Dépose l'attestation d'assurance habitation sur le bail en cours : le fichier et sa date de fin de validité. MTM la
+ * contrôle ensuite ; l'état revient dans le bail du locataire.
+ */
+export function deposerAssurance(token: string, fichier: File, dateExpiration: string): Promise<ClientAssurance> {
+  const corps = new FormData();
+  corps.append('file', fichier);
+  corps.append('dateExpiration', dateExpiration);
+  return apiClient.postForm<ClientAssurance>('/locatif/locataire/assurance', corps, { token });
 }

@@ -23,6 +23,7 @@ import { useAuth } from '../../contexts/auth-context-store';
 import { useClientData } from '../../contexts/client-data-store';
 import { toTelHref, useSiteContact } from '../../hooks/useSiteContact';
 import { usePageMetadata } from '../../hooks/usePageMetadata';
+import { useProfilClient } from '../../hooks/useProfilClient';
 import { ClientCard, ProgressBar, StatTile } from '../../components/client/shell/ClientUi';
 import { ClientDemandesList } from '../../components/client/ClientDemandesSection';
 import { Badge } from '../../components/ui/Badge';
@@ -58,6 +59,7 @@ export function ClientHomePage() {
     locataireLoading,
     notificationsNonLues,
   } = useClientData();
+  const profil = useProfilClient();
   usePageMetadata({ title: 'Mon espace client' });
 
   const list = useMemo(() => dossiers ?? [], [dossiers]);
@@ -89,7 +91,7 @@ export function ClientHomePage() {
 
   // Les espaces que ce compte possède vraiment : ni tuile vide, ni détour inutile.
   const espaces: EspaceProps[] = [
-    ...(sansDossierDeVente
+    ...(sansDossierDeVente || !profil.dossiers
       ? []
       : [
           {
@@ -135,12 +137,16 @@ export function ClientHomePage() {
           },
         ]
       : []),
-    {
-      to: ROUTES.clientMissions,
-      icon: ShieldCheck,
-      label: 'Vérifications',
-      detail: (missions?.length ?? 0) > 0 ? `${missions?.length} demandée${(missions?.length ?? 0) > 1 ? 's' : ''}` : 'Faire vérifier un terrain',
-    },
+    ...(profil.verifications
+      ? [
+          {
+            to: ROUTES.clientMissions,
+            icon: ShieldCheck,
+            label: 'Vérifications',
+            detail: (missions?.length ?? 0) > 0 ? `${missions?.length} demandée${(missions?.length ?? 0) > 1 ? 's' : ''}` : 'Faire vérifier un terrain',
+          },
+        ]
+      : []),
     {
       to: ROUTES.clientDemandes,
       icon: MessageSquare,
@@ -177,9 +183,9 @@ export function ClientHomePage() {
 
       {/* Mes espaces : un toucher pour y aller, l'état en une ligne. */}
       <nav aria-label="Mes espaces">
-        <ul className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+        <ul className={`grid grid-cols-2 gap-3 ${COLONNES_BUREAU[Math.min(espaces.length, 6)]}`}>
           {espaces.map((espace) => (
-            <li key={espace.to}>
+            <li key={espace.to} className="max-sm:odd:last:col-span-2">
               <EspaceTile {...espace} />
             </li>
           ))}
@@ -189,8 +195,8 @@ export function ClientHomePage() {
       {/* Situation financière des ventes, seulement s'il y en a. */}
       {!dossiersLoading && !dossiersError && list.length > 0 && (
         <section aria-label="Mes paiements" className="grid grid-cols-2 gap-3">
-          <StatTile icon={Wallet} value={formatMoney(totalPaid)} label="Déjà payé" tone="success" />
-          <StatTile icon={Wallet} value={formatMoney(totalRemaining)} label="Reste à payer" tone="warning" />
+          <StatTile compact icon={Wallet} value={formatMoney(totalPaid)} label="Déjà payé" tone="success" />
+          <StatTile compact icon={Wallet} value={formatMoney(totalRemaining)} label="Reste à payer" tone="warning" />
         </section>
       )}
 
@@ -225,7 +231,7 @@ export function ClientHomePage() {
         )}
 
         <div className="flex flex-col gap-5 sm:gap-6">
-          {!proprietaireLoading && biens !== null && biens.length > 0 && (
+          {!proprietaireLoading && biens !== null && biens.length > 0 && loyersEncaissesTotal > 0 && (
             <ClientCard title="Mes loyers encaissés" to={ROUTES.clientProprietaire} className="hidden lg:block">
               <p className="font-display text-2xl font-bold text-mtm-success">{formatMoney(loyersEncaissesTotal)}</p>
               <p className="mt-0.5 text-sm text-mtm-muted">
@@ -236,9 +242,11 @@ export function ClientHomePage() {
             </ClientCard>
           )}
 
-          <ClientCard title="Dernière demande" to={ROUTES.clientDemandes}>
-            <ClientDemandesList data={demandes} loading={demandesLoading} error={demandesError} limit={1} />
-          </ClientCard>
+          {(demandesLoading || demandesError || demandesEnAttente > 0 || (demandes?.messages.length ?? 0) + (demandes?.reservations.length ?? 0) > 0) && (
+            <ClientCard title="Dernière demande" to={ROUTES.clientDemandes}>
+              <ClientDemandesList data={demandes} loading={demandesLoading} error={demandesError} limit={1} />
+            </ClientCard>
+          )}
 
           <ClientCard title="Votre conseiller">
             <p className="text-sm text-mtm-muted">MTM vous répond du lundi au samedi.</p>
@@ -253,6 +261,17 @@ export function ClientHomePage() {
     </div>
   );
 }
+
+/** Colonnes de la grille des espaces sur ordinateur : autant que d'espaces jusqu'à cinq, pour qu'aucune tuile ne reste seule. */
+const COLONNES_BUREAU: Record<number, string> = {
+  0: 'lg:grid-cols-1',
+  1: 'lg:grid-cols-1',
+  2: 'lg:grid-cols-2',
+  3: 'lg:grid-cols-3',
+  4: 'lg:grid-cols-4',
+  5: 'lg:grid-cols-5',
+  6: 'lg:grid-cols-3',
+};
 
 interface EspaceProps {
   to: string;
@@ -273,8 +292,8 @@ function EspaceTile({ to, icon: Icon, label, detail, alerte = false }: EspacePro
         <Icon className="h-5 w-5" aria-hidden="true" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-bold text-mtm-text">{label}</span>
-        <span className={`block truncate text-xs ${alerte ? 'font-semibold text-mtm-warning' : 'text-mtm-muted'}`}>{detail}</span>
+        <span className="block text-sm font-bold leading-snug text-mtm-text">{label}</span>
+        <span className={`block text-xs leading-snug ${alerte ? 'font-semibold text-mtm-warning' : 'text-mtm-muted'}`}>{detail}</span>
       </span>
       <ChevronRight className="hidden h-4 w-4 shrink-0 text-mtm-muted sm:block" aria-hidden="true" />
     </Link>

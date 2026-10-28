@@ -136,6 +136,28 @@ Les **états des lieux** d’entrée et de sortie se font **pièce par pièce** 
 
 > Sur le site, le visiteur voit les nuits déjà prises, choisit ses dates et envoie une **demande** : **aucun paiement en ligne**, MTM confirme les nuits et recontacte le client.
 
+### Les charges communes et le relevé de la propriété
+
+Sur la fiche d’une propriété, deux blocs complètent les logements.
+
+**Charges communes** : eau et électricité des parties communes, gardien, entretien. **Ajouter une charge** demande un libellé, un montant, une date et une **répartition** :
+- *Parts égales* entre tous les logements ;
+- *Au prorata de la surface* (il faut que la surface des logements soit renseignée, sinon la répartition redevient égale) ;
+- *Au prorata du loyer* ;
+- *Non répartie* : la charge pèse sur la propriété sans être imputée à un logement.
+
+Dans tous les cas, **la charge reste à la charge du propriétaire** : elle vient en déduction de son reversement. La répartition sert seulement à montrer la part de chaque logement.
+
+**Relevé de la propriété** : *Générer le relevé (12 derniers mois)* produit **un seul document pour toute la villa** : un tableau par logement (loyer dû, encaissé, solde, part des charges), la liste des charges de la période, puis le **net revenant au propriétaire**, calculé avant la commission de gestion. Il est **publié d’office dans l’espace du propriétaire**, qui en est prévenu. Le relevé par logement (fiche du bien) reste disponible.
+
+## Les attestations d’assurance des locataires
+
+Le locataire dépose son **attestation d’assurance habitation** depuis *Ma location* (fichier PDF ou photo, 10 Mo au maximum, et date de fin de validité). Elle reste **« en attente »** jusqu’à votre contrôle, et le propriétaire ne la voit jamais.
+
+- Vous êtes **prévenu dans la cloche** (« Assurance à contrôler »).
+- Fiche du bien › *Pièces* : la pièce porte la mention **À contrôler** ; ouvrez-la, puis menu ⌄ › **Valider l’attestation** ou **Refuser l’attestation…**. Un refus exige un **motif**, que le locataire lit dans son espace avant de redéposer une pièce.
+- Le locataire est **prévenu dans les deux cas**. Une attestation dont la date est passée s’affiche « Expirée » dans son espace, sans que vous ayez à intervenir.
+
 ## Les demandes de résiliation
 
 Le locataire dépose sa demande depuis son espace (date de départ souhaitée, motif). MTM peut aussi **enregistrer une demande reçue par téléphone, WhatsApp ou courrier** (fiche du bien › menu ⌄ › *Demande de résiliation*).

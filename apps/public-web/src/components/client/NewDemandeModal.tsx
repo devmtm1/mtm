@@ -22,12 +22,12 @@ const TYPES: { value: ClientDemandeType; label: string; help: string; icon: type
  * l'identité vient du compte, et la demande apparaît aussitôt dans l'onglet
  * « Demandes » avec sa prise en charge.
  */
-export function NewDemandeModal({ onClose }: { onClose: () => void }) {
+export function NewDemandeModal({ onClose, initialMessage = '' }: { onClose: () => void; initialMessage?: string }) {
   const { accessToken } = useAuth();
   const { dossiers, refetchDemandes } = useClientData();
   const [type, setType] = useState<ClientDemandeType>('information');
   const [terrain, setTerrain] = useState<TerrainChoice | null>(null);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(initialMessage);
   const [submitting, setSubmitting] = useState(false);
   const toast = useToast();
   const [error, setError] = useState<string | null>(null);

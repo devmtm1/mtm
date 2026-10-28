@@ -147,12 +147,21 @@ export const STATUTS_INCIDENT: Record<string, StatusMeaning> = {
   resolu: { tone: 'success', label: 'Résolu', help: 'Incident réglé.' },
 };
 
+/** Comment une charge commune se répartit entre les logements : elle reste à la charge du propriétaire dans tous les cas. */
+export const REPARTITIONS_CHARGE: Record<string, string> = {
+  egale: 'Parts égales',
+  surface: 'Au prorata de la surface',
+  loyer: 'Au prorata du loyer',
+  globale: 'Non répartie',
+};
+
 export const TYPES_DOCUMENT: Record<string, string> = {
   contrat: 'Contrat de bail',
   quittance: 'Quittance de loyer',
   etat_lieux_entree: 'État des lieux d’entrée',
   etat_lieux_sortie: 'État des lieux de sortie',
   releve_gestion: 'Relevé de gestion',
+  assurance_habitation: 'Attestation d’assurance',
   rapport: 'Rapport',
   autre: 'Autre document',
 };

@@ -6,17 +6,23 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { LucideArrowLeft, LucidePlus } from '@lucide/angular';
+import { DatePipe } from '@angular/common';
 import { LocatifApiService } from '../../../../core/services/api/locatif-api.service';
 import { SessionService } from '../../../../core/services/session.service';
 import type {
   BienListItem,
+  ChargeImmeuble,
   ImmeubleDetail,
   LogementImmeuble,
+  RepartitionCharge,
+  ReleveImmeuble,
 } from '../../../../core/models/locatif.model';
 import { MoneyPipe } from '../../../../shared/pipes/money.pipe';
 import { NotificationService } from '../../../../shared/services/notification.service';
+import { ConfirmService } from '../../../../shared/dialogs/confirm-dialog';
 import {
   BIEN_STATUTS,
+  REPARTITIONS_CHARGE,
   TYPES_BIEN,
   TYPES_IMMEUBLE,
   label,
@@ -36,6 +42,7 @@ import { nombreOuUndefined } from '../../locatif-form';
     MatInputModule,
     MatSelectModule,
     MoneyPipe,
+    DatePipe,
     LucideArrowLeft,
     LucidePlus,
   ],
@@ -49,6 +56,7 @@ export class ImmeubleDetailPage implements OnInit {
   private readonly notify = inject(NotificationService);
   private readonly session = inject(SessionService);
   private readonly formBuilder = inject(FormBuilder);
+  private readonly confirmer = inject(ConfirmService);
 
   /** Squelette au premier chargement seulement : un rechargement après ajout garde la fiche affichée. */
   protected readonly loading = signal(true);
@@ -74,8 +82,104 @@ export class ImmeubleDetailPage implements OnInit {
     loyerMensuel: [null as number | null, [Validators.min(0)]],
   });
 
+  // --- Charges communes et relevé de la propriété ---
+
+  protected readonly charges = signal<ChargeImmeuble[]>([]);
+  protected readonly releves = signal<ReleveImmeuble[]>([]);
+  protected readonly chargeOuverte = signal(false);
+  protected readonly generation = signal(false);
+  protected readonly repartitions = Object.entries(REPARTITIONS_CHARGE);
+  protected readonly totalCharges = computed(() => this.charges().reduce((somme, charge) => somme + charge.montant, 0));
+  protected readonly chargeForm = this.formBuilder.nonNullable.group({
+    libelle: ['', [Validators.required, Validators.maxLength(120)]],
+    montant: [null as number | null, [Validators.required, Validators.min(1)]],
+    dateCharge: [new Date().toISOString().slice(0, 10), Validators.required],
+    repartition: ['egale' as RepartitionCharge, Validators.required],
+  });
+
   ngOnInit(): void {
     this.charger();
+  }
+
+  protected repartitionLabel(code: string): string {
+    return simpleLabel(REPARTITIONS_CHARGE, code);
+  }
+
+  protected ajouterCharge(): void {
+    const immeuble = this.immeuble();
+    if (!immeuble) return;
+    if (this.chargeForm.invalid) {
+      this.chargeForm.markAllAsTouched();
+      return;
+    }
+    const valeur = this.chargeForm.getRawValue();
+    this.saving.set(true);
+    this.api
+      .addChargeImmeuble(immeuble.id, {
+        libelle: valeur.libelle.trim(),
+        montant: Number(valeur.montant),
+        dateCharge: valeur.dateCharge,
+        repartition: valeur.repartition,
+      })
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.chargeForm.reset({ libelle: '', montant: null, dateCharge: valeur.dateCharge, repartition: valeur.repartition });
+          this.notify.success('Charge enregistrée');
+          this.chargerCharges(immeuble.id);
+        },
+        error: (error: unknown) => {
+          this.saving.set(false);
+          this.notify.error(error, 'Enregistrement impossible');
+        },
+      });
+  }
+
+  protected supprimerCharge(charge: ChargeImmeuble): void {
+    const immeuble = this.immeuble();
+    if (!immeuble) return;
+    this.confirmer.ask(`Supprimer la charge « ${charge.libelle} » ?`).subscribe((confirme) => {
+      if (!confirme) return;
+      this.api.removeChargeImmeuble(immeuble.id, charge.id).subscribe({
+        next: () => {
+          this.notify.success('Charge supprimée');
+          this.chargerCharges(immeuble.id);
+        },
+        error: (error: unknown) => this.notify.error(error, 'Suppression impossible'),
+      });
+    });
+  }
+
+  /** Génère le relevé de la propriété (douze derniers mois) et le publie au propriétaire, qui en est prévenu. */
+  protected genererReleve(): void {
+    const immeuble = this.immeuble();
+    if (!immeuble) return;
+    this.generation.set(true);
+    this.api.genererReleveImmeuble(immeuble.id).subscribe({
+      next: (releve) => {
+        this.generation.set(false);
+        this.notify.success(`Relevé ${releve.reference} généré et publié au propriétaire`);
+        this.chargerReleves(immeuble.id);
+      },
+      error: (error: unknown) => {
+        this.generation.set(false);
+        this.notify.error(error, 'Génération impossible');
+      },
+    });
+  }
+
+  private chargerCharges(id: string): void {
+    this.api.findChargesImmeuble(id).subscribe({
+      next: (charges) => this.charges.set(charges),
+      error: () => this.charges.set([]),
+    });
+  }
+
+  private chargerReleves(id: string): void {
+    this.api.findRelevesImmeuble(id).subscribe({
+      next: (releves) => this.releves.set(releves),
+      error: () => this.releves.set([]),
+    });
   }
 
   protected typeLabel(type: string): string {
@@ -199,6 +303,8 @@ export class ImmeubleDetailPage implements OnInit {
       next: (immeuble) => {
         this.immeuble.set(immeuble);
         this.loading.set(false);
+        this.chargerCharges(immeuble.id);
+        this.chargerReleves(immeuble.id);
       },
       error: (error: unknown) => {
         this.loading.set(false);

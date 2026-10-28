@@ -37,6 +37,7 @@ import {
   CreateDocumentLocatifDto,
   VisibiliteDocumentDto,
 } from './dto/document.dto';
+import { ControleDocumentDto } from './dto/assurance.dto';
 
 /** Un bail précis et tout ce qui s'y rattache (J2.1, section 15 du CDC). */
 @ApiTags('locatif')
@@ -410,6 +411,31 @@ export class BauxController {
         visibleLocataire: document.visibleLocataire,
         visibleProprietaire: document.visibleProprietaire,
       },
+    });
+    return document;
+  }
+
+  /** Valide ou refuse un justificatif déposé par le locataire (attestation d'assurance). */
+  @Post(':id/documents/:documentId/controle')
+  @RequirePermissions('locatif:modifier')
+  async controlerDocument(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('documentId', ParseUUIDPipe) documentId: string,
+    @Body() dto: ControleDocumentDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const document = await this.documents.controlerDocument(
+      id,
+      documentId,
+      dto,
+      user,
+    );
+    await this.audit.record({
+      userId: user.id,
+      action: 'bail.document.controle',
+      entityType: 'DocumentLocatif',
+      entityId: documentId,
+      newValue: { bailLocatifId: id, decision: dto.decision },
     });
     return document;
   }

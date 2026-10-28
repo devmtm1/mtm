@@ -18,6 +18,7 @@ import {
   VisibiliteDocumentDto,
 } from './dto/document.dto';
 import { GenererReleveDto } from './dto/releve.dto';
+import { ControleDocumentDto } from './dto/assurance.dto';
 import {
   renderQuittance,
   renderReleveGestion,
@@ -319,6 +320,74 @@ export class DocumentsLocatifService {
       },
       include: documentInclude,
     });
+  }
+
+  /**
+   * MTM contrôle un document déposé par le locataire (attestation d'assurance). Un refus porte un motif, que le
+   * locataire lit dans son espace pour déposer une pièce corrigée ; dans les deux cas il est prévenu.
+   */
+  async controlerDocument(
+    bailLocatifId: string,
+    documentId: string,
+    dto: ControleDocumentDto,
+    user: LocatifUser,
+  ) {
+    await this.access.ensureBailAccessible(bailLocatifId, user);
+    const document = await this.prisma.documentLocatif.findFirst({
+      where: { id: documentId, bailLocatifId },
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        controleStatut: true,
+        bailLocatif: { select: { locataireId: true } },
+      },
+    });
+    if (!document) throw new NotFoundException('Document introuvable');
+    if (document.controleStatut === null) {
+      throw new BadRequestException('Ce document n’est pas soumis à contrôle');
+    }
+    const motif = dto.motif?.trim() || null;
+    if (dto.decision === 'rejete' && !motif) {
+      throw new BadRequestException(
+        'Indiquez le motif du refus : le locataire le lira pour corriger son dépôt',
+      );
+    }
+    const mis = await this.prisma.documentLocatif.update({
+      where: { id: documentId },
+      data: {
+        controleStatut: dto.decision,
+        motifRejet: dto.decision === 'rejete' ? motif : null,
+        controleLe: new Date(),
+        controleParId: user.id,
+      },
+      include: documentInclude,
+    });
+    if (document.bailLocatif.locataireId) {
+      await this.notifications.notifierClient(
+        { locataireId: document.bailLocatif.locataireId },
+        {
+          type: 'assurance_controlee',
+          titre:
+            dto.decision === 'valide'
+              ? 'Votre attestation d’assurance est validée'
+              : 'Votre attestation d’assurance est refusée',
+          message:
+            dto.decision === 'valide'
+              ? 'Merci : votre dossier est à jour.'
+              : `Motif : ${motif}. Déposez une nouvelle attestation depuis votre espace.`,
+          lien: '/espace-client/ma-location',
+          entityType: 'DocumentLocatif',
+          entityId: document.id,
+          dedupeKey: `assurance-controlee:${document.id}:${dto.decision}`,
+        },
+      );
+    }
+    const { storageKey, ...reste } = mis;
+    return {
+      ...reste,
+      secureUrl: this.cloudinary.url(storageKey, mis.resourceType, false),
+    };
   }
 
   async setVisibility(
