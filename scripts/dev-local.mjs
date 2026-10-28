@@ -25,6 +25,7 @@ import { MOT_DE_PASSE } from '../docs/manuel/captures/comptes.mjs';
 import { demarrer, PORT_API } from '../docs/manuel/captures/environnement.mjs';
 import { peuplerDonnees } from '../docs/manuel/captures/jeu-donnees.mjs';
 import { CLOUD_DEMO, peuplerSite } from './dev-local-site.mjs';
+import { MOT_DE_PASSE_CLIENT, ouvrirEspacesClients } from './dev-local-clients.mjs';
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SITE = join(RACINE, 'apps', 'public-web');
@@ -91,6 +92,9 @@ try {
   const remplis = await peuplerSite({ api, urlBase: env.urlBase, donnees });
   console.log('  ' + Object.entries(remplis).map(([cle, v]) => `${cle} : ${v}`).join(' · '));
 
+  console.log('Espaces clients de démonstration…');
+  const espaces = await ouvrirEspacesClients({ api, urlApi: env.urlApi });
+
   site = spawn('npm', ['run', 'dev', '--', '--port', String(PORT_SITE), '--strictPort', '--host', 'localhost'], {
     cwd: SITE,
     env: { ...process.env, VITE_API_URL: `http://localhost:${PORT_API}/api` },
@@ -105,6 +109,8 @@ try {
   API locale  : http://localhost:${PORT_API}/api   (base jetable, données fictives)
   Back-office : npm run backoffice:dev (autre terminal)
                 fatou.diop@mtm.test / ${MOT_DE_PASSE}
+  Espace client : http://localhost:${PORT_SITE}/espace-client/connexion   (mot de passe : ${MOT_DE_PASSE_CLIENT})
+${espaces.map((e) => `                ${e.email.padEnd(34)} ${e.role}`).join('\n')}
   Ctrl+C pour tout arrêter (la base fictive est alors détruite).
 ────────────────────────────────────────────────────────────
 `);
