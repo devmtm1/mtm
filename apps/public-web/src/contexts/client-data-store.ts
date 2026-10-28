@@ -53,6 +53,8 @@ export interface ClientDataValue {
   refetchMissions: () => void;
   /** À appeler après le signalement d'un incident. */
   refetchLocataireIncidents: () => void;
+  /** À appeler après le dépôt d'une attestation d'assurance : l'état du bail en dépend. */
+  refetchLocataireBaux?: () => void;
 }
 
 /**

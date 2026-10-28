@@ -60,6 +60,11 @@ export class CloudinaryService {
     if (!file?.buffer) {
       throw new ServiceUnavailableException('Le fichier reçu est invalide');
     }
+    // Environnement local jetable (`npm run dev:local`) : les envois sont acceptés sans quitter le poste, pour pouvoir
+    // essayer les parcours qui déposent un fichier. Jamais activé en production : la variable n'y existe pas.
+    if (this.config.get<string>('STOCKAGE_FICTIF') === 'true') {
+      return this.storeForTests(file, folder, isPublic);
+    }
     if (!this.isConfigured()) {
       if (this.isTestEnvironment())
         return this.storeForTests(file, folder, isPublic);

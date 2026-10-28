@@ -8,5 +8,6 @@ export const COMPTES = {
   responsable: { email: 'awa.ndiaye@mtm.test', prenom: 'Awa', nom: 'Ndiaye', role: 'responsable_commercial' },
   commercial: { email: 'fatou.diop@mtm.test', prenom: 'Fatou', nom: 'Diop', role: 'commercial' },
   commercial2: { email: 'moussa.fall@mtm.test', prenom: 'Moussa', nom: 'Fall', role: 'commercial' },
+  gestionnaire: { email: 'mariama.ba@mtm.test', prenom: 'Mariama', nom: 'Ba', role: 'responsable_gestion_locative' },
   comptable: { email: 'ibrahima.sow@mtm.test', prenom: 'Ibrahima', nom: 'Sow', role: 'comptable' },
 };

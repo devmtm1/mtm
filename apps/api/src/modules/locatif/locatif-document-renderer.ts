@@ -20,16 +20,16 @@ export interface QuittanceData {
   reference2: string | null;
 }
 
-const NAVY = '#1A4974';
-const NAVY_SUBTLE = '#EAF1F7';
-const ACCENT = '#B52C36';
-const TEXT = '#1F2937';
-const MUTED = '#6B7280';
-const BORDER = '#E5E7EB';
-const SUCCESS = '#047857';
+export const NAVY = '#1A4974';
+export const NAVY_SUBTLE = '#EAF1F7';
+export const ACCENT = '#B52C36';
+export const TEXT = '#1F2937';
+export const MUTED = '#6B7280';
+export const BORDER = '#E5E7EB';
+export const SUCCESS = '#047857';
 
-const MARGIN = 48;
-const CONTENT_WIDTH = A4.width - MARGIN * 2;
+export const MARGIN = 48;
+export const CONTENT_WIDTH = A4.width - MARGIN * 2;
 
 const MODE_LABELS: Record<string, string> = {
   especes: 'Espèces',
@@ -39,7 +39,7 @@ const MODE_LABELS: Record<string, string> = {
   autre: 'Autre',
 };
 
-function moisLabel(date: Date): string {
+export function moisLabel(date: Date): string {
   return date.toLocaleDateString('fr-FR', {
     month: 'long',
     year: 'numeric',
@@ -239,7 +239,7 @@ export function renderReleveGestion(data: ReleveGestionData): Buffer {
     color: NAVY,
   });
   page.text(
-    `${moisLabel(data.periodeDebut)} → ${moisLabel(data.periodeFin)}`,
+    `${moisLabel(data.periodeDebut)} au ${moisLabel(data.periodeFin)}`,
     MARGIN,
     top + 30,
     { size: 9.5, color: MUTED },

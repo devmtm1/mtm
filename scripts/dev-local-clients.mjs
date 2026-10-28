@@ -72,6 +72,26 @@ export async function ouvrirEspacesClients({ api, urlApi }) {
     }
   }
 
+  // La villa de Cheikh Mbaye : deux appartements loués depuis plus de deux mois, le premier a payé ses loyers, le
+  // second pas tout à fait. De quoi lire un relevé de propriété avec des chiffres.
+  const immeubles = liste(await essayer('liste des propriétés', () => api.get('/locatif/immeubles')));
+  const villa = immeubles.find((immeuble) => String(immeuble.nom).includes('Fall'));
+  const detailVilla = villa ? await essayer('fiche de la villa', () => api.get(`/locatif/immeubles/${villa.id}`)) : null;
+  const locatairesVilla = [
+    ['Moussa', 'Sarr', 150000, 3],
+    ['Fatima', 'Ndiaye', 180000, 1],
+  ];
+  for (const [index, [prenom, nom, loyer, loyersPayes]] of locatairesVilla.entries()) {
+    const logement = detailVilla?.logements?.[index];
+    if (!logement) continue;
+    const locataire = await essayer(`locataire ${nom}`, () => api.post('/locatif/locataires', { firstName: prenom, lastName: nom }));
+    const bail = locataire && (await essayer(`bail ${nom}`, () => api.post(`/locatif/biens/${logement.id}/baux`, { locataireId: locataire.id, loyerMensuel: loyer, jourEcheance: 5, dateDebut: jour(-70) })));
+    for (let mois = 0; bail && mois < loyersPayes; mois += 1) {
+      const paiement = await essayer(`loyer ${nom}`, () => api.post(`/locatif/baux/${bail.id}/paiements`, { type: 'normal', montant: loyer, modePaiement: 'virement', datePaiement: jour(-60 + mois * 30) }));
+      if (paiement?.id) await essayer(`validation loyer ${nom}`, () => api.post(`/locatif/baux/${bail.id}/paiements/${paiement.id}/valider`, {}));
+    }
+  }
+
   // Acheteurs : un dossier réservé avec acompte, un autre avec son premier versement ; un chantier pour la première.
   const prospects = liste(await essayer('liste des prospects', () => api.get('/crm/prospects?pageSize=100')));
   const terrains = liste(await essayer('liste des terrains', () => api.get('/terrains?pageSize=20')));

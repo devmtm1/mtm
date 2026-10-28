@@ -6,6 +6,7 @@ import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import { BiensController } from './biens.controller';
 import { ImmeublesController } from './immeubles.controller';
 import { ImmeublesService } from './immeubles.service';
+import { ImmeubleRelevesService } from './immeuble-releves.service';
 import { BauxController } from './baux.controller';
 import { LocatairesController } from './locataires.controller';
 import { RelancesController } from './relances.controller';
@@ -54,6 +55,7 @@ import { ResiliationsService } from './resiliations.service';
     LocatairesService,
     BiensService,
     ImmeublesService,
+    ImmeubleRelevesService,
     BienMediasService,
     LocatifPublicService,
     BauxService,

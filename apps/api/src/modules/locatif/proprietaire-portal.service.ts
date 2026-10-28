@@ -284,10 +284,43 @@ export class ProprietairePortalService {
         },
       },
     });
-    return documents.map(({ storageKey, resourceType, ...document }) => ({
-      ...document,
-      secureUrl: this.cloudinary.url(storageKey, resourceType, false),
-    }));
+    // Le relevé unique d'une propriété prend la forme d'un document de bail : l'espace client les range ensemble,
+    // avec le nom de la propriété à la place de l'adresse du bien.
+    const releves = await this.prisma.releveImmeuble.findMany({
+      where: { visibleProprietaire: true, immeuble: { proprietaireId } },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        reference: true,
+        createdAt: true,
+        storageKey: true,
+        resourceType: true,
+        immeuble: { select: { referenceInterne: true, nom: true } },
+      },
+    });
+    return [
+      ...documents.map(({ storageKey, resourceType, ...document }) => ({
+        ...document,
+        secureUrl: this.cloudinary.url(storageKey, resourceType, false),
+      })),
+      ...releves.map((releve) => ({
+        id: releve.id,
+        type: 'releve_consolide',
+        title: `Relevé de la propriété ${releve.immeuble.nom} (${releve.reference})`,
+        createdAt: releve.createdAt,
+        secureUrl: this.cloudinary.url(
+          releve.storageKey,
+          releve.resourceType,
+          false,
+        ),
+        bailLocatif: {
+          bienLocatif: {
+            referenceInterne: releve.immeuble.referenceInterne,
+            adresse: releve.immeuble.nom,
+          },
+        },
+      })),
+    ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
   private async proprietaireDuCompte(userId: string): Promise<string> {

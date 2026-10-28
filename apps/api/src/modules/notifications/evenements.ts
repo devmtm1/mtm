@@ -120,6 +120,16 @@ export const EVENEMENTS_NOTIFICATION: EvenementNotification[] = [
     emailParDefaut: false,
   },
   {
+    cle: 'assurance_a_controler',
+    famille: 'Gestion locative',
+    libelle: 'Assurance à contrôler',
+    description:
+      'Un locataire dépose son attestation d’assurance habitation : elle attend d’être validée.',
+    destinataire: 'permission',
+    permission: 'locatif:modifier',
+    emailParDefaut: false,
+  },
+  {
     cle: 'sejour_demande',
     famille: 'Gestion locative',
     libelle: 'Demande de séjour',

@@ -11,6 +11,7 @@ import { etatPaiementIcone } from '../../components/client/shell/etat-paiement';
 import { NewIncidentModal } from '../../components/client/NewIncidentModal';
 import { ClientEchanges } from '../../components/client/ClientEchanges';
 import { ResiliationCard } from '../../components/client/ResiliationCard';
+import { AssuranceCard } from '../../components/client/AssuranceCard';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -225,6 +226,9 @@ export function ClientLocatairePage() {
           </div>
         </div>
       </ClientCard>
+
+      {/* Une attestation d'assurance valide fait partie du dossier du locataire : il la dépose et suit son contrôle. */}
+      {(bailActif.statut === 'actif' || bailActif.statut === 'preavis') && <AssuranceCard assurance={bailActif.assurance} />}
 
       {solde.resteADevoir > 0 && (
         <CommentRegler reference={`mon bail ${bailActif.referenceInterne ?? ''}`.trim()} montant={solde.resteADevoir} />

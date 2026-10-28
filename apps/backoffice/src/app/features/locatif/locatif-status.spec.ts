@@ -8,8 +8,10 @@ import {
   nomPersonne,
   nomPropre,
   pillClass,
+  REPARTITIONS_CHARGE,
   simpleLabel,
   TYPES_BIEN,
+  TYPES_DOCUMENT,
 } from './locatif-status';
 
 describe('libellés de la gestion locative', () => {
@@ -55,5 +57,16 @@ describe('libellés de la gestion locative', () => {
     expect(nomPropre({ firstName: 'el hadji', lastName: "n'diaye" })).toBe("El Hadji N'Diaye");
     expect(nomPropre({ firstName: 'Fatou', lastName: 'SARR' })).toBe('Fatou SARR');
     expect(nomPropre(null)).toBe('—');
+  });
+});
+
+describe('charges communes et attestations', () => {
+  it('propose les quatre répartitions d’une charge commune, dont celle au prorata de la surface', () => {
+    expect(Object.keys(REPARTITIONS_CHARGE)).toEqual(['egale', 'surface', 'loyer', 'globale']);
+    expect(simpleLabel(REPARTITIONS_CHARGE, 'surface')).toBe('Au prorata de la surface');
+  });
+
+  it('nomme l’attestation d’assurance parmi les types de pièce', () => {
+    expect(simpleLabel(TYPES_DOCUMENT, 'assurance_habitation')).toBe('Attestation d’assurance');
   });
 });

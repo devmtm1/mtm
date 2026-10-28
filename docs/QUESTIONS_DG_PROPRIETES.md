@@ -46,6 +46,15 @@ Quand un bien est à la fois dans les biens à vendre et dans la gestion locativ
 
 *Aujourd'hui :* ce sont deux fiches indépendantes, rien ne les relie.
 
+## Ce qui a été construit en attendant vos réponses
+
+Pour ne pas bloquer le travail, les questions 2 et 3 ont reçu une première réponse, **à confirmer ou à corriger** :
+
+- **Question 2 (relevé)** : le **relevé unique pour toute la villa**, avec le détail par appartement, est disponible (fiche de la propriété › *Relevé de la propriété*). Le relevé par appartement existe toujours. Il n’y a pas encore de relevé regroupant toutes les propriétés d’un même propriétaire.
+- **Question 3 (charges communes)** : les charges sont saisies sur la propriété et **restent à la charge du propriétaire** (déduites de son reversement). On choisit pour chacune la répartition **à parts égales, au prorata de la surface, au prorata du loyer, ou non répartie** ; elle sert à montrer la part de chaque appartement. Si vous voulez que ces charges soient **refacturées aux locataires**, dites-le : c’est une suite à construire.
+
+Les questions 1, 4 et 5 restent ouvertes.
+
 ## Comment répondre
 
 Une réponse par question suffit (par exemple « 1 : même taux, 2 : relevé unique, 3 : au prorata de la surface… »). Avec ces réponses, le développement de la suite prend quelques jours.

@@ -62,6 +62,8 @@ const env = await demarrer({
     CLOUDINARY_API_KEY: 'local-sans-cle',
     CLOUDINARY_API_SECRET: 'local-sans-cle',
     CLOUDINARY_FOLDER: 'mtm-local-test',
+    // Les envois de fichiers (attestation d'assurance, pièces…) sont acceptés sans rien envoyer à Cloudinary.
+    STOCKAGE_FICTIF: 'true',
     // L'API accepte le site sur le port choisi, et le back-office lancé à la main (4200, ou 4201 quand le 4200 est pris).
     CORS_ORIGIN: `http://localhost:${PORT_SITE},http://localhost:4200,http://localhost:4201`,
   },
@@ -109,6 +111,7 @@ try {
   API locale  : http://localhost:${PORT_API}/api   (base jetable, données fictives)
   Back-office : npm run backoffice:dev (autre terminal)
                 fatou.diop@mtm.test / ${MOT_DE_PASSE}
+                mariama.ba@mtm.test / ${MOT_DE_PASSE}   (gestion locative : charges, relevés, contrôle des attestations)
   Espace client : http://localhost:${PORT_SITE}/espace-client/connexion   (mot de passe : ${MOT_DE_PASSE_CLIENT})
 ${espaces.map((e) => `                ${e.email.padEnd(34)} ${e.role}`).join('\n')}
   Ctrl+C pour tout arrêter (la base fictive est alors détruite).

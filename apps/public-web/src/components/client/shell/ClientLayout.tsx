@@ -209,6 +209,7 @@ export function ClientLayout() {
       refetchDemandes: demandes.refetch,
       refetchMissions: missions.refetch,
       refetchLocataireIncidents: locataireIncidents.refetch,
+      refetchLocataireBaux: locataireBaux.refetch,
     }),
     [
       dossiers.data, dossiers.loading, dossiers.error,
@@ -220,7 +221,7 @@ export function ClientLayout() {
       proprietaireDocuments.data, proprietaireDocuments.loading,
       locataireBaux.data, locataireBaux.loading,
       locatairePaiements.data, locatairePaiements.loading,
-      locataireIncidents.data, locataireIncidents.loading, locataireIncidents.refetch,
+      locataireIncidents.data, locataireIncidents.loading, locataireIncidents.refetch, locataireBaux.refetch,
       notificationsData.data, nonLues, marquerNotificationLue, toutMarquerNotificationsLues,
     ],
   );

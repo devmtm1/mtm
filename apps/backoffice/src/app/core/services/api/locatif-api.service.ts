@@ -22,6 +22,10 @@ import type {
   CreateMouvementCautionPayload,
   CreatePaiementPayload,
   CautionBail,
+  ChargeImmeuble,
+  ControleDocumentPayload,
+  CreateChargeImmeublePayload,
+  ReleveImmeuble,
   DocumentLocatif,
   EcheanceLoyer,
   EnvoyerRelancePayload,
@@ -57,6 +61,27 @@ export class LocatifApiService {
   private options$?: Observable<LocatifOptions>;
 
   // --- Propriétés (villa divisée, immeuble, résidence) ---
+
+  findChargesImmeuble(id: string): Observable<ChargeImmeuble[]> {
+    return this.http.get<ChargeImmeuble[]>(`${this.baseUrl}/immeubles/${id}/charges`);
+  }
+
+  addChargeImmeuble(id: string, payload: CreateChargeImmeublePayload): Observable<ChargeImmeuble> {
+    return this.http.post<ChargeImmeuble>(`${this.baseUrl}/immeubles/${id}/charges`, payload);
+  }
+
+  removeChargeImmeuble(id: string, chargeId: string): Observable<{ success: boolean }> {
+    return this.http.delete<{ success: boolean }>(`${this.baseUrl}/immeubles/${id}/charges/${chargeId}`);
+  }
+
+  findRelevesImmeuble(id: string): Observable<ReleveImmeuble[]> {
+    return this.http.get<ReleveImmeuble[]>(`${this.baseUrl}/immeubles/${id}/releves`);
+  }
+
+  /** Relevé unique de la propriété, par défaut sur les douze derniers mois ; publié d'office au propriétaire. */
+  genererReleveImmeuble(id: string, payload: GenererRelevePayload = {}): Observable<ReleveImmeuble> {
+    return this.http.post<ReleveImmeuble>(`${this.baseUrl}/immeubles/${id}/releve`, payload);
+  }
 
   findImmeubles(query: { search?: string; proprietaireId?: string; page?: number; pageSize?: number } = {}): Observable<ImmeublePage> {
     let params = new HttpParams();
@@ -330,6 +355,11 @@ export class LocatifApiService {
     formulaire.append('type', type);
     if (title) formulaire.append('title', title);
     return this.http.post<DocumentLocatif>(`${this.baseUrl}/baux/${bailId}/documents`, formulaire);
+  }
+
+  /** Valide ou refuse un justificatif déposé par le locataire ; un refus porte son motif. */
+  controlerDocument(bailId: string, documentId: string, payload: ControleDocumentPayload): Observable<DocumentLocatif> {
+    return this.http.post<DocumentLocatif>(`${this.baseUrl}/baux/${bailId}/documents/${documentId}/controle`, payload);
   }
 
   setDocumentVisibility(
