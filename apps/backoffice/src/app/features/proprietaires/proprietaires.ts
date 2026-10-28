@@ -20,7 +20,8 @@ import {
 import { mtmGridTheme } from '../../core/ag-grid.config';
 import { ProprietairesApiService } from '../../core/services/api/proprietaires-api.service';
 import { SessionService } from '../../core/services/session.service';
-import { ProprietaireDialog } from '../terrains/proprietaire-dialog';
+import { ProprietaireDialog, type ProprietaireDialogResult } from '../terrains/proprietaire-dialog';
+import { catchError, map, of, switchMap } from 'rxjs';
 import type { ProprietaireSummary } from '../../core/models/terrain.model';
 import { NotificationService } from '../../shared/services/notification.service';
 import {
@@ -248,16 +249,33 @@ export class Proprietaires implements OnInit {
     this.dialog
       .open(ProprietaireDialog, { width: '520px', maxWidth: 'calc(100vw - 32px)' })
       .afterClosed()
-      .subscribe((payload: Omit<ProprietaireSummary, 'id'> | undefined) => {
-        if (!payload) return;
-        this.api.create(payload).subscribe({
-          next: (created) => {
-            this.notify.success('Propriétaire créé');
-            this.openDetail(created.id);
-          },
-          error: (error: unknown) =>
-            this.notify.error(error, 'Impossible de créer le propriétaire'),
-        });
+      .subscribe((result: ProprietaireDialogResult | undefined) => {
+        if (!result) return;
+        this.api
+          .create(result.payload)
+          .pipe(
+            switchMap((created) =>
+              this.api.enregistrerPiece(created.id, result.fichierPiece, false).pipe(
+                // La fiche est créée : un PDF qui n'a pas pu partir se rajoute depuis la fiche, sans tout refaire.
+                catchError((error: unknown) => {
+                  this.notify.error(
+                    error,
+                    'Propriétaire créé, mais la copie de la pièce n’a pas pu être envoyée',
+                  );
+                  return of(null);
+                }),
+                map(() => created),
+              ),
+            ),
+          )
+          .subscribe({
+            next: (created) => {
+              this.notify.success('Propriétaire créé');
+              this.openDetail(created.id);
+            },
+            error: (error: unknown) =>
+              this.notify.error(error, 'Impossible de créer le propriétaire'),
+          });
       });
   }
 

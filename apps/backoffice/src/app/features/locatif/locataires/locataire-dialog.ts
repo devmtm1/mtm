@@ -9,11 +9,12 @@ import {
 } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import type { Observable } from 'rxjs';
+import { catchError, of, switchMap, type Observable } from 'rxjs';
 import { contactRequis } from '../locatif-form';
 import { LocatifApiService } from '../../../core/services/api/locatif-api.service';
 import type { Locataire } from '../../../core/models/locatif.model';
 import { NotificationService } from '../../../shared/services/notification.service';
+import { PieceIdentiteChamps } from '../../../shared/components/piece-identite/piece-identite-champs';
 
 export interface LocataireDialogData {
   locataire?: Locataire;
@@ -23,7 +24,7 @@ export interface LocataireDialogData {
 @Component({
   selector: 'app-locataire-dialog',
   standalone: true,
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule],
+  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, PieceIdentiteChamps],
   template: `
     <h2 mat-dialog-title>{{ isEdit ? 'Modifier le locataire' : 'Nouveau locataire' }}</h2>
     <mat-dialog-content [formGroup]="form" class="locataire-dialog-grid">
@@ -55,6 +56,13 @@ export interface LocataireDialogData {
       @if (form.hasError('contactManquant') && form.touched) {
         <p class="wide contact-error">Indiquez au moins un téléphone ou un e-mail : les relances et l'espace locataire en ont besoin.</p>
       }
+      <app-piece-identite-champs
+        class="wide"
+        [groupe]="form"
+        [pieceUrl]="data.locataire?.pieceUrl ?? null"
+        (fichierChange)="fichierPiece = $event"
+        (retraitChange)="retirerPiece = $event"
+      />
       <mat-form-field appearance="outline" class="wide">
         <mat-label>Notes internes</mat-label>
         <textarea matInput rows="2" formControlName="notes"></textarea>
@@ -85,7 +93,12 @@ export class LocataireDialog {
     phone: [''],
     email: [''],
     notes: [''],
+    typePiece: [''],
+    numeroPiece: ['', Validators.maxLength(50)],
   }, { validators: contactRequis });
+
+  protected fichierPiece: File | null = null;
+  protected retirerPiece = false;
 
   constructor() {
     const locataire = this.data.locataire;
@@ -96,6 +109,8 @@ export class LocataireDialog {
         phone: locataire.phone ?? '',
         email: locataire.email ?? '',
         notes: locataire.notes ?? '',
+        typePiece: locataire.typePiece ?? '',
+        numeroPiece: locataire.numeroPiece ?? '',
       });
     }
   }
@@ -113,12 +128,28 @@ export class LocataireDialog {
       phone: texte(valeur.phone),
       email: texte(valeur.email),
       notes: texte(valeur.notes),
+      // À la modification, un champ vidé s'efface (null) ; à la création, il reste absent.
+      typePiece: texte(valeur.typePiece) ?? (this.isEdit ? null : undefined),
+      numeroPiece: texte(valeur.numeroPiece) ?? (this.isEdit ? null : undefined),
     };
     this.saving.set(true);
     const request = this.isEdit
       ? this.api.updateLocataire(this.data.locataire!.id, payload)
       : this.api.createLocataire(payload);
-    request.subscribe({
+    request
+      .pipe(
+        switchMap((locataire) =>
+          this.api.enregistrerPieceLocataire(locataire.id, this.fichierPiece, this.retirerPiece).pipe(
+            // La fiche est enregistrée : un PDF qui n'a pas pu partir se rajoute depuis la fiche, sans tout refaire.
+            catchError((error: unknown) => {
+              this.notify.error(error, 'Fiche enregistrée, mais la copie de la pièce n’a pas pu être envoyée');
+              return of(null);
+            }),
+            switchMap(() => of(locataire)),
+          ),
+        ),
+      )
+      .subscribe({
       next: (locataire) => {
         this.saving.set(false);
         this.dialogRef.close(locataire);

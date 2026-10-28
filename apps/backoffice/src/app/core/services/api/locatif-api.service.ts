@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import type {
@@ -401,6 +401,16 @@ export class LocatifApiService {
 
   updateLocataire(id: string, payload: UpdateLocatairePayload): Observable<Locataire> {
     return this.http.patch<Locataire>(`${this.baseUrl}/locataires/${id}`, payload);
+  }
+
+  /** Copie PDF de la pièce d'identité, après l'enregistrement de la fiche (envoi, ou retrait de l'ancienne). */
+  enregistrerPieceLocataire(id: string, fichier: File | null, retirer: boolean): Observable<unknown> {
+    if (fichier) {
+      const corps = new FormData();
+      corps.append('file', fichier);
+      return this.http.post(`${this.baseUrl}/locataires/${id}/piece-identite`, corps);
+    }
+    return retirer ? this.http.delete(`${this.baseUrl}/locataires/${id}/piece-identite`) : of(null);
   }
 
   /**

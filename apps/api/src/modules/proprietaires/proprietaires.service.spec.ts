@@ -36,6 +36,7 @@ describe('ProprietairesService.createClientAccount', () => {
         configMock as never,
         mailMock as never,
       ),
+      {} as never,
     );
   });
 
@@ -145,7 +146,11 @@ describe('ProprietairesService : biens confiés', () => {
   const prismaMock = {
     proprietaire: { findMany: jest.fn(), findUnique: jest.fn() },
   };
-  const service = new ProprietairesService(prismaMock as never, {} as never);
+  const service = new ProprietairesService(
+    prismaMock as never,
+    {} as never,
+    {} as never,
+  );
 
   it('compte aussi les biens en gestion locative, pas seulement les terrains', async () => {
     prismaMock.proprietaire.findMany.mockResolvedValue([]);
@@ -189,7 +194,11 @@ describe('ProprietairesService : matricule et coordonnées', () => {
       update: jest.fn(),
     },
   };
-  const service = new ProprietairesService(prismaMock as never, {} as never);
+  const service = new ProprietairesService(
+    prismaMock as never,
+    {} as never,
+    {} as never,
+  );
   const annee = new Date().getFullYear();
 
   beforeEach(() => jest.resetAllMocks());

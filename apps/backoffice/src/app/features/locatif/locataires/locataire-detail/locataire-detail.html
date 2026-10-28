@@ -100,6 +100,20 @@
       </section>
 
       <section class="page-card detail-section detail-section--wide">
+        <h2>Pièce d’identité</h2>
+        @if (l.typePiece || l.numeroPiece || l.pieceUrl) {
+          <p class="detail-section__text">
+            {{ libellePiece(l.typePiece) || 'Pièce' }}{{ l.numeroPiece ? ' n° ' + l.numeroPiece : '' }}
+            @if (l.pieceUrl) {
+              · <a [href]="l.pieceUrl" target="_blank" rel="noopener">Ouvrir le PDF</a>
+            }
+          </p>
+        } @else {
+          <p class="detail-section__text">Non renseignée. Utilisez « Modifier » pour l’ajouter (facultatif).</p>
+        }
+      </section>
+
+      <section class="page-card detail-section detail-section--wide">
         <h2>Notes internes</h2>
         <p class="detail-section__text">{{ l.notes || 'Aucune note. Utilisez « Modifier » pour en ajouter une.' }}</p>
       </section>

@@ -1,3 +1,4 @@
+import type { PieceIdentite } from './piece-identite';
 /** Modèles de la gestion locative (J2.1, section 15 du cahier des charges). */
 
 export interface LocatifPersonne {
@@ -264,7 +265,7 @@ export interface ControleDocumentPayload {
   motif?: string;
 }
 
-export interface Locataire {
+export interface Locataire extends PieceIdentite {
   id: string;
   firstName: string;
   lastName: string;
@@ -548,6 +549,9 @@ export interface CreateLocatairePayload {
   email?: string;
   phone?: string;
   notes?: string;
+  /** Pièce d'identité facultative ; `null` à la modification pour l'effacer. */
+  typePiece?: string | null;
+  numeroPiece?: string | null;
 }
 
 export type UpdateLocatairePayload = Partial<CreateLocatairePayload>;

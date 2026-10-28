@@ -34,7 +34,12 @@ import {
 } from '../../locatif/locatif-status';
 import { MandatsApiService } from '../../../core/services/api/mandats-api.service';
 import { SessionService } from '../../../core/services/session.service';
-import { ProprietaireDialog } from '../../terrains/proprietaire-dialog';
+import { libellePiece } from '../../../core/models/piece-identite';
+import {
+  ProprietaireDialog,
+  type ProprietaireDialogResult,
+} from '../../terrains/proprietaire-dialog';
+import { catchError, of, switchMap } from 'rxjs';
 import { ClientAccountDialog } from '../../../shared/dialogs/client-account-dialog';
 import type { ProprietaireSummary, TerrainListItem } from '../../../core/models/terrain.model';
 import type { MandatListItem } from '../../../core/models/mandat.model';
@@ -212,6 +217,8 @@ export class ProprietaireDetail implements OnInit {
     return mandatPill(MANDAT_STATUS, value);
   }
 
+  protected readonly libellePiece = libellePiece;
+
   protected mandatHelp(value: string): string {
     return mandatHelp(MANDAT_STATUS, value);
   }
@@ -236,16 +243,32 @@ export class ProprietaireDetail implements OnInit {
         data: { proprietaire: current as ProprietaireSummary },
       })
       .afterClosed()
-      .subscribe((payload: Omit<ProprietaireSummary, 'id'> | undefined) => {
-        if (!payload || !this.id) return;
-        this.api.update(this.id, payload).subscribe({
-          next: () => {
-            this.notify.success('Propriétaire mis à jour');
-            this.load(this.id!);
-          },
-          error: (error: unknown) =>
-            this.notify.error(error, 'Impossible de mettre à jour le propriétaire'),
-        });
+      .subscribe((result: ProprietaireDialogResult | undefined) => {
+        if (!result || !this.id) return;
+        const id = this.id;
+        this.api
+          .update(id, result.payload)
+          .pipe(
+            switchMap(() =>
+              this.api.enregistrerPiece(id, result.fichierPiece, result.retirerPiece).pipe(
+                catchError((error: unknown) => {
+                  this.notify.error(
+                    error,
+                    'Fiche enregistrée, mais la copie de la pièce n’a pas pu être mise à jour',
+                  );
+                  return of(null);
+                }),
+              ),
+            ),
+          )
+          .subscribe({
+            next: () => {
+              this.notify.success('Propriétaire mis à jour');
+              this.load(this.id!);
+            },
+            error: (error: unknown) =>
+              this.notify.error(error, 'Impossible de mettre à jour le propriétaire'),
+          });
       });
   }
 

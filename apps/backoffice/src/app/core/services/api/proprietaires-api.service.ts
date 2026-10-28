@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import type { ProprietaireSummary } from '../../models/terrain.model';
 import type { ClientAccountCreated } from '../../models/client-account.model';
@@ -36,6 +36,19 @@ export class ProprietairesApiService {
 
   update(id: string, payload: Partial<Omit<ProprietaireSummary, 'id'>>): Observable<ProprietaireSummary> {
     return this.http.patch<ProprietaireSummary>(`${this.baseUrl}/${id}`, payload);
+  }
+
+  /**
+   * Copie PDF de la pièce d'identité, après l'enregistrement de la fiche : envoie le fichier choisi, ou retire
+   * l'ancien si on l'a demandé. Sans l'un ni l'autre, rien n'est envoyé.
+   */
+  enregistrerPiece(id: string, fichier: File | null, retirer: boolean): Observable<unknown> {
+    if (fichier) {
+      const corps = new FormData();
+      corps.append('file', fichier);
+      return this.http.post(`${this.baseUrl}/${id}/piece-identite`, corps);
+    }
+    return retirer ? this.http.delete(`${this.baseUrl}/${id}/piece-identite`) : of(null);
   }
 
   remove(id: string): Observable<{ success: boolean }> {

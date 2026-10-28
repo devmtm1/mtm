@@ -9,6 +9,7 @@ import { LocatifApiService } from '../../../../core/services/api/locatif-api.ser
 import { SessionService } from '../../../../core/services/session.service';
 import type { Locataire, LocataireBail } from '../../../../core/models/locatif.model';
 import { NotificationService } from '../../../../shared/services/notification.service';
+import { libellePiece } from '../../../../core/models/piece-identite';
 import { MoneyPipe } from '../../../../shared/pipes/money.pipe';
 import {
   BAIL_STATUTS,
@@ -56,6 +57,7 @@ export class LocataireDetail implements OnInit {
   protected readonly canModify = this.session.hasPermission('locatif:modifier');
   protected readonly canSeeBien = this.session.hasPermission('locatif:consulter');
   protected readonly canCreateClient = this.session.hasPermission('clients:creer');
+  protected readonly libellePiece = libellePiece;
 
   /** Le nom tel qu'on le présente : capitales initiales, sans toucher la donnée. */
   protected nom(locataire: Locataire): string {

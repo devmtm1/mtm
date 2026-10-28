@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import type { ProprietaireSummary } from '../../core/models/terrain.model';
 import { SessionService } from '../../core/services/session.service';
+import { PieceIdentiteChamps } from '../../shared/components/piece-identite/piece-identite-champs';
 
 interface ProprietaireForm {
   firstName: FormControl<string>;
@@ -13,6 +14,15 @@ interface ProprietaireForm {
   email: FormControl<string>;
   phone: FormControl<string>;
   notes: FormControl<string>;
+  typePiece: FormControl<string>;
+  numeroPiece: FormControl<string>;
+}
+
+/** Ce que renvoie le dialogue : la fiche, plus la copie PDF de la pièce à envoyer ou à retirer. */
+export interface ProprietaireDialogResult {
+  payload: Omit<ProprietaireSummary, 'id'>;
+  fichierPiece: File | null;
+  retirerPiece: boolean;
 }
 
 @Component({
@@ -23,6 +33,7 @@ interface ProprietaireForm {
     MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
+    PieceIdentiteChamps,
   ],
   templateUrl: './proprietaire-dialog.html',
   styleUrl: './proprietaire-dialog.scss',
@@ -55,7 +66,12 @@ export class ProprietaireDialog {
     email: new FormControl('', { nonNullable: true, validators: [Validators.email] }),
     phone: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(30)] }),
     notes: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(500)] }),
+    typePiece: new FormControl('', { nonNullable: true }),
+    numeroPiece: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(50)] }),
   });
+
+  protected fichierPiece: File | null = null;
+  protected retirerPiece = false;
 
   constructor() {
     const proprietaire = this.dialogData?.proprietaire;
@@ -67,6 +83,8 @@ export class ProprietaireDialog {
         email: proprietaire.email ?? '',
         phone: proprietaire.phone ?? '',
         notes: proprietaire.notes ?? '',
+        typePiece: proprietaire.typePiece ?? '',
+        numeroPiece: proprietaire.numeroPiece ?? '',
       });
     }
   }
@@ -85,8 +103,17 @@ export class ProprietaireDialog {
       email: optional(value.email),
       phone: optional(value.phone),
       notes: optional(value.notes),
+      // Un non-administrateur ne relit pas la pièce : il ne la réécrit pas non plus.
+      ...(this.coordonneesEditables
+        ? { typePiece: optional(value.typePiece), numeroPiece: optional(value.numeroPiece) }
+        : {}),
     };
-    this.dialogRef.close(payload);
+    const result: ProprietaireDialogResult = {
+      payload,
+      fichierPiece: this.coordonneesEditables ? this.fichierPiece : null,
+      retirerPiece: this.coordonneesEditables && this.retirerPiece,
+    };
+    this.dialogRef.close(result);
   }
 
   cancel(): void {
