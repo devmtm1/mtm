@@ -100,8 +100,11 @@ export async function calculerSoldeBail(
   for (const echeance of echeances) {
     const prevu = Number(echeance.montantPrevu);
     const paye = Number(echeance.montantPaye);
-    loyersDus += prevu;
     loyersEncaisses += paye;
+    // Les échéances sont générées d'avance (un an) : un loyer pas encore échu n'est pas « dû », ni impayé. Sans cela,
+    // le locataire verrait « reste à régler » l'année entière dès la signature du bail.
+    if (echeance.dateEcheance.getTime() > maintenant.getTime()) continue;
+    loyersDus += prevu;
     if (paye < prevu) {
       echeancesImpayees += 1;
       const retard = Math.floor(

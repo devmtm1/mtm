@@ -162,7 +162,7 @@ export function StatTile({
       <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${ICON_TONES[tone]}`}>
         <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
       </span>
-      <span className="mt-2 block truncate font-display text-lg font-bold leading-tight text-mtm-text">{value}</span>
+      <span className="mt-2 block break-words font-display text-lg font-bold leading-tight text-mtm-text">{value}</span>
       <span className="block text-xs font-semibold text-mtm-muted">{label}</span>
     </>
   );

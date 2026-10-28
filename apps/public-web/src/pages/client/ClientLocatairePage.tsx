@@ -88,18 +88,38 @@ export function ClientLocatairePage() {
   }
 
   const statut = bailStatus(bailActif.statut);
-  const situation = situationPaiement(bailActif.situationPaiement);
   const caution = cautionStatus(bailActif.caution.statut);
   const { solde } = bailActif;
 
-  // Un bail de deux ans compte vingt-quatre échéances : on montre ce qui reste
-  // dû et les trois dernières réglées, le reste se déplie.
-  const reglees = bailActif.echeances.filter((echeance) => echeance.statut === 'payee');
+  // Le statut d'une échéance est mis à jour chaque nuit côté serveur : en attendant, une échéance dont la date est
+  // passée ne doit pas s'afficher « À venir » (ni la situation « À jour » alors que le solde est dû).
+  const maintenant = Date.now();
+  const echeances = bailActif.echeances.map((echeance) =>
+    echeance.statut === 'a_venir' && new Date(echeance.dateEcheance).getTime() < maintenant
+      ? { ...echeance, statut: 'impayee' }
+      : echeance,
+  );
+  const enRetard = echeances.some((echeance) => echeance.statut === 'impayee' || echeance.statut === 'en_retard');
+  const situation = situationPaiement(
+    bailActif.situationPaiement === 'a_jour' && enRetard && solde.resteADevoir > 0 ? 'retard' : bailActif.situationPaiement,
+  );
+
+  // Les échéances sont générées d'avance (un an, parfois deux) : on montre ce qui est échu et non réglé, les deux
+  // prochaines à venir et les trois dernières réglées ; le reste se déplie.
+  const reglees = echeances.filter((echeance) => echeance.statut === 'payee');
   const recentesReglees = new Set(reglees.slice(-3).map((echeance) => echeance.id));
+  const prochaines = new Set(
+    echeances
+      .filter((echeance) => echeance.statut === 'a_venir')
+      .slice(0, 2)
+      .map((echeance) => echeance.id),
+  );
   const echeancesVisibles = toutesEcheances
-    ? bailActif.echeances
-    : bailActif.echeances.filter((echeance) => echeance.statut !== 'payee' || recentesReglees.has(echeance.id));
-  const echeancesMasquees = bailActif.echeances.length - echeancesVisibles.length;
+    ? echeances
+    : echeances.filter((echeance) =>
+        echeance.statut === 'payee' ? recentesReglees.has(echeance.id) : echeance.statut === 'a_venir' ? prochaines.has(echeance.id) : true,
+      );
+  const echeancesMasquees = echeances.length - echeancesVisibles.length;
   const reglementsVisibles = tousReglements ? paiements : paiements.slice(0, 4);
 
   return (

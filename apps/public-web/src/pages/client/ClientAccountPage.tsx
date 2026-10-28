@@ -8,6 +8,7 @@ import { useProfilClient } from '../../hooks/useProfilClient';
 import { ClientCard, ClientPageHeader } from '../../components/client/shell/ClientUi';
 import { ChangePasswordForm } from '../../components/auth/ChangePasswordForm';
 import { Modal } from '../../components/ui/Modal';
+import { PreferencesCompte } from '../../components/client/PreferencesCompte';
 import { ROUTES } from '../../routes';
 
 /** Identité, sécurité du compte, conseiller, et sortie de l'espace client. */
@@ -60,6 +61,8 @@ export function ClientAccountPage() {
           <ChevronRight className="h-4 w-4 shrink-0 text-mtm-muted" aria-hidden="true" />
         </button>
       </ClientCard>
+
+      <PreferencesCompte />
 
       <ClientCard title="Votre conseiller">
         <p className="text-sm text-mtm-muted">Une question sur un dossier, un paiement ou un document ? MTM vous répond du lundi au samedi.</p>
