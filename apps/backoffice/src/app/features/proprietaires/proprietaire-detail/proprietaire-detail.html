@@ -398,6 +398,22 @@
               <dt>E-mail</dt>
               <dd>{{ p.email || '—' }}</dd>
             </div>
+            <div>
+              <dt>Pièce d’identité</dt>
+              <dd>
+                @if (p.typePiece || p.numeroPiece) {
+                  {{ libellePiece(p.typePiece) || 'Pièce' }}{{ p.numeroPiece ? ' n° ' + p.numeroPiece : '' }}
+                } @else {
+                  —
+                }
+              </dd>
+            </div>
+            @if (p.pieceUrl) {
+              <div>
+                <dt>Copie de la pièce</dt>
+                <dd><a [href]="p.pieceUrl" target="_blank" rel="noopener">Ouvrir le PDF</a></dd>
+              </div>
+            }
           }
         </dl>
       </section>

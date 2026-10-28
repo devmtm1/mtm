@@ -8,7 +8,10 @@ import {
   Patch,
   Post,
   Req,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -20,6 +23,7 @@ import { UpdateProprietaireDto } from './dto/update-proprietaire.dto';
 import { CreateClientAccountDto } from '../client-accounts/dto/create-client-account.dto';
 import { ProprietairesService } from './proprietaires.service';
 import { masquerCoordonnees } from './coordonnees';
+import { MAX_ASSET_SIZE } from '../../common/storage/asset-validation';
 
 @ApiTags('proprietaires')
 @Controller('proprietaires')
@@ -107,6 +111,49 @@ export class ProprietairesController {
         notes: proprietaire.notes,
       },
       justification: 'Modification des informations du propriétaire',
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    return masquerCoordonnees(proprietaire, user);
+  }
+
+  /** Copie PDF de la pièce d'identité (facultative) : remplace la précédente. */
+  @Post(':id/piece-identite')
+  @RequirePermissions('proprietaires:modifier')
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_ASSET_SIZE } }),
+  )
+  async deposerPiece(
+    @Param('id', ParseUUIDPipe) id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    const proprietaire = await this.proprietaires.deposerPiece(id, file);
+    await this.audit.record({
+      userId: user.id,
+      action: 'proprietaire.piece_deposee',
+      entityType: 'Proprietaire',
+      entityId: id,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    return masquerCoordonnees(proprietaire, user);
+  }
+
+  @Delete(':id/piece-identite')
+  @RequirePermissions('proprietaires:modifier')
+  async retirerPiece(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    const proprietaire = await this.proprietaires.retirerPiece(id);
+    await this.audit.record({
+      userId: user.id,
+      action: 'proprietaire.piece_retiree',
+      entityType: 'Proprietaire',
+      entityId: id,
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });

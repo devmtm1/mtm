@@ -1,5 +1,6 @@
 import { Transform } from 'class-transformer';
-import { IsEmail, IsOptional, IsString, Length } from 'class-validator';
+import { IsEmail, IsIn, IsOptional, IsString, Length } from 'class-validator';
+import { TYPES_PIECE } from '../../../common/storage/piece-identite';
 
 const emptyToUndefined = ({ value }: { value: unknown }) =>
   typeof value === 'string' && value.trim() === '' ? undefined : value;
@@ -21,6 +22,15 @@ export class CreateLocataireDto {
   @IsString()
   @Length(0, 500)
   notes?: string;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsIn(TYPES_PIECE, { message: 'Type de pièce inconnu' })
+  typePiece?: string;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 50)
+  numeroPiece?: string;
 }
 
 export class UpdateLocataireDto {
@@ -40,4 +50,13 @@ export class UpdateLocataireDto {
   @IsString()
   @Length(0, 500)
   notes?: string;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsIn(TYPES_PIECE, { message: 'Type de pièce inconnu' })
+  typePiece?: string;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 50)
+  numeroPiece?: string;
 }

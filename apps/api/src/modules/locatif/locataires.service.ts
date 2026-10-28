@@ -6,6 +6,11 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
+import { CloudinaryService } from '../../common/storage/cloudinary.service';
+import {
+  exposerPiece,
+  validerPiecePdf,
+} from '../../common/storage/piece-identite';
 import { ClientAccountsService } from '../client-accounts/client-accounts.service';
 import { CreateLocataireDto, UpdateLocataireDto } from './dto/locataire.dto';
 
@@ -15,6 +20,7 @@ export class LocatairesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly comptesClient: ClientAccountsService,
+    private readonly cloudinary: CloudinaryService,
   ) {}
 
   async findAll(search?: string) {
@@ -76,21 +82,79 @@ export class LocatairesService {
         email: true,
         phone: true,
         notes: true,
+        typePiece: true,
+        numeroPiece: true,
+        pieceStorageKey: true,
+        pieceResourceType: true,
         createdAt: true,
         updatedAt: true,
       },
     });
     if (!locataire) throw new NotFoundException('Locataire introuvable');
-    return locataire;
+    return exposerPiece(locataire, this.cloudinary);
   }
 
-  create(dto: CreateLocataireDto) {
-    return this.prisma.locataire.create({ data: dto });
+  async create(dto: CreateLocataireDto) {
+    const cree = await this.prisma.locataire.create({ data: dto });
+    return exposerPiece(cree, this.cloudinary);
   }
 
   async update(id: string, dto: UpdateLocataireDto) {
     await this.findById(id);
-    return this.prisma.locataire.update({ where: { id }, data: dto });
+    const modifie = await this.prisma.locataire.update({
+      where: { id },
+      data: dto,
+    });
+    return exposerPiece(modifie, this.cloudinary);
+  }
+
+  /** Copie PDF de la pièce d'identité : remplace la précédente, qui est supprimée du stockage. */
+  async deposerPiece(id: string, file: Express.Multer.File) {
+    const avant = await this.pieceActuelle(id);
+    validerPiecePdf(file);
+    const envoye = await this.cloudinary.upload(
+      file,
+      `locataires/${id}/piece-identite`,
+      false,
+    );
+    const modifie = await this.prisma.locataire.update({
+      where: { id },
+      data: {
+        pieceStorageKey: envoye.publicId,
+        pieceResourceType: envoye.resourceType,
+      },
+    });
+    await this.supprimerFichier(avant);
+    return exposerPiece(modifie, this.cloudinary);
+  }
+
+  async retirerPiece(id: string) {
+    const avant = await this.pieceActuelle(id);
+    const modifie = await this.prisma.locataire.update({
+      where: { id },
+      data: { pieceStorageKey: null, pieceResourceType: null },
+    });
+    await this.supprimerFichier(avant);
+    return exposerPiece(modifie, this.cloudinary);
+  }
+
+  private async pieceActuelle(id: string) {
+    const locataire = await this.prisma.locataire.findUnique({
+      where: { id },
+      select: { pieceStorageKey: true, pieceResourceType: true },
+    });
+    if (!locataire) throw new NotFoundException('Locataire introuvable');
+    return locataire;
+  }
+
+  private async supprimerFichier(piece: {
+    pieceStorageKey: string | null;
+    pieceResourceType: string | null;
+  }): Promise<void> {
+    if (!piece.pieceStorageKey) return;
+    await this.cloudinary
+      .destroy(piece.pieceStorageKey, piece.pieceResourceType ?? 'raw', false)
+      .catch(() => undefined);
   }
 
   /** Historique des baux d'un locataire, tous biens confondus. */

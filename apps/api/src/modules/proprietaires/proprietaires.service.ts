@@ -5,6 +5,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { CloudinaryService } from '../../common/storage/cloudinary.service';
+import {
+  exposerPiece,
+  validerPiecePdf,
+} from '../../common/storage/piece-identite';
 import {
   estConflitDeReference,
   referenceSuivante,
@@ -24,6 +29,7 @@ export class ProprietairesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly comptesClient: ClientAccountsService,
+    private readonly cloudinary: CloudinaryService,
   ) {}
 
   async findAll(user?: Demandeur) {
@@ -62,6 +68,10 @@ export class ProprietairesService {
         email: true,
         phone: true,
         notes: true,
+        typePiece: true,
+        numeroPiece: true,
+        pieceStorageKey: true,
+        pieceResourceType: true,
         createdAt: true,
         updatedAt: true,
         _count: {
@@ -72,7 +82,10 @@ export class ProprietairesService {
     if (!proprietaire) {
       throw new NotFoundException('Propriétaire introuvable');
     }
-    return masquerCoordonnees(proprietaire, user);
+    return masquerCoordonnees(
+      exposerPiece(proprietaire, this.cloudinary),
+      user,
+    );
   }
 
   /** Matricule que recevra le prochain propriétaire (PRO-2026-0004). */
@@ -102,9 +115,10 @@ export class ProprietairesService {
     // Deux créations simultanées peuvent viser le même rang : on relit le dernier et on réessaie.
     for (let essai = 0; ; essai++) {
       try {
-        return await this.prisma.proprietaire.create({
+        const cree = await this.prisma.proprietaire.create({
           data: { ...dto, matricule: await this.prochainMatricule() },
         });
+        return exposerPiece(cree, this.cloudinary);
       } catch (erreur) {
         if (essai >= 4 || !estConflitDeReference(erreur, 'matricule'))
           throw erreur;
@@ -116,10 +130,66 @@ export class ProprietairesService {
     await this.ensureExists(id);
     // Qui ne voit pas les coordonnées ne peut pas les réécrire.
     const { email: _email, phone: _phone, ...sansCoordonnees } = dto;
-    return this.prisma.proprietaire.update({
+    // Même règle pour la pièce d'identité : réservée à l'administrateur.
+    const {
+      typePiece: _type,
+      numeroPiece: _numero,
+      ...sansPiece
+    } = sansCoordonnees;
+    const modifie = await this.prisma.proprietaire.update({
       where: { id },
-      data: voitCoordonneesProprietaires(user) ? dto : sansCoordonnees,
+      data: voitCoordonneesProprietaires(user) ? dto : sansPiece,
     });
+    return exposerPiece(modifie, this.cloudinary);
+  }
+
+  /** Copie PDF de la pièce d'identité : remplace la précédente, qui est supprimée du stockage. */
+  async deposerPiece(id: string, file: Express.Multer.File) {
+    const avant = await this.pieceActuelle(id);
+    validerPiecePdf(file);
+    const envoye = await this.cloudinary.upload(
+      file,
+      `proprietaires/${id}/piece-identite`,
+      false,
+    );
+    const modifie = await this.prisma.proprietaire.update({
+      where: { id },
+      data: {
+        pieceStorageKey: envoye.publicId,
+        pieceResourceType: envoye.resourceType,
+      },
+    });
+    await this.supprimerFichier(avant);
+    return exposerPiece(modifie, this.cloudinary);
+  }
+
+  async retirerPiece(id: string) {
+    const avant = await this.pieceActuelle(id);
+    const modifie = await this.prisma.proprietaire.update({
+      where: { id },
+      data: { pieceStorageKey: null, pieceResourceType: null },
+    });
+    await this.supprimerFichier(avant);
+    return exposerPiece(modifie, this.cloudinary);
+  }
+
+  private async pieceActuelle(id: string) {
+    const proprietaire = await this.prisma.proprietaire.findUnique({
+      where: { id },
+      select: { pieceStorageKey: true, pieceResourceType: true },
+    });
+    if (!proprietaire) throw new NotFoundException('Propriétaire introuvable');
+    return proprietaire;
+  }
+
+  private async supprimerFichier(piece: {
+    pieceStorageKey: string | null;
+    pieceResourceType: string | null;
+  }): Promise<void> {
+    if (!piece.pieceStorageKey) return;
+    await this.cloudinary
+      .destroy(piece.pieceStorageKey, piece.pieceResourceType ?? 'raw', false)
+      .catch(() => undefined);
   }
 
   async remove(id: string): Promise<void> {

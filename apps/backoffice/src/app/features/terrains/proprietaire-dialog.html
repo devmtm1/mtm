@@ -59,8 +59,17 @@
           matricule.
         </p>
       }
+      <app-piece-identite-champs
+        class="full-width"
+        [groupe]="form"
+        [pieceUrl]="dialogData?.proprietaire?.pieceUrl ?? null"
+        (fichierChange)="fichierPiece = $event"
+        (retraitChange)="retirerPiece = $event"
+      />
     } @else {
-      <p class="coordonnees-note">Téléphone et e-mail réservés à l’administrateur.</p>
+      <p class="coordonnees-note">
+        Téléphone, e-mail et pièce d’identité réservés à l’administrateur.
+      </p>
     }
 
     <mat-form-field appearance="outline" class="full-width">
