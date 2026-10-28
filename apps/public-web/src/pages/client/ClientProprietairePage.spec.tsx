@@ -99,14 +99,59 @@ describe('ClientProprietairePage — courte durée', () => {
     expect(screen.getByText('Aucun séjour confirmé pour l’instant.')).toBeTruthy();
   });
 
-  it('garde « Aucun bail en cours » pour un bien au mois sans locataire', () => {
+  it('n’affiche pas de ligne « aucun bail » pour un bien au mois sans locataire : son état suffit', () => {
     donnees.valeur.proprietaireBiens = [
       bienALaNuit({ modeLocation: 'longue_duree', occupation: null, sejours: [], sejoursEncaisses: 0 }),
     ];
     donnees.valeur.proprietaireSynthese = synthese({ loues: 0, biensALaNuit: 0, sejoursEncaisses: 0 });
     afficher();
 
-    expect(screen.getByText('Aucun bail en cours sur ce bien.')).toBeTruthy();
+    expect(screen.queryByText(/Aucun bail en cours/)).toBeNull();
+    expect(screen.getByText('Disponible')).toBeTruthy();
     expect(screen.queryByText('Courte durée')).toBeNull();
+  });
+});
+
+describe('ClientProprietairePage — propriétés à plusieurs logements', () => {
+  const logement = (id: string, lot: string): ClientBienLocatif =>
+    bienALaNuit({
+      id,
+      referenceInterne: `L-2026-00${lot}`,
+      numeroLot: lot,
+      immeuble: { id: 'im1', nom: 'Villa Fall', type: 'villa' },
+      modeLocation: 'longue_duree',
+      occupation: null,
+      sejours: [],
+      sejoursEncaisses: 0,
+    });
+
+  it('regroupe les logements d’une propriété dans une seule carte, dans l’ordre des lots', () => {
+    donnees.valeur.proprietaireBiens = [logement('b2', '2'), logement('b1', '1'), bienALaNuit({ id: 'b9', referenceInterne: 'L-2026-0099' })];
+    donnees.valeur.proprietaireSynthese = synthese({ biens: 3 });
+    afficher();
+
+    expect(screen.getAllByRole('heading', { name: 'Villa Fall' })).toHaveLength(1);
+    expect(screen.getByText(/Villa · Guediawaye, Dakar · 2 logements, 0 loué/)).toBeTruthy();
+    const lots = screen.getAllByText(/^Logement \d/).map((n) => n.textContent?.slice(0, 10));
+    expect(lots).toEqual(['Logement 1', 'Logement 2']);
+    expect(screen.getByText('RUE 11, GUEDIAWAYE')).toBeTruthy();
+  });
+
+  it('sans activité, remplace les quatre « 0 FCFA » par une phrase', () => {
+    donnees.valeur.proprietaireBiens = [logement('b1', '1')];
+    donnees.valeur.proprietaireSynthese = synthese({ loues: 0, biensALaNuit: 0, sejoursEncaisses: 0 });
+    afficher();
+
+    expect(screen.queryByText('Loyers appelés')).toBeNull();
+    expect(screen.getByText(/dès la signature d’un premier bail/)).toBeTruthy();
+  });
+
+  it('propose d’écrire à MTM à propos du bien, déjà identifié', () => {
+    donnees.valeur.proprietaireBiens = [logement('b1', '1')];
+    donnees.valeur.proprietaireSynthese = synthese();
+    afficher();
+
+    const lien = screen.getByRole('link', { name: /Une question sur ce bien/ });
+    expect(lien.getAttribute('href')).toBe('/espace-client/demandes?bien=L-2026-001');
   });
 });

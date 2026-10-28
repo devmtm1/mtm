@@ -33,6 +33,7 @@ import { usePullToRefresh } from '../../../hooks/usePullToRefresh';
 import { useClientNotifications } from '../../../hooks/useClientNotifications';
 import { markAllNotificationsRead, markNotificationRead } from '../../../api/notifications';
 import { prochainePriorite } from '../../../utils/clientPriority';
+import { profilClient } from '../../../utils/clientProfil';
 import { useToast } from '../../ui/toast-store';
 import { ClientTabBar, type ClientTab } from './ClientTabBar';
 import { ScrollManager } from '../../layout/ScrollManager';
@@ -98,9 +99,24 @@ export function ClientLayout() {
     if (suitUnChantier) {
       tabs.push({ to: ROUTES.clientChantiers, label: 'Mon chantier', icon: HardHat, end: false });
     }
-    tabs.push(...ONGLETS_COMMUNS.map((tab) => (tab.to === ROUTES.clientDossiers ? { ...tab, alerte: retardVente } : tab)));
+    // « Dossiers » et « Vérifications » concernent les acheteurs : un propriétaire ou un locataire ne les voit pas au
+    // même rang que son bien (« Vérifications » reste accessible depuis l'accueil dès qu'il en a demandé une).
+    const profil = profilClient({
+      chargement: dossiers.loading || proprietaireBiens.loading || locataireBaux.loading,
+      nbDossiers: dossiers.data?.length ?? 0,
+      nbMissions: missions.data?.length ?? 0,
+      gestion: estProprietaire || estLocataire,
+      chantier: suitUnChantier,
+    });
+    tabs.push(
+      ...ONGLETS_COMMUNS.filter((tab) => {
+        if (tab.to === ROUTES.clientDossiers) return profil.dossiers;
+        if (tab.to === ROUTES.clientMissions) return profil.verifications;
+        return true;
+      }).map((tab) => (tab.to === ROUTES.clientDossiers ? { ...tab, alerte: retardVente } : tab)),
+    );
     return tabs;
-  }, [estProprietaire, estLocataire, suitUnChantier, retardLoyer, retardVente]);
+  }, [estProprietaire, estLocataire, suitUnChantier, retardLoyer, retardVente, dossiers.loading, dossiers.data, proprietaireBiens.loading, locataireBaux.loading, missions.data]);
 
   const refetchNotifications = notificationsData.refetch;
   const marquerNotificationLue = useCallback(
@@ -316,13 +332,13 @@ export function ClientLayout() {
                     </span>
                   )}
                 </NavLink>
-                              <NavLink
-                to={ROUTES.clientCompte}
-                aria-label="Mon compte"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-mtm-primary text-xs font-bold text-white shadow-card active:scale-90"
-              >
-                {user ? initials(user.firstName, user.lastName) : '?'}
-              </NavLink>
+                <NavLink
+                  to={ROUTES.clientCompte}
+                  aria-label="Mon compte"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-mtm-primary text-xs font-bold text-white shadow-card active:scale-90"
+                >
+                  {user ? initials(user.firstName, user.lastName) : '?'}
+                </NavLink>
               </div>
             </div>
           </header>
@@ -342,8 +358,36 @@ export function ClientLayout() {
             </div>
           )}
 
+          {/* ---- Barre supérieure (ordinateur) : cloche et profil à portée, comme sur mobile ---- */}
+          <header className="sticky top-0 z-30 hidden h-14 items-center justify-end gap-2 border-b border-mtm-border/70 bg-mtm-surface/90 px-8 backdrop-blur-xl lg:flex">
+            <NavLink
+              to={ROUTES.clientNotifications}
+              aria-label={nonLues > 0 ? `Notifications, ${nonLues} non lue${nonLues > 1 ? 's' : ''}` : 'Notifications'}
+              className="relative flex h-10 w-10 items-center justify-center rounded-full text-mtm-text hover:bg-mtm-bg"
+            >
+              <Bell className="h-5 w-5" aria-hidden="true" />
+              {nonLues > 0 && (
+                <span
+                  aria-hidden="true"
+                  className="absolute right-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-mtm-surface bg-mtm-accent px-1 text-[10px] font-bold leading-none text-white"
+                >
+                  {nonLues > 9 ? '9+' : nonLues}
+                </span>
+              )}
+            </NavLink>
+            <NavLink
+              to={ROUTES.clientCompte}
+              className="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-3 text-sm font-semibold text-mtm-text hover:bg-mtm-bg"
+            >
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-mtm-primary text-xs font-bold text-white">
+                {user ? initials(user.firstName, user.lastName) : '?'}
+              </span>
+              {user?.firstName}
+            </NavLink>
+          </header>
+
           <main id={MAIN_ID} tabIndex={-1} className="flex-1 outline-none">
-            <div className="mx-auto w-full max-w-5xl px-4 pb-28 pt-4 sm:px-6 sm:pt-6 lg:pb-10 lg:pt-8">
+            <div className="mx-auto w-full max-w-5xl px-4 pb-28 pt-5 sm:px-6 sm:pt-6 lg:max-w-6xl lg:px-8 lg:pb-10 lg:pt-8">
               <Outlet />
             </div>
           </main>

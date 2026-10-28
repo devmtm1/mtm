@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/auth-context-store';
 import { toTelHref, useSiteContact } from '../../hooks/useSiteContact';
 import { usePageMetadata } from '../../hooks/usePageMetadata';
+import { useProfilClient } from '../../hooks/useProfilClient';
 import { ClientCard, ClientPageHeader } from '../../components/client/shell/ClientUi';
 import { ChangePasswordForm } from '../../components/auth/ChangePasswordForm';
 import { Modal } from '../../components/ui/Modal';
@@ -15,6 +16,7 @@ export function ClientAccountPage() {
   const navigate = useNavigate();
   const contact = useSiteContact();
   const [passwordOpen, setPasswordOpen] = useState(false);
+  const profil = useProfilClient();
   usePageMetadata({ title: 'Mon compte' });
 
   async function handleLogout(): Promise<void> {
@@ -69,6 +71,7 @@ export function ClientAccountPage() {
         <p className="mt-3 truncate text-xs text-mtm-muted">{contact.telephone} · {contact.email}</p>
       </ClientCard>
 
+      {profil.acheteur && (
       <ClientCard title="Comment ça marche ?">
         <ol className="flex flex-col gap-2 text-sm text-mtm-muted">
           <li><strong className="text-mtm-text">1.</strong> Vous réservez un bien avec un acompte.</li>
@@ -76,6 +79,7 @@ export function ClientAccountPage() {
           <li><strong className="text-mtm-text">3.</strong> Une fois le prix soldé, vous recevez vos documents définitifs.</li>
         </ol>
       </ClientCard>
+      )}
 
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         <Link

@@ -50,6 +50,8 @@ export class ProprietairePortalService {
         region: true,
         statut: true,
         modeLocation: true,
+        numeroLot: true,
+        immeuble: { select: { id: true, nom: true, type: true } },
         sejours: {
           where: { statut: { in: STATUTS_SEJOUR_ENGAGES } },
           orderBy: { dateArrivee: 'desc' },
@@ -147,6 +149,8 @@ export class ProprietairePortalService {
           region: bien.region,
           statut: bien.statut,
           modeLocation: bien.modeLocation,
+          numeroLot: bien.numeroLot,
+          immeuble: bien.immeuble,
           occupation,
           sejours: apercu,
           sejoursEncaisses: sejours.reduce(
