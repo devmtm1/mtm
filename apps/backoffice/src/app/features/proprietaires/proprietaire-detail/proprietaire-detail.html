@@ -9,35 +9,12 @@
   </section>
 } @else if (proprietaire(); as p) {
   <section class="detail-page">
-    <a class="back-link" href="/proprietaires" (click)="$event.preventDefault(); goBack()">
-      <svg lucideArrowLeft aria-hidden="true"></svg>Retour à la liste des propriétaires
-    </a>
-
-    <header class="detail-header">
-      <div class="detail-header__main">
-        <p class="eyebrow">Propriétaire{{ p.matricule ? ' · ' + p.matricule : '' }}</p>
-        <h1>{{ p.firstName }} {{ p.lastName }}</h1>
-        <p class="detail-header__meta">
-          @if (p.phone) {
-            <a [href]="'tel:' + p.phone"><svg lucidePhone aria-hidden="true"></svg>{{ p.phone }}</a>
-          }
-          @if (p.email) {
-            <a [href]="'mailto:' + p.email"
-              ><svg lucideMail aria-hidden="true"></svg>{{ p.email }}</a
-            >
-          }
-          @if (p.coordonneesMasquees) {
-            <span
-              ><svg lucideLock aria-hidden="true"></svg>Coordonnées réservées à
-              l’administrateur</span
-            >
-          } @else if (!p.phone && !p.email) {
-            <span>Aucun moyen de contact renseigné</span>
-          }
-          <span>Enregistré le {{ p.createdAt | date: 'dd/MM/yyyy' }}</span>
-        </p>
-      </div>
-      <div class="detail-header__actions">
+    <app-fiche-entete
+      titre="Fiche du propriétaire"
+      [sousTitre]="p.firstName + ' ' + p.lastName + (p.matricule ? ' · ' + p.matricule : '')"
+      (retour)="goBack()"
+    >
+      <div actions class="actions-fiche">
         @if (canCreateMandat) {
           <button
             mat-stroked-button
@@ -68,16 +45,6 @@
             <svg class="btn-icon" lucideLandPlot aria-hidden="true"></svg>Nouveau terrain
           </button>
         }
-        @if (canCreateClient && p.email) {
-          <button
-            mat-stroked-button
-            type="button"
-            (click)="openCreateClientAccount()"
-            matTooltip="Ouvrir l’espace client « Mon bien »"
-          >
-            <svg class="btn-icon" lucideKeyRound aria-hidden="true"></svg>Accès espace client
-          </button>
-        }
         @if (canModify) {
           <button mat-flat-button color="primary" type="button" (click)="edit()">
             <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Modifier
@@ -102,7 +69,7 @@
           </mat-menu>
         }
       </div>
-    </header>
+    </app-fiche-entete>
 
     @if (canModify && todo().length) {
       <aside class="todo-banner" aria-label="À compléter">
@@ -118,6 +85,22 @@
       </aside>
     }
 
+    <app-fiche-onglets [onglets]="onglets()" [(actif)]="onglet" />
+
+    @switch (onglet()) {
+      @case ('identite') {
+        <app-fiche-identite
+          [donnees]="donneesFiche()"
+          [identiteReservee]="!!p.coordonneesMasquees"
+          messageIdentite="Identité (pièce, état civil, adresse, personne à prévenir) réservée à l’administrateur."
+          [coordonneesReservees]="!!p.coordonneesMasquees"
+          [modifiable]="canModify"
+          [avecCopiePdf]="true"
+          [complements]="complements()"
+          (modifier)="edit()"
+        />
+      }
+      @case ('biens') {
     <section class="kpi-row" aria-label="Synthèse">
       <div class="kpi kpi--primary">
         <span class="kpi__icon"><svg lucideLandPlot aria-hidden="true"></svg></span>
@@ -153,7 +136,7 @@
       </div>
     </section>
 
-    <section class="content-grid">
+        <section class="content-grid">
       <!-- Terrains -->
       @if (canSeeTerrains) {
         <section class="page-card detail-section detail-section--wide">
@@ -369,74 +352,19 @@
         </section>
       }
 
-      <section class="page-card detail-section">
-        <h2>Coordonnées</h2>
-        <dl class="info-list">
-          <div>
-            <dt>Matricule</dt>
-            <dd>{{ p.matricule || '—' }}</dd>
-          </div>
-          <div>
-            <dt>Prénom</dt>
-            <dd>{{ p.firstName }}</dd>
-          </div>
-          <div>
-            <dt>Nom</dt>
-            <dd>{{ p.lastName }}</dd>
-          </div>
-          @if (p.coordonneesMasquees) {
-            <div>
-              <dt>Téléphone et e-mail</dt>
-              <dd>Réservés à l’administrateur</dd>
-            </div>
-          } @else {
-            <div>
-              <dt>Téléphone</dt>
-              <dd>{{ p.phone || '—' }}</dd>
-            </div>
-            <div>
-              <dt>E-mail</dt>
-              <dd>{{ p.email || '—' }}</dd>
-            </div>
-            <div>
-              <dt>Pièce d’identité</dt>
-              <dd>
-                @if (p.typePiece || p.numeroPiece) {
-                  {{ libellePiece(p.typePiece) || 'Pièce' }}{{ p.numeroPiece ? ' n° ' + p.numeroPiece : '' }}
-                } @else {
-                  —
-                }
-              </dd>
-            </div>
-            @if (p.pieceUrl) {
-              <div>
-                <dt>Copie de la pièce</dt>
-                <dd><a [href]="p.pieceUrl" target="_blank" rel="noopener">Ouvrir le PDF</a></dd>
-              </div>
-            }
-          }
-        </dl>
-      </section>
-
-      <section class="page-card detail-section">
-        <h2>Notes internes</h2>
-        <p class="detail-section__text">
-          {{
-            p.notes ||
-              'Aucune note. Utilisez « Modifier » pour consigner un contexte utile (disponibilités, représentant, particularités).'
-          }}
-        </p>
-        <dl class="info-list">
-          <div>
-            <dt>Enregistré le</dt>
-            <dd>{{ p.createdAt | date: 'dd/MM/yyyy à HH:mm' }}</dd>
-          </div>
-          <div>
-            <dt>Dernière modification</dt>
-            <dd>{{ p.updatedAt | date: 'dd/MM/yyyy à HH:mm' }}</dd>
-          </div>
-        </dl>
-      </section>
-    </section>
+        </section>
+      }
+      @case ('espace-client') {
+        <app-fiche-espace-client
+          [compte]="p.clientUser"
+          [email]="p.email"
+          [peutOuvrir]="canCreateClient"
+          [peutModifier]="canModify"
+          description="ses biens confiés, le locataire en place, les loyers encaissés et ses relevés de gestion"
+          (ouvrir)="openCreateClientAccount()"
+          (ajouterEmail)="edit()"
+        />
+      }
+    }
   </section>
 }

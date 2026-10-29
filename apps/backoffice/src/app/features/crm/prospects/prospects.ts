@@ -22,9 +22,9 @@ import { downloadBlob } from '../../../shared/utils/download';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { type ContactCard, ContactCards } from '../../../shared/components/contact-cards/contact-cards';
 import { type Vue, VueToggle, ecrireVue, lireVue } from '../../../shared/components/contact-cards/vue-toggle';
-import { CLOSED_STAGES, EXIT_STAGES, INTEREST_LEVELS, PIPELINE, PRIORITIES, dueLabel, isOverdue, label, pillClass, prospectName, relanceState } from '../crm-status';
+import { PARCOURS_CLIENT, CLOSED_STAGES, EXIT_STAGES, INTEREST_LEVELS, PIPELINE, PRIORITIES, dueLabel, isOverdue, label, pillClass, prospectName, relanceState } from '../crm-status';
 
-const EMPTY_FILTERS = { search: '', statutPipeline: '', commercialResponsableId: '', niveauInteret: '', zoneRecherchee: '', vue: '' };
+const EMPTY_FILTERS = { search: '', statutPipeline: '', commercialResponsableId: '', niveauInteret: '', zoneRecherchee: '', vue: '', parcours: '' };
 
 /** Vues rapides de l'espace commercial (cahier CRM § 12). */
 export const QUICK_VIEWS = [
@@ -87,6 +87,7 @@ export class Prospects implements OnInit {
   protected readonly canCreate = computed(() => this.sessionService.hasPermission('crm:creer'));
   protected readonly canExport = computed(() => this.sessionService.hasPermission('crm:exporter'));
   protected readonly seesAll = computed(() => this.sessionService.hasSupervisionScope('crm'));
+  protected readonly parcoursOptions = Object.entries(PARCOURS_CLIENT).map(([value, sens]) => ({ value, label: sens.label }));
   protected readonly filters = this.formBuilder.nonNullable.group(EMPTY_FILTERS);
   protected readonly hasActiveFilters = signal(false);
   protected readonly vue = signal<Vue>(lireVue('prospects'));
@@ -105,7 +106,9 @@ export class Prospects implements OnInit {
         telephone: p.telephone,
         email: p.email,
         pastilles: [
-          { label: label(PIPELINE, p.statutPipeline), classe: pillClass(PIPELINE, p.statutPipeline), aide: PIPELINE[p.statutPipeline]?.help },
+          p.parcours && p.parcours !== 'acheteur'
+            ? { label: label(PARCOURS_CLIENT, p.parcours), classe: pillClass(PARCOURS_CLIENT, p.parcours), aide: PARCOURS_CLIENT[p.parcours]?.help }
+            : { label: label(PIPELINE, p.statutPipeline), classe: pillClass(PIPELINE, p.statutPipeline), aide: PIPELINE[p.statutPipeline]?.help },
           ...(p.niveauInteret
             ? [{ label: label(INTEREST_LEVELS, p.niveauInteret), classe: pillClass(INTEREST_LEVELS, p.niveauInteret), aide: INTEREST_LEVELS[p.niveauInteret]?.help }]
             : []),

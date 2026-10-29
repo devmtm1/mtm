@@ -128,6 +128,8 @@ describe('pièce d’identité', () => {
         id: 'p1',
         typePiece: 'cni',
         numeroPiece: '123',
+        urgenceNom: 'Fatou',
+        pieceValiditeLe: new Date('2030-01-01'),
         pieceStorageKey: 'cle',
         pieceResourceType: 'raw',
       });
@@ -138,6 +140,8 @@ describe('pièce d’identité', () => {
       expect(vue).toMatchObject({
         typePiece: null,
         numeroPiece: null,
+        urgenceNom: null,
+        pieceValiditeLe: null,
         pieceUrl: null,
         coordonneesMasquees: true,
       });

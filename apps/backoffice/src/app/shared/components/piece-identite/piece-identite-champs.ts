@@ -8,7 +8,7 @@ import { TYPES_PIECE, erreurFichierPiece } from '../../../core/models/piece-iden
 
 /**
  * Type, numéro et copie PDF de la pièce d'identité : trois champs facultatifs, communs aux formulaires
- * propriétaire et locataire. Le groupe reçu doit porter les contrôles `typePiece` et `numeroPiece`. Le fichier choisi est remonté au formulaire, qui l'envoie après l'enregistrement.
+ * propriétaire et locataire. Le groupe reçu doit porter les contrôles `typePiece`, `numeroPiece` et `pieceValiditeLe`. Le fichier choisi est remonté au formulaire, qui l'envoie après l'enregistrement.
  */
 @Component({
   selector: 'app-piece-identite-champs',
@@ -28,6 +28,10 @@ import { TYPES_PIECE, erreurFichierPiece } from '../../../core/models/piece-iden
       <mat-form-field appearance="outline">
         <mat-label>Numéro de la pièce</mat-label>
         <input matInput formControlName="numeroPiece" maxlength="50" autocomplete="off" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Valable jusqu’au</mat-label>
+        <input matInput type="date" formControlName="pieceValiditeLe" />
       </mat-form-field>
 
       <div class="piece__fichier">

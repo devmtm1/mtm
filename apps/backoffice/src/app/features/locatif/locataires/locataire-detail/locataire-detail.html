@@ -9,53 +9,34 @@
   </section>
 } @else if (locataire(); as l) {
   <section class="detail-page">
-    <a class="back-link" href="/locatif/locataires" (click)="$event.preventDefault(); goBack()">
-      <svg lucideArrowLeft aria-hidden="true"></svg>Retour à la liste des locataires
-    </a>
-
-    <header class="detail-header">
-      <div class="detail-header__main">
-        <p class="eyebrow">Locataire</p>
-        <h1>{{ nom(l) }}</h1>
-        <p class="detail-header__meta">
-          @if (l.phone) {
-            <a [href]="'tel:' + l.phone"><svg lucidePhone aria-hidden="true"></svg>{{ l.phone }}</a>
-          }
-          @if (l.email) {
-            <a [href]="'mailto:' + l.email"><svg lucideMail aria-hidden="true"></svg>{{ l.email }}</a>
-          }
-          @if (!l.phone && !l.email) {
-            <span>Aucun moyen de contact renseigné</span>
-          }
-        </p>
-        <p class="detail-header__meta">
-          <span>
-            @if (bauxActifs() > 0) {
-              {{ bauxActifs() }} bail(s) en cours
-            } @else {
-              Aucun bail en cours
-            }
-            @if ((baux()?.length ?? 0) > bauxActifs()) {
-              · {{ baux()?.length }} au total
-            }
-          </span>
-        </p>
-      </div>
-      <div class="detail-header__actions">
-        @if (canCreateClient && l.email) {
-          <button mat-stroked-button type="button" (click)="openCreateClientAccount()" matTooltip="Ouvrir l’espace client « Ma location »">
-            <svg class="btn-icon" lucideKeyRound aria-hidden="true"></svg>Accès espace client
-          </button>
-        }
+    <app-fiche-entete
+      titre="Fiche du locataire"
+      [sousTitre]="nom(l) + ' · ' + (bauxActifs() > 0 ? bauxActifs() + ' bail(s) en cours' : 'aucun bail en cours')"
+      (retour)="goBack()"
+    >
+      <div actions class="actions-fiche">
         @if (canModify) {
           <button mat-flat-button color="primary" type="button" (click)="edit()">
             <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Modifier
           </button>
         }
       </div>
-    </header>
+    </app-fiche-entete>
 
-    <section class="content-grid">
+    <app-fiche-onglets [onglets]="onglets()" [(actif)]="onglet" />
+
+    @switch (onglet()) {
+      @case ('identite') {
+        <app-fiche-identite
+          [donnees]="donneesFiche()"
+          [modifiable]="canModify"
+          [avecCopiePdf]="true"
+          [complements]="complements()"
+          (modifier)="edit()"
+        />
+      }
+      @case ('baux') {
+        <section class="content-grid">
       <section class="page-card detail-section detail-section--wide">
         <div class="detail-section__head">
           <div>
@@ -99,24 +80,19 @@
         }
       </section>
 
-      <section class="page-card detail-section detail-section--wide">
-        <h2>Pièce d’identité</h2>
-        @if (l.typePiece || l.numeroPiece || l.pieceUrl) {
-          <p class="detail-section__text">
-            {{ libellePiece(l.typePiece) || 'Pièce' }}{{ l.numeroPiece ? ' n° ' + l.numeroPiece : '' }}
-            @if (l.pieceUrl) {
-              · <a [href]="l.pieceUrl" target="_blank" rel="noopener">Ouvrir le PDF</a>
-            }
-          </p>
-        } @else {
-          <p class="detail-section__text">Non renseignée. Utilisez « Modifier » pour l’ajouter (facultatif).</p>
-        }
-      </section>
-
-      <section class="page-card detail-section detail-section--wide">
-        <h2>Notes internes</h2>
-        <p class="detail-section__text">{{ l.notes || 'Aucune note. Utilisez « Modifier » pour en ajouter une.' }}</p>
-      </section>
-    </section>
+        </section>
+      }
+      @case ('espace-client') {
+        <app-fiche-espace-client
+          [compte]="l.clientUser"
+          [email]="l.email"
+          [peutOuvrir]="canCreateClient"
+          [peutModifier]="canModify"
+          description="son bail, ses échéances, ses quittances, ses paiements et ses demandes"
+          (ouvrir)="openCreateClientAccount()"
+          (ajouterEmail)="edit()"
+        />
+      }
+    }
   </section>
 }

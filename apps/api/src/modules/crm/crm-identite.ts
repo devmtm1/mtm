@@ -1,5 +1,5 @@
 /**
- * Identité d'un client (date et lieu de naissance, pièce d'identité) : une donnée
+ * Identité d'un client (naissance, nationalité, adresse, pièce d'identité) : une donnée
  * sensible, qui sert à établir les factures et rapports d'une mission mais que
  * tous les collaborateurs du CRM n'ont pas à lire. Elle n'est visible, et ne se
  * modifie, qu'avec la permission `crm:identite`.
@@ -9,6 +9,12 @@ export const CHAMPS_IDENTITE = [
   'lieuNaissance',
   'typePieceIdentite',
   'numeroPieceIdentite',
+  'adresse',
+  'nationalite',
+  'pieceValiditeLe',
+  'urgenceNom',
+  'urgenceLien',
+  'urgenceTelephone',
 ] as const;
 
 export const PERMISSION_IDENTITE = 'crm:identite';

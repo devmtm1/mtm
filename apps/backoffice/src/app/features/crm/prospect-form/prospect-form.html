@@ -66,6 +66,15 @@
                 <mat-hint>Utile pour la diaspora : décalage horaire, paiement, procuration.</mat-hint>
               </mat-form-field>
               @if (peutSaisirIdentite()) {
+                <mat-form-field appearance="outline" class="form-grid__wide">
+                  <mat-label>Adresse</mat-label>
+                  <input matInput formControlName="adresse" maxlength="200" autocomplete="street-address" />
+                  <mat-hint>Rue et quartier ; la ville et le pays se renseignent plus haut.</mat-hint>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Nationalité</mat-label>
+                  <input matInput formControlName="nationalite" maxlength="80" />
+                </mat-form-field>
                 <mat-form-field appearance="outline">
                   <mat-label>Date de naissance</mat-label>
                   <input matInput type="date" formControlName="dateNaissance" />
@@ -90,7 +99,33 @@
                   <input matInput formControlName="numeroPieceIdentite" autocomplete="off" />
                   <mat-hint>Donnée sensible, visible des seuls utilisateurs habilités.</mat-hint>
                 </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Pièce valable jusqu’au</mat-label>
+                  <input matInput type="date" formControlName="pieceValiditeLe" />
+                  <mat-hint>On vous signale la pièce qui expire bientôt.</mat-hint>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Personne à prévenir en cas d’urgence</mat-label>
+                  <input matInput formControlName="urgenceNom" maxlength="120" autocomplete="off" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Son lien avec le client</mat-label>
+                  <input matInput formControlName="urgenceLien" maxlength="80" placeholder="Conjoint, frère, ami…" autocomplete="off" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Son téléphone</mat-label>
+                  <input matInput type="tel" formControlName="urgenceTelephone" maxlength="30" />
+                </mat-form-field>
               }
+              <mat-form-field appearance="outline" class="form-grid__wide">
+                <mat-label>Ce que veut ce client</mat-label>
+                <mat-select formControlName="parcours">
+                  @for (option of parcoursOptions; track option.value) {
+                    <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                  }
+                </mat-select>
+                <mat-hint>Seul « Acheteur » suit le pipeline de vente ; les autres suivent leur mission ou leur chantier.</mat-hint>
+              </mat-form-field>
               <mat-form-field appearance="outline">
                 <mat-label>Source du prospect</mat-label>
                 <mat-select formControlName="sourceAcquisition">

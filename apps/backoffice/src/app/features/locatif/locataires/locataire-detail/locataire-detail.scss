@@ -10,3 +10,8 @@
     text-decoration: underline;
   }
 }
+
+/* Les boutons d'action s'alignent avec « Retour » dans l'en-tête commun des fiches. */
+.actions-fiche {
+  display: contents;
+}

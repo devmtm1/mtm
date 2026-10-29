@@ -59,6 +59,7 @@
           matricule.
         </p>
       }
+      <app-etat-civil-champs class="full-width" [groupe]="form" />
       <app-piece-identite-champs
         class="full-width"
         [groupe]="form"
@@ -68,7 +69,7 @@
       />
     } @else {
       <p class="coordonnees-note">
-        Téléphone, e-mail et pièce d’identité réservés à l’administrateur.
+        Téléphone, e-mail et identité (pièce, état civil, adresse) réservés à l’administrateur.
       </p>
     }
 

@@ -76,6 +76,13 @@ export interface VisiteProspectItem {
   createdAt: string;
 }
 
+/** Compte d'espace client rattaché à une fiche : seulement son existence et sa dernière connexion. */
+export interface CompteClient {
+  id: string;
+  createdAt: string;
+  lastLoginAt: string | null;
+}
+
 export interface ProspectListItem {
   id: string;
   referenceInterne: string | null;
@@ -93,6 +100,8 @@ export interface ProspectListItem {
   budgetMin: number | null;
   budgetMax: number | null;
   sourceAcquisition: string | null;
+  /** acheteur | verification | chantier | autre : seul « acheteur » suit le pipeline de vente. */
+  parcours?: string;
   commercialResponsable: CommercialSummary | null;
   /** Liste : la prochaine action « à faire » uniquement. Fiche : toutes. */
   activites?: ActiviteCrmItem[];
@@ -127,6 +136,15 @@ export interface ProspectDetail extends ProspectListItem {
   lieuNaissance?: string | null;
   typePieceIdentite?: string | null;
   numeroPieceIdentite?: string | null;
+  adresse?: string | null;
+  nationalite?: string | null;
+  pieceValiditeLe?: string | null;
+  urgenceNom?: string | null;
+  urgenceLien?: string | null;
+  urgenceTelephone?: string | null;
+  clientUser?: CompteClient | null;
+  missions?: { id: string; referenceInterne: string | null; typeVerification: string; statut: string }[];
+  chantiers?: { id: string; referenceInterne: string; intitule: string; statut: string }[];
   besoins: string | null;
   preferences: string | null;
   surfaceSouhaitee: number | null;
@@ -172,6 +190,7 @@ export interface ProspectQuery {
   sourceAcquisition?: string;
   zoneRecherchee?: string;
   niveauInteret?: string;
+  parcours?: string;
   /** Vue rapide : à relancer, en retard, sans action, visites à venir, actifs. */
   vue?: string;
   dateMin?: string;
@@ -288,6 +307,14 @@ export interface CreateProspectPayload {
   lieuNaissance?: string;
   typePieceIdentite?: string;
   numeroPieceIdentite?: string;
+  adresse?: string;
+  nationalite?: string;
+  pieceValiditeLe?: string;
+  urgenceNom?: string;
+  urgenceLien?: string;
+  urgenceTelephone?: string;
+  /** acheteur | verification | chantier | autre. */
+  parcours?: string;
   sourceAcquisition?: string;
   niveauInteret?: string;
   besoins?: string;

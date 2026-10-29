@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
+import { orienterParcours } from '../crm/parcours';
 import { DemarchesOptionsService } from './demarches-options.service';
 import type { CreateClientMissionDto } from './dto/mission.dto';
 
@@ -63,6 +64,7 @@ export class DemarchesClientService {
       },
       select: { id: true, referenceInterne: true, statut: true },
     });
+    await orienterParcours(this.prisma, prospectId, 'verification');
     return mission;
   }
 

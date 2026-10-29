@@ -7,6 +7,7 @@
 export const TYPES_PIECE_IDENTITE = [
   'cni_cedeao',
   'passeport',
+  'titre_sejour',
   'permis',
   'autre',
 ] as const;
@@ -14,6 +15,7 @@ export const TYPES_PIECE_IDENTITE = [
 const LIBELLES: Record<string, string> = {
   cni_cedeao: 'Carte d’identité CEDEAO',
   passeport: 'Passeport',
+  titre_sejour: 'Titre de séjour',
   permis: 'Permis de conduire',
   autre: 'Pièce d’identité',
 };

@@ -1,6 +1,9 @@
-/** Pièce d'identité facultative d'un propriétaire ou d'un locataire : type, numéro et copie PDF. */
+/**
+ * Identité d'une personne (prospect, propriétaire ou locataire) : un seul vocabulaire pour les types de pièce,
+ * le même que l'API et que les fiches prospects.
+ */
 export const TYPES_PIECE = [
-  { valeur: 'cni', libelle: 'Carte nationale d’identité' },
+  { valeur: 'cni_cedeao', libelle: 'Carte d’identité CEDEAO' },
   { valeur: 'passeport', libelle: 'Passeport' },
   { valeur: 'titre_sejour', libelle: 'Titre de séjour' },
   { valeur: 'permis', libelle: 'Permis de conduire' },
@@ -11,11 +14,20 @@ export function libellePiece(code: string | null | undefined): string {
   return TYPES_PIECE.find((type) => type.valeur === code)?.libelle ?? '';
 }
 
-/** Champs portés par la fiche renvoyée par l'API : le lien du PDF est vide s'il n'y a pas de copie. */
+/** Champs d'identité portés par la fiche d'un propriétaire ou d'un locataire. */
 export interface PieceIdentite {
   typePiece?: string | null;
   numeroPiece?: string | null;
   pieceUrl?: string | null;
+  adresse?: string | null;
+  dateNaissance?: string | null;
+  lieuNaissance?: string | null;
+  nationalite?: string | null;
+  profession?: string | null;
+  pieceValiditeLe?: string | null;
+  urgenceNom?: string | null;
+  urgenceLien?: string | null;
+  urgenceTelephone?: string | null;
 }
 
 export const TAILLE_MAX_PIECE = 10 * 1024 * 1024;

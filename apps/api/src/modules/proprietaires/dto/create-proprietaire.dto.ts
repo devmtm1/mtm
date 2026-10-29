@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsIn, IsOptional, IsString, Length } from 'class-validator';
+import {
+  IsDateString,
+  IsEmail,
+  IsIn,
+  IsOptional,
+  IsString,
+  Length,
+} from 'class-validator';
 import { Transform } from 'class-transformer';
 import { TYPES_PIECE } from '../../../common/storage/piece-identite';
 
@@ -49,4 +56,47 @@ export class CreateProprietaireDto {
   @IsString()
   @Length(1, 50)
   numeroPiece?: string | null;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 200)
+  adresse?: string | null;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsDateString()
+  dateNaissance?: string | null;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 120)
+  lieuNaissance?: string | null;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 80)
+  nationalite?: string | null;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 120)
+  profession?: string | null;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsDateString()
+  pieceValiditeLe?: string | null;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 120)
+  urgenceNom?: string | null;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 80)
+  urgenceLien?: string | null;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 30)
+  urgenceTelephone?: string | null;
 }
