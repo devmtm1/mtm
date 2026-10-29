@@ -23,6 +23,7 @@ import { VisitesModule } from './modules/visites/visites.module';
 import { ContentBlockModule } from './modules/content/content-block.module';
 import { MandatsModule } from './modules/mandats/mandats.module';
 import { CrmModule } from './modules/crm/crm.module';
+import { PersonnesModule } from './modules/personnes/personnes.module';
 import { DemarchesModule } from './modules/demarches/demarches.module';
 import { VentesModule } from './modules/ventes/ventes.module';
 import { LocatifModule } from './modules/locatif/locatif.module';
@@ -71,6 +72,7 @@ import { NavigationModule } from './modules/navigation/navigation.module';
     ContentBlockModule,
     MandatsModule,
     CrmModule,
+    PersonnesModule,
     DemarchesModule,
     VentesModule,
     LocatifModule,

@@ -64,9 +64,10 @@ export class CrmReportingService {
     const endOfDay = new Date(now);
     endOfDay.setHours(23, 59, 59, 999);
 
+    // Les clients de vérification ou de chantier ne passent pas par le pipeline : ils fausseraient les taux.
     const baseWhere: Prisma.ProspectWhereInput = isManager
-      ? {}
-      : { commercialResponsableId: user.id };
+      ? { parcours: 'acheteur' }
+      : { parcours: 'acheteur', commercialResponsableId: user.id };
     const actifs: Prisma.ProspectWhereInput = {
       ...baseWhere,
       statutPipeline: { notIn: [...PIPELINE_CLOSED_STAGES] },

@@ -18,6 +18,10 @@ export class QueryProspectDto {
   @IsOptional() @IsString() sourceAcquisition?: string;
   @IsOptional() @IsString() zoneRecherchee?: string;
   @IsOptional() @IsString() niveauInteret?: string;
+  /** acheteur | verification | chantier | autre : sépare le pipeline de vente des clients de services. */
+  @IsOptional()
+  @IsIn(['acheteur', 'verification', 'chantier', 'autre'])
+  parcours?: string;
   /** Recherches de terrain en cours : la vue de travail du conseiller. */
   @IsOptional() @IsString() rechercheStatut?: string;
   /** Vues rapides du commercial : à relancer aujourd'hui, en retard, visites à venir… */

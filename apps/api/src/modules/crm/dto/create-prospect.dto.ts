@@ -14,6 +14,7 @@ import {
 } from 'class-validator';
 import { versBooleen } from '../../../common/utils/booleen.transform';
 import { TYPES_PIECE_IDENTITE } from '../../demarches/identite-client';
+import { PARCOURS } from '../parcours';
 
 /**
  * Fiche prospect de MTM (fiche de suivi « client potentiel »). Seuls le nom
@@ -53,6 +54,11 @@ export class CreateProspectDto {
   @Length(0, 120)
   paysResidence?: string;
 
+  @ApiPropertyOptional({ enum: PARCOURS })
+  @IsOptional()
+  @IsIn([...PARCOURS])
+  parcours?: string;
+
   // --- Identité (permission crm:identite) ---
   @ApiPropertyOptional({ example: '1974-11-03' })
   @IsOptional()
@@ -63,6 +69,35 @@ export class CreateProspectDto {
   @IsString()
   @Length(0, 120)
   lieuNaissance?: string;
+  @ApiPropertyOptional({ description: 'Adresse postale complète' })
+  @IsOptional()
+  @IsString()
+  @Length(0, 200)
+  adresse?: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @Length(0, 80)
+  nationalite?: string;
+  @ApiPropertyOptional({ example: '2030-05-31' })
+  @IsOptional()
+  @IsDateString()
+  pieceValiditeLe?: string;
+  @ApiPropertyOptional({ description: 'Personne à prévenir en cas d’urgence' })
+  @IsOptional()
+  @IsString()
+  @Length(0, 120)
+  urgenceNom?: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @Length(0, 80)
+  urgenceLien?: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @Length(0, 30)
+  urgenceTelephone?: string;
   @ApiPropertyOptional({ enum: TYPES_PIECE_IDENTITE })
   @IsOptional()
   @IsIn([...TYPES_PIECE_IDENTITE])

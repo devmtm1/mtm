@@ -266,6 +266,8 @@ export interface ControleDocumentPayload {
 }
 
 export interface Locataire extends PieceIdentite {
+  /** Compte d'espace client (« Ma location »), s'il est ouvert. */
+  clientUser?: { id: string; createdAt: string; lastLoginAt: string | null } | null;
   id: string;
   firstName: string;
   lastName: string;
@@ -552,6 +554,15 @@ export interface CreateLocatairePayload {
   /** Pièce d'identité facultative ; `null` à la modification pour l'effacer. */
   typePiece?: string | null;
   numeroPiece?: string | null;
+  adresse?: string | null;
+  dateNaissance?: string | null;
+  lieuNaissance?: string | null;
+  nationalite?: string | null;
+  profession?: string | null;
+  pieceValiditeLe?: string | null;
+  urgenceNom?: string | null;
+  urgenceLien?: string | null;
+  urgenceTelephone?: string | null;
 }
 
 export type UpdateLocatairePayload = Partial<CreateLocatairePayload>;

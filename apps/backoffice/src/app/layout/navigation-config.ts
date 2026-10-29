@@ -124,7 +124,17 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
     items: [
       // La boîte de réception du site nourrit les prospects : elle vit avec eux.
       { label: 'Demandes du site', route: '/contacts', icon: LucideInbox, permission: 'contact:consulter', compteur: 'demandesWeb' },
-      { label: 'Prospects', route: '/crm/prospects', icon: LucideUserSearch, permission: 'crm:consulter' },
+      {
+        label: 'Prospects',
+        route: '/crm/prospects',
+        icon: LucideUserSearch,
+        racines: ['/crm', '/repertoire'],
+        children: [
+          { label: 'Prospects', route: '/crm/prospects', permission: 'crm:consulter' },
+          // Une même personne peut être client, propriétaire et locataire : le répertoire les réunit.
+          { label: 'Répertoire', route: '/repertoire', permission: 'crm:consulter' },
+        ],
+      },
       {
         label: 'Dossiers de vente',
         route: '/ventes',

@@ -25,6 +25,14 @@ export const PIPELINE: Record<string, StatusMeaning> = {
   injoignable: { tone: 'danger', label: 'Injoignable', help: 'Plus aucun contact possible : motif obligatoire.' },
 };
 
+/** Ce que le client attend de MTM : seul « acheteur » suit le pipeline de vente. */
+export const PARCOURS_CLIENT: Record<string, StatusMeaning> = {
+  acheteur: { tone: 'info', label: 'Acheteur', help: 'Cherche un terrain : suit le pipeline de vente (visites, négociation, réservation).' },
+  verification: { tone: 'primary', label: 'Vérification foncière', help: 'Client d’une mission de vérification : son suivi est la mission, pas le pipeline de vente.' },
+  chantier: { tone: 'primary', label: 'Chantier', help: 'Client d’un chantier de construction : son suivi est le chantier.' },
+  autre: { tone: 'warning', label: 'Autre demande', help: 'Demande ni d’achat ni de vérification ni de chantier.' },
+};
+
 /** Sources d'acquisition (référentiel « crm.sourcesAcquisition »). */
 export const SOURCES: Record<string, StatusMeaning> = {
   facebook: { tone: 'info', label: 'Facebook', help: 'Publication ou publicité Facebook.' },

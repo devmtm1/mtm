@@ -6,14 +6,10 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
-  LucideArrowLeft,
   LucideChevronDown,
   LucideKeyRound,
   LucideLandPlot,
-  LucideMail,
   LucidePencil,
-  LucideLock,
-  LucidePhone,
   LucidePlus,
   LucideScrollText,
 } from '@lucide/angular';
@@ -34,7 +30,17 @@ import {
 } from '../../locatif/locatif-status';
 import { MandatsApiService } from '../../../core/services/api/mandats-api.service';
 import { SessionService } from '../../../core/services/session.service';
-import { libellePiece } from '../../../core/models/piece-identite';
+import { FicheEntete } from '../../../shared/components/fiche-client/fiche-entete';
+import { FicheEspaceClient } from '../../../shared/components/fiche-client/fiche-espace-client';
+import {
+  FicheIdentite,
+  type ComplementFiche,
+} from '../../../shared/components/fiche-client/fiche-identite';
+import {
+  FicheOnglets,
+  type OngletFiche,
+} from '../../../shared/components/fiche-client/fiche-onglets';
+import { type DonneesFiche } from '../../../core/models/fiche-client';
 import {
   ProprietaireDialog,
   type ProprietaireDialogResult,
@@ -65,20 +71,20 @@ import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 @Component({
   selector: 'app-proprietaire-detail',
   imports: [
+    FicheEntete,
+    FicheEspaceClient,
+    FicheIdentite,
+    FicheOnglets,
     MoneyPipe,
     DatePipe,
     MatButtonModule,
     MatDialogModule,
     MatMenuModule,
     MatTooltipModule,
-    LucideArrowLeft,
     LucideChevronDown,
     LucideKeyRound,
     LucideLandPlot,
-    LucideMail,
     LucidePencil,
-    LucideLock,
-    LucidePhone,
     LucidePlus,
     LucideScrollText,
   ],
@@ -98,6 +104,59 @@ export class ProprietaireDetail implements OnInit {
   private readonly notify = inject(NotificationService);
 
   protected readonly proprietaire = signal<ProprietaireDetailModel | null>(null);
+  protected readonly onglet = signal('identite');
+  /** L'identité rangée au format commun des fiches, avec ce que la fiche porte vraiment. */
+  protected readonly donneesFiche = computed<DonneesFiche>(() => {
+    const p = this.proprietaire();
+    return {
+      prenom: p?.firstName,
+      nom: p?.lastName,
+      telephone: p?.phone,
+      email: p?.email,
+      adresse: p?.adresse,
+      dateNaissance: p?.dateNaissance,
+      lieuNaissance: p?.lieuNaissance,
+      nationalite: p?.nationalite,
+      profession: p?.profession,
+      typePiece: p?.typePiece,
+      numeroPiece: p?.numeroPiece,
+      pieceValiditeLe: p?.pieceValiditeLe,
+      pieceUrl: p?.pieceUrl,
+      urgenceNom: p?.urgenceNom,
+      urgenceLien: p?.urgenceLien,
+      urgenceTelephone: p?.urgenceTelephone,
+    };
+  });
+  /** Le dossier du propriétaire, à la suite de l'identité. */
+  protected readonly complements = computed<ComplementFiche[]>(() => {
+    const p = this.proprietaire();
+    if (!p) return [];
+    const jour = (iso: string) => new Date(iso).toLocaleDateString('fr-FR');
+    return [
+      {
+        titre: 'Dossier',
+        lignes: [
+          { libelle: 'Matricule', valeur: p.matricule },
+          { libelle: 'Notes internes', valeur: p.notes },
+          { libelle: 'Enregistré le', valeur: jour(p.createdAt) },
+          { libelle: 'Dernière modification', valeur: jour(p.updatedAt) },
+        ],
+      },
+    ];
+  });
+  protected readonly onglets = computed<OngletFiche[]>(() => {
+    const p = this.proprietaire();
+    return [
+      { id: 'identite', libelle: 'Identité', icone: 'identite' },
+      {
+        id: 'biens',
+        libelle: 'Biens et mandats',
+        icone: 'dossiers',
+        pastille: p ? p._count.terrains + p._count.biensLocatifs + p._count.mandats : null,
+      },
+      { id: 'espace-client', libelle: 'Espace client', icone: 'espace' },
+    ];
+  });
   protected readonly terrains = signal<TerrainListItem[] | null>(null);
   protected readonly mandats = signal<MandatListItem[] | null>(null);
   /** Biens que MTM gère en location (au mois ou en courte durée) pour ce propriétaire. */
@@ -217,8 +276,6 @@ export class ProprietaireDetail implements OnInit {
     return mandatPill(MANDAT_STATUS, value);
   }
 
-  protected readonly libellePiece = libellePiece;
-
   protected mandatHelp(value: string): string {
     return mandatHelp(MANDAT_STATUS, value);
   }
@@ -280,6 +337,9 @@ export class ProprietaireDetail implements OnInit {
       name: `${current.firstName} ${current.lastName}`,
       scopeDescription: 'suivre son bien, le locataire en place et les loyers encaissés',
       create: (password) => this.api.createClientAccount(current.id, password),
+    }).subscribe((cree) => {
+      // L'accès vient d'être ouvert : l'onglet montre aussitôt « Accès ouvert ».
+      if (cree && this.id) this.load(this.id);
     });
   }
 

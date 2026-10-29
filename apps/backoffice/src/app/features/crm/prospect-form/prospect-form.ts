@@ -17,6 +17,7 @@ import { NotificationService } from '../../../shared/services/notification.servi
 import {
   CONTACT_CHANNELS,
   INTEREST_LEVELS,
+  PARCOURS_CLIENT,
   PURCHASE_GOALS,
   RECHERCHE_ACCES,
   RECHERCHE_DELAIS,
@@ -88,9 +89,11 @@ export class ProspectForm implements OnInit, AvecModifications {
   protected readonly detailsOuverts = signal(false);
   /** Identité du client (naissance, pièce) : réservée à la permission crm:identite. */
   protected readonly peutSaisirIdentite = computed(() => this.session.hasPermission('crm:identite'));
+  protected readonly parcoursOptions = Object.entries(PARCOURS_CLIENT).map(([value, sens]) => ({ value, label: sens.label, help: sens.help }));
   protected readonly typesPieceIdentite = [
     { value: 'cni_cedeao', label: 'Carte d’identité CEDEAO' },
     { value: 'passeport', label: 'Passeport' },
+    { value: 'titre_sejour', label: 'Titre de séjour' },
     { value: 'permis', label: 'Permis de conduire' },
     { value: 'autre', label: 'Autre pièce' },
   ];
@@ -152,6 +155,13 @@ export class ProspectForm implements OnInit, AvecModifications {
       lieuNaissance: [''],
       typePieceIdentite: [''],
       numeroPieceIdentite: [''],
+      pieceValiditeLe: [''],
+      urgenceNom: [''],
+      urgenceLien: [''],
+      urgenceTelephone: [''],
+      adresse: [''],
+      nationalite: [''],
+      parcours: ['acheteur'],
       sourceAcquisition: [''],
       niveauInteret: [''],
       // Premier contact
@@ -283,6 +293,13 @@ export class ProspectForm implements OnInit, AvecModifications {
       lieuNaissance: prospect.lieuNaissance ?? '',
       typePieceIdentite: prospect.typePieceIdentite ?? '',
       numeroPieceIdentite: prospect.numeroPieceIdentite ?? '',
+      pieceValiditeLe: prospect.pieceValiditeLe ? prospect.pieceValiditeLe.slice(0, 10) : '',
+      urgenceNom: prospect.urgenceNom ?? '',
+      urgenceLien: prospect.urgenceLien ?? '',
+      urgenceTelephone: prospect.urgenceTelephone ?? '',
+      adresse: prospect.adresse ?? '',
+      nationalite: prospect.nationalite ?? '',
+      parcours: prospect.parcours ?? 'acheteur',
       sourceAcquisition: prospect.sourceAcquisition ?? '',
       niveauInteret: prospect.niveauInteret ?? '',
       premierContactLe: prospect.premierContactLe ? new Date(prospect.premierContactLe) : null,
@@ -331,6 +348,7 @@ export class ProspectForm implements OnInit, AvecModifications {
       email: text(value.email),
       villeResidence: text(value.villeResidence),
       paysResidence: text(value.paysResidence),
+      parcours: value.parcours,
       // Sans la permission, l'API refuse ces champs : on ne les envoie donc pas.
       ...(this.peutSaisirIdentite()
         ? {
@@ -338,6 +356,12 @@ export class ProspectForm implements OnInit, AvecModifications {
             lieuNaissance: text(value.lieuNaissance),
             typePieceIdentite: text(value.typePieceIdentite),
             numeroPieceIdentite: text(value.numeroPieceIdentite),
+            pieceValiditeLe: text(value.pieceValiditeLe),
+            urgenceNom: text(value.urgenceNom),
+            urgenceLien: text(value.urgenceLien),
+            urgenceTelephone: text(value.urgenceTelephone),
+            adresse: text(value.adresse),
+            nationalite: text(value.nationalite),
           }
         : {}),
       sourceAcquisition: text(value.sourceAcquisition),

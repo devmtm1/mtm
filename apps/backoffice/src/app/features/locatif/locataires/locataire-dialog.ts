@@ -14,6 +14,7 @@ import { contactRequis } from '../locatif-form';
 import { LocatifApiService } from '../../../core/services/api/locatif-api.service';
 import type { Locataire } from '../../../core/models/locatif.model';
 import { NotificationService } from '../../../shared/services/notification.service';
+import { EtatCivilChamps } from '../../../shared/components/identite/etat-civil-champs';
 import { PieceIdentiteChamps } from '../../../shared/components/piece-identite/piece-identite-champs';
 
 export interface LocataireDialogData {
@@ -24,7 +25,7 @@ export interface LocataireDialogData {
 @Component({
   selector: 'app-locataire-dialog',
   standalone: true,
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, PieceIdentiteChamps],
+  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, EtatCivilChamps, PieceIdentiteChamps],
   template: `
     <h2 mat-dialog-title>{{ isEdit ? 'Modifier le locataire' : 'Nouveau locataire' }}</h2>
     <mat-dialog-content [formGroup]="form" class="locataire-dialog-grid">
@@ -56,6 +57,7 @@ export interface LocataireDialogData {
       @if (form.hasError('contactManquant') && form.touched) {
         <p class="wide contact-error">Indiquez au moins un téléphone ou un e-mail : les relances et l'espace locataire en ont besoin.</p>
       }
+      <app-etat-civil-champs class="wide" [groupe]="form" />
       <app-piece-identite-champs
         class="wide"
         [groupe]="form"
@@ -95,6 +97,15 @@ export class LocataireDialog {
     notes: [''],
     typePiece: [''],
     numeroPiece: ['', Validators.maxLength(50)],
+    adresse: ['', Validators.maxLength(200)],
+    dateNaissance: [''],
+    lieuNaissance: ['', Validators.maxLength(120)],
+    nationalite: ['', Validators.maxLength(80)],
+    profession: ['', Validators.maxLength(120)],
+    pieceValiditeLe: [''],
+    urgenceNom: ['', Validators.maxLength(120)],
+    urgenceLien: ['', Validators.maxLength(80)],
+    urgenceTelephone: ['', Validators.maxLength(30)],
   }, { validators: contactRequis });
 
   protected fichierPiece: File | null = null;
@@ -111,6 +122,15 @@ export class LocataireDialog {
         notes: locataire.notes ?? '',
         typePiece: locataire.typePiece ?? '',
         numeroPiece: locataire.numeroPiece ?? '',
+        adresse: locataire.adresse ?? '',
+        dateNaissance: locataire.dateNaissance ? locataire.dateNaissance.slice(0, 10) : '',
+        lieuNaissance: locataire.lieuNaissance ?? '',
+        nationalite: locataire.nationalite ?? '',
+        profession: locataire.profession ?? '',
+        pieceValiditeLe: locataire.pieceValiditeLe ? locataire.pieceValiditeLe.slice(0, 10) : '',
+        urgenceNom: locataire.urgenceNom ?? '',
+        urgenceLien: locataire.urgenceLien ?? '',
+        urgenceTelephone: locataire.urgenceTelephone ?? '',
       });
     }
   }
@@ -131,6 +151,15 @@ export class LocataireDialog {
       // À la modification, un champ vidé s'efface (null) ; à la création, il reste absent.
       typePiece: texte(valeur.typePiece) ?? (this.isEdit ? null : undefined),
       numeroPiece: texte(valeur.numeroPiece) ?? (this.isEdit ? null : undefined),
+      adresse: texte(valeur.adresse) ?? (this.isEdit ? null : undefined),
+      dateNaissance: texte(valeur.dateNaissance) ?? (this.isEdit ? null : undefined),
+      lieuNaissance: texte(valeur.lieuNaissance) ?? (this.isEdit ? null : undefined),
+      nationalite: texte(valeur.nationalite) ?? (this.isEdit ? null : undefined),
+      profession: texte(valeur.profession) ?? (this.isEdit ? null : undefined),
+      pieceValiditeLe: texte(valeur.pieceValiditeLe) ?? (this.isEdit ? null : undefined),
+      urgenceNom: texte(valeur.urgenceNom) ?? (this.isEdit ? null : undefined),
+      urgenceLien: texte(valeur.urgenceLien) ?? (this.isEdit ? null : undefined),
+      urgenceTelephone: texte(valeur.urgenceTelephone) ?? (this.isEdit ? null : undefined),
     };
     this.saving.set(true);
     const request = this.isEdit

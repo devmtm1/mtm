@@ -1,3 +1,4 @@
+import { orienterParcours } from '../crm/parcours';
 import {
   BadRequestException,
   ConflictException,
@@ -327,6 +328,7 @@ export class ProjetsConstructionService {
       },
       include: projetInclude,
     });
+    await orienterParcours(this.prisma, dto.clientId, 'chantier');
     void this.alertes?.alerter(
       'construction:administrer',
       {

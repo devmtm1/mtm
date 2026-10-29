@@ -850,7 +850,39 @@
               <dt>Demandée le</dt>
               <dd>{{ m.dateDemande | date: 'dd/MM/yyyy' }}</dd>
             </div>
+            <div>
+              <dt>Espace client</dt>
+              <dd>
+                @if (m.prospect.clientUser) {
+                  Actif@if (m.prospect.clientUser.lastLoginAt) {
+                    · vu le {{ m.prospect.clientUser.lastLoginAt | date: 'dd/MM/yyyy' }}
+                  } @else {
+                    · jamais connecté
+                  }
+                } @else {
+                  Pas encore d’accès
+                }
+              </dd>
+            </div>
           </dl>
+          <div class="detail-section__actions mission-detail__client-actions">
+            <a mat-stroked-button [routerLink]="['/crm/prospects', m.prospect.id]">Ouvrir la fiche client</a>
+            @if (canCreateClient && !m.prospect.clientUser) {
+              @if (m.prospect.email) {
+                <button mat-flat-button color="primary" type="button" (click)="ouvrirEspaceClient()">
+                  Ouvrir l’espace client
+                </button>
+              } @else {
+                <a
+                  mat-stroked-button
+                  [routerLink]="['/crm/prospects', m.prospect.id, 'modifier']"
+                  matTooltip="L’accès s’envoie par e-mail : ajoutez d’abord son adresse sur sa fiche"
+                >
+                  Ajouter son e-mail
+                </a>
+              }
+            }
+          </div>
         </section>
 
         <section class="page-card detail-section">

@@ -1,5 +1,12 @@
 import { Transform } from 'class-transformer';
-import { IsEmail, IsIn, IsOptional, IsString, Length } from 'class-validator';
+import {
+  IsDateString,
+  IsEmail,
+  IsIn,
+  IsOptional,
+  IsString,
+  Length,
+} from 'class-validator';
 import { TYPES_PIECE } from '../../../common/storage/piece-identite';
 
 const emptyToUndefined = ({ value }: { value: unknown }) =>
@@ -31,6 +38,49 @@ export class CreateLocataireDto {
   @IsString()
   @Length(1, 50)
   numeroPiece?: string;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 200)
+  adresse?: string;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsDateString()
+  dateNaissance?: string;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 120)
+  lieuNaissance?: string;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 80)
+  nationalite?: string;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 120)
+  profession?: string;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsDateString()
+  pieceValiditeLe?: string;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 120)
+  urgenceNom?: string;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 80)
+  urgenceLien?: string;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 30)
+  urgenceTelephone?: string;
 }
 
 export class UpdateLocataireDto {
@@ -59,4 +109,47 @@ export class UpdateLocataireDto {
   @IsString()
   @Length(1, 50)
   numeroPiece?: string;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 200)
+  adresse?: string;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsDateString()
+  dateNaissance?: string;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 120)
+  lieuNaissance?: string;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 80)
+  nationalite?: string;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 120)
+  profession?: string;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsDateString()
+  pieceValiditeLe?: string;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 120)
+  urgenceNom?: string;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 80)
+  urgenceLien?: string;
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @Length(1, 30)
+  urgenceTelephone?: string;
 }

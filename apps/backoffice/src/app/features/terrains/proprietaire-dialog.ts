@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import type { ProprietaireSummary } from '../../core/models/terrain.model';
 import { SessionService } from '../../core/services/session.service';
+import { EtatCivilChamps } from '../../shared/components/identite/etat-civil-champs';
 import { PieceIdentiteChamps } from '../../shared/components/piece-identite/piece-identite-champs';
 
 interface ProprietaireForm {
@@ -16,6 +17,15 @@ interface ProprietaireForm {
   notes: FormControl<string>;
   typePiece: FormControl<string>;
   numeroPiece: FormControl<string>;
+  adresse: FormControl<string>;
+  dateNaissance: FormControl<string>;
+  lieuNaissance: FormControl<string>;
+  nationalite: FormControl<string>;
+  profession: FormControl<string>;
+  pieceValiditeLe: FormControl<string>;
+  urgenceNom: FormControl<string>;
+  urgenceLien: FormControl<string>;
+  urgenceTelephone: FormControl<string>;
 }
 
 /** Ce que renvoie le dialogue : la fiche, plus la copie PDF de la pièce à envoyer ou à retirer. */
@@ -33,6 +43,7 @@ export interface ProprietaireDialogResult {
     MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
+    EtatCivilChamps,
     PieceIdentiteChamps,
   ],
   templateUrl: './proprietaire-dialog.html',
@@ -68,6 +79,21 @@ export class ProprietaireDialog {
     notes: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(500)] }),
     typePiece: new FormControl('', { nonNullable: true }),
     numeroPiece: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(50)] }),
+    adresse: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(200)] }),
+    dateNaissance: new FormControl('', { nonNullable: true }),
+    lieuNaissance: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.maxLength(120)],
+    }),
+    nationalite: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(80)] }),
+    profession: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(120)] }),
+    pieceValiditeLe: new FormControl('', { nonNullable: true }),
+    urgenceNom: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(120)] }),
+    urgenceLien: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(80)] }),
+    urgenceTelephone: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.maxLength(30)],
+    }),
   });
 
   protected fichierPiece: File | null = null;
@@ -85,6 +111,17 @@ export class ProprietaireDialog {
         notes: proprietaire.notes ?? '',
         typePiece: proprietaire.typePiece ?? '',
         numeroPiece: proprietaire.numeroPiece ?? '',
+        adresse: proprietaire.adresse ?? '',
+        dateNaissance: proprietaire.dateNaissance ? proprietaire.dateNaissance.slice(0, 10) : '',
+        lieuNaissance: proprietaire.lieuNaissance ?? '',
+        nationalite: proprietaire.nationalite ?? '',
+        profession: proprietaire.profession ?? '',
+        pieceValiditeLe: proprietaire.pieceValiditeLe
+          ? proprietaire.pieceValiditeLe.slice(0, 10)
+          : '',
+        urgenceNom: proprietaire.urgenceNom ?? '',
+        urgenceLien: proprietaire.urgenceLien ?? '',
+        urgenceTelephone: proprietaire.urgenceTelephone ?? '',
       });
     }
   }
@@ -105,7 +142,19 @@ export class ProprietaireDialog {
       notes: optional(value.notes),
       // Un non-administrateur ne relit pas la pièce : il ne la réécrit pas non plus.
       ...(this.coordonneesEditables
-        ? { typePiece: optional(value.typePiece), numeroPiece: optional(value.numeroPiece) }
+        ? {
+            typePiece: optional(value.typePiece),
+            numeroPiece: optional(value.numeroPiece),
+            adresse: optional(value.adresse),
+            dateNaissance: optional(value.dateNaissance),
+            lieuNaissance: optional(value.lieuNaissance),
+            nationalite: optional(value.nationalite),
+            profession: optional(value.profession),
+            pieceValiditeLe: optional(value.pieceValiditeLe),
+            urgenceNom: optional(value.urgenceNom),
+            urgenceLien: optional(value.urgenceLien),
+            urgenceTelephone: optional(value.urgenceTelephone),
+          }
         : {}),
     };
     const result: ProprietaireDialogResult = {

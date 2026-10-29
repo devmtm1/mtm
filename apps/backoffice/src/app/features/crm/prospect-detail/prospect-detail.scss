@@ -1,124 +1,43 @@
-/* ---------- Carte d'identité ---------- */
-.hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 16px 24px;
-  align-items: start;
-
-  /* Six boutons côte à côte ne tiennent pas à côté du nom sous ~1600 px : ils passent dessous,
-     sinon le nom est écrasé dans une colonne étroite et les boutons recouvrent le texte. */
-  @media (max-width: 1600px) {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-.hero__id {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  min-width: 0;
-}
-
-.avatar {
-  display: inline-grid;
-  place-items: center;
-  flex: none;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: var(--mtm-primary-subtle);
-  color: var(--mtm-primary);
-  font-family: var(--mtm-font-display);
-  font-size: 1.3rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-.hero__texte {
-  display: grid;
-  gap: 6px;
-  min-width: 0;
-
-  h1 {
-    margin: 0;
-    font-family: var(--mtm-font-display);
-    font-size: clamp(1.5rem, 1.25rem + 0.7vw, 2rem);
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-    overflow-wrap: anywhere;
-  }
-
-  .eyebrow {
-    margin: 0;
-  }
-}
-
-.hero__actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
+/* ---------- En-tête : les boutons s'alignent avec « Retour » (le conteneur est dans le composant) ---------- */
+.actions-fiche {
+  display: contents;
 
   .btn-icon--after {
     margin: 0 0 0 6px;
   }
-
-  @media (max-width: 1600px) {
-    justify-content: flex-start;
-  }
-
-  @media (max-width: 720px) {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-
-    > * {
-      width: 100%;
-      white-space: normal;
-      line-height: 1.2;
-    }
-  }
 }
 
-.hero__contact {
-  grid-column: 1 / -1;
+/* Une alerte réelle, discrète : un point et du texte, jamais un bandeau de couleur. */
+.alertes-fiche {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 24px;
-  margin: 0;
-  padding: 14px 0 0;
-  border-top: 1px solid var(--mtm-border);
-  list-style: none;
-  font-size: 0.92rem;
+  gap: 4px 20px;
+  margin: 4px 0 0;
 
-  li {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-  }
+  button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--mtm-warning);
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
 
-  svg {
-    width: 16px;
-    height: 16px;
-    color: var(--mtm-text-muted);
-  }
-
-  a {
-    color: var(--mtm-text-dark);
-    text-decoration: none;
+    &::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      margin-right: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      vertical-align: 2px;
+    }
 
     &:hover {
-      color: var(--mtm-primary);
       text-decoration: underline;
     }
-  }
-
-  .is-muted {
-    color: var(--mtm-text-muted);
-  }
-
-  .is-warning {
-    color: var(--mtm-warning);
-    font-weight: 600;
   }
 }
 
@@ -646,4 +565,43 @@
   margin: 10px 0 0;
   color: var(--mtm-text-muted);
   font-style: italic;
+}
+
+/* ---------- Onglet « Dossiers et services » : cartes empilées, à la même largeur ---------- */
+.pile {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.parcours-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 0;
+  color: var(--mtm-text-muted);
+}
+
+.vide-carte {
+  margin: 0;
+  color: var(--mtm-text-muted);
+  font-style: italic;
+}
+
+/* Les références dans les tableaux des cartes : une couleur d'action, sans soulignement permanent. */
+.data-table a {
+  color: var(--mtm-primary);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+/* Les boutons d'action d'une carte : côte à côte, avec un espace, à la ligne si la carte est étroite. */
+[actions] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }

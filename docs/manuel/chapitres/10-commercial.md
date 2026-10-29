@@ -57,6 +57,27 @@ Un **prospect** est une personne intéressée par un bien, de la première prise
 
 > Un client de la **diaspora** ? Renseignez son **pays de résidence** : il sert à penser au décalage horaire, au paiement à distance et à la procuration.
 
+### La fiche client : cinq onglets
+
+La fiche d'un client, d'un propriétaire ou d'un locataire s'ouvre toujours sur son **identité**, puis se range en onglets :
+
+- **Identité** : état civil, pièce d'identité (type, numéro, **validité**, copie PDF pour les propriétaires et locataires), coordonnées, adresse et **personne à prévenir en cas d'urgence**. Un indicateur « Fiche complète à X % » dit ce qu'il reste à demander ; une pièce qui expire dans moins de 60 jours, ou déjà expirée, est signalée. Chaque information absente est écrite « Non renseigné » plutôt que cachée.
+- **Dossiers et services** : pour un acheteur, le pipeline, les visites, les dossiers de vente et son projet ; pour un client de vérification ou de chantier, ses missions et ses chantiers. Pour un propriétaire : **Biens et mandats** ; pour un locataire : **Baux**.
+- **Documents**.
+- **Espace client** : l'accès est-il ouvert, depuis quand, dernière connexion, et le bouton pour l'ouvrir (ou « Ajouter son e-mail » s'il manque).
+- **Suivi et historique** : actions à faire, tâches, échanges, historique des modifications.
+
+L'onglet ouvert figure dans l'adresse de la page (`?onglet=espace-client`) : on peut l'envoyer à un collègue. L'identité n'est visible qu'avec la permission « identité » (et, pour un propriétaire, aux seuls administrateurs).
+
+### Retrouver une personne : le répertoire
+
+Une même personne peut être prospect, propriétaire et locataire. Le **Répertoire** (onglet à côté de « Prospects ») la retrouve par nom, téléphone, e-mail ou référence et réunit ses fiches sur une seule ligne quand elles partagent le même e-mail ou le même téléphone.
+
+- **Les cinq compteurs du haut** (personnes, clients, propriétaires, locataires, à vérifier) sont aussi des filtres : cliquez pour isoler un type, recliquez pour revenir à tout.
+- **Le tableau** donne, pour chaque personne, son contact, ses fiches (une pastille cliquable par fiche, avec sa référence) et un contrôle : « Doublon possible » quand deux fiches du même type désignent la même personne.
+- **La liste est paginée** : 25 personnes par page (50 ou 100 au choix), avec le rang affiché (« 26–50 sur 84 personnes ») et des numéros de page. Chercher, filtrer ou changer la taille ramène à la première page. Les compteurs du haut portent toujours sur toute la recherche, pas seulement sur la page affichée.
+- **Sur téléphone**, chaque personne devient une carte. Chacun ne voit que les fiches qu’il a le droit de consulter ; les coordonnées des propriétaires restent réservées à l’administrateur.
+
 ### Retrouver un prospect
 
 - Les **pastilles** au-dessus du tableau filtrent d’un clic : *À relancer aujourd’hui*, *Relances en retard*, *Sans prochaine action*, *Visites à venir*, *Retours de visite à saisir*, *Tous les actifs*.

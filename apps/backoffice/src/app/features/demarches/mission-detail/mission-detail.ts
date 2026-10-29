@@ -1,7 +1,9 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ClientAccountDialog } from '../../../shared/dialogs/client-account-dialog';
+import { VentesApiService } from '../../../core/services/api/ventes-api.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
@@ -81,6 +83,7 @@ const PARCOURS_VERIFICATION = [
 @Component({
   selector: 'app-mission-detail',
   imports: [
+    RouterLink,
     FilDiscussion,
     TachesDossier,
     DatePipe,
@@ -115,6 +118,7 @@ export class MissionDetail implements OnInit {
   private readonly formBuilder = inject(FormBuilder);
   private readonly sessionService = inject(SessionService);
   private readonly terrainsApi = inject(TerrainsApiService);
+  private readonly ventesApi = inject(VentesApiService);
 
   protected readonly mission = signal<MissionDetailModel | null>(null);
   protected readonly options = signal<Partial<MissionOptions>>({});
@@ -124,6 +128,8 @@ export class MissionDetail implements OnInit {
   protected readonly saving = signal(false);
   /** Joindre l'annexe photo au rapport : au choix, à chaque génération. */
   protected readonly avecPhotos = signal(true);
+
+  protected readonly canCreateClient = this.sessionService.hasPermission('clients:creer');
 
   protected readonly canModify = computed(() =>
     this.sessionService.hasPermission('demarches:modifier'),
@@ -642,6 +648,20 @@ export class MissionDetail implements OnInit {
   }
 
   /** Relit la fiche après une action du bloc « Règlements et facture ». */
+  /** Ouvre l'accès espace client du demandeur depuis la mission, sans passer par sa fiche. */
+  protected ouvrirEspaceClient(): void {
+    const prospect = this.mission()?.prospect;
+    if (!prospect?.email || !this.canCreateClient) return;
+    ClientAccountDialog.open(this.dialog, {
+      email: prospect.email,
+      name: [prospect.prenom, prospect.nom].filter(Boolean).join(' '),
+      scopeDescription: 'suivre sa mission, ses paiements et ses documents',
+      create: (password) => this.ventesApi.createClientAccount(prospect.id, password),
+    }).subscribe((cree) => {
+      if (cree) this.recharger();
+    });
+  }
+
   protected recharger(): void {
     this.charger();
   }

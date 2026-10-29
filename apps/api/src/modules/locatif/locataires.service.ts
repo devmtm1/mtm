@@ -9,6 +9,7 @@ import { PrismaService } from '../../database/prisma.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import {
   exposerPiece,
+  preparerEtatCivil,
   validerPiecePdf,
 } from '../../common/storage/piece-identite';
 import { ClientAccountsService } from '../client-accounts/client-accounts.service';
@@ -84,6 +85,19 @@ export class LocatairesService {
         notes: true,
         typePiece: true,
         numeroPiece: true,
+        adresse: true,
+        dateNaissance: true,
+        lieuNaissance: true,
+        nationalite: true,
+        profession: true,
+        pieceValiditeLe: true,
+        urgenceNom: true,
+        urgenceLien: true,
+        urgenceTelephone: true,
+        // Compte d'espace client : seulement son existence et sa dernière connexion.
+        clientUser: {
+          select: { id: true, createdAt: true, lastLoginAt: true },
+        },
         pieceStorageKey: true,
         pieceResourceType: true,
         createdAt: true,
@@ -95,7 +109,9 @@ export class LocatairesService {
   }
 
   async create(dto: CreateLocataireDto) {
-    const cree = await this.prisma.locataire.create({ data: dto });
+    const cree = await this.prisma.locataire.create({
+      data: preparerEtatCivil(dto),
+    });
     return exposerPiece(cree, this.cloudinary);
   }
 
@@ -103,7 +119,7 @@ export class LocatairesService {
     await this.findById(id);
     const modifie = await this.prisma.locataire.update({
       where: { id },
-      data: dto,
+      data: preparerEtatCivil(dto),
     });
     return exposerPiece(modifie, this.cloudinary);
   }

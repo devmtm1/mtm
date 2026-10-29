@@ -160,6 +160,17 @@ model Proprietaire {
   numeroPiece        String?
   pieceStorageKey    String?
   pieceResourceType  String?
+  /// État civil (facultatif) : l'identité complète tient sur la fiche, comme pour un prospect.
+  adresse            String?
+  dateNaissance      DateTime? @db.Date
+  lieuNaissance      String?
+  nationalite        String?
+  profession         String?
+  /// Validité de la pièce et personne à prévenir en cas d'urgence (facultatifs).
+  pieceValiditeLe    DateTime? @db.Date
+  urgenceNom         String?
+  urgenceLien        String?
+  urgenceTelephone   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -753,6 +764,23 @@ model Prospect {
   rechercheStatut               String?
   profession                    String?
   /**
+   * Adresse postale complète (rue, quartier) ; la ville et le pays de résidence restent à part.
+   */
+  adresse                       String?
+  nationalite                   String?
+  /**
+   * Validité de la pièce d'identité et personne à prévenir en cas d'urgence.
+   */
+  pieceValiditeLe               DateTime? @db.Date
+  urgenceNom                    String?
+  urgenceLien                   String?
+  urgenceTelephone              String?
+  /**
+   * Ce que le client attend de MTM : acheteur (pipeline de vente), verification, chantier ou autre.
+   * Seul « acheteur » suit le pipeline commercial ; les autres suivent leur mission ou leur chantier.
+   */
+  parcours                      String    @default("acheteur")
+  /**
    * Quartier, zone ou repère, en complément de la commune recherchée.
    */
   quartierRecherche             String?
@@ -837,6 +865,7 @@ model Prospect {
   @@index([createdAt])
   @@index([prochaineRelanceLe])
   @@index([rechercheStatut])
+  @@index([parcours])
   @@map("prospects")
 }
 
@@ -1462,6 +1491,17 @@ model Locataire {
   numeroPiece        String?
   pieceStorageKey    String?
   pieceResourceType  String?
+  /// État civil (facultatif) : l'identité complète tient sur la fiche, comme pour un prospect.
+  adresse            String?
+  dateNaissance      DateTime? @db.Date
+  lieuNaissance      String?
+  nationalite        String?
+  profession         String?
+  /// Validité de la pièce et personne à prévenir en cas d'urgence (facultatifs).
+  pieceValiditeLe    DateTime? @db.Date
+  urgenceNom         String?
+  urgenceLien        String?
+  urgenceTelephone   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

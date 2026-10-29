@@ -82,6 +82,7 @@ describe('navigation du back-office', () => {
   it('range en onglets les sujets à plusieurs pages, une seule ligne chacun', () => {
     const sujets = items().filter((item) => item.children);
     expect(sujets.map((item) => item.label)).toEqual([
+      'Prospects',
       'Dossiers de vente',
       'Gestion locative',
       'Finances',

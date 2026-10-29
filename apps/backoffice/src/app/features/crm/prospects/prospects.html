@@ -242,6 +242,15 @@
           </mat-select>
         </mat-form-field>
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Ce que veut le client</mat-label>
+          <mat-select formControlName="parcours">
+            <mat-option value="">Tous</mat-option>
+            @for (option of parcoursOptions; track option.value) {
+              <mat-option [value]="option.value">{{ option.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Intérêt</mat-label>
           <mat-select formControlName="niveauInteret">
             <mat-option value="">Tous</mat-option>

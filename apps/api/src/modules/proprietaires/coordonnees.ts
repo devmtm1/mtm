@@ -14,8 +14,21 @@ export function voitCoordonneesProprietaires(user?: Demandeur): boolean {
 }
 
 const MASQUEES = { email: null, phone: null, coordonneesMasquees: true };
-/** La pièce d'identité est aussi réservée à l'administrateur : type, numéro et copie PDF. */
-const PIECE = ['typePiece', 'numeroPiece', 'pieceUrl'] as const;
+/** L'identité (pièce, état civil, adresse) est aussi réservée à l'administrateur. */
+const PIECE = [
+  'typePiece',
+  'numeroPiece',
+  'pieceUrl',
+  'adresse',
+  'dateNaissance',
+  'lieuNaissance',
+  'nationalite',
+  'profession',
+  'pieceValiditeLe',
+  'urgenceNom',
+  'urgenceLien',
+  'urgenceTelephone',
+] as const;
 
 /** Copie du propriétaire sans e-mail ni téléphone (marqué `coordonneesMasquees`) si le demandeur n'est pas administrateur. */
 export function masquerCoordonnees<T extends object>(

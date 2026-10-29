@@ -4,12 +4,16 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { LucideArrowLeft, LucideKeyRound, LucideMail, LucidePencil, LucidePhone } from '@lucide/angular';
+import { LucidePencil } from '@lucide/angular';
 import { LocatifApiService } from '../../../../core/services/api/locatif-api.service';
 import { SessionService } from '../../../../core/services/session.service';
 import type { Locataire, LocataireBail } from '../../../../core/models/locatif.model';
 import { NotificationService } from '../../../../shared/services/notification.service';
-import { libellePiece } from '../../../../core/models/piece-identite';
+import { FicheEntete } from '../../../../shared/components/fiche-client/fiche-entete';
+import { FicheEspaceClient } from '../../../../shared/components/fiche-client/fiche-espace-client';
+import { FicheIdentite, type ComplementFiche } from '../../../../shared/components/fiche-client/fiche-identite';
+import { FicheOnglets, type OngletFiche } from '../../../../shared/components/fiche-client/fiche-onglets';
+import { type DonneesFiche } from '../../../../core/models/fiche-client';
 import { MoneyPipe } from '../../../../shared/pipes/money.pipe';
 import {
   BAIL_STATUTS,
@@ -29,16 +33,16 @@ import { ClientAccountDialog } from '../../../../shared/dialogs/client-account-d
 @Component({
   selector: 'app-locataire-detail',
   imports: [
+    FicheEntete,
+    FicheEspaceClient,
+    FicheIdentite,
+    FicheOnglets,
     MoneyPipe,
     DatePipe,
     MatButtonModule,
     MatDialogModule,
     MatTooltipModule,
-    LucideArrowLeft,
-    LucideKeyRound,
-    LucideMail,
     LucidePencil,
-    LucidePhone,
   ],
   templateUrl: './locataire-detail.html',
   styleUrl: './locataire-detail.scss',
@@ -52,12 +56,46 @@ export class LocataireDetail implements OnInit {
   private readonly notify = inject(NotificationService);
 
   protected readonly locataire = signal<Locataire | null>(null);
+  protected readonly onglet = signal('identite');
+  /** L'identité rangée au format commun des fiches. */
+  protected readonly donneesFiche = computed<DonneesFiche>(() => {
+    const l = this.locataire();
+    return {
+      prenom: l?.firstName,
+      nom: l?.lastName,
+      telephone: l?.phone,
+      email: l?.email,
+      adresse: l?.adresse,
+      dateNaissance: l?.dateNaissance,
+      lieuNaissance: l?.lieuNaissance,
+      nationalite: l?.nationalite,
+      profession: l?.profession,
+      typePiece: l?.typePiece,
+      numeroPiece: l?.numeroPiece,
+      pieceValiditeLe: l?.pieceValiditeLe,
+      pieceUrl: l?.pieceUrl,
+      urgenceNom: l?.urgenceNom,
+      urgenceLien: l?.urgenceLien,
+      urgenceTelephone: l?.urgenceTelephone,
+    };
+  });
+  /** Notes du dossier, à la suite de l'identité. */
+  protected readonly complements = computed<ComplementFiche[]>(() => {
+    const l = this.locataire();
+    return l ? [{ titre: 'Dossier', lignes: [{ libelle: 'Notes internes', valeur: l.notes }] }] : [];
+  });
+  protected readonly onglets = computed<OngletFiche[]>(() => {
+    return [
+      { id: 'identite', libelle: 'Identité', icone: 'identite' },
+      { id: 'baux', libelle: 'Baux', icone: 'baux', pastille: this.baux()?.length ?? null },
+      { id: 'espace-client', libelle: 'Espace client', icone: 'espace' },
+    ];
+  });
   protected readonly baux = signal<LocataireBail[] | null>(null);
   protected readonly loading = signal(true);
   protected readonly canModify = this.session.hasPermission('locatif:modifier');
   protected readonly canSeeBien = this.session.hasPermission('locatif:consulter');
   protected readonly canCreateClient = this.session.hasPermission('clients:creer');
-  protected readonly libellePiece = libellePiece;
 
   /** Le nom tel qu'on le présente : capitales initiales, sans toucher la donnée. */
   protected nom(locataire: Locataire): string {
@@ -117,6 +155,9 @@ export class LocataireDetail implements OnInit {
       name: `${current.firstName} ${current.lastName}`,
       scopeDescription: 'suivre son bail, ses échéances, ses quittances et ses paiements',
       create: (password) => this.api.createLocataireClientAccount(current.id, password),
+    }).subscribe((cree) => {
+      // L'accès vient d'être ouvert : l'onglet montre aussitôt « Accès ouvert ».
+      if (cree && this.id) this.load(this.id);
     });
   }
 

@@ -23,7 +23,27 @@ import { CreateProspectDto } from './dto/create-prospect.dto';
 import { UpdateProspectDto } from './dto/update-prospect.dto';
 import { QueryProspectDto } from './dto/query-prospect.dto';
 
+/** Compte d'espace client rattaché : ni mot de passe ni jeton, seulement son existence et sa dernière connexion. */
+const compteClientSelect = {
+  select: { id: true, createdAt: true, lastLoginAt: true },
+} as const;
+
 const prospectInclude = {
+  clientUser: compteClientSelect,
+  // Le suivi d'un client de vérification ou de chantier : ses missions et ses chantiers, avec leur avancement.
+  missions: {
+    orderBy: { dateDemande: 'desc' as const },
+    select: {
+      id: true,
+      referenceInterne: true,
+      typeVerification: true,
+      statut: true,
+    },
+  },
+  chantiers: {
+    orderBy: { createdAt: 'desc' as const },
+    select: { id: true, referenceInterne: true, intitule: true, statut: true },
+  },
   commercialResponsable: {
     select: { id: true, firstName: true, lastName: true },
   },
@@ -152,6 +172,7 @@ export class CrmService {
           }
         : {}),
       ...(query.niveauInteret ? { niveauInteret: query.niveauInteret } : {}),
+      ...(query.parcours ? { parcours: query.parcours } : {}),
       ...this.vueFilter(query.vue),
       ...(query.dateMin || query.dateMax
         ? {
@@ -249,8 +270,27 @@ export class CrmService {
     const prospect = await this.prisma.prospect.findUnique({
       where: { id },
       include: {
+        clientUser: compteClientSelect,
         commercialResponsable: {
           select: { id: true, firstName: true, lastName: true },
+        },
+        missions: {
+          orderBy: { dateDemande: 'desc' as const },
+          select: {
+            id: true,
+            referenceInterne: true,
+            typeVerification: true,
+            statut: true,
+          },
+        },
+        chantiers: {
+          orderBy: { createdAt: 'desc' as const },
+          select: {
+            id: true,
+            referenceInterne: true,
+            intitule: true,
+            statut: true,
+          },
         },
         activites: { orderBy: { dateEcheance: 'asc' as const } },
         documents: { orderBy: { createdAt: 'desc' as const } },
@@ -581,8 +621,13 @@ export class CrmService {
       : (dto.commercialResponsableId ?? user.id);
     this.options.assertRecherche(dto);
     this.assertCoherenceRecherche(dto);
-    const { premierContactLe, prochaineRelanceLe, dateNaissance, ...rest } =
-      dto;
+    const {
+      premierContactLe,
+      prochaineRelanceLe,
+      dateNaissance,
+      pieceValiditeLe,
+      ...rest
+    } = dto;
     const prospect = await this.prisma.prospect.create({
       data: {
         ...(rest as unknown as Prisma.ProspectUncheckedCreateInput),
@@ -602,6 +647,9 @@ export class CrmService {
           ? { prochaineRelanceLe: new Date(prochaineRelanceLe) }
           : {}),
         ...(dateNaissance ? { dateNaissance: new Date(dateNaissance) } : {}),
+        ...(pieceValiditeLe
+          ? { pieceValiditeLe: new Date(pieceValiditeLe) }
+          : {}),
         commercialResponsableId,
       },
       include: prospectInclude,
@@ -720,6 +768,25 @@ export class CrmService {
         rechercheStatut: dto.rechercheStatut,
       }),
       ...(dto.profession !== undefined && { profession: dto.profession }),
+      ...(dto.adresse !== undefined && { adresse: dto.adresse || null }),
+      ...(dto.pieceValiditeLe !== undefined && {
+        pieceValiditeLe: dto.pieceValiditeLe
+          ? new Date(dto.pieceValiditeLe)
+          : null,
+      }),
+      ...(dto.urgenceNom !== undefined && {
+        urgenceNom: dto.urgenceNom || null,
+      }),
+      ...(dto.urgenceLien !== undefined && {
+        urgenceLien: dto.urgenceLien || null,
+      }),
+      ...(dto.urgenceTelephone !== undefined && {
+        urgenceTelephone: dto.urgenceTelephone || null,
+      }),
+      ...(dto.nationalite !== undefined && {
+        nationalite: dto.nationalite || null,
+      }),
+      ...(dto.parcours !== undefined && { parcours: dto.parcours }),
       ...(dto.quartierRecherche !== undefined && {
         quartierRecherche: dto.quartierRecherche,
       }),

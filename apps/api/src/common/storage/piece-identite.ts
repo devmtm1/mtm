@@ -1,15 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
+import { TYPES_PIECE_IDENTITE } from '../../modules/demarches/identite-client';
 import { validateUploadedAsset } from './asset-validation';
 import type { CloudinaryService } from './cloudinary.service';
 
-/** Types de pièce proposés dans les formulaires (propriétaires et locataires). */
-export const TYPES_PIECE = [
-  'cni',
-  'passeport',
-  'titre_sejour',
-  'permis',
-  'autre',
-] as const;
+/** Types de pièce proposés dans les formulaires : le même vocabulaire que les fiches prospects. */
+export const TYPES_PIECE = TYPES_PIECE_IDENTITE;
 
 interface ChampsPiece {
   pieceStorageKey?: string | null;
@@ -42,4 +37,22 @@ export function exposerPiece<T extends ChampsPiece>(
       ? cloudinary.url(pieceStorageKey, pieceResourceType ?? 'raw', false)
       : null,
   };
+}
+
+/**
+ * Prépare les dates de la fiche pour la base : elles arrivent en texte (AAAA-MM-JJ), Prisma attend une date ;
+ * `null` efface la valeur, l'absence de champ la laisse intacte.
+ */
+type ChampDate = 'dateNaissance' | 'pieceValiditeLe';
+
+export function preparerEtatCivil<T extends object>(
+  dto: T,
+): Omit<T, ChampDate> & Partial<Record<ChampDate, Date | null>> {
+  const copie = { ...dto } as Record<string, unknown>;
+  for (const champ of ['dateNaissance', 'pieceValiditeLe'] as const) {
+    const valeur = copie[champ] as string | Date | null | undefined;
+    if (valeur === undefined) continue;
+    copie[champ] = valeur ? new Date(valeur) : null;
+  }
+  return copie as Omit<T, ChampDate> & Partial<Record<ChampDate, Date | null>>;
 }

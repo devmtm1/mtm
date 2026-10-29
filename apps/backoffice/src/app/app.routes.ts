@@ -336,6 +336,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'repertoire',
+        title: 'Répertoire des personnes',
+        canActivate: [permissionsGuard(['crm:consulter'])],
+        loadComponent: () =>
+          import('./features/personnes/personnes').then((m) => m.Personnes),
+      },
+      {
         path: 'proprietaires',
         title: 'Propriétaires',
         data: { preload: true },

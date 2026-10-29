@@ -8,6 +8,7 @@ import { PrismaService } from '../../database/prisma.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import {
   exposerPiece,
+  preparerEtatCivil,
   validerPiecePdf,
 } from '../../common/storage/piece-identite';
 import {
@@ -70,6 +71,19 @@ export class ProprietairesService {
         notes: true,
         typePiece: true,
         numeroPiece: true,
+        adresse: true,
+        dateNaissance: true,
+        lieuNaissance: true,
+        nationalite: true,
+        profession: true,
+        pieceValiditeLe: true,
+        urgenceNom: true,
+        urgenceLien: true,
+        urgenceTelephone: true,
+        // Compte d'espace client : seulement son existence et sa dernière connexion.
+        clientUser: {
+          select: { id: true, createdAt: true, lastLoginAt: true },
+        },
         pieceStorageKey: true,
         pieceResourceType: true,
         createdAt: true,
@@ -116,7 +130,10 @@ export class ProprietairesService {
     for (let essai = 0; ; essai++) {
       try {
         const cree = await this.prisma.proprietaire.create({
-          data: { ...dto, matricule: await this.prochainMatricule() },
+          data: {
+            ...preparerEtatCivil(dto),
+            matricule: await this.prochainMatricule(),
+          },
         });
         return exposerPiece(cree, this.cloudinary);
       } catch (erreur) {
@@ -130,15 +147,26 @@ export class ProprietairesService {
     await this.ensureExists(id);
     // Qui ne voit pas les coordonnées ne peut pas les réécrire.
     const { email: _email, phone: _phone, ...sansCoordonnees } = dto;
-    // Même règle pour la pièce d'identité : réservée à l'administrateur.
+    // Même règle pour l'identité (pièce, état civil, adresse) : réservée à l'administrateur.
     const {
       typePiece: _type,
       numeroPiece: _numero,
-      ...sansPiece
+      adresse: _adresse,
+      dateNaissance: _naissance,
+      lieuNaissance: _lieu,
+      nationalite: _nationalite,
+      profession: _profession,
+      pieceValiditeLe: _validite,
+      urgenceNom: _urgenceNom,
+      urgenceLien: _urgenceLien,
+      urgenceTelephone: _urgenceTelephone,
+      ...sansIdentite
     } = sansCoordonnees;
     const modifie = await this.prisma.proprietaire.update({
       where: { id },
-      data: voitCoordonneesProprietaires(user) ? dto : sansPiece,
+      data: preparerEtatCivil(
+        voitCoordonneesProprietaires(user) ? dto : sansIdentite,
+      ),
     });
     return exposerPiece(modifie, this.cloudinary);
   }

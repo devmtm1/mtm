@@ -2,6 +2,8 @@ import type { PieceIdentite } from './piece-identite';
 export type NumericOrString = number | string | null;
 
 export interface ProprietaireSummary extends PieceIdentite {
+  /** Compte d'espace client (« Mon bien »), s'il est ouvert. */
+  clientUser?: { id: string; createdAt: string; lastLoginAt: string | null } | null;
   id: string;
   /** Identifiant lisible (PRO-2026-0004) : ce qui reconnaît le propriétaire quand ses coordonnées sont masquées. */
   matricule?: string;

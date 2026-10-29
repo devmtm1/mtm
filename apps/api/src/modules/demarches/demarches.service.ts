@@ -18,6 +18,7 @@ import {
   DemarchesOptionsService,
   MISSION_STATUTS_TERMINES,
 } from './demarches-options.service';
+import { orienterParcours } from '../crm/parcours';
 import { MissionReferencesService } from './mission-references.service';
 import {
   CreateMissionDto,
@@ -28,7 +29,16 @@ import {
 
 const missionListInclude = {
   prospect: {
-    select: { id: true, nom: true, prenom: true, email: true, telephone: true },
+    select: {
+      id: true,
+      nom: true,
+      prenom: true,
+      email: true,
+      telephone: true,
+      parcours: true,
+      // Existence du compte d'espace client : la mission dit si le client peut déjà suivre son dossier.
+      clientUser: { select: { id: true, createdAt: true, lastLoginAt: true } },
+    },
   },
   terrain: {
     select: {
@@ -226,6 +236,7 @@ export class DemarchesService {
       },
       include: missionInclude,
     });
+    await orienterParcours(this.prisma, dto.prospectId, 'verification');
     void this.alertes?.alerter(
       'demarches:valider',
       {

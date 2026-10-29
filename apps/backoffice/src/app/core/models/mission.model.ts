@@ -6,6 +6,9 @@ export interface MissionProspect {
   prenom: string | null;
   email: string | null;
   telephone: string | null;
+  parcours?: string;
+  /** Compte d'espace client du demandeur, s'il en a un. */
+  clientUser?: { id: string; createdAt: string; lastLoginAt: string | null } | null;
 }
 
 export interface MissionTerrain {

@@ -72,7 +72,19 @@ Le solde et le statut (« Partiellement réglé ») se calculent sur le montant 
 
 ## Les données d’identité du client
 
-La date et le lieu de naissance, le **type** de pièce d’identité apparaissent sur la facture et le rapport ; le **numéro** de la pièce n’y figure **jamais**. Ces informations ne sont visibles qu’avec la permission « identité » (direction, encadrement commercial, responsable des démarches, administrateur).
+La date et le lieu de naissance, le **type** de pièce d’identité apparaissent sur la facture et le rapport ; le **numéro** de la pièce n’y figure **jamais**. Ces informations ne sont visibles qu’avec la permission « identité » (direction, encadrement commercial, responsable des démarches, administrateur). La fiche du client réunit aussi son adresse et sa nationalité, présentées comme sur les fiches propriétaire et locataire.
+
+## Donner à votre client l’accès à son espace
+
+Un client de vérification suit sa mission, ses paiements et ses documents dans son espace client. Depuis la page de la mission, la carte **Le client** indique si l’accès existe (« Actif », « Jamais connecté » ou « Pas encore d’accès ») :
+
+- **Ouvrir l’espace client** envoie l’invitation par e-mail avec un mot de passe provisoire.
+- **Ajouter son e-mail** apparaît quand la fiche n’a pas d’adresse : l’accès s’envoie par e-mail, il faut donc la renseigner d’abord.
+- **Ouvrir la fiche client** mène à sa fiche complète (identité, documents, historique).
+
+## Ce n’est pas un prospect de vente
+
+Dès qu’une mission (ou un chantier) est ouverte pour un client qui n’a ni dossier de vente ni visite, sa fiche passe en parcours **Vérification foncière** (ou **Chantier**). Elle n’affiche alors plus le pipeline de vente (visites, négociation, réservation) mais sa mission, et elle n’entre plus dans les chiffres commerciaux. S’il veut aussi acheter, le bouton **Il souhaite aussi acheter** le remet dans le pipeline. Le parcours se corrige aussi dans « Modifier la fiche » (« Ce que veut ce client »), et la liste des prospects se filtre par parcours.
 
 ## Les bonnes habitudes
 

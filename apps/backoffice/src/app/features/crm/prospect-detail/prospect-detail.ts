@@ -1,3 +1,18 @@
+import { NgTemplateOutlet } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import {
+  MISSION_ETAPES,
+  TYPES_VERIFICATION,
+  label as libelleMission,
+  pillClass as classeMission,
+} from '../../demarches/mission-status';
+import { STATUTS_CHANTIER, label as libelleChantier, pillClass as classeStatutChantier } from '../../construction/chantier-status';
+import { FicheCarte } from '../../../shared/components/fiche-client/fiche-carte';
+import { FicheEntete } from '../../../shared/components/fiche-client/fiche-entete';
+import { FicheEspaceClient } from '../../../shared/components/fiche-client/fiche-espace-client';
+import { FicheIdentite, type ComplementFiche } from '../../../shared/components/fiche-client/fiche-identite';
+import { FicheOnglets, type OngletFiche } from '../../../shared/components/fiche-client/fiche-onglets';
+import { completudeFiche, type DonneesFiche } from '../../../core/models/fiche-client';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe, LowerCasePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -6,21 +21,16 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
-  LucideArrowLeft,
   LucideCheck,
   LucideChevronDown,
   LucideClock,
   LucideFileText,
-  LucideKeyRound,
-  LucideMail,
   LucidePencil,
-  LucidePhone,
   LucidePlus,
   LucideReceipt,
   LucideShieldCheck,
   LucideTrash2,
   LucideUpload,
-  LucideUser,
 } from '@lucide/angular';
 import { CrmApiService } from '../../../core/services/api/crm-api.service';
 import { VentesApiService } from '../../../core/services/api/ventes-api.service';
@@ -37,7 +47,7 @@ import { ActiviteDialog } from '../activite-dialog/activite-dialog';
 import { ClientAccountDialog } from '../../../shared/dialogs/client-account-dialog';
 import { SalesDossierDialog } from '../sales-dossier-dialog/sales-dossier-dialog';
 import { VisiteDialog } from '../visite-dialog/visite-dialog';
-import {
+import { PARCOURS_CLIENT,
   ACTIVITY_STATUS,
   ACTIVITY_TYPES,
   CLOSED_STAGES,
@@ -139,6 +149,13 @@ const FIELD_LABELS: Record<string, string> = {
 @Component({
   selector: 'app-prospect-detail',
   imports: [
+    NgTemplateOutlet,
+    FicheCarte,
+    FicheEntete,
+    FicheEspaceClient,
+    FicheIdentite,
+    FicheOnglets,
+    RouterLink,
     FilDiscussion,
     TachesDossier,
     LabelPipe,
@@ -149,21 +166,16 @@ const FIELD_LABELS: Record<string, string> = {
     MatDialogModule,
     MatMenuModule,
     MatTooltipModule,
-    LucideArrowLeft,
     LucideCheck,
     LucideChevronDown,
     LucideClock,
     LucideFileText,
-    LucideKeyRound,
-    LucideMail,
     LucidePencil,
-    LucidePhone,
     LucidePlus,
     LucideReceipt,
     LucideShieldCheck,
     LucideTrash2,
     LucideUpload,
-    LucideUser,
   ],
   templateUrl: './prospect-detail.html',
   styleUrl: './prospect-detail.scss',
@@ -191,6 +203,91 @@ export class ProspectDetail implements OnInit {
   protected readonly canCreateMission = computed(() => this.session.hasPermission('demarches:creer'));
   protected readonly canSeeSales = this.session.hasPermission('ventes:consulter');
   protected readonly isSupervisor = this.session.hasSupervisionScope('crm');
+  protected readonly peutLireIdentite = this.session.hasPermission('crm:identite');
+  /** Un client de vérification ou de chantier ne suit pas le pipeline de vente : sa fiche montre sa mission ou son chantier. */
+  protected readonly clientServices = computed(() => (this.prospect()?.parcours ?? 'acheteur') !== 'acheteur');
+  protected readonly parcoursSens = computed(() => PARCOURS_CLIENT[this.prospect()?.parcours ?? 'acheteur']);
+  protected readonly onglet = signal('identite');
+  /** L'identité rangée au format commun des fiches (la même que pour un propriétaire ou un locataire). */
+  protected readonly donneesFiche = computed<DonneesFiche>(() => {
+    const p = this.prospect();
+    return {
+      prenom: p?.prenom,
+      nom: p?.nom,
+      telephone: p?.telephone,
+      whatsapp: p?.whatsapp,
+      email: p?.email,
+      adresse: p?.adresse,
+      ville: p?.villeResidence,
+      pays: p?.paysResidence,
+      dateNaissance: p?.dateNaissance,
+      lieuNaissance: p?.lieuNaissance,
+      nationalite: p?.nationalite,
+      profession: p?.profession,
+      typePiece: p?.typePieceIdentite,
+      numeroPiece: p?.numeroPieceIdentite,
+      pieceValiditeLe: p?.pieceValiditeLe,
+      urgenceNom: p?.urgenceNom,
+      urgenceLien: p?.urgenceLien,
+      urgenceTelephone: p?.urgenceTelephone,
+    };
+  });
+  /** Ce qu'il reste à renseigner ; vide pour qui n'a pas le droit de lire l'identité (les champs manqueraient à tort). */
+  protected readonly completude = computed(() =>
+    this.prospect() && this.peutLireIdentite ? completudeFiche(this.donneesFiche(), false) : null,
+  );
+  /** Origine de la fiche, à la suite de l'identité. */
+  protected readonly rubriquesFiche = computed<ComplementFiche[]>(() => {
+    const p = this.prospect();
+    if (!p) return [];
+    const jour = (iso: string) => new Date(iso).toLocaleDateString('fr-FR');
+    return [
+      {
+        titre: 'Origine de la fiche',
+        lignes: [
+          { libelle: 'Source', valeur: p.sourceAcquisition ? this.sourceLabel(p.sourceAcquisition) : null },
+          {
+            libelle: 'Premier contact',
+            valeur: p.premierContactLe
+              ? jour(p.premierContactLe) + (p.premierContactMoyen ? ` · ${this.channelLabel(p.premierContactMoyen)}` : '')
+              : null,
+          },
+          { libelle: 'Fiche créée le', valeur: jour(p.createdAt) },
+        ],
+      },
+    ];
+  });
+  /** « Alassane Sow · P-2026-0010 · Vérification foncière » : de quelle fiche il s'agit, sans rouvrir l'identité. */
+  protected readonly sousTitre = computed(() => {
+    const p = this.prospect();
+    if (!p) return null;
+    const etat = this.clientServices() ? this.parcoursSens().label : this.stageLabel(p.statutPipeline);
+    return [this.name(), p.referenceInterne, etat].filter(Boolean).join(' · ');
+  });
+  /** Le bouton principal invite à compléter tant qu'il manque des informations. */
+  protected readonly libelleEdition = computed(() => {
+    const complete = this.completude();
+    return complete && complete.pourcentage < 100 ? 'Compléter la fiche' : 'Modifier la fiche';
+  });
+  protected readonly onglets = computed<OngletFiche[]>(() => {
+    const p = this.prospect();
+    return [
+      { id: 'identite', libelle: 'Identité', icone: 'identite' },
+      {
+        id: 'dossiers',
+        libelle: 'Dossiers et services',
+        icone: 'dossiers',
+        pastille: p ? p.dossiers.length + (p.missions?.length ?? 0) + (p.chantiers?.length ?? 0) : null,
+      },
+      { id: 'documents', libelle: 'Documents', icone: 'documents', pastille: p?._count.documents ?? null },
+      { id: 'espace-client', libelle: 'Espace client', icone: 'espace' },
+      { id: 'suivi', libelle: 'Suivi et historique', icone: 'suivi', pastille: this.overdueCount(), alerte: true },
+    ];
+  });
+
+  protected allerA(id: string): void {
+    this.onglet.set(id);
+  }
 
   protected readonly name = computed(() => (this.prospect() ? prospectName(this.prospect()!) : ''));
   /** Fil du parcours : les sorties n'y figurent pas, elles l'interrompent. */
@@ -233,12 +330,6 @@ export class ProspectDetail implements OnInit {
   });
 
   /** Initiales pour l'avatar : « FS » pour Fatou Sarr. */
-  protected readonly initials = computed(() => {
-    const prospect = this.prospect();
-    if (!prospect) return '';
-    const lettres = [prospect.prenom, prospect.nom].filter(Boolean).map((mot) => (mot as string).trim()[0]);
-    return lettres.join('').toUpperCase().slice(0, 2) || '?';
-  });
 
   /** Un prospect actif sans prochaine action : le cas que la règle MTM interdit. */
   protected readonly needsRelance = computed(() => {
@@ -597,7 +688,50 @@ export class ProspectDetail implements OnInit {
       name: this.name(),
       scopeDescription: 'suivre ses dossiers, paiements et documents',
       create: (password) => this.ventesApi.createClientAccount(prospect.id, password),
+    }).subscribe((cree) => {
+      // L'accès vient d'être ouvert : la fiche montre aussitôt « Espace client actif ».
+      if (cree) this.load(prospect.id);
     });
+  }
+
+  /** Sans e-mail, pas d'accès possible : on amène l'utilisateur droit au champ à compléter. */
+  protected ajouterEmail(): void {
+    this.edit();
+  }
+
+  /** Le client de services veut aussi acheter : il entre dans le pipeline de vente. */
+  protected devientAcheteur(): void {
+    const prospect = this.prospect();
+    if (prospect) this.run(this.api.update(prospect.id, { parcours: 'acheteur' }), 'Le client suit maintenant le pipeline de vente');
+  }
+
+  /** « Vérification foncière » : la nature de la mission en clair, comme dans la liste des missions. */
+  protected natureMission(type: string): string {
+    return libelleMission(TYPES_VERIFICATION, type);
+  }
+
+  protected etapeMission(statut: string): string {
+    return libelleMission(MISSION_ETAPES, statut);
+  }
+
+  protected classeEtapeMission(statut: string): string {
+    return classeMission(MISSION_ETAPES, statut);
+  }
+
+  protected statutChantier(statut: string): string {
+    return libelleChantier(STATUTS_CHANTIER, statut);
+  }
+
+  protected classeChantier(statut: string): string {
+    return classeStatutChantier(STATUTS_CHANTIER, statut);
+  }
+
+  protected ouvrirMission(id: string): void {
+    void this.router.navigate(['/demarches/missions', id]);
+  }
+
+  protected ouvrirChantier(id: string): void {
+    void this.router.navigate(['/construction/chantiers', id]);
   }
 
   protected uploadDocument(event: Event): void {
