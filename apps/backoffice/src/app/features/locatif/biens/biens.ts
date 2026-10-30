@@ -33,6 +33,7 @@ import {
   simpleLabel,
   type StatusMeaning,
 } from '../locatif-status';
+import { nombreFr } from '../../../core/utils/format';
 
 const FILTRES_VIDES = { search: '', statut: '', type: '', responsableId: '', vue: '' };
 
@@ -151,7 +152,7 @@ export class Biens implements OnInit {
       minWidth: 120,
       type: 'rightAligned',
       valueGetter: (p) => p.data?.baux?.[0]?.loyerMensuel ?? null,
-      valueFormatter: (p) => (p.value ? `${Number(p.value).toLocaleString('fr-FR')} FCFA` : '—'),
+      valueFormatter: (p) => (p.value ? `${nombreFr(Number(p.value))} FCFA` : '—'),
     },
     {
       headerName: 'Statut',

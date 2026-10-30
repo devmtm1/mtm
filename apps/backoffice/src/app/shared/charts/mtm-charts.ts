@@ -1,5 +1,6 @@
 import type { EChartsCoreOption } from 'echarts/core';
 import { businessLabel } from '../pipes/label.pipe';
+import { nombreFr } from '../../core/utils/format';
 
 /**
  * Options ECharts prêtes à l'emploi, alignées sur la charte MTM (bleu marine,
@@ -29,9 +30,9 @@ function axisLabel(periode: string, first: boolean): string {
 }
 
 function compactNumber(value: number): string {
-  if (Math.abs(value) >= 1_000_000) return `${(value / 1_000_000).toLocaleString('fr-FR', { maximumFractionDigits: 1 })} M`;
-  if (Math.abs(value) >= 1_000) return `${(value / 1_000).toLocaleString('fr-FR', { maximumFractionDigits: 0 })} k`;
-  return value.toLocaleString('fr-FR');
+  if (Math.abs(value) >= 1_000_000) return `${nombreFr((value / 1_000_000), { maximumFractionDigits: 1 })} M`;
+  if (Math.abs(value) >= 1_000) return `${nombreFr((value / 1_000), { maximumFractionDigits: 0 })} k`;
+  return nombreFr(value);
 }
 
 export interface MonthlyPoint {
@@ -42,7 +43,7 @@ export interface MonthlyPoint {
 /** Histogramme mensuel (encaissements, dossiers créés…). */
 export function monthlyBarChart(points: MonthlyPoint[], options: { unit?: 'FCFA' | 'count'; color?: string } = {}): EChartsCoreOption {
   const unit = options.unit ?? 'count';
-  const format = (value: number) => (unit === 'FCFA' ? `${value.toLocaleString('fr-FR')} FCFA` : value.toLocaleString('fr-FR'));
+  const format = (value: number) => (unit === 'FCFA' ? `${nombreFr(value)} FCFA` : nombreFr(value));
   return {
     color: [options.color ?? SERIES_COLORS[0]],
     textStyle: { fontFamily: FONT },
@@ -95,7 +96,7 @@ export function donutChart(
     ...(options.centre
       ? {
           title: {
-            text: total.toLocaleString('fr-FR'),
+            text: nombreFr(total),
             subtext: options.centre,
             left: 'center',
             top: '31%',
@@ -129,7 +130,7 @@ export interface PointRevenuDepenses {
 
 /** Revenu et dépenses mois par mois, côte à côte (pilotage financier). */
 export function revenuDepensesChart(points: PointRevenuDepenses[]): EChartsCoreOption {
-  const format = (value: number) => `${Math.round(value).toLocaleString('fr-FR')} FCFA`;
+  const format = (value: number) => `${nombreFr(Math.round(value))} FCFA`;
   return {
     color: ['#1A4974', '#B52C36'],
     textStyle: { fontFamily: FONT },
@@ -172,7 +173,7 @@ export function donutLibelles(items: { label: string; valeur: number }[]): EChar
       trigger: 'item',
       formatter: (params: unknown) => {
         const p = params as { name: string; value: number; percent: number };
-        return `${p.name}<br/><strong>${Math.round(p.value).toLocaleString('fr-FR')} FCFA</strong> (${p.percent} %)`;
+        return `${p.name}<br/><strong>${nombreFr(Math.round(p.value))} FCFA</strong> (${p.percent} %)`;
       },
     },
     legend: { bottom: 0, left: 'center', icon: 'circle', textStyle: { color: TEXT_COLOR, fontSize: 11 }, itemWidth: 10, itemHeight: 10 },

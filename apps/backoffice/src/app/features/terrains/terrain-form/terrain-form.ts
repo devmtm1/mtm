@@ -29,6 +29,7 @@ import { CrmApiService } from '../../../core/services/api/crm-api.service';
 import type { CommercialSummary } from '../../../core/models/prospect.model';
 import type { CreateTerrainPayload, ProprietaireSummary, TerrainDetail, TerrainPointInteret } from '../../../core/models/terrain.model';
 import { SessionService } from '../../../core/services/session.service';
+import { nombreFr } from '../../../core/utils/format';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { ProprietaireDialog } from '../proprietaire-dialog';
@@ -293,7 +294,7 @@ export class TerrainForm implements OnInit, AvecModifications {
   protected readonly publicPreview = computed(() => {
     const value = this.formValue();
     const metres = (valeur: number | null) =>
-      valeur ? `${Number(valeur).toLocaleString('fr-FR')} m²` : null;
+      valeur ? `${nombreFr(Number(valeur))} m²` : null;
     // L'aperçu reproduit la carte du site : sur un bien bâti, c'est
     // l'habitable et la typologie que l'acheteur lit, pas la parcelle.
     const surface = this.estBati()

@@ -8,12 +8,14 @@
   <div class="detail-page mission-detail">
     <header class="detail-header">
       <div>
-        <button mat-button type="button" class="back-link" (click)="retour()">
-          <svg class="btn-icon" lucideArrowLeft aria-hidden="true"></svg>Retour aux missions
+        <button type="button" class="mission-detail__retour-lien" (click)="retour()">
+          <svg lucideArrowLeft aria-hidden="true"></svg>Retour aux missions
         </button>
-        <p class="eyebrow">{{ m.referenceInterne ?? 'Mission' }} · Vérification foncière</p>
         <h1>{{ m.prospect.prenom }} {{ m.prospect.nom }}</h1>
-        <p class="detail-header__location">{{ typeLabel(m.typeVerification) }} — {{ lieu() }}</p>
+        <p class="detail-header__location">
+          {{ typeLabel(m.typeVerification) }} — {{ lieu() }}
+          <span class="mission-detail__ref">· {{ m.referenceInterne ?? 'Mission' }}</span>
+        </p>
         <div class="status-line">
           <span [class]="etapePill(m.statut)" [matTooltip]="etapeAide(m.statut)">
             {{ etapeLabel(m.statut) }}
@@ -45,33 +47,16 @@
             </button>
           }
           @if (canDelete()) {
-            <button
-              mat-icon-button
-              type="button"
-              [matMenuTriggerFor]="autresActions"
-              aria-label="Plus d’actions"
-            >
-              <svg class="btn-icon" lucideChevronDown aria-hidden="true"></svg>
-            </button>
-            <mat-menu #autresActions="matMenu" xPosition="before">
-              <button mat-menu-item type="button" (click)="changerEtape('abandonnee')">
-                <span class="menu-line">
-                  <strong>Abandonner la mission</strong>
-                  <small>Le motif reste sur la fiche et explique l’arrêt au client</small>
-                </span>
-              </button>
-              <button mat-menu-item type="button" (click)="supprimerMission()">
-                <span class="menu-line">
-                  <strong>Supprimer la mission</strong>
-                  <small>Efface le dossier et ses constats</small>
-                </span>
-              </button>
-            </mat-menu>
+            <app-menu-actions [groupes]="actionsPlus()" />
           }
         </div>
       }
     </header>
 
+    <app-fiche-onglets [onglets]="onglets()" [(actif)]="onglet" />
+
+    @switch (onglet()) {
+      @case ('parcours') {
     <div class="mission-detail__layout">
       <!-- Le parcours : une étape ouverte à la fois -->
       <div class="mission-detail__parcours">
@@ -100,6 +85,7 @@
               </small>
             </span>
             <span class="etape__etat">{{ etatLabel(etatEtape('demande')) }}</span>
+            <svg class="etape__chevron" lucideChevronDown aria-hidden="true"></svg>
           </button>
 
           @if (estOuverte('demande')) {
@@ -219,6 +205,7 @@
                 </small>
               </span>
               <span class="etape__etat">{{ etatLabel(etatEtape('faisabilite')) }}</span>
+            <svg class="etape__chevron" lucideChevronDown aria-hidden="true"></svg>
             </button>
 
             @if (estOuverte('faisabilite')) {
@@ -292,6 +279,7 @@
                 </small>
               </span>
               <span class="etape__etat">{{ etatLabel(etatEtape('verification_physique')) }}</span>
+            <svg class="etape__chevron" lucideChevronDown aria-hidden="true"></svg>
             </button>
 
             @if (estOuverte('verification_physique')) {
@@ -468,6 +456,7 @@
               <span class="etape__etat">
                 {{ etatLabel(etatEtape('verification_administrative')) }}
               </span>
+            <svg class="etape__chevron" lucideChevronDown aria-hidden="true"></svg>
             </button>
 
             @if (estOuverte('verification_administrative')) {
@@ -566,6 +555,7 @@
                 </small>
               </span>
               <span class="etape__etat">{{ etatLabel(etatEtape('rapport')) }}</span>
+            <svg class="etape__chevron" lucideChevronDown aria-hidden="true"></svg>
             </button>
 
             @if (estOuverte('rapport')) {
@@ -826,10 +816,11 @@
       <!-- Le contexte, visible quelle que soit l'étape ouverte -->
       <aside class="mission-detail__aside">
         <section class="page-card detail-section">
-          <div class="detail-section__head">
+          <div class="carte-titre">
+            <span class="carte-titre__icone"><svg lucideUserRound aria-hidden="true"></svg></span>
             <h2>Le client</h2>
           </div>
-          <dl class="info-list mission-detail__faits">
+          <dl class="info-list mission-detail__faits mission-detail__faits--duo">
             <div>
               <dt>Demandeur</dt>
               <dd>{{ m.prospect.prenom }} {{ m.prospect.nom }}</dd>
@@ -841,7 +832,7 @@
               </div>
             }
             @if (m.prospect.email) {
-              <div>
+              <div class="mission-detail__plein">
                 <dt>E-mail</dt>
                 <dd><a class="inline-link" [href]="'mailto:' + m.prospect.email">{{ m.prospect.email }}</a></dd>
               </div>
@@ -866,11 +857,11 @@
             </div>
           </dl>
           <div class="detail-section__actions mission-detail__client-actions">
-            <a mat-stroked-button [routerLink]="['/crm/prospects', m.prospect.id]">Ouvrir la fiche client</a>
+            <a mat-stroked-button [routerLink]="['/crm/prospects', m.prospect.id]"><svg class="btn-icon" lucideExternalLink aria-hidden="true"></svg>Fiche client</a>
             @if (canCreateClient && !m.prospect.clientUser) {
               @if (m.prospect.email) {
                 <button mat-flat-button color="primary" type="button" (click)="ouvrirEspaceClient()">
-                  Ouvrir l’espace client
+                  <svg class="btn-icon" lucideKeyRound aria-hidden="true"></svg>Espace client
                 </button>
               } @else {
                 <a
@@ -878,7 +869,7 @@
                   [routerLink]="['/crm/prospects', m.prospect.id, 'modifier']"
                   matTooltip="L’accès s’envoie par e-mail : ajoutez d’abord son adresse sur sa fiche"
                 >
-                  Ajouter son e-mail
+                  <svg class="btn-icon" lucideMail aria-hidden="true"></svg>Ajouter l’e-mail
                 </a>
               }
             }
@@ -886,7 +877,8 @@
         </section>
 
         <section class="page-card detail-section">
-          <div class="detail-section__head">
+          <div class="carte-titre">
+            <span class="carte-titre__icone"><svg lucideMapPin aria-hidden="true"></svg></span>
             <h2>Le bien</h2>
           </div>
           <dl class="info-list mission-detail__faits">
@@ -908,7 +900,8 @@
         </section>
 
         <section class="page-card detail-section">
-          <div class="detail-section__head">
+          <div class="carte-titre">
+            <span class="carte-titre__icone"><svg lucideClipboardList aria-hidden="true"></svg></span>
             <h2>Suivi</h2>
           </div>
           <dl class="info-list mission-detail__faits">
@@ -956,7 +949,8 @@
         </section>
       </aside>
     </div>
-
+      }
+      @case ('reglements') {
     <!-- Prix convenu, règlements reçus (avec les frais de transfert), solde et facture -->
     <app-reglements-mission
       [mission]="m"
@@ -965,7 +959,8 @@
       [canValidate]="canValidate()"
       (changed)="recharger()"
     />
-
+      }
+      @case ('pieces') {
     <!-- Toutes les pièces du dossier, quelle que soit l'étape qui les a produites -->
     <section class="page-card detail-section">
       <div class="detail-section__head">
@@ -1060,8 +1055,12 @@
         </p>
       }
     </section>
+      }
+      @case ('suivi') {
     <app-taches-dossier type="mission" [dossierId]="m.id" [libelleDossier]="m.referenceInterne ?? 'Mission'" />
     <app-fil-discussion type="mission" [dossierId]="m.id" />
+      }
+    }
   </div>
 } @else {
   <p class="detail-note">Mission introuvable.</p>

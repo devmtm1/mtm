@@ -51,22 +51,7 @@
           </button>
         }
         @if (canDelete) {
-          <button
-            mat-icon-button
-            type="button"
-            [matMenuTriggerFor]="moreMenu"
-            aria-label="Plus d’actions"
-          >
-            <svg class="btn-icon" lucideChevronDown aria-hidden="true"></svg>
-          </button>
-          <mat-menu #moreMenu="matMenu" xPosition="before">
-            <button mat-menu-item type="button" (click)="remove()">
-              <span class="menu-line"
-                ><strong>Supprimer le propriétaire</strong
-                ><small>Possible uniquement sans mandat rattaché</small></span
-              >
-            </button>
-          </mat-menu>
+          <app-menu-actions [groupes]="actionsPlus()" />
         }
       </div>
     </app-fiche-entete>

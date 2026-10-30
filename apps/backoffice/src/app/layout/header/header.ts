@@ -24,14 +24,22 @@ import {
   LucideChevronDown,
   LucideChevronRight,
   LucideCircleQuestionMark,
+  LucideClipboardCheck,
+  LucideHardHat,
+  LucideKeyRound,
+  LucideLandPlot,
+  LucideListChecks,
   LucideLogOut,
   LucideMoon,
   LucidePanelLeftClose,
   LucidePanelLeftOpen,
+  LucidePlus,
+  LucideScrollText,
   LucideSearch,
   LucideSettings,
   LucideShieldCheck,
   LucideSun,
+  LucideUserSearch,
 } from '@lucide/angular';
 import { AuthService } from '../../core/services/auth.service';
 import { SessionService } from '../../core/services/session.service';
@@ -83,14 +91,22 @@ interface Breadcrumb {
     LucideChevronDown,
     LucideChevronRight,
     LucideCircleQuestionMark,
+    LucideClipboardCheck,
+    LucideHardHat,
+    LucideKeyRound,
+    LucideLandPlot,
+    LucideListChecks,
     LucideLogOut,
     LucideMoon,
     LucidePanelLeftClose,
     LucidePanelLeftOpen,
+    LucidePlus,
+    LucideScrollText,
     LucideSearch,
     LucideSettings,
     LucideShieldCheck,
     LucideSun,
+    LucideUserSearch,
   ],
   templateUrl: './header.html',
   styleUrl: './header.scss',
@@ -121,6 +137,21 @@ export class Header {
   /** Points d'attention (mandats à échéance, tâches en retard, demandes à traiter). */
   protected readonly feed = signal<FeedItem[]>([]);
   protected readonly notificationCount = computed(() => this.feed().length);
+  /** Ce qu'écrit la pastille de la cloche : le nombre, « 9+ » au-delà. */
+  protected readonly notificationBadge = computed(() => (this.notificationCount() > 9 ? '9+' : String(this.notificationCount())));
+
+  /** « + Nouveau » : les créations les plus fréquentes, limitées à ce que la personne a le droit de faire. */
+  protected readonly creations = computed(() =>
+    [
+      { libelle: 'Prospect', aide: 'Une personne à suivre', route: '/crm/prospects/nouveau', permission: 'crm:creer', icone: 'prospect' },
+      { libelle: 'Tâche', aide: 'Quelque chose à faire, pour qui et pour quand', route: '/taches', query: { nouvelle: '1' }, permission: 'taches:creer', icone: 'tache' },
+      { libelle: 'Bien à vendre', aide: 'Terrain, villa ou appartement', route: '/terrains/nouveau', permission: 'terrains:creer', icone: 'bien' },
+      { libelle: 'Mandat', aide: 'Le contrat avec un propriétaire', route: '/mandats/nouveau', permission: 'mandats:creer', icone: 'mandat' },
+      { libelle: 'Bien en gestion locative', aide: 'Logement confié par un propriétaire', route: '/locatif/biens/nouveau', permission: 'locatif:creer', icone: 'locatif' },
+      { libelle: 'Mission de vérification', aide: 'Vérification d’un terrain ou démarche', route: '/demarches/missions/nouvelle', permission: 'demarches:creer', icone: 'mission' },
+      { libelle: 'Chantier', aide: 'Un projet de construction', route: '/construction/chantiers/nouveau', permission: 'construction:creer', icone: 'chantier' },
+    ].filter((entree) => this.sessionService.hasPermission(entree.permission)),
+  );
 
   // Recherche globale
   private readonly searchTerms = new Subject<string>();
@@ -158,9 +189,10 @@ export class Header {
     return [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || user.email;
   });
 
-  protected readonly primaryRole = computed(
-    () => this.user()?.roles?.[0]?.replace(/_/g, ' ').toUpperCase() ?? '',
-  );
+  protected readonly primaryRole = computed(() => {
+    const role = this.user()?.roles?.[0]?.replace(/_/g, ' ') ?? '';
+    return role.charAt(0).toUpperCase() + role.slice(1);
+  });
 
   /**
    * Le guide du métier : chacun ouvre le sien (commercial, responsable commercial, administrateur) ;
@@ -333,6 +365,7 @@ export class Header {
       pagesNavigables()
         .filter((page) => entreeCorrespond(page, url))
         .sort((a, b) => b.route.length - a.route.length)[0] ?? null;
-    this.breadcrumb.set(match ? { section: match.section, label: match.label } : null);
+    // Sur le tableau de bord, « Accueil › Tableau de bord » répète le grand titre de la page : on n'affiche rien.
+    this.breadcrumb.set(match && match.route !== '/dashboard' ? { section: match.section, label: match.label } : null);
   }
 }

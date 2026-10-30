@@ -314,9 +314,9 @@
 }
 
 .header__profile-role {
-  font-size: 0.58rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0;
   color: var(--mtm-text-muted);
   white-space: nowrap;
 }
@@ -496,5 +496,34 @@
   .header__profile-text,
   .header__profile-chevron {
     display: none;
+  }
+}
+
+/* « + Nouveau » : un bouton plein discret à côté de la recherche ; sur téléphone, le « + » seul. */
+.header__nouveau {
+  flex: none;
+  height: 38px;
+  padding-inline: 14px 16px;
+  white-space: nowrap;
+}
+
+.header__nouveau-icone {
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+}
+
+@media (max-width: 720px) {
+  .header__nouveau-texte {
+    display: none;
+  }
+
+  .header__nouveau {
+    min-width: 38px;
+    padding-inline: 10px;
+  }
+
+  .header__nouveau-icone {
+    margin-right: 0;
   }
 }

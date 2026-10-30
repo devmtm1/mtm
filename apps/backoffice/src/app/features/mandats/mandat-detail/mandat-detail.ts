@@ -9,7 +9,6 @@ import {
   LucideArrowLeft,
   LucideBanknote,
   LucideCalendarClock,
-  LucideChevronDown,
   LucideClock,
   LucideFileText,
   LucideLandPlot,
@@ -22,6 +21,7 @@ import {
   LucideUpload,
   LucideUser,
 } from '@lucide/angular';
+import { MenuActions, type GroupeMenu } from '../../../shared/components/menu-actions/menu-actions';
 import { MandatsApiService } from '../../../core/services/api/mandats-api.service';
 import { SessionService } from '../../../core/services/session.service';
 import type { MandatDetail as MandatDetailModel, MandatFinancialSummary, MandatLotItem, MandatOptions } from '../../../core/models/mandat.model';
@@ -46,6 +46,7 @@ import {
 } from '../mandat-status';
 import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 import { FilDiscussion } from '../../../shared/components/fil-discussion/fil-discussion';
+import { FicheOnglets, type OngletFiche } from '../../../shared/components/fiche-client/fiche-onglets';
 import { TachesDossier } from '../../../shared/components/taches-dossier/taches-dossier';
 
 /**
@@ -55,6 +56,8 @@ import { TachesDossier } from '../../../shared/components/taches-dossier/taches-
 @Component({
   selector: 'app-mandat-detail',
   imports: [
+    MenuActions,
+    FicheOnglets,
     FilDiscussion,
     TachesDossier,
     LabelPipe,
@@ -68,7 +71,6 @@ import { TachesDossier } from '../../../shared/components/taches-dossier/taches-
     LucideArrowLeft,
     LucideBanknote,
     LucideCalendarClock,
-    LucideChevronDown,
     LucideClock,
     LucideFileText,
     LucideLandPlot,
@@ -106,6 +108,16 @@ export class MandatDetail implements OnInit {
     return mandat ? echeanceInfo(mandat.dateFin, mandat.statut, mandat.alerteEcheanceJours) : null;
   });
 
+  protected readonly onglet = signal('lots');
+  protected readonly onglets = computed<OngletFiche[]>(() => {
+    const mandat = this.mandat();
+    return [
+      { id: 'lots', libelle: 'Biens confiés', icone: 'biens', pastille: mandat?.lots.length ?? null },
+      { id: 'conditions', libelle: 'Conditions du contrat', icone: 'conditions' },
+      { id: 'documents', libelle: 'Documents', icone: 'documents', pastille: mandat?.documents.length ?? null },
+      { id: 'suivi', libelle: 'Tâches et échanges', icone: 'suivi' },
+    ];
+  });
   protected readonly lotsByStatus = computed<Record<string, number>>(() => {
     const counts: Record<string, number> = {};
     for (const lot of this.mandat()?.lots ?? []) counts[lot.statutLot] = (counts[lot.statutLot] || 0) + 1;
@@ -131,6 +143,21 @@ export class MandatDetail implements OnInit {
   protected readonly lotStatus = LOT_STATUS;
   protected readonly typeHelp = TYPE_MANDAT_HELP;
   protected readonly lotLabel = lotLabel;
+
+
+  protected readonly actionsPlus = computed<GroupeMenu[]>(() => [
+    {
+      actions: [
+        {
+          libelle: 'Supprimer le mandat',
+          aide: 'Irréversible, tracé dans l’audit',
+          icone: LucideTrash2,
+          danger: true,
+          action: () => this.removeMandat(),
+        },
+      ],
+    },
+  ]);
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');

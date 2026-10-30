@@ -1,4 +1,5 @@
 import type { Cellule, TypeColonne } from '../../core/services/api/pilotage-api.service';
+import { nombreFr } from '../../core/utils/format';
 
 /** Texte affiché d'une cellule d'après le type de sa colonne ; vide pour une valeur absente. */
 export function formaterCellule(valeur: Cellule | undefined, type: TypeColonne): string {
@@ -8,7 +9,7 @@ export function formaterCellule(valeur: Cellule | undefined, type: TypeColonne):
     case 'nombre':
       return Math.round(Number(valeur)).toLocaleString('fr-FR');
     case 'pourcentage':
-      return `${Number(valeur).toLocaleString('fr-FR', { maximumFractionDigits: 1 })} %`;
+      return `${nombreFr(Number(valeur), { maximumFractionDigits: 1 })} %`;
     case 'date': {
       const date = new Date(String(valeur));
       return Number.isNaN(date.getTime()) ? String(valeur) : date.toLocaleDateString('fr-FR', { timeZone: 'UTC' });

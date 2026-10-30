@@ -22,7 +22,6 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   LucideCheck,
-  LucideChevronDown,
   LucideClock,
   LucideFileText,
   LucidePencil,
@@ -31,7 +30,16 @@ import {
   LucideShieldCheck,
   LucideTrash2,
   LucideUpload,
+  LucidePhone,
+  LucideMessageCircle,
+  LucideStickyNote,
+  LucideCalendarClock,
+  LucideArrowRightLeft,
+  LucideUserPlus,
+  LucideKeyRound,
+  LucideHistory,
 } from '@lucide/angular';
+import { MenuActions, type GroupeMenu } from '../../../shared/components/menu-actions/menu-actions';
 import { CrmApiService } from '../../../core/services/api/crm-api.service';
 import { VentesApiService } from '../../../core/services/api/ventes-api.service';
 import { SessionService } from '../../../core/services/session.service';
@@ -149,6 +157,7 @@ const FIELD_LABELS: Record<string, string> = {
 @Component({
   selector: 'app-prospect-detail',
   imports: [
+    MenuActions,
     NgTemplateOutlet,
     FicheCarte,
     FicheEntete,
@@ -167,7 +176,6 @@ const FIELD_LABELS: Record<string, string> = {
     MatMenuModule,
     MatTooltipModule,
     LucideCheck,
-    LucideChevronDown,
     LucideClock,
     LucideFileText,
     LucidePencil,
@@ -359,6 +367,101 @@ export class ProspectDetail implements OnInit {
     if (index === courant) return 'current';
     return index === courant + 1 ? 'next' : 'later';
   }
+
+
+  /** Le menu « Plus » : contacter, suivre, fiche, puis suppression. Chaque action reste soumise aux mêmes droits qu'avant. */
+  protected readonly actionsPlus = computed<GroupeMenu[]>(() => {
+    const p = this.prospect();
+    const modifier = this.canModify;
+    return [
+      {
+        titre: 'Contacter',
+        actions: [
+          !!this.telHref() &&
+            modifier &&
+            this.primary() === 'relance' &&
+            !this.clientServices() && { libelle: 'Appeler', aide: p?.telephone, icone: LucidePhone, href: this.telHref() },
+          !!this.whatsappHref() && {
+            libelle: 'WhatsApp',
+            aide: 'Ouvrir la conversation',
+            icone: LucideMessageCircle,
+            href: this.whatsappHref(),
+            externe: true,
+          },
+        ],
+      },
+      {
+        titre: 'Suivi',
+        actions: [
+          modifier && {
+            libelle: 'Ajouter une note',
+            aide: 'Garder une trace de l’échange',
+            icone: LucideStickyNote,
+            action: () => this.planActivity('note'),
+          },
+          modifier &&
+            this.primary() !== 'relance' &&
+            !this.isClosed() &&
+            !this.clientServices() && {
+              libelle: 'Programmer une relance',
+              aide: 'Prochaine action et date',
+              icone: LucideCalendarClock,
+              action: () => this.planRelance(),
+            },
+          modifier &&
+            !this.clientServices() && {
+              libelle: 'Changer d’étape',
+              aide: 'Faire avancer ou clore le prospect',
+              icone: LucideArrowRightLeft,
+              action: () => this.changeStage(),
+            },
+        ],
+      },
+      {
+        titre: 'Fiche',
+        actions: [
+          modifier && {
+            libelle: 'Modifier la fiche',
+            aide: 'Coordonnées, projet, identité',
+            icone: LucidePencil,
+            action: () => this.edit(),
+          },
+          modifier &&
+            this.isSupervisor && {
+              libelle: 'Affecter un commercial',
+              aide: 'Qui suit ce prospect',
+              icone: LucideUserPlus,
+              action: () => this.assignCommercial(),
+            },
+          this.canCreateClient &&
+            !p?.clientUser && {
+              libelle: 'Ouvrir l’espace client',
+              aide: p?.email ? 'Invitation envoyée à ' + p.email : 'Nécessite une adresse e-mail',
+              icone: LucideKeyRound,
+              desactivee: !p?.email,
+              action: () => this.openCreateClientAccount(),
+            },
+          {
+            libelle: 'Historique des modifications',
+            aide: 'Qui a changé quoi, et quand',
+            icone: LucideHistory,
+            action: () => this.openHistory(),
+          },
+        ],
+      },
+      {
+        actions: [
+          this.canDelete && {
+            libelle: 'Supprimer le prospect',
+            aide: 'Irréversible, tracé dans l’audit',
+            icone: LucideTrash2,
+            danger: true,
+            action: () => this.removeProspect(),
+          },
+        ],
+      },
+    ];
+  });
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');

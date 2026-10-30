@@ -1,5 +1,6 @@
 import type { EChartsCoreOption } from 'echarts/core';
 import type { SourceVisite, TypeFiche } from '../../core/services/api/visites-api.service';
+import { nombreFr } from '../../core/utils/format';
 
 const COULEUR = '#1A4974';
 const COULEUR_VUES = '#5EA8C7';
@@ -79,7 +80,7 @@ export function courbeJours(
         }[];
         const point = points[lignes[0]?.dataIndex ?? 0];
         const corps = lignes
-          .map((l) => `${l.seriesName} : <strong>${l.value.toLocaleString('fr-FR')}</strong>`)
+          .map((l) => `${l.seriesName} : <strong>${nombreFr(l.value)}</strong>`)
           .join('<br/>');
         return `${point ? jourCourt(point.jour) : ''}<br/>${corps}`;
       },

@@ -69,25 +69,7 @@
             </button>
           }
           <button mat-flat-button color="primary" type="button" (click)="changeStatus()">Changer le statut</button>
-          <button mat-icon-button type="button" [matMenuTriggerFor]="moreMenu" aria-label="Plus d’actions">
-            <svg class="btn-icon" lucideChevronDown aria-hidden="true"></svg>
-          </button>
-          <mat-menu #moreMenu="matMenu" xPosition="before">
-            <button mat-menu-item type="button" (click)="openDocumentDialog('generate')" [disabled]="!d.terrain">
-              <span class="menu-line"><strong>Générer un document</strong><small>Bon de réservation, reçu, facture, contrat, état de paiement</small></span>
-            </button>
-            <button mat-menu-item type="button" (click)="openDocumentDialog('upload')">
-              <span class="menu-line"><strong>Ajouter un document</strong><small>Contrat signé, justificatif de paiement…</small></span>
-            </button>
-            @if (canAdminister) {
-              <button mat-menu-item type="button" (click)="addCommission()">
-                <span class="menu-line"><strong>Créer une commission</strong><small>Calculée selon une règle paramétrée</small></span>
-              </button>
-            }
-            <button mat-menu-item type="button" (click)="openDocumentsSearch()">
-              <span class="menu-line"><strong>Rechercher dans les documents</strong><small>GED : tous les documents de ce dossier</small></span>
-            </button>
-          </mat-menu>
+          <app-menu-actions [groupes]="actionsPlus()" />
         }
       </div>
     </header>
@@ -104,260 +86,287 @@
     }
 
     <!-- Où en est le paiement -->
-    <section class="page-card pay-summary" aria-label="Avancement du paiement">
-      <div class="pay-summary__facts">
-        <div>
+    <section class="chiffres" aria-label="Avancement du paiement">
+      <div class="chiffre">
+        <span class="chiffre__icone"><svg lucideTag aria-hidden="true"></svg></span>
+        <div class="chiffre__corps">
           <span>Prix de vente</span>
           <strong>{{ d.prixVente | mtmMoney }}</strong>
         </div>
-        <div>
+      </div>
+      <div class="chiffre" [class.chiffre--ok]="(d.montantPaye ?? 0) > 0">
+        <span class="chiffre__icone"><svg lucideCoins aria-hidden="true"></svg></span>
+        <div class="chiffre__corps">
           <span>Payé (validé)</span>
-          <strong class="is-success">{{ d.montantPaye | mtmMoney }}</strong>
+          <strong>{{ d.montantPaye | mtmMoney }}</strong>
         </div>
-        <div>
+        @if (percent() !== null) {
+          <span class="chiffre__anneau" [style.--taux]="percent()" role="img" [attr.aria-label]="percent() + ' % du prix encaissé'">
+            <span>{{ percent() }} %</span>
+          </span>
+        }
+      </div>
+      <div class="chiffre" [class.chiffre--du]="(d.soldeRestant ?? 0) > 0">
+        <span class="chiffre__icone"><svg lucideChartPie aria-hidden="true"></svg></span>
+        <div class="chiffre__corps">
           <span>Reste dû</span>
-          <strong class="is-primary">{{ d.soldeRestant | mtmMoney }}</strong>
+          <strong>{{ d.soldeRestant | mtmMoney }}</strong>
+          @if (percent() !== null && percent()! >= 100) {
+            <small>Le dossier peut être soldé</small>
+          }
         </div>
-        <div>
+      </div>
+      <div class="chiffre">
+        <span class="chiffre__icone"><svg lucideCalendarDays aria-hidden="true"></svg></span>
+        <div class="chiffre__corps">
           <span>Échéances</span>
           <strong>{{ echeances().length || '—' }}</strong>
         </div>
       </div>
-      @if (percent() !== null) {
-        <div class="pay-progress pay-progress--large">
-          <span class="pay-progress__bar"><span class="pay-progress__fill" [class.is-complete]="percent()! >= 100" [style.width.%]="percent()"></span></span>
-          <small>{{ percent() }} % du prix encaissé{{ percent()! >= 100 ? ' — le dossier peut être soldé' : '' }}</small>
-        </div>
-      } @else {
-        <p class="pay-summary__note">Fixez le prix de vente pour suivre l’avancement du paiement.</p>
-      }
     </section>
+    @if (percent() === null) {
+      <p class="pay-summary__note">Fixez le prix de vente pour suivre l’avancement du paiement.</p>
+    }
 
-    <section class="content-grid">
-      <!-- Paiements -->
-      <section class="page-card detail-section detail-section--wide">
-        <div class="detail-section__head">
-          <div>
-            <h2>Paiements</h2>
-            <p class="detail-section__hint">Chaque paiement reçu est enregistré puis validé par une personne habilitée.</p>
-          </div>
-          @if (canModify && !closed()) {
-            <button mat-stroked-button type="button" (click)="addPayment()">
-              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Enregistrer un paiement
-            </button>
-          }
-        </div>
-        @if (payments().length) {
-          <div class="table-scroll">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Mode</th>
-                  <th>Référence</th>
-                  <th class="is-right">Montant</th>
-                  <th>Statut</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (payment of payments(); track payment.id) {
-                  <tr>
-                    <td>{{ payment.datePaiement | date: 'dd/MM/yyyy' }}</td>
-                    <td>{{ mode(payment) }}</td>
-                    <td>{{ payment.reference || '—' }}</td>
-                    <td class="is-right"><strong>{{ payment.montant | mtmMoney }}</strong></td>
-                    <td><span [class]="paymentPill(payment)">{{ paymentLabel(payment) }}</span></td>
-                    <td class="is-right">
-                      @if (payment.statut === 'en_attente' && canValidate) {
-                        <button mat-stroked-button type="button" (click)="validatePayment(payment)" [matTooltip]="validateHint()">
-                          <svg class="btn-icon" lucideCheck aria-hidden="true"></svg>Valider
-                        </button>
-                        <button mat-button type="button" (click)="refusePayment(payment)" matTooltip="Refuser ce paiement (le motif est conservé)">Refuser</button>
-                      }
-                      @if (payment.statut === 'valide' && canAdminister) {
-                        <button mat-button type="button" (click)="reversePayment(payment)" matTooltip="Contre-passer ce paiement validé (erreur, rejet bancaire, remboursement)">Contre-passer</button>
-                      }
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        } @else {
-          <div class="detail-note">
-            Aucun paiement enregistré.
-            @if (canModify && !closed()) {
-              <button mat-button type="button" (click)="addPayment()">Enregistrer le premier paiement</button>
-            }
-          </div>
-        }
+    <app-fiche-onglets [onglets]="onglets()" [(actif)]="onglet" />
 
-        @if (echeances().length) {
-          <h3>Échéancier</h3>
-          <div class="table-scroll">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>N°</th>
-                  <th>Date</th>
-                  <th class="is-right">Prévu</th>
-                  <th class="is-right">Payé</th>
-                  <th>Statut</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (echeance of echeances(); track echeance.id) {
-                  <tr>
-                    <td>{{ echeance.numero }}</td>
-                    <td>{{ echeance.dateEcheance | date: 'dd/MM/yyyy' }}</td>
-                    <td class="is-right">{{ echeance.montantPrevu | mtmMoney }}</td>
-                    <td class="is-right">{{ echeance.montantPaye | mtmMoney }}</td>
-                    <td><span [class]="echeancePill(echeance)">{{ echeanceLabel(echeance) }}</span></td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        }
-      </section>
-
-      <!-- Réservation -->
-      <section class="page-card detail-section">
-        <div class="detail-section__head">
-          <div>
-            <h2>Réservation</h2>
-            <p class="detail-section__hint">Bloque le bien pour ce client pendant une durée convenue.</p>
-          </div>
-          @if (canReserve()) {
-            <button mat-stroked-button type="button" (click)="reserve()">Réserver</button>
-          }
-        </div>
-        @if (d.reservations.length) {
-          <ul class="stack-list">
-            @for (r of d.reservations; track r.id) {
-              <li>
-                <div class="stack-list__line">
-                  <span [class]="reservationPill(r)">{{ reservationLabel(r) }}</span>
-                  <strong>{{ r.montantAcompte | mtmMoney }} d’acompte</strong>
-                </div>
-                <small>
-                  {{ r.reference || 'Sans référence' }} · {{ r.dureeBlocageJours }} jours · expire le {{ r.dateExpiration | date: 'dd/MM/yyyy' }}
-                </small>
-              </li>
-            }
-          </ul>
-        } @else if (!d.terrain) {
-          <div class="detail-note">
-            Définissez d’abord le terrain vendu.
-            @if (canModify && !closed()) {
-              <button mat-button type="button" (click)="editDossier()">Compléter le dossier</button>
-            }
-          </div>
-        } @else {
-          <p class="detail-section__text">Aucune réservation. Réservez dès que le client verse un acompte : le bien est alors retiré du site public.</p>
-        }
-      </section>
-
-      <!-- Commissions -->
-      <section class="page-card detail-section">
-          <div class="detail-section__head">
-            <div>
-              <h2>Commissions</h2>
-              <p class="detail-section__hint">Estimée par le responsable → validée par le manager (jamais son auteur) → payée par la comptabilité une fois le dossier soldé.</p>
-            </div>
-            @if (canAdminister) {
-              <button mat-stroked-button type="button" (click)="addCommission()">
-                <svg class="btn-icon" lucidePercent aria-hidden="true"></svg>Créer
-              </button>
-            }
-          </div>
-          @if (commissions().length) {
-            <ul class="stack-list">
-              @for (commission of commissions(); track commission.id) {
-                <li>
-                  <div class="stack-list__line">
-                    <span [class]="commissionPill(commission)" [matTooltip]="commissionHelp(commission)">{{ commissionLabel(commission) }}</span>
-                    <strong>{{ (commission.montantPaye ?? commission.montantValide ?? commission.montantEstime) | mtmMoney }}</strong>
-                    <span class="stack-list__who">{{ commission.commercial ? commission.commercial.firstName + ' ' + commission.commercial.lastName : 'Commercial' }}</span>
-                  </div>
-                  <small>
-                    {{ commission.typeRegle | mtmLabel }}
-                    @if (commission.taux !== null) { · {{ commission.taux }} % }
-                    @if (commission.montantFixe !== null) { · {{ commission.montantFixe | mtmMoney }} }
-                    · estimée {{ commission.montantEstime | mtmMoney }}
-                  </small>
-                  @if (canValidateCommission(commission)) {
-                    <button mat-stroked-button type="button" (click)="validateCommission(commission)">Valider</button>
-                  } @else if (commission.statut === 'estimee') {
-                    <small class="stack-list__who">{{ canApproveCommissions ? 'À valider par un autre manager (vous l’avez créée)' : 'En attente de validation par le manager' }}</small>
-                  } @else if (commission.statut === 'validee' && canPay) {
-                    <button mat-stroked-button type="button" (click)="payCommission(commission)" [disabled]="d.statut !== 'solde'" [matTooltip]="d.statut !== 'solde' ? 'Payable une fois le dossier soldé' : ''">Marquer payée</button>
-                  }
-                </li>
+    @switch (onglet()) {
+      @case ('paiements') {
+        <section class="content-grid">
+    <!-- Paiements -->
+          <section class="page-card detail-section detail-section--wide">
+            <div class="detail-section__head">
+              <div>
+                <h2>Paiements</h2>
+                <p class="detail-section__hint">Chaque paiement reçu est enregistré puis validé par une personne habilitée.</p>
+              </div>
+              @if (canModify && !closed()) {
+                <button mat-stroked-button type="button" (click)="addPayment()">
+                  <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Enregistrer un paiement
+                </button>
               }
-            </ul>
-          } @else {
-            <p class="detail-section__text">Aucune commission. Un responsable peut en créer une à partir des règles paramétrées.</p>
-          }
-        </section>
-
-      <!-- Documents -->
-      <section class="page-card detail-section">
-        <div class="detail-section__head">
-          <div>
-            <h2>Documents</h2>
-            <p class="detail-section__hint">Générés par MTM (bon de réservation, reçu, facture, contrat, état de paiement) ou déposés (contrat signé, justificatifs).</p>
-          </div>
-          @if (canModify) {
-            <span class="detail-section__buttons">
-              <button mat-stroked-button type="button" (click)="openDocumentDialog('generate')" [disabled]="!d.terrain" matTooltip="PDF produit à partir des informations du dossier">
-                <svg class="btn-icon" lucideSparkles aria-hidden="true"></svg>Générer
-              </button>
-              <button mat-stroked-button type="button" (click)="openDocumentDialog('upload')">
-                <svg class="btn-icon" lucideUpload aria-hidden="true"></svg>Ajouter
-              </button>
-            </span>
-          }
-        </div>
-        @if (d.documents.length) {
-          <ul class="doc-list">
-            @for (document of d.documents; track document.id) {
-              <li>
-                <svg lucideFileText aria-hidden="true"></svg>
-                <a [href]="document.secureUrl" target="_blank" rel="noopener">{{ document.title || (document.type | mtmLabel) }}</a>
-                <span class="status-pill">{{ document.type | mtmLabel }}</span>
-                @if (document.isPublic) {
-                  <span class="status-pill status-pill--info" matTooltip="Visible par le client dans son espace">Client</span>
+            </div>
+            @if (payments().length) {
+              <div class="table-scroll">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Mode</th>
+                      <th>Référence</th>
+                      <th class="is-right">Montant</th>
+                      <th>Statut</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (payment of payments(); track payment.id) {
+                      <tr>
+                        <td>{{ payment.datePaiement | date: 'dd/MM/yyyy' }}</td>
+                        <td>{{ mode(payment) }}</td>
+                        <td>{{ payment.reference || '—' }}</td>
+                        <td class="is-right"><strong>{{ payment.montant | mtmMoney }}</strong></td>
+                        <td><span [class]="paymentPill(payment)">{{ paymentLabel(payment) }}</span></td>
+                        <td class="is-right">
+                          @if (payment.statut === 'en_attente' && canValidate) {
+                            <button mat-stroked-button type="button" (click)="validatePayment(payment)" [matTooltip]="validateHint()">
+                              <svg class="btn-icon" lucideCheck aria-hidden="true"></svg>Valider
+                            </button>
+                            <button mat-button type="button" (click)="refusePayment(payment)" matTooltip="Refuser ce paiement (le motif est conservé)">Refuser</button>
+                          }
+                          @if (payment.statut === 'valide' && canAdminister) {
+                            <button mat-button type="button" (click)="reversePayment(payment)" matTooltip="Annuler ce paiement validé (erreur de saisie, rejet bancaire, remboursement) : les montants du dossier sont recalculés">Annuler le paiement</button>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <div class="detail-note">
+                Aucun paiement enregistré.
+                @if (canModify && !closed()) {
+                  <button mat-button type="button" (click)="addPayment()">Enregistrer le premier paiement</button>
                 }
-                <small>v{{ document.version }} · {{ document.createdAt | date: 'dd/MM/yyyy' }}</small>
-                @if (canModify) {
-                  <button mat-icon-button type="button" (click)="removeDocument(document.id)" aria-label="Supprimer" matTooltip="Supprimer">
-                    <svg class="btn-icon" lucideTrash2 aria-hidden="true"></svg>
+              </div>
+            }
+
+            @if (echeances().length) {
+              <h3>Échéancier</h3>
+              <div class="table-scroll">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>N°</th>
+                      <th>Date</th>
+                      <th class="is-right">Prévu</th>
+                      <th class="is-right">Payé</th>
+                      <th>Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (echeance of echeances(); track echeance.id) {
+                      <tr>
+                        <td>{{ echeance.numero }}</td>
+                        <td>{{ echeance.dateEcheance | date: 'dd/MM/yyyy' }}</td>
+                        <td class="is-right">{{ echeance.montantPrevu | mtmMoney }}</td>
+                        <td class="is-right">{{ echeance.montantPaye | mtmMoney }}</td>
+                        <td><span [class]="echeancePill(echeance)">{{ echeanceLabel(echeance) }}</span></td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </section>
+        </section>
+      }
+      @case ('reservation') {
+        <section class="content-grid">
+    <!-- Réservation -->
+          <section class="page-card detail-section">
+            <div class="detail-section__head">
+              <div>
+                <h2>Réservation</h2>
+                <p class="detail-section__hint">Bloque le bien pour ce client pendant une durée convenue.</p>
+              </div>
+              @if (canReserve()) {
+                <button mat-stroked-button type="button" (click)="reserve()">Réserver</button>
+              }
+            </div>
+            @if (d.reservations.length) {
+              <ul class="stack-list">
+                @for (r of d.reservations; track r.id) {
+                  <li>
+                    <div class="stack-list__line">
+                      <span [class]="reservationPill(r)">{{ reservationLabel(r) }}</span>
+                      <strong>{{ r.montantAcompte | mtmMoney }} d’acompte</strong>
+                    </div>
+                    <small>
+                      {{ r.reference || 'Sans référence' }} · {{ r.dureeBlocageJours }} jours · expire le {{ r.dateExpiration | date: 'dd/MM/yyyy' }}
+                    </small>
+                  </li>
+                }
+              </ul>
+            } @else if (!d.terrain) {
+              <div class="detail-note">
+                Définissez d’abord le terrain vendu.
+                @if (canModify && !closed()) {
+                  <button mat-button type="button" (click)="editDossier()">Compléter le dossier</button>
+                }
+              </div>
+            } @else {
+              <p class="detail-section__text">Aucune réservation. Réservez dès que le client verse un acompte : le bien est alors retiré du site public.</p>
+            }
+          </section>
+    <!-- Commissions -->
+          <section class="page-card detail-section">
+              <div class="detail-section__head">
+                <div>
+                  <h2>Commissions</h2>
+                  <p class="detail-section__hint">Estimée par le responsable → validée par le manager (jamais son auteur) → payée par la comptabilité une fois le dossier soldé.</p>
+                </div>
+                @if (canAdminister) {
+                  <button mat-stroked-button type="button" (click)="addCommission()">
+                    <svg class="btn-icon" lucidePercent aria-hidden="true"></svg>Créer
                   </button>
                 }
-              </li>
+              </div>
+              @if (commissions().length) {
+                <ul class="stack-list">
+                  @for (commission of commissions(); track commission.id) {
+                    <li>
+                      <div class="stack-list__line">
+                        <span [class]="commissionPill(commission)" [matTooltip]="commissionHelp(commission)">{{ commissionLabel(commission) }}</span>
+                        <strong>{{ (commission.montantPaye ?? commission.montantValide ?? commission.montantEstime) | mtmMoney }}</strong>
+                        <span class="stack-list__who">{{ commission.commercial ? commission.commercial.firstName + ' ' + commission.commercial.lastName : 'Commercial' }}</span>
+                      </div>
+                      <small>
+                        {{ commission.typeRegle | mtmLabel }}
+                        @if (commission.taux !== null) { · {{ commission.taux }} % }
+                        @if (commission.montantFixe !== null) { · {{ commission.montantFixe | mtmMoney }} }
+                        · estimée {{ commission.montantEstime | mtmMoney }}
+                      </small>
+                      @if (canValidateCommission(commission)) {
+                        <button mat-stroked-button type="button" (click)="validateCommission(commission)">Valider</button>
+                      } @else if (commission.statut === 'estimee') {
+                        <small class="stack-list__who">{{ canApproveCommissions ? 'À valider par un autre manager (vous l’avez créée)' : 'En attente de validation par le manager' }}</small>
+                      } @else if (commission.statut === 'validee' && canPay) {
+                        <button mat-stroked-button type="button" (click)="payCommission(commission)" [disabled]="d.statut !== 'solde'" [matTooltip]="d.statut !== 'solde' ? 'Payable une fois le dossier soldé' : ''">Marquer payée</button>
+                      }
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <p class="detail-section__text">Aucune commission. Un responsable peut en créer une à partir des règles paramétrées.</p>
+              }
+            </section>
+        </section>
+      }
+      @case ('documents') {
+        <section class="content-grid">
+    <!-- Documents -->
+          <section class="page-card detail-section detail-section--wide">
+            <div class="detail-section__head">
+              <div>
+                <h2>Documents</h2>
+                <p class="detail-section__hint">Générés par MTM (bon de réservation, reçu, facture, contrat, état de paiement) ou déposés (contrat signé, justificatifs).</p>
+              </div>
+              @if (canModify) {
+                <span class="detail-section__buttons">
+                  <button mat-stroked-button type="button" (click)="openDocumentDialog('generate')" [disabled]="!d.terrain" matTooltip="PDF produit à partir des informations du dossier">
+                    <svg class="btn-icon" lucideSparkles aria-hidden="true"></svg>Générer
+                  </button>
+                  <button mat-stroked-button type="button" (click)="openDocumentDialog('upload')">
+                    <svg class="btn-icon" lucideUpload aria-hidden="true"></svg>Ajouter
+                  </button>
+                </span>
+              }
+            </div>
+            @if (d.documents.length) {
+              <ul class="doc-list">
+                @for (document of d.documents; track document.id) {
+                  <li>
+                    <svg lucideFileText aria-hidden="true"></svg>
+                    <a [href]="document.secureUrl" target="_blank" rel="noopener">{{ document.title || (document.type | mtmLabel) }}</a>
+                    <span class="status-pill">{{ document.type | mtmLabel }}</span>
+                    @if (document.isPublic) {
+                      <span class="status-pill status-pill--info" matTooltip="Visible par le client dans son espace">Client</span>
+                    }
+                    <small>v{{ document.version }} · {{ document.createdAt | date: 'dd/MM/yyyy' }}</small>
+                    @if (canModify) {
+                      <button mat-icon-button type="button" (click)="removeDocument(document.id)" aria-label="Supprimer" matTooltip="Supprimer">
+                        <svg class="btn-icon" lucideTrash2 aria-hidden="true"></svg>
+                      </button>
+                    }
+                  </li>
+                }
+              </ul>
+            } @else {
+              <p class="detail-section__text">Aucun document. Générez le bon de réservation dès la réservation, puis le reçu à chaque paiement.</p>
             }
-          </ul>
-        } @else {
-          <p class="detail-section__text">Aucun document. Générez le bon de réservation dès la réservation, puis le reçu à chaque paiement.</p>
-        }
-      </section>
-
-      <!-- Informations -->
-      <section class="page-card detail-section">
-        <h2>Informations</h2>
-        <dl class="info-list">
-          <div><dt>Client</dt><dd>{{ client() }}<small>{{ d.prospect.email || '' }}</small></dd></div>
-          <div><dt>Bien</dt><dd>{{ d.terrain ? d.terrain.referenceInterne + ' — ' + d.terrain.nom : 'Non défini' }}<small>{{ d.terrain?.statutCommercial || '' }}</small></dd></div>
-          <div><dt>Mandat</dt><dd>{{ d.mandat?.referenceInterne || '—' }}</dd></div>
-          <div><dt>Commercial</dt><dd>{{ d.commercialResponsable ? d.commercialResponsable.firstName + ' ' + d.commercialResponsable.lastName : '—' }}</dd></div>
-          <div><dt>Ouvert le</dt><dd>{{ d.createdAt | date: 'dd/MM/yyyy à HH:mm' }}</dd></div>
-          <div><dt>Dernière modification</dt><dd>{{ d.updatedAt | date: 'dd/MM/yyyy à HH:mm' }}</dd></div>
-        </dl>
-      </section>
-    </section>
-    <app-taches-dossier type="vente" [dossierId]="d.id" [libelleDossier]="d.referenceInterne ?? 'Dossier de vente'" />
-    <app-fil-discussion type="vente" [dossierId]="d.id" />
+          </section>
+        </section>
+      }
+      @case ('suivi') {
+        <section class="content-grid">
+    <!-- Informations -->
+          <section class="page-card detail-section detail-section--wide">
+            <h2>Informations</h2>
+            <dl class="info-list">
+              <div><dt>Client</dt><dd>{{ client() }}<small>{{ d.prospect.email || '' }}</small></dd></div>
+              <div><dt>Bien</dt><dd>{{ d.terrain ? d.terrain.referenceInterne + ' — ' + d.terrain.nom : 'Non défini' }}<small>{{ d.terrain?.statutCommercial || '' }}</small></dd></div>
+              <div><dt>Mandat</dt><dd>{{ d.mandat?.referenceInterne || '—' }}</dd></div>
+              <div><dt>Commercial</dt><dd>{{ d.commercialResponsable ? d.commercialResponsable.firstName + ' ' + d.commercialResponsable.lastName : '—' }}</dd></div>
+              <div><dt>Ouvert le</dt><dd>{{ d.createdAt | date: 'dd/MM/yyyy à HH:mm' }}</dd></div>
+              <div><dt>Dernière modification</dt><dd>{{ d.updatedAt | date: 'dd/MM/yyyy à HH:mm' }}</dd></div>
+            </dl>
+          </section>
+        </section>
+        <app-taches-dossier type="vente" [dossierId]="d.id" [libelleDossier]="d.referenceInterne ?? 'Dossier de vente'" />
+        <app-fil-discussion type="vente" [dossierId]="d.id" />
+      }
+    }
   </section>
 }

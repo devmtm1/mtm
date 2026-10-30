@@ -22,6 +22,7 @@ import {
   variationDite,
   type PeriodePreset,
 } from '../finances/finances-utils';
+import { nombreFr } from '../../core/utils/format';
 
 /**
  * Tableau de bord direction (maquette B) : chiffre d'affaires et revenu, ventes,
@@ -141,7 +142,7 @@ export class VueDirection implements OnInit {
   protected pct(valeur: number | null): string {
     return valeur === null
       ? '—'
-      : `${valeur.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} %`;
+      : `${nombreFr(valeur, { maximumFractionDigits: 1 })} %`;
   }
 
   protected barre(taux: number | null): number {

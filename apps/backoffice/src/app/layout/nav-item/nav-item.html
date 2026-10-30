@@ -4,7 +4,7 @@
     class="nav-item"
     [class.nav-item--active]="sujetActif()"
     [routerLink]="item().route"
-    [matTooltip]="collapsed() ? item().label : ''"
+    [matTooltip]="collapsed() ? item().label : item().libelleMenu ? item().label : ''"
     matTooltipPosition="right"
     [attr.aria-current]="sujetActif() ? 'page' : null"
     (click)="navigate.emit()"
@@ -14,7 +14,7 @@
       <span class="nav-item__point" aria-hidden="true"></span>
     }
     @if (!collapsed()) {
-      <span class="nav-item__label">{{ item().label }}</span>
+      <span class="nav-item__label">{{ item().libelleMenu ?? item().label }}</span>
       @if (pastille(); as total) {
         <span class="nav-item__pastille" [attr.aria-label]="total + ' à traiter'">{{ total }}</span>
       }
@@ -26,13 +26,13 @@
     [href]="item().href"
     target="_blank"
     rel="noopener"
-    [matTooltip]="collapsed() ? item().label : ''"
+    [matTooltip]="collapsed() ? item().label : item().libelleMenu ? item().label : ''"
     matTooltipPosition="right"
     (click)="navigate.emit()"
   >
     <svg [lucideIcon]="item().icon" class="nav-item__icon" aria-hidden="true"></svg>
     @if (!collapsed()) {
-      <span class="nav-item__label">{{ item().label }}</span>
+      <span class="nav-item__label">{{ item().libelleMenu ?? item().label }}</span>
     }
   </a>
 } @else {
@@ -42,7 +42,7 @@
     routerLinkActive="nav-item--active"
     [routerLinkActiveOptions]="{ exact: !!item().exact }"
     #rla="routerLinkActive"
-    [matTooltip]="collapsed() ? item().label : ''"
+    [matTooltip]="collapsed() ? item().label : item().libelleMenu ? item().label : ''"
     matTooltipPosition="right"
     [attr.aria-current]="rla.isActive ? 'page' : null"
     (click)="navigate.emit()"
@@ -52,7 +52,7 @@
       <span class="nav-item__point" aria-hidden="true"></span>
     }
     @if (!collapsed()) {
-      <span class="nav-item__label">{{ item().label }}</span>
+      <span class="nav-item__label">{{ item().libelleMenu ?? item().label }}</span>
       @if (pastille(); as total) {
         <span class="nav-item__pastille" [attr.aria-label]="total + ' à traiter'">{{ total }}</span>
       }

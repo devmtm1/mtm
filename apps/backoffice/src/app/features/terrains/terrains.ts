@@ -62,6 +62,7 @@ import {
   statusHelp,
   typeBienLabel,
 } from './terrain-status';
+import { nombreFr } from '../../core/utils/format';
 
 const EMPTY_FILTERS = {
   search: '',
@@ -286,7 +287,7 @@ export class Terrains implements OnInit {
       flex: 0.7,
       minWidth: 96,
       type: 'rightAligned',
-      valueFormatter: (p) => (p.value == null ? '—' : `${Number(p.value).toLocaleString('fr-FR')} m²`),
+      valueFormatter: (p) => (p.value == null ? '—' : `${nombreFr(Number(p.value))} m²`),
     },
     {
       // Typologie et surface habitable, les deux chiffres qu'un commercial
@@ -301,7 +302,7 @@ export class Terrains implements OnInit {
         const surface =
           p.data.surfaceHabitable == null
             ? null
-            : `${Number(p.data.surfaceHabitable).toLocaleString('fr-FR')} m²`;
+            : `${nombreFr(Number(p.data.surfaceHabitable))} m²`;
         return [p.data.nombrePieces, surface].filter(Boolean).join(' · ');
       },
       valueFormatter: (p) => (p.value ? String(p.value) : '—'),

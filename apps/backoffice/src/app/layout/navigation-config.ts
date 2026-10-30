@@ -74,6 +74,8 @@ export interface NavLeaf {
    * s'ouvre dans un nouvel onglet au lieu de passer par le routeur.
    */
   href?: string;
+  /** Libellé court du menu latéral, quand le nom complet y passerait sur deux lignes ; la page garde son nom complet. */
+  libelleMenu?: string;
   /** Pastille : le nombre de choses qui attendent la personne sur cette page. */
   compteur?: CompteurNavigation;
 }
@@ -173,7 +175,7 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
           { label: 'Relances d’impayés', route: '/locatif/relances', permission: 'locatif:consulter', compteur: 'relancesLocatives' },
         ],
       },
-      { label: 'Vérifications et démarches', route: '/demarches/missions', icon: LucideClipboardCheck, permission: 'demarches:consulter' },
+      { label: 'Vérifications et démarches', libelleMenu: 'Vérifications', route: '/demarches/missions', icon: LucideClipboardCheck, permission: 'demarches:consulter' },
       { label: 'Chantiers', route: '/construction/chantiers', icon: LucideHardHat, permission: 'construction:consulter' },
     ],
   },

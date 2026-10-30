@@ -94,10 +94,10 @@
   } @else if (items().length === 0) {
     <section class="page-card">
       <div class="empty-state">
-        <h3>Rien à afficher</h3>
+        <h3>{{ statut() === 'a_faire,en_cours' && !echeance() && !priorite() && !recherche.value ? 'Tout est à jour' : 'Aucun résultat' }}</h3>
         <p>
           @if (statut() === 'a_faire,en_cours' && !echeance() && !priorite() && !recherche.value) {
-            Aucune tâche en cours dans cette vue.
+            Aucune tâche à traiter dans cette vue.
           } @else {
             Aucune tâche ne correspond à ces filtres.
           }
