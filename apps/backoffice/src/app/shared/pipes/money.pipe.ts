@@ -1,4 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
+import { montantFcfa } from '../../core/utils/format';
 
 /**
  * Montant en FCFA, format français (« 12 500 000 FCFA »), « — » si absent.
@@ -10,6 +11,6 @@ export class MoneyPipe implements PipeTransform {
   transform(value: number | string | null | undefined): string {
     if (value === null || value === undefined || value === '') return '—';
     const amount = Number(value);
-    return Number.isFinite(amount) ? `${amount.toLocaleString('fr-FR')} FCFA` : '—';
+    return Number.isFinite(amount) ? montantFcfa(amount) : '—';
   }
 }

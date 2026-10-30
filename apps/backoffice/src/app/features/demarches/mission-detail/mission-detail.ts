@@ -20,7 +20,15 @@ import {
   LucidePlus,
   LucideTrash2,
   LucideUpload,
+  LucideClipboardList,
+  LucideExternalLink,
+  LucideKeyRound,
+  LucideMail,
+  LucideMapPin,
+  LucideUserRound,
+  LucideCircleX,
 } from '@lucide/angular';
+import { MenuActions, type GroupeMenu } from '../../../shared/components/menu-actions/menu-actions';
 import type { Observable } from 'rxjs';
 import { DemarchesApiService } from '../../../core/services/api/demarches-api.service';
 import { TerrainsApiService } from '../../../core/services/api/terrains-api.service';
@@ -57,6 +65,7 @@ import {
 } from '../mission-status';
 import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 import { FilDiscussion } from '../../../shared/components/fil-discussion/fil-discussion';
+import { FicheOnglets, type OngletFiche } from '../../../shared/components/fiche-client/fiche-onglets';
 import { TachesDossier } from '../../../shared/components/taches-dossier/taches-dossier';
 
 /**
@@ -83,6 +92,14 @@ const PARCOURS_VERIFICATION = [
 @Component({
   selector: 'app-mission-detail',
   imports: [
+    MenuActions,
+    LucideUserRound,
+    LucideMapPin,
+    LucideMail,
+    LucideKeyRound,
+    LucideExternalLink,
+    LucideClipboardList,
+    FicheOnglets,
     RouterLink,
     FilDiscussion,
     TachesDossier,
@@ -265,6 +282,13 @@ export class MissionDetail implements OnInit {
       (doc) => doc.type !== 'rapport' && !doc.etapeId,
     ),
   );
+  protected readonly onglet = signal('parcours');
+  protected readonly onglets = computed<OngletFiche[]>(() => [
+    { id: 'parcours', libelle: 'Parcours', icone: 'etapes' },
+    { id: 'reglements', libelle: 'Prix et règlements', icone: 'paiements' },
+    { id: 'pieces', libelle: 'Pièces du dossier', icone: 'documents', pastille: this.pieces().length || null },
+    { id: 'suivi', libelle: 'Tâches et échanges', icone: 'suivi' },
+  ]);
   protected readonly estTerminee = computed(() =>
     ETAPES_TERMINALES.includes(this.mission()?.statut ?? ''),
   );
@@ -301,6 +325,31 @@ export class MissionDetail implements OnInit {
     reserves: [''],
     recommandation: [''],
   });
+
+
+  protected readonly actionsPlus = computed<GroupeMenu[]>(() => [
+    {
+      actions: [
+        {
+          libelle: 'Abandonner la mission',
+          aide: 'Le motif reste sur la fiche et explique l’arrêt au client',
+          icone: LucideCircleX,
+          action: () => this.changerEtape('abandonnee'),
+        },
+      ],
+    },
+    {
+      actions: [
+        {
+          libelle: 'Supprimer la mission',
+          aide: 'Efface le dossier et ses constats',
+          icone: LucideTrash2,
+          danger: true,
+          action: () => this.supprimerMission(),
+        },
+      ],
+    },
+  ]);
 
   ngOnInit(): void {
     this.api.getOptions().subscribe({

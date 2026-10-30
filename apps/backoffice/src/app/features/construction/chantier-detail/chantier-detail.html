@@ -75,52 +75,7 @@
           <button mat-flat-button color="primary" type="button" (click)="saisirJournee()">
             <svg class="btn-icon" lucideNotebookPen aria-hidden="true"></svg>Saisir la journée
           </button>
-          <button
-            mat-icon-button
-            type="button"
-            [matMenuTriggerFor]="autresActions"
-            aria-label="Plus d’actions"
-          >
-            <svg class="btn-icon" lucideChevronDown aria-hidden="true"></svg>
-          </button>
-          <mat-menu #autresActions="matMenu" xPosition="before">
-            <button mat-menu-item type="button" (click)="ajouterJalon()">
-              <span class="menu-line">
-                <strong>Ajouter une étape</strong>
-                <small>Une ligne de plus au planning</small>
-              </span>
-            </button>
-            <button mat-menu-item type="button" (click)="saisirDepense()">
-              <span class="menu-line">
-                <strong>Saisir une dépense</strong>
-                <small>Matériaux, acompte, frais — en attente de contrôle</small>
-              </span>
-            </button>
-            <button mat-menu-item type="button" (click)="ajouterPrestataire()">
-              <span class="menu-line">
-                <strong>Ajouter un prestataire</strong>
-                <small>Maçon, électricien, bureau de contrôle…</small>
-              </span>
-            </button>
-            <button mat-menu-item type="button" (click)="ajouterLigneBudget()">
-              <span class="menu-line">
-                <strong>Ajouter un poste de budget</strong>
-                <small>Chiffrer un poste avant de le dépenser</small>
-              </span>
-            </button>
-            <button mat-menu-item type="button" (click)="genererRapport()">
-              <span class="menu-line">
-                <strong>Générer le rapport d’avancement</strong>
-                <small>Publié d’office dans l’espace client</small>
-              </span>
-            </button>
-            <button mat-menu-item type="button" (click)="changerStatut()">
-              <span class="menu-line">
-                <strong>Faire avancer le chantier</strong>
-                <small>Démarrage, suspension, réception, clôture</small>
-              </span>
-            </button>
-          </mat-menu>
+          <app-menu-actions [groupes]="actionsPlus()" />
         </div>
       }
     </header>
@@ -219,9 +174,11 @@
       </section>
     }
 
-    <div class="chantier-detail__layout">
-      <!-- Colonne principale : ce qui se pilote au quotidien -->
-      <div class="chantier-detail__main">
+    <app-fiche-onglets [onglets]="onglets()" [(actif)]="onglet" />
+
+    @switch (onglet()) {
+      @case ('journal') {
+        <div class="chantier-detail__main">
         <!-- Journal de chantier -->
         <section class="page-card detail-section">
           <div class="detail-section__head">
@@ -353,7 +310,10 @@
             </p>
           }
         </section>
-
+        </div>
+      }
+      @case ('planning') {
+        <div class="chantier-detail__main">
         <!-- Planning : la « vue de type Gantt » de la section 16. Après le
              journal : on le consulte une fois par semaine, alors qu'on écrit
              au journal tous les jours. -->
@@ -488,7 +448,11 @@
             </p>
           }
         </section>
-
+        </div>
+      }
+      @case ('budget') {
+        <div class="chantier-detail__layout">
+          <div class="chantier-detail__main">
         <!-- Dépenses -->
         <section class="page-card detail-section">
           <div class="detail-section__head">
@@ -566,10 +530,8 @@
             <p class="detail-note">Aucune dépense enregistrée sur ce chantier.</p>
           }
         </section>
-      </div>
-
-      <!-- Colonne latérale : ce qu'on consulte sans agir -->
-      <aside class="chantier-detail__aside">
+          </div>
+          <aside class="chantier-detail__aside">
         <!-- Budget par poste -->
         <section class="page-card detail-section">
           <div class="detail-section__head">
@@ -658,7 +620,12 @@
             </p>
           }
         </section>
-
+          </aside>
+        </div>
+      }
+      @case ('equipe') {
+        <div class="chantier-detail__layout">
+          <div class="chantier-detail__main">
         <!-- Prestataires -->
         <section class="page-card detail-section">
           <div class="detail-section__head">
@@ -707,7 +674,8 @@
             <p class="detail-section__hint">Aucun prestataire engagé pour l’instant.</p>
           }
         </section>
-
+          </div>
+          <aside class="chantier-detail__aside">
         <!-- Pièces -->
         <section class="page-card detail-section">
           <div class="detail-section__head">
@@ -773,9 +741,10 @@
             <p class="detail-section__hint">Aucune pièce pour l’instant.</p>
           }
         </section>
-      </aside>
-    </div>
-
+          </aside>
+        </div>
+      }
+      @case ('suivi') {
     <!-- Consulté rarement : replié -->
     <details class="page-card chantier-detail__repli">
       <summary>
@@ -816,8 +785,10 @@
         <p class="detail-note"><strong>Notes internes :</strong> {{ c.notes }}</p>
       }
     </details>
-    <app-taches-dossier type="chantier" [dossierId]="c.id" [libelleDossier]="c.referenceInterne" />
-    <app-fil-discussion type="chantier" [dossierId]="c.id" />
+        <app-taches-dossier type="chantier" [dossierId]="c.id" [libelleDossier]="c.referenceInterne" />
+        <app-fil-discussion type="chantier" [dossierId]="c.id" />
+      }
+    }
   </div>
 } @else {
   <p class="detail-note">Chantier introuvable.</p>

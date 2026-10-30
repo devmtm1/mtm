@@ -1,6 +1,6 @@
 /* ==========================================================================
-   Ligne du menu latéral — texte ardoise, icônes gris-bleu ;
-   la page courante : fond bleu très clair, texte et icône en bleu doux.
+   Ligne du menu latéral (fond bleu marine) — texte clair, icônes bleu-gris ;
+   la page courante : fond marine plus clair, texte blanc, barre claire à gauche.
    ========================================================================== */
 
 :host {
@@ -47,17 +47,29 @@
 
 .nav-item--active {
   background-color: var(--mtm-sb-active-bg);
-  color: var(--mtm-sb-active);
+  color: var(--mtm-sb-active-texte);
   font-weight: 600;
   box-shadow: var(--mtm-sb-ombre-active);
 
+  /* Barre à gauche : la page courante se repère sans dépendre de la seule couleur de fond. */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 9px;
+    bottom: 9px;
+    left: 0;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--mtm-sb-marqueur);
+  }
+
   .nav-item__icon {
-    color: var(--mtm-sb-active);
+    color: var(--mtm-sb-marqueur);
   }
 
   &:hover {
     background-color: var(--mtm-sb-active-bg);
-    color: var(--mtm-sb-active);
+    color: var(--mtm-sb-active-texte);
   }
 }
 

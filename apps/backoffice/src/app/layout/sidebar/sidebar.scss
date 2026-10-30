@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Sidebar MTM Immobilier — fond clair bleuté, texte ardoise, rubrique active en bleu doux.
+   Sidebar MTM Immobilier — fond bleu marine, texte clair, rubrique active en marine plus clair.
    Largeur pilotée par le shell (--sidebar-width : 248px / 72px replié).
    ========================================================================== */
 
@@ -22,7 +22,7 @@
   min-height: 72px;
   padding: 16px 18px;
   flex-shrink: 0;
-  /* Une ombre sous le logo plutôt qu'un filet : l'en-tête se détache de la liste. */
+  border-bottom: 1px solid var(--mtm-sb-sep);
   box-shadow: var(--mtm-sb-ombre-marque);
   position: relative;
   z-index: 1;
@@ -35,15 +35,16 @@
   width: 42px;
   height: 42px;
   border-radius: 12px;
-  background-color: var(--mtm-primary);
+  /* Le logo est une image sur fond blanc : on le pose sur une pastille blanche, lisible sur le marine. */
+  background-color: #fff;
   flex-shrink: 0;
 }
 
 .sidebar__logo-image {
-  width: 26px;
-  height: 26px;
-  object-fit: cover;
-  border-radius: 6px;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  border-radius: 8px;
 }
 
 .sidebar__brand-text {

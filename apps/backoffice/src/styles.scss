@@ -5,19 +5,22 @@
 @use '@angular/material' as mat;
 
 :root {
-  /* Menu latéral : clair, doux, sans contraste agressif. */
-  --mtm-sb-bg: #F8FAFC;
-  --mtm-sb-text: #334155;
-  --mtm-sb-icon: #64748B;
-  --mtm-sb-titre: #64748B;
-  --mtm-sb-hover: #EFF3F8;
-  --mtm-sb-active-bg: #FFFFFF;
-  /* Relief : le menu passe au-dessus de la page, la page active ressort en pastille. */
-  --mtm-sb-ombre: 10px 0 34px -8px rgba(18, 54, 90, 0.26), 2px 0 6px rgba(18, 54, 90, 0.08);
-  --mtm-sb-ombre-marque: 0 8px 18px -12px rgba(18, 54, 90, 0.28);
-  --mtm-sb-ombre-active: 0 6px 14px -6px rgba(36, 90, 133, 0.38);
-  --mtm-sb-active: #245A85;
-  --mtm-sb-sep: #E8EDF3;
+  /* Menu latéral : bleu marine de la marque, un ton plus sombre que le bleu des boutons pour que les deux restent
+     distincts. Texte clair (contraste > 7:1), titres de rubrique en bleu-gris clair (> 5:1), page active en marine plus
+     clair avec une barre claire à gauche. Pas d'ombre : la couleur sépare déjà le menu de la page. */
+  --mtm-sb-bg: #0F2A44;
+  --mtm-sb-text: #D6E2EF;
+  --mtm-sb-icon: #9FB6CC;
+  --mtm-sb-titre: #93AAC2;
+  --mtm-sb-hover: #173A5C;
+  --mtm-sb-active-bg: #1F4E7C;
+  --mtm-sb-ombre: none;
+  --mtm-sb-ombre-marque: none;
+  --mtm-sb-ombre-active: none;
+  --mtm-sb-active: #FFFFFF;
+  --mtm-sb-active-texte: #FFFFFF;
+  --mtm-sb-marqueur: #7DB8E8;
+  --mtm-sb-sep: #1D3F5F;
   // Couleurs de marque — valeurs mesurées sur le logo MTM Immobilier (logomtm.jpeg)
   // Bleu marine du cube et du mot IMMOBILIER : couleur principale de l'interface.
   --mtm-primary-dark: #233D5B;
@@ -101,10 +104,12 @@
   --mtm-sb-titre: #A1A1AA;
   --mtm-sb-hover: #23262E;
   --mtm-sb-active-bg: #243447;
-  --mtm-sb-ombre: 10px 0 34px -8px rgba(0, 0, 0, 0.55), 2px 0 6px rgba(0, 0, 0, 0.3);
-  --mtm-sb-ombre-marque: 0 8px 18px -12px rgba(0, 0, 0, 0.6);
-  --mtm-sb-ombre-active: 0 6px 14px -6px rgba(0, 0, 0, 0.6);
+  --mtm-sb-ombre: none;
+  --mtm-sb-ombre-marque: none;
+  --mtm-sb-ombre-active: none;
   --mtm-sb-active: #8DBBE8;
+  --mtm-sb-active-texte: #FFFFFF;
+  --mtm-sb-marqueur: #8DBBE8;
   --mtm-sb-sep: #2A2D36;
   color-scheme: dark;
 
@@ -176,6 +181,20 @@ body {
   min-width: 320px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Liens du texte courant (référence d'un dossier, nom d'une propriété…) : la couleur de la marque, soulignée au
+   survol, au lieu du bleu et du soulignement du navigateur. Les boutons et liens déjà stylés (class) ne changent pas. */
+a:not([class]) {
+  color: var(--mtm-primary);
+  font-weight: 600;
+  text-decoration: none;
+  text-underline-offset: 3px;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+  }
 }
 
 h1,
@@ -496,6 +515,61 @@ ag-grid-angular {
 
 .btn-icon--after {
   margin: 0 0 0 6px;
+}
+
+/* Menu d'actions d'une fiche (« Plus ») : des groupes titrés, et pour chaque action une icône, son nom et une ligne d'explication. */
+.mat-mdc-menu-panel.menu-actions {
+  min-width: 340px;
+  max-width: 380px;
+  border-radius: 14px;
+
+  .mat-mdc-menu-content {
+    padding: 8px 0;
+  }
+
+  .menu-groupe {
+    margin: 0;
+    padding: 10px 20px 4px;
+    color: var(--mtm-text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .menu-separateur {
+    height: 1px;
+    margin: 6px 0;
+    background: var(--mtm-border);
+  }
+
+  .mat-mdc-menu-item {
+    min-height: 52px;
+    padding: 6px 20px;
+
+    .mat-mdc-menu-item-text {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+  }
+
+  .menu-icone {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    color: var(--mtm-primary);
+  }
+
+  .menu-line strong {
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+
+  .menu-item--danger {
+    .menu-icone,
+    .menu-line strong {
+      color: var(--mtm-error);
+    }
+  }
 }
 
 /* Entrée de menu à deux lignes (action + explication) */
@@ -2199,8 +2273,9 @@ ag-grid-angular {
 
 /* Cartes de chiffres soignées : le libellé d'abord, le chiffre en grand, l'icône à droite,
    un zéro qui s'efface. S'active en ajoutant `kpi-row--soigne` à `.kpi-row`. */
+.kpi-row,
 .kpi-row--soigne {
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(176px, 1fr));
   gap: 14px;
 
   .kpi {
@@ -2258,6 +2333,9 @@ ag-grid-angular {
   }
 
   @media (max-width: 720px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+
     .kpi {
       min-height: 0;
       padding: 12px 14px;
@@ -2265,6 +2343,383 @@ ag-grid-angular {
 
     .kpi__body strong {
       font-size: 1.3rem;
+    }
+  }
+}
+
+/* Les quatre chiffres qui commandent la suite, lisibles sans défiler. */
+.bien-detail__figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 16px 28px;
+
+  > div {
+    display: grid;
+    gap: 2px;
+    align-content: start;
+  }
+
+  span {
+    color: var(--mtm-text-muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  strong {
+    font-family: var(--mtm-font-display);
+    font-size: 1.28rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  small {
+    color: var(--mtm-text-muted);
+    font-size: 0.76rem;
+  }
+
+  /* Un reste dû se signale par la couleur, pas par un encadré de plus. */
+  .is-due strong {
+    color: var(--mtm-accent);
+  }
+}
+
+/* Deux tiers pour agir, un tiers pour consulter.
+   `min-width: 0` à chaque étage : sans lui, la largeur minimale d'un contenu
+   insécable — une référence de quittance, par exemple — repousse la grille
+   au-delà de la page au lieu d'être tronquée ou renvoyée à la ligne. */
+.bien-detail__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 18px;
+  min-width: 0;
+
+  @media (max-width: 1180px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.bien-detail__main,
+.bien-detail__aside,
+.bien-detail__duo {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  min-width: 0;
+
+  > * {
+    min-width: 0;
+  }
+}
+
+/* Dans une colonne étroite, une pièce se lit sur deux lignes : son nom, puis
+   son type et sa date. Sur une seule ligne, une référence longue débordait. */
+.bien-detail__aside,
+.bien-detail__duo {
+  .doc-item {
+    flex-wrap: wrap;
+  }
+
+  .doc-item__title {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    white-space: normal;
+    overflow-wrap: anywhere;
+
+    small {
+      color: var(--mtm-text-muted);
+      font-size: 0.74rem;
+      font-weight: 400;
+    }
+  }
+}
+
+/* Dans une colonne étroite, les faits se lisent l'un sous l'autre. */
+.bien-detail__faits {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+
+.bien-detail__mouvements {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.84rem;
+
+  li {
+    display: grid;
+    gap: 1px;
+    padding-left: 10px;
+    border-left: 2px solid var(--mtm-border);
+  }
+
+  small {
+    font-size: 0.76rem;
+  }
+}
+
+/* Sections repliées : l'en-tête reste cliquable, sans ressembler à un bouton. */
+.bien-detail__repli {
+  summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 10px;
+    cursor: pointer;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    strong {
+      font-family: var(--mtm-font-display);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    small {
+      color: var(--mtm-text-muted);
+      font-size: 0.8rem;
+    }
+
+    /* Chevron dessiné en CSS : pas d'icône à charger pour un simple repli. */
+    &::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      margin-left: auto;
+      border-right: 2px solid var(--mtm-text-muted);
+      border-bottom: 2px solid var(--mtm-text-muted);
+      transform: rotate(45deg) translate(-2px, -2px);
+      transition: transform 0.15s ease;
+    }
+
+    &:hover strong {
+      color: var(--mtm-primary);
+    }
+  }
+
+  &[open] summary {
+    margin-bottom: 14px;
+
+    &::after {
+      transform: rotate(225deg) translate(-2px, -2px);
+    }
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+/* Attestations d'assurance déposées par les locataires : ce que le gestionnaire doit contrôler se voit avant la liste. */
+.doc-alert {
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--mtm-warning, #a34a07);
+  background: color-mix(in srgb, var(--mtm-warning, #a34a07) 10%, white);
+  color: var(--mtm-warning, #a34a07);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.doc-item__etat {
+  font-weight: 600;
+
+  &--attente {
+    color: var(--mtm-warning, #a34a07);
+  }
+  &--ok {
+    color: var(--mtm-success, #047857);
+  }
+  &--refus {
+    color: var(--mtm-error, #b52c36);
+  }
+}
+
+/* Onglet « Bail et pièces » : le bail et ses pièces côte à côte, l'un sous l'autre sur écran étroit. */
+.bien-detail__duo {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* En-tête : l'identité à gauche ; à droite les actions, et dessous la photo de couverture. */
+.bien-detail__entete {
+  align-items: flex-start;
+}
+
+.bien-detail__cote {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 16px;
+  min-width: 0;
+
+  @media (max-width: 720px) {
+    align-items: stretch;
+    width: 100%;
+  }
+}
+
+.bien-detail__couverture {
+  width: 216px;
+  height: 128px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: var(--mtm-shadow-card);
+
+  @media (max-width: 720px) {
+    width: 100%;
+    height: 120px;
+  }
+}
+
+.bien-detail__entete .detail-header__location {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  svg {
+    flex: none;
+    width: 17px;
+    height: 17px;
+    color: var(--mtm-text-muted);
+  }
+}
+
+/* Chiffres clés d'une fiche (bien, propriété, mandat, dossier de vente) : une pastille d'icône, le libellé, le montant. Le retard se voit à la teinte rouge de la carte, la caution détenue à la teinte verte. */
+.chiffres {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(248px, 1fr));
+  gap: 14px;
+
+  @media (max-width: 720px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+}
+
+.chiffre {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--mtm-border);
+  border-radius: var(--mtm-radius-lg, 14px);
+  background: var(--mtm-card-bg);
+  box-shadow: var(--mtm-shadow-card);
+
+  &__icone {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--mtm-primary-subtle);
+    color: var(--mtm-primary);
+
+    svg {
+      width: 21px;
+      height: 21px;
+    }
+  }
+
+  &__corps {
+    display: grid;
+    flex: 1;
+    gap: 2px;
+    min-width: 0;
+
+    > span {
+      color: var(--mtm-text-muted);
+      font-size: 0.74rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    strong {
+      font-family: var(--mtm-font-display);
+      font-size: 1.22rem;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+
+    small {
+      color: var(--mtm-text-muted);
+      font-size: 0.78rem;
+    }
+  }
+
+  /* Avec un anneau à côté, le montant se resserre pour ne pas le toucher. */
+  &:has(.chiffre__anneau) .chiffre__corps strong {
+    font-size: 1.08rem;
+  }
+
+  &--du {
+    border-color: color-mix(in srgb, var(--mtm-error) 28%, var(--mtm-border));
+    background: color-mix(in srgb, var(--mtm-error-bg) 70%, var(--mtm-card-bg));
+
+    .chiffre__icone {
+      background: color-mix(in srgb, var(--mtm-error) 14%, var(--mtm-card-bg));
+      color: var(--mtm-error);
+    }
+
+    strong {
+      color: var(--mtm-error);
+    }
+  }
+
+  &--ok {
+    border-color: color-mix(in srgb, var(--mtm-success) 28%, var(--mtm-border));
+    background: color-mix(in srgb, var(--mtm-success-bg) 70%, var(--mtm-card-bg));
+
+    .chiffre__icone {
+      background: color-mix(in srgb, var(--mtm-success) 14%, var(--mtm-card-bg));
+      color: var(--mtm-success);
+    }
+  }
+
+  /* Anneau de progression : la part des loyers appelés qui est encaissée. */
+  &__anneau {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: conic-gradient(var(--mtm-success) calc(var(--taux) * 1%), var(--mtm-border) 0);
+
+    > span {
+      display: grid;
+      place-items: center;
+      width: 39px;
+      height: 39px;
+      border-radius: 50%;
+      background: var(--mtm-card-bg);
+      color: var(--mtm-text-dark);
+      font-size: 0.72rem;
+      font-weight: 700;
     }
   }
 }

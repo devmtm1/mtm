@@ -1,16 +1,38 @@
-import { Component, OnInit, inject, input, model } from '@angular/core';
+import { Component, effect, inject, input, model } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
+  LucideBanknote,
+  LucideCalendarDays,
+  LucideCircleCheck,
+  LucideClipboardList,
+  LucideClock,
   LucideFileText,
   LucideFolderOpen,
   LucideHistory,
+  LucideImage,
   LucideKeyRound,
+  LucideLandPlot,
   LucideScrollText,
+  LucideTriangleAlert,
   LucideUser,
 } from '@lucide/angular';
 
 /** Icône d'un onglet : un nom court, pour que les fiches n'aient pas à importer chaque icône. */
-export type IconeOnglet = 'identite' | 'dossiers' | 'documents' | 'espace' | 'suivi' | 'baux';
+export type IconeOnglet =
+  | 'identite'
+  | 'dossiers'
+  | 'documents'
+  | 'espace'
+  | 'suivi'
+  | 'baux'
+  | 'paiements'
+  | 'biens'
+  | 'conditions'
+  | 'photos'
+  | 'etapes'
+  | 'agenda'
+  | 'alerte'
+  | 'horloge';
 
 export interface OngletFiche {
   id: string;
@@ -31,14 +53,24 @@ export interface OngletFiche {
 @Component({
   selector: 'app-fiche-onglets',
   imports: [
+    LucideBanknote,
+    LucideCalendarDays,
+    LucideCircleCheck,
+    LucideClipboardList,
+    LucideClock,
     LucideFileText,
     LucideFolderOpen,
     LucideHistory,
+    LucideImage,
     LucideKeyRound,
+    LucideLandPlot,
     LucideScrollText,
+    LucideTriangleAlert,
     LucideUser,
   ],
   template: `
+    <!-- Les touches fléchées montent des onglets (focusables) jusqu'à la liste : elle n'a pas à l'être. -->
+    <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
     <div
       class="onglets"
       role="tablist"
@@ -75,6 +107,30 @@ export interface OngletFiche {
             @case ('baux') {
               <svg lucideScrollText aria-hidden="true"></svg>
             }
+            @case ('paiements') {
+              <svg lucideBanknote aria-hidden="true"></svg>
+            }
+            @case ('biens') {
+              <svg lucideLandPlot aria-hidden="true"></svg>
+            }
+            @case ('conditions') {
+              <svg lucideClipboardList aria-hidden="true"></svg>
+            }
+            @case ('photos') {
+              <svg lucideImage aria-hidden="true"></svg>
+            }
+            @case ('etapes') {
+              <svg lucideCircleCheck aria-hidden="true"></svg>
+            }
+            @case ('agenda') {
+              <svg lucideCalendarDays aria-hidden="true"></svg>
+            }
+            @case ('alerte') {
+              <svg lucideTriangleAlert aria-hidden="true"></svg>
+            }
+            @case ('horloge') {
+              <svg lucideClock aria-hidden="true"></svg>
+            }
           }
           {{ onglet.libelle }}
           @if (affiche(onglet)) {
@@ -110,6 +166,7 @@ export interface OngletFiche {
       background: none;
       color: var(--mtm-text-muted);
       font: inherit;
+      font-size: 0.95rem;
       font-weight: 500;
       white-space: nowrap;
       cursor: pointer;
@@ -147,7 +204,7 @@ export interface OngletFiche {
     }
   `,
 })
-export class FicheOnglets implements OnInit {
+export class FicheOnglets {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -155,9 +212,16 @@ export class FicheOnglets implements OnInit {
   /** Identifiant de l'onglet ouvert, lié à la fiche (`[(actif)]`). */
   readonly actif = model.required<string>();
 
-  ngOnInit(): void {
-    const demande = this.route.snapshot.queryParamMap.get('onglet');
-    if (demande && this.onglets().some((onglet) => onglet.id === demande)) this.actif.set(demande);
+  /** Onglet demandé par l'adresse. Certains onglets n'existent qu'une fois la fiche chargée (le bail, par exemple) : on l'ouvre dès qu'il paraît. */
+  private demande = this.route.snapshot.queryParamMap.get('onglet');
+
+  constructor() {
+    effect(() => {
+      const present = this.onglets().some((onglet) => onglet.id === this.demande);
+      if (!this.demande || !present) return;
+      this.actif.set(this.demande);
+      this.demande = null;
+    });
   }
 
   protected affiche(onglet: OngletFiche): boolean {
@@ -170,6 +234,7 @@ export class FicheOnglets implements OnInit {
   }
 
   protected choisir(id: string): void {
+    this.demande = null;
     this.actif.set(id);
     void this.router.navigate([], {
       relativeTo: this.route,

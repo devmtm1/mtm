@@ -10,6 +10,15 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
+  LucideTrash2,
+  LucideCircleX,
+  LucideArrowRightLeft,
+  LucideLock,
+  LucideCalendarClock,
+  LucideClipboardList,
+  LucideClipboardCheck,
+  LucideFileX,
+  LucideWallet,
   LucideArrowLeft,
   LucideBanknote,
   LucideBellRing,
@@ -17,11 +26,17 @@ import {
   LucideChevronDown,
   LucideFileText,
   LucidePlus,
+  LucideBuilding2,
+  LucideChartPie,
+  LucideCoins,
+  LucideMapPin,
   LucideReceipt,
+  LucideShieldCheck,
   LucideTriangleAlert,
   LucideUpload,
   LucideX,
 } from '@lucide/angular';
+import { MenuActions, type GroupeMenu } from '../../../shared/components/menu-actions/menu-actions';
 import { forkJoin, of } from 'rxjs';
 import type { Observable } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
@@ -91,6 +106,7 @@ import { SignalementDialog } from './signalement-dialog';
 import { SortieDialog } from './sortie-dialog';
 import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 import { ConsultationsBien } from '../../../shared/components/consultations-bien/consultations-bien';
+import { FicheOnglets, type OngletFiche } from '../../../shared/components/fiche-client/fiche-onglets';
 
 /**
  * Fiche d'un bien locatif : ses informations, le bail en cours (ou son
@@ -101,6 +117,8 @@ import { ConsultationsBien } from '../../../shared/components/consultations-bien
 @Component({
   selector: 'app-bien-detail',
   imports: [
+    MenuActions,
+    FicheOnglets,
     RouterLink,
     BienAnnonceCard,
     ConsultationsBien,
@@ -120,7 +138,12 @@ import { ConsultationsBien } from '../../../shared/components/consultations-bien
     LucideChevronDown,
     LucideFileText,
     LucidePlus,
+    LucideBuilding2,
+    LucideChartPie,
+    LucideCoins,
+    LucideMapPin,
     LucideReceipt,
+    LucideShieldCheck,
     LucideTriangleAlert,
     LucideUpload,
     LucideX,
@@ -144,6 +167,61 @@ export class BienDetailPage implements OnInit {
   protected readonly bailActuel = signal<BailDetail | null>(null);
   /** Bien en courte durée : on y réserve des séjours au lieu d'y signer un bail. */
   protected readonly courte = computed(() => this.bien()?.modeLocation === 'courte_duree');
+  /** La photo de couverture n'a pas pu être chargée : on ne laisse pas un cadre vide. */
+  protected readonly photoIndisponible = signal(false);
+
+  /** Photo de couverture : la première photo de l'annonce, s'il y en a une. */
+  protected readonly couverture = computed(
+    () => this.bien()?.medias?.find((media) => media.type === 'photo')?.secureUrl ?? null,
+  );
+
+  /** Part des loyers appelés qui est encaissée, de 0 à 100 ; sert à l'anneau de la carte « Encaissé ». */
+  protected readonly tauxEncaisse = computed(() => {
+    const solde = this.solde();
+    if (!solde || solde.loyersDus <= 0) return null;
+    return Math.max(0, Math.min(100, Math.round((solde.loyersEncaisses / solde.loyersDus) * 100)));
+  });
+
+  /** La première échéance à encaisser (la plus ancienne non soldée) porte le bouton principal ; les suivantes restent discrètes. */
+  protected readonly echeanceAEncaisser = computed(
+    () =>
+      this.echeancesAffichees().find(
+        (echeance) => echeance.statut !== 'payee' && echeance.statut !== 'annulee',
+      )?.id ?? null,
+  );
+
+  /** Onglet choisi ; vide tant que la personne n'en a pas choisi, l'onglet par défaut dépend alors du bien. */
+  protected readonly onglet = signal('');
+  protected readonly ongletsDisponibles = computed<OngletFiche[]>(() => {
+    const incidents = (this.bailActuel()?.incidents ?? []).length;
+    if (this.courte()) {
+      return [
+        { id: 'sejours', libelle: 'Séjours', icone: 'baux' },
+        { id: 'annonce', libelle: 'Annonce et photos', icone: 'photos' },
+        { id: 'infos', libelle: 'Informations', icone: 'identite' },
+      ];
+    }
+    return [
+      { id: 'loyers', libelle: 'Loyers', icone: 'agenda' },
+      ...(this.bailActuel()
+        ? [
+            { id: 'bail', libelle: 'Bail et pièces', icone: 'baux' as const },
+            { id: 'incidents', libelle: 'Incidents', icone: 'alerte' as const, pastille: incidents || null },
+          ]
+        : []),
+      { id: 'annonce', libelle: 'Annonce et photos', icone: 'photos' },
+      { id: 'infos', libelle: 'Informations et historique', icone: 'horloge' },
+    ];
+  });
+  protected readonly onglets = this.ongletsDisponibles;
+  protected readonly ongletActif = computed(() => {
+    const demande = this.onglet();
+    return this.ongletsDisponibles().some((onglet) => onglet.id === demande)
+      ? demande
+      : this.courte()
+        ? 'sejours'
+        : 'loyers';
+  });
   protected readonly sejours = signal<SejourListItem[]>([]);
   protected readonly statutsSejour = STATUTS_SEJOUR;
   protected readonly reglementsSejour = STATUTS_REGLEMENT;
@@ -246,6 +324,54 @@ export class BienDetailPage implements OnInit {
     tauxGestion: [null as number | null],
     notes: [''],
     responsableId: [''],
+  });
+
+
+  /** Le menu « Plus » : gestion du bail, suivi du locataire, fin de location, propriétaire, puis suppression du bien. */
+  protected readonly actionsPlus = computed<GroupeMenu[]>(() => {
+    const bail = this.bailActuel();
+    const actif = bail?.statut === 'actif';
+    return [
+      ...(bail
+        ? [
+            {
+              titre: 'Gestion du bail',
+              actions: [
+                { libelle: 'Mouvement de caution', aide: 'Versement, retenue justifiée, restitution', icone: LucideWallet, action: () => this.enregistrerMouvementCaution() },
+                { libelle: 'Incident ou demande', aide: 'Constat de visite, demande reçue du locataire', icone: LucideTriangleAlert, action: () => this.creerSignalement() },
+                actif && { libelle: 'Demande de résiliation', aide: 'Reçue par téléphone, WhatsApp ou courrier', icone: LucideFileX, action: () => this.enregistrerResiliation() },
+              ],
+            },
+            {
+              titre: 'Suivi locataire',
+              actions: [
+                { libelle: 'État des lieux d’entrée', aide: 'Pièce par pièce, compteurs et clés', icone: LucideClipboardCheck, action: () => this.etatDesLieuxBail('entree') },
+                { libelle: 'État des lieux de sortie', aide: 'Comparé à l’entrée pour justifier une retenue', icone: LucideClipboardList, action: () => this.etatDesLieuxBail('sortie') },
+                actif && { libelle: 'Préavis de départ', aide: 'Le locataire annonce son départ', icone: LucideCalendarClock, action: () => this.donnerPreavis() },
+              ],
+            },
+            {
+              titre: 'Fin de location',
+              actions: [
+                { libelle: 'Clôture (sortie)', aide: 'État des lieux, régularisation calculée, caution', icone: LucideLock, action: () => this.cloturerBail() },
+                { libelle: 'Changer de locataire', aide: 'Clôt ce bail et ouvre le suivant', icone: LucideArrowRightLeft, action: () => this.changerLocataire() },
+                actif && { libelle: 'Résilier sans préavis', aide: 'Départ constaté, motif obligatoire', icone: LucideCircleX, danger: true, action: () => this.resilierSansPreavis() },
+              ],
+            },
+            {
+              titre: 'Propriétaire',
+              actions: [
+                this.canPublish() && { libelle: 'Relevé de gestion', aide: 'Publié dans l’espace du propriétaire', icone: LucideFileText, action: () => this.genererReleve() },
+              ],
+            },
+          ]
+        : []),
+      {
+        actions: [
+          this.canDelete() && { libelle: 'Supprimer le bien', aide: 'Impossible dès qu’un bail existe', icone: LucideTrash2, danger: true, action: () => this.supprimerBien() },
+        ],
+      },
+    ];
   });
 
   ngOnInit(): void {

@@ -78,9 +78,9 @@ La date et le lieu de naissance, le **type** de pièce d’identité apparaissen
 
 Un client de vérification suit sa mission, ses paiements et ses documents dans son espace client. Depuis la page de la mission, la carte **Le client** indique si l’accès existe (« Actif », « Jamais connecté » ou « Pas encore d’accès ») :
 
-- **Ouvrir l’espace client** envoie l’invitation par e-mail avec un mot de passe provisoire.
-- **Ajouter son e-mail** apparaît quand la fiche n’a pas d’adresse : l’accès s’envoie par e-mail, il faut donc la renseigner d’abord.
-- **Ouvrir la fiche client** mène à sa fiche complète (identité, documents, historique).
+- **Espace client** envoie l’invitation par e-mail avec un mot de passe provisoire.
+- **Ajouter l’e-mail** apparaît quand la fiche n’a pas d’adresse : l’accès s’envoie par e-mail, il faut donc la renseigner d’abord.
+- **Fiche client** mène à sa fiche complète (identité, documents, historique).
 
 ## Ce n’est pas un prospect de vente
 

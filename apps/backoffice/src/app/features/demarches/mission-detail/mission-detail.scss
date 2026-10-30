@@ -35,6 +35,55 @@
     gap: 10px;
   }
 
+  &__retour-lien {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 10px -4px;
+    padding: 4px 8px;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    color: var(--mtm-primary);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    &:hover {
+      background: var(--mtm-primary-subtle);
+    }
+  }
+
+  &__ref {
+    color: var(--mtm-text-muted);
+  }
+
+  /* Le client : demandeur et téléphone côte à côte, le reste sur toute la largeur. */
+  &__faits--duo {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  &__plein {
+    grid-column: 1 / -1;
+  }
+
+  &__client-actions.detail-section__actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+
+    > * {
+      min-width: 0;
+      padding-inline: 10px;
+    }
+  }
+
   &__retard {
     color: var(--mtm-accent);
     font-weight: 600;
@@ -354,4 +403,81 @@
   justify-content: flex-end;
   gap: 10px;
   margin-top: 4px;
+}
+
+/* Titre d'une carte latérale : une pastille d'icône, puis le nom. */
+.carte-titre {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+
+  h2 {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+
+  &__icone {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--mtm-primary-subtle);
+    color: var(--mtm-primary);
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
+/* Étapes : rang plus grand, état en pastille, flèche qui se retourne à l'ouverture. */
+.etape {
+  &__rang {
+    flex-basis: 36px;
+    width: 36px;
+    height: 36px;
+    font-size: 0.95rem;
+  }
+
+  &__etat {
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: var(--mtm-bg-hover);
+  }
+
+  &--en_cours &__etat {
+    background: var(--mtm-primary-subtle);
+    color: var(--mtm-primary);
+  }
+
+  &--fait &__etat {
+    background: var(--mtm-success-bg);
+    color: var(--mtm-success);
+  }
+
+  &__chevron {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    color: var(--mtm-text-muted);
+    transition: transform 0.15s ease;
+  }
+
+  &__head[aria-expanded='true'] &__chevron {
+    transform: rotate(180deg);
+  }
+
+  &--en_cours {
+    border-color: color-mix(in srgb, var(--mtm-primary) 35%, var(--mtm-border));
+  }
+
+  &__corps {
+    gap: 16px;
+    padding-top: 16px;
+  }
 }

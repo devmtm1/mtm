@@ -83,7 +83,10 @@ export class Sidebar implements OnInit {
           return { ...item, children, route: children[0]?.route ?? item.route };
         })
         .filter((item) => (item.children ? item.children.length > 0 : allowed(item))),
-    })).filter((section) => section.items.length > 0);
+    }))
+      .filter((section) => section.items.length > 0)
+      // Replier une rubrique de une ou deux entrées ne sert qu'à cacher ce qu'on cherche : elle reste ouverte, sans flèche.
+      .map((section) => (section.collapsible && section.items.length <= 2 ? { ...section, collapsible: false } : section));
   });
 
   ngOnInit(): void {

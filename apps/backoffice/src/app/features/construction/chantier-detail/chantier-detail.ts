@@ -15,11 +15,16 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   LucideArrowLeft,
-  LucideChevronDown,
   LucideFileText,
   LucideNotebookPen,
   LucidePlus,
+  LucideCalendarPlus,
+  LucideCalculator,
+  LucideBanknote,
+  LucideUserPlus,
+  LucideCirclePlay,
 } from '@lucide/angular';
+import { MenuActions, type GroupeMenu } from '../../../shared/components/menu-actions/menu-actions';
 import { ConstructionApiService } from '../../../core/services/api/construction-api.service';
 import { SessionService } from '../../../core/services/session.service';
 import type {
@@ -61,7 +66,9 @@ import { PrestataireDialog } from './prestataire-dialog';
 import { DepenseDialog } from './depense-dialog';
 import { LigneBudgetDialog } from './ligne-budget-dialog';
 import { FilDiscussion } from '../../../shared/components/fil-discussion/fil-discussion';
+import { FicheOnglets, type OngletFiche } from '../../../shared/components/fiche-client/fiche-onglets';
 import { TachesDossier } from '../../../shared/components/taches-dossier/taches-dossier';
+import { nombreFr } from '../../../core/utils/format';
 
 /** Nombre de journées affichées avant de devoir déplier le journal. */
 const JOURNEES_VISIBLES = 6;
@@ -81,6 +88,8 @@ const PIECES_VISIBLES = 4;
 @Component({
   selector: 'app-chantier-detail',
   imports: [
+    MenuActions,
+    FicheOnglets,
     FilDiscussion,
     TachesDossier,
     MoneyPipe,
@@ -88,7 +97,6 @@ const PIECES_VISIBLES = 4;
     MatMenuModule,
     MatTooltipModule,
     LucideArrowLeft,
-    LucideChevronDown,
     LucideFileText,
     LucideNotebookPen,
     LucidePlus,
@@ -108,6 +116,14 @@ export class ChantierDetailPage implements OnInit {
 
   private chantierId = '';
 
+  protected readonly onglet = signal('journal');
+  protected readonly onglets = computed<OngletFiche[]>(() => [
+    { id: 'journal', libelle: 'Journal', icone: 'suivi' },
+    { id: 'planning', libelle: 'Planning', icone: 'etapes' },
+    { id: 'budget', libelle: 'Dépenses et budget', icone: 'paiements' },
+    { id: 'equipe', libelle: 'Prestataires et pièces', icone: 'documents' },
+    { id: 'suivi', libelle: 'Projet et échanges', icone: 'conditions' },
+  ]);
   protected readonly loading = signal(true);
   protected readonly chantier = signal<Chantier | null>(null);
   protected readonly journal = signal<EntreeJournal[]>([]);
@@ -345,6 +361,32 @@ export class ChantierDetailPage implements OnInit {
   protected readonly piecesMasquees = computed(() =>
     Math.max(0, (this.chantier()?.documents.length ?? 0) - PIECES_VISIBLES),
   );
+
+
+  /** Le menu « Plus » : planning et budget, équipe, puis avancement du chantier. */
+  protected readonly actionsPlus = computed<GroupeMenu[]>(() => [
+    {
+      titre: 'Planning et budget',
+      actions: [
+        { libelle: 'Ajouter une étape', aide: 'Une ligne de plus au planning', icone: LucideCalendarPlus, action: () => this.ajouterJalon() },
+        { libelle: 'Ajouter un poste de budget', aide: 'Chiffrer un poste avant de le dépenser', icone: LucideCalculator, action: () => this.ajouterLigneBudget() },
+        { libelle: 'Saisir une dépense', aide: 'Matériaux, acompte, frais — en attente de contrôle', icone: LucideBanknote, action: () => this.saisirDepense() },
+      ],
+    },
+    {
+      titre: 'Équipe',
+      actions: [
+        { libelle: 'Ajouter un prestataire', aide: 'Maçon, électricien, bureau de contrôle…', icone: LucideUserPlus, action: () => this.ajouterPrestataire() },
+      ],
+    },
+    {
+      titre: 'Avancement',
+      actions: [
+        { libelle: 'Générer le rapport d’avancement', aide: 'Publié d’office dans l’espace client', icone: LucideFileText, action: () => this.genererRapport() },
+        { libelle: 'Faire avancer le chantier', aide: 'Démarrage, suspension, réception, clôture', icone: LucideCirclePlay, action: () => this.changerStatut() },
+      ],
+    },
+  ]);
 
   ngOnInit(): void {
     this.chantierId = this.route.snapshot.paramMap.get('id') ?? '';
@@ -904,7 +946,7 @@ export class ChantierDetailPage implements OnInit {
   protected quantiteLigne(ligne: LigneBudget): string {
     const quantite = montant(ligne.quantite);
     if (!quantite) return '';
-    return `${quantite.toLocaleString('fr-FR')} ${this.unite(ligne.unite, quantite)}`.trim();
+    return `${nombreFr(quantite)} ${this.unite(ligne.unite, quantite)}`.trim();
   }
 
   /**

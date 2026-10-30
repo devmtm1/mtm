@@ -23,57 +23,7 @@
       }
       <div actions class="actions-fiche">
           @if (canModify || canCreateClient || canDelete) {
-            <button mat-stroked-button type="button" [matMenuTriggerFor]="moreMenu" aria-label="Plus d’actions">
-              Plus<svg class="btn-icon btn-icon--after" lucideChevronDown aria-hidden="true"></svg>
-            </button>
-            <mat-menu #moreMenu="matMenu" xPosition="before">
-              @if (telHref() && canModify && primary() === 'relance' && !clientServices()) {
-                <a mat-menu-item [href]="telHref()">
-                  <span class="menu-line"><strong>Appeler</strong><small>{{ p.telephone }}</small></span>
-                </a>
-              }
-              @if (whatsappHref()) {
-                <a mat-menu-item [href]="whatsappHref()" target="_blank" rel="noopener">
-                  <span class="menu-line"><strong>WhatsApp</strong><small>Ouvrir la conversation</small></span>
-                </a>
-              }
-              @if (canModify) {
-                <button mat-menu-item type="button" (click)="planActivity('note')">
-                  <span class="menu-line"><strong>Ajouter une note</strong><small>Garder une trace de l’échange</small></span>
-                </button>
-                @if (primary() !== 'relance' && !isClosed() && !clientServices()) {
-                  <button mat-menu-item type="button" (click)="planRelance()">
-                    <span class="menu-line"><strong>Programmer une relance</strong><small>Prochaine action et date</small></span>
-                  </button>
-                }
-                @if (!clientServices()) {
-                  <button mat-menu-item type="button" (click)="changeStage()">
-                    <span class="menu-line"><strong>Changer d’étape</strong><small>Faire avancer ou clore le prospect</small></span>
-                  </button>
-                }
-                <button mat-menu-item type="button" (click)="edit()">
-                  <span class="menu-line"><strong>Modifier la fiche</strong><small>Coordonnées, projet, identité</small></span>
-                </button>
-              }
-              @if (canModify && isSupervisor) {
-                <button mat-menu-item type="button" (click)="assignCommercial()">
-                  <span class="menu-line"><strong>Affecter un commercial</strong><small>Qui suit ce prospect</small></span>
-                </button>
-              }
-              @if (canCreateClient && !p.clientUser) {
-                <button mat-menu-item type="button" (click)="openCreateClientAccount()" [disabled]="!p.email">
-                  <span class="menu-line"><strong>Ouvrir l’espace client</strong><small>{{ p.email ? 'Invitation envoyée à ' + p.email : 'Nécessite une adresse e-mail' }}</small></span>
-                </button>
-              }
-              <button mat-menu-item type="button" (click)="openHistory()">
-                <span class="menu-line"><strong>Historique des modifications</strong><small>Qui a changé quoi, et quand</small></span>
-              </button>
-              @if (canDelete) {
-                <button mat-menu-item type="button" (click)="removeProspect()">
-                  <span class="menu-line"><strong>Supprimer le prospect</strong><small>Irréversible, tracé dans l’audit</small></span>
-                </button>
-              }
-            </mat-menu>
+            <app-menu-actions [groupes]="actionsPlus()" />
           }
         @if (canModify) {
           <button mat-flat-button color="primary" type="button" (click)="edit()">

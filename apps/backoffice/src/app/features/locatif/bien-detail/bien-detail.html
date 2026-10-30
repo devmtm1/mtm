@@ -6,18 +6,20 @@
   </div>
 } @else if (bien(); as b) {
   <div class="detail-page bien-detail">
-    <header class="detail-header">
-      <div>
+    <header class="detail-header bien-detail__entete">
+      <div class="bien-detail__id">
         <button mat-button type="button" class="back-link" (click)="retour()">
           <svg class="btn-icon" lucideArrowLeft aria-hidden="true"></svg>Retour aux biens
         </button>
         <p class="eyebrow">{{ b.referenceInterne }} · Gestion locative</p>
         <h1>{{ b.adresse }}</h1>
         <p class="detail-header__location">
+          <svg lucideMapPin aria-hidden="true"></svg>
           {{ typeLabel(b.type) }}{{ localisation(b) }} · {{ personne(b.proprietaire) }}
         </p>
         @if (b.immeuble) {
           <p class="detail-header__location">
+            <svg lucideBuilding2 aria-hidden="true"></svg>
             Logement{{ b.numeroLot ? ' ' + b.numeroLot : '' }} de
             <a [routerLink]="['/locatif/immeubles', b.immeuble.id]">{{ b.immeuble.nom }}</a>
           </p>
@@ -35,6 +37,7 @@
         </div>
       </div>
 
+      <div class="bien-detail__cote">
       @if (canModify()) {
         <div class="detail-header__actions">
           @if (courte()) {
@@ -50,96 +53,15 @@
               <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Créer un bail
             </button>
           }
-          <button
-            mat-icon-button
-            type="button"
-            [matMenuTriggerFor]="autresActions"
-            aria-label="Plus d’actions"
-          >
-            <svg class="btn-icon" lucideChevronDown aria-hidden="true"></svg>
-          </button>
-          <mat-menu #autresActions="matMenu" xPosition="before">
-            @if (bailActuel(); as bail) {
-              <button mat-menu-item type="button" (click)="enregistrerMouvementCaution()">
-                <span class="menu-line">
-                  <strong>Mouvement de caution</strong>
-                  <small>Versement, retenue justifiée, restitution</small>
-                </span>
-              </button>
-              <button mat-menu-item type="button" (click)="creerSignalement()">
-                <span class="menu-line">
-                  <strong>Incident ou demande</strong>
-                  <small>Constat de visite, demande reçue du locataire</small>
-                </span>
-              </button>
-              @if (bail.statut === 'actif') {
-                <button mat-menu-item type="button" (click)="enregistrerResiliation()">
-                  <span class="menu-line">
-                    <strong>Demande de résiliation</strong>
-                    <small>Reçue par téléphone, WhatsApp ou courrier</small>
-                  </span>
-                </button>
-              }
-              <button mat-menu-item type="button" (click)="etatDesLieuxBail('entree')">
-                <span class="menu-line">
-                  <strong>État des lieux d’entrée</strong>
-                  <small>Pièce par pièce, compteurs et clés</small>
-                </span>
-              </button>
-              <button mat-menu-item type="button" (click)="etatDesLieuxBail('sortie')">
-                <span class="menu-line">
-                  <strong>État des lieux de sortie</strong>
-                  <small>Comparé à l’entrée pour justifier une retenue</small>
-                </span>
-              </button>
-              @if (bail.statut === 'actif') {
-                <button mat-menu-item type="button" (click)="donnerPreavis()">
-                  <span class="menu-line">
-                    <strong>Préavis de départ</strong>
-                    <small>Le locataire annonce son départ</small>
-                  </span>
-                </button>
-              }
-              <button mat-menu-item type="button" (click)="cloturerBail()">
-                <span class="menu-line">
-                  <strong>Clôturer (sortie)</strong>
-                  <small>État des lieux, régularisation calculée, caution</small>
-                </span>
-              </button>
-              <button mat-menu-item type="button" (click)="changerLocataire()">
-                <span class="menu-line">
-                  <strong>Changer de locataire</strong>
-                  <small>Clôt ce bail et ouvre le suivant</small>
-                </span>
-              </button>
-              @if (bail.statut === 'actif') {
-                <button mat-menu-item type="button" (click)="resilierSansPreavis()">
-                  <span class="menu-line">
-                    <strong>Résilier sans préavis</strong>
-                    <small>Départ constaté, motif obligatoire</small>
-                  </span>
-                </button>
-              }
-              @if (canPublish()) {
-                <button mat-menu-item type="button" (click)="genererReleve()">
-                  <span class="menu-line">
-                    <strong>Relevé de gestion</strong>
-                    <small>Publié dans l’espace du propriétaire</small>
-                  </span>
-                </button>
-              }
-            }
-            @if (canDelete()) {
-              <button mat-menu-item type="button" (click)="supprimerBien()">
-                <span class="menu-line">
-                  <strong>Supprimer le bien</strong>
-                  <small>Impossible dès qu’un bail existe</small>
-                </span>
-              </button>
-            }
-          </mat-menu>
+          <app-menu-actions [groupes]="actionsPlus()" />
         </div>
       }
+      @if (couverture(); as photo) {
+        @if (!photoIndisponible()) {
+        <img class="bien-detail__couverture" [src]="photo" alt="Photo de couverture du bien" loading="lazy" (error)="photoIndisponible.set(true)" />
+        }
+      }
+      </div>
     </header>
 
     @if (!bailActuel() && b.statut === 'loue') {
@@ -154,106 +76,66 @@
 
     <!-- Ce qu'on doit savoir sans défiler -->
     @if (bailActuel(); as bail) {
-      <section class="page-card bien-detail__figures" aria-label="Situation financière">
-        <div>
-          <span>Loyer mensuel</span>
-          <strong>{{ bail.loyerMensuel | mtmMoney }}</strong>
-          @if (bail.charges) {
-            <small>+ {{ bail.charges | mtmMoney }} de charges</small>
-          }
+      <section class="chiffres" aria-label="Situation financière">
+        <div class="chiffre">
+          <span class="chiffre__icone"><svg lucideFileText aria-hidden="true"></svg></span>
+          <div class="chiffre__corps">
+            <span>Loyer mensuel</span>
+            <strong>{{ bail.loyerMensuel | mtmMoney }}</strong>
+            @if (bail.charges) {
+              <small>+ {{ bail.charges | mtmMoney }} de charges</small>
+            }
+          </div>
         </div>
         @if (solde(); as s) {
-          <div>
-            <span>Encaissé</span>
-            <strong>{{ s.loyersEncaisses | mtmMoney }}</strong>
-            <small>sur {{ s.loyersDus | mtmMoney }} appelés</small>
-          </div>
-          <div [class.is-due]="s.solde > 0">
-            <span>Reste dû</span>
-            <strong>{{ s.solde | mtmMoney }}</strong>
-            @if (s.encaissementsEnAttente > 0) {
-              <small>{{ s.encaissementsEnAttente | mtmMoney }} à valider</small>
-            } @else if (s.echeancesImpayees > 0) {
-              <small>{{ s.echeancesImpayees }} échéance(s) non soldée(s)</small>
-            } @else {
-              <small>Aucun retard</small>
+          <div class="chiffre">
+            <span class="chiffre__icone"><svg lucideCoins aria-hidden="true"></svg></span>
+            <div class="chiffre__corps">
+              <span>Encaissé</span>
+              <strong>{{ s.loyersEncaisses | mtmMoney }}</strong>
+              <small>sur {{ s.loyersDus | mtmMoney }} appelés</small>
+            </div>
+            @if (tauxEncaisse(); as taux) {
+              <span class="chiffre__anneau" [style.--taux]="taux" role="img" [attr.aria-label]="taux + ' % des loyers appelés encaissés'">
+                <span>{{ taux }} %</span>
+              </span>
             }
+          </div>
+          <div class="chiffre" [class.chiffre--du]="s.solde > 0">
+            <span class="chiffre__icone"><svg lucideChartPie aria-hidden="true"></svg></span>
+            <div class="chiffre__corps">
+              <span>Reste dû</span>
+              <strong>{{ s.solde | mtmMoney }}</strong>
+              @if (s.encaissementsEnAttente > 0) {
+                <small>{{ s.encaissementsEnAttente | mtmMoney }} à valider</small>
+              } @else if (s.echeancesImpayees > 0) {
+                <small>{{ s.echeancesImpayees }} échéance(s) non soldée(s)</small>
+              } @else {
+                <small>Aucun retard</small>
+              }
+            </div>
           </div>
         }
         @if (caution(); as c) {
-          <div>
-            <span>Caution détenue</span>
-            <strong>{{ c.etat.disponible | mtmMoney }}</strong>
-            <small>{{ cautionLabel(c.etat.statut) }}</small>
+          <div class="chiffre" [class.chiffre--ok]="c.etat.disponible > 0">
+            <span class="chiffre__icone"><svg lucideShieldCheck aria-hidden="true"></svg></span>
+            <div class="chiffre__corps">
+              <span>Caution détenue</span>
+              <strong>{{ c.etat.disponible | mtmMoney }}</strong>
+              <small>{{ cautionLabel(c.etat.statut) }}</small>
+            </div>
           </div>
         }
       </section>
     }
 
-    <!-- Annonce sur le site public : photos, loyer affiché, publication. -->
-    <app-bien-annonce
-      [bien]="b"
-      [canModify]="canModify()"
-      [canPublish]="canPublish()"
-      (changed)="rafraichirBien()"
-    />
 
-    <!-- Combien de visiteurs ont ouvert l'annonce sur le site, et combien de demandes en sont venues. -->
-    <app-consultations-bien type="location" [bienId]="b.id" />
+    <app-fiche-onglets [onglets]="onglets()" [actif]="ongletActif()" (actifChange)="onglet.set($event)" />
 
-    @if (courte()) {
-      <section class="page-card detail-section" aria-labelledby="sejours-bien">
-        <div class="detail-section__head">
-          <div>
-            <h2 id="sejours-bien">Séjours</h2>
-            <p class="detail-section__hint">
-              Ce bien est en courte durée : chaque réservation est un séjour, avec son prix figé, sa caution et ses états
-              des lieux.
-            </p>
-          </div>
-          @if (canModify()) {
-            <button mat-stroked-button type="button" (click)="nouveauSejour()">
-              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau séjour
-            </button>
-          }
-        </div>
-        @if (sejours().length) {
-          <div class="table-scroll">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Séjour</th>
-                  <th>Client</th>
-                  <th>Dates</th>
-                  <th class="is-right">Total</th>
-                  <th>Statut</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (sejour of sejours(); track sejour.id) {
-                  <tr class="is-clickable" tabindex="0" (click)="ouvrirSejour(sejour.id)" (keydown.enter)="ouvrirSejour(sejour.id)">
-                    <td><strong>{{ sejour.referenceInterne }}</strong></td>
-                    <td>{{ voyageurSejour(sejour.locataire) }}</td>
-                    <td>{{ periodeSejour(sejour) }}<br /><small>{{ jourSejour(sejour.dateArrivee) }} → {{ jourSejour(sejour.dateDepart) }}</small></td>
-                    <td class="is-right">{{ sejour.montantTotal | mtmMoney }}</td>
-                    <td>
-                      <span [class]="statutsSejour[sejour.statut].pill">{{ statutsSejour[sejour.statut].label }}</span>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        } @else {
-          <p class="detail-note">Aucun séjour pour l’instant.</p>
-        }
-      </section>
-    }
-
-    @if (bailActuel(); as bail) {
-      <div class="bien-detail__layout">
-        <!-- Colonne principale : l'argent, c'est-à-dire le travail quotidien -->
-        <div class="bien-detail__main">
+    @switch (ongletActif()) {
+      @case ('loyers') {
+        @if (bailActuel(); as bail) {
+          <div class="bien-detail__main">
           <section class="page-card detail-section">
             <div class="detail-section__head">
               <div>
@@ -286,13 +168,13 @@
                       <th class="is-right">Dû</th>
                       <th class="is-right">Réglé</th>
                       <th>Statut</th>
-                      <th></th>
+                      <th class="is-right">Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     @for (echeance of echeancesAffichees(); track echeance.id) {
-                      <tr>
-                        <td>{{ echeance.periode | date: 'MMMM yyyy' }}</td>
+                      <tr [class.ligne-impayee]="echeance.statut === 'impayee' || echeance.statut === 'en_retard'">
+                        <td class="cell-periode">{{ echeance.periode | date: 'MMMM yyyy' }}</td>
                         <td>{{ echeance.dateEcheance | date: 'dd/MM' }}</td>
                         <td class="is-right">{{ echeance.montantPrevu | mtmMoney }}</td>
                         <td class="is-right">{{ echeance.montantPaye | mtmMoney }}</td>
@@ -303,13 +185,31 @@
                         </td>
                         <td class="is-right">
                           @if (canModify() && echeance.statut !== 'payee' && echeance.statut !== 'annulee') {
-                            <button mat-button type="button" (click)="enregistrerPaiement(echeance)">
-                              Encaisser
-                            </button>
+                            @if (echeance.id === echeanceAEncaisser()) {
+                              <button
+                                mat-flat-button
+                                color="primary"
+                                type="button"
+                                class="bouton-ligne"
+                                (click)="enregistrerPaiement(echeance)"
+                              >
+                                Encaisser
+                              </button>
+                            } @else {
+                              <button
+                                mat-stroked-button
+                                type="button"
+                                class="bouton-ligne"
+                                (click)="enregistrerPaiement(echeance)"
+                              >
+                                Encaisser
+                              </button>
+                            }
                           } @else if (canValidate() && echeance.statut === 'payee') {
                             <button
-                              mat-button
+                              mat-stroked-button
                               type="button"
+                              class="bouton-ligne"
                               matTooltip="Quittance remise au locataire"
                               (click)="genererQuittance(echeance)"
                             >
@@ -487,72 +387,24 @@
               </div>
             </section>
           }
-
-          <section class="page-card detail-section">
-            <div class="detail-section__head">
-              <div>
-                <h2>Incidents et demandes</h2>
-                <p class="detail-section__hint">
-                  Signalés par le locataire depuis son espace, ou constatés par MTM.
-                </p>
-              </div>
-              @if (canModify()) {
-                <button mat-stroked-button type="button" (click)="creerSignalement()">
-                  <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau
-                </button>
-              }
-            </div>
-            @if (bail.incidents.length) {
-              <div class="table-scroll">
-                <table class="data-table">
-                  <thead>
-                    <tr>
-                      <th>Nature</th>
-                      <th>Objet</th>
-                      <th>Signalé</th>
-                      <th>Statut</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (signalement of bail.incidents; track signalement.id) {
-                      <tr>
-                        <td>{{ natureLabel(signalement.nature) }}</td>
-                        <td>
-                          {{ signalementTypeLabel(signalement) }}
-                          <small class="cell-muted">{{ signalement.description }}</small>
-                        </td>
-                        <td>
-                          {{ signalement.createdAt | date: 'dd/MM/yyyy' }}
-                          <small class="cell-muted">
-                            {{ signalement.reportedBy ? personne(signalement.reportedBy) : 'Le locataire' }}
-                          </small>
-                        </td>
-                        <td>
-                          <span [class]="incidentStatutPill(signalement.statut)">
-                            {{ incidentStatutLabel(signalement.statut) }}
-                          </span>
-                        </td>
-                        <td class="is-right">
-                          @if (canModify() && signalement.statut !== 'resolu') {
-                            <button mat-button type="button" (click)="resoudreIncident(signalement.id)">
-                              {{ signalement.nature === 'demande' ? 'Traitée' : 'Résolu' }}
-                            </button>
-                          }
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-            } @else {
-              <p class="detail-note">Aucun incident ni demande sur ce bail.</p>
-            }
-          </section>
+          </div>
+        } @else {
+      <section class="page-card detail-section">
+        <div class="detail-section__head">
+          <h2>Bail en cours</h2>
         </div>
-
-        <!-- Colonne latérale : ce qu'on consulte sans agir -->
-        <aside class="bien-detail__aside">
+        <p class="detail-note">
+          Aucun bail actif sur ce bien.
+          @if (canModify()) {
+            <button mat-button type="button" (click)="creerBail()">Créer le bail</button>
+          }
+        </p>
+      </section>
+        }
+      }
+      @case ('bail') {
+        @if (bailActuel(); as bail) {
+          <div class="bien-detail__duo">
           <section class="page-card detail-section">
             <div class="detail-section__head">
               <h2>Le bail</h2>
@@ -739,23 +591,137 @@
               <p class="detail-section__hint">Aucune pièce pour l’instant.</p>
             }
           </section>
-        </aside>
-      </div>
-    } @else if (!courte()) {
-      <section class="page-card detail-section">
+          </div>
+        }
+      }
+      @case ('incidents') {
+        @if (bailActuel(); as bail) {
+          <section class="page-card detail-section">
+            <div class="detail-section__head">
+              <div>
+                <h2>Incidents et demandes</h2>
+                <p class="detail-section__hint">
+                  Signalés par le locataire depuis son espace, ou constatés par MTM.
+                </p>
+              </div>
+              @if (canModify()) {
+                <button mat-stroked-button type="button" (click)="creerSignalement()">
+                  <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau
+                </button>
+              }
+            </div>
+            @if (bail.incidents.length) {
+              <div class="table-scroll">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Nature</th>
+                      <th>Objet</th>
+                      <th>Signalé</th>
+                      <th>Statut</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (signalement of bail.incidents; track signalement.id) {
+                      <tr>
+                        <td>{{ natureLabel(signalement.nature) }}</td>
+                        <td>
+                          {{ signalementTypeLabel(signalement) }}
+                          <small class="cell-muted">{{ signalement.description }}</small>
+                        </td>
+                        <td>
+                          {{ signalement.createdAt | date: 'dd/MM/yyyy' }}
+                          <small class="cell-muted">
+                            {{ signalement.reportedBy ? personne(signalement.reportedBy) : 'Le locataire' }}
+                          </small>
+                        </td>
+                        <td>
+                          <span [class]="incidentStatutPill(signalement.statut)">
+                            {{ incidentStatutLabel(signalement.statut) }}
+                          </span>
+                        </td>
+                        <td class="is-right">
+                          @if (canModify() && signalement.statut !== 'resolu') {
+                            <button mat-button type="button" (click)="resoudreIncident(signalement.id)">
+                              {{ signalement.nature === 'demande' ? 'Traitée' : 'Résolu' }}
+                            </button>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <p class="detail-note">Aucun incident ni demande sur ce bail.</p>
+            }
+          </section>
+        }
+      }
+      @case ('sejours') {
+    @if (courte()) {
+      <section class="page-card detail-section" aria-labelledby="sejours-bien">
         <div class="detail-section__head">
-          <h2>Bail en cours</h2>
-        </div>
-        <p class="detail-note">
-          Aucun bail actif sur ce bien.
+          <div>
+            <h2 id="sejours-bien">Séjours</h2>
+            <p class="detail-section__hint">
+              Ce bien est en courte durée : chaque réservation est un séjour, avec son prix figé, sa caution et ses états
+              des lieux.
+            </p>
+          </div>
           @if (canModify()) {
-            <button mat-button type="button" (click)="creerBail()">Créer le bail</button>
+            <button mat-stroked-button type="button" (click)="nouveauSejour()">
+              <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau séjour
+            </button>
           }
-        </p>
+        </div>
+        @if (sejours().length) {
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Séjour</th>
+                  <th>Client</th>
+                  <th>Dates</th>
+                  <th class="is-right">Total</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (sejour of sejours(); track sejour.id) {
+                  <tr class="is-clickable" tabindex="0" (click)="ouvrirSejour(sejour.id)" (keydown.enter)="ouvrirSejour(sejour.id)">
+                    <td><strong>{{ sejour.referenceInterne }}</strong></td>
+                    <td>{{ voyageurSejour(sejour.locataire) }}</td>
+                    <td>{{ periodeSejour(sejour) }}<br /><small>{{ jourSejour(sejour.dateArrivee) }} → {{ jourSejour(sejour.dateDepart) }}</small></td>
+                    <td class="is-right">{{ sejour.montantTotal | mtmMoney }}</td>
+                    <td>
+                      <span [class]="statutsSejour[sejour.statut].pill">{{ statutsSejour[sejour.statut].label }}</span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <p class="detail-note">Aucun séjour pour l’instant.</p>
+        }
       </section>
     }
+      }
+      @case ('annonce') {
+    <!-- Annonce sur le site public : photos, loyer affiché, publication. -->
+    <app-bien-annonce
+      [bien]="b"
+      [canModify]="canModify()"
+      [canPublish]="canPublish()"
+      (changed)="rafraichirBien()"
+    />
 
-    <!-- Ce qu'on ouvre rarement reste replié -->
+    <!-- Combien de visiteurs ont ouvert l'annonce sur le site, et combien de demandes en sont venues. -->
+    <app-consultations-bien type="location" [bienId]="b.id" />
+      }
+      @case ('infos') {
     @if (bauxTermines().length) {
       <details class="page-card bien-detail__repli">
         <summary>
@@ -854,6 +820,8 @@
         }
       </form>
     </details>
+      }
+    }
   </div>
 } @else {
   <p class="detail-note">Bien introuvable.</p>

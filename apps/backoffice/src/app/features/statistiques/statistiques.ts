@@ -11,6 +11,7 @@ import {
 import { NotificationService } from '../../shared/services/notification.service';
 import { comparaisonCourte, tendanceDe } from '../finances/finances-utils';
 import { LIBELLES_SOURCE, courbeJours, lienFiche } from './visites-utils';
+import { nombreFr } from '../../core/utils/format';
 
 const PERIODES: { jours: PeriodeVisites; label: string }[] = [
   { jours: 7, label: '7 jours' },
@@ -86,7 +87,7 @@ export class Statistiques implements OnInit {
   }
 
   protected nombre(valeur: number): string {
-    return valeur.toLocaleString('fr-FR');
+    return nombreFr(valeur);
   }
 
   protected periodeLongue(): string {

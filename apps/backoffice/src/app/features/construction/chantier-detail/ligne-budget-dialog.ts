@@ -16,6 +16,7 @@ import type {
   LigneBudgetPayload,
 } from '../../../core/models/chantier.model';
 import { POSTES_BUDGET, label, montant } from '../chantier-status';
+import { nombreFr } from '../../../core/utils/format';
 
 export interface LigneBudgetDialogData {
   postes: string[];
@@ -182,7 +183,7 @@ export class LigneBudgetDialog {
   protected aideMontant(): string {
     const total = this.totalDeduit();
     if (total > 0) {
-      return `Calculé depuis la quantité : ${total.toLocaleString('fr-FR')} FCFA.`;
+      return `Calculé depuis la quantité : ${nombreFr(total)} FCFA.`;
     }
     return 'Saisi directement pour un poste au forfait.';
   }

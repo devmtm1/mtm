@@ -6,13 +6,14 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
-  LucideChevronDown,
   LucideKeyRound,
   LucideLandPlot,
   LucidePencil,
   LucidePlus,
   LucideScrollText,
+  LucideTrash2,
 } from '@lucide/angular';
+import { MenuActions, type GroupeMenu } from '../../../shared/components/menu-actions/menu-actions';
 import {
   ProprietairesApiService,
   type ProprietaireDetail as ProprietaireDetailModel,
@@ -71,6 +72,7 @@ import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 @Component({
   selector: 'app-proprietaire-detail',
   imports: [
+    MenuActions,
     FicheEntete,
     FicheEspaceClient,
     FicheIdentite,
@@ -81,7 +83,6 @@ import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
     MatDialogModule,
     MatMenuModule,
     MatTooltipModule,
-    LucideChevronDown,
     LucideKeyRound,
     LucideLandPlot,
     LucidePencil,
@@ -208,6 +209,21 @@ export class ProprietaireDetail implements OnInit {
   });
 
   private id: string | null = null;
+
+
+  protected readonly actionsPlus = computed<GroupeMenu[]>(() => [
+    {
+      actions: [
+        {
+          libelle: 'Supprimer le propriétaire',
+          aide: 'Possible uniquement sans mandat rattaché',
+          icone: LucideTrash2,
+          danger: true,
+          action: () => this.remove(),
+        },
+      ],
+    },
+  ]);
 
   ngOnInit(): void {
     this.id = this.route.snapshot.paramMap.get('id');

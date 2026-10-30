@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, computed, inject, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,7 +11,6 @@ import {
   LucideArchiveRestore,
   LucideArrowLeft,
   LucideCamera,
-  LucideChevronDown,
   LucideClock,
   LucideExternalLink,
   LucideEye,
@@ -27,7 +26,12 @@ import {
   LucideStar,
   LucideTrash2,
   LucideUpload,
+  LucideScale,
+  LucideBadgeCheck,
+  LucideUserPlus,
+  LucideHistory,
 } from '@lucide/angular';
+import { MenuActions, type GroupeMenu } from '../../../shared/components/menu-actions/menu-actions';
 import * as L from 'leaflet';
 import { installBaseLayers } from '../../../shared/maps/map-layers';
 import { TerrainsApiService, type TerrainNote } from '../../../core/services/api/terrains-api.service';
@@ -56,8 +60,10 @@ import {
 } from '../terrain-status';
 import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 import { FilDiscussion } from '../../../shared/components/fil-discussion/fil-discussion';
+import { FicheOnglets, type OngletFiche } from '../../../shared/components/fiche-client/fiche-onglets';
 import { TachesDossier } from '../../../shared/components/taches-dossier/taches-dossier';
 import { ConsultationsBien } from '../../../shared/components/consultations-bien/consultations-bien';
+import { nombreFr } from '../../../core/utils/format';
 
 /**
  * Fiche terrain (J1.1 / J1.3). Tout ce qu'un commercial doit savoir sur une
@@ -67,6 +73,8 @@ import { ConsultationsBien } from '../../../shared/components/consultations-bien
 @Component({
   selector: 'app-terrain-detail',
   imports: [
+    MenuActions,
+    FicheOnglets,
     ConsultationsBien,
     FilDiscussion,
     TachesDossier,
@@ -82,7 +90,6 @@ import { ConsultationsBien } from '../../../shared/components/consultations-bien
     LucideArchiveRestore,
     LucideArrowLeft,
     LucideCamera,
-    LucideChevronDown,
     LucideClock,
     LucideExternalLink,
     LucideEye,
@@ -113,6 +120,13 @@ export class TerrainDetail implements OnInit, OnDestroy {
   private readonly dialog = inject(MatDialog);
 
   protected readonly terrain = signal<TerrainDetailModel | null>(null);
+  protected readonly onglet = signal('bien');
+  protected readonly onglets = computed<OngletFiche[]>(() => [
+    { id: 'bien', libelle: 'Le bien', icone: 'biens' },
+    { id: 'commercial', libelle: 'Commercialisation et juridique', icone: 'conditions' },
+    { id: 'documents', libelle: 'Documents', icone: 'documents', pastille: this.terrain()?.documents.length ?? null },
+    { id: 'suivi', libelle: 'Notes et échanges', icone: 'suivi' },
+  ]);
   protected readonly loading = signal(true);
   protected readonly busy = signal(false);
   protected readonly options = signal<TerrainOptions | null>(null);
@@ -192,6 +206,80 @@ export class TerrainDetail implements OnInit, OnDestroy {
   private readonly mapContainer = viewChild<ElementRef<HTMLDivElement>>('mapContainer');
   private map: L.Map | null = null;
 
+  /** La carte vit dans l'onglet « Le bien » : quand on y revient, son conteneur est neuf, la carte est donc redessinée. */
+  private readonly redessinerCarte = effect(() => {
+    if (this.onglet() !== 'bien' || !this.terrain()) return;
+    setTimeout(() => {
+      this.map?.remove();
+      this.map = null;
+      this.renderMap();
+    }, 0);
+  });
+
+
+  /** Le menu « Plus » : la fiche, son suivi, puis le portefeuille. Les actions de modification disparaissent sur un bien archivé. */
+  protected readonly actionsPlus = computed<GroupeMenu[]>(() => {
+    const modifiable = this.canModify && !this.archived();
+    return [
+      {
+        titre: 'Fiche du bien',
+        actions: [
+          modifiable &&
+            this.primary() !== 'modifier' && {
+              libelle: 'Modifier la fiche',
+              aide: 'Identité, prix, caractéristiques',
+              icone: LucidePencil,
+              action: () => this.edit(),
+            },
+          modifiable &&
+            this.canValidate && {
+              libelle: 'Statut juridique',
+              aide: 'Titre foncier, bail, délibération…',
+              icone: LucideScale,
+              action: () => this.changeStatus('juridique'),
+            },
+          modifiable &&
+            this.canValidate && {
+              libelle: 'Niveau de vérification',
+              aide: 'Contrôle des documents par MTM',
+              icone: LucideBadgeCheck,
+              action: () => this.changeStatus('verification'),
+            },
+          modifiable &&
+            this.canAssign && {
+              libelle: `${this.terrain()?.commercialResponsable ? 'Réaffecter' : 'Affecter'} un commercial`,
+              aide: 'Qui suit ce bien',
+              icone: LucideUserPlus,
+              action: () => this.assignCommercial(),
+            },
+        ],
+      },
+      {
+        titre: 'Suivi',
+        actions: [
+          {
+            libelle: 'Historique des modifications',
+            aide: 'Qui a changé quoi, et quand',
+            icone: LucideHistory,
+            action: () => this.openHistory(),
+          },
+        ],
+      },
+      {
+        titre: 'Portefeuille',
+        actions: [
+          modifiable && {
+            libelle: 'Archiver',
+            aide: 'Retire du portefeuille actif, sans rien supprimer',
+            icone: LucideArchive,
+            desactivee: this.busy(),
+            action: () => this.archive(),
+          },
+        ],
+      },
+    ];
+  });
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
@@ -249,7 +337,7 @@ export class TerrainDetail implements OnInit, OnDestroy {
   }
 
   protected formatNumber(value: number | string | null): string {
-    return value === null ? '—' : Number(value).toLocaleString('fr-FR');
+    return value === null ? '—' : nombreFr(Number(value));
   }
 
   /** Les dimensions sont stockées en JSON libre ({ description } depuis le formulaire). */

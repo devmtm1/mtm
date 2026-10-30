@@ -18,8 +18,8 @@
 
 .shell__sidenav {
   width: var(--sidebar-width);
-  /* Trait rouge de la charte à la limite du menu. */
-  border-right: 2px solid var(--mtm-accent);
+  /* Le rouge de la charte signale ailleurs une erreur ou un retard : il ne marque pas la limite du menu. */
+  border-right: 1px solid var(--mtm-sb-sep);
   border-radius: 0;
   /* Le menu se détache de la page : ombre portée à droite, au-dessus du contenu. */
   box-shadow: var(--mtm-sb-ombre);

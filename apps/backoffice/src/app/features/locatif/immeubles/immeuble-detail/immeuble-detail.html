@@ -24,57 +24,61 @@
       }
     </header>
 
-    <section class="kpi-row" aria-label="Synthèse de la propriété">
-      <div class="kpi">
-        <span class="kpi__body">
-          <strong>{{ i.synthese.logements }}</strong>
+    <section class="chiffres" aria-label="Synthèse de la propriété">
+      <div class="chiffre">
+        <span class="chiffre__icone"><svg lucideBuilding2 aria-hidden="true"></svg></span>
+        <div class="chiffre__corps">
           <span>Logements</span>
-          <small
-            >{{ i.synthese.loues }} loué{{ i.synthese.loues > 1 ? 's' : '' }} ·
-            {{ i.synthese.disponibles }} disponible{{
-              i.synthese.disponibles > 1 ? 's' : ''
-            }}</small
-          >
-        </span>
+          <strong>{{ i.synthese.logements }}</strong>
+          <small>
+            {{ i.synthese.loues }} loué{{ i.synthese.loues > 1 ? 's' : '' }} ·
+            {{ i.synthese.disponibles }} disponible{{ i.synthese.disponibles > 1 ? 's' : '' }}
+          </small>
+        </div>
+        @if (i.synthese.logements) {
+          <span class="chiffre__anneau" [style.--taux]="i.synthese.tauxOccupation" role="img" [attr.aria-label]="'Taux d’occupation ' + i.synthese.tauxOccupation + ' %'">
+            <span>{{ i.synthese.tauxOccupation }} %</span>
+          </span>
+        }
       </div>
-      <div class="kpi">
-        <span class="kpi__body">
-          <strong>{{ i.synthese.logements ? i.synthese.tauxOccupation + ' %' : '—' }}</strong>
-          <span>Taux d’occupation</span>
-          @if (i.synthese.horsMarche > 0) {
-            <small>{{ i.synthese.horsMarche }} hors marché</small>
-          }
-        </span>
-      </div>
-      <div class="kpi">
-        <span class="kpi__body">
-          <strong>{{ i.synthese.loyerMensuelAttendu | mtmMoney }}</strong>
+      <div class="chiffre">
+        <span class="chiffre__icone"><svg lucideCoins aria-hidden="true"></svg></span>
+        <div class="chiffre__corps">
           <span>Loyers attendus / mois</span>
+          <strong>{{ i.synthese.loyerMensuelAttendu | mtmMoney }}</strong>
           <small>Potentiel : {{ i.synthese.loyerMensuelPotentiel | mtmMoney }}</small>
-        </span>
+        </div>
       </div>
-      <div
-        class="kpi"
-        [class.kpi--danger]="i.synthese.impayes > 0"
-        [class.kpi--muted]="i.synthese.impayes === 0"
-      >
-        <span class="kpi__body">
-          <strong>{{ i.synthese.impayes | mtmMoney }}</strong>
+      <div class="chiffre" [class.chiffre--du]="i.synthese.impayes > 0" [class.chiffre--ok]="i.synthese.impayes === 0">
+        <span class="chiffre__icone"><svg lucideTriangleAlert aria-hidden="true"></svg></span>
+        <div class="chiffre__corps">
           <span>Impayés</span>
+          <strong>{{ i.synthese.impayes | mtmMoney }}</strong>
           <small>
             @if (i.synthese.logementsEnRetard > 0) {
-              {{ i.synthese.logementsEnRetard }} logement{{
-                i.synthese.logementsEnRetard > 1 ? 's' : ''
-              }}
-              en retard
+              {{ i.synthese.logementsEnRetard }} logement{{ i.synthese.logementsEnRetard > 1 ? 's' : '' }} en retard
             } @else {
               Tout est à jour
             }
           </small>
-        </span>
+        </div>
       </div>
+      @if (i.synthese.horsMarche > 0) {
+        <div class="chiffre">
+          <span class="chiffre__icone"><svg lucideChartPie aria-hidden="true"></svg></span>
+          <div class="chiffre__corps">
+            <span>Hors marché</span>
+            <strong>{{ i.synthese.horsMarche }}</strong>
+            <small>Logements non proposés à la location</small>
+          </div>
+        </div>
+      }
     </section>
 
+    <app-fiche-onglets [onglets]="onglets()" [(actif)]="onglet" />
+
+    @switch (onglet()) {
+      @case ('logements') {
     <section class="page-card">
       <div class="card-head">
         <h2>Logements</h2>
@@ -206,7 +210,8 @@
         </div>
       }
     </section>
-
+      }
+      @case ('charges') {
     <section class="page-card">
       <div class="card-head">
         <h2>Charges communes</h2>
@@ -291,7 +296,8 @@
         </div>
       }
     </section>
-
+      }
+      @case ('releve') {
     <section class="page-card">
       <div class="card-head">
         <h2>Relevé de la propriété</h2>
@@ -343,5 +349,7 @@
         </div>
       }
     </section>
+      }
+    }
   </div>
 }

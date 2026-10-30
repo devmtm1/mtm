@@ -9,7 +9,6 @@ import {
   LucideArrowLeft,
   LucideBanknote,
   LucideCheck,
-  LucideChevronDown,
   LucideFileText,
   LucideLandPlot,
   LucidePencil,
@@ -19,7 +18,14 @@ import {
   LucideTrash2,
   LucideUpload,
   LucideUser,
+  LucideTag,
+  LucideCoins,
+  LucideChartPie,
+  LucideCalendarDays,
+  LucideFilePlus,
+  LucideSearch,
 } from '@lucide/angular';
+import { MenuActions, type GroupeMenu } from '../../../shared/components/menu-actions/menu-actions';
 import { CrmApiService } from '../../../core/services/api/crm-api.service';
 import { VentesApiService } from '../../../core/services/api/ventes-api.service';
 import { SessionService } from '../../../core/services/session.service';
@@ -55,6 +61,7 @@ import {
   statusChoices,
 } from '../ventes-status';
 import { FilDiscussion } from '../../../shared/components/fil-discussion/fil-discussion';
+import { FicheOnglets, type OngletFiche } from '../../../shared/components/fiche-client/fiche-onglets';
 import { TachesDossier } from '../../../shared/components/taches-dossier/taches-dossier';
 
 /**
@@ -66,6 +73,12 @@ import { TachesDossier } from '../../../shared/components/taches-dossier/taches-
   selector: 'app-vente-detail',
   standalone: true,
   imports: [
+    MenuActions,
+    LucideCalendarDays,
+    LucideChartPie,
+    LucideCoins,
+    LucideTag,
+    FicheOnglets,
     FilDiscussion,
     TachesDossier,
     LabelPipe,
@@ -77,7 +90,6 @@ import { TachesDossier } from '../../../shared/components/taches-dossier/taches-
     LucideArrowLeft,
     LucideBanknote,
     LucideCheck,
-    LucideChevronDown,
     LucideFileText,
     LucideLandPlot,
     LucidePencil,
@@ -122,6 +134,16 @@ export class VenteDetailPage implements OnInit {
 
   protected readonly client = computed(() => (this.dossier() ? clientName(this.dossier()!.prospect) : ''));
   protected readonly reference = computed(() => this.dossier()?.referenceInterne ?? 'Dossier');
+  protected readonly onglet = signal('paiements');
+  protected readonly onglets = computed<OngletFiche[]>(() => {
+    const dossier = this.dossier();
+    return [
+      { id: 'paiements', libelle: 'Paiements', icone: 'paiements', pastille: this.pendingPayments().length || null, alerte: true },
+      { id: 'reservation', libelle: 'Réservation et commissions', icone: 'conditions', pastille: dossier?.commissions?.length ?? null },
+      { id: 'documents', libelle: 'Documents', icone: 'documents', pastille: dossier?.documents.length ?? null },
+      { id: 'suivi', libelle: 'Informations et suivi', icone: 'suivi' },
+    ];
+  });
   protected readonly closed = computed(() => ['solde', 'annule'].includes(this.dossier()?.statut ?? ''));
   protected readonly percent = computed(() => (this.dossier() ? progression(this.dossier()!) : null));
   protected readonly reservation = computed(() => (this.dossier() ? activeReservation(this.dossier()!) : null));
@@ -153,6 +175,46 @@ export class VenteDetailPage implements OnInit {
     if (this.commissions().some((commission) => this.canValidateCommission(commission))) items.push({ label: 'Valider la commission estimée', hint: 'Confirme le montant dû au commercial ; la comptabilité pourra ensuite la payer.' });
     return items;
   });
+
+
+  /** Le menu « Plus » : documents du dossier, puis commissions. */
+  protected readonly actionsPlus = computed<GroupeMenu[]>(() => [
+    {
+      titre: 'Documents',
+      actions: [
+        {
+          libelle: 'Générer un document',
+          aide: 'Bon de réservation, reçu, facture, contrat, état de paiement',
+          icone: LucideFilePlus,
+          desactivee: !this.dossier()?.terrain,
+          action: () => this.openDocumentDialog('generate'),
+        },
+        {
+          libelle: 'Ajouter un document',
+          aide: 'Contrat signé, justificatif de paiement…',
+          icone: LucideUpload,
+          action: () => this.openDocumentDialog('upload'),
+        },
+        {
+          libelle: 'Rechercher dans les documents',
+          aide: 'GED : tous les documents de ce dossier',
+          icone: LucideSearch,
+          action: () => this.openDocumentsSearch(),
+        },
+      ],
+    },
+    {
+      titre: 'Commissions',
+      actions: [
+        this.canAdminister && {
+          libelle: 'Créer une commission',
+          aide: 'Calculée selon une règle paramétrée',
+          icone: LucidePercent,
+          action: () => this.addCommission(),
+        },
+      ],
+    },
+  ]);
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -277,7 +339,7 @@ export class VenteDetailPage implements OnInit {
       if (result.value === 'annule' && aDesPaiementsValides) {
         TextPromptDialog.ask(this.dialog, {
           title: 'Annuler un dossier déjà payé',
-          description: 'Ce dossier a des paiements validés. Dites ce qu’ils deviennent : acompte conservé selon les conditions de réservation, ou remboursé après contre-passation.',
+          description: 'Ce dossier a des paiements validés. Dites ce qu’ils deviennent : acompte conservé selon les conditions de réservation, ou remboursé après l’annulation du paiement.',
           label: 'Sort des paiements',
           confirmLabel: 'Annuler le dossier',
         }).subscribe((motif) => {
@@ -349,11 +411,11 @@ export class VenteDetailPage implements OnInit {
     const dossier = this.dossier();
     if (!dossier) return;
     const terminer = (motif: string, remboursement: boolean, referenceRemboursement?: string) =>
-      this.run(this.api.reversePayment(dossier.id, payment.id, { motif, remboursement, referenceRemboursement }), 'Paiement contre-passé : montants et statut recalculés');
+      this.run(this.api.reversePayment(dossier.id, payment.id, { motif, remboursement, referenceRemboursement }), 'Paiement annulé : montants et statut recalculés');
     TextPromptDialog.ask(this.dialog, {
-      title: 'Contre-passer ce paiement',
+      title: 'Annuler ce paiement',
       description: 'Le paiement est annulé et les montants du dossier sont recalculés. Le motif est conservé sur le paiement.',
-      label: 'Motif de la contre-passation',
+      label: 'Motif de l’annulation',
       confirmLabel: 'Continuer',
     }).subscribe((motif) => {
       if (!motif) return;

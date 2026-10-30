@@ -108,6 +108,11 @@ export class Taches implements OnInit {
     this.chargerResume();
     const ouverte = this.route.snapshot.queryParamMap.get('tache');
     if (ouverte) this.ouvrir({ id: ouverte });
+    // « + Nouveau › Tâche » dans la barre du haut arrive ici avec ?nouvelle=1 : on ouvre le formulaire, puis on retire le paramètre.
+    if (this.route.snapshot.queryParamMap.get('nouvelle') && this.canCreate) {
+      void this.router.navigate([], { queryParams: { nouvelle: null }, queryParamsHandling: 'merge', replaceUrl: true });
+      this.nouvelle();
+    }
   }
 
   protected changerVue(vue: Vue): void {

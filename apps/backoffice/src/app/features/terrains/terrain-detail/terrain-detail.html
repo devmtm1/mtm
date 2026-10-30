@@ -88,39 +88,7 @@
             <svg class="btn-icon" lucideGlobe aria-hidden="true"></svg>Voir sur le site
           </a>
         }
-        <button mat-stroked-button type="button" [matMenuTriggerFor]="plusMenu" aria-label="Plus d’actions">
-          Plus<svg class="btn-icon btn-icon--after" lucideChevronDown aria-hidden="true"></svg>
-        </button>
-        <mat-menu #plusMenu="matMenu" xPosition="before">
-          @if (canModify && !archived()) {
-            @if (primary() !== 'modifier') {
-              <button mat-menu-item type="button" (click)="edit()">
-                <span class="menu-line"><strong>Modifier la fiche</strong><small>Identité, prix, caractéristiques</small></span>
-              </button>
-            }
-            @if (canValidate) {
-              <button mat-menu-item type="button" (click)="changeStatus('juridique')">
-                <span class="menu-line"><strong>Statut juridique</strong><small>Titre foncier, bail, délibération…</small></span>
-              </button>
-              <button mat-menu-item type="button" (click)="changeStatus('verification')">
-                <span class="menu-line"><strong>Niveau de vérification</strong><small>Contrôle des documents par MTM</small></span>
-              </button>
-            }
-            @if (canAssign) {
-              <button mat-menu-item type="button" (click)="assignCommercial()">
-                <span class="menu-line"><strong>{{ t.commercialResponsable ? 'Réaffecter' : 'Affecter' }} un commercial</strong><small>Qui suit ce bien</small></span>
-              </button>
-            }
-          }
-          <button mat-menu-item type="button" (click)="openHistory()">
-            <span class="menu-line"><strong>Historique des modifications</strong><small>Qui a changé quoi, et quand</small></span>
-          </button>
-          @if (canModify && !archived()) {
-            <button mat-menu-item type="button" (click)="archive()" [disabled]="busy()">
-              <span class="menu-line"><strong>Archiver</strong><small>Retire du portefeuille actif, sans rien supprimer</small></span>
-            </button>
-          }
-        </mat-menu>
+        <app-menu-actions [groupes]="actionsPlus()" />
       </div>
     </header>
 
@@ -141,9 +109,12 @@
       </section>
     }
 
-    <div class="layout">
-      <!-- Le bien : photos, description, caractéristiques, carte, suivi -->
-      <div class="colonne">
+    <app-fiche-onglets [onglets]="onglets()" [(actif)]="onglet" />
+
+    @switch (onglet()) {
+      @case ('bien') {
+        <div class="layout">
+          <div class="colonne">
         <div class="page-card gallery">
           <div class="gallery__main">
             @if (mainImage(); as imageUrl) {
@@ -296,47 +267,8 @@
             </div>
           }
         </section>
-
-        <section class="page-card detail-section">
-          <h2>Notes de suivi</h2>
-          @if (canModify) {
-            <div class="note-form">
-              <textarea
-                rows="2"
-                maxlength="2000"
-                placeholder="Appel passé, visite faite, relance du vendeur…"
-                aria-label="Nouvelle note de suivi"
-                [value]="noteDraft()"
-                (input)="onNoteInput($event)"
-              ></textarea>
-              <button mat-flat-button color="primary" type="button" (click)="addNote()" [disabled]="!noteDraft().trim()">
-                <svg class="btn-icon" lucideSend aria-hidden="true"></svg>Ajouter
-              </button>
-            </div>
-          }
-          @if (notes().length) {
-            <ul class="note-list">
-              @for (note of notes(); track note.id) {
-                <li>
-                  <p>{{ note.texte }}</p>
-                  <small>
-                    {{ note.auteur ? note.auteur.firstName + ' ' + note.auteur.lastName : 'Utilisateur supprimé' }}
-                    · {{ note.createdAt | date: 'dd/MM/yyyy à HH:mm' }}
-                  </small>
-                </li>
-              }
-            </ul>
-          } @else {
-            <p class="detail-section__text is-vide">Aucune note pour l’instant. Gardez ici la trace de chaque échange avec le vendeur.</p>
-          }
-        </section>
-
-        <app-taches-dossier type="terrain" [dossierId]="t.id" [libelleDossier]="t.referenceInterne" />
-        <app-fil-discussion type="terrain" [dossierId]="t.id" />
-      </div>
-
-      <!-- Les données commerciales et administratives -->
-      <aside class="colonne">
+          </div>
+          <aside class="colonne">
         <div class="page-card summary">
           <h2>Contacts</h2>
           <dl class="fact-list">
@@ -392,7 +324,11 @@
             </dl>
           </div>
         }
-
+          </aside>
+        </div>
+      }
+      @case ('commercial') {
+        <div class="colonne">
         <section class="page-card detail-section">
           <h2>Commercialisation</h2>
           <dl class="info-list info-list--un">
@@ -464,7 +400,10 @@
             }
           </dl>
         </section>
-
+        </div>
+      }
+      @case ('documents') {
+        <div class="colonne">
         <section class="page-card detail-section">
           <div class="detail-section__head">
             <h2>Documents</h2>
@@ -494,6 +433,43 @@
             <p class="detail-section__text is-vide">Aucun document. Ajoutez le titre, le plan ou tout justificatif : ils restent internes sauf mention contraire.</p>
           }
         </section>
+        </div>
+      }
+      @case ('suivi') {
+        <div class="colonne">
+        <section class="page-card detail-section">
+          <h2>Notes de suivi</h2>
+          @if (canModify) {
+            <div class="note-form">
+              <textarea
+                rows="2"
+                maxlength="2000"
+                placeholder="Appel passé, visite faite, relance du vendeur…"
+                aria-label="Nouvelle note de suivi"
+                [value]="noteDraft()"
+                (input)="onNoteInput($event)"
+              ></textarea>
+              <button mat-flat-button color="primary" type="button" (click)="addNote()" [disabled]="!noteDraft().trim()">
+                <svg class="btn-icon" lucideSend aria-hidden="true"></svg>Ajouter
+              </button>
+            </div>
+          }
+          @if (notes().length) {
+            <ul class="note-list">
+              @for (note of notes(); track note.id) {
+                <li>
+                  <p>{{ note.texte }}</p>
+                  <small>
+                    {{ note.auteur ? note.auteur.firstName + ' ' + note.auteur.lastName : 'Utilisateur supprimé' }}
+                    · {{ note.createdAt | date: 'dd/MM/yyyy à HH:mm' }}
+                  </small>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="detail-section__text is-vide">Aucune note pour l’instant. Gardez ici la trace de chaque échange avec le vendeur.</p>
+          }
+        </section>
 
         <section class="page-card detail-section">
           <h2>Suivi</h2>
@@ -505,7 +481,10 @@
             <svg class="btn-icon" lucideClock aria-hidden="true"></svg>Voir l’historique des modifications
           </button>
         </section>
-      </aside>
-    </div>
+          <app-taches-dossier type="terrain" [dossierId]="t.id" [libelleDossier]="t.referenceInterne" />
+          <app-fil-discussion type="terrain" [dossierId]="t.id" />
+        </div>
+      }
+    }
   </section>
 }

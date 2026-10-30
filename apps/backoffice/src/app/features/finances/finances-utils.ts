@@ -1,4 +1,5 @@
 import type { Activite, StatutOperation, TotauxFinanciers } from '../../core/services/api/finances-api.service';
+import { montantFcfa } from '../../core/utils/format';
 
 export const ACTIVITES: { code: Activite; label: string }[] = [
   { code: 'vente', label: 'Vente de biens' },
@@ -32,7 +33,7 @@ export function libelleActivite(code: string): string {
 
 /** « 1 250 000 FCFA ». */
 export function fcfa(valeur: number): string {
-  return `${Math.round(valeur).toLocaleString('fr-FR').replace(/\u202f/g, '\u00a0')}\u00a0FCFA`;
+  return montantFcfa(Math.round(valeur));
 }
 
 /** Catégorie lisible : « loyer_bureaux » → « Loyer bureaux ». */

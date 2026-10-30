@@ -17,6 +17,7 @@ import type {
   LigneBudget,
 } from '../../../core/models/chantier.model';
 import { MODES_PAIEMENT, POSTES_BUDGET, label, montant } from '../chantier-status';
+import { nombreFr } from '../../../core/utils/format';
 
 export interface DepenseDialogData {
   postes: string[];
@@ -208,7 +209,7 @@ export class DepenseDialog {
     if (!prevu) {
       return 'La rattacher permet de voir quel poste dérape, pas seulement le total.';
     }
-    return `Budget prévu sur cette ligne : ${prevu.toLocaleString('fr-FR')} FCFA.`;
+    return `Budget prévu sur cette ligne : ${nombreFr(prevu)} FCFA.`;
   }
 
   protected confirm(): void {

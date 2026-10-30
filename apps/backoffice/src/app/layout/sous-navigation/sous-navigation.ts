@@ -44,6 +44,9 @@ export class SousNavigation {
     for (const section of NAVIGATION_SECTIONS) {
       for (const item of section.items) {
         if (!item.children?.some((enfant) => entreeCorrespond(enfant, url))) continue;
+        // Une fiche (/locatif/biens/<id>) a son propre en-tête et son bouton « Retour » : les onglets du sujet ne s'y
+        // empilent pas devant. Ils ne figurent que sur les pages qui sont elles-mêmes un onglet.
+        if (!item.children.some((enfant) => url.replace(/\/$/, '') === enfant.route)) return null;
         const onglets = item.children.filter(
           (enfant) => !enfant.permission || this.session.hasPermission(enfant.permission),
         );

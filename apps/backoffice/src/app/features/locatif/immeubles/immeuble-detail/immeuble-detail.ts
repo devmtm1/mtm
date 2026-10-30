@@ -2,10 +2,11 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
+import { FicheOnglets, type OngletFiche } from '../../../../shared/components/fiche-client/fiche-onglets';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { LucideArrowLeft, LucidePlus } from '@lucide/angular';
+import { LucideArrowLeft, LucidePlus, LucideBuilding2, LucideCoins, LucideTriangleAlert, LucideChartPie } from '@lucide/angular';
 import { DatePipe } from '@angular/common';
 import { LocatifApiService } from '../../../../core/services/api/locatif-api.service';
 import { SessionService } from '../../../../core/services/session.service';
@@ -36,6 +37,11 @@ import { nombreOuUndefined } from '../../locatif-form';
 @Component({
   selector: 'app-immeuble-detail',
   imports: [
+    LucideChartPie,
+    LucideTriangleAlert,
+    LucideCoins,
+    LucideBuilding2,
+    FicheOnglets,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
@@ -59,6 +65,12 @@ export class ImmeubleDetailPage implements OnInit {
   private readonly confirmer = inject(ConfirmService);
 
   /** Squelette au premier chargement seulement : un rechargement après ajout garde la fiche affichée. */
+  protected readonly onglet = signal('logements');
+  protected readonly onglets = computed<OngletFiche[]>(() => [
+    { id: 'logements', libelle: 'Logements', icone: 'biens', pastille: this.immeuble()?.synthese.logements ?? null },
+    { id: 'charges', libelle: 'Charges communes', icone: 'paiements', pastille: this.charges().length || null },
+    { id: 'releve', libelle: 'Relevé de la propriété', icone: 'documents' },
+  ]);
   protected readonly loading = signal(true);
   protected readonly immeuble = signal<ImmeubleDetail | null>(null);
   protected readonly ajoutOuvert = signal(false);

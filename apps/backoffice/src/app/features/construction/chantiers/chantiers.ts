@@ -48,6 +48,7 @@ import {
   pillClass,
   tonAvancement,
 } from '../chantier-status';
+import { nombreFr } from '../../../core/utils/format';
 
 const FILTRES_VIDES = {
   search: '',
@@ -395,7 +396,7 @@ export class Chantiers implements OnInit {
     const budget = montant(p.data.budgetPrevu);
     if (!budget && !depense) return '<span class="cell-muted">—</span>';
     const format = (valeur: number) =>
-      `${Math.round(valeur / 1000).toLocaleString('fr-FR')} k`;
+      `${nombreFr(Math.round(valeur / 1000))} k`;
     if (!budget) {
       return `<span class="cell-stack"><span>${format(depense)}</span><small>hors budget défini</small></span>`;
     }

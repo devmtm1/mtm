@@ -7,6 +7,7 @@ import {
 } from '../../core/services/api/pilotage-api.service';
 import { NotificationService } from '../../shared/services/notification.service';
 import { fcfa, presets, type PeriodePreset } from '../finances/finances-utils';
+import { nombreFr } from '../../core/utils/format';
 
 /**
  * Tableau de bord manager (maquette F, vue équipe) : activité de chaque
@@ -74,7 +75,7 @@ export class VueManager implements OnInit {
   }
 
   protected tauxDit(taux: number | null): string {
-    return taux === null ? '—' : `${taux.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} %`;
+    return taux === null ? '—' : `${nombreFr(taux, { maximumFractionDigits: 1 })} %`;
   }
 
   protected barre(taux: number | null): number {

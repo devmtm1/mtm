@@ -291,11 +291,13 @@
   padding: 18px 20px;
   border-radius: var(--mtm-radius-lg);
   box-shadow: var(--mtm-shadow-card);
+  /* Le montant se règle sur la largeur de la carte : « 13 000 000 FCFA » ne passe plus sous l'icône. */
+  container-type: inline-size;
 
   .kpi__icon {
-    flex: 0 0 44px;
-    width: 44px;
-    height: 44px;
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
     border-radius: 12px;
 
     svg {
@@ -307,6 +309,7 @@
   .kpi__body {
     flex: 1;
     gap: 4px;
+    min-width: 0;
 
     > span {
       order: 1;
@@ -317,7 +320,7 @@
 
     strong {
       order: 2;
-      font-size: 1.75rem;
+      font-size: clamp(1rem, 7.2cqi, 1.75rem);
       font-weight: 700;
       letter-spacing: -0.02em;
       line-height: 1.15;

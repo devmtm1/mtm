@@ -8,6 +8,7 @@ import { type Etat, type EtatCatalogue, TresorerieApiService } from '../../core/
 import { NotificationService } from '../../shared/services/notification.service';
 import { fcfa, presets } from './finances-utils';
 import { telecharger } from './finances-outils';
+import { nombreFr } from '../../core/utils/format';
 
 /**
  * États à la demande de la Direction : journaux de caisse et de banques,
@@ -161,7 +162,7 @@ export class EtatsFinanciers implements OnInit {
   protected cellule(valeur: string | number | null | undefined, type: 'texte' | 'montant' | 'date' | 'nombre'): string {
     if (valeur === null || valeur === undefined || valeur === '') return '—';
     if (type === 'montant') return fcfa(Number(valeur));
-    if (type === 'nombre') return Number(valeur).toLocaleString('fr-FR');
+    if (type === 'nombre') return nombreFr(Number(valeur));
     if (type === 'date') return new Date(`${String(valeur).slice(0, 10)}T00:00:00Z`).toLocaleDateString('fr-FR', { timeZone: 'UTC' });
     return String(valeur);
   }
