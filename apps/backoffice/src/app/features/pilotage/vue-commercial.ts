@@ -1,13 +1,4 @@
-import {
-  LucideBellRing,
-  LucideCalendarDays,
-  LucideLandPlot,
-  LucideListChecks,
-  LucidePlus,
-  LucideReceipt,
-  LucideUserSearch,
-} from '@lucide/angular';
-import { MatButtonModule } from '@angular/material/button';
+import { LucideBellRing, LucideListChecks, LucideReceipt, LucideUserSearch } from '@lucide/angular';
 import { Component, OnInit, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgxEchartsDirective } from 'ngx-echarts';
@@ -17,7 +8,6 @@ import {
 } from '../../core/services/api/pilotage-api.service';
 import { donutChart } from '../../shared/charts/mtm-charts';
 import { NotificationService } from '../../shared/services/notification.service';
-import { SessionService } from '../../core/services/session.service';
 import { fcfa } from '../finances/finances-utils';
 
 /**
@@ -29,12 +19,8 @@ import { fcfa } from '../finances/finances-utils';
   selector: 'app-vue-commercial',
   standalone: true,
   imports: [
-    MatButtonModule,
     LucideBellRing,
-    LucideCalendarDays,
-    LucideLandPlot,
     LucideListChecks,
-    LucidePlus,
     LucideReceipt,
     LucideUserSearch,
     RouterLink,
@@ -46,13 +32,12 @@ import { fcfa } from '../finances/finances-utils';
 export class VueCommercial implements OnInit {
   private readonly api = inject(PilotageApiService);
   private readonly notify = inject(NotificationService);
-  private readonly session = inject(SessionService);
 
-  /** Raccourcis du quotidien : seulement ceux que les droits de la personne permettent. */
-  protected readonly peutCreerProspect = this.session.hasPermission('crm:creer');
-  protected readonly peutVoirBiens = this.session.hasPermission('terrains:consulter');
-  protected readonly peutVoirVentes = this.session.hasPermission('ventes:consulter');
-  protected readonly peutVoirAgenda = this.session.hasPermission('agenda:consulter');
+  /** Rien à faire aujourd'hui : ni relance, ni visite à venir, ni rendez-vous à l'agenda. */
+  protected readonly rienAujourdhui = computed(() => {
+    const d = this.donnees();
+    return !!d && d.relances.prochaines.length === 0 && d.visites.aVenir.length === 0 && d.agenda.length === 0;
+  });
 
   /** Vide : mon propre tableau. */
   readonly commercialId = input<string | undefined>(undefined);

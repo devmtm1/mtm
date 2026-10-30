@@ -59,7 +59,7 @@ Les **pastilles rouges** du menu comptent ce qui vous attend : paiements à vali
 
 ![Vue Équipe](img/resp-01-tableau-equipe.png)
 
-Deux rangées de réglages en haut : les **onglets de vue** (*Équipe*, *Mon activité*, *Vue générale*) disent **qui** vous regardez ; le **sélecteur de période** (*Ce mois-ci*, *Mois précédent*) dit **quand**.
+Deux rangées de réglages en haut : les **onglets de vue** (*Accueil*, *Mon activité*, *Équipe*) disent **qui** vous regardez ; le **sélecteur de période** (*Ce mois-ci*, *Mois précédent*) dit **quand**.
 
 **Les quatre cartes de chiffres :**
 

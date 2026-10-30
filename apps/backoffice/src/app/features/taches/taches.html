@@ -1,12 +1,8 @@
 <div class="taches-page">
   <header class="page-header">
     <div>
-      <p class="eyebrow">Mon travail</p>
       <h1 class="page-header__title">Tâches</h1>
-      <p class="page-header__subtitle">
-        Ce qu’il y a à faire, par qui et pour quand. Une tâche peut être rattachée à un dossier ; la personne à qui vous
-        la confiez est prévenue, et vous l’êtes si elle prend du retard.
-      </p>
+      <p class="page-header__subtitle">Ce qu’il y a à faire, par qui et pour quand.</p>
     </div>
     @if (canCreate) {
       <button mat-flat-button color="primary" type="button" (click)="nouvelle()">
@@ -14,40 +10,6 @@
       </button>
     }
   </header>
-
-  @if (resume(); as r) {
-    <section class="compteurs" aria-label="Vos tâches en un coup d’œil">
-      <button
-        type="button"
-        class="compteur compteur--danger"
-        [class.is-vide]="r.enRetard === 0"
-        [class.is-actif]="echeance() === 'retard'"
-        [attr.aria-pressed]="echeance() === 'retard'"
-        (click)="changerVue('mes'); filtrer('echeance', 'retard')"
-      >
-        <strong>{{ r.enRetard }}</strong><span>en retard</span>
-      </button>
-      <button
-        type="button"
-        class="compteur compteur--jour"
-        [class.is-vide]="r.aujourdhui === 0"
-        [class.is-actif]="echeance() === 'aujourdhui'"
-        [attr.aria-pressed]="echeance() === 'aujourdhui'"
-        (click)="changerVue('mes'); filtrer('echeance', 'aujourdhui')"
-      >
-        <strong>{{ r.aujourdhui }}</strong><span>pour aujourd’hui</span>
-      </button>
-      <button
-        type="button"
-        class="compteur"
-        [class.is-actif]="echeance() === ''"
-        [attr.aria-pressed]="echeance() === ''"
-        (click)="changerVue('mes'); filtrer('echeance', '')"
-      >
-        <strong>{{ r.aFaire }}</strong><span>à faire au total</span>
-      </button>
-    </section>
-  }
 
   <nav class="onglets" aria-label="Quelles tâches afficher">
     <button type="button" [class.is-actif]="vue() === 'mes'" (click)="changerVue('mes')">Mes tâches</button>
@@ -57,28 +19,12 @@
     }
   </nav>
 
-  <section class="filtres page-card" aria-label="Filtres">
-    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="filtres__recherche">
+  <section class="barre" aria-label="Filtres">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="barre__recherche">
       <mat-label>Rechercher une tâche</mat-label>
       <input matInput [formControl]="recherche" autocomplete="off" />
     </mat-form-field>
-    <mat-form-field appearance="outline" subscriptSizing="dynamic">
-      <mat-label>Statut</mat-label>
-      <mat-select [value]="statut()" (selectionChange)="filtrer('statut', $event.value)">
-        @for (filtre of filtresStatut; track filtre.valeur) {
-          <mat-option [value]="filtre.valeur">{{ filtre.label }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
-    <mat-form-field appearance="outline" subscriptSizing="dynamic">
-      <mat-label>Échéance</mat-label>
-      <mat-select [value]="echeance()" (selectionChange)="filtrer('echeance', $event.value)">
-        @for (filtre of filtresEcheance; track filtre.valeur) {
-          <mat-option [value]="filtre.valeur">{{ filtre.label }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
-    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="barre__priorite">
       <mat-label>Priorité</mat-label>
       <mat-select [value]="priorite()" (selectionChange)="filtrer('priorite', $event.value)">
         <mat-option value="">Toutes</mat-option>
@@ -87,6 +33,23 @@
         }
       </mat-select>
     </mat-form-field>
+    <nav class="puces" aria-label="Quelles tâches afficher">
+      @for (puce of puces(); track puce.code) {
+        <button
+          type="button"
+          class="puce"
+          [class.puce--danger]="puce.danger"
+          [class.is-actif]="puceActive() === puce.code"
+          [attr.aria-pressed]="puceActive() === puce.code"
+          (click)="choisirPuce(puce)"
+        >
+          {{ puce.label }}
+          @if (puce.compte !== null) {
+            <span class="puce__compte">{{ puce.compte }}</span>
+          }
+        </button>
+      }
+    </nav>
   </section>
 
   @if (loading()) {
@@ -108,8 +71,14 @@
       </div>
     </section>
   } @else {
-    <ul class="liste">
-      @for (tache of items(); track tache.id) {
+    @for (groupe of groupes(); track groupe.code) {
+      @if (groupe.titre) {
+        <h2 class="groupe" [class.groupe--danger]="groupe.code === 'retard'">
+          {{ groupe.titre }}<span class="groupe__compte">{{ groupe.taches.length }}</span>
+        </h2>
+      }
+      <ul class="liste">
+        @for (tache of groupe.taches; track tache.id) {
         <li class="ligne" [class.is-retard]="tache.enRetard" [class.is-fermee]="!ouvrable(tache)">
           @if (ouvrable(tache) && tache.peutModifier) {
             <button type="button" class="ligne__coche" (click)="terminer(tache, $event)" [attr.aria-label]="'Terminer la tâche ' + tache.titre">
@@ -122,6 +91,9 @@
             <strong class="ligne__titre">{{ tache.titre }}</strong>
             <span class="ligne__meta">
               <span [class]="'echeance echeance--' + (tache.enRetard ? 'retard' : urgence(tache.dateLimite))">{{ echeanceDite(tache.dateLimite) }}</span>
+              @if (tache.dateLimite && !echeanceDite(tache.dateLimite).includes('/')) {
+                <span class="ligne__date">{{ tache.dateLimite | date: 'dd/MM/yyyy' }}</span>
+              }
               @if (tache.entityLabel) {
                 <span class="ligne__lien">{{ typeDossier(tache.entityType) }} {{ tache.entityLabel }}</span>
               }
@@ -141,7 +113,8 @@
           }
         </li>
       }
-    </ul>
+      </ul>
+    }
     <app-pagination
       [page]="page()"
       [pageSize]="pageSize"

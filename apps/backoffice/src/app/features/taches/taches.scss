@@ -4,103 +4,6 @@
   gap: 18px;
 }
 
-/* --------------------------------------------------------------------------
-   Compteurs : ce sont des filtres. Celui qui est appliqué est cerné et le dit.
-   -------------------------------------------------------------------------- */
-.compteurs {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-
-  @media (max-width: 560px) {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-.compteur {
-  position: relative;
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  padding: 14px 18px 14px 22px;
-  border: 1px solid var(--mtm-border);
-  border-radius: var(--mtm-radius-md);
-  background: var(--mtm-card-bg);
-  box-shadow: var(--mtm-shadow-card);
-  color: var(--mtm-text-dark);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
-
-  /* Filet de couleur à gauche : la teinte dit la gravité avant même de lire. */
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 12px;
-    bottom: 12px;
-    width: 4px;
-    border-radius: 0 4px 4px 0;
-    background: var(--mtm-primary);
-  }
-
-  strong {
-    font-family: var(--mtm-font-display);
-    font-size: 1.7rem;
-    font-weight: 700;
-    line-height: 1.1;
-    font-variant-numeric: tabular-nums;
-  }
-
-  span {
-    font-size: 0.88rem;
-    color: var(--mtm-text-muted);
-  }
-
-  &--danger::before {
-    background: var(--mtm-error);
-  }
-
-  &--jour::before {
-    background: var(--mtm-warning);
-  }
-
-  /* Rien dedans : le compteur se tait. */
-  &.is-vide {
-    background: var(--mtm-bg-surface);
-    box-shadow: none;
-
-    strong {
-      color: var(--mtm-text-muted);
-    }
-
-    &::before {
-      background: var(--mtm-border);
-    }
-  }
-
-  &--danger:not(.is-vide) strong {
-    color: var(--mtm-error);
-  }
-
-  &:hover {
-    border-color: var(--mtm-primary);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--mtm-primary-light);
-    outline-offset: 2px;
-  }
-
-  &.is-actif {
-    border-color: var(--mtm-primary);
-    box-shadow: 0 0 0 1px var(--mtm-primary);
-  }
-}
-
 /* Onglets : les mêmes que ceux des sujets du menu. */
 .onglets {
   display: flex;
@@ -138,26 +41,146 @@
   }
 }
 
-/* Filtres : une barre compacte, la recherche d'abord et la plus large. */
-.filtres {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) repeat(3, minmax(0, 190px));
+/* Barre de filtres : la recherche, la priorité et les puces sur une seule ligne ; elles passent à la ligne quand la place manque. */
+.barre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 12px;
-  align-items: start;
-  padding: 14px 16px;
 
-  @media (max-width: 900px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  &__recherche {
+    flex: 1 1 240px;
+    max-width: 340px;
+  }
 
-    .filtres__recherche {
-      grid-column: 1 / -1;
+  &__priorite {
+    flex: 0 0 160px;
+  }
+
+  .puces {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  @media (max-width: 720px) {
+    &__recherche {
+      flex: 1 1 0;
+      max-width: none;
+    }
+
+    &__priorite {
+      flex: 0 0 130px;
+    }
+
+    .puces {
+      flex-basis: 100%;
     }
   }
 }
 
+.puces {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.puce {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border: 1px solid var(--mtm-border);
+  border-radius: 999px;
+  background: var(--mtm-card-bg);
+  color: var(--mtm-text-dark);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+
+  &:hover {
+    border-color: var(--mtm-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mtm-primary);
+    outline-offset: 2px;
+  }
+
+  &.is-actif {
+    border-color: var(--mtm-primary);
+    background: var(--mtm-primary-subtle);
+    color: var(--mtm-primary);
+    font-weight: 600;
+  }
+
+  &__compte {
+    min-width: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--mtm-bg-hover);
+    color: var(--mtm-text-muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 20px;
+    text-align: center;
+  }
+
+  &.is-actif &__compte {
+    background: var(--mtm-card-bg);
+    color: var(--mtm-primary);
+  }
+
+  &--danger &__compte {
+    background: var(--mtm-error-bg);
+    color: var(--mtm-error);
+  }
+}
+
+/* Une période de la liste : « En retard 2 », « Aujourd'hui 2 »… */
+.groupe {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 -4px;
+  color: var(--mtm-text-muted);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+
+  &--danger {
+    color: var(--mtm-error);
+  }
+
+  &__compte {
+    padding: 0 7px;
+    border-radius: 999px;
+    background: var(--mtm-bg-hover);
+    font-size: 0.74rem;
+    line-height: 18px;
+  }
+}
+
+.ligne__date {
+  font-variant-numeric: tabular-nums;
+}
+
 .liste {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -173,7 +196,7 @@
   grid-template-columns: 36px minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 12px;
-  padding: 14px 18px 14px 16px;
+  padding: 10px 16px 10px 14px;
   border: 1px solid var(--mtm-border);
   border-radius: var(--mtm-radius-md);
   background: var(--mtm-card-bg);

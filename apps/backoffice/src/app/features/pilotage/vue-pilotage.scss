@@ -107,101 +107,6 @@ h2 {
 }
 
 /* --------------------------------------------------------------------------
-   Chiffres clés : le libellé d'abord, le chiffre en grand, la tendance en
-   pastille. L'icône passe à droite pour ne pas couper la lecture.
-   -------------------------------------------------------------------------- */
-.kpi-row {
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 14px;
-}
-
-.kpi {
-  flex-direction: row-reverse;
-  align-items: flex-start;
-  justify-content: space-between;
-  min-height: 112px;
-  padding: 18px 20px;
-  border-radius: var(--mtm-radius-lg);
-  box-shadow: var(--mtm-shadow-card);
-
-  .kpi__icon {
-    flex: 0 0 44px;
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-
-    svg {
-      width: 22px;
-      height: 22px;
-    }
-  }
-
-  .kpi__body {
-    flex: 1;
-    gap: 4px;
-
-    > span {
-      order: 1;
-      color: var(--mtm-text-muted);
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-
-    strong {
-      order: 2;
-      font-size: 1.75rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      line-height: 1.15;
-    }
-
-    small {
-      order: 3;
-      margin-top: 4px;
-      font-size: 0.78rem;
-      line-height: 1.35;
-    }
-
-    small.tendance {
-      display: inline-flex;
-      align-items: center;
-      width: fit-content;
-      padding: 2px 9px;
-      border-radius: 999px;
-      background: var(--mtm-bg-hover);
-      color: var(--mtm-text-muted);
-      font-weight: 600;
-    }
-
-    small.tendance--hausse {
-      background: var(--mtm-success-bg);
-      color: var(--mtm-success);
-    }
-
-    small.tendance--baisse {
-      background: var(--mtm-error-bg);
-      color: var(--mtm-error);
-    }
-  }
-
-  @media (max-width: 720px) {
-    flex-direction: row-reverse;
-    min-height: 0;
-    padding: 14px;
-
-    .kpi__icon {
-      flex-basis: 36px;
-      width: 36px;
-      height: 36px;
-    }
-
-    .kpi__body strong {
-      font-size: 1.3rem;
-    }
-  }
-}
-
-/* --------------------------------------------------------------------------
    Tableau de l'équipe : une ligne par commercial, lisible d'un regard.
    Les zéros s'effacent (gris) pour laisser ressortir ce qui s'est passé ;
    un retard est en rouge ; le total de l'équipe ferme le tableau.
@@ -249,6 +154,23 @@ h2 {
 
   .objectif {
     min-width: 170px;
+  }
+
+  /* Sur téléphone, le nom du commercial reste visible pendant qu'on fait défiler les chiffres. */
+  @media (max-width: 720px) {
+    thead th:first-child,
+    tbody td:first-child,
+    tfoot th:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      background: var(--mtm-card-bg);
+    }
+
+    thead th:first-child,
+    tfoot th:first-child {
+      background: var(--mtm-bg-surface);
+    }
   }
 
   tfoot th,
@@ -348,10 +270,12 @@ h2 {
   }
 }
 
+/* Chaque carte garde la hauteur de son contenu : une carte presque vide ne s'étire pas à côté d'une grande. */
 .deux {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+  align-items: start;
 
   @media (max-width: 1000px) {
     grid-template-columns: minmax(0, 1fr);
@@ -417,7 +341,8 @@ h2 {
   }
 }
 
-.chiffres {
+/* Trois faits côte à côte dans une carte : le libellé en petit, la valeur dessous. */
+.faits {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
@@ -621,4 +546,12 @@ h2 {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+/* Relances, visites et agenda : seulement les cartes qui ont quelque chose à dire, côte à côte. */
+.trois {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  align-items: start;
 }

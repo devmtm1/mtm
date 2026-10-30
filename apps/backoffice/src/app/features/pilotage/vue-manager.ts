@@ -60,6 +60,15 @@ export class VueManager implements OnInit {
 
   protected fcfa = fcfa;
 
+  /** Un zéro s'écrit « — » dans le tableau : on voit d'un coup d'œil qui a produit quelque chose. */
+  protected valeur(n: number): string {
+    return n === 0 ? '—' : String(n);
+  }
+
+  protected montant(n: number): string {
+    return n === 0 ? '—' : fcfa(n);
+  }
+
   /** « Fallou Senghor » → « FS » : de quoi repérer une ligne sans lire le nom. */
   protected initiales(nom: string): string {
     const mots = nom.trim().split(/\s+/).filter(Boolean);

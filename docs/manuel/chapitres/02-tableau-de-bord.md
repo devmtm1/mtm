@@ -8,14 +8,22 @@ roles: tous
 
 Le tableau de bord est la **première page** après la connexion. Il répond à une question : *« qu’est-ce qui demande mon attention aujourd’hui ? »*
 
-Selon votre rôle, **un ou plusieurs onglets** apparaissent en haut. L’application ouvre le plus « haut » que vos droits permettent, et retient votre dernier choix sur l’appareil.
+Selon votre rôle, **un ou plusieurs onglets** apparaissent en haut. L’application ouvre l’**Accueil**, et retient votre dernier choix sur l’appareil.
 
 | Onglet | Pour qui | Ce qu’il montre |
 | --- | --- | --- |
-| **Direction** | Direction, administrateur | Encaissements, revenu de MTM, ventes et résultat, alertes, tendances sur 12 mois |
-| **Équipe** | Manager, responsable commercial, direction, comptabilité | L’activité de chaque commercial, les objectifs, les dossiers bloqués |
+| **Accueil** | Tous | Ce qu’il y a à traiter aujourd’hui, quatre chiffres choisis selon votre métier, et deux blocs de détail |
 | **Mon activité** | Tout collaborateur qui suit des prospects | Mes prospects, mes relances, mes visites, mon objectif, mes commissions, mes tâches |
-| **Vue générale** | Tous | L’état de chaque module auquel vous avez accès |
+| **Équipe** | Manager, responsable commercial, direction, comptabilité | L’activité de chaque commercial, les objectifs, les dossiers bloqués |
+| **Direction** | Direction, administrateur | Encaissements, revenu de MTM, ventes et résultat, alertes, tendances sur 12 mois |
+
+## Accueil
+
+Trois étages, du plus urgent au plus général :
+
+1. **À traiter** : les points qui demandent une action (mandat qui expire, paiement à valider, demande reçue du site…). L’urgent est en tête, avec un repère rouge ; cinq lignes au plus, puis « Voir les N points » ouvre toutes vos notifications.
+2. **Quatre chiffres**, choisis selon votre métier : un commercial voit ses prospects, ses dossiers de vente et ses biens ; la gestion locative voit les loyers en retard, les biens loués, les résiliations et les relances ; la comptabilité voit les saisies à contrôler et les paiements à valider ; la direction voit l’encaissé, les retards de loyer et les chantiers. Chaque carte est **cliquable** et mène à la page où agir ; elle devient **rouge** quand quelque chose attend.
+3. **Deux blocs de détail** au plus : les dossiers de vente récents, les encaissements des six derniers mois, le pipeline des prospects, la gestion locative ou les chantiers.
 
 ## Mon activité
 
@@ -40,10 +48,6 @@ Les chiffres de l’entreprise, comparés à la période précédente de même d
 ![Vue Direction](img/dir-01-tableau-direction.png)
 
 Voir le chapitre *La direction : chiffres et rapports*.
-
-## Vue générale
-
-Un résumé de chaque module que vous pouvez consulter : biens disponibles, mandats à renouveler, prospects suivis, dossiers de vente en cours, démarches, chantiers, gestion locative. Chaque tuile est **cliquable** et mène au module.
 
 ## Lire les couleurs
 

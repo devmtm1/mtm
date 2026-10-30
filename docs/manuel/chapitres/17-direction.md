@@ -10,7 +10,7 @@ Ce chapitre s’adresse à la **direction** et à celles et ceux qui consultent 
 
 ## Le tableau de bord de direction
 
-À la connexion, la direction arrive sur l’onglet **Direction**. Les onglets **Équipe**, **Mon activité** et **Vue générale** restent accessibles.
+À la connexion, la direction arrive sur l’**Accueil**. Les onglets **Direction**, **Équipe** et **Mon activité** sont à côté ; le dernier choix est retenu sur l’appareil.
 
 ![Tableau de bord de direction](img/dir-01-tableau-direction.png)
 

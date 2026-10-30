@@ -1,225 +1,18 @@
 .dashboard-page {
   display: grid;
   gap: 20px;
+  min-width: 0;
 }
 
-/* À traiter */
-.todo-section {
-  display: grid;
-  gap: 12px;
-
-  h2 {
-    margin: 0;
-    font-family: var(--mtm-font-display);
-    font-size: 1rem;
-    font-weight: 700;
-  }
-
-  &__empty {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0;
-    padding: 10px 12px;
-    border-radius: 10px;
-    background: var(--mtm-success-bg);
-    color: var(--mtm-success);
-    font-size: 0.86rem;
-    font-weight: 600;
-
-    svg {
-      width: 18px;
-      height: 18px;
-    }
-  }
-}
-
-.todo-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.todo-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--mtm-border);
-  border-radius: 10px;
-  background: var(--mtm-card-bg);
-  color: var(--mtm-text-dark);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
-
-  &:hover {
-    border-color: var(--mtm-primary);
-    background: var(--mtm-primary-subtle);
-  }
-
-  &__dot {
-    flex: 0 0 8px;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--mtm-info);
-  }
-
-  &.is-warning &__dot {
-    background: var(--mtm-warning);
-  }
-
-  &.is-danger &__dot {
-    background: var(--mtm-error);
-  }
-
-  &.is-danger {
-    border-color: var(--mtm-error);
-  }
-
-  &__body {
-    display: grid;
-    flex: 1;
-    gap: 2px;
-    min-width: 0;
-
-    strong {
-      overflow: hidden;
-      font-size: 0.86rem;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    small {
-      overflow: hidden;
-      color: var(--mtm-text-muted);
-      font-size: 0.76rem;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-  }
-
-  > svg {
-    flex: 0 0 16px;
-    width: 16px;
-    height: 16px;
-    color: var(--mtm-text-muted);
-  }
-}
-
-/* Graphiques */
-.charts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 16px;
-}
-
-.chart-card {
-  display: grid;
-  gap: 6px;
-
-  h2 {
-    margin: 0;
-    font-family: var(--mtm-font-display);
-    font-size: 1rem;
-    font-weight: 700;
-  }
-
-  &__empty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 200px;
-    margin: 0;
-    color: var(--mtm-text-muted);
-    font-size: 0.86rem;
-  }
-}
-
-.chart {
-  width: 100%;
-  height: 220px;
-  margin-top: 6px;
-
-  &--donut {
-    height: 240px;
-  }
-}
-
-/* Objectif du mois (fiche « Ma performance ») */
-.detail-section h3 {
-  margin: 8px 0 0;
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
-.objective-list {
-  display: grid;
-  gap: 10px;
-  margin: 0;
-
-  > div {
-    display: grid;
-    gap: 4px;
-  }
-
-  dt {
-    display: flex;
-    justify-content: space-between;
-    color: var(--mtm-text-muted);
-    font-size: 0.76rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-
-    em {
-      color: var(--mtm-primary);
-      font-style: normal;
-      font-weight: 700;
-    }
-  }
-
-  dd {
-    margin: 0;
-    font-size: 0.9rem;
-    font-weight: 600;
-  }
-}
-
-.objective-bar {
-  display: block;
-  width: 100%;
-  height: 7px;
-  overflow: hidden;
-  border-radius: 4px;
-  background: var(--mtm-bg-hover);
-
-  > span {
-    display: block;
-    height: 100%;
-    border-radius: 4px;
-    background: var(--mtm-primary);
-
-    &.is-complete {
-      background: var(--mtm-success);
-    }
-  }
-}
-
-/* En-tête : la date en clair (plus de majuscules criardes), un seul filet sous les onglets. */
+/* En-tête : la date en clair, la salutation, rien d'autre. */
 .dash-header {
-  margin-bottom: 0;
-  padding-bottom: 12px;
-  border-bottom: 0;
+  display: grid;
+  gap: 2px;
+  padding-bottom: 4px;
 }
 
 .dash-date {
-  margin: 0 0 4px;
+  margin: 0;
   color: var(--mtm-text-muted);
   font-size: 0.88rem;
   font-weight: 500;
@@ -229,11 +22,24 @@
   }
 }
 
+.dash-titre {
+  margin: 0;
+  font-family: var(--mtm-font-display);
+  font-size: clamp(1.5rem, 1.25rem + 0.7vw, 2rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.dash-aide {
+  margin: 6px 0 0;
+  color: var(--mtm-text-muted);
+}
+
 /* Les vues du tableau de bord : des onglets (QUI on regarde), comme les sujets du menu. */
 .vues {
   display: flex;
   gap: 4px;
-  margin-bottom: 4px;
+  margin-bottom: -8px;
   border-bottom: 1px solid var(--mtm-border);
   overflow-x: auto;
   scrollbar-width: none;
@@ -277,75 +83,237 @@
   }
 }
 
-/* Vue générale : les mêmes cartes de chiffres que les autres vues, plus lisibles. */
-.kpi-row {
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 14px;
-}
+/* À traiter : une liste d'une colonne, le titre en entier, un repère de couleur à gauche. */
+.a-traiter {
+  display: grid;
+  gap: 12px;
 
-.kpi {
-  flex-direction: row-reverse;
-  align-items: flex-start;
-  justify-content: space-between;
-  min-height: 112px;
-  padding: 18px 20px;
-  border-radius: var(--mtm-radius-lg);
-  box-shadow: var(--mtm-shadow-card);
-  /* Le montant se règle sur la largeur de la carte : « 13 000 000 FCFA » ne passe plus sous l'icône. */
-  container-type: inline-size;
+  &__tete {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
 
-  .kpi__icon {
-    flex: 0 0 40px;
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-
-    svg {
-      width: 22px;
-      height: 22px;
+    h2 {
+      margin: 0;
+      font-family: var(--mtm-font-display);
+      font-size: 1.05rem;
+      font-weight: 700;
     }
   }
 
-  .kpi__body {
+  &__liste {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__vide {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--mtm-success-bg);
+    color: var(--mtm-success);
+    font-size: 0.88rem;
+    font-weight: 600;
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  &__suite {
+    justify-self: start;
+  }
+}
+
+.point {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--mtm-border);
+  border-radius: 10px;
+  background: var(--mtm-card-bg);
+  color: var(--mtm-text-dark);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+
+  &:hover {
+    border-color: var(--mtm-primary);
+    background: var(--mtm-primary-subtle);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mtm-primary);
+    outline-offset: 1px;
+  }
+
+  &__repere {
+    flex: 0 0 4px;
+    align-self: stretch;
+    border-radius: 4px;
+    background: var(--mtm-info);
+  }
+
+  &.is-warning &__repere {
+    background: var(--mtm-warning);
+  }
+
+  &.is-danger &__repere {
+    background: var(--mtm-error);
+  }
+
+  &__texte {
+    display: grid;
     flex: 1;
-    gap: 4px;
+    gap: 2px;
     min-width: 0;
 
-    > span {
-      order: 1;
-      color: var(--mtm-text-muted);
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-
     strong {
-      order: 2;
-      font-size: clamp(1rem, 7.2cqi, 1.75rem);
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      line-height: 1.15;
+      font-size: 0.9rem;
+      overflow-wrap: anywhere;
     }
 
     small {
-      order: 3;
-      margin-top: 4px;
-      font-size: 0.78rem;
-      line-height: 1.35;
+      color: var(--mtm-text-muted);
+      font-size: 0.8rem;
+      overflow-wrap: anywhere;
     }
   }
 
-  @media (max-width: 720px) {
-    min-height: 0;
-    padding: 14px;
+  > svg {
+    flex: 0 0 16px;
+    width: 16px;
+    height: 16px;
+    color: var(--mtm-text-muted);
+  }
+}
 
-    .kpi__icon {
-      flex-basis: 36px;
-      width: 36px;
-      height: 36px;
-    }
+/* Détail : deux blocs côte à côte, un seul bloc prend toute la largeur. */
+.details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  /* Deux blocs côte à côte ont la même hauteur : le bas des cartes est aligné. */
+  align-items: stretch;
 
-    .kpi__body strong {
-      font-size: 1.3rem;
+  .bloc:only-child {
+    grid-column: 1 / -1;
+  }
+
+  @media (max-width: 1100px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.bloc {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+
+  &__tete {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    h2 {
+      margin: 0;
+      font-family: var(--mtm-font-display);
+      font-size: 1.02rem;
+      font-weight: 700;
     }
+  }
+
+  &__aide {
+    margin: 2px 0 0;
+    color: var(--mtm-text-muted);
+    font-size: 0.84rem;
+  }
+
+  &__vide {
+    display: grid;
+    place-items: center;
+    min-height: 120px;
+    margin: 0;
+    color: var(--mtm-text-muted);
+    font-size: 0.88rem;
+    text-align: center;
+  }
+}
+
+.chart {
+  width: 100%;
+  height: 220px;
+
+  &--donut {
+    height: 240px;
+  }
+}
+
+/* Lignes de chiffres (gestion locative, chantiers) : le libellé, le montant, un zéro qui s'efface. */
+.lignes {
+  display: grid;
+  margin: 0;
+
+  > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--mtm-border);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+
+  dt {
+    color: var(--mtm-text-muted);
+    font-size: 0.88rem;
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .is-nul dd {
+    color: var(--mtm-text-muted);
+    font-weight: 500;
+  }
+}
+
+.data-table--compacte td small.cell-muted {
+  display: block;
+}
+
+/* Sur téléphone, le prix passe sous le nom du client : le tableau n'a plus que deux colonnes et ne se coupe plus. */
+.prix-mobile {
+  display: none !important;
+  font-weight: 600;
+}
+
+@media (max-width: 720px) {
+  .col-prix {
+    display: none;
+  }
+
+  .prix-mobile {
+    display: block !important;
   }
 }

@@ -1,16 +1,10 @@
 <div class="dashboard-page">
-  <header class="page-header dash-header">
-    <div>
-      <p class="dash-date">{{ today | date: 'EEEE d MMMM yyyy' }}</p>
-      <h1 class="page-header__title">{{ greeting() }} {{ user()?.firstName }}</h1>
-      <p class="page-header__subtitle">
-        @if (hasAnyModule) {
-          Ce qui demande votre attention aujourd’hui, puis l’état de chaque activité.
-        } @else {
-          Votre compte n’a accès à aucun module métier pour l’instant : demandez à un administrateur de vous attribuer un rôle.
-        }
-      </p>
-    </div>
+  <header class="dash-header">
+    <p class="dash-date">{{ today | date: 'EEEE d MMMM yyyy' }}</p>
+    <h1 class="dash-titre">{{ greeting() }} {{ user()?.firstName }}</h1>
+    @if (!hasAnyModule) {
+      <p class="dash-aide">Votre compte n’a accès à aucun module métier pour l’instant : demandez à un administrateur de vous attribuer un rôle.</p>
+    }
   </header>
 
   @if (vues().length > 1) {
@@ -39,331 +33,210 @@
       <app-vue-commercial [commercialId]="commercialId()" />
     }
     @default {
-
-  <!-- À traiter aujourd'hui -->
-  @if (hasAnyModule) {
-    <section class="page-card todo-section" aria-labelledby="todo-title">
-      <div class="detail-section__head">
-        <div>
-          <h2 id="todo-title">À traiter</h2>
-          <p class="detail-section__hint">Échéances de mandats, actions en retard, demandes reçues du site. Cliquez pour ouvrir.</p>
-        </div>
-        @if (feedItems(); as items) {
-          <span class="status-pill" [class.status-pill--danger]="urgent().length" [class.status-pill--success]="items.length === 0">
-            {{ items.length === 0 ? 'Rien en attente' : items.length + ' point' + (items.length > 1 ? 's' : '') }}
-          </span>
-        }
-      </div>
-      @if (feedItems() === null) {
-        <div class="skeleton" style="height: 44px"></div>
-        <div class="skeleton" style="height: 44px"></div>
-      } @else if (feedItems()!.length === 0) {
-        <p class="todo-section__empty"><svg lucideCircleCheck aria-hidden="true"></svg>Tout est à jour. Rien d’urgent pour aujourd’hui.</p>
-      } @else {
-        <ul class="todo-list">
-          @for (item of urgent().concat(others()).slice(0, 8); track item.id) {
-            <li>
-              <button type="button" class="todo-item" [class.is-danger]="item.severity === 'danger'" [class.is-warning]="item.severity === 'warning'" (click)="open(item)">
-                <span class="todo-item__dot"></span>
-                <span class="todo-item__body">
-                  <strong>{{ item.title }}</strong>
-                  <small>{{ item.detail }}</small>
-                </span>
-                <svg lucideArrowRight aria-hidden="true"></svg>
+      @if (hasAnyModule) {
+        <!-- Ce qu'il y a à faire : l'urgent d'abord, cinq lignes au plus -->
+        <section class="page-card a-traiter" aria-labelledby="a-traiter-titre">
+          <div class="a-traiter__tete">
+            <h2 id="a-traiter-titre">À traiter</h2>
+            @if (feedItems() !== null) {
+              @if (aTraiter().length === 0) {
+                <span class="status-pill status-pill--success">Rien en attente</span>
+              } @else if (urgents() > 0) {
+                <span class="status-pill status-pill--danger">{{ urgents() }} urgent{{ urgents() > 1 ? 's' : '' }}</span>
+              } @else {
+                <span class="status-pill">{{ aTraiter().length }} à voir</span>
+              }
+            }
+          </div>
+          @if (feedItems() === null) {
+            <div class="skeleton" style="height: 48px"></div>
+            <div class="skeleton" style="height: 48px"></div>
+          } @else if (aTraiter().length === 0) {
+            <p class="a-traiter__vide"><svg lucideCircleCheck aria-hidden="true"></svg>Tout est à jour. Rien d’urgent pour aujourd’hui.</p>
+          } @else {
+            <ul class="a-traiter__liste">
+              @for (item of pointsVisibles(); track item.id) {
+                <li>
+                  <button type="button" class="point" [class.is-danger]="item.severity === 'danger'" [class.is-warning]="item.severity === 'warning'" (click)="open(item)">
+                    <span class="point__repere" aria-hidden="true"></span>
+                    <span class="point__texte">
+                      <strong>{{ item.title }}</strong>
+                      <small>{{ item.detail }}</small>
+                    </span>
+                    <svg lucideArrowRight aria-hidden="true"></svg>
+                  </button>
+                </li>
+              }
+            </ul>
+            @if (aTraiter().length > pointsVisibles().length) {
+              <button mat-button type="button" class="a-traiter__suite" (click)="goTo('/notifications')">
+                Voir les {{ aTraiter().length }} points
               </button>
-            </li>
+            }
           }
-        </ul>
-      }
-    </section>
-  }
+        </section>
 
-  <!-- État des modules -->
-  <section class="kpi-row" aria-label="État des activités">
-    @if (canViewTerrains) {
-      <button type="button" class="kpi kpi--primary" (click)="goTo('/terrains')">
-        <span class="kpi__icon"><svg lucideLandPlot aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          @if (terrainStats(); as s) {
-            <strong>{{ s.parStatut['Disponible'] ?? 0 }}<small class="kpi__of">/ {{ s.total }}</small></strong>
-            <span>Biens disponibles</span>
-            <small>{{ s.sansGps + s.sansPhotoPublique > 0 ? (s.sansGps + s.sansPhotoPublique) + ' fiche' + (s.sansGps + s.sansPhotoPublique > 1 ? 's' : '') + ' à compléter' : 'Toutes les fiches sont complètes' }}</small>
-          } @else {
-            <strong>…</strong>
-            <span>Biens</span>
+        <!-- Quatre chiffres, choisis selon le métier -->
+        @if (indicateurs(); as liste) {
+          @if (liste.length) {
+            <section class="chiffres chiffres--compact" aria-label="Vos chiffres">
+              @for (i of liste; track i.libelle) {
+                <button
+                  type="button"
+                  class="chiffre chiffre--lien"
+                  [class.chiffre--du]="i.ton === 'alerte'"
+                  [class.chiffre--ok]="i.ton === 'ok'"
+                  (click)="goTo(i.route)"
+                >
+                  <span class="chiffre__icone"><svg [lucideIcon]="i.icone" aria-hidden="true"></svg></span>
+                  <span class="chiffre__corps">
+                    <span>{{ i.libelle }}</span>
+                    <strong>{{ i.valeur }}</strong>
+                    <small>{{ i.aide }}</small>
+                  </span>
+                  @if (i.anneau !== null && i.anneau !== undefined) {
+                    <span class="chiffre__anneau" [style.--taux]="i.anneau" role="img" [attr.aria-label]="i.anneau + ' %'">
+                      <span>{{ i.anneau }} %</span>
+                    </span>
+                  }
+                </button>
+              }
+            </section>
           }
-        </span>
-      </button>
-    }
-    @if (canViewMandats) {
-      <button type="button" class="kpi" [class.kpi--warning]="(mandatStats()?.expirant30Jours ?? 0) > 0" [class.kpi--success]="(mandatStats()?.expirant30Jours ?? 0) === 0" (click)="goTo('/mandats')">
-        <span class="kpi__icon"><svg lucideScrollText aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          @if (mandatStats(); as s) {
-            <strong>{{ s.actifs }}<small class="kpi__of">/ {{ s.totalMandats }}</small></strong>
-            <span>Mandats actifs</span>
-            <small>{{ s.expirant30Jours > 0 ? s.expirant30Jours + ' à renouveler sous 30 jours' : 'Aucune échéance proche' }}</small>
-          } @else {
-            <strong>…</strong>
-            <span>Mandats</span>
-          }
-        </span>
-      </button>
-    }
-    @if (canViewCrm) {
-      <button type="button" class="kpi" [class.kpi--warning]="(crmStats()?.upcomingTasksCount ?? 0) > 0" (click)="goTo('/crm/prospects')">
-        <span class="kpi__icon"><svg lucideUserSearch aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          @if (crmStats(); as s) {
-            <strong>{{ s.totalProspects }}</strong>
-            <span>Prospects suivis</span>
-            <small>{{ s.nouveaux }} nouveau{{ s.nouveaux > 1 ? 'x' : '' }} · {{ s.upcomingTasksCount }} action{{ s.upcomingTasksCount > 1 ? 's' : '' }} à venir</small>
-          } @else {
-            <strong>…</strong>
-            <span>Prospects</span>
-          }
-        </span>
-      </button>
-    }
-    @if (canViewVentes) {
-      <button type="button" class="kpi kpi--success" (click)="goTo('/ventes')">
-        <span class="kpi__icon"><svg lucideReceipt aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          @if (ventesStats(); as s) {
-            <strong>{{ dossiersEnCours() }}<small class="kpi__of">/ {{ s.totalDossiers }}</small></strong>
-            <span>Dossiers de vente en cours</span>
-            <small>{{ s.dossiersParStatut['solde'] ?? 0 }} soldé{{ (s.dossiersParStatut['solde'] ?? 0) > 1 ? 's' : '' }}</small>
-          } @else {
-            <strong>…</strong>
-            <span>Ventes</span>
-          }
-        </span>
-      </button>
-    }
-    @if (canViewVentes && canViewFinancials) {
-      <div class="kpi">
-        <span class="kpi__icon"><svg lucideBanknote aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          @if (ventesStats(); as s) {
-            <strong>{{ s.totalPaiementsValides | mtmMoney }}</strong>
-            <span>Encaissé (validé)</span>
-            <small>Commissions : {{ s.totalCommissionsValidees | mtmMoney }} validées · {{ s.totalCommissionsPayees | mtmMoney }} payées</small>
-          } @else {
-            <strong>…</strong>
-            <span>Encaissé</span>
-          }
-        </span>
-      </div>
-    }
-    @if (canViewLocatif) {
-      <button type="button" class="kpi" [class.kpi--warning]="(locatifStats()?.echeancesEnRetard ?? 0) > 0" [class.kpi--success]="(locatifStats()?.echeancesEnRetard ?? 0) === 0" (click)="goTo('/locatif/biens')">
-        <span class="kpi__icon"><svg lucideBuilding2 aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          @if (locatifStats(); as s) {
-            <strong>{{ s.loues }}<small class="kpi__of">/ {{ s.total }}</small></strong>
-            <span>Biens loués</span>
-            <!-- « enRetard » comptait des biens : on affiche bien des échéances. -->
-            <small>{{ s.echeancesEnRetard > 0 ? s.echeancesEnRetard + ' échéance' + (s.echeancesEnRetard > 1 ? 's' : '') + ' en retard sur ' + s.biensEnRetard + ' bien' + (s.biensEnRetard > 1 ? 's' : '') : 'Aucun loyer en retard' }}</small>
-          } @else {
-            <strong>…</strong>
-            <span>Gestion locative</span>
-          }
-        </span>
-      </button>
-    }
-    @if (canViewConstruction) {
-      <button type="button" class="kpi" [class.kpi--warning]="chantiersEnAlerte() > 0" [class.kpi--success]="chantiersEnAlerte() === 0" (click)="goTo('/construction/chantiers')">
-        <span class="kpi__icon"><svg lucideHardHat aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          @if (chantierStats(); as s) {
-            <strong>{{ s.chantiersActifs }}</strong>
-            <span>Chantiers actifs</span>
-            <!-- Ce qui dérape passe avant l'avancement moyen : c'est le seul
-                 des deux chiffres qui appelle une action. -->
-            <small>{{ chantiersEnAlerte() > 0 ? chantiersEnAlerte() + ' chantier' + (chantiersEnAlerte() > 1 ? 's' : '') + ' en retard ou hors budget' : s.avancementMoyen + ' % d’avancement moyen' }}</small>
-          } @else {
-            <strong>…</strong>
-            <span>Chantiers</span>
-          }
-        </span>
-      </button>
-    }
-  </section>
-
-  <!-- Graphiques -->
-  @if (canViewVentes || canViewCrm) {
-    <section class="charts-grid" aria-label="Évolution de l’activité">
-      @if (canViewVentes && canViewFinancials) {
-        <article class="page-card chart-card">
-          <h2>Encaissements validés</h2>
-          <p class="detail-section__hint">Paiements contrôlés, par mois, sur les 6 derniers mois.</p>
-          @if (loadingVentes()) {
-            <div class="skeleton chart"></div>
-          } @else if (encaissementsChart(); as chart) {
-            <div echarts [options]="chart" class="chart" role="img" aria-label="Encaissements validés par mois"></div>
-          } @else {
-            <p class="chart-card__empty">Aucun encaissement validé sur la période.</p>
-          }
-        </article>
-      }
-      @if (canViewVentes) {
-        <article class="page-card chart-card">
-          <h2>Nouveaux dossiers de vente</h2>
-          <p class="detail-section__hint">Dossiers ouverts par mois : le rythme de l’activité commerciale.</p>
-          @if (loadingVentes()) {
-            <div class="skeleton chart"></div>
-          } @else if (dossiersChart(); as chart) {
-            <div echarts [options]="chart" class="chart" role="img" aria-label="Dossiers de vente créés par mois"></div>
-          } @else {
-            <p class="chart-card__empty">Aucun dossier créé sur les 6 derniers mois.</p>
-          }
-        </article>
-        <article class="page-card chart-card">
-          <h2>Dossiers par statut</h2>
-          <p class="detail-section__hint">Où en sont les ventes en portefeuille.</p>
-          @if (loadingVentes()) {
-            <div class="skeleton chart"></div>
-          } @else if (statutsChart(); as chart) {
-            <div echarts [options]="chart" class="chart chart--donut" role="img" aria-label="Répartition des dossiers par statut"></div>
-          } @else {
-            <p class="chart-card__empty">Aucun dossier en portefeuille.</p>
-          }
-        </article>
-      }
-      @if (canViewCrm) {
-        <article class="page-card chart-card">
-          <h2>Pipeline des prospects</h2>
-          <p class="detail-section__hint">Répartition par étape, du premier contact à la vente.</p>
-          @if (pipelineChart(); as chart) {
-            <div echarts [options]="chart" class="chart chart--donut" role="img" aria-label="Prospects par étape du pipeline"></div>
-          } @else if (crmStats()) {
-            <p class="chart-card__empty">Aucun prospect en portefeuille.</p>
-          } @else {
-            <div class="skeleton chart"></div>
-          }
-        </article>
-      }
-    </section>
-  }
-
-  <section class="content-grid">
-    <!-- Ma performance -->
-    @if (canViewVentes && isCommercial) {
-      <section class="page-card detail-section">
-        <div class="detail-section__head">
-          <div>
-            <h2>Ma performance</h2>
-            <p class="detail-section__hint">Vos dossiers, ce que vous avez encaissé et vos commissions.</p>
-          </div>
-          <button mat-button type="button" (click)="goTo('/ventes/objectifs')">
-            <svg class="btn-icon" lucideTarget aria-hidden="true"></svg>Objectifs
-          </button>
-        </div>
-        @if (myPerformance(); as perf) {
-          <dl class="info-list">
-            <div><dt>Mes dossiers</dt><dd>{{ perf.totalDossiers }}</dd></div>
-            <div><dt>Encaissé (validé)</dt><dd>{{ perf.totalPaiements | mtmMoney }}</dd></div>
-            <div><dt>Commissions payées</dt><dd>{{ perf.totalCommissionsPayees | mtmMoney }}</dd></div>
-          </dl>
         } @else {
-          <div class="skeleton" style="height: 56px"></div>
+          <section class="chiffres chiffres--compact" aria-busy="true" aria-label="Chargement des chiffres">
+            @for (n of [1, 2, 3, 4]; track n) {
+              <div class="skeleton" style="height: 94px; border-radius: 14px"></div>
+            }
+          </section>
         }
-        @if (myObjectif(); as objectif) {
-          <h3>Objectif de {{ monthLabel }}</h3>
-          <dl class="objective-list">
-            @if (objectif.taux.ventes !== null) {
-              <div>
-                <dt>Ventes <em>{{ objectif.taux.ventes }} %</em></dt>
-                <dd>{{ objectif.realise.ventes }} / {{ objectif.objectif?.cibleVentes }}</dd>
-                <span class="objective-bar"><span [class.is-complete]="objectif.taux.ventes >= 100" [style.width.%]="barValue(objectif.taux.ventes)"></span></span>
-              </div>
-            }
-            @if (objectif.taux.chiffreAffaires !== null) {
-              <div>
-                <dt>Chiffre d’affaires <em>{{ objectif.taux.chiffreAffaires }} %</em></dt>
-                <dd>{{ objectif.realise.chiffreAffaires | mtmMoney }} / {{ objectif.objectif?.cibleChiffreAffaires | mtmMoney }}</dd>
-                <span class="objective-bar"><span [class.is-complete]="objectif.taux.chiffreAffaires >= 100" [style.width.%]="barValue(objectif.taux.chiffreAffaires)"></span></span>
-              </div>
-            }
-            @if (objectif.taux.commissions !== null) {
-              <div>
-                <dt>Commissions <em>{{ objectif.taux.commissions }} %</em></dt>
-                <dd>{{ objectif.realise.commissions | mtmMoney }} / {{ objectif.objectif?.cibleCommissions | mtmMoney }}</dd>
-                <span class="objective-bar"><span [class.is-complete]="objectif.taux.commissions >= 100" [style.width.%]="barValue(objectif.taux.commissions)"></span></span>
-              </div>
-            }
-          </dl>
-        } @else if (myPerformance()) {
-          <p class="detail-section__text">Aucun objectif fixé pour {{ monthLabel }}.</p>
-        }
-      </section>
-    }
 
-    <!-- Ventes récentes -->
-    @if (canViewVentes) {
-      <section class="page-card detail-section" [class.detail-section--wide]="!isCommercial">
-        <div class="detail-section__head">
-          <div>
-            <h2>Dossiers récents</h2>
-            <p class="detail-section__hint">Les derniers dossiers de vente ouverts.</p>
-          </div>
-          <button mat-button type="button" (click)="goTo('/ventes')">Tous les dossiers</button>
-        </div>
-        @if (loadingVentes()) {
-          <div class="skeleton" style="height: 48px"></div>
-          <div class="skeleton" style="height: 48px"></div>
-        } @else if (ventesStats()?.ventesRecentes?.length) {
-          <div class="table-scroll">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Référence</th>
-                  <th>Client</th>
-                  <th>Bien</th>
-                  <th class="is-right">Prix</th>
-                  <th>Statut</th>
-                  <th>Ouvert le</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (vente of ventesStats()!.ventesRecentes; track vente.id) {
-                  <tr class="is-clickable" (click)="openVente(vente.id)">
-                    <td><strong>{{ vente.referenceInterne || 'Dossier' }}</strong></td>
-                    <td>{{ vente.prospect.prenom }} {{ vente.prospect.nom }}</td>
-                    <td>{{ vente.terrain?.nom || 'Bien non défini' }}</td>
-                    <td class="is-right">{{ vente.prixVente | mtmMoney }}</td>
-                    <td><span [class]="venteStatusPill(vente.statut)">{{ venteStatusLabel(vente.statut) }}</span></td>
-                    <td>{{ vente.createdAt | date: 'dd/MM/yyyy' }}</td>
-                  </tr>
+        <!-- Le détail : deux blocs au plus -->
+        @if (blocs().length) {
+          <section class="details">
+            @for (bloc of blocs(); track bloc) {
+              @switch (bloc) {
+                @case ('recents') {
+                  <article class="page-card bloc">
+                    <div class="bloc__tete">
+                      <div>
+                        <h2>Dossiers de vente récents</h2>
+                        <p class="bloc__aide">Les derniers dossiers ouverts</p>
+                      </div>
+                      <button mat-button type="button" (click)="goTo('/ventes')">Tous les dossiers</button>
+                    </div>
+                    @if (loadingVentes()) {
+                      <div class="skeleton" style="height: 48px"></div>
+                      <div class="skeleton" style="height: 48px"></div>
+                    } @else if (ventesRecentes().length) {
+                      <div class="table-scroll">
+                        <table class="data-table data-table--compacte">
+                          <thead>
+                            <tr>
+                              <th>Dossier</th>
+                              <th class="is-right col-prix">Prix</th>
+                              <th>Statut</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (vente of ventesRecentes(); track vente.id) {
+                              <tr class="is-clickable" tabindex="0" (click)="openVente(vente.id)" (keydown.enter)="openVente(vente.id)">
+                                <td>
+                                  <strong>{{ vente.prospect.prenom }} {{ vente.prospect.nom }}</strong>
+                                  <small class="cell-muted">{{ vente.referenceInterne || 'Dossier' }} · {{ vente.terrain?.nom || 'Bien non défini' }}</small>
+                                  <small class="cell-muted prix-mobile">{{ vente.prixVente | mtmMoney }}</small>
+                                </td>
+                                <td class="is-right col-prix">{{ vente.prixVente | mtmMoney }}</td>
+                                <td><span [class]="venteStatusPill(vente.statut)">{{ venteStatusLabel(vente.statut) }}</span></td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+                    } @else {
+                      <p class="bloc__vide">Aucun dossier de vente pour le moment.</p>
+                    }
+                  </article>
                 }
-              </tbody>
-            </table>
-          </div>
-        } @else {
-          <p class="detail-section__text">Aucun dossier de vente pour le moment.</p>
+                @case ('encaissements') {
+                  <article class="page-card bloc">
+                    <div class="bloc__tete">
+                      <div>
+                        <h2>Encaissements validés</h2>
+                        <p class="bloc__aide">Les 6 derniers mois</p>
+                      </div>
+                    </div>
+                    @if (loadingVentes()) {
+                      <div class="skeleton chart"></div>
+                    } @else if (encaissementsChart(); as chart) {
+                      <div echarts [options]="chart" class="chart" role="img" aria-label="Encaissements validés par mois"></div>
+                    } @else {
+                      <p class="bloc__vide">Aucun encaissement validé sur la période.</p>
+                    }
+                  </article>
+                }
+                @case ('pipeline') {
+                  <article class="page-card bloc">
+                    <div class="bloc__tete">
+                      <div>
+                        <h2>Pipeline des prospects</h2>
+                        <p class="bloc__aide">{{ pipelineTotal() }} prospect{{ pipelineTotal() > 1 ? 's' : '' }} par étape</p>
+                      </div>
+                      <button mat-button type="button" (click)="goTo('/crm/prospects')">Voir les prospects</button>
+                    </div>
+                    @if (pipelineChart(); as chart) {
+                      <div echarts [options]="chart" class="chart chart--donut" role="img" aria-label="Prospects par étape du pipeline"></div>
+                    } @else if (crmPret()) {
+                      <p class="bloc__vide">Pas assez de prospects pour répartir le pipeline par étape.</p>
+                    } @else {
+                      <div class="skeleton chart"></div>
+                    }
+                  </article>
+                }
+                @case ('locatif') {
+                  <article class="page-card bloc">
+                    <div class="bloc__tete">
+                      <h2>Gestion locative</h2>
+                      <button mat-button type="button" (click)="goTo('/locatif/biens')">Ouvrir</button>
+                    </div>
+                    <dl class="lignes">
+                      @for (ligne of lignesLocatif(); track ligne.libelle) {
+                        <div [class.is-nul]="ligne.valeur === 0">
+                          <dt>{{ ligne.libelle }}</dt>
+                          <dd>{{ ligne.valeur | mtmMoney }}</dd>
+                        </div>
+                      }
+                    </dl>
+                  </article>
+                }
+                @case ('chantiers') {
+                  <article class="page-card bloc">
+                    <div class="bloc__tete">
+                      <div>
+                        <h2>Chantiers</h2>
+                        <p class="bloc__aide">{{ chantierStats()?.avancementMoyen ?? 0 }} % d’avancement moyen</p>
+                      </div>
+                      <button mat-button type="button" (click)="goTo('/construction/chantiers')">Ouvrir</button>
+                    </div>
+                    <dl class="lignes">
+                      @for (ligne of lignesChantiers(); track ligne.libelle) {
+                        <div [class.is-nul]="ligne.valeur === 0">
+                          <dt>{{ ligne.libelle }}</dt>
+                          <dd>{{ ligne.valeur | mtmMoney }}</dd>
+                        </div>
+                      }
+                      <div [class.is-nul]="(chantierStats()?.problemesOuverts ?? 0) === 0">
+                        <dt>Problèmes ouverts</dt>
+                        <dd>{{ chantierStats()?.problemesOuverts ?? 0 }}</dd>
+                      </div>
+                    </dl>
+                  </article>
+                }
+              }
+            }
+          </section>
         }
-      </section>
-    }
-
-    <!-- Portefeuille propriétaire -->
-    @if (canViewMandats && mandatStats(); as m) {
-      <section class="page-card detail-section" [class.detail-section--wide]="!canViewVentes">
-        <div class="detail-section__head">
-          <div>
-            <h2>Portefeuille propriétaire</h2>
-            <p class="detail-section__hint">Ce que les mandats représentent en lots et en chiffre d’affaires.</p>
-          </div>
-          <button mat-button type="button" (click)="goTo('/mandats')">Tous les mandats</button>
-        </div>
-        <dl class="info-list">
-          <div><dt>Lots confiés</dt><dd>{{ m.totalLots }}<small>{{ m.lotsParStatut['Vendu'] ?? 0 }} vendu{{ (m.lotsParStatut['Vendu'] ?? 0) > 1 ? 's' : '' }}</small></dd></div>
-          <div><dt>Chiffre d’affaires</dt><dd>{{ m.financial.chiffreAffaires | mtmMoney }}</dd></div>
-          <div><dt>Reste à commercialiser</dt><dd>{{ m.financial.resteACommercialiser | mtmMoney }}</dd></div>
-          <div><dt>Commissions estimées</dt><dd>{{ m.financial.commissionsEstimees | mtmMoney }}</dd></div>
-        </dl>
-      </section>
-    }
-  </section>
+      }
     }
   }
 </div>

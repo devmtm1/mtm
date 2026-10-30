@@ -72,7 +72,7 @@ Un sujet à plusieurs pages (par exemple **Dossiers de vente**) n’a **qu’une
 - **Mon pipeline** : vos prospects par étape. Le total est écrit au centre de l’anneau.
 - En bas : prospects **à relancer**, **visites à venir**, **agenda du jour**.
 
-L’onglet **Vue générale** donne, en plus, l’état de chaque module auquel vous avez accès.
+L’onglet **Accueil** montre ce qu’il y a à traiter aujourd’hui et quatre chiffres : vos prospects, vos dossiers de vente et les biens disponibles.
 
 ## Ma journée type
 
@@ -325,7 +325,7 @@ Pour le détail pas à pas (créer un bien locatif, un bail, un séjour, encaiss
 
 ![Mes tâches](img/10-taches.png)
 
-- Les trois **compteurs** du haut (en retard, pour aujourd’hui, à faire au total) sont aussi des **filtres** : un clic sur « en retard » ne montre que cela.
+- Les **pastilles** sous la recherche (À faire, En retard, Aujourd’hui, Cette semaine…) sont des **filtres** : un clic sur « En retard » ne montre que cela. La liste est découpée par période.
 - Les onglets : **Mes tâches** et **Confiées par moi**.
 - L’**échéance** change de couleur : rouge si elle est dépassée, orange le jour même.
 - Cochez le **rond à gauche** quand la tâche est faite.

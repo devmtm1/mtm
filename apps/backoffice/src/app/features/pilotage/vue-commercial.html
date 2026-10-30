@@ -2,70 +2,39 @@
   <div class="skeleton" style="height: 280px"></div>
 } @else if (donnees(); as d) {
   <div class="vue">
-    @if (!commercialId()) {
-      <nav class="actions-rapides" aria-label="Raccourcis">
-        @if (peutCreerProspect) {
-          <a mat-flat-button color="primary" routerLink="/crm/prospects/nouveau">
-            <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau prospect
-          </a>
-        }
-        <a mat-stroked-button routerLink="/crm/prospects">
-          <svg class="btn-icon" lucideUserSearch aria-hidden="true"></svg>Mes prospects
-        </a>
-        @if (peutVoirBiens) {
-          <a mat-stroked-button routerLink="/terrains">
-            <svg class="btn-icon" lucideLandPlot aria-hidden="true"></svg>Mes biens
-          </a>
-        }
-        @if (peutVoirVentes) {
-          <a mat-stroked-button routerLink="/ventes">
-            <svg class="btn-icon" lucideReceipt aria-hidden="true"></svg>Mes ventes
-          </a>
-        }
-        @if (peutVoirAgenda) {
-          <a mat-stroked-button routerLink="/agenda">
-            <svg class="btn-icon" lucideCalendarDays aria-hidden="true"></svg>Mon agenda
-          </a>
-        }
-      </nav>
-    }
-    <section class="kpi-row" aria-label="Mes chiffres">
-      <article class="kpi">
-        <span class="kpi__icon"><svg lucideUserSearch aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          <strong>{{ d.prospectsActifs }}</strong>
+    <section class="chiffres chiffres--compact" aria-label="Mes chiffres">
+      <div class="chiffre">
+        <span class="chiffre__icone"><svg lucideUserSearch aria-hidden="true"></svg></span>
+        <div class="chiffre__corps">
           <span>Prospects actifs</span>
+          <strong>{{ d.prospectsActifs }}</strong>
           <small>dans mon pipeline</small>
-        </span>
-      </article>
-      <article class="kpi" [class.kpi--attention]="d.relances.enRetard > 0">
-        <span class="kpi__icon"><svg lucideBellRing aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          <strong>{{ d.relances.enRetard + d.relances.aujourdhui }}</strong>
+        </div>
+      </div>
+      <div class="chiffre" [class.chiffre--du]="d.relances.enRetard > 0">
+        <span class="chiffre__icone"><svg lucideBellRing aria-hidden="true"></svg></span>
+        <div class="chiffre__corps">
           <span>Relances</span>
-          <small
-            >{{ d.relances.enRetard }} en retard · {{ d.relances.aujourdhui }} aujourd’hui</small
-          >
-        </span>
-      </article>
-      <article class="kpi">
-        <span class="kpi__icon"><svg lucideReceipt aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          <strong>{{ d.ventes.soldeesCeMois }}</strong>
+          <strong>{{ d.relances.enRetard + d.relances.aujourdhui }}</strong>
+          <small>{{ d.relances.enRetard }} en retard · {{ d.relances.aujourdhui }} aujourd’hui</small>
+        </div>
+      </div>
+      <div class="chiffre">
+        <span class="chiffre__icone"><svg lucideReceipt aria-hidden="true"></svg></span>
+        <div class="chiffre__corps">
           <span>Ventes soldées ce mois</span>
-          <small>{{ d.objectif.realise.ventes }} dossier(s) engagé(s) · {{ fcfa(d.ventes.chiffreAffairesCeMois) }}</small>
-        </span>
-      </article>
-      <article class="kpi" [class.kpi--attention]="d.taches.enRetard > 0">
-        <span class="kpi__icon"><svg lucideListChecks aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          <strong>{{ d.taches.ouvertes }}</strong>
+          <strong>{{ d.ventes.soldeesCeMois }}</strong>
+          <small>{{ fcfa(d.ventes.chiffreAffairesCeMois) }} · {{ d.objectif.realise.ventes }} engagé(s)</small>
+        </div>
+      </div>
+      <div class="chiffre" [class.chiffre--du]="d.taches.enRetard > 0">
+        <span class="chiffre__icone"><svg lucideListChecks aria-hidden="true"></svg></span>
+        <div class="chiffre__corps">
           <span>Mes tâches</span>
-          <small
-            >{{ d.taches.enRetard }} en retard · {{ d.taches.aujourdhui }} pour aujourd’hui</small
-          >
-        </span>
-      </article>
+          <strong>{{ d.taches.ouvertes }}</strong>
+          <small>{{ d.taches.enRetard }} en retard · {{ d.taches.aujourdhui }} pour aujourd’hui</small>
+        </div>
+      </div>
     </section>
 
     <div class="deux">
@@ -122,7 +91,7 @@
           </p>
         }
         <h3 class="sous-titre">Mes commissions · <a routerLink="/ventes/commissions">voir le détail</a></h3>
-        <dl class="chiffres">
+        <dl class="faits">
           <div>
             <dt>Estimées</dt>
             <dd>{{ fcfa(d.commissions.estimees) }}</dd>
@@ -154,67 +123,54 @@
       </section>
     </div>
 
-    <div class="deux">
-      <section class="page-card">
-        <h2>À relancer</h2>
-        @if (d.relances.prochaines.length === 0) {
-          <p class="etat-ok">Aucune relance en retard ni prévue aujourd’hui.</p>
-        } @else {
-          <ul class="liste">
-            @for (r of d.relances.prochaines; track r.id) {
-              <li [class.est-retard]="r.enRetard">
-                <a [routerLink]="route(r.lien)">{{ r.titre }}</a>
-                <span>{{ r.prospect }} · {{ r.enRetard ? 'en retard' : 'aujourd’hui' }}</span>
-              </li>
-            }
-          </ul>
+    @if (rienAujourdhui()) {
+      <p class="etat-ok">Rien de prévu : aucune relance, visite ni rendez-vous à l’agenda aujourd’hui.</p>
+    } @else {
+      <div class="trois">
+        @if (d.relances.prochaines.length) {
+          <section class="page-card">
+            <h2>À relancer</h2>
+            <ul class="liste">
+              @for (r of d.relances.prochaines; track r.id) {
+                <li [class.est-retard]="r.enRetard">
+                  <a [routerLink]="route(r.lien)">{{ r.titre }}</a>
+                  <span>{{ r.prospect }} · {{ r.enRetard ? 'en retard' : 'aujourd’hui' }}</span>
+                </li>
+              }
+            </ul>
+          </section>
         }
-      </section>
-
-      <section class="page-card">
-        <h2>Visites à venir</h2>
-        <p class="aide">
-          {{ d.visites.effectueesCeMois }} visite{{
-            d.visites.effectueesCeMois > 1 ? 's' : ''
-          }}
-          effectuée{{ d.visites.effectueesCeMois > 1 ? 's' : '' }} ce mois.
-        </p>
-        @if (d.visites.aVenir.length === 0) {
-          <p class="etat-vide">Aucune visite programmée.</p>
-        } @else {
-          <ul class="liste">
-            @for (v of d.visites.aVenir; track v.id) {
-              <li>
-                <a [routerLink]="route(v.lien)">{{ v.bien }}</a>
-                <span
-                  >{{ v.prospect }} · {{ jour(v.date) }}{{ v.heure ? ' à ' + v.heure : '' }}</span
-                >
-              </li>
-            }
-          </ul>
+        @if (d.visites.aVenir.length) {
+          <section class="page-card">
+            <h2>Visites à venir</h2>
+            <p class="aide">
+              {{ d.visites.effectueesCeMois }} visite{{ d.visites.effectueesCeMois > 1 ? 's' : '' }}
+              effectuée{{ d.visites.effectueesCeMois > 1 ? 's' : '' }} ce mois.
+            </p>
+            <ul class="liste">
+              @for (v of d.visites.aVenir; track v.id) {
+                <li>
+                  <a [routerLink]="route(v.lien)">{{ v.bien }}</a>
+                  <span>{{ v.prospect }} · {{ jour(v.date) }}{{ v.heure ? ' à ' + v.heure : '' }}</span>
+                </li>
+              }
+            </ul>
+          </section>
         }
-      </section>
-    </div>
-
-    <section class="page-card">
-      <h2>Mon agenda aujourd’hui</h2>
-      @if (d.agenda.length === 0) {
-        <p class="etat-vide">
-          Rien d’inscrit à l’agenda aujourd’hui. <a routerLink="/agenda">Ouvrir l’agenda</a>
-        </p>
-      } @else {
-        <ul class="liste">
-          @for (e of d.agenda; track e.id) {
-            <li>
-              <a routerLink="/agenda" [queryParams]="{ evenement: e.id }">{{ e.titre }}</a>
-              <span
-                >{{ e.journeeEntiere ? 'Toute la journée' : heure(e.debut)
-                }}{{ e.lieu ? ' · ' + e.lieu : '' }}</span
-              >
-            </li>
-          }
-        </ul>
-      }
-    </section>
+        @if (d.agenda.length) {
+          <section class="page-card">
+            <h2>Mon agenda aujourd’hui</h2>
+            <ul class="liste">
+              @for (e of d.agenda; track e.id) {
+                <li>
+                  <a routerLink="/agenda" [queryParams]="{ evenement: e.id }">{{ e.titre }}</a>
+                  <span>{{ e.journeeEntiere ? 'Toute la journée' : heure(e.debut) }}{{ e.lieu ? ' · ' + e.lieu : '' }}</span>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+      </div>
+    }
   </div>
 }

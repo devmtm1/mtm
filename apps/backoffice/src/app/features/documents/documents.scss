@@ -97,3 +97,51 @@
   }
 }
 
+/* Raccourcis de période : une rangée de pastilles sous les filtres, les dates à la main seulement en « Personnalisée ». */
+.periodes-doc {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.periode-doc {
+  padding: 6px 14px;
+  border: 1px solid var(--mtm-border);
+  border-radius: 999px;
+  background: var(--mtm-card-bg);
+  color: var(--mtm-text-dark);
+  font: inherit;
+  font-size: 0.86rem;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--mtm-primary);
+  }
+
+  &.is-actif {
+    border-color: var(--mtm-primary);
+    background: var(--mtm-primary-subtle);
+    color: var(--mtm-primary);
+    font-weight: 600;
+  }
+
+  &__dates {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    color: var(--mtm-text-muted);
+    font-size: 0.86rem;
+
+    input {
+      padding: 5px 8px;
+      border: 1px solid var(--mtm-border);
+      border-radius: 8px;
+      background: var(--mtm-card-bg);
+      color: var(--mtm-text-dark);
+      font: inherit;
+    }
+  }
+}
