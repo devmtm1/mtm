@@ -100,7 +100,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (document of visible(); track document.id) {
+            @for (document of visiblesPage(); track document.id) {
               <tr class="is-clickable" (click)="openDossier(document)">
                 <td>
                   <span class="doc-cell"><svg lucideFileText aria-hidden="true"></svg><strong>{{ document.title || (document.type | mtmLabel) }}</strong><small>v{{ document.version }}</small></span>
@@ -126,6 +126,14 @@
           </tbody>
         </table>
       </div>
+      <app-pagination
+        [page]="page()"
+        [pageSize]="pageSize()"
+        [total]="visible().length"
+        nom="document"
+        (pageChange)="page.set($event)"
+        (pageSizeChange)="changerTaille($event)"
+      />
     }
   </section>
 </section>

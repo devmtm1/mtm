@@ -13,7 +13,7 @@ import {
   type LocatifUser,
 } from './locatif-access.service';
 import { LocatifOptionsService } from './locatif-options.service';
-import { EnvoyerRelanceDto, QueryRelanceDto } from './dto/relance.dto';
+import { EnvoyerRelanceDto, QueryRelanceDto, QueryRelancePageDto } from './dto/relance.dto';
 
 const relanceInclude = {
   echeance: {
@@ -81,6 +81,47 @@ export class RelancesLoyerService {
       orderBy: [{ joursRetard: 'desc' }, { createdAt: 'desc' }],
       take: 200,
     });
+  }
+
+  /**
+   * Une page de la file, pour l'écran « Relances d'impayés ». Le total et le montant en jeu portent sur toute la file,
+   * pas sur la seule page affichée : « 21 780 000 FCFA en jeu » ne change pas quand on tourne les pages.
+   */
+  async findPage(query: QueryRelancePageDto, user: LocatifUser) {
+    const where: Prisma.RelanceLoyerWhereInput = {
+      statut: query.statut ?? 'a_envoyer',
+      bailLocatif: {
+        bienLocatif: {
+          ...this.access.ownershipFilter(user),
+          ...(query.bienLocatifId ? { id: query.bienLocatifId } : {}),
+        },
+      },
+    };
+    const pageSize = Math.max(1, query.pageSize);
+    const total = await this.prisma.relanceLoyer.count({ where });
+    const pages = Math.max(1, Math.ceil(total / pageSize));
+    // Une page demandée au-delà de la dernière (la file a rétréci pendant qu'on la parcourait) ramène à la dernière.
+    const page = Math.min(Math.max(1, query.page), pages);
+    const [items, echeances] = await Promise.all([
+      this.prisma.relanceLoyer.findMany({
+        where,
+        include: relanceInclude,
+        // L'identifiant départage les relances de même retard : sans lui, une relance peut passer d'une page à l'autre.
+        orderBy: [{ joursRetard: 'desc' }, { createdAt: 'desc' }, { id: 'asc' }],
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prisma.relanceLoyer.findMany({
+        where,
+        select: { echeance: { select: { montantPrevu: true, montantPaye: true } } },
+      }),
+    ]);
+    const montantEnJeu = echeances.reduce(
+      (somme, relance) =>
+        somme + Math.max(0, Number(relance.echeance?.montantPrevu ?? 0) - Number(relance.echeance?.montantPaye ?? 0)),
+      0,
+    );
+    return { items, page, pageSize, total, pages, montantEnJeu };
   }
 
   /** Compteur pour le tableau de bord et la vignette « à relancer ». */

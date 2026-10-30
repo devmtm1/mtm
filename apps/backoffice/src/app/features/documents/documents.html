@@ -183,72 +183,14 @@
           </tbody>
         </table>
       </div>
-      <nav class="pager" aria-label="Pagination">
-        <div class="pager__info">
-          <span>{{ premier() }}–{{ dernier() }} sur {{ total() }}</span>
-          <label class="pager__size">
-            Par page
-            <select [value]="pageSize()" (change)="changePageSize(+$any($event.target).value)">
-              @for (taille of tailles; track taille) {
-                <option [value]="taille" [selected]="taille === pageSize()">{{ taille }}</option>
-              }
-            </select>
-          </label>
-        </div>
-        <div class="pager__pages">
-          <button
-            type="button"
-            class="pager__btn"
-            (click)="goTo(1)"
-            [disabled]="page() <= 1"
-            aria-label="Première page"
-          >
-            <svg lucideChevronsLeft aria-hidden="true"></svg>
-          </button>
-          <button
-            type="button"
-            class="pager__btn"
-            (click)="goTo(page() - 1)"
-            [disabled]="page() <= 1"
-            aria-label="Page précédente"
-          >
-            <svg lucideChevronLeft aria-hidden="true"></svg>
-          </button>
-          @for (numero of pages(); track $index) {
-            @if (numero === null) {
-              <span class="pager__gap" aria-hidden="true">…</span>
-            } @else {
-              <button
-                type="button"
-                class="pager__btn"
-                [class.is-active]="numero === page()"
-                [attr.aria-current]="numero === page() ? 'page' : null"
-                (click)="goTo(numero)"
-              >
-                {{ numero }}
-              </button>
-            }
-          }
-          <button
-            type="button"
-            class="pager__btn"
-            (click)="goTo(page() + 1)"
-            [disabled]="page() >= pageCount()"
-            aria-label="Page suivante"
-          >
-            <svg lucideChevronRight aria-hidden="true"></svg>
-          </button>
-          <button
-            type="button"
-            class="pager__btn"
-            (click)="goTo(pageCount())"
-            [disabled]="page() >= pageCount()"
-            aria-label="Dernière page"
-          >
-            <svg lucideChevronsRight aria-hidden="true"></svg>
-          </button>
-        </div>
-      </nav>
+      <app-pagination
+        [page]="page()"
+        [pageSize]="pageSize()"
+        [total]="total()"
+        nom="document"
+        (pageChange)="goTo($event)"
+        (pageSizeChange)="changePageSize($event)"
+      />
     }
   </section>
 </section>

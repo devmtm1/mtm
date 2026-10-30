@@ -34,3 +34,14 @@ export function plageAffichee(
   if (total === 0) return { debut: 0, fin: 0 };
   return { debut: (page - 1) * taille + 1, fin: Math.min(page * taille, total) };
 }
+
+/**
+ * La page d'une liste déjà chargée en entier (listes courtes, filtrées côté navigateur). Une page demandée au-delà de
+ * la dernière ramène à la dernière : une liste qui rétrécit ne laisse pas une page vide.
+ */
+export function pageDe<T>(liste: readonly T[], page: number, taille: number): T[] {
+  const parPage = Math.max(1, taille);
+  const pages = Math.max(1, Math.ceil(liste.length / parPage));
+  const courante = Math.min(Math.max(1, page), pages);
+  return liste.slice((courante - 1) * parPage, courante * parPage);
+}

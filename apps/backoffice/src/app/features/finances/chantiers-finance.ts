@@ -12,6 +12,8 @@ import { JustificationDialog } from '../../shared/dialogs/justification-dialog';
 import { NotificationService } from '../../shared/services/notification.service';
 import { fcfa } from './finances-utils';
 import { dateFr, libelleMode, nomPersonne } from './finances-outils';
+import { pageDe } from '../../core/utils/pagination';
+import { Pagination } from '../../shared/components/pagination/pagination';
 
 /**
  * Rentabilité de chaque chantier : prix, recettes confirmées du client, coût
@@ -21,7 +23,7 @@ import { dateFr, libelleMode, nomPersonne } from './finances-outils';
 @Component({
   selector: 'app-chantiers-finance',
   standalone: true,
-  imports: [RouterLink, MatButtonModule],
+  imports: [Pagination, RouterLink, MatButtonModule],
   styleUrl: './finances-pages.scss',
   template: `
     <div class="page-grille">
@@ -110,7 +112,7 @@ import { dateFr, libelleMode, nomPersonne } from './finances-outils';
                   </tr>
                 </thead>
                 <tbody>
-                  @for (c of liste; track c.id) {
+                  @for (c of chantiersPage(liste); track c.id) {
                     <tr>
                       <td>
                         <a [routerLink]="['/finances/chantiers', c.id]"
@@ -136,6 +138,14 @@ import { dateFr, libelleMode, nomPersonne } from './finances-outils';
                 </tbody>
               </table>
             </div>
+            <app-pagination
+              [page]="page()"
+              [pageSize]="pageSize()"
+              [total]="liste.length"
+              nom="chantier"
+              (pageChange)="page.set($event)"
+              (pageSizeChange)="changerTaille($event)"
+            />
           }
         </section>
       } @else {
@@ -145,6 +155,19 @@ import { dateFr, libelleMode, nomPersonne } from './finances-outils';
   `,
 })
 export class ChantiersFinance implements OnInit {
+  protected readonly page = signal(1);
+  protected readonly pageSize = signal(25);
+
+  /** Les chantiers de la page affichée : les totaux du haut portent sur toute la liste, le tableau est découpé. */
+  protected chantiersPage<T>(liste: T[]): T[] {
+    return pageDe(liste, this.page(), this.pageSize());
+  }
+
+  protected changerTaille(taille: number): void {
+    this.pageSize.set(taille);
+    this.page.set(1);
+  }
+
   private readonly api = inject(TresorerieApiService);
   private readonly dialog = inject(MatDialog);
   private readonly notify = inject(NotificationService);

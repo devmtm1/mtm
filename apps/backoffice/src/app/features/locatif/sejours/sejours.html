@@ -150,13 +150,14 @@
         </table>
       </div>
 
-      @if (pages() > 1) {
-        <nav class="pager" aria-label="Pages">
-          <button mat-stroked-button type="button" (click)="pagePrecedente()" [disabled]="page() === 1">Précédent</button>
-          <span>Page {{ page() }} sur {{ pages() }} · {{ total() }} séjours</span>
-          <button mat-stroked-button type="button" (click)="pageSuivante()" [disabled]="page() === pages()">Suivant</button>
-        </nav>
-      }
+      <app-pagination
+        [page]="page()"
+        [pageSize]="pageSize"
+        [total]="total()"
+        [tailles]="[]"
+        nom="séjour"
+        (pageChange)="aller($event)"
+      />
     }
   </section>
 </div>

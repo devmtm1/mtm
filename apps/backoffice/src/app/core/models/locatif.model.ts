@@ -1,3 +1,4 @@
+import type { Page } from './page';
 import type { PieceIdentite } from './piece-identite';
 /** Modèles de la gestion locative (J2.1, section 15 du cahier des charges). */
 
@@ -695,3 +696,9 @@ export interface CreateImmeublePayload {
 }
 
 export type UpdateImmeublePayload = Partial<Omit<CreateImmeublePayload, 'logements'>>;
+
+/** Une page de la file de relances, avec ce que vaut toute la file. */
+export interface RelancesPage extends Page<RelanceLoyer> {
+  /** Total encore dû sur les échéances relancées, toutes pages confondues. */
+  montantEnJeu: number;
+}

@@ -171,4 +171,30 @@ describe('RelancesLoyerService', () => {
       }),
     );
   });
+
+  describe('findPage', () => {
+    const gest = { id: 'u-loc', roles: ['responsable_gestion_locative'], permissions: ['locatif:consulter'] };
+
+    it('pagine la file et calcule le montant en jeu sur toute la file', async () => {
+      prismaMock.relanceLoyer.count.mockResolvedValue(53);
+      prismaMock.relanceLoyer.findMany
+        .mockResolvedValueOnce([{ id: 'r-1' }])
+        .mockResolvedValueOnce([
+          { echeance: { montantPrevu: 100000, montantPaye: 0 } },
+          { echeance: { montantPrevu: 150000, montantPaye: 50000 } },
+          { echeance: { montantPrevu: 80000, montantPaye: 90000 } },
+        ]);
+      const resultat = await relances.findPage({ page: 2, pageSize: 25 }, gest);
+      expect(resultat).toMatchObject({ page: 2, pageSize: 25, total: 53, pages: 3, montantEnJeu: 200000 });
+      expect(prismaMock.relanceLoyer.findMany.mock.calls[0][0]).toMatchObject({ skip: 25, take: 25 });
+    });
+
+    it('une page au-delà de la dernière ramène à la dernière', async () => {
+      prismaMock.relanceLoyer.count.mockResolvedValue(30);
+      prismaMock.relanceLoyer.findMany.mockResolvedValue([]);
+      const resultat = await relances.findPage({ page: 9, pageSize: 25 }, gest);
+      expect(resultat.page).toBe(2);
+      expect(prismaMock.relanceLoyer.findMany.mock.calls[0][0]).toMatchObject({ skip: 25, take: 25 });
+    });
+  });
 });

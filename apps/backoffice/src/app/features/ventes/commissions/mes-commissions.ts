@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { LucideBanknote, LucideCircleCheck, LucideHourglass } from '@lucide/angular';
 import { type MaCommission, type MesCommissions, VentesApiService } from '../../../core/services/api/ventes-api.service';
@@ -11,10 +11,12 @@ import { COMMISSION_STATUS, DOSSIER_STATUS, help, label, pillClass } from '../ve
  * vente, et où elle en est (estimée → validée → payée). Jusqu'ici, un commercial
  * n'en voyait que trois totaux sur son tableau de bord.
  */
+import { Pagination } from '../../../shared/components/pagination/pagination';
+import { pageDe } from '../../../core/utils/pagination';
 @Component({
   selector: 'app-mes-commissions',
   standalone: true,
-  imports: [MoneyPipe, LucideBanknote, LucideCircleCheck, LucideHourglass],
+  imports: [Pagination, MoneyPipe, LucideBanknote, LucideCircleCheck, LucideHourglass],
   templateUrl: './mes-commissions.html',
   styleUrl: './mes-commissions.scss',
 })
@@ -25,6 +27,14 @@ export class MesCommissionsComponent implements OnInit {
 
   protected readonly loading = signal(true);
   protected readonly donnees = signal<MesCommissions | null>(null);
+  protected readonly page = signal(1);
+  protected readonly pageSize = signal(25);
+  protected readonly commissionsPage = computed(() => pageDe(this.donnees()?.items ?? [], this.page(), this.pageSize()));
+
+  protected changerTaille(taille: number): void {
+    this.pageSize.set(taille);
+    this.page.set(1);
+  }
 
   protected readonly statutLabel = (commission: MaCommission) => label(COMMISSION_STATUS, commission.statut);
   protected readonly statutPill = (commission: MaCommission) => pillClass(COMMISSION_STATUS, commission.statut);

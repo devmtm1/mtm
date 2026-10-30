@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fenetrePages, plageAffichee } from './pagination';
+import { fenetrePages, pageDe, plageAffichee } from './pagination';
 
 describe('fenetrePages', () => {
   it('montre tous les numéros jusqu’à sept pages', () => {
@@ -39,5 +39,22 @@ describe('plageAffichee', () => {
 
   it('une liste vide n’affiche aucun rang', () => {
     expect(plageAffichee(1, 25, 0)).toEqual({ debut: 0, fin: 0 });
+  });
+});
+
+describe('pageDe', () => {
+  const liste = Array.from({ length: 53 }, (_, i) => i + 1);
+
+  it('découpe la liste en pages', () => {
+    expect(pageDe(liste, 1, 25)).toHaveLength(25);
+    expect(pageDe(liste, 3, 25)).toEqual([51, 52, 53]);
+  });
+
+  it('une page au-delà de la dernière ramène à la dernière', () => {
+    expect(pageDe(liste, 9, 25)).toEqual([51, 52, 53]);
+  });
+
+  it('une liste vide donne une page vide', () => {
+    expect(pageDe([], 1, 25)).toEqual([]);
   });
 });

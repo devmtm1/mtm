@@ -41,6 +41,7 @@ import type {
   Regularisation,
   RejetPaiementPayload,
   RelanceLoyer,
+  RelancesPage,
   ResiliationSansPreavisPayload,
   SoldeBail,
   SortiePayload,
@@ -280,6 +281,13 @@ export class LocatifApiService {
     if (statut) params = params.set('statut', statut);
     if (bienLocatifId) params = params.set('bienLocatifId', bienLocatifId);
     return this.http.get<RelanceLoyer[]>(`${this.baseUrl}/relances`, { params });
+  }
+
+  /** La file paginée de l'écran « Relances d'impayés » ; le total et le montant en jeu portent sur toute la file. */
+  findRelancesPage(params: { statut?: string; page: number; pageSize: number }): Observable<RelancesPage> {
+    let http = new HttpParams().set('page', params.page).set('pageSize', params.pageSize);
+    if (params.statut) http = http.set('statut', params.statut);
+    return this.http.get<RelancesPage>(`${this.baseUrl}/relances/liste`, { params: http });
   }
 
   countRelances(): Observable<{ aEnvoyer: number }> {

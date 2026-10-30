@@ -1,3 +1,4 @@
+import type { Page } from './page';
 /** Séjours de courte durée, états des lieux et demandes de résiliation. */
 
 export type StatutSejour = 'demande' | 'confirmee' | 'en_cours' | 'terminee' | 'annulee';
@@ -217,12 +218,7 @@ export interface DemandeResiliation {
   };
 }
 
-export interface ResiliationPage {
-  items: DemandeResiliation[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
+export type ResiliationPage = Page<DemandeResiliation>;
 
 export interface ResiliationStats {
   enAttente: number;

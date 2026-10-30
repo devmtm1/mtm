@@ -9,7 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { LucideCheck, LucideUserCheck, LucideChevronLeft, LucideChevronRight, LucideInbox, LucideKeyRound, LucideLandPlot, LucideMail, LucideClock, LucideEllipsisVertical, LucideMessageSquare, LucidePhone, LucideSearch, LucideUserPlus, LucideX } from '@lucide/angular';
+import { LucideCheck, LucideUserCheck, LucideInbox, LucideKeyRound, LucideLandPlot, LucideMail, LucideClock, LucideEllipsisVertical, LucideMessageSquare, LucidePhone, LucideSearch, LucideUserPlus, LucideX } from '@lucide/angular';
 import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ContactApiService, type ContactMessage } from '../../core/services/api/contact-api.service';
@@ -19,6 +19,7 @@ import type { CommercialSummary } from '../../core/models/prospect.model';
 import { NotificationService } from '../../shared/services/notification.service';
 import { StatusChoiceDialog } from '../../shared/dialogs/status-choice-dialog';
 import { RepondreDialog } from './repondre-dialog';
+import { Pagination } from '../../shared/components/pagination/pagination';
 
 type Scope = 'all' | 'unread' | 'read';
 
@@ -29,7 +30,7 @@ type Scope = 'all' | 'unread' | 'read';
  */
 @Component({
   selector: 'app-contacts',
-  imports: [DatePipe, MoneyPipe, MatButtonModule, MatFormFieldModule, MatInputModule, MatMenuModule, MatTooltipModule, LucideCheck, LucideUserCheck, LucideChevronLeft, LucideChevronRight, LucideClock, LucideEllipsisVertical, LucideInbox, LucideKeyRound, LucideLandPlot, LucideMail, LucideMessageSquare, LucidePhone, LucideSearch, LucideUserPlus, LucideX],
+  imports: [Pagination, DatePipe, MoneyPipe, MatButtonModule, MatFormFieldModule, MatInputModule, MatMenuModule, MatTooltipModule, LucideCheck, LucideUserCheck, LucideClock, LucideEllipsisVertical, LucideInbox, LucideKeyRound, LucideLandPlot, LucideMail, LucideMessageSquare, LucidePhone, LucideSearch, LucideUserPlus, LucideX],
   templateUrl: './contacts.html',
   styleUrl: './contacts.scss',
 })
@@ -87,8 +88,6 @@ export class Contacts implements OnInit {
     const start = this.currentPage() * this.pageSize();
     return this.filtered().slice(start, start + this.pageSize());
   });
-  protected readonly rangeStart = computed(() => (this.filtered().length === 0 ? 0 : this.currentPage() * this.pageSize() + 1));
-  protected readonly rangeEnd = computed(() => Math.min(this.filtered().length, (this.currentPage() + 1) * this.pageSize()));
 
   protected readonly hasActiveFilters =computed(() => this.scope() !== 'all' || this.search().trim() !== '');
 

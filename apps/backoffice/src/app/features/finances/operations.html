@@ -116,13 +116,14 @@
           </li>
         }
       </ul>
-      @if (pages() > 1) {
-        <nav class="pagination" aria-label="Pages de saisies">
-          <button mat-stroked-button type="button" (click)="aller(page() - 1)" [disabled]="page() <= 1">Précédentes</button>
-          <span>Page {{ page() }} sur {{ pages() }} · {{ r.total }} saisie{{ r.total > 1 ? 's' : '' }}</span>
-          <button mat-stroked-button type="button" (click)="aller(page() + 1)" [disabled]="page() >= pages()">Suivantes</button>
-        </nav>
-      }
+      <app-pagination
+        [page]="page()"
+        [pageSize]="r.pageSize"
+        [total]="r.total"
+        nom="saisie"
+        [tailles]="[]"
+        (pageChange)="aller($event)"
+      />
     }
   }
 

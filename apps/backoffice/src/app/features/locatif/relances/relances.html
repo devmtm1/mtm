@@ -29,9 +29,9 @@
         <p class="detail-section__hint">
           @if (loading()) {
             Chargement…
-          } @else if (relances().length) {
-            {{ relances().length }} relance{{ relances().length > 1 ? 's' : '' }} ·
-            {{ montantConcerne() | mtmMoney }} en jeu
+          } @else if (total()) {
+            {{ total() }} relance{{ total() > 1 ? 's' : '' }} ·
+            {{ montantEnJeu() | mtmMoney }} en jeu
           } @else {
             Rien à traiter dans cette vue.
           }
@@ -41,7 +41,7 @@
 
     @if (loading()) {
       <div class="skeleton" style="height: 180px"></div>
-    } @else if (relances().length === 0) {
+    } @else if (total() === 0) {
       <p class="detail-note">
         Aucune relance ici. La file se remplit dès qu’une échéance dépasse le premier délai
         paramétré.
@@ -132,6 +132,14 @@
           </tbody>
         </table>
       </div>
+      <app-pagination
+        [page]="page()"
+        [pageSize]="pageSize()"
+        [total]="total()"
+        nom="relance"
+        (pageChange)="aller($event)"
+        (pageSizeChange)="changerTaille($event)"
+      />
     }
   </section>
 </div>

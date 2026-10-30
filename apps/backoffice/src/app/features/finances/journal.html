@@ -144,27 +144,14 @@
           </tbody>
         </table>
       </section>
-      @if (pages() > 1) {
-        <nav class="pagination" aria-label="Pages du journal">
-          <button
-            mat-stroked-button
-            type="button"
-            (click)="aller(page() - 1)"
-            [disabled]="page() <= 1"
-          >
-            Précédentes
-          </button>
-          <span>Page {{ page() }} sur {{ pages() }}</span>
-          <button
-            mat-stroked-button
-            type="button"
-            (click)="aller(page() + 1)"
-            [disabled]="page() >= pages()"
-          >
-            Suivantes
-          </button>
-        </nav>
-      }
+      <app-pagination
+        [page]="page()"
+        [pageSize]="j.pageSize"
+        [total]="j.total"
+        nom="ligne"
+        [tailles]="[]"
+        (pageChange)="aller($event)"
+      />
     }
   }
 </div>

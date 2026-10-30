@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -7,8 +7,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import {
-  LucideChevronLeft,
-  LucideChevronRight,
   LucideContact,
   LucideCopy,
   LucideKeyRound,
@@ -26,7 +24,7 @@ import {
   type Personne,
   type RolePersonne,
 } from '../../core/services/api/personnes-api.service';
-import { fenetrePages, plageAffichee } from '../../core/utils/pagination';
+import { Pagination } from '../../shared/components/pagination/pagination';
 import { NotificationService } from '../../shared/services/notification.service';
 import { PARCOURS_CLIENT } from '../crm/crm-status';
 
@@ -53,8 +51,7 @@ const LIBELLES_ROLE: Record<RolePersonne, string> = {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    LucideChevronLeft,
-    LucideChevronRight,
+    Pagination,
     LucideContact,
     LucideCopy,
     LucideKeyRound,
@@ -292,65 +289,15 @@ const LIBELLES_ROLE: Record<RolePersonne, string> = {
               </tbody>
             </table>
           </div>
-          <nav class="pagination" aria-label="Pagination du répertoire">
-            <p class="pagination__etat">
-              {{ plage().debut }}–{{ plage().fin }} sur {{ total() }} personne{{
-                total() > 1 ? 's' : ''
-              }}
-            </p>
-            <div class="pagination__taille">
-              <label for="personnes-taille">Lignes par page</label>
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                <mat-select
-                  id="personnes-taille"
-                  [value]="pageSize()"
-                  (valueChange)="changerTaille($event)"
-                >
-                  @for (taille of tailles; track taille) {
-                    <mat-option [value]="taille">{{ taille }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-            </div>
-            @if (pages() > 1) {
-              <div class="pagination__pages">
-                <button
-                  type="button"
-                  class="pagination__bouton"
-                  [disabled]="page() === 1"
-                  (click)="aller(page() - 1)"
-                  aria-label="Page précédente"
-                >
-                  <svg lucideChevronLeft aria-hidden="true"></svg>
-                </button>
-                @for (numero of numeros(); track $index) {
-                  @if (numero === '…') {
-                    <span class="pagination__points" aria-hidden="true">…</span>
-                  } @else {
-                    <button
-                      type="button"
-                      class="pagination__bouton"
-                      [class.pagination__bouton--courante]="numero === page()"
-                      [attr.aria-current]="numero === page() ? 'page' : null"
-                      [attr.aria-label]="'Page ' + numero"
-                      (click)="aller(numero)"
-                    >
-                      {{ numero }}
-                    </button>
-                  }
-                }
-                <button
-                  type="button"
-                  class="pagination__bouton"
-                  [disabled]="page() === pages()"
-                  (click)="aller(page() + 1)"
-                  aria-label="Page suivante"
-                >
-                  <svg lucideChevronRight aria-hidden="true"></svg>
-                </button>
-              </div>
-            }
-          </nav>
+          <app-pagination
+            [page]="page()"
+            [pageSize]="pageSize()"
+            [total]="total()"
+            [tailles]="tailles"
+            nom="personne"
+            (pageChange)="aller($event)"
+            (pageSizeChange)="changerTaille($event)"
+          />
           @if (tronque()) {
             <p class="personnes-page__astuce">
               La recherche est très large : seules les premières fiches de chaque type sont lues.
@@ -473,85 +420,7 @@ const LIBELLES_ROLE: Record<RolePersonne, string> = {
       font-weight: 500;
       opacity: 0.75;
     }
-    .pagination {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px 24px;
-      padding: 14px 20px;
-      border-top: 1px solid var(--mtm-border);
-    }
-    .pagination__etat {
-      margin: 0;
-      color: var(--mtm-text-muted);
-      font-size: 0.86rem;
-    }
-    .pagination__taille {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--mtm-text-muted);
-      font-size: 0.86rem;
-    }
-    .pagination__taille .mat-mdc-form-field {
-      width: 84px;
-      --mat-form-field-container-height: 38px;
-      --mat-form-field-container-vertical-padding: 7px;
-    }
-    .pagination__pages {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .pagination__bouton {
-      display: inline-grid;
-      place-items: center;
-      min-width: 36px;
-      height: 36px;
-      padding: 0 8px;
-      border: 1px solid transparent;
-      border-radius: 8px;
-      background: none;
-      color: var(--mtm-text-dark, inherit);
-      font: inherit;
-      font-size: 0.88rem;
-      cursor: pointer;
-    }
-    .pagination__bouton svg {
-      width: 18px;
-      height: 18px;
-    }
-    .pagination__bouton:hover:not(:disabled):not(.pagination__bouton--courante) {
-      background: var(--mtm-bg-hover);
-    }
-    .pagination__bouton:focus-visible {
-      outline: 2px solid var(--mtm-primary);
-      outline-offset: 1px;
-    }
-    .pagination__bouton:disabled {
-      opacity: 0.4;
-      cursor: default;
-    }
-    .pagination__bouton--courante {
-      border-color: var(--mtm-primary);
-      background: var(--mtm-primary-subtle);
-      color: var(--mtm-primary);
-      font-weight: 600;
-    }
-    .pagination__points {
-      min-width: 24px;
-      text-align: center;
-      color: var(--mtm-text-muted);
-    }
     @media (max-width: 720px) {
-      .pagination {
-        justify-content: center;
-      }
-      .pagination__etat {
-        width: 100%;
-        text-align: center;
-      }
       .personnes-table thead {
         position: absolute;
         width: 1px;
@@ -619,10 +488,6 @@ export class Personnes implements OnInit {
     doublon: 0,
   });
 
-  protected readonly numeros = computed(() => fenetrePages(this.page(), this.pages()));
-  protected readonly plage = computed(() =>
-    plageAffichee(this.page(), this.pageSize(), this.total()),
-  );
 
   /** Chaque changement de recherche, de filtre, de page ou de taille relance une lecture ; la plus récente l'emporte. */
   private readonly lecture$ = new Subject<void>();

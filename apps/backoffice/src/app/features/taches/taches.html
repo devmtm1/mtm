@@ -142,12 +142,13 @@
         </li>
       }
     </ul>
-    @if (pages() > 1) {
-      <nav class="pagination" aria-label="Pages de tâches">
-        <button mat-stroked-button type="button" (click)="aller(page() - 1)" [disabled]="page() <= 1">Précédentes</button>
-        <span>Page {{ page() }} sur {{ pages() }} · {{ total() }} tâche{{ total() > 1 ? 's' : '' }}</span>
-        <button mat-stroked-button type="button" (click)="aller(page() + 1)" [disabled]="page() >= pages()">Suivantes</button>
-      </nav>
-    }
+    <app-pagination
+      [page]="page()"
+      [pageSize]="pageSize"
+      [total]="total()"
+      [tailles]="[]"
+      nom="tâche"
+      (pageChange)="aller($event)"
+    />
   }
 </div>

@@ -8,10 +8,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import {
-  LucideChevronLeft,
-  LucideChevronRight,
-  LucideChevronsLeft,
-  LucideChevronsRight,
   LucideExternalLink,
   LucideFile,
   LucideFileSpreadsheet,
@@ -28,7 +24,8 @@ import {
   type GedDocument,
   type GedOrigine,
 } from '../../core/services/api/ged-api.service';
-import { natureFichier, pagesAffichees, type GedFichier } from './documents-utils';
+import { natureFichier, type GedFichier } from './documents-utils';
+import { Pagination } from '../../shared/components/pagination/pagination';
 
 /** Libellé de chaque origine : le module qui porte le document. */
 export const GED_ORIGINE_LABELS: Record<GedOrigine, string> = {
@@ -42,7 +39,6 @@ export const GED_ORIGINE_LABELS: Record<GedOrigine, string> = {
 };
 
 /** Tailles de page proposées (le serveur accepte jusqu'à 100). */
-export const TAILLES_PAGE = [10, 25, 50, 100];
 
 /**
  * GED (section 17 CDC) : retrouver un document — titre, contrat, plan,
@@ -55,16 +51,13 @@ export const TAILLES_PAGE = [10, 25, 50, 100];
   selector: 'app-documents',
   standalone: true,
   imports: [
+    Pagination,
     DatePipe,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    LucideChevronLeft,
-    LucideChevronRight,
-    LucideChevronsLeft,
-    LucideChevronsRight,
     LucideExternalLink,
     LucideFile,
     LucideFileSpreadsheet,
@@ -88,7 +81,6 @@ export class DocumentsPage implements OnInit {
   protected readonly total = signal(0);
   protected readonly page = signal(1);
   protected readonly pageSize = signal(25);
-  protected readonly tailles = TAILLES_PAGE;
   protected readonly loading = signal(true);
   protected readonly failed = signal(false);
   protected readonly origines = signal<GedOrigine[]>([]);
@@ -102,13 +94,6 @@ export class DocumentsPage implements OnInit {
 
   protected readonly pageCount = computed(() =>
     Math.max(1, Math.ceil(this.total() / this.pageSize())),
-  );
-  protected readonly pages = computed(() => pagesAffichees(this.page(), this.pageCount()));
-  protected readonly premier = computed(() =>
-    this.total() === 0 ? 0 : (this.page() - 1) * this.pageSize() + 1,
-  );
-  protected readonly dernier = computed(() =>
-    Math.min(this.total(), this.page() * this.pageSize()),
   );
   protected readonly originOptions = computed(() =>
     this.origines().map((origine) => ({ value: origine, label: GED_ORIGINE_LABELS[origine] })),

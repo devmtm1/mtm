@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -21,6 +21,7 @@ import { OperationDialog } from './operation-dialog';
 import { STATUTS_OPERATION, fcfa, libelleActivite, libelleCategorie } from './finances-utils';
 import { NIVEAUX_VALIDATION, nomPersonne, selectionnerFichier } from './finances-outils';
 import { FormDialog } from './form-dialog';
+import { Pagination } from '../../shared/components/pagination/pagination';
 
 const ONGLETS: { code: string; label: string }[] = [
   { code: 'a_autoriser', label: 'À autoriser' },
@@ -38,7 +39,7 @@ const ONGLETS: { code: string; label: string }[] = [
 @Component({
   selector: 'app-operations-financieres',
   standalone: true,
-  imports: [RouterLink, MatButtonModule, LucidePlus],
+  imports: [Pagination, RouterLink, MatButtonModule, LucidePlus],
   templateUrl: './operations.html',
   styleUrl: './operations.scss',
 })
@@ -61,11 +62,6 @@ export class OperationsFinancieres implements OnInit {
   protected readonly page = signal(1);
   protected readonly loading = signal(true);
   protected readonly resultat = signal<OperationsPage | null>(null);
-  protected readonly pages = computed(() => {
-    const r = this.resultat();
-    return r ? Math.max(1, Math.ceil(r.total / r.pageSize)) : 1;
-  });
-
   ngOnInit(): void {
     this.tresorerie.monPouvoir().subscribe({ next: (p) => this.pouvoir.set(p) });
     this.charger();

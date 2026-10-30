@@ -110,8 +110,8 @@ export class SejoursApiService {
 
   // --- Demandes de résiliation ---
 
-  findResiliations(statut?: string): Observable<ResiliationPage> {
-    let params = new HttpParams().set('pageSize', 100);
+  findResiliations(statut: string | undefined, page: number, pageSize: number): Observable<ResiliationPage> {
+    let params = new HttpParams().set('page', page).set('pageSize', pageSize);
     if (statut) params = params.set('statut', statut);
     return this.http.get<ResiliationPage>(`${this.baseUrl}/resiliations`, { params });
   }

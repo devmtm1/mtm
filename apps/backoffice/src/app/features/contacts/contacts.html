@@ -218,26 +218,15 @@
           </tbody>
         </table>
       </div>
-      <nav class="pager" aria-label="Pagination des messages">
-        <span class="pager__range">{{ rangeStart() }}–{{ rangeEnd() }} sur {{ filtered().length }}</span>
-        <label class="pager__size">
-          Lignes par page
-          <select [value]="pageSize()" (change)="setPageSize(+$any($event.target).value)">
-            @for (size of pageSizes; track size) {
-              <option [value]="size" [selected]="size === pageSize()">{{ size }}</option>
-            }
-          </select>
-        </label>
-        <div class="pager__nav">
-          <button type="button" mat-icon-button [disabled]="currentPage() === 0" (click)="goToPage(currentPage() - 1)" aria-label="Page précédente">
-            <svg lucideChevronLeft aria-hidden="true"></svg>
-          </button>
-          <span>Page {{ currentPage() + 1 }} / {{ totalPages() }}</span>
-          <button type="button" mat-icon-button [disabled]="currentPage() >= totalPages() - 1" (click)="goToPage(currentPage() + 1)" aria-label="Page suivante">
-            <svg lucideChevronRight aria-hidden="true"></svg>
-          </button>
-        </div>
-      </nav>
+      <app-pagination
+        [page]="currentPage() + 1"
+        [pageSize]="pageSize()"
+        [total]="filtered().length"
+        [tailles]="pageSizes"
+        nom="message"
+        (pageChange)="goToPage($event - 1)"
+        (pageSizeChange)="setPageSize($event)"
+      />
     }
   </section>
 </div>

@@ -25,6 +25,7 @@ import {
   selectionnerFichier,
 } from './finances-outils';
 import { FormDialog } from './form-dialog';
+import { Pagination } from '../../shared/components/pagination/pagination';
 
 type Onglet = 'situation' | 'reversements';
 
@@ -44,7 +45,7 @@ const STATUTS: Record<string, { label: string; ton: string }> = {
 @Component({
   selector: 'app-reversements',
   standalone: true,
-  imports: [MatButtonModule],
+  imports: [Pagination, MatButtonModule],
   styleUrl: './finances-pages.scss',
   template: `
     <div class="page-grille">
@@ -240,6 +241,14 @@ const STATUTS: Record<string, { label: string; ton: string }> = {
                 </li>
               }
             </ul>
+            <app-pagination
+              [page]="page()"
+              [pageSize]="pageSize()"
+              [total]="l.total"
+              nom="reversement"
+              (pageChange)="allerPage($event)"
+              (pageSizeChange)="changerTaille($event)"
+            />
           }
         } @else {
           <div class="skeleton" style="height: 180px"></div>
@@ -265,6 +274,8 @@ export class Reversements implements OnInit {
 
   protected readonly onglet = signal<Onglet>('situation');
   protected readonly situation = signal<SituationProprietaires | null>(null);
+  protected readonly page = signal(1);
+  protected readonly pageSize = signal(25);
   protected readonly liste = signal<Page<Reversement> | null>(null);
   protected readonly statut = signal('en_attente');
   protected readonly pouvoir = signal<PouvoirAutorisation | null>(null);
@@ -297,6 +308,7 @@ export class Reversements implements OnInit {
 
   protected filtrer(statut: string): void {
     this.statut.set(statut);
+    this.page.set(1);
     this.chargerListe();
   }
 
@@ -418,9 +430,29 @@ export class Reversements implements OnInit {
     });
   }
 
+  protected allerPage(page: number): void {
+    this.page.set(page);
+    this.chargerListe();
+  }
+
+  protected changerTaille(taille: number): void {
+    this.pageSize.set(taille);
+    this.page.set(1);
+    this.chargerListe();
+  }
+
   private chargerListe(): void {
-    this.api.reversements({ statut: this.statut(), pageSize: 50 }).subscribe({
-      next: (l) => this.liste.set(l),
+    this.api.reversements({ statut: this.statut(), page: this.page(), pageSize: this.pageSize() }).subscribe({
+      next: (l) => {
+        // Une page devenue vide (la dernière demande vient d'être traitée) : retour à la dernière page qui existe.
+        if (l.items.length === 0 && l.total > 0 && l.page > 1) {
+          this.page.set(Math.ceil(l.total / l.pageSize));
+          this.chargerListe();
+          return;
+        }
+        this.page.set(l.page);
+        this.liste.set(l);
+      },
       error: (e: unknown) => this.notify.error(e, 'Impossible de charger les reversements'),
     });
   }
