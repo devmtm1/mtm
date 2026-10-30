@@ -16,6 +16,7 @@ import {
   libelle,
   nomVoyageur,
 } from '../sejours/sejour-status';
+import { Pagination } from '../../../shared/components/pagination/pagination';
 
 const ONGLETS = [
   { value: 'en_attente', label: 'À traiter' },
@@ -29,7 +30,7 @@ const ONGLETS = [
  */
 @Component({
   selector: 'app-resiliations',
-  imports: [DatePipe, RouterLink, MatButtonModule],
+  imports: [Pagination, DatePipe, RouterLink, MatButtonModule],
   templateUrl: './resiliations.html',
   styleUrl: './resiliations.scss',
 })
@@ -45,6 +46,9 @@ export class Resiliations implements OnInit {
   protected readonly onglet = signal('en_attente');
   protected readonly loading = signal(true);
   protected readonly items = signal<DemandeResiliation[]>([]);
+  protected readonly page = signal(1);
+  protected readonly pageSize = signal(25);
+  protected readonly total = signal(0);
   protected readonly stats = signal<ResiliationStats | null>(null);
 
   protected readonly statuts = STATUTS_RESILIATION;
@@ -60,6 +64,18 @@ export class Resiliations implements OnInit {
 
   protected choisir(valeur: string): void {
     this.onglet.set(valeur);
+    this.page.set(1);
+    this.charger();
+  }
+
+  protected aller(page: number): void {
+    this.page.set(page);
+    this.charger();
+  }
+
+  protected changerTaille(taille: number): void {
+    this.pageSize.set(taille);
+    this.page.set(1);
     this.charger();
   }
 
@@ -76,9 +92,17 @@ export class Resiliations implements OnInit {
   private charger(): void {
     if (!this.chargementInitialFait) this.loading.set(true);
     this.api.getResiliationStats().subscribe({ next: (stats) => this.stats.set(stats), error: () => this.stats.set(null) });
-    this.api.findResiliations(this.onglet() || undefined).subscribe({
+    this.api.findResiliations(this.onglet() || undefined, this.page(), this.pageSize()).subscribe({
       next: (page) => {
+        // Une page devenue vide (la dernière demande vient d'être traitée) : on revient à la dernière page qui existe.
+        if (page.items.length === 0 && page.total > 0 && page.page > 1) {
+          this.page.set(Math.ceil(page.total / page.pageSize));
+          this.charger();
+          return;
+        }
         this.items.set(page.items);
+        this.page.set(page.page);
+        this.total.set(page.total);
         this.finChargement();
       },
       error: (error: unknown) => {

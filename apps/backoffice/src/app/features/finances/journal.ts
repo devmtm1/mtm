@@ -4,7 +4,7 @@ import {
   LucideTrendingUp,
   LucideWallet,
 } from '@lucide/angular';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -22,12 +22,14 @@ import { SessionService } from '../../core/services/session.service';
 import { NotificationService } from '../../shared/services/notification.service';
 import { ExportFinancesDialog } from './export-dialog';
 import { ACTIVITES, NATURES, fcfa, libelleActivite, presets } from './finances-utils';
+import { Pagination } from '../../shared/components/pagination/pagination';
 
 /** Journal financier : tous les mouvements d'argent de la période, d'où qu'ils viennent. */
 @Component({
   selector: 'app-journal-financier',
   standalone: true,
   imports: [
+    Pagination,
     LucideCreditCard,
     LucideListChecks,
     LucideTrendingUp,
@@ -61,11 +63,6 @@ export class JournalFinancier implements OnInit {
   protected readonly loading = signal(true);
   protected readonly journal = signal<JournalPage | null>(null);
   protected readonly activites = ACTIVITES;
-  protected readonly pages = computed(() => {
-    const j = this.journal();
-    return j ? Math.max(1, Math.ceil(j.total / j.pageSize)) : 1;
-  });
-
   ngOnInit(): void {
     this.recherche.valueChanges.pipe(debounceTime(300)).subscribe(() => this.recharger());
     this.charger();

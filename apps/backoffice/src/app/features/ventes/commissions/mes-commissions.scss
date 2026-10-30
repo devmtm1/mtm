@@ -14,3 +14,7 @@ tbody tr:focus-visible {
   outline: 2px solid var(--mtm-primary);
   outline-offset: -2px;
 }
+
+app-pagination {
+  --pagination-gutter: 0px;
+}

@@ -10,3 +10,13 @@
 .relances-page__filtre {
   min-width: 190px;
 }
+
+/* La carte a déjà son retrait : la barre de pagination s'y aligne sans en ajouter un second. */
+app-pagination {
+  --pagination-gutter: 0px;
+}
+
+/* Le nom du locataire et sa référence, l’adresse du bien et le mois : deux lignes, pas deux mots collés. */
+td small.cell-muted {
+  display: block;
+}

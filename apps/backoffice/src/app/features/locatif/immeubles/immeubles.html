@@ -87,6 +87,14 @@
           </tbody>
         </table>
       </div>
+      <app-pagination
+        [page]="page()"
+        [pageSize]="pageSize()"
+        [total]="total()"
+        nom="propriété"
+        (pageChange)="aller($event)"
+        (pageSizeChange)="changerTaille($event)"
+      />
     }
   </section>
 </div>

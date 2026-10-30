@@ -147,7 +147,8 @@ export class ImmeublesService {
           ...immeubleBaseInclude,
           logements: { select: logementSelect(maintenant) },
         },
-        orderBy: [{ nom: 'asc' }],
+        // L'identifiant départage deux propriétés de même nom : sans lui, une propriété peut passer d'une page à l'autre.
+        orderBy: [{ nom: 'asc' }, { id: 'asc' }],
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),

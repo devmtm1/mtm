@@ -16,6 +16,7 @@ import { NotificationService } from '../../shared/services/notification.service'
 import { fcfa } from './finances-utils';
 import { MODES_PAIEMENT, aujourdhuiIso, dateFr, libelleMode, nomPersonne, selectionnerFichier } from './finances-outils';
 import { FormDialog } from './form-dialog';
+import { Pagination } from '../../shared/components/pagination/pagination';
 
 const STATUTS: Record<string, { label: string; ton: string }> = {
   demandee: { label: 'À décider', ton: 'warning' },
@@ -33,7 +34,7 @@ const STATUTS: Record<string, { label: string; ton: string }> = {
 @Component({
   selector: 'app-remboursements',
   standalone: true,
-  imports: [MatButtonModule],
+  imports: [Pagination, MatButtonModule],
   styleUrl: './finances-pages.scss',
   template: `
     <div class="page-grille">
@@ -135,6 +136,14 @@ const STATUTS: Record<string, { label: string; ton: string }> = {
               </li>
             }
           </ul>
+          <app-pagination
+            [page]="page()"
+            [pageSize]="pageSize()"
+            [total]="l.total"
+            nom="demande"
+            (pageChange)="aller($event)"
+            (pageSizeChange)="changerTaille($event)"
+          />
         }
       } @else {
         <div class="skeleton" style="height: 180px"></div>
@@ -152,6 +161,8 @@ export class Remboursements implements OnInit {
   protected readonly peutCreer = this.session.hasPermission('finances:creer');
   protected readonly peutPayer = this.session.hasPermission('finances:payer');
 
+  protected readonly page = signal(1);
+  protected readonly pageSize = signal(25);
   protected readonly liste = signal<Page<Remboursement> | null>(null);
   protected readonly regles = signal<RegleDesistement | null>(null);
   protected readonly pouvoir = signal<PouvoirAutorisation | null>(null);
@@ -179,6 +190,7 @@ export class Remboursements implements OnInit {
 
   protected filtrer(statut: string): void {
     this.statut.set(statut);
+    this.page.set(1);
     this.charger();
   }
 
@@ -299,9 +311,29 @@ export class Remboursements implements OnInit {
     });
   }
 
+  protected aller(page: number): void {
+    this.page.set(page);
+    this.charger();
+  }
+
+  protected changerTaille(taille: number): void {
+    this.pageSize.set(taille);
+    this.page.set(1);
+    this.charger();
+  }
+
   private charger(): void {
-    this.api.remboursements({ statut: this.statut(), pageSize: 50 }).subscribe({
-      next: (l) => this.liste.set(l),
+    this.api.remboursements({ statut: this.statut(), page: this.page(), pageSize: this.pageSize() }).subscribe({
+      next: (l) => {
+        // Une page devenue vide (la dernière demande vient d'être traitée) : retour à la dernière page qui existe.
+        if (l.items.length === 0 && l.total > 0 && l.page > 1) {
+          this.page.set(Math.ceil(l.total / l.pageSize));
+          this.charger();
+          return;
+        }
+        this.page.set(l.page);
+        this.liste.set(l);
+      },
       error: (e: unknown) => this.notify.error(e, 'Impossible de charger les demandes'),
     });
   }

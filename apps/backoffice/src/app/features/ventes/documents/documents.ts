@@ -12,6 +12,8 @@ import { debounceTime } from 'rxjs/operators';
 import { VentesApiService } from '../../../core/services/api/ventes-api.service';
 import { LabelPipe } from '../../../shared/pipes/label.pipe';
 import type { VenteDocumentSearchItem, VenteOptions } from '../../../core/models/vente.model';
+import { Pagination } from '../../../shared/components/pagination/pagination';
+import { pageDe } from '../../../core/utils/pagination';
 
 /**
  * GED des ventes (J1.6) : retrouver un document — contrat, reçu, facture,
@@ -21,7 +23,7 @@ import type { VenteDocumentSearchItem, VenteOptions } from '../../../core/models
 @Component({
   selector: 'app-vente-documents',
   standalone: true,
-  imports: [LabelPipe, DatePipe, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, LucideArrowLeft, LucideExternalLink, LucideFileText, LucideSearch, LucideX],
+  imports: [Pagination, LabelPipe, DatePipe, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, LucideArrowLeft, LucideExternalLink, LucideFileText, LucideSearch, LucideX],
   templateUrl: './documents.html',
   styleUrl: './documents.scss',
 })
@@ -47,12 +49,25 @@ export class VenteDocumentsPage implements OnInit {
     return term ? this.documents().filter((document) => `${document.title ?? ''} ${document.type}`.toLowerCase().includes(term)) : this.documents();
   });
 
+  protected readonly page = signal(1);
+  protected readonly pageSize = signal(25);
+  /** Les documents de la page affichée : la liste (100 au plus) est filtrée puis découpée dans le navigateur. */
+  protected readonly visiblesPage = computed(() => pageDe(this.visible(), this.page(), this.pageSize()));
+
+  protected changerTaille(taille: number): void {
+    this.pageSize.set(taille);
+    this.page.set(1);
+  }
+
   ngOnInit(): void {
     const params = this.route.snapshot.queryParamMap;
     this.context.set({ dossierVenteId: params.get('dossierVenteId'), prospectId: params.get('prospectId'), terrainId: params.get('terrainId') });
     this.api.getOptions().subscribe({ next: (options) => this.options.set(options), error: () => this.options.set(null) });
     this.load();
-    this.filters.controls.search.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((value) => this.search.set(value));
+    this.filters.controls.search.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((value) => {
+      this.search.set(value);
+      this.page.set(1);
+    });
     this.filters.controls.type.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.load());
     this.filters.controls.dateFrom.valueChanges.pipe(debounceTime(400), takeUntilDestroyed(this.destroyRef)).subscribe(() => this.load());
     this.filters.controls.dateTo.valueChanges.pipe(debounceTime(400), takeUntilDestroyed(this.destroyRef)).subscribe(() => this.load());
@@ -78,6 +93,7 @@ export class VenteDocumentsPage implements OnInit {
   }
 
   protected load(): void {
+    this.page.set(1);
     if (!this.chargementInitialFait) this.loading.set(true);
     const value = this.filters.getRawValue();
     const context = this.context();

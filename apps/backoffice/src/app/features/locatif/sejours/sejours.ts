@@ -26,6 +26,7 @@ import {
   nomVoyageur,
   periodeSejour,
 } from './sejour-status';
+import { Pagination } from '../../../shared/components/pagination/pagination';
 
 const VUES = [
   { value: '', label: 'Tous' },
@@ -43,6 +44,7 @@ const VUES = [
 @Component({
   selector: 'app-sejours',
   imports: [
+    Pagination,
     DatePipe,
     MoneyPipe,
     ReactiveFormsModule,
@@ -120,18 +122,9 @@ export class Sejours implements OnInit {
     });
   }
 
-  protected pagePrecedente(): void {
-    if (this.page() > 1) {
-      this.page.update((valeur) => valeur - 1);
-      this.charger();
-    }
-  }
-
-  protected pageSuivante(): void {
-    if (this.page() < this.pages()) {
-      this.page.update((valeur) => valeur + 1);
-      this.charger();
-    }
+  protected aller(page: number): void {
+    this.page.set(page);
+    this.charger();
   }
 
   private reinitialiserPage(): void {

@@ -25,6 +25,7 @@ import {
   selectionnerFichier,
 } from './finances-outils';
 import { FormDialog } from './form-dialog';
+import { Pagination } from '../../shared/components/pagination/pagination';
 
 type Onglet = 'soldes' | 'mouvements' | 'clotures';
 
@@ -49,7 +50,7 @@ const STATUTS_MOUVEMENT: Record<string, { label: string; ton: string }> = {
 @Component({
   selector: 'app-tresorerie',
   standalone: true,
-  imports: [RouterLink, MatButtonModule],
+  imports: [Pagination, RouterLink, MatButtonModule],
   styleUrl: './finances-pages.scss',
   template: `
     <div class="page-grille">
@@ -229,6 +230,14 @@ const STATUTS_MOUVEMENT: Record<string, { label: string; ton: string }> = {
                   </li>
                 }
               </ul>
+              <app-pagination
+                [page]="pageMouvements()"
+                [pageSize]="tailleMouvements()"
+                [total]="m.total"
+                nom="mouvement"
+                (pageChange)="allerMouvements($event)"
+                (pageSizeChange)="tailleMouvementsChoisie($event)"
+              />
             }
           } @else {
             <div class="skeleton" style="height: 180px"></div>
@@ -304,6 +313,14 @@ const STATUTS_MOUVEMENT: Record<string, { label: string; ton: string }> = {
                   </li>
                 }
               </ul>
+              <app-pagination
+                [page]="pageClotures()"
+                [pageSize]="tailleClotures()"
+                [total]="c.total"
+                nom="clôture"
+                (pageChange)="allerClotures($event)"
+                (pageSizeChange)="tailleCloturesChoisie($event)"
+              />
             }
           } @else {
             <div class="skeleton" style="height: 180px"></div>
@@ -332,6 +349,10 @@ export class Tresorerie implements OnInit {
 
   protected readonly onglet = signal<Onglet>('soldes');
   protected readonly soldes = signal<Soldes | null>(null);
+  protected readonly pageMouvements = signal(1);
+  protected readonly tailleMouvements = signal(25);
+  protected readonly pageClotures = signal(1);
+  protected readonly tailleClotures = signal(25);
   protected readonly mouvements = signal<Page<MouvementFonds> | null>(null);
   protected readonly clotures = signal<Page<ClotureCaisse> | null>(null);
   protected readonly manquantes = signal<JourNonCloture[]>([]);
@@ -366,6 +387,7 @@ export class Tresorerie implements OnInit {
 
   protected filtrerMouvements(statut: string): void {
     this.statutMouvement.set(statut);
+    this.pageMouvements.set(1);
     this.chargerMouvements();
   }
 
@@ -578,18 +600,57 @@ export class Tresorerie implements OnInit {
     });
   }
 
+  protected allerMouvements(page: number): void {
+    this.pageMouvements.set(page);
+    this.chargerMouvements();
+  }
+
+  protected tailleMouvementsChoisie(taille: number): void {
+    this.tailleMouvements.set(taille);
+    this.pageMouvements.set(1);
+    this.chargerMouvements();
+  }
+
+  protected allerClotures(page: number): void {
+    this.pageClotures.set(page);
+    this.chargerClotures();
+  }
+
+  protected tailleCloturesChoisie(taille: number): void {
+    this.tailleClotures.set(taille);
+    this.pageClotures.set(1);
+    this.chargerClotures();
+  }
+
   private chargerMouvements(): void {
     if (!this.soldes()) this.chargerSoldes();
-    this.api.mouvements({ statut: this.statutMouvement(), pageSize: 50 }).subscribe({
-      next: (m) => this.mouvements.set(m),
+    this.api.mouvements({ statut: this.statutMouvement(), page: this.pageMouvements(), pageSize: this.tailleMouvements() }).subscribe({
+      next: (m) => {
+        // Une page devenue vide (le dernier mouvement vient d'être traité) : retour à la dernière page qui existe.
+        if (m.items.length === 0 && m.total > 0 && m.page > 1) {
+          this.pageMouvements.set(Math.ceil(m.total / m.pageSize));
+          this.chargerMouvements();
+          return;
+        }
+        this.pageMouvements.set(m.page);
+        this.mouvements.set(m);
+      },
       error: (e: unknown) => this.notify.error(e, 'Impossible de charger les mouvements'),
     });
   }
 
   private chargerClotures(): void {
     if (!this.soldes()) this.chargerSoldes();
-    this.api.cloturesCaisse({ pageSize: 50 }).subscribe({
-      next: (c) => this.clotures.set(c),
+    this.api.cloturesCaisse({ page: this.pageClotures(), pageSize: this.tailleClotures() }).subscribe({
+      next: (c) => {
+        if (c.items.length === 0 && c.total > 0 && c.page > 1) {
+          this.pageClotures.set(Math.ceil(c.total / c.pageSize));
+          this.chargerClotures();
+          return;
+        }
+        this.pageClotures.set(c.page);
+        this.clotures.set(c);
+      },
       error: (e: unknown) => this.notify.error(e, 'Impossible de charger les clôtures'),
     });
     this.api.joursNonClotures().subscribe({ next: (j) => this.manquantes.set(j) });

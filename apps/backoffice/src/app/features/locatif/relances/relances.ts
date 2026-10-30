@@ -16,6 +16,7 @@ import { SessionService } from '../../../core/services/session.service';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { JustificationDialog } from '../../../shared/dialogs/justification-dialog';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
+import { Pagination } from '../../../shared/components/pagination/pagination';
 import {
   MODELES_RELANCE,
   SITUATIONS_PAIEMENT,
@@ -34,6 +35,7 @@ import {
 @Component({
   selector: 'app-relances',
   imports: [
+    Pagination,
     DatePipe,
     MoneyPipe,
     ReactiveFormsModule,
@@ -57,6 +59,11 @@ export class Relances implements OnInit {
   private readonly sessionService = inject(SessionService);
 
   protected readonly relances = signal<RelanceLoyer[]>([]);
+  protected readonly page = signal(1);
+  protected readonly pageSize = signal(25);
+  /** Toute la file, pas seulement la page affichée. */
+  protected readonly total = signal(0);
+  protected readonly montantEnJeu = signal(0);
   protected readonly options = signal<Partial<LocatifOptions>>({});
   protected readonly loading = signal(true);
   protected readonly saving = signal(false);
@@ -74,21 +81,15 @@ export class Relances implements OnInit {
     return modeles.map((modele) => `${modele.joursRetard} j`).join(', ');
   });
 
-  /** Total encore dû sur les échéances relancées : l'enjeu de la file. */
-  protected readonly montantConcerne = computed(() =>
-    this.relances().reduce((somme, relance) => {
-      const prevu = Number(relance.echeance?.montantPrevu ?? 0);
-      const paye = Number(relance.echeance?.montantPaye ?? 0);
-      return somme + Math.max(0, prevu - paye);
-    }, 0),
-  );
-
   ngOnInit(): void {
     this.api.getOptions().subscribe({
       next: (options) => this.options.set(options),
       error: () => this.options.set({}),
     });
-    this.filtres.controls.statut.valueChanges.subscribe(() => this.charger());
+    this.filtres.controls.statut.valueChanges.subscribe(() => {
+      this.page.set(1);
+      this.charger();
+    });
     this.charger();
   }
 
@@ -155,9 +156,15 @@ export class Relances implements OnInit {
 
   private charger(): void {
     if (!this.chargementInitialFait) this.loading.set(true);
-    this.api.findRelances(this.filtres.controls.statut.value).subscribe({
-      next: (relances) => {
-        this.relances.set(relances);
+    this.api
+      .findRelancesPage({ statut: this.filtres.controls.statut.value, page: this.page(), pageSize: this.pageSize() })
+      .subscribe({
+      next: (resultat) => {
+        this.relances.set(resultat.items);
+        // Le serveur ramène une page trop loin (la file a rétréci) à la dernière : on suit.
+        this.page.set(resultat.page);
+        this.total.set(resultat.total);
+        this.montantEnJeu.set(resultat.montantEnJeu);
         this.finChargement();
       },
       error: (error: unknown) => {
@@ -165,6 +172,17 @@ export class Relances implements OnInit {
         this.notify.error(error, 'Impossible de charger les relances');
       },
     });
+  }
+
+  protected aller(page: number): void {
+    this.page.set(page);
+    this.charger();
+  }
+
+  protected changerTaille(taille: number): void {
+    this.pageSize.set(taille);
+    this.page.set(1);
+    this.charger();
   }
 
   /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place, sans clignoter ni remonter. */

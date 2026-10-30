@@ -29,6 +29,7 @@ import {
   pastille,
   routeDossier,
 } from './taches-status';
+import { Pagination } from '../../shared/components/pagination/pagination';
 
 type Vue = 'mes' | 'creees' | 'equipe';
 
@@ -57,6 +58,7 @@ const FILTRES_ECHEANCE: { valeur: string; label: string }[] = [
   selector: 'app-taches',
   standalone: true,
   imports: [
+    Pagination,
     ReactiveFormsModule,
     RouterLink,
     MatButtonModule,

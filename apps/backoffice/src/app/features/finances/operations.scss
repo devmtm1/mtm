@@ -96,15 +96,6 @@
   }
 }
 
-.pagination {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 0.88rem;
-}
-
 .aide {
   margin: 0;
   font-size: 0.85rem;
@@ -126,4 +117,8 @@
   &:empty {
     display: none;
   }
+}
+
+app-pagination {
+  --pagination-gutter: 0px;
 }

@@ -13,7 +13,7 @@ import { RequirePermissions } from '../auth/decorators/require-permissions.decor
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { AuditService } from '../audit/audit.service';
 import { RelancesLoyerService } from './relances.service';
-import { EnvoyerRelanceDto, QueryRelanceDto } from './dto/relance.dto';
+import { EnvoyerRelanceDto, QueryRelanceDto, QueryRelancePageDto } from './dto/relance.dto';
 
 /**
  * File de relances de loyer (section 15 : « modèles configurables et
@@ -35,6 +35,16 @@ export class RelancesController {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.relances.findAll(query, user);
+  }
+
+  /** La file paginée de l'écran « Relances d'impayés » ; `GET /locatif/relances` reste la liste simple du fil d'alertes. */
+  @Get('liste')
+  @RequirePermissions('locatif:consulter')
+  findPage(
+    @Query() query: QueryRelancePageDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.relances.findPage(query, user);
   }
 
   @Get('compteur')

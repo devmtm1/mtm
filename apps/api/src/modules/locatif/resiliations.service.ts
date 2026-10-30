@@ -153,7 +153,7 @@ export class ResiliationsService {
         include: demandeInclude,
         // Les demandes à traiter d'abord, les plus anciennes en tête : ce sont
         // celles qui attendent depuis le plus longtemps une réponse.
-        orderBy: [{ statut: 'asc' }, { dateDemande: 'asc' }],
+        orderBy: [{ statut: 'asc' }, { dateDemande: 'asc' }, { id: 'asc' }],
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),

@@ -10,26 +10,3 @@ export function natureFichier(url: string | null | undefined): GedFichier {
   if (['doc', 'docx', 'odt', 'txt', 'rtf'].includes(extension)) return 'texte';
   return 'autre';
 }
-
-/**
- * Numéros de page à afficher : toujours la première et la dernière, la page
- * courante et ses voisines ; `null` marque un « … » entre deux plages.
- */
-export function pagesAffichees(page: number, total: number): (number | null)[] {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  const voulues = new Set([1, total, page - 1, page, page + 1]);
-  if (page <= 3) [2, 3, 4].forEach((n) => voulues.add(n));
-  if (page >= total - 2) [total - 3, total - 2, total - 1].forEach((n) => voulues.add(n));
-  const numeros = [...voulues].filter((n) => n >= 1 && n <= total).sort((a, b) => a - b);
-  const resultat: (number | null)[] = [];
-  numeros.forEach((n, i) => {
-    if (i > 0) {
-      const ecart = n - numeros[i - 1];
-      // Un « … » qui ne cache qu'une page ne sert à rien : on l'affiche.
-      if (ecart === 2) resultat.push(n - 1);
-      else if (ecart > 2) resultat.push(null);
-    }
-    resultat.push(n);
-  });
-  return resultat;
-}
