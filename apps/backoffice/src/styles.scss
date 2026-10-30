@@ -2671,6 +2671,46 @@ ag-grid-angular {
     }
   }
 
+  /* Tendance par rapport à la période précédente : une pastille verte (hausse), rouge (baisse) ou grise. */
+  small.tendance {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: var(--mtm-bg-hover);
+    color: var(--mtm-text-muted);
+    font-weight: 600;
+  }
+
+  small.tendance--hausse {
+    background: var(--mtm-success-bg);
+    color: var(--mtm-success);
+  }
+
+  small.tendance--baisse {
+    background: var(--mtm-error-bg);
+    color: var(--mtm-error);
+  }
+
+  /* Une carte sur laquelle on clique (tableau de bord) : un bouton sans l'apparence d'un bouton. */
+  &--lien {
+    width: 100%;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+    &:hover {
+      border-color: var(--mtm-primary);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--mtm-primary);
+      outline-offset: 2px;
+    }
+  }
+
   /* Avec un anneau à côté, le montant se resserre pour ne pas le toucher. */
   &:has(.chiffre__anneau) .chiffre__corps strong {
     font-size: 1.08rem;
@@ -2720,6 +2760,35 @@ ag-grid-angular {
       color: var(--mtm-text-dark);
       font-size: 0.72rem;
       font-weight: 700;
+    }
+  }
+}
+
+/* Cartes de chiffres compactes (tableaux de bord) : sur téléphone, deux par ligne, sans icône ni anneau, pour que quatre
+   chiffres tiennent sur un demi-écran au lieu d'une pile de quatre cartes. */
+@media (max-width: 720px) {
+  .chiffres--compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+
+    .chiffre {
+      align-items: flex-start;
+      padding: 12px;
+
+      .chiffre__icone,
+      .chiffre__anneau {
+        display: none;
+      }
+
+      .chiffre__corps strong {
+        font-size: 1.1rem;
+      }
+
+      .chiffre__corps small {
+        font-size: 0.74rem;
+        line-height: 1.3;
+        white-space: normal;
+      }
     }
   }
 }

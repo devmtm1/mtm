@@ -355,6 +355,8 @@ export class AgendaService {
             select: {
               referenceInterne: true,
               bienLocatifId: true,
+              locataire: { select: { firstName: true, lastName: true } },
+              bienLocatif: { select: { adresse: true } },
             },
           },
         },
@@ -365,7 +367,14 @@ export class AgendaService {
           id: loyer.id,
           source: 'loyer',
           type: 'echeance',
-          titre: `Loyer ${loyer.bailLocatif.referenceInterne}`,
+          // Qui paie, et pour quel bien : « Loyer B-2026-0003 » ne dit rien à qui lit son agenda.
+          titre: [
+            'Loyer',
+            [loyer.bailLocatif.locataire?.firstName, loyer.bailLocatif.locataire?.lastName].filter(Boolean).join(' ') || loyer.bailLocatif.referenceInterne,
+            loyer.bailLocatif.bienLocatif?.adresse,
+          ]
+            .filter(Boolean)
+            .join(' · '),
           debut: jourComplet(loyer.dateEcheance),
           fin: null,
           journeeEntiere: true,
@@ -390,7 +399,7 @@ export class AgendaService {
           numero: true,
           dateEcheance: true,
           statut: true,
-          dossierVente: { select: { id: true, referenceInterne: true } },
+          dossierVente: { select: { id: true, referenceInterne: true, prospect: { select: { prenom: true, nom: true } } } },
         },
         take: 300,
       });
@@ -399,7 +408,12 @@ export class AgendaService {
           id: echeance.id,
           source: 'echeance_vente',
           type: 'echeance',
-          titre: `Échéance n°${echeance.numero} — ${echeance.dossierVente.referenceInterne ?? 'dossier de vente'}`,
+          // Le client d'abord : c'est lui que l'on cherche dans son agenda, pas la référence du dossier.
+          titre: `Paiement n°${echeance.numero} — ${
+            [echeance.dossierVente.prospect?.prenom, echeance.dossierVente.prospect?.nom].filter(Boolean).join(' ') ||
+            echeance.dossierVente.referenceInterne ||
+            'dossier de vente'
+          }`,
           debut: jourComplet(echeance.dateEcheance),
           fin: null,
           journeeEntiere: true,

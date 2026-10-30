@@ -92,6 +92,16 @@ export class DocumentsPage implements OnInit {
     jusqua: '',
   });
 
+  /** Raccourcis de période : ils règlent les deux dates, « Personnalisée » les laisse à la main. */
+  protected readonly periodes: { code: string; label: string }[] = [
+    { code: 'tout', label: 'Toutes les dates' },
+    { code: '7', label: '7 derniers jours' },
+    { code: '30', label: '30 derniers jours' },
+    { code: 'annee', label: 'Cette année' },
+    { code: 'perso', label: 'Personnalisée' },
+  ];
+  protected readonly periodeChoisie = signal('tout');
+
   protected readonly pageCount = computed(() =>
     Math.max(1, Math.ceil(this.total() / this.pageSize())),
   );
@@ -124,7 +134,24 @@ export class DocumentsPage implements OnInit {
   }
 
   protected reset(): void {
+    this.periodeChoisie.set('tout');
     this.filters.reset({ q: '', origine: '', type: '', depuis: '', jusqua: '' });
+  }
+
+  /** Vrai dès qu'un filtre est posé : le message « aucun résultat » n'a de sens qu'alors. */
+  protected filtresActifs(): boolean {
+    const v = this.filters.getRawValue();
+    return !!(v.q.trim() || v.origine || v.type.trim() || v.depuis || v.jusqua);
+  }
+
+  protected choisirPeriode(code: string): void {
+    this.periodeChoisie.set(code);
+    if (code === 'perso') return;
+    const jour = (d: Date) => d.toISOString().slice(0, 10);
+    const aujourdhui = new Date();
+    const depuis =
+      code === '7' ? new Date(aujourdhui.getTime() - 7 * 86_400_000) : code === '30' ? new Date(aujourdhui.getTime() - 30 * 86_400_000) : code === 'annee' ? new Date(aujourdhui.getFullYear(), 0, 1) : null;
+    this.filters.patchValue({ depuis: depuis ? jour(depuis) : '', jusqua: '' });
   }
 
   protected openParent(document: GedDocument): void {

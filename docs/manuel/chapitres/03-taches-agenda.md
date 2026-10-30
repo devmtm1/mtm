@@ -16,7 +16,8 @@ Tâches et agenda sont ouverts à **tous les collaborateurs**.
 
 - Une tâche a un **responsable**, une **priorité** (basse, moyenne, haute, urgente), une **date limite** et un **statut** (à faire, en cours, terminée, annulée).
 - Les onglets : **Mes tâches** (celles qui vous sont confiées) et **Confiées par moi**.
-- Les tuiles du haut comptent celles **en retard**, **pour aujourd’hui** et **à faire au total**.
+- Les **pastilles** sous la recherche filtrent d’un clic : **À faire**, **En retard**, **Aujourd’hui**, **Cette semaine**, **Sans date**, **Terminées**, **Annulées**. Les trois premières affichent leur nombre.
+- La liste est découpée par période (en retard, aujourd’hui, cette semaine, plus tard).
 - Une tâche **en retard** est marquée en rouge, avec le nombre de jours.
 - Cochez le **rond à gauche** quand la tâche est faite.
 
@@ -49,6 +50,8 @@ Une tâche garde son **historique** : création, changement de responsable, de p
 ![Mon agenda](img/11-agenda.png)
 
 - Vues **mois**, **semaine** et **liste** ; **mon agenda** ou celui de **l’équipe**.
+- Les pastilles **Événements, Tâches, Visites, Échéances** filtrent l’affichage et montrent combien il y en a dans la période ; décochez-en une pour la masquer. Les échéances financières (loyers, paiements) sont écrites plus discrètement et portent le nom de la personne concernée.
+- Sur téléphone, le mois montre un point de couleur par élément ; touchez un jour pour lire ses éléments en dessous.
 - Les événements : **rendez-vous, visite, appel, vérification, réunion, échéance**.
 - Sont ajoutés **automatiquement** (en lecture seule, dans votre périmètre) : tâches à rendre, visites suivies par le CRM, fins de mandat, jalons de chantier, arrivées et départs de séjours, loyers à échéance, échéances de paiement et fins de réservation des ventes.
 - La période affichée ne dépasse pas **62 jours**.

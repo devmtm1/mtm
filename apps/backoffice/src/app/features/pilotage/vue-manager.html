@@ -14,42 +14,45 @@
   @if (loading() && !donnees()) {
     <div class="skeleton" style="height: 300px"></div>
   } @else if (donnees(); as d) {
-    <section class="kpi-row" aria-label="Activité de l’équipe">
-      <article class="kpi">
-        <span class="kpi__icon"><svg lucideReceipt aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          <strong>{{ d.totaux.ventesSoldees }}</strong>
+    <section class="chiffres chiffres--compact" aria-label="Activité de l’équipe">
+      <div class="chiffre">
+        <span class="chiffre__icone"><svg lucideReceipt aria-hidden="true"></svg></span>
+        <div class="chiffre__corps">
           <span>Ventes soldées</span>
+          <strong>{{ d.totaux.ventesSoldees }}</strong>
           <small>{{ fcfa(d.totaux.chiffreAffaires) }}</small>
-        </span>
-      </article>
-      <article class="kpi">
-        <span class="kpi__icon"><svg lucideTarget aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          <strong>{{ tauxDit(d.objectifs.tauxVentes) }}</strong>
+        </div>
+      </div>
+      <div class="chiffre">
+        <span class="chiffre__icone"><svg lucideTarget aria-hidden="true"></svg></span>
+        <div class="chiffre__corps">
           <span>Objectif de ventes</span>
-          <small
-            >{{ d.objectifs.realiseVentes }} sur {{ d.objectifs.cibleVentes }} ·
-            {{ d.objectifs.avecObjectif }} commercial(aux) avec objectif</small
-          >
-        </span>
-      </article>
-      <article class="kpi" [class.kpi--attention]="d.totaux.relancesEnRetard > 0">
-        <span class="kpi__icon"><svg lucideBellRing aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          <strong>{{ d.totaux.relancesEnRetard }}</strong>
+          <strong>{{ d.objectifs.avecObjectif ? tauxDit(d.objectifs.tauxVentes) : 'Non fixé' }}</strong>
+          <small>
+            @if (d.objectifs.avecObjectif) {
+              {{ d.objectifs.realiseVentes }} sur {{ d.objectifs.cibleVentes }} · {{ d.objectifs.avecObjectif }} commercial{{ d.objectifs.avecObjectif > 1 ? 'aux' : '' }}
+            } @else {
+              Aucun objectif ce mois
+            }
+          </small>
+        </div>
+      </div>
+      <div class="chiffre" [class.chiffre--du]="d.totaux.relancesEnRetard > 0">
+        <span class="chiffre__icone"><svg lucideBellRing aria-hidden="true"></svg></span>
+        <div class="chiffre__corps">
           <span>Relances en retard</span>
-          <small>{{ d.totaux.tachesEnRetard }} tâche(s) en retard</small>
-        </span>
-      </article>
-      <article class="kpi" [class.kpi--attention]="d.bloques.total > 0">
-        <span class="kpi__icon"><svg lucideOctagonAlert aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          <strong>{{ d.bloques.total }}</strong>
+          <strong>{{ d.totaux.relancesEnRetard }}</strong>
+          <small>{{ d.totaux.tachesEnRetard }} tâche{{ d.totaux.tachesEnRetard > 1 ? 's' : '' }} en retard</small>
+        </div>
+      </div>
+      <div class="chiffre" [class.chiffre--du]="d.bloques.total > 0" [class.chiffre--ok]="d.bloques.total === 0">
+        <span class="chiffre__icone"><svg lucideOctagonAlert aria-hidden="true"></svg></span>
+        <div class="chiffre__corps">
           <span>Dossiers bloqués</span>
-          <small>à débloquer</small>
-        </span>
-      </article>
+          <strong>{{ d.bloques.total }}</strong>
+          <small>{{ d.bloques.total > 0 ? 'à débloquer' : 'Tout avance' }}</small>
+        </div>
+      </div>
     </section>
 
     <section class="page-card" aria-label="Équipe commerciale">
@@ -91,33 +94,33 @@
                     </button>
                   </td>
                   <td class="is-right" [class.zero]="ligne.prospectsActifs === 0">
-                    {{ ligne.prospectsActifs }}
+                    {{ valeur(ligne.prospectsActifs) }}
                   </td>
                   <td
                     class="is-right"
                     [class.zero]="ligne.relancesEnRetard === 0"
                     [class.negatif]="ligne.relancesEnRetard > 0"
                   >
-                    {{ ligne.relancesEnRetard }}
+                    {{ valeur(ligne.relancesEnRetard) }}
                   </td>
                   <td class="is-right" [class.zero]="ligne.visitesEffectuees === 0">
-                    {{ ligne.visitesEffectuees }}
+                    {{ valeur(ligne.visitesEffectuees) }}
                   </td>
                   <td class="is-right" [class.zero]="ligne.ventesSoldees === 0">
-                    {{ ligne.ventesSoldees }}
+                    {{ valeur(ligne.ventesSoldees) }}
                   </td>
                   <td class="is-right" [class.zero]="ligne.chiffreAffaires === 0">
-                    {{ fcfa(ligne.chiffreAffaires) }}
+                    {{ montant(ligne.chiffreAffaires) }}
                   </td>
                   <td class="is-right" [class.zero]="ligne.commissionsEstimees === 0">
-                    {{ fcfa(ligne.commissionsEstimees) }}
+                    {{ montant(ligne.commissionsEstimees) }}
                   </td>
                   <td
                     class="is-right"
                     [class.zero]="ligne.tachesEnRetard === 0"
                     [class.negatif]="ligne.tachesEnRetard > 0"
                   >
-                    {{ ligne.tachesEnRetard }}
+                    {{ valeur(ligne.tachesEnRetard) }}
                   </td>
                   <td class="objectif">
                     @if (ligne.objectif?.cibleVentes) {
@@ -145,16 +148,16 @@
               <tfoot>
                 <tr>
                   <th scope="row">Total de l’équipe</th>
-                  <td class="is-right">{{ totauxEquipe().prospectsActifs }}</td>
+                  <td class="is-right">{{ valeur(totauxEquipe().prospectsActifs) }}</td>
                   <td class="is-right" [class.negatif]="totauxEquipe().relancesEnRetard > 0">
-                    {{ totauxEquipe().relancesEnRetard }}
+                    {{ valeur(totauxEquipe().relancesEnRetard) }}
                   </td>
-                  <td class="is-right">{{ totauxEquipe().visitesEffectuees }}</td>
-                  <td class="is-right">{{ totauxEquipe().ventesSoldees }}</td>
-                  <td class="is-right">{{ fcfa(totauxEquipe().chiffreAffaires) }}</td>
-                  <td class="is-right">{{ fcfa(totauxEquipe().commissionsEstimees) }}</td>
+                  <td class="is-right">{{ valeur(totauxEquipe().visitesEffectuees) }}</td>
+                  <td class="is-right">{{ valeur(totauxEquipe().ventesSoldees) }}</td>
+                  <td class="is-right">{{ montant(totauxEquipe().chiffreAffaires) }}</td>
+                  <td class="is-right">{{ montant(totauxEquipe().commissionsEstimees) }}</td>
                   <td class="is-right" [class.negatif]="totauxEquipe().tachesEnRetard > 0">
-                    {{ totauxEquipe().tachesEnRetard }}
+                    {{ valeur(totauxEquipe().tachesEnRetard) }}
                   </td>
                   <td></td>
                 </tr>

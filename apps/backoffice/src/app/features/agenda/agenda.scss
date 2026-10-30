@@ -33,29 +33,6 @@
   gap: 16px;
 }
 
-/* --- En-tête --- */
-.entete-titre {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-}
-
-.entete-titre__icone {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  background: var(--mtm-primary-subtle);
-  color: var(--mtm-primary);
-
-  svg {
-    width: 26px;
-    height: 26px;
-  }
-}
-
 /* --- Barre de navigation --- */
 .barre {
   display: flex;
@@ -219,6 +196,18 @@
   height: 8px;
   border-radius: 50%;
   background: var(--couleur);
+}
+
+.legende__nombre {
+  min-width: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--mtm-bg-hover);
+  color: var(--mtm-text-muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 20px;
+  text-align: center;
 }
 
 /* --- Corps : calendrier et colonne latérale --- */
@@ -423,67 +412,6 @@
   font-size: 0.85rem;
 }
 
-/* --- Colonne latérale --- */
-.lateral {
-  display: grid;
-  gap: 16px;
-}
-
-.lateral__titre {
-  margin: 0;
-  font-family: var(--mtm-font-display);
-  font-size: 1.05rem;
-  font-weight: 700;
-}
-
-.rapide {
-  display: grid;
-  gap: 14px;
-}
-
-.rapide__tuiles {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.rapide__tuile {
-  display: grid;
-  justify-items: center;
-  gap: 2px;
-  padding: 12px 4px;
-  border-radius: 12px;
-  background: var(--fond);
-  text-align: center;
-
-  strong {
-    font-size: 1.25rem;
-    line-height: 1.2;
-  }
-
-  > span:last-child {
-    color: var(--mtm-text-muted);
-    font-size: 0.7rem;
-  }
-}
-
-.rapide__icone {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  margin-bottom: 4px;
-  border-radius: 10px;
-  background: #fff;
-  color: var(--couleur);
-  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.1);
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
-}
-
 .panneau {
   display: grid;
   gap: 10px;
@@ -642,5 +570,72 @@
   .barre__titre {
     margin-left: 0;
     font-size: 1.1rem;
+  }
+}
+
+/* Les échéances financières (loyers, paiements) sont du contexte, pas vos rendez-vous : elles s'écrivent plus discrètement. */
+.element[data-famille='echeances'] .element__texte,
+.ligne[data-famille='echeances'] .ligne__titre {
+  color: var(--mtm-text-muted);
+  font-weight: 400;
+}
+
+/* Titre de la période affichée : sans icône, comme les autres pages. */
+.barre__titre svg {
+  display: none;
+}
+
+/* Téléphone : le mois tient dans la largeur (sept colonnes étroites, des points au lieu des titres) ; les éléments du jour
+   choisi se lisent dans le panneau en dessous. */
+@media (max-width: 720px) {
+  .mois {
+    overflow-x: visible;
+    gap: 3px;
+  }
+
+  .mois__entete,
+  .mois__semaine {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 3px;
+  }
+
+  .mois__entete span {
+    padding: 6px 0;
+    font-size: 0.62rem;
+    letter-spacing: 0;
+    text-align: center;
+  }
+
+  .case {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    justify-content: center;
+    gap: 3px;
+    min-height: 54px;
+    padding: 4px 2px;
+    border-radius: 8px;
+
+    .case__numero {
+      width: 100%;
+      text-align: center;
+      justify-self: center;
+    }
+
+    .case__plus {
+      display: none;
+    }
+
+    .element {
+      padding: 0;
+    }
+
+    .element__corps {
+      display: none;
+    }
+
+    .element .puce {
+      margin-top: 0;
+    }
   }
 }

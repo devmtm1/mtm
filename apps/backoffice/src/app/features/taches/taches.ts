@@ -1,4 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -33,20 +34,23 @@ import { Pagination } from '../../shared/components/pagination/pagination';
 
 type Vue = 'mes' | 'creees' | 'equipe';
 
-/** Filtres de statut proposés : « à traiter » regroupe ce qui reste à faire. */
-const FILTRES_STATUT: { valeur: string; label: string }[] = [
-  { valeur: 'a_faire,en_cours', label: 'À traiter' },
-  { valeur: 'terminee', label: 'Terminées' },
-  { valeur: 'annulee', label: 'Annulées' },
-  { valeur: '', label: 'Toutes' },
-];
+/** Une puce de filtre : ce qu'elle règle (statut et échéance) et ce qu'elle compte. */
+interface Puce {
+  code: string;
+  label: string;
+  statut: string;
+  echeance: string;
+  compte: number | null;
+  danger?: boolean;
+}
 
-const FILTRES_ECHEANCE: { valeur: string; label: string }[] = [
-  { valeur: '', label: 'Toutes les échéances' },
-  { valeur: 'retard', label: 'En retard' },
-  { valeur: 'aujourdhui', label: 'Aujourd’hui' },
-  { valeur: 'semaine', label: 'Cette semaine' },
-  { valeur: 'sans_date', label: 'Sans date limite' },
+/** Les périodes dans lesquelles la liste est découpée, dans l'ordre où elles s'affichent. */
+const PERIODES: { code: string; titre: string }[] = [
+  { code: 'retard', titre: 'En retard' },
+  { code: 'aujourdhui', titre: 'Aujourd’hui' },
+  { code: 'semaine', titre: 'Cette semaine' },
+  { code: 'plus_tard', titre: 'Plus tard' },
+  { code: 'sans', titre: 'Sans date limite' },
 ];
 
 /**
@@ -58,6 +62,7 @@ const FILTRES_ECHEANCE: { valeur: string; label: string }[] = [
   selector: 'app-taches',
   standalone: true,
   imports: [
+    DatePipe,
     Pagination,
     ReactiveFormsModule,
     RouterLink,
@@ -94,12 +99,51 @@ export class Taches implements OnInit {
   protected readonly total = signal(0);
   protected readonly resume = signal<TachesResume | null>(null);
 
-  protected readonly filtresStatut = FILTRES_STATUT;
-  protected readonly filtresEcheance = FILTRES_ECHEANCE;
   protected readonly priorites = Object.keys(PRIORITES);
   protected readonly pageSize = 20;
   protected readonly pages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize)));
   protected readonly moi = this.session.user()?.id;
+
+  /** Les filtres rapides : à faire, en retard, aujourd'hui… avec ce que chacun compte quand on le sait. */
+  protected readonly puces = computed<Puce[]>(() => {
+    const r = this.resume();
+    const afaire = 'a_faire,en_cours';
+    return [
+      { code: 'a_faire', label: 'À faire', statut: afaire, echeance: '', compte: r?.aFaire ?? null },
+      { code: 'retard', label: 'En retard', statut: afaire, echeance: 'retard', compte: r?.enRetard ?? null, danger: (r?.enRetard ?? 0) > 0 },
+      { code: 'aujourdhui', label: 'Aujourd’hui', statut: afaire, echeance: 'aujourdhui', compte: r?.aujourdhui ?? null },
+      { code: 'semaine', label: 'Cette semaine', statut: afaire, echeance: 'semaine', compte: null },
+      { code: 'sans_date', label: 'Sans date', statut: afaire, echeance: 'sans_date', compte: null },
+      { code: 'terminees', label: 'Terminées', statut: 'terminee', echeance: '', compte: null },
+      { code: 'annulees', label: 'Annulées', statut: 'annulee', echeance: '', compte: null },
+    ];
+  });
+
+  /** La puce qui correspond aux filtres appliqués ; aucune si la combinaison ne ressemble à aucune puce. */
+  protected readonly puceActive = computed(
+    () => this.puces().find((puce) => puce.statut === this.statut() && puce.echeance === this.echeance())?.code ?? null,
+  );
+
+  /**
+   * La liste découpée par période (en retard, aujourd'hui, cette semaine, plus tard) tant qu'on regarde ce qui reste à
+   * faire ; les tâches terminées ou annulées restent en une seule liste.
+   */
+  protected readonly groupes = computed(() => {
+    const taches = this.items();
+    if (this.statut() !== 'a_faire,en_cours') return [{ code: 'toutes', titre: '', taches }];
+    const maintenant = new Date();
+    const periode = (tache: Tache): string => {
+      if (!tache.dateLimite) return 'sans';
+      const urgence = urgenceEcheance(tache.dateLimite, maintenant);
+      if (tache.enRetard || urgence === 'retard') return 'retard';
+      if (urgence === 'aujourdhui') return 'aujourdhui';
+      const jours = (new Date(tache.dateLimite).getTime() - maintenant.getTime()) / 86_400_000;
+      return jours <= 7 ? 'semaine' : 'plus_tard';
+    };
+    return PERIODES.map((p) => ({ code: p.code, titre: p.titre, taches: taches.filter((tache) => periode(tache) === p.code) })).filter(
+      (g) => g.taches.length > 0,
+    );
+  });
 
   ngOnInit(): void {
     this.recherche.valueChanges.pipe(debounceTime(300)).subscribe(() => {
@@ -119,6 +163,13 @@ export class Taches implements OnInit {
 
   protected changerVue(vue: Vue): void {
     this.vue.set(vue);
+    this.page.set(1);
+    this.charger();
+  }
+
+  protected choisirPuce(puce: Puce): void {
+    this.statut.set(puce.statut);
+    this.echeance.set(puce.echeance);
     this.page.set(1);
     this.charger();
   }

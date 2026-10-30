@@ -1,15 +1,11 @@
 <div class="agenda-page">
   <header class="page-header agenda-entete">
-    <div class="entete-titre">
-      <span class="entete-titre__icone" aria-hidden="true"><svg lucideCalendarDays></svg></span>
-      <div>
-        <p class="eyebrow">Mon travail</p>
-        <h1 class="page-header__title">Agenda</h1>
-        <p class="page-header__subtitle">
-          Rendez-vous, visites, appels et réunions de l’équipe, avec les échéances qui tombent dans vos dossiers : tâches,
-          mandats, jalons de chantier, séjours, loyers et paiements.
-        </p>
-      </div>
+    <div>
+      <h1 class="page-header__title">Agenda</h1>
+      <p class="page-header__subtitle">
+        Rendez-vous, visites et réunions, avec les échéances de vos dossiers : tâches, mandats, chantiers, séjours, loyers
+        et paiements.
+      </p>
     </div>
     @if (canCreate) {
       <button mat-flat-button color="primary" type="button" (click)="nouveau()">
@@ -27,9 +23,7 @@
       <button class="barre__rond" type="button" (click)="naviguer(1)" aria-label="Période suivante">
         <svg lucideChevronRight aria-hidden="true"></svg>
       </button>
-      <h2 class="barre__titre" aria-live="polite">
-        <svg lucideCalendarDays aria-hidden="true"></svg>{{ titre() }}
-      </h2>
+      <h2 class="barre__titre" aria-live="polite">{{ titre() }}</h2>
     </div>
     <div class="barre__reglages">
       <div class="segment" role="group" aria-label="Vue">
@@ -56,6 +50,7 @@
       >
         <span class="legende__case"><svg lucideCheck aria-hidden="true"></svg></span>
         <span class="legende__point"></span>{{ famille.label }}
+        <span class="legende__nombre">{{ comptes().get(famille.code) ?? 0 }}</span>
       </button>
     }
   </div>
@@ -144,34 +139,6 @@
     </section>
 
     <div class="lateral">
-      <section class="page-card rapide" aria-label="Vue rapide">
-        <h3 class="lateral__titre">Vue rapide</h3>
-        <div class="rapide__tuiles">
-          @for (stat of statistiques(); track stat.code) {
-            <article class="rapide__tuile" [attr.data-famille]="stat.code">
-              <span class="rapide__icone" aria-hidden="true">
-                @switch (stat.code) {
-                  @case ('evenements') {
-                    <svg lucideCalendarDays></svg>
-                  }
-                  @case ('taches') {
-                    <svg lucideClipboardCheck></svg>
-                  }
-                  @case ('visites') {
-                    <svg lucideMapPin></svg>
-                  }
-                  @default {
-                    <svg lucideAlarmClock></svg>
-                  }
-                }
-              </span>
-              <strong>{{ stat.nombre }}</strong>
-              <span>{{ stat.label }}</span>
-            </article>
-          }
-        </div>
-      </section>
-
       <aside class="panneau page-card" aria-live="polite">
         @if (selection(); as item) {
           <h3 class="panneau__titre">{{ item.titre }}</h3>

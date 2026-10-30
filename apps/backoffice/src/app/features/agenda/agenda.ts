@@ -3,14 +3,10 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import {
-  LucideAlarmClock,
   LucideArrowRight,
-  LucideCalendarDays,
   LucideCheck,
   LucideChevronLeft,
   LucideChevronRight,
-  LucideClipboardCheck,
-  LucideMapPin,
   LucidePlus,
 } from '@lucide/angular';
 import { AgendaApiService, type ItemAgenda } from '../../core/services/api/agenda-api.service';
@@ -52,14 +48,10 @@ const PAR_CASE = 3;
   imports: [
     RouterLink,
     MatButtonModule,
-    LucideAlarmClock,
     LucideArrowRight,
-    LucideCalendarDays,
     LucideCheck,
     LucideChevronLeft,
     LucideChevronRight,
-    LucideClipboardCheck,
-    LucideMapPin,
     LucidePlus,
   ],
   templateUrl: './agenda.html',
@@ -120,22 +112,20 @@ export class Agenda implements OnInit {
     return cle ? (this.parJour().get(cle) ?? []) : [];
   });
 
-  /** « Vue rapide » : combien d'éléments de chaque famille dans la période affichée (les familles masquées comptent zéro). */
-  protected readonly statistiques = computed(() => {
-    const visibles = this.items().filter((item) => !this.masquees().has(familleDe(item)));
-    return FAMILLES.map((f) => ({
-      code: f.code,
-      label: f.label,
-      nombre: visibles.filter((item) => familleDe(item) === f.code).length,
-    }));
+  /** Combien d'éléments de chaque famille dans la période affichée : le chiffre de la légende (les familles masquées comptent toujours). */
+  protected readonly comptes = computed(() => {
+    const comptes = new Map<string, number>();
+    for (const item of this.items()) comptes.set(familleDe(item), (comptes.get(familleDe(item)) ?? 0) + 1);
+    return comptes;
   });
 
-  /** Les cinq prochains éléments à partir de maintenant, dans la période chargée. */
+  /** Les cinq prochains éléments à partir de maintenant, dans la période chargée, sans répéter ceux du jour déjà détaillé à côté. */
   protected readonly prochains = computed(() => {
     const maintenant = Date.now();
     const aujourdhui = cleDate(new Date());
     return this.items()
       .filter((item) => !this.masquees().has(familleDe(item)))
+      .filter((item) => cleJour(item) !== this.jourChoisi())
       .filter((item) => (item.journeeEntiere ? cleJour(item) >= aujourdhui : new Date(item.debut).getTime() >= maintenant))
       .sort((a, b) => new Date(a.debut).getTime() - new Date(b.debut).getTime())
       .slice(0, 5);

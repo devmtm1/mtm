@@ -1,13 +1,10 @@
 <section class="documents-page">
   <header class="page-header">
     <div>
-      <p class="eyebrow">Mon travail</p>
       <h1 class="page-header__title">Documents</h1>
       <p class="page-header__subtitle">
-        Les documents de tous les modules au même endroit : titres, plans, contrats, reçus,
-        rapports, quittances. Vous ne voyez que ceux que vos droits sur chaque module vous
-        permettent de voir. La recherche porte sur le titre, le type et la référence du dossier, pas
-        sur le contenu des fichiers.
+        Les documents de tous vos modules au même endroit. La recherche porte sur le titre, le type et la référence du
+        dossier, pas sur le contenu des fichiers.
       </p>
     </div>
   </header>
@@ -48,18 +45,29 @@
           <mat-label>Type</mat-label>
           <input matInput formControlName="type" placeholder="contrat, plan…" autocomplete="off" />
         </mat-form-field>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Du</mat-label>
-          <input matInput type="date" formControlName="depuis" />
-        </mat-form-field>
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Au</mat-label>
-          <input matInput type="date" formControlName="jusqua" />
-        </mat-form-field>
         <button mat-button type="button" class="list-filters__reset" (click)="reset()">
           <svg class="btn-icon" lucideX aria-hidden="true"></svg>Effacer
         </button>
       </form>
+      <nav class="periodes-doc" aria-label="Période de création">
+        @for (periode of periodes; track periode.code) {
+          <button
+            type="button"
+            class="periode-doc"
+            [class.is-actif]="periodeChoisie() === periode.code"
+            [attr.aria-pressed]="periodeChoisie() === periode.code"
+            (click)="choisirPeriode(periode.code)"
+          >
+            {{ periode.label }}
+          </button>
+        }
+        @if (periodeChoisie() === 'perso') {
+          <form class="periode-doc__dates" [formGroup]="filters">
+            <label>Du <input type="date" formControlName="depuis" /></label>
+            <label>au <input type="date" formControlName="jusqua" /></label>
+          </form>
+        }
+      </nav>
     </div>
 
     @if (loading()) {
@@ -77,10 +85,14 @@
     } @else if (!documents().length) {
       <div class="empty-state">
         <svg lucideFileText aria-hidden="true"></svg>
-        <h3>Aucun document</h3>
-        <p>
-          Aucun document ne correspond à cette recherche dans les modules que vous pouvez consulter.
-        </p>
+        @if (filtresActifs()) {
+          <h3>Aucun résultat</h3>
+          <p>Aucun document ne correspond à ces filtres dans les modules que vous pouvez consulter.</p>
+          <button mat-stroked-button type="button" (click)="reset()">Effacer les filtres</button>
+        } @else {
+          <h3>Aucun document pour l’instant</h3>
+          <p>Les documents apparaissent ici dès qu’un module en produit : contrat, reçu, plan, rapport, quittance.</p>
+        }
       </div>
     } @else {
       <div class="table-scroll">
