@@ -35,6 +35,13 @@ export class QueryTerrainDto {
    * sol (habitation, commerce, agricole) et non ce qui est vendu.
    */
   @IsOptional() @IsString() typeBien?: string;
+  /**
+   * Rubrique d'entrée du catalogue public : `hectares` (terrains de plus de 500 m²) ou `terrains_villas`
+   * (les autres terrains et les villas). Sans effet sur la liste de gestion.
+   */
+  @IsOptional()
+  @IsIn(['hectares', 'terrains_villas'])
+  categorie?: 'hectares' | 'terrains_villas';
   /** Typologie d'un bien bâti : F1, F2… */
   @IsOptional() @IsString() nombrePieces?: string;
   @IsOptional() @IsUUID() proprietaireId?: string;

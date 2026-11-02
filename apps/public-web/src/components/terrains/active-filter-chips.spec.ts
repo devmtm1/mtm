@@ -15,6 +15,14 @@ describe('puces des filtres actifs', () => {
     expect(chips[1].key).toBe('region');
   });
 
+  it('annonce la rubrique d’entrée avant tout et permet de la retirer', () => {
+    const chips = activeFilterChips({ categorie: 'hectares', region: 'Thiès' });
+
+    expect(chips[0]).toEqual({ key: 'categorie', label: 'Nos hectares', clears: ['categorie'] });
+    expect(chips[1].key).toBe('region');
+    expect(activeFilterChips({ categorie: 'terrains_villas' })[0].label).toBe('Terrains & villas');
+  });
+
   it('porte la typologie d’un bien bâti', () => {
     const chips = activeFilterChips({ nombrePieces: 'F3' });
 

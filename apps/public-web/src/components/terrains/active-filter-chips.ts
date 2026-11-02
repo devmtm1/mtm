@@ -1,6 +1,7 @@
 import type { TerrainFilters } from '../../types/terrain';
 import { formatMoney } from '../../utils/format';
 import { typeBienLabel, vocationLabel } from '../../utils/bienLabels';
+import { CATEGORIES_CATALOGUE } from '../../utils/categoriesCatalogue';
 
 export interface FilterChip {
   key: string;
@@ -12,6 +13,10 @@ export interface FilterChip {
 /** Puces lisibles des filtres actifs, dans l'ordre du formulaire. */
 export function activeFilterChips(filters: TerrainFilters): FilterChip[] {
   const chips: FilterChip[] = [];
+  // La rubrique d'entrée (« Nos hectares »…) d'abord : c'est par elle que le visiteur est arrivé.
+  if (filters.categorie) {
+    chips.push({ key: 'categorie', label: CATEGORIES_CATALOGUE[filters.categorie].libelle, clears: ['categorie'] });
+  }
   // La nature du bien d'abord : c'est le tri le plus structurant du catalogue.
   if (filters.typeBien) {
     chips.push({ key: 'typeBien', label: typeBienLabel(filters.typeBien), clears: ['typeBien'] });

@@ -10,6 +10,7 @@ import type {
 } from './dto/public-terrain.dto';
 import { DEFAULT_TERRAIN_OPTIONS } from './terrains.service';
 import { publicTerrainSelect, publicVenduSelect } from './terrain-queries';
+import { filtreCategorie } from './terrain-categories';
 
 /**
  * Catalogue public des terrains (J1.2, sections 5-7 et 11 CDC). Sont exposés les
@@ -65,6 +66,8 @@ export class TerrainsPublicService {
       ...(query.commune ? { commune: query.commune } : {}),
       ...(query.vocation ? { vocation: query.vocation } : {}),
       ...(query.typeBien ? { typeBien: query.typeBien } : {}),
+      // « Nos hectares » ou « Terrains et villas » : en AND, pour ne pas écraser la recherche libre (OR).
+      ...(query.categorie ? { AND: [filtreCategorie(query.categorie)] } : {}),
       ...(query.nombrePieces ? { nombrePieces: query.nombrePieces } : {}),
       ...(query.superficieMin !== undefined || query.superficieMax !== undefined
         ? {
