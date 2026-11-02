@@ -1,6 +1,6 @@
 /* ==========================================================================
    MTM IMMOBILIER — Coquille applicative (shell)
-   Sidebar 248px (72px replié) piloté par la variable --sidebar-width ;
+   Sidebar 256px (72px replié) piloté par la variable --sidebar-width ;
    aucune position fixe forcée, Angular Material gère la mise en page.
    ========================================================================== */
 
@@ -9,7 +9,7 @@
   width: 100%;
   min-width: 0;
 
-  --sidebar-width: 248px;
+  --sidebar-width: 256px;
 
   &--collapsed {
     --sidebar-width: 72px;

@@ -11,7 +11,7 @@ import {
   NotificationsApiService,
   type ServerNotification,
 } from '../../core/services/api/notifications-api.service';
-import { routeDeLien } from '../../core/services/notifications-feed.service';
+import { NotificationsFeedService, routeDeLien } from '../../core/services/notifications-feed.service';
 import { NotificationService } from '../../shared/services/notification.service';
 
 /**
@@ -28,6 +28,7 @@ import { NotificationService } from '../../shared/services/notification.service'
 })
 export class MesNotifications implements OnInit {
   private readonly api = inject(NotificationsApiService);
+  private readonly fil = inject(NotificationsFeedService);
   private readonly notify = inject(NotificationService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder).nonNullable;
@@ -63,7 +64,8 @@ export class MesNotifications implements OnInit {
 
   protected ouvrir(notification: ServerNotification): void {
     if (!notification.readAt) {
-      this.api.markRead(notification.id).subscribe({ error: () => undefined });
+      // Par le fil partagé : la cloche et le tableau de bord perdent la notification en même temps que cette page.
+      this.fil.marquerLue(notification.id);
       this.page.update((page) => ({
         nonLues: Math.max(0, page.nonLues - 1),
         items: page.items.map((item) =>
@@ -78,6 +80,7 @@ export class MesNotifications implements OnInit {
   protected toutLu(): void {
     this.api.markAllRead().subscribe({
       next: () => {
+        this.fil.retirerNotificationsServeur();
         this.page.update((page) => ({
           nonLues: 0,
           items: page.items.map((item) => ({ ...item, readAt: item.readAt ?? new Date().toISOString() })),

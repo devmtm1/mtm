@@ -136,7 +136,8 @@ export class Dashboard implements OnInit {
   protected readonly hasAnyModule =
     this.canViewVentes || this.canViewMandats || this.canViewTerrains || this.canViewCrm || this.canViewLocatif || this.canViewConstruction || this.canViewFinances;
 
-  protected readonly feedItems = signal<FeedItem[] | null>(null);
+  /** Le fil partagé avec la cloche : lire une notification la retire des deux. */
+  protected readonly feedItems = this.feed.items;
   private readonly ventesStats = signal<VenteDashboardStats | null>(null);
   private readonly mandatStats = signal<MandatStats | null>(null);
   private readonly terrainStats = signal<TerrainStats | null>(null);
@@ -443,9 +444,9 @@ export class Dashboard implements OnInit {
       this.vue.set(this.vueInitiale());
     }
     this.feed
-      .load()
+      .actualiser()
       .pipe(catchError(() => of([] as FeedItem[])))
-      .subscribe((items) => this.feedItems.set(items));
+      .subscribe();
 
     const pret = (domaine: Domaine) => this.domainesPrets.update((ensemble) => new Set(ensemble).add(domaine));
     if (this.canViewVentes) {
@@ -471,6 +472,8 @@ export class Dashboard implements OnInit {
   }
 
   protected open(item: FeedItem): void {
+    // Ouvrir une notification du serveur vaut lecture : elle disparaît du tableau de bord et de la cloche.
+    if (item.notificationId) this.feed.marquerLue(item.notificationId);
     void this.router.navigate(item.route, { queryParams: item.queryParams });
   }
 

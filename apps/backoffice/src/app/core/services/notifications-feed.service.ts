@@ -1,6 +1,6 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { Observable, defer, forkJoin, of } from 'rxjs';
-import { catchError, finalize, map } from 'rxjs/operators';
+import { catchError, finalize, map, tap } from 'rxjs/operators';
 import { ActiviteReseau } from './activite-reseau.service';
 import { ConstructionApiService } from './api/construction-api.service';
 import { LocatifApiService } from './api/locatif-api.service';
@@ -95,6 +95,33 @@ export class NotificationsFeedService {
   private readonly agendaApi = inject(AgendaApiService);
 
   private readonly activite = inject(ActiviteReseau);
+
+  /**
+   * Le fil tel qu'il est affiché : un seul pour toute l'application (cloche, tableau de bord…). `null` tant qu'il n'a
+   * jamais été chargé. Lire une notification la retire d'ici, donc de partout à la fois.
+   */
+  private readonly etat = signal<FeedItem[] | null>(null);
+  readonly items = this.etat.asReadonly();
+
+  /** Recharge le fil et met à jour l'affichage partagé. */
+  actualiser(): Observable<FeedItem[]> {
+    return this.load().pipe(tap((items) => this.etat.set(items)));
+  }
+
+  /**
+   * Une notification du serveur a été lue (ouverte depuis la cloche, le tableau de bord ou la page Notifications) :
+   * on la marque lue côté serveur, et elle quitte le fil sans attendre le prochain rechargement.
+   * L'échec de l'appel n'empêche pas la navigation ; au prochain rechargement, le serveur la redonnera si elle n'a pas été marquée.
+   */
+  marquerLue(notificationId: string): void {
+    this.notificationsApi.markRead(notificationId).subscribe({ error: () => undefined });
+    this.etat.update((items) => items?.filter((item) => item.notificationId !== notificationId) ?? items);
+  }
+
+  /** « Tout marquer comme lu » : les notifications du serveur quittent le fil ; les signaux calculés (tâches en retard…) restent tant que la situation dure. */
+  retirerNotificationsServeur(): void {
+    this.etat.update((items) => items?.filter((item) => !item.notificationId) ?? items);
+  }
 
   /** Chargement de fond : ses nombreuses requêtes ne font pas bouger la barre de progression. */
   load(): Observable<FeedItem[]> {
