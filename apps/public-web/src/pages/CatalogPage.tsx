@@ -20,6 +20,7 @@ import { BandeauPage, IMAGE_BANDEAU_PAGE } from '../components/layout/BandeauPag
 import { useEditableContent } from '../hooks/useEditableContent';
 import { fieldInputClass } from '../components/ui/FormField';
 import type { Terrain, TerrainFilters as TerrainFiltersValue } from '../types/terrain';
+import { CATEGORIES_CATALOGUE } from '../utils/categoriesCatalogue';
 
 // Relus depuis l'URL : un filtre absent d'ici est écrit dans l'adresse mais
 // jamais rechargé — il disparaîtrait au premier aller-retour.
@@ -79,6 +80,9 @@ function parseFilters(params: URLSearchParams): TerrainFiltersValue {
     filters.sortOrder = tri.sortOrder;
   }
 
+  const categorie = params.get('categorie');
+  if (categorie === 'hectares' || categorie === 'terrains_villas') filters.categorie = categorie;
+
   const statut = params.get('statut');
   if (statut === 'disponible' || statut === 'vendu') filters.statut = statut;
 
@@ -118,10 +122,12 @@ export function CatalogPage() {
   const { data, loading, error } = useTerrainsCatalog(queryFilters);
   const { text, lines, loading: contenuEnCours } = useEditableContent();
 
+  const rubrique = filters.categorie ? CATEGORIES_CATALOGUE[filters.categorie] : null;
   usePageMetadata({
-    title: 'Terrains et villas à vendre',
-    description:
-      'Catalogue de terrains et de villas vérifiés à vendre au Sénégal : filtrez par type de bien, zone, commune, statut juridique, superficie et budget.',
+    title: rubrique ? `${rubrique.libelle} à vendre` : 'Terrains et villas à vendre',
+    description: rubrique
+      ? `${rubrique.description} Terrains vérifiés au Sénégal : filtrez par zone, commune, statut juridique et budget.`
+      : 'Catalogue de terrains et de villas vérifiés à vendre au Sénégal : filtrez par type de bien, zone, commune, statut juridique, superficie et budget.',
   });
 
   // Les champs saisis au clavier (recherche libre, min/max) passent par un
@@ -272,8 +278,8 @@ export function CatalogPage() {
       <BandeauPage
         vague="discrete"
         eyebrow={text('catalogue.eyebrow', 'Catalogue')}
-        title={text('catalogue.title', 'Nos biens')}
-        description={text('catalogue.intro', INTRO_DEFAUT)}
+        title={rubrique ? rubrique.libelle : text('catalogue.title', 'Nos biens')}
+        description={rubrique ? rubrique.description : text('catalogue.intro', INTRO_DEFAUT)}
         points={lines('catalogue.reassurance', REASSURANCES_DEFAUT)}
         image={text('catalogue.image', IMAGE_BANDEAU_PAGE)}
         chargement={contenuEnCours}

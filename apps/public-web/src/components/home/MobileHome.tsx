@@ -3,7 +3,7 @@ import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ChevronRight,
-  Home,
+  Expand,
   KeyRound,
   LandPlot,
   LayoutGrid,
@@ -13,6 +13,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { ROUTES } from '../../routes';
+import { CATEGORIES_CATALOGUE, adresseCategorie } from '../../utils/categoriesCatalogue';
 import { useTerrainsCatalog } from '../../hooks/useTerrainsCatalog';
 import { useLocationsCatalog } from '../../hooks/useLocations';
 import { AppPropertyCard } from '../mobile/AppPropertyCard';
@@ -42,11 +43,18 @@ interface Category {
 }
 
 const CATEGORIES: Category[] = [
-  { label: 'Vente', to: ROUTES.catalog, icon: Home, tone: 'text-mtm-primary', box: 'bg-mtm-primary-subtle' },
+  // Les grandes surfaces : les terrains de plus de 500 m² (la règle est dans l'API, `categorie=hectares`).
+  {
+    label: CATEGORIES_CATALOGUE.hectares.libelle,
+    to: adresseCategorie(ROUTES.catalog, 'hectares'),
+    icon: Expand,
+    tone: 'text-mtm-primary',
+    box: 'bg-mtm-primary-subtle',
+  },
   { label: 'Location', to: ROUTES.locations, icon: KeyRound, tone: 'text-mtm-success', box: 'bg-mtm-success/10' },
   {
-    label: 'Terrains',
-    to: `${ROUTES.catalog}?typeBien=terrain`,
+    label: CATEGORIES_CATALOGUE.terrains_villas.libelle,
+    to: adresseCategorie(ROUTES.catalog, 'terrains_villas'),
     icon: LandPlot,
     tone: 'text-mtm-accent',
     box: 'bg-mtm-accent-subtle',
@@ -159,13 +167,13 @@ export function MobileHome() {
               <span className={`flex h-11 w-11 items-center justify-center rounded-xl ${box} ${tone}`}>
                 <Icon className="h-[22px] w-[22px]" aria-hidden="true" />
               </span>
-              <span className="text-xs font-semibold text-mtm-text">{label}</span>
+              <span className="text-center text-xs font-semibold leading-tight text-mtm-text">{label}</span>
             </>
           );
           const cls =
-            'flex w-full flex-col items-center gap-2 rounded-2xl border border-mtm-border/70 bg-mtm-surface px-1 py-3 shadow-card transition-transform active:scale-95';
+            'flex h-full w-full flex-col items-center gap-2 rounded-2xl border border-mtm-border/70 bg-mtm-surface px-1 py-3 shadow-card transition-transform active:scale-95';
           return (
-            <li key={label}>
+            <li key={label} className="flex">
               {to ? (
                 <Link to={to} className={cls}>
                   {inner}

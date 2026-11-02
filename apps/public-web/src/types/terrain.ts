@@ -96,6 +96,11 @@ export interface TerrainFilters {
    * l'usage du sol et non ce qui est vendu.
    */
   typeBien?: string;
+  /**
+   * Rubrique d'entrée du catalogue : `hectares` (terrains de plus de 500 m²) ou `terrains_villas` (les autres terrains
+   * et les villas). Elle ne remplace pas la nature du bien : on peut encore affiner par zone, prix ou superficie.
+   */
+  categorie?: 'hectares' | 'terrains_villas';
   /** Typologie d'un bien bâti : F3, F4… */
   nombrePieces?: string;
   statutJuridique?: string;

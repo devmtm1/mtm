@@ -32,6 +32,51 @@ describe('TerrainsPublicService', () => {
     expect(where.statutCommercial).toBe('Disponible');
   });
 
+  it('« Nos hectares » ne garde que les terrains de plus de 500 m²', async () => {
+    prismaMock.terrain.findMany.mockResolvedValue([]);
+    prismaMock.terrain.count.mockResolvedValue(0);
+
+    await publicCatalog.findPublic({
+      categorie: 'hectares',
+      search: 'saly',
+      page: 1,
+      pageSize: 12,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+    });
+
+    const where = prismaMock.terrain.findMany.mock.calls[0][0].where;
+    expect(where.AND).toEqual([{ typeBien: 'terrain', superficie: { gt: 500 } }]);
+    // La recherche libre reste là : la rubrique s'ajoute, elle ne l'écrase pas.
+    expect(where.OR).toBeDefined();
+  });
+
+  it('« Terrains et villas » garde les terrains jusqu’à 500 m² (ou sans superficie) et les villas', async () => {
+    prismaMock.terrain.findMany.mockResolvedValue([]);
+    prismaMock.terrain.count.mockResolvedValue(0);
+
+    await publicCatalog.findPublic({
+      categorie: 'terrains_villas',
+      page: 1,
+      pageSize: 12,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+    });
+
+    const where = prismaMock.terrain.findMany.mock.calls[0][0].where;
+    expect(where.AND).toEqual([
+      {
+        OR: [
+          {
+            typeBien: 'terrain',
+            OR: [{ superficie: { lte: 500 } }, { superficie: null }],
+          },
+          { typeBien: 'villa' },
+        ],
+      },
+    ]);
+  });
+
   it('propose comme filtres les natures réellement en vente', async () => {
     prismaMock.systemSetting.findUnique.mockResolvedValue(null);
     prismaMock.terrain.findMany.mockResolvedValue([
