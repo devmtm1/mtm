@@ -145,22 +145,18 @@
                 </p>
               </div>
               @if (echeancesMasquees() > 0 || echeancesToutes()) {
-                <button
-                  class="link-button"
-                  type="button"
-                  (click)="echeancesToutes.set(!echeancesToutes())"
-                >
+                <button mat-stroked-button type="button" (click)="basculerHistorique()">
                   @if (echeancesToutes()) {
-                    Ne montrer que ce qui reste dû
+                    Masquer les loyers soldés plus anciens
                   } @else {
-                    Voir toute la durée du bail ({{ echeancesMasquees() }} de plus)
+                    Voir les {{ echeancesMasquees() }} loyers soldés plus anciens
                   }
                 </button>
               }
             </div>
             @if (echeancesAffichees().length) {
               <div class="table-scroll">
-                <table class="data-table">
+                <table class="data-table echeances-table">
                   <thead>
                     <tr>
                       <th>Période</th>
@@ -172,8 +168,8 @@
                     </tr>
                   </thead>
                   <tbody>
-                    @for (echeance of echeancesAffichees(); track echeance.id) {
-                      <tr [class.ligne-impayee]="echeance.statut === 'impayee' || echeance.statut === 'en_retard'">
+                    @for (echeance of echeancesPage(); track echeance.id) {
+                      <tr>
                         <td class="cell-periode">{{ echeance.periode | date: 'MMMM yyyy' }}</td>
                         <td>{{ echeance.dateEcheance | date: 'dd/MM' }}</td>
                         <td class="is-right">{{ echeance.montantPrevu | mtmMoney }}</td>
@@ -182,6 +178,9 @@
                           <span [class]="echeancePill(echeance.statut)">
                             {{ echeanceLabel(echeance.statut) }}
                           </span>
+                          @if (retardDe(echeance); as retard) {
+                            <small class="cell-muted retard-echeance">{{ retard }}</small>
+                          }
                         </td>
                         <td class="is-right">
                           @if (canModify() && echeance.statut !== 'payee' && echeance.statut !== 'annulee') {
@@ -197,9 +196,9 @@
                               </button>
                             } @else {
                               <button
-                                mat-stroked-button
+                                mat-button
                                 type="button"
-                                class="bouton-ligne"
+                                class="bouton-ligne bouton-ligne--discret"
                                 (click)="enregistrerPaiement(echeance)"
                               >
                                 Encaisser
@@ -207,9 +206,9 @@
                             }
                           } @else if (canValidate() && echeance.statut === 'payee') {
                             <button
-                              mat-stroked-button
+                              mat-button
                               type="button"
-                              class="bouton-ligne"
+                              class="bouton-ligne bouton-ligne--discret"
                               matTooltip="Quittance remise au locataire"
                               (click)="genererQuittance(echeance)"
                             >
@@ -222,6 +221,14 @@
                   </tbody>
                 </table>
               </div>
+              <app-pagination
+                [page]="pageEcheances()"
+                [pageSize]="tailleEcheances"
+                [total]="echeancesAffichees().length"
+                [tailles]="[]"
+                nom="échéance"
+                (pageChange)="pageEcheances.set($event)"
+              />
             } @else {
               <p class="detail-note">Aucune échéance en attente sur ce bail.</p>
             }
