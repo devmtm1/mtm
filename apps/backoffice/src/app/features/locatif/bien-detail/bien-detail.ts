@@ -106,6 +106,8 @@ import { SignalementDialog } from './signalement-dialog';
 import { SortieDialog } from './sortie-dialog';
 import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 import { ConsultationsBien } from '../../../shared/components/consultations-bien/consultations-bien';
+import { Pagination } from '../../../shared/components/pagination/pagination';
+import { pageDe } from '../../../core/utils/pagination';
 import { FicheOnglets, type OngletFiche } from '../../../shared/components/fiche-client/fiche-onglets';
 
 /**
@@ -117,6 +119,7 @@ import { FicheOnglets, type OngletFiche } from '../../../shared/components/fiche
 @Component({
   selector: 'app-bien-detail',
   imports: [
+    Pagination,
     MenuActions,
     FicheOnglets,
     RouterLink,
@@ -259,6 +262,9 @@ export class BienDetailPage implements OnInit {
   // versements : tout afficher noie ce qui appelle une action.
 
   protected readonly echeancesToutes = signal(false);
+  protected readonly pageEcheances = signal(1);
+  protected readonly tailleEcheances = 12;
+
   protected readonly paiementsTous = signal(false);
   protected readonly piecesToutes = signal(false);
   protected readonly cautionDepliee = signal(false);
@@ -275,6 +281,25 @@ export class BienDetailPage implements OnInit {
         new Date(echeance.periode) >= seuil,
     );
   });
+
+  /** Les échéances de la page affichée : un bail de plusieurs années en compte des dizaines, on ne les déroule pas toutes d'un coup. */
+  protected readonly echeancesPage = computed(() =>
+    pageDe(this.echeancesAffichees(), this.pageEcheances(), this.tailleEcheances),
+  );
+
+  protected basculerHistorique(): void {
+    this.echeancesToutes.update((valeur) => !valeur);
+    this.pageEcheances.set(1);
+  }
+
+  /** « 25 mois de retard » : de quoi mesurer d'un regard l'ancienneté d'un impayé, que la seule pastille ne dit pas. */
+  protected retardDe(echeance: { statut: string; dateEcheance: string }): string | null {
+    if (!['impayee', 'en_retard', 'partielle'].includes(echeance.statut)) return null;
+    const jours = Math.floor((Date.now() - new Date(echeance.dateEcheance).getTime()) / 86_400_000);
+    if (jours <= 0) return null;
+    if (jours < 60) return `${jours} j de retard`;
+    return `${Math.floor(jours / 30.4)} mois de retard`;
+  }
 
   protected readonly echeancesMasquees = computed(
     () => (this.bailActuel()?.echeances.length ?? 0) - this.echeancesAffichees().length,

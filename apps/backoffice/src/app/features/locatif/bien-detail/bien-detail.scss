@@ -22,13 +22,47 @@
   text-transform: capitalize;
 }
 
-.ligne-impayee {
-  background: color-mix(in srgb, var(--mtm-error-bg) 45%, transparent);
-}
-
 .bouton-ligne {
   min-width: 96px;
   height: 34px;
   font-size: 0.86rem;
 }
 
+/* Échéances : des colonnes de largeur raisonnable (sur un grand écran, le mois et le montant ne sont plus aux deux bouts de la page), l'action la plus discrète possible sauf pour la plus ancienne. */
+.echeances-table {
+  table-layout: fixed;
+
+  th:nth-child(1) {
+    width: 22%;
+  }
+
+  th:nth-child(2) {
+    width: 12%;
+  }
+
+  th:nth-child(3),
+  th:nth-child(4) {
+    width: 15%;
+  }
+
+  th:nth-child(5) {
+    width: 20%;
+  }
+
+  th:nth-child(6) {
+    width: 16%;
+  }
+
+  .retard-echeance {
+    display: block;
+    margin-top: 2px;
+  }
+}
+
+.bouton-ligne--discret {
+  color: var(--mtm-primary);
+}
+
+app-pagination {
+  --pagination-gutter: 0px;
+}
