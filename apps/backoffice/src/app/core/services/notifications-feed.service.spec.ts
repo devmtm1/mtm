@@ -14,13 +14,14 @@ describe('NotificationsFeedService', () => {
   const crmApi = { getUpcomingTasks: vi.fn() };
   const contactApi = { findAll: vi.fn() };
   const ventesApi = { findReservationRequests: vi.fn() };
-  const notificationsApi = { list: vi.fn() };
+  const notificationsApi = { list: vi.fn(), markRead: vi.fn() };
   let service: NotificationsFeedService;
 
   beforeEach(() => {
     permissions.clear();
     vi.resetAllMocks();
     notificationsApi.list.mockReturnValue(of({ items: [], nonLues: 0 }));
+    notificationsApi.markRead.mockReturnValue(of({ marquees: 1 }));
     TestBed.configureTestingModule({
       providers: [
         NotificationsFeedService,
@@ -115,5 +116,30 @@ describe('NotificationsFeedService', () => {
     // « mandat_echeance » est déjà au fil par le calcul des mandats expirants.
     expect(items).toHaveLength(1);
     expect(items[0]).toMatchObject({ notificationId: 'n1', route: ['/ventes', 'd1'] });
+  });
+  describe('lecture d’une notification', () => {
+    const notification = (id: string) => ({ id, type: 'paiement_a_valider', niveau: 'info', titre: `Paiement ${id}`, message: null, lien: '/ventes/1', readAt: null });
+
+    beforeEach(async () => {
+      notificationsApi.list.mockReturnValue(of({ items: [notification('n1'), notification('n2')], nonLues: 2 }));
+      await new Promise((resolve) => service.actualiser().subscribe(resolve));
+    });
+
+    it('expose le fil chargé à tous ceux qui le lisent', () => {
+      expect(service.items()?.map((item) => item.notificationId)).toEqual(['n1', 'n2']);
+    });
+
+    it('retire du fil la notification lue, et la marque lue côté serveur', () => {
+      service.marquerLue('n1');
+
+      expect(notificationsApi.markRead).toHaveBeenCalledWith('n1');
+      expect(service.items()?.map((item) => item.notificationId)).toEqual(['n2']);
+    });
+
+    it('retire toutes les notifications du serveur avec « tout marquer lu »', () => {
+      service.retirerNotificationsServeur();
+
+      expect(service.items()).toEqual([]);
+    });
   });
 });

@@ -135,7 +135,7 @@ export class Header {
   protected readonly isDark = this.themeService.isDark;
 
   /** Points d'attention (mandats à échéance, tâches en retard, demandes à traiter). */
-  protected readonly feed = signal<FeedItem[]>([]);
+  protected readonly feed = computed(() => this.feedService.items() ?? []);
   protected readonly notificationCount = computed(() => this.feed().length);
   /** Ce qu'écrit la pastille de la cloche : le nombre, « 9+ » au-delà. */
   protected readonly notificationBadge = computed(() => (this.notificationCount() > 9 ? '9+' : String(this.notificationCount())));
@@ -243,31 +243,30 @@ export class Header {
       .pipe(
         // Onglet caché : inutile de recharger, le fil se met à jour au retour sur l’onglet.
         filter(() => document.visibilityState === 'visible'),
-        switchMap(() => this.feedService.load()),
+        switchMap(() => this.feedService.actualiser()),
         takeUntilDestroyed(),
       )
-      .subscribe((items) => this.feed.set(items));
+      .subscribe();
 
     // Retour sur l'onglet : le fil se met à jour tout de suite, sans attendre le prochain passage.
     fromEvent(document, 'visibilitychange')
       .pipe(
         filter(() => document.visibilityState === 'visible'),
         throttleTime(60_000),
-        switchMap(() => this.feedService.load()),
+        switchMap(() => this.feedService.actualiser()),
         takeUntilDestroyed(),
       )
-      .subscribe((items) => this.feed.set(items));
+      .subscribe();
   }
 
   protected refreshFeed(): void {
-    this.feedService.load().subscribe((items) => this.feed.set(items));
+    this.feedService.actualiser().subscribe();
   }
 
   protected openFeedItem(item: FeedItem): void {
     if (item.notificationId) {
-      // Ouvrir l'événement vaut accusé de lecture ; l'échec n'empêche pas la navigation.
-      this.notificationsApi.markRead(item.notificationId).subscribe({ error: () => undefined });
-      this.feed.update((items) => items.filter((entry) => entry.id !== item.id));
+      // Ouvrir l'événement vaut accusé de lecture : il quitte le fil, ici comme dans le tableau de bord.
+      this.feedService.marquerLue(item.notificationId);
     }
     void this.router.navigate(
       item.route,
