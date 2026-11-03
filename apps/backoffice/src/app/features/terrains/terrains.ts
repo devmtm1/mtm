@@ -435,6 +435,10 @@ export class Terrains implements OnInit {
     void this.router.navigate(['/terrains/nouveau']);
   }
 
+  protected openProgrammes(): void {
+    void this.router.navigate(['/programmes']);
+  }
+
   protected openImport(): void {
     void this.router.navigate(['/terrains/import']);
   }

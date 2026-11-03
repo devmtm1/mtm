@@ -7,6 +7,7 @@ import { activeFilterChips, type FilterChip } from '../components/terrains/activ
 import { TerrainCard } from '../components/terrains/TerrainCard';
 import { CatalogStatutSwitch, type CatalogStatut } from '../components/terrains/CatalogStatutSwitch';
 import { SoldPropertyCard } from '../components/terrains/SoldPropertyCard';
+import { ProgrammesBand } from '../components/terrains/ProgrammesBand';
 import { estVendu } from '../utils/venteLabels';
 import { TerrainsMap } from '../components/terrains/TerrainsMap';
 import { CATALOG_GRID } from '../components/terrains/terrain-grid';
@@ -339,6 +340,8 @@ export function CatalogPage() {
           <ActiveFilterChips chips={chips} onRemove={removeChip} onClear={() => commitFilters({})} />
         </div>
       )}
+
+      {viewMode === 'liste' && !hasActiveFilters && currentPage === 1 && <ProgrammesBand />}
 
       <div className="mt-4 sm:mt-6">
         <h2 className="sr-only">Biens à vendre</h2>

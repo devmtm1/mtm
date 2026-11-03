@@ -31,6 +31,7 @@ import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { StatusChoiceDialog } from '../../../shared/dialogs/status-choice-dialog';
 import { MandatHistoryDialog } from './mandat-history-dialog';
 import { MandatLotDialog } from './mandat-lot-dialog';
+import { MandatProgrammeDialog } from './mandat-programme-dialog';
 import { MandatDocumentDialog } from './mandat-document-dialog';
 import {
   LOT_STATUS,
@@ -236,6 +237,32 @@ export class MandatDetail implements OnInit {
       .afterClosed()
       .subscribe((result: { terrainId: string; statutLot: string } | undefined) => {
         if (result) this.run(this.api.addLot(mandat.id, result), 'Bien rattaché au mandat');
+      });
+  }
+
+  protected addProgramme(): void {
+    const mandat = this.mandat();
+    if (!mandat) return;
+    this.dialog
+      .open(MandatProgrammeDialog, { width: '540px', maxWidth: 'calc(100vw - 32px)' })
+      .afterClosed()
+      .subscribe((programmeId: string | undefined) => {
+        if (!programmeId) return;
+        this.busy.set(true);
+        this.api.addProgramme(mandat.id, programmeId).subscribe({
+          next: (res) => {
+            const ecartes = res.dejaRattaches + res.exclusifsAilleurs;
+            this.notify.success(
+              `${res.ajoutes} lot${res.ajoutes > 1 ? 's' : ''} confié${res.ajoutes > 1 ? 's' : ''} au mandat` +
+                (ecartes ? ` (${ecartes} déjà rattaché${ecartes > 1 ? 's' : ''} ou sous un autre mandat exclusif).` : '.'),
+            );
+            this.reload();
+          },
+          error: (error: unknown) => {
+            this.busy.set(false);
+            this.notify.error(error, 'Le programme n’a pas pu être confié');
+          },
+        });
       });
   }
 

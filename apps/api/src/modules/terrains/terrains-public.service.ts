@@ -36,6 +36,9 @@ export class TerrainsPublicService {
     const base: Prisma.TerrainWhereInput = {
       // Un bien archivé ne paraît jamais sur le site, quel que soit son statut.
       archiveLe: null,
+      // Les lots d'un programme ne sont pas annoncés un par un : une annonce
+      // par programme viendra, 30 lots ne doivent pas noyer le catalogue.
+      programmeId: null,
       // Recherche libre du catalogue public : restreinte aux champs publics
       // (jamais parcelleMatricule ni notes internes).
       ...(search
@@ -177,7 +180,11 @@ export class TerrainsPublicService {
       this.settings.getRawValue('terrains.statutJuridique'),
       this.settings.getRawValue('terrains.nombrePieces'),
       this.prisma.terrain.findMany({
-        where: { statutCommercial: 'Disponible', archiveLe: null },
+        where: {
+          statutCommercial: 'Disponible',
+          archiveLe: null,
+          programmeId: null,
+        },
         select: {
           region: true,
           commune: true,

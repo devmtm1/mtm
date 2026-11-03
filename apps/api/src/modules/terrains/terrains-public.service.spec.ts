@@ -46,7 +46,9 @@ describe('TerrainsPublicService', () => {
     });
 
     const where = prismaMock.terrain.findMany.mock.calls[0][0].where;
-    expect(where.AND).toEqual([{ typeBien: 'terrain', superficie: { gt: 500 } }]);
+    expect(where.AND).toEqual([
+      { typeBien: 'terrain', superficie: { gt: 500 } },
+    ]);
     // La recherche libre reste là : la rubrique s'ajoute, elle ne l'écrase pas.
     expect(where.OR).toBeDefined();
   });

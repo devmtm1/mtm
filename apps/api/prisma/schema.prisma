@@ -175,6 +175,7 @@ model Proprietaire {
   updatedAt DateTime @updatedAt
 
   terrains      Terrain[]
+  programmes    ProgrammeLotissement[]
   mandats       Mandat[]
   biensLocatifs BienLocatif[]
   immeubles     ImmeubleLocatif[]
@@ -345,6 +346,15 @@ model Terrain {
   missions                 MissionVerification[]
   chantiers                ProjetConstruction[]
   prospectsInteresses      Prospect[]            @relation("ProspectTerrainChoisi")
+  /**
+   * Lot d'un programme (lotissement) : le terrain reste l'unité de vente, le
+   * programme porte ce qui est commun (titre mère, propriétaire, conditions).
+   */
+  programmeId              String?
+  programme                ProgrammeLotissement? @relation(fields: [programmeId], references: [id], onDelete: Restrict)
+  categorieLotId           String?
+  categorieLot             CategorieLot?         @relation(fields: [categorieLotId], references: [id], onDelete: SetNull)
+  numeroLot                String?
 
   @@index([statutJuridique])
   @@index([niveauVerification])
@@ -357,6 +367,9 @@ model Terrain {
   @@index([typeBien])
   @@index([archiveLe])
   @@index([dateEntree])
+  @@index([programmeId])
+  @@index([categorieLotId])
+  @@unique([programmeId, numeroLot])
   @@map("terrains")
 }
 
@@ -3191,4 +3204,64 @@ model ReleveImmeuble {
 
   @@index([immeubleId, createdAt])
   @@map("releves_immeubles")
+}
+
+/**
+ * Lotissement : un ensemble de lots vendus séparément, saisi une seule fois.
+ * Les lots sont des terrains rattachés au programme ; les conditions ci-dessous
+ * sont celles par défaut, copiées sur chaque lot à la génération.
+ */
+model ProgrammeLotissement {
+  id                  String         @id @default(uuid())
+  reference           String         @unique
+  nom                 String
+  region              String?
+  commune             String?
+  localisationDetail  String?
+  description         String?
+  proprietaireId      String?
+  proprietaire        Proprietaire?  @relation(fields: [proprietaireId], references: [id], onDelete: SetNull)
+  statutJuridique     String
+  typeDocumentFoncier String?
+  niveauVerification  String
+  prixLot             Decimal?       @db.Decimal(15, 2)
+  modalitePaiement    String?
+  dureeMoratoireMois  Int?
+  acompteMontant      Decimal?       @db.Decimal(15, 2)
+  /// Produit détenu en direct par MTM (sans propriétaire intermédiaire) : copié sur chaque lot.
+  produitDirect       Boolean        @default(false)
+  /// Commission de MTM par lot vendu (bien confié par un propriétaire) : copiée sur chaque lot. Donnée sensible.
+  commissionLot       Decimal?       @db.Decimal(15, 2)
+  /// Marge de MTM par lot vendu (bien en propre ou produit direct) : copiée sur chaque lot. Donnée sensible.
+  margeLot            Decimal?       @db.Decimal(15, 2)
+  archiveLe           DateTime?
+  categories          CategorieLot[]
+  lots                Terrain[]
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  @@index([proprietaireId])
+  @@index([archiveLe])
+  @@map("programmes_lotissement")
+}
+
+/** Groupe de lots aux mêmes conditions (façade, angle, standard…). */
+model CategorieLot {
+  id                 String               @id @default(uuid())
+  programmeId        String
+  programme          ProgrammeLotissement @relation(fields: [programmeId], references: [id], onDelete: Cascade)
+  nom                String
+  prixPublic         Decimal?             @db.Decimal(15, 2)
+  modalitePaiement   String?
+  dureeMoratoireMois Int?
+  acompteMontant     Decimal?             @db.Decimal(15, 2)
+  /// Commission ou marge propre à la catégorie ; à défaut, celle du programme. Données sensibles.
+  commission         Decimal?             @db.Decimal(15, 2)
+  marge              Decimal?             @db.Decimal(15, 2)
+  lots               Terrain[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  @@unique([programmeId, nom])
+  @@map("categories_lot")
 }

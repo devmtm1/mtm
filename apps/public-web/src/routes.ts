@@ -3,6 +3,8 @@ export const ROUTES = {
   home: '/',
   catalog: '/terrains',
   terrainDetail: (id: string) => `/terrains/${id}`,
+  /** Un lotissement et la grille de ses lots libres. */
+  programme: (id: string) => `/lotissements/${id}`,
   /** Annonces de location (biens en gestion locative publiés par MTM). */
   locations: '/locations',
   locationDetail: (id: string) => `/locations/${id}`,

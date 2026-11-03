@@ -13,6 +13,9 @@
       </p>
     </div>
     <div class="page-header__actions">
+      <button mat-stroked-button type="button" (click)="openProgrammes()" matTooltip="Un lotissement de plusieurs lots, saisi une seule fois">
+        <svg class="btn-icon" lucideLayoutGrid aria-hidden="true"></svg>Programmes
+      </button>
       @if (canCreate()) {
         <button mat-stroked-button type="button" (click)="openImport()" matTooltip="Créer plusieurs biens d’un coup à partir d’un fichier Excel">
           <svg class="btn-icon" lucideFileSpreadsheet aria-hidden="true"></svg>Importer depuis Excel

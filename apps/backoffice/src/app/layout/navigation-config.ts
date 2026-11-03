@@ -153,7 +153,16 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
   {
     title: 'Biens',
     items: [
-      { label: 'Biens à vendre', route: '/terrains', icon: LucideLandPlot, permission: 'terrains:consulter' },
+      {
+        label: 'Biens à vendre',
+        route: '/terrains',
+        icon: LucideLandPlot,
+        racines: ['/terrains', '/programmes'],
+        children: [
+          { label: 'Tous les biens', route: '/terrains', permission: 'terrains:consulter' },
+          { label: 'Programmes', route: '/programmes', permission: 'terrains:consulter' },
+        ],
+      },
       { label: 'Mandats', route: '/mandats', icon: LucideScrollText, permission: 'mandats:consulter' },
       { label: 'Propriétaires', route: '/proprietaires', icon: LucideContact, permission: 'proprietaires:consulter' },
     ],

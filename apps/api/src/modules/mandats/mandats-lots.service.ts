@@ -82,6 +82,59 @@ export class MandatsLotsService {
     });
   }
 
+  /**
+   * Confie au mandat tous les lots d'un programme, en une fois. Les lots déjà
+   * rattachés à ce mandat, archivés, ou couverts par un autre mandat exclusif
+   * actif (si celui-ci l'est aussi) sont laissés de côté et comptés à part.
+   */
+  async addProgramme(mandatId: string, programmeId: string, user: MandatUser) {
+    await this.access.ensureAccessible(mandatId, user);
+    const programme = await this.prisma.programmeLotissement.findUnique({
+      where: { id: programmeId },
+      select: { id: true },
+    });
+    if (!programme) throw new NotFoundException('Programme introuvable');
+
+    const mandat = await this.prisma.mandat.findUnique({
+      where: { id: mandatId },
+      select: { exclusivite: true, statut: true },
+    });
+    const lots = await this.prisma.terrain.findMany({
+      where: { programmeId, archiveLe: null },
+      select: { id: true },
+    });
+    const dejaLies = new Set(
+      (
+        await this.prisma.mandatLot.findMany({
+          where: { mandatId, terrainId: { in: lots.map((l) => l.id) } },
+          select: { terrainId: true },
+        })
+      ).map((l) => l.terrainId),
+    );
+    const pris = new Set<string>();
+    if (mandat?.exclusivite && mandat.statut === 'Actif') {
+      const autres = await this.prisma.mandatLot.findMany({
+        where: {
+          terrainId: { in: lots.map((l) => l.id) },
+          mandat: { id: { not: mandatId }, statut: 'Actif', exclusivite: true },
+        },
+        select: { terrainId: true },
+      });
+      for (const a of autres) pris.add(a.terrainId);
+    }
+    const aAjouter = lots.filter((l) => !dejaLies.has(l.id) && !pris.has(l.id));
+    if (aAjouter.length > 0) {
+      await this.prisma.mandatLot.createMany({
+        data: aAjouter.map((l) => ({ mandatId, terrainId: l.id })),
+      });
+    }
+    return {
+      ajoutes: aAjouter.length,
+      dejaRattaches: dejaLies.size,
+      exclusifsAilleurs: pris.size,
+    };
+  }
+
   async updateLot(
     mandatId: string,
     lotId: string,
