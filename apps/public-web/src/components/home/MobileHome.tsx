@@ -28,6 +28,7 @@ import { ServicesSection } from './ServicesSection';
 import { UpcomingProjectsSection } from './UpcomingProjectsSection';
 import { RealisationsPreviewSection } from './RealisationsPreviewSection';
 import { VideosSection } from './VideosSection';
+import { FeaturedProgrammesSection } from './FeaturedProgrammesSection';
 import { AboutPreviewSection } from './AboutPreviewSection';
 import { TestimonialsSection } from './TestimonialsSection';
 import { ContactCtaSection } from './ContactCtaSection';
@@ -235,6 +236,9 @@ export function MobileHome() {
       </section>
 
       <div className="mt-2">
+        <Reveal>
+          <FeaturedProgrammesSection />
+        </Reveal>
         <Reveal>
           <VideosSection />
         </Reveal>

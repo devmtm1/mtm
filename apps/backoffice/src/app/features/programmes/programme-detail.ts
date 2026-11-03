@@ -40,6 +40,7 @@ import { VentePaiementDialog } from '../ventes/vente-paiement-dialog';
 import { ProgrammeClients } from './pilotage/programme-clients';
 import { ProgrammeDocuments } from './pilotage/programme-documents';
 import { ProgrammeMandats } from './pilotage/programme-mandats';
+import { ProgrammeSitePublic } from './pilotage/programme-site-public';
 import { ProgrammeVersements } from './pilotage/programme-versements';
 import { ProgrammeVisites } from './pilotage/programme-visites';
 import { MoneyPipe } from '../../shared/pipes/money.pipe';
@@ -104,6 +105,7 @@ export function clientDuLot<T extends Pick<LigneClientProgramme, 'statut' | 'lot
     ProgrammeClients,
     ProgrammeDocuments,
     ProgrammeMandats,
+    ProgrammeSitePublic,
     ProgrammeVersements,
     ProgrammeVisites,
   ],
@@ -148,6 +150,7 @@ export class ProgrammeDetail implements OnInit {
       { id: 'visites', libelle: 'Visites', icone: 'agenda' },
       { id: 'mandats', libelle: 'Mandats et commissions', icone: 'baux' },
       { id: 'documents', libelle: 'Documents', icone: 'documents' },
+      { id: 'site', libelle: 'Site public', icone: 'photos' },
     ];
   });
   protected readonly introuvable = signal(false);
@@ -525,7 +528,7 @@ export class ProgrammeDetail implements OnInit {
     });
   }
 
-  private charger(): void {
+  protected charger(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return;
     this.chargerVentes();

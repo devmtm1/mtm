@@ -90,6 +90,12 @@ export interface ProgrammeDialogData {
         </mat-form-field>
       </div>
 
+      <mat-form-field appearance="outline">
+        <mat-label>Description pour le site public</mat-label>
+        <textarea matInput rows="4" formControlName="description" maxlength="2000"></textarea>
+        <mat-hint>Présentez le lotissement : emplacement, atouts, équipements, accès. Elle s'affiche sur sa page.</mat-hint>
+      </mat-form-field>
+
       <h3 class="programme-dialog__titre">Conditions de vente par défaut</h3>
       <p class="programme-dialog__aide">
         Chaque lot les reçoit à sa création. Une catégorie de lots peut ensuite les remplacer.
@@ -208,6 +214,7 @@ export class ProgrammeDialog implements OnInit {
     region: [''],
     commune: [''],
     localisationDetail: [''],
+    description: [''],
     proprietaireId: [''],
     statutJuridique: ['', Validators.required],
     niveauVerification: ['', Validators.required],
@@ -261,6 +268,7 @@ export class ProgrammeDialog implements OnInit {
         region: p.region ?? '',
         commune: p.commune ?? '',
         localisationDetail: p.localisationDetail ?? '',
+        description: p.description ?? '',
         proprietaireId: p.proprietaireId ?? '',
         statutJuridique: p.statutJuridique,
         niveauVerification: p.niveauVerification,
@@ -292,6 +300,7 @@ export class ProgrammeDialog implements OnInit {
       ...(v.region.trim() ? { region: v.region.trim() } : {}),
       ...(v.commune.trim() ? { commune: v.commune.trim() } : {}),
       ...(v.localisationDetail.trim() ? { localisationDetail: v.localisationDetail.trim() } : {}),
+      ...(v.description.trim() ? { description: v.description.trim() } : {}),
       ...(v.proprietaireId ? { proprietaireId: v.proprietaireId } : {}),
       ...(v.prixLot !== null ? { prixLot: Number(v.prixLot) } : {}),
       ...(v.modalitePaiement ? { modalitePaiement: v.modalitePaiement } : {}),

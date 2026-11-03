@@ -37,18 +37,6 @@ type Utilisateur = { id: string; roles: string[]; permissions: string[] };
 /** Un lot réservé ou vendu n'est jamais écrasé par une mise à jour de conditions. */
 const STATUTS_FIGES = ['Réservé', 'Vendu'];
 
-/** Champs d'un programme que le site public peut montrer. */
-const champsPublics = {
-  reference: true,
-  nom: true,
-  region: true,
-  commune: true,
-  localisationDetail: true,
-  description: true,
-  statutJuridique: true,
-  niveauVerification: true,
-} as const;
-
 const proprietaireResume = {
   select: { id: true, firstName: true, lastName: true },
 };
@@ -181,70 +169,6 @@ export class ProgrammesService {
     };
   }
 
-  /** Programmes à montrer au public : ceux qui ont encore au moins un lot à vendre. */
-  async findPublic() {
-    const programmes = await this.prisma.programmeLotissement.findMany({
-      where: {
-        archiveLe: null,
-        lots: { some: { statutCommercial: 'Disponible', archiveLe: null } },
-      },
-      orderBy: { createdAt: 'desc' },
-      select: { id: true, ...champsPublics },
-    });
-    const lots = await this.prisma.terrain.findMany({
-      where: {
-        programmeId: { in: programmes.map((p) => p.id) },
-        statutCommercial: 'Disponible',
-        archiveLe: null,
-      },
-      select: { programmeId: true, prixPublic: true },
-    });
-    return programmes.map((p) => {
-      const siens = lots.filter((l) => l.programmeId === p.id);
-      const prix = siens
-        .map((l) => Number(l.prixPublic ?? 0))
-        .filter((n) => n > 0);
-      return {
-        ...p,
-        lotsDisponibles: siens.length,
-        prixMin: prix.length ? Math.min(...prix) : null,
-        prixMax: prix.length ? Math.max(...prix) : null,
-      };
-    });
-  }
-
-  /** Fiche publique : le programme et ses lots libres, sans rien d'interne (propriétaire, prix d'acquisition). */
-  async findPublicOne(id: string) {
-    const programme = await this.prisma.programmeLotissement.findFirst({
-      where: { id, archiveLe: null },
-      select: {
-        id: true,
-        ...champsPublics,
-        lots: {
-          where: { statutCommercial: 'Disponible', archiveLe: null },
-          select: {
-            id: true,
-            numeroLot: true,
-            superficie: true,
-            uniteSuperficie: true,
-            prixPublic: true,
-            modalitePaiement: true,
-            dureeMoratoireMois: true,
-            acompteMontant: true,
-            categorieLot: { select: { nom: true } },
-          },
-        },
-      },
-    });
-    if (!programme) throw new NotFoundException('Programme introuvable');
-    programme.lots.sort((a, b) =>
-      (a.numeroLot ?? '').localeCompare(b.numeroLot ?? '', 'fr', {
-        numeric: true,
-      }),
-    );
-    return programme;
-  }
-
   /** Retire le programme des listes. Impossible tant qu'une vente est en cours sur l'un de ses lots. */
   async archiver(id: string) {
     await this.assertExiste(id);
@@ -319,6 +243,10 @@ export class ProgrammesService {
         : typeof valeur === 'string' || typeof valeur === 'boolean'
           ? valeur
           : Number(valeur);
+    // Annoncer un programme sur le site public est une publication : même droit que pour un bien.
+    if (donnees.publie === true && !actuel.publie && user) {
+      this.access.assertCanPublish(true, user);
+    }
     const modifies = CHAMPS_COMPTA.filter(
       (champ) =>
         donnees[champ] !== undefined &&

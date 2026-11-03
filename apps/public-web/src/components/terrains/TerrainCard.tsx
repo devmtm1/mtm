@@ -87,7 +87,7 @@ export function TerrainCard({ terrain, compact = false, masquerMisEnAvant = fals
           <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider">
             <span className="text-mtm-primary">{typeBienLabel(terrain.typeBien)}</span>
             <span aria-hidden="true" className="text-mtm-border">·</span>
-            <span className="text-mtm-muted">{terrain.referenceInterne}</span>
+            <span className="whitespace-nowrap text-mtm-muted">{terrain.referenceInterne}</span>
           </span>
 
         </div>

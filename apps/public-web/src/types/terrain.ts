@@ -39,6 +39,10 @@ export interface Terrain {
   /** Date de la vente d'une référence vendue, quand elle est connue. */
   venduLe: string | null;
   referenceInterne: string;
+  /** Un lot de lotissement : son numéro (« A-12 »), sa catégorie (« Angle ») et le programme auquel la fiche renvoie. */
+  numeroLot?: string | null;
+  categorieLot?: { nom: string } | null;
+  programme?: { id: string; nom: string } | null;
   nom: string;
   statutJuridique: string;
   niveauVerification: string;

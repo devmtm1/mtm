@@ -3234,8 +3234,11 @@ model ProgrammeLotissement {
   commissionLot       Decimal?       @db.Decimal(15, 2)
   /// Marge de MTM par lot vendu (bien en propre ou produit direct) : copiée sur chaque lot. Donnée sensible.
   margeLot            Decimal?       @db.Decimal(15, 2)
+  /// Visible sur le site public (tant qu'il reste un lot à vendre). On peut le préparer sans l'annoncer.
+  publie              Boolean        @default(true)
   archiveLe           DateTime?
   categories          CategorieLot[]
+  medias              ProgrammeMedia[]
   lots                Terrain[]
   createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
@@ -3243,6 +3246,23 @@ model ProgrammeLotissement {
   @@index([proprietaireId])
   @@index([archiveLe])
   @@map("programmes_lotissement")
+}
+
+/// Visuels d'un programme pour le site public : photos (la première est la couverture) et plan de masse.
+model ProgrammeMedia {
+  id           String               @id @default(uuid())
+  programmeId  String
+  programme    ProgrammeLotissement @relation(fields: [programmeId], references: [id], onDelete: Cascade)
+  /// photo | plan
+  type         String
+  title        String?
+  storageKey   String
+  resourceType String               @default("image")
+  sortOrder    Int                  @default(0)
+  createdAt    DateTime             @default(now())
+
+  @@index([programmeId, sortOrder])
+  @@map("programme_medias")
 }
 
 /** Groupe de lots aux mêmes conditions (façade, angle, standard…). */

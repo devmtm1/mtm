@@ -4,6 +4,8 @@ import { TerrainsController } from './terrains.controller';
 import { ProgrammesController } from './programmes.controller';
 import { ProgrammesService } from './programmes.service';
 import { ProgrammesPilotageService } from './programmes-pilotage.service';
+import { ProgrammesPublicService } from './programmes-public.service';
+import { ProgrammesAssetsService } from './programmes-assets.service';
 import { TerrainsService } from './terrains.service';
 import { TerrainsAccessService } from './terrains-access.service';
 import { TerrainsPublicService } from './terrains-public.service';
@@ -23,6 +25,8 @@ import { SettingsModule } from '../settings/settings.module';
     TerrainsService,
     ProgrammesService,
     ProgrammesPilotageService,
+    ProgrammesPublicService,
+    ProgrammesAssetsService,
     CloudinaryService,
   ],
   exports: [TerrainsService, TerrainsAccessService],

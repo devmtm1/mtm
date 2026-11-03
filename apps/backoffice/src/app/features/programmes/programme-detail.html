@@ -446,6 +446,9 @@
       @case ('documents') {
         <app-programme-documents [programmeId]="p.id" />
       }
+      @case ('site') {
+        <app-programme-site-public [programme]="p" (modifie)="charger()" />
+      }
     }
   } @else {
     <div class="skeleton" style="height: 120px; border-radius: 14px"></div>

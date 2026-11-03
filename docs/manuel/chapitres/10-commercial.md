@@ -180,6 +180,7 @@ Quand MTM commercialise **un lotissement de plusieurs terrains** (par exemple tr
 | **Visites** | Les visites des prospects sur les lots du programme, et leurs retours. |
 | **Mandats et commissions** | Les mandats qui confient des lots du programme, et les commissions des ventes. |
 | **Documents** | Les pièces des lots (titre, plan…) et celles des ventes (contrat, reçus…). |
+| **Site public** | L’interrupteur **Publier sur le site**, la photo de couverture (la première photo), la galerie et le **plan de masse**. Le texte de présentation se saisit dans **Modifier** (« Description pour le site public »). |
 
 Chacun ne voit que ce que ses droits permettent : un commercial retrouve ses propres clients, visites et mandats ; la direction, la comptabilité et les responsables voient l’ensemble. Cliquer sur un client, un lot ou un mandat ouvre sa fiche habituelle.
 
@@ -195,7 +196,14 @@ Dans l’onglet **Versements**, un bloc « Comptabilité du programme » (visibl
 
 Chaque lot reste un bien comme les autres : on ouvre sa fiche en cliquant dessus, et on le vend depuis un **dossier de vente**. Un lot **réservé** ou **vendu** n’est jamais modifié par une mise à jour en bloc : il garde les conditions de son contrat.
 
-> **Sur le site public**, les lots ne sont pas annoncés un par un dans le catalogue : une carte **Lotissements** (nombre de lots libres, fourchette de prix) mène à la page du programme, qui présente la grille de ses lots disponibles, chacun avec sa fiche et sa demande de visite. Un programme dont tous les lots sont réservés ou vendus disparaît du site.
+**Sur le site public**, un programme est une vraie page de vente, pas une simple liste de lots :
+
+- **Dans le catalogue**, il apparaît sous forme d’une **carte « Lotissement »** mêlée aux autres biens (photo, prix de départ, statut juridique, barre d’avancement « 4 lots disponibles sur 6 », mention « Dernier lot »). Elle suit les mêmes filtres que les biens : commune, budget, superficie, statut juridique. Les lots ne sont pas listés un par un dans le catalogue. Un programme figure aussi sur l’accueil, dans « Choisissez votre lot ».
+- **La page du lotissement** présente la photo, le lieu, le statut juridique, les chiffres clés (lots disponibles, prix, superficies), la description, les lots (filtre par catégorie, tri par prix ou superficie ; une liste alignée, un lot par ligne, ou des tuiles régulières), le plan de masse, la galerie et les conditions de paiement. Un bouton « Être rappelé par un conseiller » reste visible, et chaque lot a sa fiche et sa demande de visite.
+- **Les lots réservés ou vendus** restent visibles, **grisés et sans prix**, à la demande du visiteur : ils montrent l’avancement des ventes sans promettre ce qui n’existe plus.
+- **La fiche d’un lot** renvoie à son lotissement (fil d’Ariane, pastille « Lot A-04 · Angle ») et propose les autres lots disponibles.
+- **Sans photo**, le programme emprunte celle d’un de ses lots à vendre, ou un visuel aux couleurs de MTM. **Sans plan de masse**, la section n’apparaît pas.
+- **Publication** : un programme est visible tant qu’il reste un lot à vendre et que l’interrupteur est sur « Publié ». Le retirer du site est libre ; l’annoncer demande le droit de publier. Un programme non publié n’existe pour le public ni dans le catalogue, ni par son adresse, ni par la fiche de ses lots.
 
 ## Proposer un bien et organiser une visite
 

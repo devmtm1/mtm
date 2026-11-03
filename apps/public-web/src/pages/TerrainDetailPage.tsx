@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, BookmarkCheck, CalendarCheck, Download, FileText, Globe2, MapPin, MessageSquare, Navigation, ShieldCheck, UserCheck } from 'lucide-react';
+import { ArrowLeft, BookmarkCheck, ChevronRight, LayoutGrid, CalendarCheck, Download, FileText, Globe2, MapPin, MessageSquare, Navigation, ShieldCheck, UserCheck } from 'lucide-react';
 import { ROUTES } from '../routes';
 import { useTerrain } from '../hooks/useTerrain';
 import { TerrainGallery } from '../components/terrains/TerrainGallery';
 import { TerrainCaracteristiques, TerrainEssentiel, TerrainStatutJuridique } from '../components/terrains/TerrainFacts';
 import { SimilarTerrains } from '../components/terrains/SimilarTerrains';
+import { AutresLotsDuProgramme } from '../components/programmes/AutresLotsDuProgramme';
 import { ClientRow } from '../components/client/shell/ClientUi';
 import { ExpandableText } from '../components/ui/ExpandableText';
 import { ShareButton } from '../components/mobile/ShareButton';
@@ -73,13 +74,29 @@ export function TerrainDetailPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 pb-6 sm:px-6 lg:py-10 lg:pb-10">
-      <Link
-        to={ROUTES.catalog}
-        className="mb-6 hidden lg:inline-flex items-center gap-1.5 text-sm font-semibold text-mtm-muted transition-colors hover:text-mtm-primary"
-      >
-        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-        Retour au catalogue
-      </Link>
+      {terrain.programme ? (
+        /* Un lot de lotissement : le fil d'Ariane remonte au lotissement, pas seulement au catalogue. */
+        <nav aria-label="Fil d’Ariane" className="mb-6 hidden flex-wrap items-center gap-x-2 gap-y-1 text-sm text-mtm-muted lg:flex">
+          <Link to={ROUTES.catalog} className="inline-flex items-center gap-1.5 font-semibold transition-colors hover:text-mtm-primary">
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Nos biens
+          </Link>
+          <span aria-hidden="true">/</span>
+          <Link to={ROUTES.programme(terrain.programme.id)} className="font-semibold transition-colors hover:text-mtm-primary">
+            {terrain.programme.nom}
+          </Link>
+          <span aria-hidden="true">/</span>
+          <span className="font-semibold text-mtm-text">Lot {terrain.numeroLot ?? terrain.referenceInterne}</span>
+        </nav>
+      ) : (
+        <Link
+          to={ROUTES.catalog}
+          className="mb-6 hidden lg:inline-flex items-center gap-1.5 text-sm font-semibold text-mtm-muted transition-colors hover:text-mtm-primary"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          Retour au catalogue
+        </Link>
+      )}
 
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.6fr_1fr]">
         <div className="flex flex-col gap-6 lg:gap-8">
@@ -96,6 +113,24 @@ export function TerrainDetailPage() {
                 {location}
                 {terrain.localisationDetail && ` · ${terrain.localisationDetail}`}
               </p>
+            )}
+            {terrain.programme && (
+              <Link
+                to={ROUTES.programme(terrain.programme.id)}
+                className="mt-2 flex items-center gap-2.5 rounded-lg bg-mtm-primary-subtle px-3 py-2 text-sm font-semibold text-mtm-primary transition-colors hover:bg-mtm-primary-light sm:inline-flex"
+              >
+                <LayoutGrid className="h-5 w-5 shrink-0" aria-hidden="true" />
+                <span className="flex min-w-0 flex-1 flex-col leading-snug sm:flex-row sm:gap-1.5">
+                  <span>
+                    Lot {terrain.numeroLot ?? terrain.referenceInterne}
+                    {terrain.categorieLot && <span className="font-medium text-mtm-primary/80"> · {terrain.categorieLot.nom}</span>}
+                  </span>
+                  <span className="font-medium text-mtm-primary/80">
+                    <span className="hidden sm:inline">· </span>lotissement {terrain.programme.nom}
+                  </span>
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+              </Link>
             )}
             {/* Mobile : le prix se lit tout de suite sous le nom, comme sur une carte d'annonce. */}
             {vendu ? (
@@ -266,6 +301,7 @@ export function TerrainDetailPage() {
         )}
       </div>
 
+      {terrain.programme && !vendu && <AutresLotsDuProgramme programmeId={terrain.programme.id} lotId={terrain.id} />}
       <SimilarTerrains terrain={terrain} />
 
       {/* Mobile : le prix et l'action principale restent sous le pouce, sans

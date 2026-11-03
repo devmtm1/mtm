@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -9,7 +10,11 @@ import {
   Post,
   Query,
   Req,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { MAX_ASSET_SIZE } from '../../common/storage/asset-validation';
 import { ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -20,9 +25,13 @@ import { PublicCache } from '../../common/http/public-cache.decorator';
 import { AuditService } from '../audit/audit.service';
 import { ProgrammesService } from './programmes.service';
 import { ProgrammesPilotageService } from './programmes-pilotage.service';
+import { ProgrammesPublicService } from './programmes-public.service';
+import { ProgrammesAssetsService } from './programmes-assets.service';
+import { QueryProgrammesPublicDto } from './dto/query-programmes-public.dto';
 import {
   AffecterLotsDto,
   CreateCategorieLotDto,
+  CreateProgrammeMediaDto,
   CreateProgrammeDto,
   GenererLotsDto,
   StatutLotsDto,
@@ -36,6 +45,8 @@ export class ProgrammesController {
   constructor(
     private readonly programmes: ProgrammesService,
     private readonly pilotage: ProgrammesPilotageService,
+    private readonly publics: ProgrammesPublicService,
+    private readonly assets: ProgrammesAssetsService,
     private readonly audit: AuditService,
   ) {}
 
@@ -68,15 +79,15 @@ export class ProgrammesController {
   @Public()
   @PublicCache()
   @Get('public')
-  findPublic() {
-    return this.programmes.findPublic();
+  findPublic(@Query() query: QueryProgrammesPublicDto) {
+    return this.publics.findPublic(query);
   }
 
   @Public()
   @PublicCache()
   @Get('public/:id')
   findPublicOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.programmes.findPublicOne(id);
+    return this.publics.findPublicOne(id);
   }
 
   @Get(':id') @RequirePermissions('terrains:consulter') findOne(
@@ -114,6 +125,62 @@ export class ProgrammesController {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.pilotage.documents(id, user);
+  }
+
+  // Visuels du site public : photos (la première est la couverture) et plan de masse.
+  @Get(':id/medias') @RequirePermissions('terrains:consulter') medias(
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.assets.lister(id);
+  }
+
+  @Post(':id/medias')
+  @RequirePermissions('terrains:modifier')
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_ASSET_SIZE } }),
+  )
+  async ajouterMedia(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateProgrammeMediaDto,
+    @UploadedFile() file: Express.Multer.File | undefined,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    if (!file) throw new BadRequestException('Un fichier est obligatoire');
+    const media = await this.assets.ajouter(id, dto, file, user);
+    await this.trace(user, req, 'programme.media_ajoute', id, {
+      mediaId: media.id,
+      type: dto.type,
+    });
+    return media;
+  }
+
+  @Post(':id/medias/:mediaId/couverture')
+  @RequirePermissions('terrains:modifier')
+  async couverture(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('mediaId', ParseUUIDPipe) mediaId: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    const media = await this.assets.definirCouverture(id, mediaId);
+    await this.trace(user, req, 'programme.couverture_definie', id, {
+      mediaId,
+    });
+    return media;
+  }
+
+  @Delete(':id/medias/:mediaId')
+  @RequirePermissions('terrains:modifier')
+  async supprimerMedia(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('mediaId', ParseUUIDPipe) mediaId: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    await this.assets.supprimer(id, mediaId);
+    await this.trace(user, req, 'programme.media_supprime', id, { mediaId });
+    return { deleted: true };
   }
 
   @Post() @RequirePermissions('terrains:creer') async create(

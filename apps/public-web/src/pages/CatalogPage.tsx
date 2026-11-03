@@ -7,7 +7,9 @@ import { activeFilterChips, type FilterChip } from '../components/terrains/activ
 import { TerrainCard } from '../components/terrains/TerrainCard';
 import { CatalogStatutSwitch, type CatalogStatut } from '../components/terrains/CatalogStatutSwitch';
 import { SoldPropertyCard } from '../components/terrains/SoldPropertyCard';
-import { ProgrammesBand } from '../components/terrains/ProgrammesBand';
+import { ProgrammeCard } from '../components/programmes/ProgrammeCard';
+import { useProgrammes } from '../hooks/useProgrammes';
+import type { ProgrammeFilters } from '../api/programmes';
 import { estVendu } from '../utils/venteLabels';
 import { TerrainsMap } from '../components/terrains/TerrainsMap';
 import { CATALOG_GRID } from '../components/terrains/terrain-grid';
@@ -121,6 +123,19 @@ export function CatalogPage() {
     [filters, viewMode],
   );
   const { data, loading, error } = useTerrainsCatalog(queryFilters);
+
+  // Les lotissements se mêlent aux biens, filtrés par les mêmes critères : sans cela, un visiteur qui cherche
+  // « un terrain à Thiès » ne verrait jamais le lotissement qui y vend des lots. On ne les propose pas quand le
+  // critère ne peut pas leur correspondre (villa, bien vendu, vocation, rubrique), ni sur la carte.
+  const programmeFilters = useMemo<ProgrammeFilters | null>(() => {
+    if (viewMode !== 'liste') return null;
+    if (filters.statut === 'vendu') return null;
+    if ((filters.typeBien && filters.typeBien !== 'terrain') || filters.nombrePieces || filters.vocation || filters.categorie) return null;
+    const { search, region, commune, statutJuridique, prixPublicMin, prixPublicMax, superficieMin, superficieMax } = filters;
+    return { search, region, commune, statutJuridique, prixPublicMin, prixPublicMax, superficieMin, superficieMax };
+  }, [filters, viewMode]);
+  const { data: programmesData } = useProgrammes(programmeFilters);
+  const programmes = useMemo(() => (programmeFilters ? (programmesData ?? []) : []), [programmeFilters, programmesData]);
   const { text, lines, loading: contenuEnCours } = useEditableContent();
 
   const rubrique = filters.categorie ? CATEGORIES_CATALOGUE[filters.categorie] : null;
@@ -341,21 +356,17 @@ export function CatalogPage() {
         </div>
       )}
 
-      {viewMode === 'liste' && !hasActiveFilters && currentPage === 1 && <ProgrammesBand />}
-
       <div className="mt-4 sm:mt-6">
         <h2 className="sr-only">Biens à vendre</h2>
         {/* Barre de résultats collante : le compteur et la bascule Liste / Carte
             restent sous la main pendant le défilement. */}
         <div className="sticky top-16 z-20 -mx-4 mb-3 flex items-center justify-between gap-3 border-b border-mtm-border bg-mtm-bg/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 lg:static lg:mx-0 lg:mb-4 lg:border-0 lg:bg-transparent lg:px-0 lg:py-0">
           <p className="text-sm text-mtm-muted" aria-live="polite">
-            {loading && !data
-              ? 'Recherche…'
-              : data
-                ? data.total === 1
-                  ? '1 bien trouvé'
-                  : `${data.total} biens trouvés`
-                : ''}
+            {loading && !data ? 'Recherche…' : data ? (data.total === 1 ? '1 bien trouvé' : `${data.total} biens trouvés`) : ''}
+            {/* Sur téléphone, le compteur reste court pour laisser sa place au tri. */}
+            {data && programmes.length > 0 && (
+              <span className="hidden sm:inline">{` · ${programmes.length} lotissement${programmes.length > 1 ? 's' : ''}`}</span>
+            )}
           </p>
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             {sortSelect}
@@ -365,7 +376,7 @@ export function CatalogPage() {
 
         {(loadingFresh || (loading && viewMode === 'carte')) && <CardGridSkeleton count={8} gridClassName={CATALOG_GRID} compact />}
         {error && <EmptyState title="Impossible de charger les biens" description={error} />}
-        {!loading && !error && data && data.items.length === 0 && (
+        {!loading && !error && data && data.items.length === 0 && programmes.length === 0 && (
           <EmptyState
             title="Aucun bien ne correspond à votre recherche"
             description="Essayez d'élargir vos critères de filtre."
@@ -378,10 +389,13 @@ export function CatalogPage() {
             }
           />
         )}
-        {!error && data && data.items.length > 0 && (viewMode === 'carte' ? !loading : fresh) && (
+        {!error && data && (data.items.length > 0 || programmes.length > 0) && (viewMode === 'carte' ? !loading : fresh) && (
           <>
             {viewMode === 'liste' ? (
               <div className={CATALOG_GRID}>
+                {programmes.map((programme) => (
+                  <ProgrammeCard key={programme.id} programme={programme} compact />
+                ))}
                 {listItems.map((terrain) =>
                   estVendu(terrain) ? (
                     <SoldPropertyCard key={terrain.id} terrain={terrain} />

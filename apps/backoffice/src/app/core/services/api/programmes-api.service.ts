@@ -36,6 +36,17 @@ export interface ProgrammeResume extends ConditionsLot {
   margeLot: number | string | null;
   /** Le programme porte-t-il ce que la comptabilité attend de chaque lot vendu ? */
   comptaComplete: boolean;
+  /** Annoncé sur le site public tant qu'il reste un lot à vendre. */
+  publie: boolean;
+}
+
+/** Un visuel du programme pour le site public : une photo (la première est la couverture) ou le plan de masse. */
+export interface MediaProgramme {
+  id: string;
+  type: 'photo' | 'plan' | string;
+  title: string | null;
+  sortOrder: number;
+  secureUrl: string;
 }
 
 export interface CategorieLot extends ConditionsLot {
@@ -87,6 +98,7 @@ export interface ProgrammePayload extends ConditionsLot {
   margeLot?: number;
   /** Obligatoire pour changer la commission, la marge, le mode produit direct ou le propriétaire d'un programme qui a des lots. */
   justification?: string;
+  publie?: boolean;
 }
 
 export interface CategoriePayload extends ConditionsLot {
@@ -268,6 +280,28 @@ export class ProgrammesApiService {
 
   documents(id: string): Observable<DocumentsProgramme> {
     return this.http.get<DocumentsProgramme>(`${this.baseUrl}/${id}/documents`);
+  }
+
+  // --- Visuels du site public ---
+
+  medias(id: string): Observable<MediaProgramme[]> {
+    return this.http.get<MediaProgramme[]>(`${this.baseUrl}/${id}/medias`);
+  }
+
+  ajouterMedia(id: string, fichier: File, type: 'photo' | 'plan', titre?: string): Observable<unknown> {
+    const form = new FormData();
+    form.append('file', fichier);
+    form.append('type', type);
+    if (titre) form.append('title', titre);
+    return this.http.post<unknown>(`${this.baseUrl}/${id}/medias`, form);
+  }
+
+  definirCouverture(id: string, mediaId: string): Observable<unknown> {
+    return this.http.post<unknown>(`${this.baseUrl}/${id}/medias/${mediaId}/couverture`, {});
+  }
+
+  supprimerMedia(id: string, mediaId: string): Observable<unknown> {
+    return this.http.delete<unknown>(`${this.baseUrl}/${id}/medias/${mediaId}`);
   }
 
   /** Recopie les conditions du programme (prix, paiement, propriétaire, commission ou marge) sur ses lots libres. */

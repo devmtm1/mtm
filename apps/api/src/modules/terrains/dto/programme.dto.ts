@@ -67,6 +67,12 @@ export class UpdateProgrammeDto extends ConditionsLotDto {
   commissionLot?: number;
   @ApiPropertyOptional() @IsOptional() @IsNumber() @Min(0) margeLot?: number;
   @ApiPropertyOptional({
+    description: 'Visible sur le site public tant qu’il reste un lot à vendre.',
+  })
+  @IsOptional()
+  @IsBoolean()
+  publie?: boolean;
+  @ApiPropertyOptional({
     description:
       "Obligatoire quand on change la commission, la marge, le mode produit direct ou le propriétaire d'un programme qui a déjà des lots.",
   })
@@ -87,6 +93,18 @@ export class UpdateCategorieLotDto extends ConditionsLotDto {
   @ApiPropertyOptional() @IsOptional() @IsNumber() @Min(0) prixPublic?: number;
   @ApiPropertyOptional() @IsOptional() @IsNumber() @Min(0) commission?: number;
   @ApiPropertyOptional() @IsOptional() @IsNumber() @Min(0) marge?: number;
+}
+
+/** Un visuel du programme pour le site public. */
+export class CreateProgrammeMediaDto {
+  @ApiProperty({ enum: ['photo', 'plan'] })
+  @IsIn(['photo', 'plan'])
+  type!: 'photo' | 'plan';
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @Length(1, 200)
+  title?: string;
 }
 
 /** « 30 lots de A-01 à A-30, 300 m² chacun » : création en série. */

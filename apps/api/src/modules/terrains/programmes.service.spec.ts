@@ -341,6 +341,29 @@ describe('ProgrammesService.update — données sensibles', () => {
     expect(prismaMock.programmeLotissement.update).toHaveBeenCalled();
   });
 
+  it('annoncer un programme sur le site public est une publication : il faut le droit de publier', async () => {
+    const { prismaMock, service } = contexte();
+    prismaMock.programmeLotissement.findUnique.mockResolvedValue({
+      ...programme,
+      publie: false,
+    });
+    await expect(
+      service.update(
+        'p1',
+        { publie: true },
+        { ...user, permissions: ['terrains:modifier'] },
+      ),
+    ).rejects.toThrow(/permission terrains:publier/);
+    await service.update('p1', { publie: true }, direction);
+    // Le retirer du site, lui, ne demande rien de plus que modifier.
+    prismaMock.programmeLotissement.findUnique.mockResolvedValue({
+      ...programme,
+      publie: true,
+    });
+    await service.update('p1', { publie: false }, user);
+    expect(prismaMock.programmeLotissement.update).toHaveBeenCalledTimes(2);
+  });
+
   it('refuse à un commercial de saisir la commission, la marge ou le produit direct', async () => {
     const { prismaMock, service } = contexte();
     prismaMock.programmeLotissement.findUnique.mockResolvedValue(actuel);
@@ -445,33 +468,6 @@ describe('ProgrammesService.archiver', () => {
     expect(
       prismaMock.programmeLotissement.update.mock.calls[0][0].data.archiveLe,
     ).toBeInstanceOf(Date);
-  });
-});
-
-describe('ProgrammesService.findPublic', () => {
-  it('résume chaque programme par ses lots libres : nombre et fourchette de prix', async () => {
-    const { prismaMock, service } = contexte();
-    prismaMock.programmeLotissement.findMany.mockResolvedValue([
-      { id: 'p1', nom: 'Les Almadies' },
-    ]);
-    prismaMock.terrain.findMany.mockResolvedValue([
-      { programmeId: 'p1', prixPublic: 12_000_000 },
-      { programmeId: 'p1', prixPublic: 18_000_000 },
-      { programmeId: 'p1', prixPublic: null },
-    ]);
-    const [p] = await service.findPublic();
-    expect(p).toMatchObject({
-      lotsDisponibles: 3,
-      prixMin: 12_000_000,
-      prixMax: 18_000_000,
-    });
-    // Seuls les programmes qui ont encore un lot disponible sont listés.
-    expect(
-      prismaMock.programmeLotissement.findMany.mock.calls[0][0].where,
-    ).toMatchObject({
-      archiveLe: null,
-      lots: { some: { statutCommercial: 'Disponible' } },
-    });
   });
 });
 
