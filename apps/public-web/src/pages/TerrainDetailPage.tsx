@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, BookmarkCheck, ChevronRight, LayoutGrid, CalendarCheck, Download, FileText, Globe2, MapPin, MessageSquare, Navigation, ShieldCheck, UserCheck } from 'lucide-react';
+import { ArrowLeft, BadgeCheck, CalendarCheck, ChevronRight, Download, FileText, LandPlot, LayoutGrid, MapPin, MessageSquare, Navigation } from 'lucide-react';
 import { ROUTES } from '../routes';
 import { useTerrain } from '../hooks/useTerrain';
 import { TerrainGallery } from '../components/terrains/TerrainGallery';
-import { TerrainCaracteristiques, TerrainEssentiel, TerrainStatutJuridique } from '../components/terrains/TerrainFacts';
+import { TerrainBandeau, TerrainCaracteristiques, TerrainEssentiel, TerrainStatutJuridique } from '../components/terrains/TerrainFacts';
+import { CartePrixBien } from '../components/terrains/CartePrixBien';
 import { SimilarTerrains } from '../components/terrains/SimilarTerrains';
 import { AutresLotsDuProgramme } from '../components/programmes/AutresLotsDuProgramme';
 import { ClientRow } from '../components/client/shell/ClientUi';
@@ -101,36 +102,35 @@ export function TerrainDetailPage() {
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.6fr_1fr]">
         <div className="flex flex-col gap-6 lg:gap-8">
           <div className="relative order-2 -mx-4 -mt-12 rounded-t-3xl bg-mtm-bg px-4 pt-5 sm:-mx-6 sm:px-6 lg:order-1 lg:mx-0 lg:mt-0 lg:rounded-none lg:bg-transparent lg:px-0 lg:pt-0">
-            <span className="text-xs font-semibold uppercase tracking-wide text-mtm-muted">
+            <span className="inline-flex rounded-full bg-mtm-primary-dark px-3 py-1 text-xs font-bold tracking-wide text-white">
               {terrain.referenceInterne}
             </span>
-            <h1 className="mt-1 font-display text-2xl font-bold text-mtm-text sm:text-3xl">
+            <h1 className="mt-2.5 font-display text-2xl font-extrabold leading-tight text-mtm-text sm:text-3xl lg:text-[2.6rem]">
               {terrain.nom}
             </h1>
             {location && (
-              <p className="mt-2 flex items-center gap-1.5 text-sm text-mtm-muted">
-                <MapPin className="h-4 w-4" aria-hidden="true" />
+              <p className="mt-2.5 flex items-center gap-1.5 text-sm text-mtm-muted sm:text-base">
+                <MapPin className="h-4 w-4 shrink-0 fill-mtm-primary/15 text-mtm-primary" aria-hidden="true" />
                 {location}
                 {terrain.localisationDetail && ` · ${terrain.localisationDetail}`}
               </p>
             )}
             {terrain.programme && (
-              <Link
-                to={ROUTES.programme(terrain.programme.id)}
-                className="mt-2 flex items-center gap-2.5 rounded-lg bg-mtm-primary-subtle px-3 py-2 text-sm font-semibold text-mtm-primary transition-colors hover:bg-mtm-primary-light sm:inline-flex"
-              >
-                <LayoutGrid className="h-5 w-5 shrink-0" aria-hidden="true" />
-                <span className="flex min-w-0 flex-1 flex-col leading-snug sm:flex-row sm:gap-1.5">
-                  <span>
-                    Lot {terrain.numeroLot ?? terrain.referenceInterne}
-                    {terrain.categorieLot && <span className="font-medium text-mtm-primary/80"> · {terrain.categorieLot.nom}</span>}
-                  </span>
-                  <span className="font-medium text-mtm-primary/80">
-                    <span className="hidden sm:inline">· </span>lotissement {terrain.programme.nom}
-                  </span>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-mtm-primary-subtle px-3 py-1.5 text-sm font-semibold text-mtm-primary">
+                  <LayoutGrid className="h-4 w-4" aria-hidden="true" />
+                  Lot {terrain.numeroLot ?? terrain.referenceInterne}
+                  {terrain.categorieLot && <span className="font-medium text-mtm-primary/80">· {terrain.categorieLot.nom}</span>}
                 </span>
-                <ChevronRight className="h-4 w-4 shrink-0" aria-hidden="true" />
-              </Link>
+                <Link
+                  to={ROUTES.programme(terrain.programme.id)}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-mtm-primary-subtle px-3 py-1.5 text-sm font-semibold text-mtm-primary transition-colors hover:bg-mtm-primary-light"
+                >
+                  <LandPlot className="h-4 w-4" aria-hidden="true" />
+                  Lotissement {terrain.programme.nom}
+                  <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              </div>
             )}
             {/* Mobile : le prix se lit tout de suite sous le nom, comme sur une carte d'annonce. */}
             {vendu ? (
@@ -142,11 +142,17 @@ export function TerrainDetailPage() {
               {/* La nature avant le statut juridique : le visiteur doit savoir
                   en un coup d'œil s'il regarde une parcelle ou une maison. */}
               {vendu && <Badge tone="accent">Vendu</Badge>}
-              <Badge tone="primary">{typeBienLabel(terrain.typeBien)}</Badge>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-mtm-primary-dark px-3 py-1 text-xs font-semibold text-white">
+                <LandPlot className="h-3.5 w-3.5" aria-hidden="true" />
+                {typeBienLabel(terrain.typeBien)}
+              </span>
               {bati && terrain.nombrePieces && (
                 <Badge tone="primary">{terrain.nombrePieces}</Badge>
               )}
-              <Badge tone="success">{terrain.niveauVerification}</Badge>
+              <Badge tone="success">
+                <BadgeCheck className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+                {terrain.niveauVerification}
+              </Badge>
               {etatLabel && <Badge tone="neutral">{etatLabel}</Badge>}
               {terrain.vocation && <Badge tone="neutral">{vocationLabel(terrain.vocation)}</Badge>}
             </div>
@@ -166,8 +172,13 @@ export function TerrainDetailPage() {
           />
 
           <div className="order-3 flex flex-col gap-6 lg:gap-8">
-          <TerrainStatutJuridique terrain={terrain} />
-          <TerrainEssentiel terrain={terrain} />
+          <div className="flex flex-col gap-6 lg:hidden">
+            <TerrainStatutJuridique terrain={terrain} />
+            <TerrainEssentiel terrain={terrain} />
+          </div>
+          <div className="hidden lg:block">
+            <TerrainBandeau terrain={terrain} />
+          </div>
 
           {terrain.description && (
             <section>
@@ -243,61 +254,13 @@ export function TerrainDetailPage() {
             </div>
           </aside>
         ) : (
-          <aside className="h-fit rounded-2xl border border-mtm-border bg-mtm-surface p-5 shadow-card lg:sticky lg:top-24 lg:rounded-lg lg:p-6">
-            <p className="hidden text-xs font-semibold uppercase tracking-wide text-mtm-muted lg:block">Prix public</p>
-            <p className="mt-1 hidden font-display text-3xl font-bold text-mtm-primary lg:block">
-              {formatMoney(terrain.prixPublic)}
-            </p>
-            <h2 className="font-display text-lg font-bold text-mtm-text lg:hidden">Intéressé par ce bien{'\u00A0'}?</h2>
-  
-            <div className="mt-4 flex flex-col gap-3 lg:mt-6">
-              {/* Mobile : la barre fixe du bas propose déjà « Visiter » ; le
-                  bouton n'est repris ici que sur ordinateur. */}
-              <div className="hidden lg:flex lg:flex-col">
-                <Button onClick={() => setActiveModal('visite')}>
-                  <CalendarCheck className="h-4 w-4" aria-hidden="true" />
-                  Demander une visite
-                </Button>
-              </div>
-              {/* Une seule action principale (la visite) ; la réservation vient
-                  ensuite, avec ce qu'elle engage ; la demande d'informations est un
-                  lien discret. */}
-              <div className="flex flex-col gap-1.5">
-                <Button variant="secondary" onClick={() => setActiveModal('reservation')}>
-                  <BookmarkCheck className="h-4 w-4" aria-hidden="true" />
-                  Réserver ce terrain
-                </Button>
-                <p className="text-center text-xs text-mtm-muted">
-                  Sans engagement : un conseiller vous rappelle pour l’acompte.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setActiveModal('infos')}
-                className="inline-flex items-center justify-center gap-1.5 self-center rounded-md px-2 py-1 text-sm font-semibold text-mtm-primary underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-mtm-primary"
-              >
-                <MessageSquare className="h-4 w-4" aria-hidden="true" />
-                Demander des informations
-              </button>
-            </div>
-  
-            {/* Réassurance : les trois engagements du cahier des charges qui
-                comptent au moment de cliquer (sections 6 et 7). */}
-            <ul className="mt-6 flex flex-col gap-2 border-t border-mtm-border pt-5 text-sm text-mtm-muted">
-              <li className="flex items-start gap-2">
-                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-mtm-success" aria-hidden="true" />
-                Terrain contrôlé par nos équipes avant publication
-              </li>
-              <li className="flex items-start gap-2">
-                <Globe2 className="mt-0.5 h-4 w-4 shrink-0 text-mtm-success" aria-hidden="true" />
-                Suivi à distance pour la diaspora
-              </li>
-              <li className="flex items-start gap-2">
-                <UserCheck className="mt-0.5 h-4 w-4 shrink-0 text-mtm-success" aria-hidden="true" />
-                Un interlocuteur dédié jusqu’à la signature
-              </li>
-            </ul>
-          </aside>
+          <CartePrixBien
+            prix={terrain.prixPublic}
+            onVisite={() => setActiveModal('visite')}
+            onReservation={() => setActiveModal('reservation')}
+            onInfos={() => setActiveModal('infos')}
+            contexte={terrain.programme ? `Lot ${terrain.numeroLot ?? terrain.referenceInterne} · ${terrain.programme.nom}` : undefined}
+          />
         )}
       </div>
 

@@ -88,6 +88,12 @@ export function ProgrammePage() {
   const lieu = [programme.commune, programme.region].filter(Boolean).join(', ');
   const surface = fourchetteSuperficie(programme.superficieMin, programme.superficieMax, programme.uniteSuperficie);
   const conditions = pointsDeConditions(programme.conditions);
+  // Une tuile de lot sans photo prend le plan de masse ; à défaut, la première photo du lotissement, ou sa couverture.
+  const visuelDesLots = plans[0]
+    ? { src: plans[0].secureUrl, legende: 'Plan de masse' }
+    : (photos[0]?.secureUrl ?? programme.couverture)
+      ? { src: (photos[0]?.secureUrl ?? programme.couverture) as string, legende: 'Le lotissement' }
+      : null;
   // La seconde photo illustre le texte de présentation ; à défaut, la couverture.
   const vignette = photos[1]?.secureUrl ?? programme.couverture;
 
@@ -196,7 +202,7 @@ export function ProgrammePage() {
               sousTitre={`${disponibilites(programme)}. Touchez un lot pour voir sa fiche.`}
             />
             <div className="mt-5">
-              <LotsExplorer lots={programme.lots} categories={programme.categories} onVisite={setContact} />
+              <LotsExplorer lots={programme.lots} categories={programme.categories} onVisite={setContact} visuel={visuelDesLots} />
             </div>
           </section>
 

@@ -15,7 +15,7 @@ const GARANTIES = [
 ];
 
 /** Une silhouette de ville très claire, au pied de la carte : de la chaleur, sans image à charger. */
-function Silhouette() {
+export function Silhouette() {
   return (
     <svg aria-hidden="true" viewBox="0 0 320 70" preserveAspectRatio="xMidYMax slice" className="pointer-events-none absolute inset-x-0 bottom-0 h-16 w-full text-mtm-primary-subtle" fill="currentColor">
       <path d="M0,70 V48 h14 V34 h18 V52 h10 V26 h16 V44 h12 V38 h8 V16 h14 V40 h12 V30 h20 V50 h10 V22 h16 V42 h14 V34 h12 V12 h10 V30 h16 V46 h12 V28 h18 V44 h14 V36 h16 V52 h12 V40 h14 V70 Z" />

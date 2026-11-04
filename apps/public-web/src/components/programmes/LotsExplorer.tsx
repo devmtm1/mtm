@@ -3,12 +3,14 @@ import { ArrowUpDown, LayoutGrid, List } from 'lucide-react';
 import type { CategoriePublique, LotPublic } from '../../api/programmes';
 import { lotsAffiches, nombreDeLots, TRIS_LOTS, type TriLots } from '../../utils/programmes';
 import { LotRow } from './LotRow';
-import { LotTile } from './LotTile';
+import { LotTile, type VisuelLot } from './LotTile';
 
 interface LotsExplorerProps {
   lots: LotPublic[];
   categories: CategoriePublique[];
   onVisite: (lot: LotPublic) => void;
+  /** Ce que montre une tuile sans photo : le plan de masse du lotissement, à défaut une de ses photos. */
+  visuel?: VisuelLot | null;
 }
 
 const puce = (actif: boolean) =>
@@ -23,12 +25,14 @@ const puce = (actif: boolean) =>
  * d'œil. On filtre par catégorie, on trie par prix ou superficie ; les lots réservés et vendus se montrent à la
  * demande, grisés, après ceux qu'on peut acheter.
  */
-export function LotsExplorer({ lots, categories, onVisite }: LotsExplorerProps) {
+export function LotsExplorer({ lots, categories, onVisite, visuel = null }: LotsExplorerProps) {
   const [categorie, setCategorie] = useState('');
   const [seulementDisponibles, setSeulementDisponibles] = useState(true);
   const [tri, setTri] = useState<TriLots>('numero');
   const [vue, setVue] = useState<'liste' | 'tuiles'>('tuiles');
 
+  // Dès qu'une tuile a une image, toutes en ont une (au moins un fond à la charte) : la grille reste régulière.
+  const avecPhoto = visuel !== null || lots.some((l) => l.photo);
   const libres = lots.filter((l) => l.statut === 'Disponible').length;
   const autres = lots.length - libres;
   const affiches = useMemo(
@@ -122,7 +126,7 @@ export function LotsExplorer({ lots, categories, onVisite }: LotsExplorerProps) 
       ) : (
         <ul className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
           {affiches.map((lot) => (
-            <LotTile key={lot.id} lot={lot} />
+            <LotTile key={lot.id} lot={lot} visuel={visuel} avecPhoto={avecPhoto} />
           ))}
         </ul>
       )}
