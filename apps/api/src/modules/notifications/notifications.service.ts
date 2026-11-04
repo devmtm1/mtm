@@ -1,3 +1,4 @@
+import { normaliserTelephone } from '../../common/utils/telephone';
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
@@ -43,6 +44,8 @@ export interface CibleClient {
   proprietaireId?: string | null;
   /** Adresse e-mail du client : retrouve son compte à partir d'une demande déposée sans compte. */
   email?: string | null;
+  /** Numéro de téléphone du client : retrouve son compte quand la demande est déposée sans e-mail. */
+  telephone?: string | null;
 }
 
 /**
@@ -132,6 +135,11 @@ export class NotificationsService {
       criteres.push({
         clientProspect: { email: { equals: cible.email, mode: 'insensitive' } },
       });
+    if (cible.telephone) {
+      const normalise = normaliserTelephone(cible.telephone);
+      if (normalise) criteres.push({ telephoneConnexion: normalise });
+      criteres.push({ clientProspect: { telephone: cible.telephone } });
+    }
     if (criteres.length === 0) return [];
     const users = await this.prisma.user.findMany({
       where: { isActive: true, OR: criteres },

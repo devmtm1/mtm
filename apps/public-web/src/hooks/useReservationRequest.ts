@@ -47,7 +47,7 @@ export function useReservationRequest(terrainId: string) {
       await sendReservationRequest({
         terrainId,
         nom: values.nom.trim(),
-        email: values.email.trim(),
+        email: values.email.trim() || undefined,
         telephone: values.telephone.trim() || undefined,
         message: values.message.trim() || undefined,
       });

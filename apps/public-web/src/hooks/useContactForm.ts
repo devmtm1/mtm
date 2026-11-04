@@ -59,7 +59,8 @@ export function useContactForm({
       if (client && bienLocatifId) {
         await sendContactMessage({
           nom: `${client.firstName} ${client.lastName}`.trim(),
-          email: client.email,
+          email: client.email ?? undefined,
+          telephone: client.telephone ?? undefined,
           sujet: values.sujet.trim() || undefined,
           message: values.message.trim(),
           bienLocatifId,
@@ -79,7 +80,7 @@ export function useContactForm({
       }
       await sendContactMessage({
         nom: values.nom.trim(),
-        email: values.email.trim(),
+        email: values.email.trim() || undefined,
         telephone: values.telephone.trim() || undefined,
         sujet: values.sujet.trim() || undefined,
         message: values.message.trim(),

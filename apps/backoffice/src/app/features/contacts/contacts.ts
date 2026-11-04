@@ -182,6 +182,8 @@ export class Contacts implements OnInit {
           );
           if (emailEnvoye) {
             this.notify.success('Réponse envoyée par e-mail et visible dans l’espace client');
+          } else if (!contact.email) {
+            this.notify.info('Réponse enregistrée et visible dans l’espace client. Ce demandeur n’a laissé que son numéro : rappelez-le pour la lui donner.');
           } else {
             this.notify.info('Réponse enregistrée et visible dans l’espace client, mais l’e-mail n’a pas pu partir : joignez le client autrement.');
           }

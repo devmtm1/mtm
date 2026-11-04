@@ -5,10 +5,30 @@
  * n'existe que pour donner un retour immédiat à l'utilisateur.
  */
 
+import { isValidTelephone, MESSAGE_TELEPHONE_INVALIDE } from './telephone';
+
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function isValidEmail(value: string): boolean {
   return EMAIL_PATTERN.test(value.trim());
+}
+
+const MESSAGE_JOIGNABLE = 'Indiquez une adresse e-mail ou un numéro de téléphone.';
+
+/**
+ * Il faut pouvoir répondre au visiteur : une adresse e-mail OU un numéro de téléphone, au minimum un des deux.
+ * Chacun, une fois saisi, doit être valable.
+ */
+function validerJoignable(values: { email: string; telephone: string }, errors: FieldErrors): void {
+  const email = values.email.trim();
+  const telephone = values.telephone.trim();
+  if (!email && !telephone) {
+    errors.email = MESSAGE_JOIGNABLE;
+    errors.telephone = MESSAGE_JOIGNABLE;
+    return;
+  }
+  if (email && !isValidEmail(email)) errors.email = 'Adresse e-mail invalide.';
+  if (telephone && !isValidTelephone(telephone)) errors.telephone = MESSAGE_TELEPHONE_INVALIDE;
 }
 
 export interface FieldErrors {
@@ -28,12 +48,7 @@ export function validateContactForm(values: ContactFormValues): FieldErrors {
   if (values.nom.trim().length < 2 || values.nom.trim().length > 200) {
     errors.nom = 'Le nom doit contenir entre 2 et 200 caractères.';
   }
-  if (!isValidEmail(values.email)) {
-    errors.email = 'Adresse e-mail invalide.';
-  }
-  if (values.telephone && (values.telephone.trim().length < 4 || values.telephone.trim().length > 30)) {
-    errors.telephone = 'Numéro de téléphone invalide.';
-  }
+  validerJoignable(values, errors);
   if (values.message.trim().length < 10 || values.message.trim().length > 2000) {
     errors.message = 'Le message doit contenir entre 10 et 2000 caractères.';
   }
@@ -52,12 +67,7 @@ export function validateReservationForm(values: ReservationFormValues): FieldErr
   if (values.nom.trim().length < 2 || values.nom.trim().length > 200) {
     errors.nom = 'Le nom doit contenir entre 2 et 200 caractères.';
   }
-  if (!isValidEmail(values.email)) {
-    errors.email = 'Adresse e-mail invalide.';
-  }
-  if (values.telephone && (values.telephone.trim().length < 4 || values.telephone.trim().length > 30)) {
-    errors.telephone = 'Numéro de téléphone invalide.';
-  }
+  validerJoignable(values, errors);
   return errors;
 }
 
@@ -95,12 +105,13 @@ export function validateConfierBien(values: ConfierBienValues): FieldErrors {
   if (values.nom.trim().length < 2 || values.nom.trim().length > 200) {
     errors.nom = 'Indiquez votre nom.';
   }
-  if (!isValidEmail(values.email)) {
-    errors.email = 'Adresse e-mail invalide.';
-  }
+  // Le téléphone est exigé ici (c'est le canal du rappel) ; l'e-mail est facultatif mais doit être valable.
+  if (values.email.trim() && !isValidEmail(values.email)) errors.email = 'Adresse e-mail invalide.';
   const telephone = values.telephone.trim();
-  if (telephone.length < 4 || telephone.length > 30) {
+  if (!telephone) {
     errors.telephone = 'Indiquez un numéro pour vous rappeler (WhatsApp ou appel).';
+  } else if (!isValidTelephone(telephone)) {
+    errors.telephone = MESSAGE_TELEPHONE_INVALIDE;
   }
   if (!values.typeBien) errors.typeBien = 'Choisissez le type de bien.';
   if (values.commune.trim().length < 2) errors.commune = 'Indiquez la commune ou le quartier.';
@@ -133,10 +144,12 @@ export interface DevisConstructionValues {
 export function validateDevisConstruction(values: DevisConstructionValues): FieldErrors {
   const errors: FieldErrors = {};
   if (values.nom.trim().length < 2 || values.nom.trim().length > 200) errors.nom = 'Indiquez votre nom.';
-  if (!isValidEmail(values.email)) errors.email = 'Adresse e-mail invalide.';
+  if (values.email.trim() && !isValidEmail(values.email)) errors.email = 'Adresse e-mail invalide.';
   const telephone = values.telephone.trim();
-  if (telephone.length < 4 || telephone.length > 30) {
+  if (!telephone) {
     errors.telephone = 'Indiquez un numéro pour vous rappeler (WhatsApp ou appel).';
+  } else if (!isValidTelephone(telephone)) {
+    errors.telephone = MESSAGE_TELEPHONE_INVALIDE;
   }
   if (!values.typeProjet) errors.typeProjet = 'Choisissez la nature du projet.';
   if (!values.terrain) errors.terrain = 'Dites-nous où vous en êtes pour le terrain.';

@@ -34,7 +34,11 @@ export interface RepondreDialogData {
         <mat-label>Votre réponse</mat-label>
         <textarea matInput rows="6" maxlength="4000" [formControl]="reponse" placeholder="Bonjour, …"></textarea>
         <mat-hint>
-          Envoyée à {{ data.contact.email ?? 'l’adresse du demandeur' }} et visible dans son espace client.
+          @if (data.contact.email) {
+            Envoyée à {{ data.contact.email }} et visible dans son espace client.
+          } @else {
+            Ce demandeur n’a laissé que son numéro ({{ data.contact.telephone }}) : la réponse est visible dans son espace client, rappelez-le aussi.
+          }
         </mat-hint>
         @if (reponse.invalid && reponse.touched) {
           <mat-error>Écrivez au moins quelques mots.</mat-error>

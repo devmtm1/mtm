@@ -1,6 +1,6 @@
 export interface ContactPayload {
   nom: string;
-  email: string;
+  email?: string;
   telephone?: string;
   sujet?: string;
   message: string;
@@ -33,7 +33,7 @@ export const SITUATIONS_BIEN_CONFIE = [
 /** Un propriétaire propose un bien à la gestion (page « Gestion locative »). */
 export interface ConfierBienPayload {
   nom: string;
-  email: string;
+  email?: string;
   telephone: string;
   pays?: string;
   typeBien: string;
@@ -64,7 +64,7 @@ export const SITUATIONS_TERRAIN = [
 /** Demande de devis pour un projet de construction (page « Construction »). */
 export interface DevisConstructionPayload {
   nom: string;
-  email: string;
+  email?: string;
   telephone: string;
   pays?: string;
   typeProjet: string;

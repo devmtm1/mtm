@@ -1,3 +1,4 @@
+import { ChampTelephone } from '../ui/ChampTelephone';
 import { CheckCircle2 } from 'lucide-react';
 import { useReservationRequest } from '../../hooks/useReservationRequest';
 import { Button } from '../ui/Button';
@@ -58,7 +59,7 @@ export function ReservationModal({ terrainId, terrainNom, onClose }: Reservation
             />
           </FormField>
 
-          <FormField label="E-mail" htmlFor="reservation-email" error={errors.email} required>
+          <FormField label="E-mail" htmlFor="reservation-email" error={errors.email} hint="Un e-mail ou un téléphone : l’un des deux suffit.">
             <input
               id="reservation-email"
               type="email"
@@ -69,16 +70,7 @@ export function ReservationModal({ terrainId, terrainNom, onClose }: Reservation
             />
           </FormField>
 
-          <FormField label="Téléphone" htmlFor="reservation-telephone" error={errors.telephone}>
-            <input
-              id="reservation-telephone"
-              type="tel"
-              className={fieldInputClass}
-              value={values.telephone}
-              onChange={(event) => setValue('telephone', event.target.value)}
-              autoComplete="tel"
-            />
-          </FormField>
+          <ChampTelephone label="Téléphone" id="reservation-telephone" value={values.telephone} onChange={(valeur) => setValue('telephone', valeur)} error={errors.telephone} />
 
           </>
           )}

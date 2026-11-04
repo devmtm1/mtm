@@ -1,10 +1,11 @@
+import { isValidTelephone, MESSAGE_TELEPHONE_INVALIDE } from '../../utils/telephone';
+import { ChampTelephone } from '../ui/ChampTelephone';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Mail, MessageCircle, Smartphone } from 'lucide-react';
 import { ApiError } from '../../api/client';
 import { fetchPreferences, savePreferences, type PreferencesClient } from '../../api/notifications';
 import { useAuth } from '../../contexts/auth-context-store';
 import { Button } from '../ui/Button';
-import { FormField, fieldInputClass } from '../ui/FormField';
 import { Skeleton } from '../ui/Skeleton';
 import { useToast } from '../ui/toast-store';
 import { ClientCard } from './shell/ClientUi';
@@ -74,6 +75,10 @@ export function PreferencesCompte() {
   async function enregistrer(event: FormEvent): Promise<void> {
     event.preventDefault();
     if (!accessToken) return;
+    if (telephone.trim() && !isValidTelephone(telephone)) {
+      setErreur(MESSAGE_TELEPHONE_INVALIDE);
+      return;
+    }
     setErreur(null);
     setEnvoi(true);
     try {
@@ -108,18 +113,7 @@ export function PreferencesCompte() {
         </div>
       ) : (
         <form className="flex flex-col gap-4" onSubmit={(event) => void enregistrer(event)}>
-          <FormField label="Téléphone" htmlFor="pref-telephone">
-            <input
-              id="pref-telephone"
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
-              className={fieldInputClass}
-              placeholder="+221 77 123 45 67"
-              value={telephone}
-              onChange={(event) => setTelephone(event.target.value)}
-            />
-          </FormField>
+          <ChampTelephone label="Téléphone" id="pref-telephone" value={telephone} onChange={setTelephone} />
           <p className="-mt-2 text-xs text-mtm-muted">
             {user?.email ? 'Adresse e-mail de connexion' : 'Numéro de connexion'} :{' '}
             <span className="font-semibold text-mtm-text">{user?.email ?? user?.telephone}</span>. Pour le changer, demandez à votre
