@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Building2, Check, Images, Layers, LayoutGrid, MapPin, Maximize2, MessageSquare, Tag, Wallet } from 'lucide-react';
 import { fetchProgramme, fetchProgrammes, type LotPublic, type ProgrammePublicDetail } from '../api/programmes';
-import { disponibilites, fourchettePrix, fourchetteSuperficie, pointsDeConditions } from '../utils/programmes';
+import { disponibilites, fourchettePrix, fourchetteSuperficie, pointsDeConditions, visuelDesLotsDe } from '../utils/programmes';
 import { formatMoney } from '../utils/format';
 import { VAGUES } from '../utils/vagues';
 import { useAsyncData } from '../hooks/useAsyncData';
@@ -89,11 +89,7 @@ export function ProgrammePage() {
   const surface = fourchetteSuperficie(programme.superficieMin, programme.superficieMax, programme.uniteSuperficie);
   const conditions = pointsDeConditions(programme.conditions);
   // Une tuile de lot sans photo prend le plan de masse ; à défaut, la première photo du lotissement, ou sa couverture.
-  const visuelDesLots = plans[0]
-    ? { src: plans[0].secureUrl, legende: 'Plan de masse' }
-    : (photos[0]?.secureUrl ?? programme.couverture)
-      ? { src: (photos[0]?.secureUrl ?? programme.couverture) as string, legende: 'Le lotissement' }
-      : null;
+  const visuelDesLots = visuelDesLotsDe(programme);
   // La seconde photo illustre le texte de présentation ; à défaut, la couverture.
   const vignette = photos[1]?.secureUrl ?? programme.couverture;
 
