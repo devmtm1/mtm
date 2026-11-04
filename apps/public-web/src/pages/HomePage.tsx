@@ -1,6 +1,7 @@
 import { HeroSection } from '../components/home/HeroSection';
 import { QuickSearchSection } from '../components/home/QuickSearchSection';
 import { FeaturedTerrainsSection } from '../components/home/FeaturedTerrainsSection';
+import { FeaturedProgrammesSection } from '../components/home/FeaturedProgrammesSection';
 import { FeaturedLocationsSection } from '../components/home/FeaturedLocationsSection';
 import { ProjetsSection } from '../components/home/ProjetsSection';
 import { VideosSection } from '../components/home/VideosSection';
@@ -44,6 +45,9 @@ export function HomePage() {
       </Reveal>
       <Reveal>
         <FeaturedTerrainsSection />
+      </Reveal>
+      <Reveal>
+        <FeaturedProgrammesSection />
       </Reveal>
       <Reveal>
         <FeaturedLocationsSection />

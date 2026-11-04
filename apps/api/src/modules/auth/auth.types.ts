@@ -1,6 +1,9 @@
 export interface AuthenticatedUser {
   id: string;
-  email: string;
+  /** Absent pour un client qui s'est ouvert un espace avec son seul numéro de téléphone. */
+  email: string | null;
+  /** Numéro de connexion (format international), pour un compte qui en a un. */
+  telephone: string | null;
   firstName: string;
   lastName: string;
   roles: string[];
@@ -24,5 +27,5 @@ export type LoginResponse = LoginResult | TwoFactorRequiredResult;
 
 export interface JwtPayload {
   sub: string; // userId
-  email: string;
+  email: string | null;
 }

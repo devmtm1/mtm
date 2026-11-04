@@ -1,10 +1,31 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsOptional, IsString, Length } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsEmail,
+  IsOptional,
+  IsString,
+  Length,
+  ValidateIf,
+} from 'class-validator';
 
 export class LoginDto {
-  @ApiProperty({ example: 'admin@mtm-immobilier.sn' })
+  @ApiPropertyOptional({
+    description:
+      'Adresse e-mail ou numéro de téléphone (compte client ouvert sans e-mail)',
+    example: '77 123 45 67',
+  })
+  @ValidateIf((dto: LoginDto) => !dto.email)
+  @IsString({ message: 'Identifiant invalide' })
+  @Length(3, 254, { message: 'Identifiant invalide' })
+  identifiant?: string;
+
+  @ApiPropertyOptional({
+    example: 'admin@mtm-immobilier.sn',
+    description:
+      'Ancien nom du champ : équivaut à « identifiant » avec une adresse e-mail',
+  })
+  @ValidateIf((dto: LoginDto) => !dto.identifiant)
   @IsEmail({}, { message: 'Adresse e-mail invalide' })
-  email!: string;
+  email?: string;
 
   @ApiProperty({ example: 'MotDePasseSecurise123!' })
   @IsString()

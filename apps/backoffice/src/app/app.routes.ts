@@ -83,6 +83,20 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'programmes/:id',
+        title: 'Programme',
+        canActivate: [permissionsGuard(['terrains:consulter'])],
+        loadComponent: () =>
+          import('./features/programmes/programme-detail').then((m) => m.ProgrammeDetail),
+      },
+      {
+        path: 'programmes',
+        title: 'Programmes',
+        data: { preload: true },
+        canActivate: [permissionsGuard(['terrains:consulter'])],
+        loadComponent: () => import('./features/programmes/programmes').then((m) => m.Programmes),
+      },
+      {
         path: 'terrains/:id',
         title: 'Fiche du bien',
         data: { preload: true },

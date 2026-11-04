@@ -6,7 +6,7 @@ import type { CompteEspaceClient } from '../../../core/models/fiche-client';
 
 /**
  * Onglet « Espace client » : le client peut-il déjà se connecter, depuis quand, et que verra-t-il ? C'est ici qu'on
- * lui ouvre ses identifiants. L'accès s'envoie par e-mail : sans adresse, on propose de la renseigner d'abord.
+ * lui ouvre ses identifiants. L'accès s'envoie par e-mail, ou par WhatsApp / SMS quand le client n'a que son numéro : sans l'un ni l'autre, on propose de renseigner ses coordonnées d'abord.
  * Même présentation que les cartes de l'identité.
  */
 @Component({
@@ -34,36 +34,42 @@ import type { CompteEspaceClient } from '../../../core/models/fiche-client';
             </dd>
           </div>
           <div>
-            <dt>Adresse de connexion</dt>
-            <dd>{{ email() }}</dd>
+            <dt>Identifiant de connexion</dt>
+            <dd>{{ email() || telephone() }}</dd>
           </div>
         </dl>
         <p class="texte">Le client voit {{ description() }}.</p>
       } @else {
         <p class="texte">
           Une fois l’accès ouvert, le client pourra se connecter pour voir {{ description() }}.
-          L’invitation et un mot de passe provisoire lui sont envoyés par e-mail.
+          L’invitation lui est envoyée par e-mail, ou par WhatsApp / SMS s’il n’a que son numéro de téléphone.
         </p>
         @if (peutOuvrir()) {
-          @if (email()) {
+          @if (email() || telephone()) {
             <div class="action">
               <button mat-flat-button color="primary" type="button" (click)="ouvrir.emit()">
                 Ouvrir l’espace client
               </button>
-              <span class="aide">L’invitation part à {{ email() }}</span>
+              <span class="aide">
+                @if (email()) {
+                  L’invitation part par e-mail à {{ email() }}
+                } @else {
+                  L’invitation part par WhatsApp ou SMS au {{ telephone() }}
+                }
+              </span>
             </div>
           } @else if (peutModifier()) {
             <p class="alerte">
-              Pas d’adresse e-mail sur cette fiche : l’accès s’envoie par e-mail.
+              Ni e-mail ni numéro de téléphone sur cette fiche : l’invitation ne peut pas partir.
             </p>
             <div class="action">
               <button mat-stroked-button type="button" (click)="ajouterEmail.emit()">
-                Ajouter son e-mail
+                Ajouter ses coordonnées
               </button>
             </div>
           } @else {
             <p class="alerte">
-              Pas d’adresse e-mail sur cette fiche : l’accès ne peut pas encore être ouvert.
+              Ni e-mail ni numéro de téléphone sur cette fiche : l’accès ne peut pas encore être ouvert.
             </p>
           }
         } @else {
@@ -176,6 +182,8 @@ import type { CompteEspaceClient } from '../../../core/models/fiche-client';
 export class FicheEspaceClient {
   readonly compte = input<CompteEspaceClient | null | undefined>(null);
   readonly email = input<string | null | undefined>(null);
+  /** Le numéro du client : il suffit, sans e-mail, pour ouvrir son espace. */
+  readonly telephone = input<string | null | undefined>(null);
   readonly peutOuvrir = input(false);
   readonly peutModifier = input(false);
   /** Ce que le client verra, à la suite de « Le client voit » : « ses dossiers, ses paiements et ses documents ». */

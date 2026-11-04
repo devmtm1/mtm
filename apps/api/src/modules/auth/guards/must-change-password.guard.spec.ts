@@ -10,6 +10,7 @@ describe('MustChangePasswordGuard', () => {
   const buildUser = (mustChangePassword: boolean): AuthenticatedUser => ({
     id: 'u1',
     email: 'test@mtm.sn',
+    telephone: null,
     firstName: 'Test',
     lastName: 'User',
     roles: [],

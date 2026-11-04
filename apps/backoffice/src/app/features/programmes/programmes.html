@@ -1,0 +1,203 @@
+<div class="programmes-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Biens</p>
+      <h1 class="page-header__title">Programmes de lotissement</h1>
+      <p class="page-header__subtitle">
+        Un lotissement se saisit une seule fois : titre foncier, propriétaire, prix et conditions. Ses lots se créent ensuite
+        d’un coup et se vendent séparément.
+      </p>
+    </div>
+    @if (canCreate) {
+      <div class="page-header__actions">
+        <button mat-flat-button color="primary" type="button" (click)="nouveau()">
+          <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau programme
+        </button>
+      </div>
+    }
+  </header>
+
+  @if (!archives()) {
+    <section class="kpi-row kpi-row--soigne" aria-label="Synthèse des programmes">
+      @if (totaux(); as t) {
+        <div class="kpi">
+          <span class="kpi__icon"><svg lucideLayoutGrid aria-hidden="true"></svg></span>
+          <span class="kpi__body">
+            <strong>{{ t.programmes }}</strong>
+            <span>Programmes actifs</span>
+            <small>{{ t.lots }} lot{{ t.lots > 1 ? 's' : '' }} au total</small>
+          </span>
+        </div>
+        <div class="kpi kpi--success" [class.kpi--zero]="t.disponibles === 0">
+          <span class="kpi__icon"><svg lucideCircleCheck aria-hidden="true"></svg></span>
+          <span class="kpi__body">
+            <strong>{{ t.disponibles }}</strong>
+            <span>Lots disponibles</span>
+            <small>Publiés sur le site</small>
+          </span>
+        </div>
+        <div class="kpi kpi--warning" [class.kpi--zero]="t.reserves === 0">
+          <span class="kpi__icon"><svg lucideStar aria-hidden="true"></svg></span>
+          <span class="kpi__body">
+            <strong>{{ t.reserves }}</strong>
+            <span>Lots réservés</span>
+            <small>Dossier de vente en cours</small>
+          </span>
+        </div>
+        <div class="kpi kpi--primary" [class.kpi--zero]="t.vendus === 0">
+          <span class="kpi__icon"><svg lucideLandPlot aria-hidden="true"></svg></span>
+          <span class="kpi__body">
+            <strong>{{ t.vendus }}</strong>
+            <span>Lots vendus</span>
+            <small>{{ t.tauxVendu }} % du stock</small>
+          </span>
+        </div>
+      } @else {
+        @for (i of [1, 2, 3, 4]; track i) {
+          <div class="kpi skeleton" aria-hidden="true"></div>
+        }
+      }
+    </section>
+  }
+
+  <section class="page-card carte-tableau" aria-label="Liste des programmes">
+    <div class="barre">
+      <div class="periodes" role="group" aria-label="Programmes à afficher">
+        <button type="button" [class.is-actif]="!archives()" [attr.aria-pressed]="!archives()" (click)="afficherArchives(false)">
+          Actifs
+        </button>
+        <button type="button" [class.is-actif]="archives()" [attr.aria-pressed]="archives()" (click)="afficherArchives(true)">
+          Archivés
+        </button>
+      </div>
+      <label class="recherche">
+        <svg lucideSearch aria-hidden="true"></svg>
+        <input
+          type="search"
+          placeholder="Rechercher un programme, une commune…"
+          aria-label="Rechercher un programme"
+          autocomplete="off"
+          [value]="recherche()"
+          (input)="recherche.set($any($event.target).value)"
+        />
+      </label>
+    </div>
+
+    @if (programmes() === null) {
+      <div class="chargement" aria-hidden="true">
+        <div class="skeleton" style="height: 44px"></div>
+        <div class="skeleton" style="height: 44px"></div>
+        <div class="skeleton" style="height: 44px"></div>
+      </div>
+    } @else if (programmes()!.length === 0) {
+      <div class="empty-state">
+        <svg lucideLayoutGrid aria-hidden="true"></svg>
+        @if (archives()) {
+          <h3>Aucun programme archivé</h3>
+          <p>Un programme archivé quitte la liste mais garde ses lots et ses ventes ; il se restaure ici.</p>
+        } @else {
+          <h3>Aucun programme pour l’instant</h3>
+          <p>
+            Créez le programme, puis générez ses lots d’un coup : numérotation, superficie et prix sont appliqués à tous.
+          </p>
+          @if (canCreate) {
+            <button mat-flat-button color="primary" type="button" (click)="nouveau()">Créer un programme</button>
+          }
+        }
+      </div>
+    } @else if (visibles().length === 0) {
+      <div class="empty-state">
+        <svg lucideSearch aria-hidden="true"></svg>
+        <h3>Aucun programme ne correspond</h3>
+        <p>Aucun résultat pour « {{ recherche() }} ».</p>
+        <button mat-stroked-button type="button" (click)="recherche.set('')">Effacer la recherche</button>
+      </div>
+    } @else {
+      <div class="table-scroll">
+        <table class="data-table data-table--douce tableau">
+          <thead>
+            <tr>
+              <th scope="col">Programme</th>
+              <th scope="col">Lieu</th>
+              <th scope="col">État</th>
+              <th scope="col" class="col-avancement">Avancement</th>
+              <th scope="col" class="is-right">Lots</th>
+              <th scope="col" class="is-right">Disponibles</th>
+              <th scope="col" class="is-right">Réservés</th>
+              <th scope="col" class="is-right">Vendus</th>
+              <th scope="col" class="is-right">Prix de base</th>
+              @if (archives() && canEdit) {
+                <th scope="col" aria-label="Actions"></th>
+              } @else {
+                <th scope="col" class="col-fleche" aria-label="Ouvrir"></th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of visibles(); track p.id) {
+              <tr class="is-clickable" tabindex="0" (click)="ouvrir(p)" (keydown.enter)="ouvrir(p)">
+                <td>
+                  <span class="programme">
+                    <span class="monogramme" aria-hidden="true">{{ initiales(p.nom) }}</span>
+                    <span class="programme__texte">
+                      <strong>{{ p.nom }}</strong>
+                      <small>
+                        {{ p.reference }}
+                        @if (p.proprietaire; as prop) {
+                          · {{ prop.firstName }} {{ prop.lastName }}
+                        }
+                      </small>
+                    </span>
+                  </span>
+                </td>
+                <td>{{ p.commune || p.region || '—' }}</td>
+                <td>
+                  <span class="etats">
+                    <span [class]="'status-pill status-pill--' + etat(p).ton">{{ etat(p).libelle }}</span>
+                    @if (!p.comptaComplete) {
+                      <span class="status-pill status-pill--warning" title="Sans cette donnée, les ventes ne rapportent rien à la comptabilité.">
+                        {{ p.proprietaireId && !p.produitDirect ? 'Commission' : 'Marge' }} à renseigner
+                      </span>
+                    }
+                  </span>
+                </td>
+                <td class="col-avancement">
+                  @if (p.nombreLots > 0) {
+                    <span class="avancement" [attr.aria-label]="tauxVendu(p) + ' % des lots vendus'">
+                      <span class="jauge" role="img" [attr.aria-label]="tauxVendu(p) + ' % vendus'">
+                        <span class="jauge__vendus" [style.width.%]="(p.lotsVendus / p.nombreLots) * 100"></span>
+                        <span class="jauge__reserves" [style.width.%]="(p.lotsReserves / p.nombreLots) * 100"></span>
+                        <span class="jauge__dispo" [style.width.%]="(p.lotsDisponibles / p.nombreLots) * 100"></span>
+                      </span>
+                      <small>{{ tauxVendu(p) }} % vendus</small>
+                    </span>
+                  } @else {
+                    <span class="sans-lots">Aucun lot</span>
+                  }
+                </td>
+                <td class="is-right"><strong>{{ p.nombreLots }}</strong></td>
+                <td class="is-right nombre nombre--ok" [class.nombre--zero]="p.lotsDisponibles === 0">{{ p.lotsDisponibles }}</td>
+                <td class="is-right nombre nombre--attente" [class.nombre--zero]="p.lotsReserves === 0">{{ p.lotsReserves }}</td>
+                <td class="is-right nombre nombre--vendu" [class.nombre--zero]="p.lotsVendus === 0">{{ p.lotsVendus }}</td>
+                <td class="is-right">{{ p.prixLot ? (p.prixLot | mtmMoney) : '—' }}</td>
+                @if (archives() && canEdit) {
+                  <td class="is-right">
+                    <button mat-stroked-button type="button" (click)="restaurer(p); $event.stopPropagation()">Restaurer</button>
+                  </td>
+                } @else {
+                  <td class="col-fleche"><svg lucideChevronRight aria-hidden="true"></svg></td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="pied">
+        <strong>{{ visibles().length }}</strong> programme{{ visibles().length > 1 ? 's' : '' }}
+        @if (recherche()) {
+          correspondant à la recherche
+        }
+      </p>
+    }
+  </section>
+</div>

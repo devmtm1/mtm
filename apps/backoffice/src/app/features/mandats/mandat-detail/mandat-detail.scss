@@ -3,3 +3,9 @@
   font-size: 0.76rem;
   white-space: nowrap;
 }
+
+.detail-section__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

@@ -1,0 +1,456 @@
+<div class="programme-page">
+  <a routerLink="/programmes" class="retour"><svg lucideArrowLeft aria-hidden="true"></svg>Tous les programmes</a>
+
+  @if (introuvable()) {
+    <section class="page-card"><p>Ce programme n’existe pas ou n’est plus accessible.</p></section>
+  } @else if (programme(); as p) {
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Programme de lotissement · {{ p.reference }}</p>
+        <h1 class="page-header__title">{{ p.nom }}</h1>
+        <p class="meta">
+          <span><svg lucideMapPin aria-hidden="true"></svg>{{ p.commune || p.region || 'Lieu non précisé' }}</span>
+          @if (p.proprietaire; as prop) {
+            <span><svg lucideUser aria-hidden="true"></svg>{{ prop.firstName }} {{ prop.lastName }}</span>
+          }
+          @if (p.statutJuridique) {
+            <span><svg lucideFileText aria-hidden="true"></svg>{{ p.statutJuridique }}</span>
+          }
+        </p>
+      </div>
+      <div class="page-header__actions">
+        @if (canEdit) {
+          <button mat-stroked-button type="button" (click)="modifier()">
+            <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Modifier
+          </button>
+          <button mat-stroked-button type="button" (click)="archiver()">
+            <svg class="btn-icon" lucideArchive aria-hidden="true"></svg>Archiver
+          </button>
+        }
+        @if (canCreate) {
+          <button mat-flat-button color="primary" type="button" (click)="generer()">
+            <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Générer des lots
+          </button>
+        }
+      </div>
+    </header>
+
+    <!-- Ce que la comptabilité attend de chaque lot vendu : sans commission ou marge, une vente rapporte zéro. -->
+    @if (!p.comptaComplete) {
+      <section class="alerte-compta" role="alert">
+        <svg lucideTriangleAlert aria-hidden="true"></svg>
+        <p>
+          <strong>{{ confie(p) ? 'Commission' : 'Marge' }} de MTM à renseigner.</strong>
+          Sans elle, les ventes de ce programme ne rapportent rien à la comptabilité{{ confie(p) ? ' et le propriétaire n’apparaît pas dans les reversements' : '' }} :
+          aucun lot ne peut être mis en vente.
+          @if (!(canEdit && peutVoirFinancier)) {
+            Demandez à la direction de la renseigner.
+          }
+        </p>
+        @if (canEdit && peutVoirFinancier) {
+          <button mat-flat-button color="primary" type="button" (click)="modifier()">Renseigner</button>
+        }
+      </section>
+    } @else if (p.lotsSansCompta > 0) {
+      <section class="alerte-compta" role="alert">
+        <svg lucideTriangleAlert aria-hidden="true"></svg>
+        <p>
+          <strong>{{ p.lotsSansCompta }} lot{{ p.lotsSansCompta > 1 ? 's n’ont' : ' n’a' }} pas encore reçu la {{ confie(p) ? 'commission' : 'marge' }} du programme.</strong>
+          Tant que c’est le cas, {{ p.lotsSansCompta > 1 ? 'ils ne peuvent' : 'il ne peut' }} pas être mis en vente.
+        </p>
+        @if (canEdit) {
+          <button mat-flat-button color="primary" type="button" (click)="appliquerAuxLots()">Appliquer aux lots</button>
+        }
+      </section>
+    }
+
+    <!-- L'argent du programme, visible depuis tous les onglets. -->
+    @if (ventes(); as v) {
+      @if (v.acces && v.finances; as f) {
+        <section class="kpi-row kpi-row--soigne montants" aria-label="Encaissements du programme">
+          <button type="button" class="kpi kpi--success" (click)="onglet.set('versements')">
+            <span class="kpi__icon"><svg lucideBanknote aria-hidden="true"></svg></span>
+            <span class="kpi__body">
+              <strong>{{ f.encaisse | mtmMoney }}</strong>
+              <span>Encaissé</span>
+              <small>sur {{ f.totalAttendu | mtmMoney }} attendus</small>
+            </span>
+          </button>
+          <button type="button" class="kpi" (click)="onglet.set('clients')">
+            <span class="kpi__icon"><svg lucideUsers aria-hidden="true"></svg></span>
+            <span class="kpi__body">
+              <strong>{{ f.resteAEncaisser | mtmMoney }}</strong>
+              <span>Reste à encaisser</span>
+              <small>{{ f.dossiers }} client{{ f.dossiers > 1 ? 's' : '' }}, dont {{ f.dossiersSoldes }} soldé{{ f.dossiersSoldes > 1 ? 's' : '' }}</small>
+            </span>
+          </button>
+          <button type="button" class="kpi kpi--attention" [class.kpi--muted]="f.enRetard === 0" (click)="onglet.set('versements')">
+            <span class="kpi__icon"><svg lucideTriangleAlert aria-hidden="true"></svg></span>
+            <span class="kpi__body">
+              <strong>{{ f.enRetard | mtmMoney }}</strong>
+              <span>En retard</span>
+              <small>{{ f.echeancesEnRetard }} échéance{{ f.echeancesEnRetard > 1 ? 's' : '' }} dépassée{{ f.echeancesEnRetard > 1 ? 's' : '' }}</small>
+            </span>
+          </button>
+          <button type="button" class="kpi kpi--warning" [class.kpi--zero]="f.aValider === 0" (click)="onglet.set('versements')">
+            <span class="kpi__icon"><svg lucideClock aria-hidden="true"></svg></span>
+            <span class="kpi__body">
+              <strong>{{ f.aValider | mtmMoney }}</strong>
+              <span>À valider</span>
+              <small>Versements en attente de contrôle</small>
+            </span>
+          </button>
+        </section>
+      }
+    }
+
+    <app-fiche-onglets [onglets]="onglets()" [(actif)]="onglet" />
+
+    @switch (onglet()) {
+      @case ('apercu') {
+    <!-- Chiffres clés : chaque tuile ouvre l'onglet des lots, filtré. -->
+    <section class="kpi-row kpi-row--soigne" aria-label="Avancement du programme">
+      <button type="button" class="kpi" (click)="voirLots('')">
+        <span class="kpi__icon"><svg lucideLandPlot aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ p.nombreLots }}</strong>
+          <span>Lots</span>
+          <small>{{ p.prixLot ? 'Prix de base ' + (p.prixLot | mtmMoney) : 'Prix à fixer' }}</small>
+        </span>
+      </button>
+      <button type="button" class="kpi kpi--success" [class.kpi--zero]="p.lotsDisponibles === 0" (click)="voirLots('Disponible')">
+        <span class="kpi__icon"><svg lucideCircleCheck aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ p.lotsDisponibles }}</strong>
+          <span>Disponibles</span>
+          <small>{{ p.valeurDisponible | mtmMoney }} à vendre</small>
+        </span>
+      </button>
+      <button type="button" class="kpi kpi--warning" [class.kpi--zero]="p.lotsReserves === 0" (click)="voirLots('Réservé')">
+        <span class="kpi__icon"><svg lucideStar aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ p.lotsReserves }}</strong>
+          <span>Réservés</span>
+          <small>{{ p.valeurReservee | mtmMoney }} en cours</small>
+        </span>
+      </button>
+      <button type="button" class="kpi kpi--primary" [class.kpi--zero]="p.lotsVendus === 0" (click)="voirLots('Vendu')">
+        <span class="kpi__icon"><svg lucideCircleCheck aria-hidden="true"></svg></span>
+        <span class="kpi__body">
+          <strong>{{ p.lotsVendus }}</strong>
+          <span>Vendus · {{ tauxVendu(p) }} %</span>
+          <small>{{ p.valeurVendue | mtmMoney }} encaissable</small>
+        </span>
+      </button>
+    </section>
+
+    <!-- Synthèse : où en sont les ventes, et sur quelles bases le programme se vend. -->
+    <section class="synthese" aria-label="Synthèse du programme">
+      <div class="page-card synthese__carte">
+        <h2>Avancement des ventes</h2>
+        @if (p.nombreLots > 0) {
+          <p class="synthese__taux"><strong>{{ tauxVendu(p) }} %</strong> des lots vendus</p>
+          <span class="jauge jauge--grande" role="img" [attr.aria-label]="tauxVendu(p) + ' % des lots vendus'">
+            <span class="jauge__vendus" [style.width.%]="(p.lotsVendus / p.nombreLots) * 100"></span>
+            <span class="jauge__reserves" [style.width.%]="(p.lotsReserves / p.nombreLots) * 100"></span>
+            <span class="jauge__dispo" [style.width.%]="(p.lotsDisponibles / p.nombreLots) * 100"></span>
+          </span>
+          <ul class="legende">
+            <li><i class="point point--vendu"></i>Vendus <strong>{{ p.lotsVendus }}</strong></li>
+            <li><i class="point point--reserve"></i>Réservés <strong>{{ p.lotsReserves }}</strong></li>
+            <li><i class="point point--dispo"></i>Disponibles <strong>{{ p.lotsDisponibles }}</strong></li>
+            @if (p.lotsBrouillon > 0) {
+              <li><i class="point point--brouillon"></i>À mettre en vente <strong>{{ p.lotsBrouillon }}</strong></li>
+            }
+          </ul>
+        } @else {
+          <p class="discret">Les ventes s’afficheront ici dès que les lots seront générés.</p>
+        }
+      </div>
+      <div class="page-card synthese__carte">
+        <div class="synthese__tete">
+          <h2>Conditions du programme</h2>
+          @if (canEdit && p.nombreLots > 0) {
+            <button mat-stroked-button type="button" (click)="appliquerAuxLots()">Appliquer aux lots</button>
+          }
+        </div>
+        <dl class="fiche">
+          <div><dt>Prix de base</dt><dd>{{ p.prixLot ? (p.prixLot | mtmMoney) : 'À fixer' }}</dd></div>
+          <div><dt>Paiement</dt><dd>{{ conditions(p) || '—' }}</dd></div>
+          <div><dt>Statut juridique</dt><dd>{{ p.statutJuridique || '—' }}</dd></div>
+          <div><dt>Vérification</dt><dd>{{ p.niveauVerification || '—' }}</dd></div>
+          <div><dt>Détention</dt><dd>{{ detention(p) }}</dd></div>
+          @if (p.commissionLot !== null && p.commissionLot !== undefined) {
+            <div><dt>Commission de MTM par lot</dt><dd>{{ p.commissionLot | mtmMoney }}</dd></div>
+          }
+          @if (p.margeLot !== null && p.margeLot !== undefined) {
+            <div><dt>Marge de MTM par lot</dt><dd>{{ p.margeLot | mtmMoney }}</dd></div>
+          }
+          @if (p.localisationDetail) {
+            <div class="fiche__large"><dt>Localisation</dt><dd>{{ p.localisationDetail }}</dd></div>
+          }
+        </dl>
+      </div>
+    </section>
+
+    <section class="page-card carte-tableau" aria-labelledby="categories-titre">
+      <div class="list-toolbar">
+        <div class="list-toolbar__title">
+          <h2 id="categories-titre">Catégories de lots</h2>
+          <p>
+            Des lots qui se vendent aux mêmes conditions. Sans catégorie, un lot suit celles du programme
+            ({{ conditions(p) || 'aucune précisée' }}).
+          </p>
+        </div>
+        @if (canEdit) {
+          <button mat-stroked-button type="button" (click)="ajouterCategorie()">
+            <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Ajouter une catégorie
+          </button>
+        }
+      </div>
+      @if (p.categories.length) {
+        <div class="table-scroll">
+          <table class="data-table data-table--douce">
+            <thead>
+              <tr>
+                <th scope="col">Catégorie</th>
+                <th scope="col" class="is-right">Prix public</th>
+                <th scope="col">Conditions</th>
+                <th scope="col" class="is-right">Lots</th>
+                @if (canEdit) {
+                  <th scope="col" aria-label="Actions"></th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (c of p.categories; track c.id) {
+                <tr class="categorie">
+                  <td><strong>{{ c.nom }}</strong></td>
+                  <td class="is-right">{{ c.prixPublic ? (c.prixPublic | mtmMoney) : 'Prix du programme' }}</td>
+                  <td class="discret">{{ conditions(c) || '—' }}</td>
+                  <td class="is-right">{{ lotsDeCategorie(c) }}</td>
+                  @if (canEdit) {
+                    <td class="actions-ligne">
+                      @if (lotsDeCategorie(c) > 0) {
+                        <button mat-button type="button" (click)="appliquer(c)">Appliquer aux lots</button>
+                      }
+                      <button mat-icon-button type="button" aria-label="Modifier la catégorie" matTooltip="Modifier" (click)="modifierCategorie(c)">
+                        <svg lucidePencil aria-hidden="true"></svg>
+                      </button>
+                      <button mat-icon-button type="button" aria-label="Supprimer la catégorie" matTooltip="Supprimer" (click)="supprimer(c)">
+                        <svg lucideTrash2 aria-hidden="true"></svg>
+                      </button>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="etat-vide etat-vide--carte">
+          Aucune catégorie : les lots suivent les conditions du programme. Une catégorie sert à vendre une partie des
+          lots à un autre prix (angle, face route…).
+        </p>
+      }
+    </section>
+
+      }
+      @case ('lots') {
+    <section class="page-card carte-tableau" aria-labelledby="lots-titre">
+      <div class="list-toolbar">
+        <div class="list-toolbar__title">
+          <h2 id="lots-titre">Les lots</h2>
+          <p>Cliquez sur un lot pour ouvrir sa fiche. Un lot se vend depuis un dossier de vente, comme tout bien.</p>
+        </div>
+        @if (canEdit && p.nombreLots > 0) {
+          <button mat-stroked-button type="button" (click)="basculerSelection()">
+            {{ selectionActive() ? 'Terminer la sélection' : 'Sélectionner des lots' }}
+          </button>
+        }
+      </div>
+
+      @if (p.nombreLots === 0) {
+        <div class="empty-state">
+          <svg lucideLandPlot aria-hidden="true"></svg>
+          <h3>Ce programme n’a pas encore de lots</h3>
+          <p>Générez-les d’un coup : numérotation, superficie et prix sont appliqués à chacun.</p>
+          @if (canCreate) {
+            <button mat-flat-button color="primary" type="button" (click)="generer()">Générer des lots</button>
+          }
+        </div>
+      } @else {
+        <div class="filtres-lots">
+          <div class="periodes" role="group" aria-label="Filtrer les lots par statut">
+            @for (puce of puces(); track puce.code) {
+              <button type="button" [class.is-actif]="filtre() === puce.code" [attr.aria-pressed]="filtre() === puce.code" (click)="choisirFiltre(puce.code)">
+                {{ puce.label }} <span class="compte">{{ puce.n }}</span>
+              </button>
+            }
+          </div>
+          <span class="compte-filtre">{{ lotsAffiches().length }} lot{{ lotsAffiches().length > 1 ? 's' : '' }} affiché{{ lotsAffiches().length > 1 ? 's' : '' }}</span>
+        </div>
+
+        @if (selectionActive()) {
+          <div class="selection" role="region" aria-label="Actions sur la sélection">
+            <span class="selection__compte">
+              <strong>{{ nombreSelectionnes() }}</strong> lot{{ nombreSelectionnes() > 1 ? 's' : '' }} sélectionné{{
+                nombreSelectionnes() > 1 ? 's' : ''
+              }}
+            </span>
+            <span class="selection__actions">
+              <button mat-flat-button color="primary" type="button" [disabled]="!nombreSelectionnes()" (click)="mettreEnVente()">
+                Mettre en vente
+              </button>
+              <button mat-stroked-button type="button" [disabled]="!nombreSelectionnes()" (click)="retirerDeLaVente()">
+                Suspendre
+              </button>
+              @if (p.categories.length) {
+                <mat-select
+                  class="selection__categorie"
+                  placeholder="Ranger dans une catégorie"
+                  aria-label="Ranger dans une catégorie"
+                  [disabled]="!nombreSelectionnes()"
+                  (selectionChange)="ranger($event.value === '' ? null : $event.value)"
+                >
+                  <mat-option value="">Aucune catégorie</mat-option>
+                  @for (c of p.categories; track c.id) {
+                    <mat-option [value]="c.id">{{ c.nom }}</mat-option>
+                  }
+                </mat-select>
+              }
+            </span>
+          </div>
+        }
+
+        <div class="table-scroll">
+          <table class="data-table data-table--douce tableau-lots">
+            <thead>
+              <tr>
+                @if (selectionActive()) {
+                  <th scope="col" class="col-case">
+                    <input
+                      type="checkbox"
+                      aria-label="Sélectionner tous les lots affichés"
+                      [checked]="toutEstSelectionne()"
+                      [disabled]="!lotsSelectionnables()"
+                      (change)="basculerToutSelectionner()"
+                    />
+                  </th>
+                }
+                <th scope="col">Lot</th>
+                <th scope="col" class="is-right">Superficie</th>
+                <th scope="col">Catégorie</th>
+                <th scope="col" class="is-right">Prix public</th>
+                <th scope="col">Statut</th>
+                <th scope="col">Client</th>
+                @if (!selectionActive()) {
+                  <th scope="col" class="col-fleche" aria-label="Actions"></th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (lot of lotsPage(); track lot.id) {
+                <tr
+                  class="is-clickable"
+                  [class.is-selectionne]="selection().has(lot.id)"
+                  [class.is-fige]="selectionActive() && estFige(lot)"
+                  tabindex="0"
+                  (click)="cliquerLot(lot)"
+                  (keydown.enter)="cliquerLot(lot)"
+                >
+                  @if (selectionActive()) {
+                    <td class="col-case">
+                      <input
+                        type="checkbox"
+                        [attr.aria-label]="'Sélectionner le lot ' + (lot.numeroLot || lot.referenceInterne)"
+                        [checked]="selection().has(lot.id)"
+                        [disabled]="estFige(lot)"
+                        (click)="$event.stopPropagation()"
+                        (change)="cliquerLot(lot)"
+                      />
+                    </td>
+                  }
+                  <td><strong>{{ lot.numeroLot || lot.referenceInterne }}</strong></td>
+                  <td class="is-right">{{ lot.superficie ? (lot.superficie | number: '1.0-0') + ' m²' : '—' }}</td>
+                  <td>{{ categorie(lot)?.nom || '—' }}</td>
+                  <td class="is-right">{{ lot.prixPublic | mtmMoney }}</td>
+                  <td>
+                    <span [class]="pillClass(commercialStatus, lot.statutCommercial)">{{ lot.statutCommercial }}</span>
+                  </td>
+                  <td>
+                    @if (acheteur(lot); as a) {
+                      <span class="cellule-client">
+                        <a class="lien-client" [routerLink]="['/ventes', a.principal.dossierId]" (click)="$event.stopPropagation()">{{ a.principal.client.nom }}</a>
+                        @if (a.principal.statut === 'en_cours' || a.principal.statut === 'pre_reserve') {
+                          <small>Dossier en négociation</small>
+                        }
+                        @if (a.autres > 0) {
+                          <small>+ {{ a.autres }} autre{{ a.autres > 1 ? 's' : '' }} dossier{{ a.autres > 1 ? 's' : '' }}</small>
+                        }
+                      </span>
+                    } @else {
+                      <span class="discret">—</span>
+                    }
+                  </td>
+                  @if (!selectionActive()) {
+                    <td class="col-fleche">
+                      <span class="actions-lot">
+                        @if (canSell && lot.statutCommercial === 'Disponible') {
+                          <button mat-stroked-button type="button" (click)="vendre(lot); $event.stopPropagation()">Vendre</button>
+                        }
+                        <svg lucideChevronRight aria-hidden="true"></svg>
+                      </span>
+                    </td>
+                  }
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8" class="aucun">Aucun lot dans cet état.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <app-pagination
+          [page]="page()"
+          [pageSize]="taillePage()"
+          [total]="lotsAffiches().length"
+          nom="lot"
+          (pageChange)="page.set($event)"
+          (pageSizeChange)="changerTaille($event)"
+        />
+      }
+    </section>
+      }
+      @case ('clients') {
+        @if (ventes(); as v) {
+          <app-programme-clients [ventes]="v" [peutEnregistrer]="canPay" (versement)="enregistrerVersement($event)" />
+        } @else {
+          <div class="skeleton" style="height: 120px; border-radius: 14px"></div>
+        }
+      }
+      @case ('versements') {
+        @if (ventes(); as v) {
+          <app-programme-versements [ventes]="v" />
+        } @else {
+          <div class="skeleton" style="height: 120px; border-radius: 14px"></div>
+        }
+      }
+      @case ('visites') {
+        <app-programme-visites [programmeId]="p.id" />
+      }
+      @case ('mandats') {
+        <app-programme-mandats [programmeId]="p.id" [commissions]="ventes()?.commissions ?? []" />
+      }
+      @case ('documents') {
+        <app-programme-documents [programmeId]="p.id" />
+      }
+      @case ('site') {
+        <app-programme-site-public [programme]="p" (modifie)="charger()" />
+      }
+    }
+  } @else {
+    <div class="skeleton" style="height: 120px; border-radius: 14px"></div>
+  }
+</div>

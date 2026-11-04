@@ -294,7 +294,7 @@ export function ClientLayout() {
               </span>
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold">{displayName}</p>
-                <p className="truncate text-xs text-white/60">{user?.email}</p>
+                <p className="truncate text-xs text-white/60">{user?.email ?? user?.telephone}</p>
               </div>
             </div>
             <div className="mt-3 flex flex-col gap-0.5">

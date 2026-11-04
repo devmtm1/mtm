@@ -202,7 +202,12 @@ export class NotificationsService {
         creees += 1;
         const destinataire = notification.user;
         // Chacun peut couper l'e-mail ; SMS et WhatsApp ne partent que pour qui les a demandés.
-        if (envoyerEmail && destinataire.notificationsEmail !== false) {
+        // Un client sans e-mail (compte ouvert avec son seul numéro) ne reçoit que les canaux externes.
+        if (
+          envoyerEmail &&
+          destinataire.email &&
+          destinataire.notificationsEmail !== false
+        ) {
           await this.envoyerEmail(destinataire.email, input);
         }
         await this.envoyerCanauxExternes(

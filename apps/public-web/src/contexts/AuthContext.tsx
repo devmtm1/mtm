@@ -59,8 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const login = useCallback(async (email: string, password: string, twoFactorCode?: string) => {
-    const result = await authApi.login({ email, password, twoFactorCode });
+  const login = useCallback(async (identifiant: string, password: string, twoFactorCode?: string) => {
+    const result = await authApi.login({ identifiant, password, twoFactorCode });
     if (!result.requiresTwoFactor) {
       setAccessToken(result.accessToken);
       setUser(result.user);

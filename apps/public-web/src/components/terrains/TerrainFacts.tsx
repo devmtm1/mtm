@@ -107,3 +107,47 @@ export function TerrainStatutJuridique({ terrain }: { terrain: Terrain }) {
     </section>
   );
 }
+
+/**
+ * Sur ordinateur, le statut juridique et les repères chiffrés ne forment qu'un seul bandeau : une rangée que l'œil lit
+ * d'un trait (statut, superficie, prix au m²…), au lieu de deux blocs empilés. Sur téléphone, on garde les cartes
+ * séparées, plus faciles à lire au pouce.
+ */
+export function TerrainBandeau({ terrain }: { terrain: Terrain }) {
+  const faits = faitsEssentiels(terrain).filter((fait) => fait.icone !== 'statut');
+  const niveau = terrain.statutJuridique ? niveauStatutJuridique(terrain.statutJuridique) : null;
+  if (!niveau && faits.length === 0) return null;
+  const style = niveau ? ENCART[niveau] : null;
+  const IconeStatut = niveau === 'attention' ? TriangleAlert : ShieldCheck;
+
+  return (
+    <section aria-label="L’essentiel" className="flex flex-wrap items-stretch gap-y-3 rounded-2xl border border-mtm-border/70 bg-mtm-surface p-2 shadow-card">
+      {style && (
+        <div className={`flex min-w-[15rem] flex-1 items-center gap-3.5 rounded-xl border p-3.5 ${style.fond}`}>
+          <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${style.icone}`}>
+            <IconeStatut className="h-6 w-6" aria-hidden="true" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-mtm-muted">Statut juridique</p>
+            <p className={`font-display text-xl font-bold leading-tight ${style.titre}`}>{terrain.statutJuridique}</p>
+            {terrain.niveauVerification && <p className="mt-0.5 text-xs text-mtm-muted">Vérification MTM : {terrain.niveauVerification}</p>}
+          </div>
+        </div>
+      )}
+      {faits.map((fait) => {
+        const Icone = ICONES[fait.icone];
+        return (
+          <div key={fait.key} className="flex min-w-[9.5rem] flex-1 items-center gap-3 border-l border-mtm-border px-5 first:border-l-0">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-mtm-primary-subtle text-mtm-primary">
+              <Icone className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-[11px] font-semibold uppercase tracking-wide text-mtm-muted">{fait.label}</span>
+              <span className="block font-display text-lg font-bold leading-tight text-mtm-text">{fait.value}</span>
+            </span>
+          </div>
+        );
+      })}
+    </section>
+  );
+}

@@ -10,7 +10,9 @@ import type { ClientAccountCreated } from '../../core/models/client-account.mode
 import { environment } from '../../../environments/environment';
 
 export interface ClientAccountDialogData {
-  email: string;
+  /** L'espace s'ouvre avec l'e-mail OU, à défaut, le numéro de téléphone : au moins l'un des deux est renseigné. */
+  email: string | null;
+  telephone?: string | null;
   name: string;
   /** Description de ce que le client verra dans son espace (dossiers, bien, location…). */
   scopeDescription: string;
@@ -59,6 +61,7 @@ export class ClientAccountDialog {
   protected readonly created = signal(false);
   protected readonly createdPassword = signal('');
   protected readonly invitationSent = signal(false);
+  protected readonly canalInvitation = signal<'email' | 'whatsapp' | 'sms' | null>(null);
   protected readonly resetToken = signal<string | null>(null);
   protected readonly compteExistant = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -76,6 +79,7 @@ export class ClientAccountDialog {
       next: (result) => {
         this.createdPassword.set(password);
         this.invitationSent.set(result.invitationSent);
+        this.canalInvitation.set(result.canalInvitation ?? null);
         this.resetToken.set(result.resetToken ?? null);
         this.compteExistant.set(result.compteExistant ?? false);
         this.created.set(true);
@@ -93,7 +97,21 @@ export class ClientAccountDialog {
     this.dialogRef.close(this.created());
   }
 
-  /** Lien de première connexion à transmettre au client si l'e-mail n'est pas parti. */
+  /** L'identifiant du client : son e-mail, ou son numéro quand il n'a pas d'e-mail. */
+  protected get identifiant(): string {
+    return this.data.email || this.data.telephone || '';
+  }
+
+  /** Ce que le collaborateur envoie lui-même par WhatsApp quand l'invitation n'est pas partie toute seule. */
+  protected get lienWhatsapp(): string | null {
+    const lien = this.invitationLink;
+    const numero = (this.data.telephone ?? '').replace(/\D/g, '');
+    if (!lien || !numero) return null;
+    const message = `Bonjour, votre espace client MTM Immobilier est ouvert. Choisissez votre mot de passe ici (lien valable 7 jours) : ${lien}`;
+    return `https://wa.me/${numero}?text=${encodeURIComponent(message)}`;
+  }
+
+  /** Lien de première connexion à transmettre au client si l'invitation n'est pas partie. */
   protected get invitationLink(): string | null {
     const token = this.resetToken();
     return token
@@ -102,7 +120,7 @@ export class ClientAccountDialog {
   }
 
   protected async copyCredentials(): Promise<void> {
-    const lines = [`Email : ${this.data.email}`];
+    const lines = [`Identifiant : ${this.identifiant}`];
     if (this.invitationLink) lines.push(`Lien de première connexion (7 jours) : ${this.invitationLink}`);
     lines.push(`Mot de passe temporaire : ${this.createdPassword()}`);
     await navigator.clipboard?.writeText(lines.join('\n'));

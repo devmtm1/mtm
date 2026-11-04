@@ -30,9 +30,9 @@ export function changePassword(
 }
 
 export function requestPasswordReset(
-  email: string,
+  identifiant: string,
 ): Promise<{ accepted: true; developmentToken?: string }> {
-  return apiClient.post('/auth/password-reset/request', { email });
+  return apiClient.post('/auth/password-reset/request', { identifiant });
 }
 
 export function confirmPasswordReset(token: string, newPassword: string): Promise<{ success: true }> {

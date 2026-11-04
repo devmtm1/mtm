@@ -18,6 +18,10 @@ export const publicTerrainSelect = {
   id: true,
   statutCommercial: true,
   referenceInterne: true,
+  // Un lot de programme : son numéro, sa catégorie et le programme auquel la fiche renvoie.
+  numeroLot: true,
+  categorieLot: { select: { nom: true } },
+  programme: { select: { id: true, nom: true, publie: true, archiveLe: true } },
   nom: true,
   statutJuridique: true,
   niveauVerification: true,

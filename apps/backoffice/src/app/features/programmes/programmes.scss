@@ -1,0 +1,221 @@
+.programmes-page {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+.carte-tableau {
+  display: grid;
+  padding: 0;
+  overflow: hidden;
+}
+
+.barre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--mtm-border);
+}
+
+.recherche {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 1 340px;
+  min-width: 220px;
+  padding: 0 12px;
+  height: 40px;
+  border: 1px solid var(--mtm-border);
+  border-radius: 10px;
+  background: var(--mtm-card-bg);
+  color: var(--mtm-text-muted);
+
+  svg {
+    flex: 0 0 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--mtm-text-dark);
+    font: inherit;
+    font-size: 0.88rem;
+  }
+
+  &:focus-within {
+    border-color: var(--mtm-primary);
+    box-shadow: 0 0 0 2px var(--mtm-primary-subtle);
+  }
+}
+
+.chargement {
+  display: grid;
+  gap: 10px;
+  padding: 20px;
+}
+
+.empty-state {
+  margin: 0;
+  border: 0;
+}
+
+.table-scroll {
+  padding: 4px 12px 0;
+}
+
+.tableau {
+  min-width: 980px;
+
+  td:first-child {
+    min-width: 250px;
+  }
+
+  tbody tr {
+    &:focus-visible {
+      outline: 2px solid var(--mtm-primary);
+      outline-offset: -2px;
+    }
+
+    &:hover .col-fleche svg {
+      color: var(--mtm-primary);
+      transform: translateX(2px);
+    }
+  }
+}
+
+.programme {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+
+  &__texte {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  strong {
+    font-size: 0.92rem;
+    overflow-wrap: anywhere;
+  }
+
+  small {
+    color: var(--mtm-text-muted);
+    font-size: 0.78rem;
+  }
+}
+
+.monogramme {
+  display: inline-grid;
+  flex: 0 0 38px;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--mtm-primary-subtle);
+  color: var(--mtm-primary);
+  font-family: var(--mtm-font-display);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.col-avancement {
+  width: 190px;
+}
+
+.avancement {
+  display: grid;
+  gap: 4px;
+
+  small {
+    color: var(--mtm-text-muted);
+    font-size: 0.74rem;
+  }
+}
+
+/* Vendus, puis réservés, puis disponibles : une barre empilée lue de gauche à droite. */
+.jauge {
+  display: flex;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--mtm-bg-hover);
+
+  &__vendus {
+    background: var(--mtm-primary);
+  }
+
+  &__reserves {
+    background: var(--mtm-warning);
+  }
+
+  &__dispo {
+    background: var(--mtm-success);
+    opacity: 0.45;
+  }
+}
+
+.sans-lots {
+  color: var(--mtm-text-muted);
+  font-size: 0.82rem;
+}
+
+.nombre {
+  font-weight: 600;
+
+  &--ok {
+    color: var(--mtm-success);
+  }
+
+  &--attente {
+    color: var(--mtm-warning);
+  }
+
+  &--vendu {
+    color: var(--mtm-primary);
+  }
+
+  &--zero {
+    color: var(--mtm-text-muted);
+    font-weight: 400;
+    opacity: 0.6;
+  }
+}
+
+.col-fleche {
+  width: 36px;
+  text-align: right;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    color: var(--mtm-text-muted);
+    transition:
+      color 0.15s ease,
+      transform 0.15s ease;
+  }
+}
+
+.pied {
+  margin: 0;
+  padding: 12px 20px;
+  border-top: 1px solid var(--mtm-border);
+  color: var(--mtm-text-muted);
+  font-size: 0.84rem;
+}
+
+.etats {
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+}

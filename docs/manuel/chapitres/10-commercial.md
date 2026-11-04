@@ -157,6 +157,54 @@ La fiche réunit prix, superficie, situation juridique, localisation, photos et 
 
 Prenez l’habitude de **photographier chaque bien lors de la visite** et d’ajouter les photos à sa fiche : une fiche complète (photos, GPS, prix) se vend mieux et alimente le site public.
 
+### Un lotissement : les programmes
+
+Quand MTM commercialise **un lotissement de plusieurs terrains** (par exemple trente lots à Dakar), on ne crée pas trente fiches à la main. Sur **Biens à vendre**, le bouton **Programmes** ouvre la liste des lotissements.
+
+1. **Nouveau programme** : saisissez une seule fois le nom, la localisation, le propriétaire, la situation juridique, le prix d’un lot et les conditions de paiement (modalité, acompte, moratoire).
+2. **Générer des lots** : indiquez le nombre de lots, le début du numéro (par exemple « A- ») et la surface. Les lots sont créés d’un coup, de A-01 à A-30, avec les conditions du programme. Si vous recommencez plus tard, la numérotation continue à la suite.
+3. **Catégories de lots** : si tous les lots ne se vendent pas aux mêmes conditions (façade, angle, standard…), créez une catégorie avec son prix et ses conditions. **Sélectionner des lots** permet de les ranger dans une catégorie. **Appliquer aux lots** met à jour les lots d’une catégorie après un changement de prix.
+4. **Mettre en vente** : les lots sont créés en **Brouillon**. Sélectionnez-les, puis **Mettre en vente** : ils deviennent **Disponibles**.
+
+5. **Confier au mandat** : sur la fiche d’un mandat, **Confier un programme** rattache tous les lots d’un coup (inutile de les ajouter un par un). Les lots déjà rattachés, ou couverts par un autre mandat exclusif actif, sont laissés de côté et comptés dans le message.
+6. **Suivre** : la fiche du programme affiche le nombre de lots libres, réservés et vendus, et leur valeur au prix public. **Archiver** retire le programme des listes ; c’est refusé tant qu’un lot est réservé.
+
+**Tout gérer depuis le programme.** La fiche s’organise en onglets, avec en haut les chiffres de l’argent (encaissé, reste à encaisser, en retard, à valider) :
+
+| Onglet | Ce qu’on y trouve |
+|---|---|
+| **Vue d’ensemble** | Avancement des ventes, conditions du programme, catégories de lots. |
+| **Lots** | Le tableau des lots, avec le **client** de chaque lot réservé ou vendu. Sur un lot disponible, **Vendre** ouvre un dossier de vente : on choisit le client, le dossier s’ouvre au prix du lot. |
+| **Clients** | Un client par dossier : lot, statut, prix, payé, reste dû, prochaine échéance ou retard. **Versement** enregistre un paiement sans quitter la page (il reste « à valider » jusqu’au contrôle). |
+| **Versements** | Les échéances à régler (les plus en retard d’abord) et l’historique de tous les paiements. |
+| **Visites** | Les visites des prospects sur les lots du programme, et leurs retours. |
+| **Mandats et commissions** | Les mandats qui confient des lots du programme, et les commissions des ventes. |
+| **Documents** | Les pièces des lots (titre, plan…) et celles des ventes (contrat, reçus…). |
+| **Site public** | L’interrupteur **Publier sur le site**, la photo de couverture (la première photo), la galerie et le **plan de masse**. Le texte de présentation se saisit dans **Modifier** (« Description pour le site public »). |
+
+Chacun ne voit que ce que ses droits permettent : un commercial retrouve ses propres clients, visites et mandats ; la direction, la comptabilité et les responsables voient l’ensemble. Cliquer sur un client, un lot ou un mandat ouvre sa fiche habituelle.
+
+**Ce que MTM gagne sur chaque lot (comptabilité).** La comptabilité déduit le revenu de MTM d’un seul montant par lot : la **commission** quand le bien est confié par un propriétaire, la **marge** quand le bien est à MTM (en propre ou « produit direct »). Sans ce montant, une vente rapporterait zéro dans les comptes et le propriétaire n’apparaîtrait jamais dans les reversements. Le programme le porte donc une fois, et chaque lot le reçoit à sa création :
+
+- Dans **Modifier le programme**, section « Ce que MTM gagne sur chaque lot vendu » : la commission (ou la marge) par lot, et la case « produit direct ». Une **catégorie** peut avoir sa propre commission ou marge (un lot d’angle, plus cher, rapporte davantage) ; à défaut, elle reprend celle du programme.
+- **Données sensibles** : seules la direction et les personnes qui ont le droit « Voir le financier » les voient et les saisissent. Pour tous les autres, elles restent masquées.
+- **Un lot sans commission ou sans marge ne peut pas être mis en vente.** Une alerte orange en haut de la fiche explique quoi renseigner ; **Appliquer aux lots** recopie le montant sur les lots déjà créés.
+- **Changer la commission, la marge, le mode « produit direct » ou le propriétaire** d’un programme qui a déjà des lots exige une **justification**, conservée au journal d’audit.
+- **Les lots réservés ou vendus ne sont jamais modifiés** : leurs écritures comptables ne changent pas, même si la commission du programme évolue.
+
+Dans l’onglet **Versements**, un bloc « Comptabilité du programme » (visible avec le droit de consulter les finances) donne l’encaissé, le revenu acquis par MTM, la part des propriétaires, ce qui est déjà reversé et le reste à reverser. Ces chiffres suivent les mêmes formules que le **Journal** et que la situation des propriétaires (Finances › Reversements) : ils se recoupent. L’argent d’un dossier annulé reste compté au journal, comme le prévoit la comptabilité ; il est signalé à part, à rembourser au client.
+
+Chaque lot reste un bien comme les autres : on ouvre sa fiche en cliquant dessus, et on le vend depuis un **dossier de vente**. Un lot **réservé** ou **vendu** n’est jamais modifié par une mise à jour en bloc : il garde les conditions de son contrat.
+
+**Sur le site public**, un programme est une vraie page de vente, pas une simple liste de lots :
+
+- **Dans le catalogue**, il apparaît sous forme d’une **carte « Lotissement »** mêlée aux autres biens (photo, prix de départ, statut juridique, barre d’avancement « 4 lots disponibles sur 6 », mention « Dernier lot »). Elle suit les mêmes filtres que les biens : commune, budget, superficie, statut juridique. Les lots ne sont pas listés un par un dans le catalogue. Un programme figure aussi sur l’accueil, dans « Choisissez votre lot ».
+- **La page du lotissement** présente la photo, le lieu, le statut juridique, les chiffres clés (lots disponibles, prix, superficies), la description, les lots (filtre par catégorie, tri par prix ou superficie ; une liste alignée, un lot par ligne, ou des tuiles régulières), le plan de masse, la galerie et les conditions de paiement. Un bouton « Être rappelé par un conseiller » reste visible, et chaque lot a sa fiche et sa demande de visite.
+- **Les lots réservés ou vendus** restent visibles, **grisés et sans prix**, à la demande du visiteur : ils montrent l’avancement des ventes sans promettre ce qui n’existe plus.
+- **La fiche d’un lot** renvoie à son lotissement (fil d’Ariane, pastille « Lot A-04 · Angle ») et propose les autres lots disponibles.
+- **Sans photo**, le programme emprunte celle d’un de ses lots à vendre, ou un visuel aux couleurs de MTM. **Sans plan de masse**, la section n’apparaît pas.
+- **Publication** : un programme est visible tant qu’il reste un lot à vendre et que l’interrupteur est sur « Publié ». Le retirer du site est libre ; l’annoncer demande le droit de publier. Un programme non publié n’existe pour le public ni dans le catalogue, ni par son adresse, ni par la fiche de ses lots.
+
 ## Proposer un bien et organiser une visite
 
 Depuis la fiche du prospect, zone **Biens proposés** :

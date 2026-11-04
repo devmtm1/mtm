@@ -6,13 +6,13 @@ import { ApiError } from '../../api/client';
 import { useAuth } from '../../contexts/auth-context-store';
 
 interface LoginFormProps {
-  onRequiresTwoFactor: (email: string, password: string) => void;
+  onRequiresTwoFactor: (identifiant: string, password: string) => void;
   onForgotPassword: () => void;
 }
 
 export function LoginForm({ onRequiresTwoFactor, onForgotPassword }: LoginFormProps) {
   const { login } = useAuth();
-  const [email, setEmail] = useState('');
+  const [identifiant, setIdentifiant] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,9 +22,9 @@ export function LoginForm({ onRequiresTwoFactor, onForgotPassword }: LoginFormPr
     setError(null);
     setSubmitting(true);
     try {
-      const result = await login(email.trim(), password);
+      const result = await login(identifiant.trim(), password);
       if (result.requiresTwoFactor) {
-        onRequiresTwoFactor(email.trim(), password);
+        onRequiresTwoFactor(identifiant.trim(), password);
       }
       // Sinon : le contexte est mis à jour, la page parente réagit et redirige.
     } catch (caught) {
@@ -38,15 +38,19 @@ export function LoginForm({ onRequiresTwoFactor, onForgotPassword }: LoginFormPr
 
   return (
     <form className="flex flex-col gap-4" onSubmit={(event) => void handleSubmit(event)}>
-      <FormField label="E-mail" htmlFor="login-email" required>
+      <FormField label="E-mail ou numéro de téléphone" htmlFor="login-identifiant" required>
         <input
-          id="login-email"
-          type="email"
+          id="login-identifiant"
+          type="text"
           required
-          autoComplete="email"
+          autoComplete="username"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          placeholder="awa@exemple.sn ou 77 123 45 67"
           className={fieldInputClass}
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
+          value={identifiant}
+          onChange={(event) => setIdentifiant(event.target.value)}
         />
       </FormField>
 

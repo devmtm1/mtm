@@ -25,6 +25,7 @@ import { CreateMandatDto } from './dto/create-mandat.dto';
 import { QueryMandatDto } from './dto/query-mandat.dto';
 import { UpdateMandatDto } from './dto/update-mandat.dto';
 import { CreateMandatLotDto } from './dto/create-mandat-lot.dto';
+import { CreateMandatProgrammeDto } from './dto/create-mandat-programme.dto';
 import { UpdateMandatLotDto } from './dto/update-mandat-lot.dto';
 import { CreateMandatDocumentDto } from './dto/create-mandat-document.dto';
 import { MandatsService } from './mandats.service';
@@ -186,6 +187,27 @@ export class MandatsController {
       userAgent: req.headers['user-agent'],
     });
     return lot;
+  }
+
+  @Post(':id/programme')
+  @RequirePermissions('mandats:modifier')
+  async addProgramme(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateMandatProgrammeDto,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    const resultat = await this.lots.addProgramme(id, dto.programmeId, user);
+    await this.audit.record({
+      userId: user.id,
+      action: 'mandat.programme.created',
+      entityType: 'Mandat',
+      entityId: id,
+      newValue: { programmeId: dto.programmeId, ...resultat },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    return resultat;
   }
 
   @Patch(':id/lots/:lotId')

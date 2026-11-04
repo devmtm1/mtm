@@ -700,9 +700,10 @@ export class MissionDetail implements OnInit {
   /** Ouvre l'accès espace client du demandeur depuis la mission, sans passer par sa fiche. */
   protected ouvrirEspaceClient(): void {
     const prospect = this.mission()?.prospect;
-    if (!prospect?.email || !this.canCreateClient) return;
+    if ((!prospect?.email && !prospect?.telephone) || !this.canCreateClient) return;
     ClientAccountDialog.open(this.dialog, {
       email: prospect.email,
+      telephone: prospect.telephone,
       name: [prospect.prenom, prospect.nom].filter(Boolean).join(' '),
       scopeDescription: 'suivre sa mission, ses paiements et ses documents',
       create: (password) => this.ventesApi.createClientAccount(prospect.id, password),

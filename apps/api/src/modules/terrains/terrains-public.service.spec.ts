@@ -46,7 +46,9 @@ describe('TerrainsPublicService', () => {
     });
 
     const where = prismaMock.terrain.findMany.mock.calls[0][0].where;
-    expect(where.AND).toEqual([{ typeBien: 'terrain', superficie: { gt: 500 } }]);
+    expect(where.AND).toEqual([
+      { typeBien: 'terrain', superficie: { gt: 500 } },
+    ]);
     // La recherche libre reste là : la rubrique s'ajoute, elle ne l'écrase pas.
     expect(where.OR).toBeDefined();
   });
@@ -90,6 +92,58 @@ describe('TerrainsPublicService', () => {
     // Dédoublonné et trié, comme les zones : proposer « appartement » quand
     // aucun n'est en vente n'offrirait au visiteur qu'une liste vide.
     expect(options.typeBien).toEqual(['terrain', 'villa']);
+  });
+
+  it('propose aussi les zones des lotissements : « Thiès » doit être cherchable quand seul un lotissement y vend', async () => {
+    prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+    prismaMock.terrain.findMany.mockResolvedValue([
+      {
+        region: 'Dakar',
+        commune: 'Rufisque',
+        vocation: null,
+        typeBien: 'villa',
+      },
+    ]);
+    prismaMock.programmeLotissement.findMany.mockResolvedValue([
+      { region: 'Thiès', commune: 'Thiès' },
+    ]);
+
+    const options = await publicCatalog.getPublicFilterOptions();
+
+    expect(options.commune).toEqual(['Rufisque', 'Thiès']);
+    expect(options.region).toEqual(['Dakar', 'Thiès']);
+    // Un lotissement vend des terrains.
+    expect(options.typeBien).toEqual(['terrain', 'villa']);
+  });
+
+  it('une fiche de lot renvoie à son programme, sauf s’il n’est plus publié', () => {
+    const base = {
+      id: 't1',
+      referenceInterne: 'T-1',
+      numeroLot: 'A-04',
+      categorieLot: { nom: 'Angle' },
+      nom: 'Lot',
+      statutJuridique: 'Titre foncier',
+      niveauVerification: 'Vérifié',
+      region: 'Thiès',
+      commune: 'Thiès',
+      typeBien: 'terrain',
+      medias: [],
+      documents: [],
+    };
+    const publie = publicCatalog.toPublic({
+      ...base,
+      programme: { id: 'p1', nom: 'Cité', publie: true, archiveLe: null },
+    });
+    expect(publie.programme).toEqual({ id: 'p1', nom: 'Cité' });
+    expect(publie.numeroLot).toBe('A-04');
+    expect(publie.categorieLot).toEqual({ nom: 'Angle' });
+
+    const retire = publicCatalog.toPublic({
+      ...base,
+      programme: { id: 'p1', nom: 'Cité', publie: false, archiveLe: null },
+    });
+    expect(retire.programme).toBeNull();
   });
 
   it('propose toujours les typologies, même si aucune fiche ne la porte', async () => {
@@ -385,6 +439,15 @@ describe('TerrainsPublicService', () => {
         OR: [
           { statutCommercial: 'Disponible' },
           { statutCommercial: 'Vendu', referenceVendue: true },
+        ],
+        // Un lot d'un programme non publié (ou archivé) n'existe pas pour le public.
+        AND: [
+          {
+            OR: [
+              { programmeId: null },
+              { programme: { publie: true, archiveLe: null } },
+            ],
+          },
         ],
       });
 

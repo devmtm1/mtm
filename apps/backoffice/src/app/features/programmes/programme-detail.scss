@@ -1,0 +1,410 @@
+.programme-page {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+.retour {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  color: var(--mtm-text-muted);
+  font-size: 0.88rem;
+  text-decoration: none;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    color: var(--mtm-primary);
+  }
+}
+
+/* Lieu, propriétaire, statut juridique : l'identité du programme en une ligne. */
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 6px 0 0;
+  color: var(--mtm-text-muted);
+  font-size: 0.88rem;
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  svg {
+    width: 15px;
+    height: 15px;
+  }
+}
+
+.synthese {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+
+  &__carte {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+
+    h2 {
+      margin: 0;
+      font-family: var(--mtm-font-display);
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+  }
+
+  &__taux {
+    margin: 0;
+    color: var(--mtm-text-muted);
+    font-size: 0.9rem;
+
+    strong {
+      color: var(--mtm-text-dark);
+      font-family: var(--mtm-font-display);
+      font-size: 1.7rem;
+    }
+  }
+}
+
+.legende {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--mtm-text-muted);
+  font-size: 0.84rem;
+
+  strong {
+    margin-left: 4px;
+    color: var(--mtm-text-dark);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.point {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 7px;
+  border-radius: 50%;
+
+  &--vendu {
+    background: var(--mtm-primary);
+  }
+
+  &--reserve {
+    background: var(--mtm-warning);
+  }
+
+  &--dispo {
+    background: var(--mtm-success);
+    opacity: 0.55;
+  }
+
+  &--brouillon {
+    background: var(--mtm-border);
+  }
+}
+
+.jauge--grande {
+  height: 12px;
+}
+
+/* La fiche d'identité du programme : un libellé, sa valeur, deux colonnes. */
+.fiche {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 24px;
+  margin: 0;
+
+  dt {
+    color: var(--mtm-text-muted);
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 2px 0 0;
+    font-size: 0.92rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+  }
+
+  &__large {
+    grid-column: 1 / -1;
+  }
+}
+
+.carte-tableau {
+  display: grid;
+  padding: 0;
+  overflow: hidden;
+}
+
+.list-toolbar {
+  align-items: center;
+}
+
+.table-scroll {
+  padding: 8px 12px 4px;
+}
+
+.empty-state {
+  margin: 0;
+  border: 0;
+}
+
+.etat-vide--carte {
+  margin: 16px 20px 20px;
+}
+
+.discret {
+  color: var(--mtm-text-muted);
+}
+
+.actions-ligne {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  white-space: nowrap;
+
+  svg {
+    width: 17px;
+    height: 17px;
+  }
+}
+
+.filtres-lots {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding: 14px 20px 6px;
+
+  .compte-filtre {
+    color: var(--mtm-text-muted);
+    font-size: 0.84rem;
+  }
+}
+
+.compte {
+  margin-left: 4px;
+  color: var(--mtm-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Vendus, puis réservés, puis disponibles : une barre empilée lue de gauche à droite. */
+.jauge {
+  display: flex;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--mtm-bg-hover);
+
+  &__vendus {
+    background: var(--mtm-primary);
+  }
+
+  &__reserves {
+    background: var(--mtm-warning);
+  }
+
+  &__dispo {
+    background: var(--mtm-success);
+    opacity: 0.45;
+  }
+}
+
+/* Barre d'actions sur les lots cochés : elle n'existe que pendant la sélection. */
+.selection {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin: 8px 20px 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--mtm-primary-subtle);
+
+  &__actions {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  &__categorie {
+    flex: 0 1 260px;
+    min-width: 220px;
+    padding: 6px 10px;
+    border: 1px solid var(--mtm-border);
+    border-radius: 8px;
+    background: var(--mtm-card-bg);
+  }
+}
+
+.tableau-lots {
+  min-width: 860px;
+
+  tbody tr {
+    &:focus-visible {
+      outline: 2px solid var(--mtm-primary);
+      outline-offset: -2px;
+    }
+
+    &:hover .col-fleche svg {
+      color: var(--mtm-primary);
+      transform: translateX(2px);
+    }
+
+    &.is-selectionne td {
+      background: var(--mtm-primary-subtle);
+    }
+
+    &.is-fige {
+      cursor: not-allowed;
+
+      td {
+        opacity: 0.6;
+      }
+    }
+  }
+
+  .aucun {
+    padding: 28px 14px;
+    color: var(--mtm-text-muted);
+    text-align: center;
+  }
+}
+
+.col-case {
+  width: 44px;
+
+  input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--mtm-primary);
+    cursor: pointer;
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+  }
+}
+
+.col-fleche {
+  width: 36px;
+  text-align: right;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    color: var(--mtm-text-muted);
+    transition:
+      color 0.15s ease,
+      transform 0.15s ease;
+  }
+}
+
+.discret {
+  color: var(--mtm-text-muted);
+}
+
+.lien-client {
+  color: var(--mtm-primary);
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.actions-lot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+/* Un bouton dans une ligne de tableau : plus bas que le bouton de page. */
+.actions-lot button {
+  --mat-button-outlined-container-height: 34px;
+  --mdc-outlined-button-container-height: 34px;
+}
+
+/* Les montants en FCFA sont longs : un cran de moins que les nombres de lots, pour ne pas toucher l'icône. */
+.montants .kpi__body strong {
+  font-size: 1.2rem;
+  white-space: nowrap;
+}
+
+.autres-dossiers {
+  color: var(--mtm-text-muted);
+  font-size: 0.74rem;
+}
+
+.cellule-client {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+
+  small {
+    color: var(--mtm-text-muted);
+    font-size: 0.74rem;
+  }
+}
+
+/* Alerte comptable : une vente sans commission ni marge rapporterait zéro. */
+.alerte-compta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 12px 16px;
+  border: 1px solid var(--mtm-warning);
+  border-radius: 12px;
+  background: var(--mtm-warning-bg);
+
+  svg {
+    flex: 0 0 20px;
+    width: 20px;
+    height: 20px;
+    color: var(--mtm-warning);
+  }
+
+  p {
+    flex: 1 1 320px;
+    margin: 0;
+    font-size: 0.9rem;
+  }
+}
+
+.synthese__tete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}

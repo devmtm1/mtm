@@ -9,6 +9,10 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import {
+  estAdresseEmail,
+  normaliserTelephone,
+} from '../../common/utils/telephone';
 
 export type UserWithRoles = User & {
   roles: {
@@ -120,6 +124,31 @@ export class UsersService {
     });
   }
 
+  /**
+   * Retrouve un compte par son identifiant de connexion : une adresse e-mail, ou un numéro de téléphone (écrit comme
+   * le client l'écrit : « 77 123 45 67 » et « +221771234567 » désignent le même compte).
+   */
+  async findByIdentifiant(identifiant: string): Promise<UserWithRoles | null> {
+    const saisie = identifiant.trim();
+    if (estAdresseEmail(saisie)) return this.findByEmail(saisie);
+    const telephone = normaliserTelephone(saisie);
+    if (!telephone) return null;
+    return await this.prisma.user.findUnique({
+      where: { telephoneConnexion: telephone },
+      include: {
+        roles: {
+          include: {
+            role: {
+              include: {
+                permissions: { include: { permission: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
   async findById(id: string): Promise<UserWithRoles | null> {
     return await this.prisma.user.findUnique({
       where: { id },
@@ -158,7 +187,8 @@ export class UsersService {
    */
   toAuthenticatedUser(user: UserWithRoles): {
     id: string;
-    email: string;
+    email: string | null;
+    telephone: string | null;
     firstName: string;
     lastName: string;
     roles: string[];
@@ -169,6 +199,7 @@ export class UsersService {
     return {
       id: user.id,
       email: user.email,
+      telephone: user.telephoneConnexion,
       firstName: user.firstName,
       lastName: user.lastName,
       roles: user.roles.map(

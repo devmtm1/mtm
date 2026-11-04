@@ -859,7 +859,7 @@
           <div class="detail-section__actions mission-detail__client-actions">
             <a mat-stroked-button [routerLink]="['/crm/prospects', m.prospect.id]"><svg class="btn-icon" lucideExternalLink aria-hidden="true"></svg>Fiche client</a>
             @if (canCreateClient && !m.prospect.clientUser) {
-              @if (m.prospect.email) {
+              @if (m.prospect.email || m.prospect.telephone) {
                 <button mat-flat-button color="primary" type="button" (click)="ouvrirEspaceClient()">
                   <svg class="btn-icon" lucideKeyRound aria-hidden="true"></svg>Espace client
                 </button>
@@ -867,9 +867,9 @@
                 <a
                   mat-stroked-button
                   [routerLink]="['/crm/prospects', m.prospect.id, 'modifier']"
-                  matTooltip="L’accès s’envoie par e-mail : ajoutez d’abord son adresse sur sa fiche"
+                  matTooltip="L’accès s’envoie par e-mail ou par WhatsApp / SMS : ajoutez d’abord l’un ou l’autre sur sa fiche"
                 >
-                  <svg class="btn-icon" lucideMail aria-hidden="true"></svg>Ajouter l’e-mail
+                  <svg class="btn-icon" lucideMail aria-hidden="true"></svg>Ajouter ses coordonnées
                 </a>
               }
             }

@@ -2,6 +2,7 @@ import {
   ForbiddenException,
   Injectable,
   Logger,
+  Optional,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -14,6 +15,7 @@ import { parseDurationToMs } from '../../common/utils/duration.util';
 import { PrismaService } from '../../database/prisma.service';
 import { UsersService, UserWithRoles } from '../users/users.service';
 import { MailService } from '../../common/mail/mail.service';
+import { CanalExterneService } from '../notifications/canal-externe.service';
 import { AuditService } from '../audit/audit.service';
 import { TwoFactorService } from './two-factor.service';
 import { JwtPayload, LoginResponse } from './auth.types';
@@ -49,19 +51,20 @@ export class AuthService {
     private readonly twoFactorService: TwoFactorService,
     private readonly auditService: AuditService,
     private readonly mailService: MailService,
+    @Optional() private readonly canaux?: CanalExterneService,
   ) {
     this.authConfig = this.configService.get<AuthConfig>('auth')!;
   }
 
   async login(
-    email: string,
+    identifiant: string,
     password: string,
     twoFactorCode: string | undefined,
     context: RequestContext,
   ): Promise<LoginResponse & { refreshToken?: string }> {
-    const user = await this.usersService.findByEmail(email);
+    const user = await this.usersService.findByIdentifiant(identifiant);
 
-    // Message volontairement générique : ne jamais révéler si l'email
+    // Message volontairement générique : ne jamais révéler si l'identifiant
     // existe ou non (protection contre l'énumération de comptes).
     const invalidCredentialsMessage = 'Identifiants invalides';
 
@@ -221,10 +224,10 @@ export class AuthService {
   }
 
   async requestPasswordReset(
-    email: string,
+    identifiant: string,
     context: RequestContext,
   ): Promise<PasswordResetResult> {
-    const user = await this.usersService.findByEmail(email);
+    const user = await this.usersService.findByIdentifiant(identifiant);
     if (!user || !user.isActive) return { accepted: true };
 
     const rawToken = randomBytes(32).toString('hex');
@@ -242,36 +245,78 @@ export class AuthService {
 
     // Un compte client se connecte sur le site public, un compte interne sur
     // le back-office : le lien renvoie vers la bonne interface.
-    const isClient = user.clientProspectId !== null;
+    const isClient =
+      user.clientProspectId !== null ||
+      user.clientProprietaireId !== null ||
+      user.clientLocataireId !== null;
     const baseUrl = this.configService.get<string>(
       isClient ? 'PUBLIC_WEB_URL' : 'BACKOFFICE_URL',
     );
     const loginPath = isClient ? '/espace-client/connexion' : '/login';
     const link = `${baseUrl}${loginPath}?reset=${rawToken}`;
-    const sent = await this.mailService.send({
-      to: user.email,
-      subject: 'Réinitialisation de votre mot de passe — MTM Immobilier',
-      text: [
-        `Bonjour ${user.firstName},`,
-        'Vous avez demandé à réinitialiser votre mot de passe. Ouvrez ce lien dans les 30 minutes :',
-        link,
-        `Si le lien ne fonctionne pas, saisissez ce code dans le formulaire « Mot de passe oublié » : ${rawToken}`,
-        'Si vous n’êtes pas à l’origine de cette demande, ignorez ce message : votre mot de passe reste inchangé.',
-      ].join('\n\n'),
-    });
+    const { envoye: sent, canalDisponible } =
+      await this.envoyerLienReinitialisation(user, link, rawToken);
     if (!sent) {
       this.logger.error(
-        `Jeton de réinitialisation non délivré à ${user.email} : SMTP indisponible`,
+        `Jeton de réinitialisation non délivré à ${user.email ?? user.telephoneConnexion} : aucun canal d'envoi disponible`,
       );
     }
 
-    // Hors production et sans SMTP, le jeton est renvoyé pour permettre de
-    // tester le parcours ; jamais en production.
+    // Hors production et sans canal d'envoi (SMTP, SMS, WhatsApp), le jeton est
+    // renvoyé pour permettre de tester le parcours ; jamais en production.
     const exposeToken =
-      process.env.NODE_ENV !== 'production' && !this.mailService.isConfigured();
+      process.env.NODE_ENV !== 'production' && !canalDisponible;
     return exposeToken
       ? { accepted: true, developmentToken: rawToken }
       : { accepted: true };
+  }
+
+  /**
+   * Envoie le lien de réinitialisation : par e-mail quand le compte en a un, sinon par WhatsApp puis SMS sur son
+   * numéro. Renvoie si le message est parti, et si au moins un canal d'envoi est configuré.
+   */
+  private async envoyerLienReinitialisation(
+    user: UserWithRoles,
+    link: string,
+    rawToken: string,
+  ): Promise<{ envoye: boolean; canalDisponible: boolean }> {
+    if (user.email) {
+      const envoye = await this.mailService.send({
+        to: user.email,
+        subject: 'Réinitialisation de votre mot de passe — MTM Immobilier',
+        text: [
+          `Bonjour ${user.firstName},`,
+          'Vous avez demandé à réinitialiser votre mot de passe. Ouvrez ce lien dans les 30 minutes :',
+          link,
+          `Si le lien ne fonctionne pas, saisissez ce code dans le formulaire « Mot de passe oublié » : ${rawToken}`,
+          'Si vous n’êtes pas à l’origine de cette demande, ignorez ce message : votre mot de passe reste inchangé.',
+        ].join('\n\n'),
+      });
+      return { envoye, canalDisponible: this.mailService.isConfigured() };
+    }
+    if (!user.telephoneConnexion || !this.canaux) {
+      return { envoye: false, canalDisponible: false };
+    }
+    const texte = [
+      `MTM Immobilier : bonjour ${user.firstName}, pour choisir un nouveau mot de passe, ouvrez ce lien dans les 30 minutes :`,
+      link,
+      'Si vous n’êtes pas à l’origine de cette demande, ignorez ce message.',
+    ].join('\n');
+    let canalDisponible = false;
+    for (const canal of ['whatsapp', 'sms'] as const) {
+      if (!this.canaux.estConfigure(canal)) continue;
+      canalDisponible = true;
+      if (
+        await this.canaux.envoyer({
+          canal,
+          destinataire: user.telephoneConnexion,
+          texte,
+        })
+      ) {
+        return { envoye: true, canalDisponible };
+      }
+    }
+    return { envoye: false, canalDisponible };
   }
 
   async resetPassword(
@@ -434,7 +479,7 @@ export class AuthService {
       await this.usersService.lockAccount(user.id, lockUntil);
       await this.recordAudit(user.id, 'auth.account.locked', context);
       this.logger.warn(
-        `Compte verrouillé après ${updated.failedLoginAttempts} échecs: ${user.email}`,
+        `Compte verrouillé après ${updated.failedLoginAttempts} échecs: ${user.email ?? user.telephoneConnexion}`,
       );
     }
   }

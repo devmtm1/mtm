@@ -36,6 +36,9 @@ export class TerrainsPublicService {
     const base: Prisma.TerrainWhereInput = {
       // Un bien archivé ne paraît jamais sur le site, quel que soit son statut.
       archiveLe: null,
+      // Les lots d'un programme ne sont pas annoncés un par un : une annonce
+      // par programme viendra, 30 lots ne doivent pas noyer le catalogue.
+      programmeId: null,
       // Recherche libre du catalogue public : restreinte aux champs publics
       // (jamais parcelleMatricule ni notes internes).
       ...(search
@@ -157,6 +160,15 @@ export class TerrainsPublicService {
           { statutCommercial: 'Disponible' },
           { statutCommercial: 'Vendu', referenceVendue: true },
         ],
+        // Un lot d'un programme que MTM n'a pas publié (ou a archivé) n'existe pas pour le public.
+        AND: [
+          {
+            OR: [
+              { programmeId: null },
+              { programme: { publie: true, archiveLe: null } },
+            ],
+          },
+        ],
       },
       select: publicVenduSelect,
     });
@@ -173,11 +185,15 @@ export class TerrainsPublicService {
    * proposés correspondent toujours aux données disponibles.
    */
   async getPublicFilterOptions() {
-    const [legal, pieces, published, vendus] = await Promise.all([
+    const [legal, pieces, published, vendus, programmes] = await Promise.all([
       this.settings.getRawValue('terrains.statutJuridique'),
       this.settings.getRawValue('terrains.nombrePieces'),
       this.prisma.terrain.findMany({
-        where: { statutCommercial: 'Disponible', archiveLe: null },
+        where: {
+          statutCommercial: 'Disponible',
+          archiveLe: null,
+          programmeId: null,
+        },
         select: {
           region: true,
           commune: true,
@@ -192,7 +208,18 @@ export class TerrainsPublicService {
           archiveLe: null,
         },
       }),
+      // Les lotissements ont leurs zones, eux aussi : sans elles, « Thiès » ne serait pas proposé
+      // alors qu'un lotissement y vend des lots.
+      this.prisma.programmeLotissement.findMany({
+        where: {
+          publie: true,
+          archiveLe: null,
+          lots: { some: { statutCommercial: 'Disponible', archiveLe: null } },
+        },
+        select: { region: true, commune: true },
+      }),
     ]);
+    const zonesProgrammes = programmes ?? [];
 
     const distinct = (values: (string | null)[]): string[] =>
       [
@@ -206,12 +233,22 @@ export class TerrainsPublicService {
         legal,
         DEFAULT_TERRAIN_OPTIONS.statutJuridique,
       ),
-      region: distinct(published.map((terrain) => terrain.region)),
-      commune: distinct(published.map((terrain) => terrain.commune)),
+      region: distinct([
+        ...published.map((terrain) => terrain.region),
+        ...zonesProgrammes.map((programme) => programme.region),
+      ]),
+      commune: distinct([
+        ...published.map((terrain) => terrain.commune),
+        ...zonesProgrammes.map((programme) => programme.commune),
+      ]),
       vocation: distinct(published.map((terrain) => terrain.vocation)),
       // Dérivée des biens publiés, comme les zones : le catalogue ne doit pas
       // proposer « villa » quand il n'en reste aucune à vendre.
-      typeBien: distinct(published.map((terrain) => terrain.typeBien)),
+      typeBien: distinct([
+        ...published.map((terrain) => terrain.typeBien),
+        // Un lotissement vend des terrains.
+        ...(zonesProgrammes.length > 0 ? ['terrain'] : []),
+      ]),
       // Servie par le référentiel, elle, et non dérivée : F1 à F6 est une
       // liste fermée et connue d'avance. La déduire des biens publiés faisait
       // disparaître le filtre tant qu'aucune fiche ne portait sa typologie —
@@ -263,6 +300,14 @@ export class TerrainsPublicService {
       id: string;
       statutCommercial?: string;
       referenceInterne: string;
+      numeroLot?: string | null;
+      categorieLot?: { nom: string } | null;
+      programme?: {
+        id: string;
+        nom: string;
+        publie: boolean;
+        archiveLe: Date | null;
+      } | null;
       nom: string;
       statutJuridique: string;
       niveauVerification: string;
@@ -353,6 +398,15 @@ export class TerrainsPublicService {
       statutCommercial: source.statutCommercial ?? 'Disponible',
       venduLe: null,
       referenceInterne: source.referenceInterne,
+      numeroLot: source.numeroLot ?? null,
+      categorieLot: source.categorieLot ?? null,
+      // Le lien n'est proposé que si la page du programme existe : un programme retiré ou archivé n'a plus de page.
+      programme:
+        source.programme &&
+        source.programme.publie &&
+        !source.programme.archiveLe
+          ? { id: source.programme.id, nom: source.programme.nom }
+          : null,
       nom: source.nom,
       statutJuridique: source.statutJuridique,
       niveauVerification: source.niveauVerification,

@@ -26,6 +26,23 @@ describe('LoginDto (validation)', () => {
     expect(errors).toHaveLength(0);
   });
 
+  it('accepte un numéro de téléphone comme identifiant', async () => {
+    const dto = plainToInstance(LoginDto, {
+      identifiant: '77 123 45 67',
+      password: 'MotDePasse123!',
+    });
+
+    expect(await validate(dto)).toHaveLength(0);
+  });
+
+  it('exige un identifiant : ni e-mail ni numéro est refusé', async () => {
+    const dto = plainToInstance(LoginDto, { password: 'MotDePasse123!' });
+
+    const errors = await validate(dto);
+
+    expect(errors.length).toBeGreaterThan(0);
+  });
+
   it('rejette un email invalide', async () => {
     const dto = plainToInstance(LoginDto, {
       email: 'pas-un-email',

@@ -6,7 +6,8 @@ export interface AuthContextValue {
   accessToken: string | null;
   /** Vrai pendant la tentative de reprise de session au chargement de l'app. */
   bootstrapping: boolean;
-  login: (email: string, password: string, twoFactorCode?: string) => Promise<LoginResult>;
+  /** `identifiant` : adresse e-mail ou numéro de téléphone. */
+  login: (identifiant: string, password: string, twoFactorCode?: string) => Promise<LoginResult>;
   logout: () => Promise<void>;
   /** Recharge l'utilisateur courant (ex. après un changement de mot de passe). */
   refreshUser: () => Promise<void>;
@@ -21,7 +22,7 @@ export const AuthContext = createContext<AuthContextValue | null>(null);
 export function useClientSession(): { token: string; firstName: string; lastName: string; email: string } | null {
   const { user, accessToken } = useAuth();
   if (!user || !accessToken || !user.roles.includes('client')) return null;
-  return { token: accessToken, firstName: user.firstName, lastName: user.lastName, email: user.email };
+  return { token: accessToken, firstName: user.firstName, lastName: user.lastName, email: user.email ?? '' };
 }
 
 export function useAuth(): AuthContextValue {

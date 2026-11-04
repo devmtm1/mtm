@@ -34,6 +34,12 @@ export interface PublicTerrainResponse {
   /** Date de la vente d'une référence vendue, quand elle est connue. */
   venduLe: string | null;
   referenceInterne: string;
+  /** Numéro du lot dans son programme (« A-12 »), nul pour un bien isolé. */
+  numeroLot: string | null;
+  /** Catégorie du lot dans son programme (« Angle »). */
+  categorieLot: { nom: string } | null;
+  /** Le programme public auquel le lot appartient, pour y renvoyer et proposer les autres lots. */
+  programme: { id: string; nom: string } | null;
   nom: string;
   statutJuridique: string;
   niveauVerification: string;

@@ -4,12 +4,18 @@
   @if (!created()) {
     <p class="account-dialog__intro">
       L’espace client permet à <strong>{{ data.name }}</strong> de {{ data.scopeDescription }} sur le
-      site public. Un e-mail d’invitation part à <strong>{{ data.email }}</strong> : il y choisit son mot de passe. Si cette personne a déjà un espace client avec cette adresse, l’accès est simplement ajouté à son compte.
+      site public.
+      @if (data.email) {
+        Un e-mail d’invitation part à <strong>{{ data.email }}</strong> : il y choisit son mot de passe.
+      } @else {
+        Cette personne n’a pas d’e-mail : l’invitation part par WhatsApp ou SMS au <strong>{{ data.telephone }}</strong>, et elle se connecte ensuite avec ce numéro.
+      }
+      Si cette personne a déjà un espace client avec cet identifiant, l’accès est simplement ajouté à son compte.
     </p>
     <mat-form-field appearance="outline" class="account-dialog__field">
       <mat-label>Mot de passe de secours</mat-label>
       <input matInput type="text" [formControl]="form.controls.password" autocomplete="new-password" />
-      <mat-hint>À communiquer seulement si l’e-mail n’arrive pas. {{ passwordHint }}</mat-hint>
+      <mat-hint>À communiquer seulement si l’invitation n’arrive pas. {{ passwordHint }}</mat-hint>
       @if (form.controls.password.invalid && form.controls.password.touched) {
         <mat-error>Le mot de passe ne respecte pas les règles requises.</mat-error>
       }
@@ -20,34 +26,44 @@
     }
   } @else if (compteExistant()) {
     <div class="account-dialog__box account-dialog__box--success">
-      <strong>Accès ajouté à l’espace client existant de {{ data.email }}.</strong>
+      <strong>Accès ajouté à l’espace client existant de {{ identifiant }}.</strong>
       <p>
         Cette personne avait déjà un espace client : l’accès est ajouté à son compte, avec son mot de passe habituel
         (aucun mot de passe à lui transmettre).
         @if (invitationSent()) {
-          Un e-mail l’en informe.
+          Un message l’en informe.
         } @else {
-          L’e-mail d’information n’a pas pu partir : prévenez-la vous-même de se reconnecter.
+          Le message d’information n’a pas pu partir : prévenez-la vous-même de se reconnecter.
         }
       </p>
     </div>
   } @else if (invitationSent()) {
     <div class="account-dialog__box account-dialog__box--success">
-      <strong>Compte créé — invitation envoyée à {{ data.email }}.</strong>
+      <strong>
+        Compte créé — invitation envoyée
+        @switch (canalInvitation()) {
+          @case ('email') { par e-mail à {{ data.email }}. }
+          @case ('whatsapp') { par WhatsApp au {{ data.telephone }}. }
+          @default { par SMS au {{ data.telephone }}. }
+        }
+      </strong>
       <p>Le client a 7 jours pour choisir son mot de passe via le lien reçu.</p>
-      <p><small>Si l’e-mail n’arrive pas, mot de passe de secours : <code>{{ createdPassword() }}</code> (à transmettre par un canal sûr).</small></p>
+      <p><small>Si le message n’arrive pas, mot de passe de secours : <code>{{ createdPassword() }}</code> (à transmettre par un canal sûr).</small></p>
     </div>
   } @else {
     <div class="account-dialog__box account-dialog__box--warning">
-      <strong>Compte créé, mais l’e-mail d’invitation n’a pas pu partir.</strong>
+      <strong>Compte créé, mais l’invitation n’a pas pu partir.</strong>
       <p>Transmettez au client, par un canal sûr :</p>
       <dl>
-        <div><dt>E-mail</dt><dd>{{ data.email }}</dd></div>
+        <div><dt>Identifiant</dt><dd>{{ identifiant }}</dd></div>
         @if (invitationLink) {
           <div><dt>Lien de première connexion (7 jours)</dt><dd class="is-break">{{ invitationLink }}</dd></div>
         }
         <div><dt>Mot de passe temporaire</dt><dd><code>{{ createdPassword() }}</code></dd></div>
       </dl>
+      @if (lienWhatsapp) {
+        <a mat-stroked-button [href]="lienWhatsapp" target="_blank" rel="noopener noreferrer">Envoyer le lien par WhatsApp</a>
+      }
     </div>
   }
 </mat-dialog-content>

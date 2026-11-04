@@ -103,6 +103,17 @@ export class MandatsApiService {
     return this.http.post<MandatLotItem>(`${this.baseUrl}/${mandatId}/lots`, payload);
   }
 
+  /** Confie au mandat tous les lots d'un programme de lotissement. */
+  addProgramme(
+    mandatId: string,
+    programmeId: string,
+  ): Observable<{ ajoutes: number; dejaRattaches: number; exclusifsAilleurs: number }> {
+    return this.http.post<{ ajoutes: number; dejaRattaches: number; exclusifsAilleurs: number }>(
+      `${this.baseUrl}/${mandatId}/programme`,
+      { programmeId },
+    );
+  }
+
   updateLot(mandatId: string, lotId: string, payload: { statutLot?: string }): Observable<MandatLotItem> {
     return this.http.patch<MandatLotItem>(`${this.baseUrl}/${mandatId}/lots/${lotId}`, payload);
   }

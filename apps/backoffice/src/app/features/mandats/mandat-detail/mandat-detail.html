@@ -124,9 +124,12 @@
                 <p class="detail-section__hint">Les biens que ce mandat autorise MTM à commercialiser, et où en est chacun.</p>
               </div>
               @if (canModify) {
-                <button mat-stroked-button type="button" (click)="addLot()">
-                  <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Rattacher un terrain
-                </button>
+                <div class="detail-section__actions">
+                  <button mat-stroked-button type="button" (click)="addProgramme()">Confier un programme</button>
+                  <button mat-stroked-button type="button" (click)="addLot()">
+                    <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Rattacher un terrain
+                  </button>
+                </div>
               }
             </div>
             @if (m.lots.length) {

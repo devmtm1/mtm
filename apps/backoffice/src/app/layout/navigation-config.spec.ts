@@ -84,6 +84,7 @@ describe('navigation du back-office', () => {
     expect(sujets.map((item) => item.label)).toEqual([
       'Prospects',
       'Dossiers de vente',
+      'Biens à vendre',
       'Gestion locative',
       'Finances',
       'Comptabilité',

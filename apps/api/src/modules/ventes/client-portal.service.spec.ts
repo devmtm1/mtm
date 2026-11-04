@@ -12,10 +12,9 @@ describe('ClientPortalService – demandes depuis l’espace client', () => {
     service = new ClientPortalService(
       prisma as never,
       {} as never,
-      {} as never,
-      {} as never,
       contacts as never,
       ventes as never,
+      {} as never,
     );
     prisma.user.findUnique.mockResolvedValue({
       clientProspect: {

@@ -1,0 +1,322 @@
+/* Styles communs aux onglets d'un programme : un bloc, un tableau, des états vides. */
+:host {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+.bloc {
+  display: grid;
+  padding: 0;
+  overflow: hidden;
+}
+
+.bloc__tete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--mtm-border);
+
+  h2 {
+    margin: 0;
+    font-family: var(--mtm-font-display);
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 2px 0 0;
+    color: var(--mtm-text-muted);
+    font-size: 0.82rem;
+  }
+}
+
+.table-scroll {
+  padding: 8px 12px 4px;
+}
+
+.empty-state {
+  margin: 0;
+  border: 0;
+}
+
+.etat-vide {
+  margin: 16px 20px 20px;
+}
+
+.perimetre {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--mtm-primary-subtle);
+  color: var(--mtm-primary);
+  font-size: 0.84rem;
+}
+
+.sans-acces {
+  margin: 0;
+}
+
+.fort {
+  font-weight: 700;
+}
+
+.discret {
+  color: var(--mtm-text-muted);
+}
+
+.positif {
+  color: var(--mtm-success);
+  font-weight: 600;
+}
+
+.retard {
+  color: var(--mtm-error);
+  font-weight: 600;
+}
+
+.tableau {
+  min-width: 860px;
+
+  tbody tr {
+    &.is-clickable:focus-visible {
+      outline: 2px solid var(--mtm-primary);
+      outline-offset: -2px;
+    }
+
+    &.is-annule td {
+      opacity: 0.55;
+    }
+  }
+
+  a {
+    color: var(--mtm-primary);
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.cellule {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+
+  strong {
+    font-size: 0.9rem;
+  }
+
+  small {
+    color: var(--mtm-text-muted);
+    font-size: 0.76rem;
+  }
+}
+
+.actions-ligne {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  white-space: nowrap;
+
+  svg {
+    width: 17px;
+    height: 17px;
+  }
+}
+
+.jauge {
+  display: block;
+  width: 96px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--mtm-bg-hover);
+
+  span {
+    display: block;
+    height: 100%;
+    background: var(--mtm-success);
+  }
+}
+
+.paye {
+  display: grid;
+  gap: 4px;
+  justify-items: end;
+}
+
+.filtres {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  padding: 14px 20px 6px;
+}
+
+/* Un bouton dans une ligne de tableau : plus bas que le bouton de page. */
+.actions-ligne button {
+  --mat-button-outlined-container-height: 34px;
+  --mdc-outlined-button-container-height: 34px;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.liens-compta {
+  display: flex;
+  gap: 16px;
+
+  a {
+    color: var(--mtm-primary);
+    font-size: 0.86rem;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.alerte-ligne {
+  margin: 12px 20px 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--mtm-warning-bg);
+  color: var(--mtm-text-dark);
+  font-size: 0.86rem;
+}
+
+/* Les chiffres comptables : un libellé, sa valeur, trois colonnes. */
+.compta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px 24px;
+  margin: 0;
+  padding: 16px 20px 20px;
+
+  dt {
+    color: var(--mtm-text-muted);
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 2px 0 0;
+    font-size: 1rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__large {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Onglet « Site public » : interrupteur de publication et galerie des visuels. */
+.publication {
+  display: grid;
+  gap: 10px;
+  padding: 16px 20px 20px;
+}
+
+.alerte-ligne--sobre {
+  margin: 0;
+}
+
+.icone-lien {
+  width: 14px;
+  height: 14px;
+  margin-right: 4px;
+  vertical-align: -2px;
+}
+
+.bouton-fichier {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--mtm-border);
+  border-radius: 10px;
+  background: var(--mtm-card-bg);
+  color: var(--mtm-primary);
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    border-color: var(--mtm-primary);
+  }
+}
+
+.visuels {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 16px 20px 20px;
+  list-style: none;
+}
+
+.visuel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--mtm-border);
+  border-radius: 12px;
+  background: var(--mtm-bg-hover);
+
+  img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+
+  &__type {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.94);
+    color: var(--mtm-text-dark);
+    font-size: 0.72rem;
+    font-weight: 700;
+
+    &--couverture {
+      background: var(--mtm-primary);
+      color: #fff;
+    }
+  }
+
+  &__actions {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    display: flex;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.94);
+
+    svg {
+      width: 17px;
+      height: 17px;
+    }
+  }
+}

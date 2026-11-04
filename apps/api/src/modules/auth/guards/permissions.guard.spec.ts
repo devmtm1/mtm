@@ -13,6 +13,7 @@ describe('PermissionsGuard', () => {
   const buildUser = (permissions: string[]): AuthenticatedUser => ({
     id: 'u1',
     email: 'test@mtm.sn',
+    telephone: null,
     firstName: 'Test',
     lastName: 'User',
     roles: ['commercial'],

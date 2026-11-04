@@ -222,7 +222,7 @@ export class UsersController {
    */
   private toSafeUser(user: {
     id: string;
-    email: string;
+    email: string | null;
     firstName: string;
     lastName: string;
     isActive: boolean;

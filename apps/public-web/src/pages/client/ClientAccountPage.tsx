@@ -40,7 +40,7 @@ export function ClientAccountPage() {
           <p className="truncate font-display text-xl font-bold">
             {user?.firstName} {user?.lastName}
           </p>
-          <p className="truncate text-sm text-white/80">{user?.email}</p>
+          <p className="truncate text-sm text-white/80">{user?.email ?? user?.telephone}</p>
           <p className="mt-0.5 text-xs text-white/75">Client MTM Immobilier</p>
         </div>
       </section>
