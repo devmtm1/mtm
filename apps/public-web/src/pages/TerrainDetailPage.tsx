@@ -1,4 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { fetchProgramme } from '../api/programmes';
+import { useAsyncData } from '../hooks/useAsyncData';
+import type { TerrainMedia } from '../types/terrain';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, BadgeCheck, CalendarCheck, ChevronRight, Download, FileText, LandPlot, LayoutGrid, MapPin, MessageSquare, Navigation } from 'lucide-react';
 import { ROUTES } from '../routes';
@@ -36,6 +39,22 @@ export function TerrainDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: terrain, loading, error } = useTerrain(id);
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
+
+  // Un lot sans média à lui montre ceux de son lotissement : le plan de masse d'abord, puis les photos, puis la couverture.
+  const programmeId = terrain?.programme?.id;
+  const { data: programme } = useAsyncData(() => (programmeId ? fetchProgramme(programmeId) : Promise.resolve(null)), [programmeId]);
+  const mediasGalerie = useMemo<TerrainMedia[]>(() => {
+    if (!terrain) return [];
+    if (terrain.medias.some((media) => media.type !== 'plan') || !programme) return terrain.medias;
+    const enMedia = (id: string, title: string | null, secureUrl: string, sortOrder: number): TerrainMedia => ({
+      id, type: 'photo', title, isPublic: true, sortOrder, secureUrl, capturedAt: null, createdAt: '',
+    });
+    const plans = programme.medias.filter((m) => m.type === 'plan').map((m, i) => enMedia(m.id, m.title ?? 'Plan de masse', m.secureUrl, i));
+    const photos = programme.medias.filter((m) => m.type === 'photo').map((m, i) => enMedia(m.id, m.title, m.secureUrl, plans.length + i));
+    const liste = [...plans, ...photos];
+    if (liste.length === 0 && programme.couverture) liste.push(enMedia(`couverture-${programme.id}`, programme.nom, programme.couverture, 0));
+    return liste.length > 0 ? liste : terrain.medias;
+  }, [terrain, programme]);
 
   const location = [terrain?.commune, terrain?.region].filter(Boolean).join(', ');
   const bati = terrain ? estBienBati(terrain) : false;
@@ -159,7 +178,7 @@ export function TerrainDetailPage() {
           </div>
 
           <TerrainGallery
-            medias={terrain.medias}
+            medias={mediasGalerie}
             alt={terrain.nom}
             className="order-1 -mx-4 sm:-mx-6 lg:mx-0 lg:order-2"
             badge={vendu ? <SoldBadge /> : undefined}
