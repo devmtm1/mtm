@@ -13,6 +13,7 @@ describe('SensitiveTwoFactorGuard', () => {
   ): AuthenticatedUser => ({
     id: 'u1',
     email: 'test@mtm.sn',
+    telephone: null,
     firstName: 'Test',
     lastName: 'User',
     roles,

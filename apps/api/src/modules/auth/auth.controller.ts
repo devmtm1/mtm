@@ -55,7 +55,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const result = await this.authService.login(
-      dto.email,
+      dto.identifiant ?? dto.email ?? '',
       dto.password,
       dto.twoFactorCode,
       { ipAddress: req.ip, userAgent: req.headers['user-agent'] },
@@ -109,10 +109,13 @@ export class AuthController {
     @Body() dto: RequestPasswordResetDto,
     @Req() req: Request,
   ) {
-    return this.authService.requestPasswordReset(dto.email, {
-      ipAddress: req.ip,
-      userAgent: req.headers['user-agent'],
-    });
+    return this.authService.requestPasswordReset(
+      dto.identifiant ?? dto.email ?? '',
+      {
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+      },
+    );
   }
 
   @Public()
@@ -178,7 +181,10 @@ export class AuthController {
   @Post('2fa/setup')
   @SkipTwoFactorRequirement()
   async setupTwoFactor(@CurrentUser() user: AuthenticatedUser) {
-    return this.authService.setupTwoFactor(user.id, user.email);
+    return this.authService.setupTwoFactor(
+      user.id,
+      user.email ?? user.telephone ?? user.id,
+    );
   }
 
   @Authenticated()

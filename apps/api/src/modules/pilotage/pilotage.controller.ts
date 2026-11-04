@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -146,6 +147,11 @@ export class PilotageController {
   @HttpCode(200)
   @RequirePermissions('rapports:administrer')
   essaiEnvoi(@CurrentUser() user: AuthenticatedUser) {
+    if (!user.email) {
+      throw new BadRequestException(
+        'Votre compte n’a pas d’adresse e-mail pour recevoir l’exemplaire de test',
+      );
+    }
     return this.envoi.envoyerTest(user.email);
   }
 

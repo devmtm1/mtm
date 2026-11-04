@@ -149,9 +149,10 @@ export class LocataireDetail implements OnInit {
 
   protected openCreateClientAccount(): void {
     const current = this.locataire();
-    if (!current?.email || !this.canCreateClient) return;
+    if ((!current?.email && !current?.phone) || !this.canCreateClient) return;
     ClientAccountDialog.open(this.dialog, {
       email: current.email,
+      telephone: current.phone,
       name: `${current.firstName} ${current.lastName}`,
       scopeDescription: 'suivre son bail, ses échéances, ses quittances et ses paiements',
       create: (password) => this.api.createLocataireClientAccount(current.id, password),

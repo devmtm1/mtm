@@ -210,15 +210,16 @@ export class LocatairesService {
       select: {
         id: true,
         email: true,
+        phone: true,
         firstName: true,
         lastName: true,
         clientUser: { select: { id: true } },
       },
     });
     if (!locataire) throw new NotFoundException('Locataire introuvable');
-    if (!locataire.email) {
+    if (!locataire.email && !locataire.phone) {
       throw new BadRequestException(
-        'Le locataire doit avoir une adresse e-mail',
+        'Le locataire doit avoir une adresse e-mail ou un numéro de téléphone',
       );
     }
     if (locataire.clientUser) {
@@ -227,6 +228,7 @@ export class LocatairesService {
 
     return this.comptesClient.ouvrir({
       email: locataire.email,
+      telephone: locataire.phone,
       firstName: locataire.firstName,
       lastName: locataire.lastName,
       password,

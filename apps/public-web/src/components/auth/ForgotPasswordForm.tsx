@@ -16,7 +16,7 @@ export function ForgotPasswordForm({ onBackToLogin, initialToken }: ForgotPasswo
   const [step, setStep] = useState<'request' | 'sent' | 'confirm' | 'done'>(
     initialToken ? 'confirm' : 'request',
   );
-  const [email, setEmail] = useState('');
+  const [identifiant, setIdentifiant] = useState('');
   const [token, setToken] = useState(initialToken ?? '');
   const [newPassword, setNewPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -27,7 +27,7 @@ export function ForgotPasswordForm({ onBackToLogin, initialToken }: ForgotPasswo
     setError(null);
     setSubmitting(true);
     try {
-      const result = await requestPasswordReset(email.trim());
+      const result = await requestPasswordReset(identifiant.trim());
       // Hors production, l'API renvoie le jeton directement (pas encore de
       // fournisseur e-mail/SMS branché) — on préremplit pour fluidifier la recette.
       if (result.developmentToken) setToken(result.developmentToken);
@@ -72,8 +72,8 @@ export function ForgotPasswordForm({ onBackToLogin, initialToken }: ForgotPasswo
     return (
       <form className="flex flex-col gap-4" onSubmit={(event) => void handleConfirm(event)}>
         <p className="text-sm text-mtm-muted">
-          Si un compte existe pour cette adresse, un jeton de réinitialisation a été généré.
-          Collez-le ci-dessous avec votre nouveau mot de passe.
+          Si un compte existe pour cet identifiant, un lien de réinitialisation vous a été envoyé (par e-mail, WhatsApp ou SMS).
+          Ouvrez-le, ou collez ci-dessous le code reçu avec votre nouveau mot de passe.
         </p>
         <FormField label="Jeton reçu" htmlFor="reset-token" required>
           <input
@@ -121,17 +121,21 @@ export function ForgotPasswordForm({ onBackToLogin, initialToken }: ForgotPasswo
   return (
     <form className="flex flex-col gap-4" onSubmit={(event) => void handleRequest(event)}>
       <p className="text-sm text-mtm-muted">
-        Indiquez votre e-mail : nous générons un jeton de réinitialisation.
+        Indiquez votre e-mail ou votre numéro de téléphone : nous vous envoyons un lien pour choisir un nouveau mot de passe.
       </p>
-      <FormField label="E-mail" htmlFor="forgot-email" required>
+      <FormField label="E-mail ou numéro de téléphone" htmlFor="forgot-identifiant" required>
         <input
-          id="forgot-email"
-          type="email"
+          id="forgot-identifiant"
+          type="text"
           required
-          autoComplete="email"
+          autoComplete="username"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          placeholder="awa@exemple.sn ou 77 123 45 67"
           className={fieldInputClass}
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
+          value={identifiant}
+          onChange={(event) => setIdentifiant(event.target.value)}
         />
       </FormField>
 

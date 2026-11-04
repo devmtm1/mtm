@@ -5,12 +5,13 @@ import { ApiError } from '../../api/client';
 import { useAuth } from '../../contexts/auth-context-store';
 
 interface TwoFactorFormProps {
-  email: string;
+  /** L'identifiant saisi à la connexion (e-mail ou numéro de téléphone). */
+  identifiant: string;
   password: string;
   onCancel: () => void;
 }
 
-export function TwoFactorForm({ email, password, onCancel }: TwoFactorFormProps) {
+export function TwoFactorForm({ identifiant, password, onCancel }: TwoFactorFormProps) {
   const { login } = useAuth();
   const [code, setCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -21,7 +22,7 @@ export function TwoFactorForm({ email, password, onCancel }: TwoFactorFormProps)
     setError(null);
     setSubmitting(true);
     try {
-      await login(email, password, code.trim());
+      await login(identifiant, password, code.trim());
       // Succès : le contexte est mis à jour, la page parente redirige.
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : 'Code invalide.');

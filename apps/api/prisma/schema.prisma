@@ -20,8 +20,11 @@ datasource db {
 // ============================================================
 
 model User {
-  id       String @id @default(uuid())
-  email    String @unique
+  id       String  @id @default(uuid())
+  /// Facultatif : un espace client peut s'ouvrir avec un numéro de téléphone seul (au moins l'un des deux est requis).
+  email    String? @unique
+  /// Identifiant de connexion par téléphone, au format international (+221771234567), unique.
+  telephoneConnexion String? @unique
   password String // hash bcrypt, jamais en clair
 
   firstName String

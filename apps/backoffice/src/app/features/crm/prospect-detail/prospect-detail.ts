@@ -436,9 +436,13 @@ export class ProspectDetail implements OnInit {
           this.canCreateClient &&
             !p?.clientUser && {
               libelle: 'Ouvrir l’espace client',
-              aide: p?.email ? 'Invitation envoyée à ' + p.email : 'Nécessite une adresse e-mail',
+              aide: p?.email
+                ? 'Invitation envoyée à ' + p.email
+                : p?.telephone
+                  ? 'Invitation par WhatsApp ou SMS au ' + p.telephone
+                  : 'Nécessite un e-mail ou un numéro de téléphone',
               icone: LucideKeyRound,
-              desactivee: !p?.email,
+              desactivee: !p?.email && !p?.telephone,
               action: () => this.openCreateClientAccount(),
             },
           {
@@ -785,9 +789,10 @@ export class ProspectDetail implements OnInit {
 
   protected openCreateClientAccount(): void {
     const prospect = this.prospect();
-    if (!prospect?.email || !this.canCreateClient) return;
+    if ((!prospect?.email && !prospect?.telephone) || !this.canCreateClient) return;
     ClientAccountDialog.open(this.dialog, {
       email: prospect.email,
+      telephone: prospect.telephone,
       name: this.name(),
       scopeDescription: 'suivre ses dossiers, paiements et documents',
       create: (password) => this.ventesApi.createClientAccount(prospect.id, password),
@@ -797,7 +802,7 @@ export class ProspectDetail implements OnInit {
     });
   }
 
-  /** Sans e-mail, pas d'accès possible : on amène l'utilisateur droit au champ à compléter. */
+  /** Sans e-mail ni téléphone, pas d'accès possible : on amène l'utilisateur droit aux champs à compléter. */
   protected ajouterEmail(): void {
     this.edit();
   }

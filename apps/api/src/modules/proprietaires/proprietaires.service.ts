@@ -244,15 +244,16 @@ export class ProprietairesService {
       select: {
         id: true,
         email: true,
+        phone: true,
         firstName: true,
         lastName: true,
         clientUser: { select: { id: true } },
       },
     });
     if (!proprietaire) throw new NotFoundException('Propriétaire introuvable');
-    if (!proprietaire.email) {
+    if (!proprietaire.email && !proprietaire.phone) {
       throw new BadRequestException(
-        'Le propriétaire doit avoir une adresse e-mail',
+        'Le propriétaire doit avoir une adresse e-mail ou un numéro de téléphone',
       );
     }
     if (proprietaire.clientUser) {
@@ -261,6 +262,7 @@ export class ProprietairesService {
 
     return this.comptesClient.ouvrir({
       email: proprietaire.email,
+      telephone: proprietaire.phone,
       firstName: proprietaire.firstName,
       lastName: proprietaire.lastName,
       password,

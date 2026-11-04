@@ -19,7 +19,7 @@ export function LoginPage() {
   const [searchParams] = useSearchParams();
   const resetToken = searchParams.get('reset') ?? undefined;
   const [mode, setMode] = useState<ViewMode>(resetToken ? 'forgotPassword' : 'login');
-  const [pendingCredentials, setPendingCredentials] = useState<{ email: string; password: string } | null>(null);
+  const [pendingCredentials, setPendingCredentials] = useState<{ identifiant: string; password: string } | null>(null);
 
   if (bootstrapping) return null;
 
@@ -41,7 +41,7 @@ export function LoginPage() {
             <ChangePasswordForm />
           ) : mode === 'twoFactor' && pendingCredentials ? (
             <TwoFactorForm
-              email={pendingCredentials.email}
+              identifiant={pendingCredentials.identifiant}
               password={pendingCredentials.password}
               onCancel={() => setMode('login')}
             />
@@ -49,8 +49,8 @@ export function LoginPage() {
             <ForgotPasswordForm onBackToLogin={() => setMode('login')} initialToken={resetToken} />
           ) : (
             <LoginForm
-              onRequiresTwoFactor={(email, password) => {
-                setPendingCredentials({ email, password });
+              onRequiresTwoFactor={(identifiant, password) => {
+                setPendingCredentials({ identifiant, password });
                 setMode('twoFactor');
               }}
               onForgotPassword={() => setMode('forgotPassword')}

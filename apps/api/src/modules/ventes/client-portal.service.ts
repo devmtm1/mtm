@@ -5,12 +5,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { randomBytes, createHash } from 'node:crypto';
-import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../database/prisma.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
-import { MailService } from '../../common/mail/mail.service';
+import { ClientAccountsService } from '../client-accounts/client-accounts.service';
 import { ContactService } from '../contact/contact.service';
 import { CreateClientAccountDto } from './dto/create-client-account.dto';
 import { CreateClientDemandeDto } from './dto/create-client-demande.dto';
@@ -26,10 +23,9 @@ export class ClientPortalService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly cloudinary: CloudinaryService,
-    private readonly config: ConfigService,
-    private readonly mail: MailService,
     private readonly contacts: ContactService,
     private readonly ventes: VentesService,
+    private readonly comptesClient: ClientAccountsService,
   ) {}
 
   /**
@@ -47,8 +43,15 @@ export class ClientPortalService {
       },
     });
     const prospect = user?.clientProspect;
-    if (!prospect?.email) {
+    if (!prospect) {
       throw new ForbiddenException('Ce compte n’est pas rattaché à un client');
+    }
+    // Une demande part toujours avec une adresse e-mail (la réponse de l'équipe y est envoyée) : un client qui
+    // s'est ouvert un espace avec son seul numéro la demande à son conseiller, qui l'ajoute à sa fiche.
+    if (!prospect.email) {
+      throw new BadRequestException(
+        'Pour envoyer une demande depuis votre espace, il faut une adresse e-mail sur votre fiche : demandez à votre conseiller MTM de l’ajouter, ou appelez-nous.',
+      );
     }
     const identity = {
       nom: [prospect.prenom, prospect.nom].filter(Boolean).join(' '),
@@ -83,81 +86,40 @@ export class ClientPortalService {
     return { kind: 'message' as const, id: contact.id };
   }
 
+  /**
+   * Ouvre l'espace d'un client avec son adresse e-mail OU son numéro de téléphone (beaucoup de clients n'ont pas
+   * d'e-mail). La procédure est commune à tous les espaces : voir ClientAccountsService.
+   */
   async createClientAccount(dto: CreateClientAccountDto) {
     const prospect = await this.prisma.prospect.findUnique({
       where: { id: dto.prospectId },
       select: {
         id: true,
         email: true,
+        telephone: true,
         nom: true,
         prenom: true,
         clientUser: { select: { id: true } },
       },
     });
     if (!prospect) throw new NotFoundException('Client introuvable');
-    if (!prospect.email)
-      throw new BadRequestException('Le client doit avoir une adresse e-mail');
+    if (!prospect.email && !prospect.telephone) {
+      throw new BadRequestException(
+        'Le client doit avoir une adresse e-mail ou un numéro de téléphone',
+      );
+    }
     if (prospect.clientUser)
       throw new ConflictException('Un compte client existe déjà');
-    const role = await this.prisma.role.findUnique({
-      where: { name: 'client' },
-      select: { id: true },
-    });
-    if (!role)
-      throw new BadRequestException('Le rôle client n’est pas configuré');
-    const existing = await this.prisma.user.findUnique({
-      where: { email: prospect.email },
-      select: { id: true },
-    });
-    if (existing)
-      throw new ConflictException('Cette adresse e-mail est déjà utilisée');
-    const password = await bcrypt.hash(dto.password, 12);
-    const rawToken = randomBytes(32).toString('hex');
-    const tokenHash = createHash('sha256').update(rawToken).digest('hex');
-    const user = await this.prisma.user.create({
-      data: {
-        email: prospect.email,
-        password,
-        firstName: prospect.prenom ?? prospect.nom,
-        lastName: prospect.prenom ? prospect.nom : 'Client',
-        mustChangePassword: true,
-        clientProspectId: prospect.id,
-        roles: { create: { roleId: role.id } },
-        passwordResetTokens: {
-          create: {
-            tokenHash,
-            expiresAt: new Date(Date.now() + 7 * 24 * 3600 * 1000),
-          },
-        },
-      },
-      select: { id: true, email: true, firstName: true, lastName: true },
-    });
-
-    // Invitation : le client choisit lui-même son mot de passe via le jeton
-    // (valable 7 jours). Le mot de passe initial saisi par le commercial reste
-    // une solution de repli si l'e-mail n'arrive pas.
-    const baseUrl = this.config.get<string>('PUBLIC_WEB_URL');
-    const link = `${baseUrl}/espace-client/connexion?reset=${rawToken}`;
-    const sent = await this.mail.send({
-      to: user.email,
-      subject: 'Votre espace client MTM Immobilier',
-      text: [
-        `Bonjour ${user.firstName},`,
+    return this.comptesClient.ouvrir({
+      email: prospect.email,
+      telephone: prospect.telephone,
+      firstName: prospect.prenom ?? prospect.nom,
+      lastName: prospect.prenom ? prospect.nom : 'Client',
+      password: dto.password,
+      rattachement: { clientProspectId: prospect.id },
+      introduction:
         'Votre espace client est ouvert. Vous y retrouverez vos dossiers, vos paiements et vos documents.',
-        'Pour choisir votre mot de passe et vous connecter, ouvrez ce lien (valable 7 jours) :',
-        link,
-        `Identifiant : ${user.email}`,
-        'En cas de difficulté, répondez à ce message ou contactez votre conseiller MTM.',
-      ].join('\n\n'),
     });
-
-    // Le jeton n'est renvoyé au commercial que si l'e-mail n'est pas parti :
-    // il peut alors le transmettre par un autre canal.
-    return {
-      ...user,
-      invitationSent: sent,
-      resetToken: sent ? undefined : rawToken,
-    };
   }
 
   /**
@@ -168,15 +130,23 @@ export class ClientPortalService {
   async getClientDemandes(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { clientProspect: { select: { email: true } } },
+      select: {
+        clientProspect: { select: { email: true, telephone: true } },
+      },
     });
-    const email = user?.clientProspect?.email;
-    if (!email)
+    const { email, telephone } = user?.clientProspect ?? {};
+    if (!user?.clientProspect)
       throw new ForbiddenException('Ce compte n’est pas rattaché à un client');
+    // Les demandes se retrouvent par l'e-mail ou, à défaut, par le numéro de téléphone de la fiche.
+    const parContact = [
+      ...(email ? [{ email }] : []),
+      ...(telephone ? [{ telephone }] : []),
+    ];
+    if (parContact.length === 0) return { messages: [], reservations: [] };
 
     const [contacts, reservationRequests] = await Promise.all([
       this.prisma.contact.findMany({
-        where: { email },
+        where: { OR: parContact },
         orderBy: { createdAt: 'desc' },
         select: {
           id: true,
@@ -190,7 +160,7 @@ export class ClientPortalService {
         },
       }),
       this.prisma.reservationRequest.findMany({
-        where: { email },
+        where: { OR: parContact },
         orderBy: { createdAt: 'desc' },
         select: {
           id: true,

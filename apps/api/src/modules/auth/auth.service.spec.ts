@@ -12,10 +12,11 @@ import { PrismaService } from '../../database/prisma.service';
 
 describe('AuthService', () => {
   let service: AuthService;
+  let canaux: { estConfigure: jest.Mock; envoyer: jest.Mock };
   let usersService: jest.Mocked<
     Pick<
       UsersService,
-      | 'findByEmail'
+      | 'findByIdentifiant'
       | 'findById'
       | 'incrementFailedAttempts'
       | 'resetFailedAttempts'
@@ -48,6 +49,7 @@ describe('AuthService', () => {
   const baseUser = {
     id: 'user-1',
     email: 'admin@mtm-immobilier.sn',
+    telephoneConnexion: null,
     password: 'hashed-password',
     firstName: 'Admin',
     lastName: 'MTM',
@@ -73,7 +75,7 @@ describe('AuthService', () => {
 
   beforeEach(() => {
     usersService = {
-      findByEmail: jest.fn(),
+      findByIdentifiant: jest.fn(),
       findById: jest.fn(),
       incrementFailedAttempts: jest.fn(),
       resetFailedAttempts: jest.fn(),
@@ -149,6 +151,10 @@ describe('AuthService', () => {
       isConfigured: jest.fn().mockReturnValue(false),
     } as unknown as MailService;
 
+    canaux = {
+      estConfigure: jest.fn().mockReturnValue(false),
+      envoyer: jest.fn().mockResolvedValue(true),
+    };
     service = new AuthService(
       usersService as unknown as UsersService,
       prismaMock as unknown as PrismaService,
@@ -157,12 +163,13 @@ describe('AuthService', () => {
       twoFactorService,
       auditService,
       mailService,
+      canaux as never,
     );
   });
 
   describe('login', () => {
     it("rejette avec un message générique si l'utilisateur n'existe pas", async () => {
-      usersService.findByEmail.mockResolvedValue(null);
+      usersService.findByIdentifiant.mockResolvedValue(null);
 
       await expect(
         service.login('inconnu@mtm.sn', 'password', undefined, {}),
@@ -170,7 +177,7 @@ describe('AuthService', () => {
     });
 
     it('rejette si le compte est inactif', async () => {
-      usersService.findByEmail.mockResolvedValue({
+      usersService.findByIdentifiant.mockResolvedValue({
         ...baseUser,
         isActive: false,
       });
@@ -182,7 +189,7 @@ describe('AuthService', () => {
 
     it('rejette si le compte est verrouillé', async () => {
       const future = new Date(Date.now() + 60_000);
-      usersService.findByEmail.mockResolvedValue({
+      usersService.findByIdentifiant.mockResolvedValue({
         ...baseUser,
         lockedUntil: future,
       });
@@ -194,7 +201,7 @@ describe('AuthService', () => {
 
     it('incrémente les échecs et verrouille après le seuil configuré', async () => {
       const hashedPassword = await bcrypt.hash('correct-password', 4);
-      usersService.findByEmail.mockResolvedValue({
+      usersService.findByIdentifiant.mockResolvedValue({
         ...baseUser,
         password: hashedPassword,
       });
@@ -218,7 +225,7 @@ describe('AuthService', () => {
 
     it('retourne requiresTwoFactor=true si le 2FA est activé sans code fourni', async () => {
       const hashedPassword = await bcrypt.hash('correct-password', 4);
-      usersService.findByEmail.mockResolvedValue({
+      usersService.findByIdentifiant.mockResolvedValue({
         ...baseUser,
         password: hashedPassword,
         twoFactorEnabled: true,
@@ -237,7 +244,7 @@ describe('AuthService', () => {
 
     it('réussit et retourne un accessToken + refreshToken avec mot de passe correct', async () => {
       const hashedPassword = await bcrypt.hash('correct-password', 4);
-      usersService.findByEmail.mockResolvedValue({
+      usersService.findByIdentifiant.mockResolvedValue({
         ...baseUser,
         password: hashedPassword,
       });
@@ -440,9 +447,79 @@ describe('AuthService', () => {
     });
   });
 
+  describe('compte client sans e-mail (numéro de téléphone)', () => {
+    const client = {
+      ...baseUser,
+      email: null,
+      telephoneConnexion: '+221771234567',
+      clientProspectId: 'prospect-1',
+    };
+
+    it('se connecte avec son numéro, quelle que soit la façon de l’écrire', async () => {
+      usersService.findByIdentifiant.mockResolvedValue({
+        ...client,
+        password: await bcrypt.hash('Motdepasse1!', 4),
+      });
+
+      const result = await service.login(
+        '77 123 45 67',
+        'Motdepasse1!',
+        undefined,
+        {},
+      );
+
+      expect(usersService.findByIdentifiant).toHaveBeenCalledWith(
+        '77 123 45 67',
+      );
+      expect(result.requiresTwoFactor).toBe(false);
+    });
+
+    it('envoie le lien de réinitialisation sur WhatsApp, sans passer par l’e-mail', async () => {
+      usersService.findByIdentifiant.mockResolvedValue(client);
+      canaux.estConfigure.mockImplementation(
+        (canal: string) => canal === 'whatsapp',
+      );
+
+      const result = await service.requestPasswordReset('+221771234567', {});
+
+      expect(canaux.envoyer).toHaveBeenCalledWith(
+        expect.objectContaining({
+          canal: 'whatsapp',
+          destinataire: '+221771234567',
+        }),
+      );
+      expect(canaux.envoyer.mock.calls[0][0].texte).toContain(
+        '/espace-client/connexion?reset=',
+      );
+      expect(result.developmentToken).toBeUndefined();
+    });
+
+    it('bascule sur le SMS quand WhatsApp refuse le message', async () => {
+      usersService.findByIdentifiant.mockResolvedValue(client);
+      canaux.estConfigure.mockReturnValue(true);
+      canaux.envoyer.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+
+      await service.requestPasswordReset('+221771234567', {});
+
+      expect(canaux.envoyer.mock.calls.map((appel) => appel[0].canal)).toEqual([
+        'whatsapp',
+        'sms',
+      ]);
+    });
+
+    it('renvoie le jeton de test, hors production, quand aucun canal n’est configuré', async () => {
+      usersService.findByIdentifiant.mockResolvedValue(client);
+
+      const result = await service.requestPasswordReset('+221771234567', {});
+
+      expect(canaux.envoyer).not.toHaveBeenCalled();
+      expect(result.developmentToken).toHaveLength(64);
+    });
+  });
+
   describe('récupération de compte', () => {
     it('répond de façon générique pour un email inconnu', async () => {
-      usersService.findByEmail.mockResolvedValue(null);
+      usersService.findByIdentifiant.mockResolvedValue(null);
 
       await expect(
         service.requestPasswordReset('inconnu@mtm.sn', {}),
@@ -451,7 +528,7 @@ describe('AuthService', () => {
     });
 
     it('crée un token temporaire pour un compte actif hors production', async () => {
-      usersService.findByEmail.mockResolvedValue(baseUser);
+      usersService.findByIdentifiant.mockResolvedValue(baseUser);
 
       const result = await service.requestPasswordReset(baseUser.email, {});
 

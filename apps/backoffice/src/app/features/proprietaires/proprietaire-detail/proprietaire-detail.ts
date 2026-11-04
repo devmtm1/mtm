@@ -347,9 +347,10 @@ export class ProprietaireDetail implements OnInit {
 
   protected openCreateClientAccount(): void {
     const current = this.proprietaire();
-    if (!current?.email || !this.canCreateClient) return;
+    if ((!current?.email && !current?.phone) || !this.canCreateClient) return;
     ClientAccountDialog.open(this.dialog, {
       email: current.email,
+      telephone: current.phone,
       name: `${current.firstName} ${current.lastName}`,
       scopeDescription: 'suivre son bien, le locataire en place et les loyers encaissés',
       create: (password) => this.api.createClientAccount(current.id, password),

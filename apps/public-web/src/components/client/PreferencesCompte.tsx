@@ -121,7 +121,8 @@ export function PreferencesCompte() {
             />
           </FormField>
           <p className="-mt-2 text-xs text-mtm-muted">
-            Adresse e-mail de connexion : <span className="font-semibold text-mtm-text">{user?.email}</span>. Pour la changer, demandez à votre
+            {user?.email ? 'Adresse e-mail de connexion' : 'Numéro de connexion'} :{' '}
+            <span className="font-semibold text-mtm-text">{user?.email ?? user?.telephone}</span>. Pour le changer, demandez à votre
             conseiller.
           </p>
 
