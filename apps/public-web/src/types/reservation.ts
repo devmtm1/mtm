@@ -1,7 +1,7 @@
 export interface ReservationRequestPayload {
   terrainId: string;
   nom: string;
-  email: string;
+  email?: string;
   telephone?: string;
   message?: string;
 }

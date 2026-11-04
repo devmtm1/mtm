@@ -1,3 +1,4 @@
+import { EstTelephone } from '../../../common/validators/est-telephone';
 import { Type } from 'class-transformer';
 import {
   IsDateString,
@@ -115,7 +116,7 @@ export class RestituerCautionSejourDto {
 export class DemandeSejourPublicDto {
   @IsString() @Length(1, 120) prenom!: string;
   @IsString() @Length(1, 120) nom!: string;
-  @IsString() @Length(6, 40) telephone!: string;
+  @IsString() @Length(6, 40) @EstTelephone() telephone!: string;
   @IsOptional() @IsEmail() @MaxLength(200) email?: string;
   @IsDateString() dateArrivee!: string;
   @IsDateString() dateDepart!: string;

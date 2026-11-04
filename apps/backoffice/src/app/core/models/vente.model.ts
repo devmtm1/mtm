@@ -48,7 +48,7 @@ export interface DossierVenteListItem {
 export interface ReservationRequestItem {
   id: string;
   nom: string;
-  email: string;
+  email: string | null;
   telephone: string | null;
   message: string | null;
   statut: string;

@@ -5,10 +5,12 @@ interface FormFieldProps {
   htmlFor: string;
   error?: string;
   required?: boolean;
+  /** Une précision sous le champ, tant qu'il n'a pas d'erreur. */
+  hint?: string;
   children: ReactNode;
 }
 
-export function FormField({ label, htmlFor, error, required, children }: FormFieldProps) {
+export function FormField({ label, htmlFor, error, required, hint, children }: FormFieldProps) {
   return (
     <div className="flex flex-col gap-1">
       <label htmlFor={htmlFor} className="text-sm font-semibold text-mtm-text">
@@ -16,6 +18,7 @@ export function FormField({ label, htmlFor, error, required, children }: FormFie
         {required && <span className="text-mtm-error"> *</span>}
       </label>
       {children}
+      {hint && !error && <p className="text-xs text-mtm-muted">{hint}</p>}
       {error && (
         <p className="text-xs font-medium text-mtm-error" role="alert">
           {error}

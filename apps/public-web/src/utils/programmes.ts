@@ -1,4 +1,4 @@
-import type { ConditionsPubliques, LotPublic, ProgrammePublic, StatutLotPublic } from '../api/programmes';
+import type { ConditionsPubliques, LotPublic, ProgrammePublic, ProgrammePublicDetail, StatutLotPublic } from '../api/programmes';
 import { formatMoney, groupDigits } from './format';
 
 /** Fourchette de prix d'un programme : « 12 000 000 FCFA » ou « de 12 000 000 à 18 000 000 FCFA ». */
@@ -122,3 +122,11 @@ export const SEUIL_SECTION_PROGRAMMES = 3;
 
 /** Valeur du filtre « Type de bien » du catalogue qui ne garde que les lotissements. */
 export const TYPE_LOTISSEMENT = 'lotissement';
+
+/** L'image qu'une tuile de lot sans photo emprunte à son lotissement : le plan de masse, à défaut une photo, à défaut la couverture. */
+export function visuelDesLotsDe(programme: Pick<ProgrammePublicDetail, 'medias' | 'couverture'>): { src: string; legende: string } | null {
+  const plan = programme.medias.find((m) => m.type === 'plan');
+  if (plan) return { src: plan.secureUrl, legende: 'Plan de masse' };
+  const src = programme.medias.find((m) => m.type === 'photo')?.secureUrl ?? programme.couverture;
+  return src ? { src, legende: 'Le lotissement' } : null;
+}

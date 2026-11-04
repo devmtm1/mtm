@@ -1,3 +1,4 @@
+import { ChampTelephone } from '../ui/ChampTelephone';
 import { useState } from 'react';
 import { CheckCircle2, ChevronDown, Send } from 'lucide-react';
 import { sendConfierBien } from '../../api/contact';
@@ -56,7 +57,7 @@ export function FormulaireConfierBien() {
     try {
       await sendConfierBien({
         nom: values.nom.trim(),
-        email: values.email.trim(),
+        email: values.email.trim() || undefined,
         telephone: values.telephone.trim(),
         pays: values.pays.trim() || undefined,
         typeBien: values.typeBien,
@@ -104,10 +105,8 @@ export function FormulaireConfierBien() {
         <FormField label="Nom complet" htmlFor="confier-nom" error={errors.nom} required>
           <input id="confier-nom" type="text" autoComplete="name" className={fieldInputClass} value={values.nom} onChange={(e) => set('nom', e.target.value)} />
         </FormField>
-        <FormField label="Téléphone ou WhatsApp" htmlFor="confier-telephone" error={errors.telephone} required>
-          <input id="confier-telephone" type="tel" autoComplete="tel" className={fieldInputClass} value={values.telephone} onChange={(e) => set('telephone', e.target.value)} />
-        </FormField>
-        <FormField label="E-mail" htmlFor="confier-email" error={errors.email} required>
+        <ChampTelephone label="Téléphone ou WhatsApp" id="confier-telephone" value={values.telephone} onChange={(valeur) => set('telephone', valeur)} error={errors.telephone} required />
+        <FormField label="E-mail (facultatif)" htmlFor="confier-email" error={errors.email}>
           <input id="confier-email" type="email" autoComplete="email" className={fieldInputClass} value={values.email} onChange={(e) => set('email', e.target.value)} />
         </FormField>
       </fieldset>

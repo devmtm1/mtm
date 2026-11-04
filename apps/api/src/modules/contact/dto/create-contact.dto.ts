@@ -1,5 +1,13 @@
+import { EstTelephone } from '../../../common/validators/est-telephone';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsOptional, IsString, IsUUID, Length } from 'class-validator';
+import {
+  IsEmail,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Length,
+  ValidateIf,
+} from 'class-validator';
 
 export class CreateContactDto {
   @ApiProperty({ example: 'Fatou Diop' })
@@ -7,14 +15,23 @@ export class CreateContactDto {
   @Length(2, 200)
   nom!: string;
 
-  @ApiProperty({ example: 'fatou@example.com' })
-  @IsEmail()
-  email!: string;
+  @ApiProperty({ example: 'fatou@example.com', required: false })
+  /** Une adresse e-mail ou un numéro de téléphone : au moins l'un des deux. */
+  @ValidateIf(
+    (o: { email?: string; telephone?: string }) =>
+      o.email !== undefined || !o.telephone,
+  )
+  @IsEmail(
+    {},
+    { message: 'Indiquez une adresse e-mail ou un numéro de téléphone' },
+  )
+  email?: string;
 
   @ApiProperty({ example: '+221 77 000 00 00', required: false })
   @IsOptional()
   @IsString()
   @Length(4, 30)
+  @EstTelephone()
   telephone?: string;
 
   @ApiProperty({

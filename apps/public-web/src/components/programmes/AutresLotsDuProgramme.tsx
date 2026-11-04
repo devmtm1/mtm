@@ -3,7 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import { fetchProgramme } from '../../api/programmes';
 import { useAsyncData } from '../../hooks/useAsyncData';
 import { ROUTES } from '../../routes';
-import { disponibilites } from '../../utils/programmes';
+import { disponibilites, visuelDesLotsDe } from '../../utils/programmes';
 import { LotTile } from './LotTile';
 
 interface AutresLotsDuProgrammeProps {
@@ -21,6 +21,8 @@ export function AutresLotsDuProgramme({ programmeId, lotId }: AutresLotsDuProgra
 
   const autres = (programme?.lots ?? []).filter((l) => l.statut === 'Disponible' && l.id !== lotId).slice(0, 8);
   if (!programme || autres.length === 0) return null;
+
+  const visuel = visuelDesLotsDe(programme);
 
   return (
     <section aria-labelledby="autres-lots-titre" className="mt-10">
@@ -41,7 +43,7 @@ export function AutresLotsDuProgramme({ programmeId, lotId }: AutresLotsDuProgra
       </div>
       <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {autres.map((lot) => (
-          <LotTile key={lot.id} lot={lot} />
+          <LotTile key={lot.id} lot={lot} visuel={visuel} avecPhoto={visuel !== null || autres.some((l) => l.photo)} />
         ))}
       </ul>
     </section>

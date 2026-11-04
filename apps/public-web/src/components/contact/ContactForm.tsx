@@ -1,3 +1,4 @@
+import { ChampTelephone } from '../ui/ChampTelephone';
 import { CheckCircle2 } from 'lucide-react';
 import { useContactForm } from '../../hooks/useContactForm';
 import { ClientIdentityNotice } from './ClientIdentityNotice';
@@ -75,7 +76,7 @@ export function ContactForm({
           />
         </FormField>
 
-        <FormField label="E-mail" htmlFor="contact-email" error={errors.email} required>
+        <FormField label="E-mail" htmlFor="contact-email" error={errors.email} hint="Un e-mail ou un téléphone : l’un des deux suffit.">
           <input
             id="contact-email"
             type="email"
@@ -90,16 +91,7 @@ export function ContactForm({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {!client && (
-        <FormField label="Téléphone" htmlFor="contact-telephone" error={errors.telephone}>
-          <input
-            id="contact-telephone"
-            type="tel"
-            className={fieldInputClass}
-            value={values.telephone}
-            onChange={(event) => setValue('telephone', event.target.value)}
-            autoComplete="tel"
-          />
-        </FormField>
+        <ChampTelephone label="Téléphone" id="contact-telephone" value={values.telephone} onChange={(valeur) => setValue('telephone', valeur)} error={errors.telephone} />
         )}
 
         <FormField label="Sujet" htmlFor="contact-sujet">

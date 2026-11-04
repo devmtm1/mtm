@@ -19,10 +19,10 @@ export const AuthContext = createContext<AuthContextValue | null>(null);
  * Session d'un client de l'espace client (rôle « client »), ou null. Sert aux
  * formulaires publics : un client connecté n'a pas à ressaisir son identité.
  */
-export function useClientSession(): { token: string; firstName: string; lastName: string; email: string } | null {
+export function useClientSession(): { token: string; firstName: string; lastName: string; email: string | null; telephone: string | null } | null {
   const { user, accessToken } = useAuth();
   if (!user || !accessToken || !user.roles.includes('client')) return null;
-  return { token: accessToken, firstName: user.firstName, lastName: user.lastName, email: user.email ?? '' };
+  return { token: accessToken, firstName: user.firstName, lastName: user.lastName, email: user.email ?? null, telephone: user.telephone ?? null };
 }
 
 export function useAuth(): AuthContextValue {

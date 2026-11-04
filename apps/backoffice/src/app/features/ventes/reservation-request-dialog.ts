@@ -35,7 +35,7 @@ export interface ReservationRequestDialogResult {
       </p>
       <dl class="request-dialog__facts">
         <div><dt>Client</dt><dd>{{ data.request.nom }}</dd></div>
-        <div><dt>Contact</dt><dd>{{ data.request.telephone || '—' }} · {{ data.request.email }}</dd></div>
+        <div><dt>Contact</dt><dd>{{ [data.request.telephone, data.request.email].filter(Boolean).join(' · ') || '—' }}</dd></div>
         <div><dt>Terrain</dt><dd>{{ data.request.terrain.referenceInterne }} — {{ data.request.terrain.nom }}</dd></div>
         <div><dt>Reçue le</dt><dd>{{ data.request.createdAt | date: 'dd/MM/yyyy à HH:mm' }}</dd></div>
         @if (data.request.message) {

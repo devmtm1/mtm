@@ -46,16 +46,15 @@ export class ClientPortalService {
     if (!prospect) {
       throw new ForbiddenException('Ce compte n’est pas rattaché à un client');
     }
-    // Une demande part toujours avec une adresse e-mail (la réponse de l'équipe y est envoyée) : un client qui
-    // s'est ouvert un espace avec son seul numéro la demande à son conseiller, qui l'ajoute à sa fiche.
-    if (!prospect.email) {
+    // Une demande part avec l'e-mail ou le téléphone de la fiche : l'un des deux suffit pour rappeler le client.
+    if (!prospect.email && !prospect.telephone) {
       throw new BadRequestException(
-        'Pour envoyer une demande depuis votre espace, il faut une adresse e-mail sur votre fiche : demandez à votre conseiller MTM de l’ajouter, ou appelez-nous.',
+        'Pour envoyer une demande depuis votre espace, il faut une adresse e-mail ou un numéro de téléphone sur votre fiche : demandez à votre conseiller MTM de l’ajouter, ou appelez-nous.',
       );
     }
     const identity = {
       nom: [prospect.prenom, prospect.nom].filter(Boolean).join(' '),
-      email: prospect.email,
+      email: prospect.email ?? undefined,
       telephone: prospect.telephone ?? undefined,
     };
 

@@ -663,7 +663,8 @@ model Contact {
   bienLocatifId String? // bien en location de référence si la demande vient d'une annonce
   bienLocatif   BienLocatif? @relation("BienLocatifContacts", fields: [bienLocatifId], references: [id], onDelete: SetNull)
   nom           String
-  email         String
+  /** Au moins un des deux : l'e-mail ou le téléphone (beaucoup de clients n'ont pas d'e-mail). */
+  email         String?
   telephone     String?
   sujet         String? // "Acquérir un terrain" / "Vérification foncière" / "Gestion locative" / ...
   message       String
@@ -697,7 +698,8 @@ model ReservationRequest {
   terrainId    String
   terrain      Terrain       @relation(fields: [terrainId], references: [id], onDelete: Restrict)
   nom          String
-  email        String
+  /** Au moins un des deux : l'e-mail ou le téléphone. */
+  email        String?
   telephone    String?
   message      String?
   statut       String        @default("nouvelle")

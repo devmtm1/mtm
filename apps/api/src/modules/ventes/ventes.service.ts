@@ -180,7 +180,12 @@ export class VentesService {
 
     const dossier = await this.prisma.$transaction(async (transaction) => {
       let prospect = await transaction.prospect.findFirst({
-        where: { email: request.email },
+        where: {
+          OR: [
+            ...(request.email ? [{ email: request.email }] : []),
+            ...(request.telephone ? [{ telephone: request.telephone }] : []),
+          ],
+        },
         select: { id: true },
       });
       if (!prospect) {
@@ -261,7 +266,7 @@ export class VentesService {
     void this.notifications.notify(
       `Demande de réservation : ${terrain.referenceInterne} — ${terrain.nom}`,
       [
-        `De : ${dto.nom} <${dto.email}>`,
+        `De : ${dto.nom}${dto.email ? ` <${dto.email}>` : ''}`,
         dto.telephone ? `Téléphone : ${dto.telephone}` : '',
         dto.message ? `\n${dto.message}\n` : '',
         'À convertir en dossier de vente depuis le back-office (Ventes / Demandes de réservation).',

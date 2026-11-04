@@ -10,7 +10,7 @@ export function ClientIdentityNotice({
   client,
   dansEspaceClient = true,
 }: {
-  client: { firstName: string; lastName: string; email: string };
+  client: { firstName: string; lastName: string; email: string | null; telephone?: string | null };
   /** Faux pour une demande de location : elle part aux gestionnaires locatifs, hors de l'espace client. */
   dansEspaceClient?: boolean;
 }) {
@@ -22,7 +22,7 @@ export function ClientIdentityNotice({
         <strong>
           {client.firstName} {client.lastName}
         </strong>{' '}
-        ({client.email}).{' '}
+        ({client.email ?? client.telephone}).{' '}
         {dansEspaceClient ? (
           <>
             Vous retrouverez cette demande et sa prise en charge dans{' '}
@@ -32,7 +32,7 @@ export function ClientIdentityNotice({
             .
           </>
         ) : (
-          'Notre équipe vous recontactera à cette adresse.'
+          'Notre équipe vous recontactera avec ces coordonnées.'
         )}
       </p>
     </div>

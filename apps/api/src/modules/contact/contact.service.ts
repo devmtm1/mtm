@@ -221,7 +221,7 @@ export class ContactService {
     void this.notifications.notify(
       `Nouveau message : ${sujet || 'sans sujet'}`,
       [
-        `De : ${dto.nom} <${dto.email}>`,
+        `De : ${dto.nom}${dto.email ? ` <${dto.email}>` : ''}`,
         dto.telephone ? `Téléphone : ${dto.telephone}` : '',
         terrainLabel ? `Terrain : ${terrainLabel}` : '',
         bienLabel ? `Bien en location : ${bienLabel}` : '',
@@ -349,22 +349,25 @@ export class ContactService {
       },
     });
 
+    // Un message déposé avec le seul numéro n'a pas d'adresse où répondre : la réponse reste dans l'espace du
+    // client, et l'équipe le rappelle (le numéro est affiché dans le back-office).
     let emailEnvoye = false;
     try {
-      emailEnvoye = await this.mail.send({
-        to: contact.email,
-        subject: `Réponse de MTM Immobilier${contact.sujet ? ` — ${contact.sujet}` : ''}`,
-        text: [
-          `Bonjour ${contact.nom},`,
-          '',
-          texte,
-          '',
-          '— L’équipe MTM Immobilier',
-          '',
-          'Votre message :',
-          contact.message,
-        ].join('\n'),
-      });
+      if (contact.email)
+        emailEnvoye = await this.mail.send({
+          to: contact.email,
+          subject: `Réponse de MTM Immobilier${contact.sujet ? ` — ${contact.sujet}` : ''}`,
+          text: [
+            `Bonjour ${contact.nom},`,
+            '',
+            texte,
+            '',
+            '— L’équipe MTM Immobilier',
+            '',
+            'Votre message :',
+            contact.message,
+          ].join('\n'),
+        });
     } catch (error) {
       this.logger.warn(
         `Réponse au contact ${id} enregistrée mais e-mail non envoyé : ${
@@ -374,7 +377,7 @@ export class ContactService {
     }
 
     void this.notificationsInternes.notifierClient(
-      { email: contact.email },
+      { email: contact.email, telephone: contact.telephone },
       {
         type: 'reponse_demande',
         titre: 'MTM a répondu à votre message',

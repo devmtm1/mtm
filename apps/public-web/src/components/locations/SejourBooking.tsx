@@ -1,3 +1,5 @@
+import { isValidTelephone, MESSAGE_TELEPHONE_INVALIDE } from '../../utils/telephone';
+import { ChampTelephone } from '../ui/ChampTelephone';
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { CalendarDays, CheckCircle2, Clock, Moon, ShieldCheck, Users } from 'lucide-react';
@@ -66,8 +68,8 @@ export function SejourBooking({ location }: { location: Location }) {
       setErreur('Indiquez votre prénom et votre nom.');
       return;
     }
-    if (telephone.replace(/\s+/g, '').length < 6) {
-      setErreur('Indiquez un numéro de téléphone (avec l’indicatif pays) pour que nous puissions vous répondre.');
+    if (!isValidTelephone(telephone)) {
+      setErreur(telephone.trim() ? MESSAGE_TELEPHONE_INVALIDE : 'Indiquez un numéro de téléphone pour que nous puissions vous répondre.');
       return;
     }
     setErreur(null);
@@ -217,17 +219,7 @@ export function SejourBooking({ location }: { location: Location }) {
               <input id="sejour-nom" className={fieldInputClass} value={nom} onChange={(event) => setNom(event.target.value)} autoComplete="family-name" />
             </FormField>
           </div>
-          <FormField label="Téléphone / WhatsApp" htmlFor="sejour-telephone" required>
-            <input
-              id="sejour-telephone"
-              type="tel"
-              className={fieldInputClass}
-              placeholder="+221 77 000 00 00"
-              value={telephone}
-              onChange={(event) => setTelephone(event.target.value)}
-              autoComplete="tel"
-            />
-          </FormField>
+          <ChampTelephone label="Téléphone / WhatsApp" id="sejour-telephone" value={telephone} onChange={setTelephone} required />
           <FormField label="E-mail (facultatif)" htmlFor="sejour-email">
             <input id="sejour-email" type="email" className={fieldInputClass} value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" />
           </FormField>

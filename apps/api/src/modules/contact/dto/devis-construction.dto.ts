@@ -1,3 +1,4 @@
+import { EstTelephone } from '../../../common/validators/est-telephone';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Equals,
@@ -34,13 +35,16 @@ export class DevisConstructionDto {
   @Length(2, 200)
   nom!: string;
 
-  @ApiProperty({ example: 'fatou@example.com' })
+  @ApiProperty({ example: 'fatou@example.com', required: false })
+  /** Facultatif : le téléphone, obligatoire ici, est le canal du rappel. */
+  @IsOptional()
   @IsEmail()
-  email!: string;
+  email?: string;
 
   @ApiProperty({ example: '+221 77 000 00 00' })
   @IsString()
   @Length(4, 30)
+  @EstTelephone()
   telephone!: string;
 
   @ApiProperty({ example: 'France', required: false })
