@@ -16,6 +16,9 @@ import { ROUTES } from '../../routes';
 import { CATEGORIES_CATALOGUE, adresseCategorie } from '../../utils/categoriesCatalogue';
 import { useTerrainsCatalog } from '../../hooks/useTerrainsCatalog';
 import { useLocationsCatalog } from '../../hooks/useLocations';
+import { useProgrammes } from '../../hooks/useProgrammes';
+import { ProgrammeCard } from '../programmes/ProgrammeCard';
+import { SEUIL_SECTION_PROGRAMMES } from '../../utils/programmes';
 import { AppPropertyCard } from '../mobile/AppPropertyCard';
 import { ServicesSheet } from '../mobile/ServicesSheet';
 import { mergeRecent } from '../mobile/recent-properties';
@@ -88,6 +91,9 @@ export function MobileHome() {
     [terrains.data, locations.data],
   );
   const loading = terrains.loading || locations.loading;
+  // Sous trois lotissements publiés, ils ouvrent cette rangée au lieu d'avoir la leur (voir FeaturedProgrammesSection).
+  const { data: tousProgrammes } = useProgrammes({});
+  const programmes = (tousProgrammes ?? []).length < SEUIL_SECTION_PROGRAMMES ? (tousProgrammes ?? []) : [];
 
   function submit(event: FormEvent): void {
     event.preventDefault();
@@ -215,11 +221,16 @@ export function MobileHome() {
           </div>
         )}
 
-        {!loading && recents.length > 0 && (
+        {!loading && (recents.length > 0 || programmes.length > 0) && (
           <ul
             className="mt-3 flex snap-x snap-mandatory scroll-pl-4 gap-3 overflow-x-auto overscroll-x-contain px-4 pb-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             aria-label="Biens en vedette"
           >
+            {programmes.map((programme) => (
+              <li key={programme.id} className="w-[72%] max-w-[17.5rem] shrink-0 snap-start [&>a]:h-full">
+                <ProgrammeCard programme={programme} compact />
+              </li>
+            ))}
             {recents.map((card) => (
               <li key={`${card.kind}-${card.id}`} className="w-[72%] max-w-[17.5rem] shrink-0 snap-start">
                 <AppPropertyCard card={card} />
@@ -228,7 +239,7 @@ export function MobileHome() {
           </ul>
         )}
 
-        {!loading && recents.length === 0 && (
+        {!loading && recents.length === 0 && programmes.length === 0 && (
           <p className="mx-4 mt-3 rounded-2xl border border-dashed border-mtm-border bg-mtm-surface p-5 text-center text-sm text-mtm-muted">
             Aucun bien en vedette pour le moment. Découvrez tous nos biens, ou contactez-nous pour connaître nos prochaines offres.
           </p>

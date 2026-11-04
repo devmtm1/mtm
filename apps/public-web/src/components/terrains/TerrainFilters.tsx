@@ -3,6 +3,7 @@ import { ChevronDown, MapPin, Search, SlidersHorizontal } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { TerrainFilters as TerrainFiltersValue } from '../../types/terrain';
 import { typeBienLabel, vocationLabel } from '../../utils/bienLabels';
+import { TYPE_LOTISSEMENT } from '../../utils/programmes';
 import { useTerrainFilterOptions } from '../../hooks/useTerrainFilterOptions';
 import { Button } from '../ui/Button';
 import { ROUTES } from '../../routes';
@@ -30,6 +31,8 @@ interface TerrainFiltersProps {
   panel?: boolean;
   header?: ReactNode;
   onReset?: () => void;
+  /** Des lotissements sont publiés : « Lotissement » est proposé parmi les types de bien. */
+  avecLotissements?: boolean;
 }
 
 const baseInputClass =
@@ -47,7 +50,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-export function TerrainFilters({ value, onChange, onSubmit, compact = false, sheet = false, panel = false, header, onReset }: TerrainFiltersProps) {
+export function TerrainFilters({ value, onChange, onSubmit, compact = false, sheet = false, panel = false, header, onReset, avecLotissements = false }: TerrainFiltersProps) {
   const inputClass = panel ? panelInputClass : baseInputClass;
   // Critères du second niveau du panneau : rangés tant qu'aucun n'est utilisé.
   const avances = [value.nombrePieces, value.vocation, value.statutJuridique, value.superficieMin, value.superficieMax, value.prixPublicMin].filter(
@@ -66,7 +69,8 @@ export function TerrainFilters({ value, onChange, onSubmit, compact = false, she
    * choisie. Sans type choisi, le catalogue reste mixte et c'est l'usage du
    * sol qui s'applique à tout.
    */
-  const batiSelectionne = Boolean(value.typeBien) && value.typeBien !== 'terrain';
+  const lotissementSelectionne = value.typeBien === TYPE_LOTISSEMENT;
+  const batiSelectionne = Boolean(value.typeBien) && value.typeBien !== 'terrain' && !lotissementSelectionne;
 
   function set<K extends keyof TerrainFiltersValue>(key: K, next: TerrainFiltersValue[K]): void {
     const suivant = { ...value, [key]: next, page: 1 };
@@ -75,7 +79,11 @@ export function TerrainFilters({ value, onChange, onSubmit, compact = false, she
     // voit plus et ne peut plus annuler.
     if (key === 'typeBien') {
       const versBati = Boolean(next) && next !== 'terrain';
-      if (versBati) delete suivant.vocation;
+      // Un lotissement n'a ni typologie ni usage du sol à filtrer.
+      if (next === TYPE_LOTISSEMENT) {
+        delete suivant.vocation;
+        delete suivant.nombrePieces;
+      } else if (versBati) delete suivant.vocation;
       else delete suivant.nombrePieces;
     }
     onChange(suivant);
@@ -121,6 +129,7 @@ export function TerrainFilters({ value, onChange, onSubmit, compact = false, she
             {typeBienLabel(type)}
           </option>
         ))}
+        {avecLotissements && <option value={TYPE_LOTISSEMENT}>{typeBienLabel(TYPE_LOTISSEMENT)}</option>}
       </select>
     </Field>
   );
@@ -146,7 +155,7 @@ export function TerrainFilters({ value, onChange, onSubmit, compact = false, she
     </Field>
   ) : null;
 
-  const vocationField = batiSelectionne ? null : (
+  const vocationField = batiSelectionne || lotissementSelectionne ? null : (
     <Field label="Usage du terrain">
       <select
         className={inputClass}

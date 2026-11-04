@@ -113,3 +113,12 @@ export function lotsAffiches(lots: LotPublic[], critere: CritereLots): LotPublic
     return (a.numeroLot ?? '').localeCompare(b.numeroLot ?? '', 'fr', { numeric: true });
   });
 }
+
+/**
+ * À partir de combien de lotissements publiés l'accueil leur consacre une section à part. En dessous, ils se mêlent aux
+ * biens en vedette : une section d'une seule carte laisserait un grand vide à côté d'elle.
+ */
+export const SEUIL_SECTION_PROGRAMMES = 3;
+
+/** Valeur du filtre « Type de bien » du catalogue qui ne garde que les lotissements. */
+export const TYPE_LOTISSEMENT = 'lotissement';

@@ -22,8 +22,9 @@ import { Modal } from '../components/ui/Modal';
 import { BandeauPage, IMAGE_BANDEAU_PAGE } from '../components/layout/BandeauPage';
 import { useEditableContent } from '../hooks/useEditableContent';
 import { fieldInputClass } from '../components/ui/FormField';
-import type { Terrain, TerrainFilters as TerrainFiltersValue } from '../types/terrain';
+import type { Terrain, TerrainFilters as TerrainFiltersValue, TerrainPage } from '../types/terrain';
 import { CATEGORIES_CATALOGUE } from '../utils/categoriesCatalogue';
+import { TYPE_LOTISSEMENT } from '../utils/programmes';
 
 // Relus depuis l'URL : un filtre absent d'ici est écrit dans l'adresse mais
 // jamais rechargé — il disparaîtrait au premier aller-retour.
@@ -60,6 +61,9 @@ const TRIS: { cle: string; libelle: string; sortBy?: TerrainFiltersValue['sortBy
 function triDe(filters: TerrainFiltersValue): string {
   return TRIS.find((tri) => tri.sortBy && tri.sortBy === filters.sortBy && tri.sortOrder === filters.sortOrder)?.cle ?? 'recent';
 }
+
+/** Réponse vide : le type « Lotissement » ne demande aucun bien à l'API, seulement des programmes. */
+const AUCUN_BIEN: TerrainPage = { items: [], total: 0, page: 1, pageSize: PAGE_SIZE };
 
 const REASSURANCES_DEFAUT = ['Titres et documents vérifiés', 'Prix et surfaces annoncés', 'Visite et suivi, même à distance'];
 const INTRO_DEFAUT =
@@ -108,7 +112,10 @@ function criteriaKey(filters: TerrainFiltersValue): string {
 export function CatalogPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const filters = useMemo(() => parseFilters(searchParams), [searchParams]);
-  const [viewMode, setViewMode] = useState<'liste' | 'carte'>('liste');
+  const lotissementSeul = filters.typeBien === TYPE_LOTISSEMENT;
+  const [vueChoisie, setViewMode] = useState<'liste' | 'carte'>('liste');
+  // Les lotissements n'ont pas de point sur la carte : ce type ramène toujours à la liste.
+  const viewMode = lotissementSeul ? 'liste' : vueChoisie;
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetDraft, setSheetDraft] = useState<TerrainFiltersValue>(filters);
 
@@ -119,10 +126,13 @@ export function CatalogPage() {
       ...(viewMode === 'carte' ? { ...filters, page: 1, pageSize: 200 } : filters),
       // Sans choix, le catalogue mêle les biens à vendre et les références vendues.
       statut: filters.statut ?? ('tous' as const),
+      ...(lotissementSeul ? { typeBien: undefined, pageSize: 1 } : {}),
     }),
-    [filters, viewMode],
+    [filters, viewMode, lotissementSeul],
   );
-  const { data, loading, error } = useTerrainsCatalog(queryFilters);
+  const { data: donneesApi, loading: chargementApi, error } = useTerrainsCatalog(queryFilters);
+  const data = lotissementSeul ? AUCUN_BIEN : donneesApi;
+  const loading = lotissementSeul ? false : chargementApi;
 
   // Les lotissements se mêlent aux biens, filtrés par les mêmes critères : sans cela, un visiteur qui cherche
   // « un terrain à Thiès » ne verrait jamais le lotissement qui y vend des lots. On ne les propose pas quand le
@@ -130,11 +140,14 @@ export function CatalogPage() {
   const programmeFilters = useMemo<ProgrammeFilters | null>(() => {
     if (viewMode !== 'liste') return null;
     if (filters.statut === 'vendu') return null;
-    if ((filters.typeBien && filters.typeBien !== 'terrain') || filters.nombrePieces || filters.vocation || filters.categorie) return null;
+    if ((filters.typeBien && filters.typeBien !== 'terrain' && !lotissementSeul) || filters.nombrePieces || filters.vocation || filters.categorie) return null;
     const { search, region, commune, statutJuridique, prixPublicMin, prixPublicMax, superficieMin, superficieMax } = filters;
     return { search, region, commune, statutJuridique, prixPublicMin, prixPublicMax, superficieMin, superficieMax };
-  }, [filters, viewMode]);
+  }, [filters, viewMode, lotissementSeul]);
   const { data: programmesData } = useProgrammes(programmeFilters);
+  // « Lotissement » n'est proposé parmi les types de bien que s'il y en a de publiés.
+  const { data: tousProgrammes } = useProgrammes({});
+  const avecLotissements = (tousProgrammes ?? []).length > 0;
   const programmes = useMemo(() => (programmeFilters ? (programmesData ?? []) : []), [programmeFilters, programmesData]);
   const { text, lines, loading: contenuEnCours } = useEditableContent();
 
@@ -346,6 +359,7 @@ export function CatalogPage() {
               onSubmit={() => commitFilters(draft)}
               onReset={() => commitFilters({})}
               header={statutSwitch}
+              avecLotissements={avecLotissements}
             />
           </div>
         </div>
@@ -362,9 +376,17 @@ export function CatalogPage() {
             restent sous la main pendant le défilement. */}
         <div className="sticky top-16 z-20 -mx-4 mb-3 flex items-center justify-between gap-3 border-b border-mtm-border bg-mtm-bg/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 lg:static lg:mx-0 lg:mb-4 lg:border-0 lg:bg-transparent lg:px-0 lg:py-0">
           <p className="text-sm text-mtm-muted" aria-live="polite">
-            {loading && !data ? 'Recherche…' : data ? (data.total === 1 ? '1 bien trouvé' : `${data.total} biens trouvés`) : ''}
+            {lotissementSeul
+              ? `${programmes.length} lotissement${programmes.length > 1 ? 's' : ''}`
+              : loading && !data
+                ? 'Recherche…'
+                : data
+                  ? data.total === 1
+                    ? '1 bien trouvé'
+                    : `${data.total} biens trouvés`
+                  : ''}
             {/* Sur téléphone, le compteur reste court pour laisser sa place au tri. */}
-            {data && programmes.length > 0 && (
+            {data && !lotissementSeul && programmes.length > 0 && (
               <span className="hidden sm:inline">{` · ${programmes.length} lotissement${programmes.length > 1 ? 's' : ''}`}</span>
             )}
           </p>
@@ -424,7 +446,7 @@ export function CatalogPage() {
 
       {sheetOpen && (
         <Modal title="Filtrer les biens" onClose={() => setSheetOpen(false)}>
-          <TerrainFilters value={sheetDraft} onChange={setSheetDraft} onSubmit={applySheet} sheet />
+          <TerrainFilters value={sheetDraft} onChange={setSheetDraft} onSubmit={applySheet} sheet avecLotissements={avecLotissements} />
           <div className="mt-5 grid grid-cols-2 gap-2 border-t border-mtm-border pt-4">
             <Button variant="secondary" onClick={() => setSheetDraft({ search: sheetDraft.search, pageSize: PAGE_SIZE })}>
               Tout effacer
