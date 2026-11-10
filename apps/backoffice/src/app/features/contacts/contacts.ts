@@ -9,7 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { LucideCheck, LucideUserCheck, LucideInbox, LucideKeyRound, LucideLandPlot, LucideMail, LucideClock, LucideEllipsisVertical, LucideMessageSquare, LucidePhone, LucideSearch, LucideUserPlus, LucideX } from '@lucide/angular';
+import { LucideCheck, LucideUserCheck, LucideInbox, LucideKeyRound, LucideLandPlot, LucideMail, LucideClock, LucideEllipsisVertical, LucideMessageSquare, LucidePhone, LucideSearch, LucideUserPlus, LucideX, LucideDownload } from '@lucide/angular';
 import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ContactApiService, type ContactMessage } from '../../core/services/api/contact-api.service';
@@ -20,6 +20,8 @@ import { NotificationService } from '../../shared/services/notification.service'
 import { StatusChoiceDialog } from '../../shared/dialogs/status-choice-dialog';
 import { RepondreDialog } from './repondre-dialog';
 import { Pagination } from '../../shared/components/pagination/pagination';
+import { ExportListeDialog } from '../../shared/dialogs/export-liste-dialog';
+import { isoJour, sourceDepuisLignes } from '../../shared/utils/export-lignes';
 
 type Scope = 'all' | 'unread' | 'read';
 
@@ -30,7 +32,7 @@ type Scope = 'all' | 'unread' | 'read';
  */
 @Component({
   selector: 'app-contacts',
-  imports: [Pagination, DatePipe, MoneyPipe, MatButtonModule, MatFormFieldModule, MatInputModule, MatMenuModule, MatTooltipModule, LucideCheck, LucideUserCheck, LucideClock, LucideEllipsisVertical, LucideInbox, LucideKeyRound, LucideLandPlot, LucideMail, LucideMessageSquare, LucidePhone, LucideSearch, LucideUserPlus, LucideX],
+  imports: [LucideDownload, Pagination, DatePipe, MoneyPipe, MatButtonModule, MatFormFieldModule, MatInputModule, MatMenuModule, MatTooltipModule, LucideCheck, LucideUserCheck, LucideClock, LucideEllipsisVertical, LucideInbox, LucideKeyRound, LucideLandPlot, LucideMail, LucideMessageSquare, LucidePhone, LucideSearch, LucideUserPlus, LucideX],
   templateUrl: './contacts.html',
   styleUrl: './contacts.scss',
 })
@@ -42,6 +44,7 @@ export class Contacts implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly session = inject(SessionService);
 
+  protected readonly peutExporterListe = computed(() => this.session.hasPermission('contact:exporter'));
   protected readonly contacts = signal<ContactMessage[]>([]);
   protected readonly loading = signal(true);
   protected readonly busyId = signal<string | null>(null);
@@ -294,5 +297,28 @@ export class Contacts implements OnInit {
   private finChargement(): void {
     this.loading.set(false);
     this.chargementInitialFait = true;
+  }
+
+  /** Exporte les demandes affichées (recherche et filtre compris) en Excel ou en PDF. */
+  protected exporterListe(): void {
+    const sujet = (c: ContactMessage): string =>
+      c.type === 'confier_bien' ? 'Bien à confier' : c.type === 'devis_construction' ? 'Devis construction' : (c.sujet ?? 'Contact');
+    const statut = (c: ContactMessage): string => (c.reponse ? 'Répondu' : c.lu ? 'Lu' : 'Non lu');
+    ExportListeDialog.open(
+      this.dialog,
+      sourceDepuisLignes<ContactMessage>(
+        { module: 'contacts', titre: 'Demandes du site' },
+        [
+          { libelle: 'Contact', valeur: (c) => c.nom },
+          { libelle: 'Téléphone', valeur: (c) => c.telephone },
+          { libelle: 'E-mail', valeur: (c) => c.email },
+          { libelle: 'Sujet', valeur: sujet },
+          { libelle: 'Message', valeur: (c) => c.message },
+          { libelle: 'Reçu le', type: 'date', valeur: (c) => isoJour(c.createdAt) },
+          { libelle: 'Statut', valeur: statut },
+        ],
+        this.filtered(),
+      ),
+    ).subscribe();
   }
 }

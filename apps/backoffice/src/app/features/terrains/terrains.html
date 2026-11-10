@@ -13,6 +13,11 @@
       </p>
     </div>
     <div class="page-header__actions">
+      @if (peutExporterListe()) {
+        <button mat-stroked-button type="button" (click)="exporterListe()">
+          <svg class="btn-icon" lucideDownload aria-hidden="true"></svg>Exporter
+        </button>
+      }
       <button mat-stroked-button type="button" (click)="openProgrammes()" matTooltip="Un lotissement de plusieurs lots, saisi une seule fois">
         <svg class="btn-icon" lucideLayoutGrid aria-hidden="true"></svg>Programmes
       </button>

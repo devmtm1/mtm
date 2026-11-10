@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -30,12 +30,12 @@ import { SessionService } from '../../core/services/session.service';
 import type { DossierVenteListItem, ReservationRequestItem, VenteDashboardStats, VenteOptions } from '../../core/models/vente.model';
 import { NotificationService } from '../../shared/services/notification.service';
 import { MoneyPipe } from '../../shared/pipes/money.pipe';
-import { JustificationDialog } from '../../shared/dialogs/justification-dialog';
-import { downloadBlob } from '../../shared/utils/download';
 import { ReservationRequestDialog } from './reservation-request-dialog';
 import { ProspectPickerDialog } from './prospect-picker-dialog';
 import { SalesDossierDialog } from '../crm/sales-dossier-dialog/sales-dossier-dialog';
 import { DOSSIER_STATUS, activeReservation, clientName, joursAvantExpiration, label, pillClass, progression } from './ventes-status';
+import { ExportListeDialog } from '../../shared/dialogs/export-liste-dialog';
+import { sourceDepuisGrille } from '../../shared/utils/export-grille';
 
 /**
  * Dossiers de vente (J1.6). L'écran met en avant ce qui demande une
@@ -77,6 +77,7 @@ export class Ventes implements OnInit {
   private readonly formBuilder = inject(FormBuilder);
   private readonly money = new MoneyPipe();
 
+  private readonly grille = viewChild(AgGridAngular);
   protected readonly theme = mtmGridTheme;
   protected readonly loading = signal(true);
   protected readonly dossiers = signal<DossierVenteListItem[]>([]);
@@ -270,24 +271,6 @@ export class Ventes implements OnInit {
     });
   }
 
-  /** Export CSV tracé (section 24) : justification obligatoire, consignée dans l'audit. */
-  protected exportCsv(): void {
-    JustificationDialog.ask(this.dialog, {
-      title: 'Exporter les dossiers de vente',
-      description: 'L’export contient des données clients et, selon vos droits, financières. Indiquez le motif.',
-      confirmLabel: 'Exporter en CSV',
-    }).subscribe((justification) => {
-      if (!justification) return;
-      this.api.exportCsv(justification).subscribe({
-        next: (blob) => {
-          downloadBlob(blob, `dossiers-vente-${new Date().toISOString().slice(0, 10)}.csv`);
-          this.notify.success('Export téléchargé');
-        },
-        error: (error: unknown) => this.notify.error(error, 'Export impossible'),
-      });
-    });
-  }
-
   // --- Cellules ---------------------------------------------------------------
 
   private pill(statut: string | null): HTMLElement | string {
@@ -360,5 +343,12 @@ export class Ventes implements OnInit {
       this.openDetail(id);
     });
     return button;
+  }
+
+  /** Exporte la liste telle qu'affichée (filtres et tri compris) en Excel ou en PDF. */
+  protected exporterListe(): void {
+    const api = this.grille()?.api;
+    if (!api) return;
+    ExportListeDialog.open(this.dialog, sourceDepuisGrille(api, { module: 'ventes', titre: 'Dossiers de vente' })).subscribe();
   }
 }

@@ -22,6 +22,7 @@ import {
   LucideTriangleAlert,
   LucideUser,
   LucideUsers,
+  LucideDownload,
 } from '@lucide/angular';
 import {
   type CategorieLot,
@@ -52,6 +53,8 @@ import { CategorieDialog, type CategorieDialogData } from './categorie-dialog';
 import { GenererLotsDialog, type GenererLotsDialogData } from './generer-lots-dialog';
 import { ProgrammeDialog, type ProgrammeDialogData } from './programme-dialog';
 import { tauxVendu } from './programmes';
+import { ExportListeDialog } from '../../shared/dialogs/export-liste-dialog';
+import { sourceDepuisLignes } from '../../shared/utils/export-lignes';
 
 /** Réservé et Vendu viennent des dossiers de vente : un lot dans ces états ne se modifie pas en bloc. */
 const FIGES = ['Réservé', 'Vendu'];
@@ -77,7 +80,7 @@ export function clientDuLot<T extends Pick<LigneClientProgramme, 'statut' | 'lot
 /** Un programme : ses chiffres, ses catégories de lots et le tableau de ses lots. */
 @Component({
   selector: 'app-programme-detail',
-  imports: [
+  imports: [LucideDownload, 
     DecimalPipe,
     MatButtonModule,
     MatSelectModule,
@@ -121,6 +124,7 @@ export class ProgrammeDetail implements OnInit {
   private readonly notifications = inject(NotificationService);
   private readonly session = inject(SessionService);
 
+  protected readonly peutExporterListe = computed(() => this.session.hasPermission('terrains:exporter'));
   protected readonly canCreate = this.session.hasPermission('terrains:creer');
   protected readonly canEdit = this.session.hasPermission('terrains:modifier');
 
@@ -540,5 +544,27 @@ export class ProgrammeDetail implements OnInit {
       },
       error: () => this.introuvable.set(true),
     });
+  }
+
+  /** Exporte l'état des lots affichés (filtre par statut compris) en Excel ou en PDF. */
+  protected exporterListe(): void {
+    const programme = this.programme();
+    if (!programme) return;
+    ExportListeDialog.open(
+      this.dialog,
+      sourceDepuisLignes<LotProgramme>(
+        { module: 'programmes', titre: `État des lots — ${programme.nom}`, sousTitre: this.filtre() ? `Lots ${this.filtre().toLowerCase()}` : 'Tous les lots' },
+        [
+          { libelle: 'Lot', valeur: (l) => l.numeroLot ?? l.referenceInterne },
+          { libelle: 'Référence', valeur: (l) => l.referenceInterne },
+          { libelle: 'Superficie (m²)', type: 'nombre', valeur: (l) => (l.superficie === null ? null : Number(l.superficie)) },
+          { libelle: 'Catégorie', valeur: (l) => this.categorie(l)?.nom },
+          { libelle: 'Prix public (FCFA)', type: 'montant', valeur: (l) => (l.prixPublic === null ? null : Number(l.prixPublic)) },
+          { libelle: 'Statut', valeur: (l) => l.statutCommercial },
+          { libelle: 'Client', valeur: (l) => this.acheteur(l)?.principal.client.nom },
+        ],
+        this.lotsAffiches(),
+      ),
+    ).subscribe();
   }
 }

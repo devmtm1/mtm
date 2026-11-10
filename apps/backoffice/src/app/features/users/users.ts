@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import type { ColDef, ICellRendererParams, RowClickedEvent } from 'ag-grid-community';
 import { MatButtonModule } from '@angular/material/button';
@@ -6,7 +6,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { LucideSearch, LucideShieldAlert, LucideUserCheck, LucideUserPlus, LucideUserX, LucideX } from '@lucide/angular';
+import { LucideSearch, LucideShieldAlert, LucideUserCheck, LucideUserPlus, LucideUserX, LucideX, LucideDownload } from '@lucide/angular';
 import { mtmGridTheme } from '../../core/ag-grid.config';
 import { SessionService } from '../../core/services/session.service';
 import { UsersApiService } from '../../core/services/api/users-api.service';
@@ -16,6 +16,8 @@ import { relativeDate, requiresTwoFactor, roleLabel } from '../admin/admin-label
 import { DeleteUserDialog } from './delete-user-dialog';
 import { ResetTwoFactorDialog } from './reset-two-factor-dialog';
 import { UserFormDialog } from './user-form-dialog';
+import { ExportListeDialog } from '../../shared/dialogs/export-liste-dialog';
+import { sourceDepuisGrille } from '../../shared/utils/export-grille';
 
 type Scope = 'all' | 'active' | 'inactive' | 'attention';
 
@@ -30,7 +32,7 @@ function escapeHtml(value: string): string {
  */
 @Component({
   selector: 'app-users',
-  imports: [AgGridAngular, MatButtonModule, MatFormFieldModule, MatInputModule, MatTooltipModule, LucideSearch, LucideShieldAlert, LucideUserCheck, LucideUserPlus, LucideUserX, LucideX],
+  imports: [LucideDownload, AgGridAngular, MatButtonModule, MatFormFieldModule, MatInputModule, MatTooltipModule, LucideSearch, LucideShieldAlert, LucideUserCheck, LucideUserPlus, LucideUserX, LucideX],
   templateUrl: './users.html',
   styleUrl: './users.scss',
 })
@@ -40,6 +42,8 @@ export class Users implements OnInit {
   private readonly notify = inject(NotificationService);
   private readonly session = inject(SessionService);
 
+  private readonly grille = viewChild(AgGridAngular);
+  protected readonly peutExporterListe = computed(() => this.session.hasPermission('users:exporter'));
   protected readonly theme = mtmGridTheme;
   protected readonly loading = signal(true);
   protected readonly users = signal<UserListItem[]>([]);
@@ -284,5 +288,12 @@ export class Users implements OnInit {
   private finChargement(): void {
     this.loading.set(false);
     this.chargementInitialFait = true;
+  }
+
+  /** Exporte la liste telle qu'affichée (filtres et tri compris) en Excel ou en PDF. */
+  protected exporterListe(): void {
+    const api = this.grille()?.api;
+    if (!api) return;
+    ExportListeDialog.open(this.dialog, sourceDepuisGrille(api, { module: 'users', titre: 'Utilisateurs' })).subscribe();
   }
 }

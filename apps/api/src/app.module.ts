@@ -37,6 +37,7 @@ import { AgendaModule } from './modules/agenda/agenda.module';
 import { MessagesModule } from './modules/messages/messages.module';
 import { WorkflowsModule } from './modules/workflows/workflows.module';
 import { FinancesModule } from './modules/finances/finances.module';
+import { ExportsModule } from './modules/exports/exports.module';
 import { PilotageModule } from './modules/pilotage/pilotage.module';
 import { NavigationModule } from './modules/navigation/navigation.module';
 
@@ -85,6 +86,7 @@ import { NavigationModule } from './modules/navigation/navigation.module';
     WorkflowsModule,
     FinancesModule,
     PilotageModule,
+    ExportsModule,
     NavigationModule,
     GedModule,
     CronModule,

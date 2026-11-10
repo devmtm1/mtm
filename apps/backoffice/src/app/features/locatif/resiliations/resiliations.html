@@ -11,6 +11,13 @@
         }
       </p>
     </div>
+    <div class="page-header__actions">
+      @if (peutExporterListe()) {
+        <button mat-stroked-button type="button" (click)="exporterListe()" [disabled]="preparationExport()">
+          <svg class="btn-icon" lucideDownload aria-hidden="true"></svg>{{ preparationExport() ? 'Préparation…' : 'Exporter' }}
+        </button>
+      }
+    </div>
   </header>
 
   <section class="page-card">

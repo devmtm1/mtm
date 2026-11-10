@@ -673,12 +673,14 @@ async function main(): Promise<void> {
       'proprietaires:creer',
       'proprietaires:modifier',
       'proprietaires:supprimer',
+      'proprietaires:exporter',
     ],
     manager: [
       'proprietaires:consulter',
       'proprietaires:creer',
       'proprietaires:modifier',
       'proprietaires:supprimer',
+      'proprietaires:exporter',
     ],
   };
   for (const [roleName, permissionNames] of Object.entries(
@@ -793,11 +795,13 @@ async function main(): Promise<void> {
     responsable_commercial: [
       'contact:consulter',
       'contact:modifier',
+      'contact:exporter',
       'content:consulter',
     ],
     manager: [
       'contact:consulter',
       'contact:modifier',
+      'contact:exporter',
       'contact:supprimer',
       'content:consulter',
       'content:creer',
@@ -808,6 +812,7 @@ async function main(): Promise<void> {
     direction: [
       'contact:consulter',
       'contact:modifier',
+      'contact:exporter',
       'contact:supprimer',
       'content:consulter',
       'content:creer',

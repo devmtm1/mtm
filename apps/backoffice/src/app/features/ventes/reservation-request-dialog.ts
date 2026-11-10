@@ -35,7 +35,7 @@ export interface ReservationRequestDialogResult {
       </p>
       <dl class="request-dialog__facts">
         <div><dt>Client</dt><dd>{{ data.request.nom }}</dd></div>
-        <div><dt>Contact</dt><dd>{{ [data.request.telephone, data.request.email].filter(Boolean).join(' · ') || '—' }}</dd></div>
+        <div><dt>Contact</dt><dd>{{ coordonnees }}</dd></div>
         <div><dt>Terrain</dt><dd>{{ data.request.terrain.referenceInterne }} — {{ data.request.terrain.nom }}</dd></div>
         <div><dt>Reçue le</dt><dd>{{ data.request.createdAt | date: 'dd/MM/yyyy à HH:mm' }}</dd></div>
         @if (data.request.message) {
@@ -78,6 +78,9 @@ export class ReservationRequestDialog {
   private readonly dialogRef = inject(MatDialogRef<ReservationRequestDialog>);
   private readonly formBuilder = inject(FormBuilder);
   readonly data = inject<ReservationRequestDialogData>(MAT_DIALOG_DATA);
+
+  /** Le téléphone et/ou l'e-mail laissés par le demandeur : l'un des deux suffit. */
+  protected readonly coordonnees = [this.data.request.telephone, this.data.request.email].filter((valeur) => !!valeur).join(' · ') || '—';
 
   protected readonly form = this.formBuilder.nonNullable.group({
     prixVente: [null as number | null, Validators.min(0)],

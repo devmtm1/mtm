@@ -1,10 +1,11 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { LucidePlus } from '@lucide/angular';
+import { LucidePlus, LucideDownload } from '@lucide/angular';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { LocatifApiService } from '../../../core/services/api/locatif-api.service';
 import { SessionService } from '../../../core/services/session.service';
@@ -13,11 +14,13 @@ import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { TYPES_IMMEUBLE, nomPropre, simpleLabel } from '../locatif-status';
 import { Pagination } from '../../../shared/components/pagination/pagination';
+import { ExportListeDialog } from '../../../shared/dialogs/export-liste-dialog';
+import { chargerToutesLesPages, sourceDepuisLignes } from '../../../shared/utils/export-lignes';
 
 /** Propriétés en gestion : villas divisées, immeubles, résidences, avec l'occupation de leurs logements. */
 @Component({
   selector: 'app-immeubles',
-  imports: [
+  imports: [LucideDownload, 
     Pagination,
     ReactiveFormsModule,
     MatButtonModule,
@@ -31,11 +34,14 @@ import { Pagination } from '../../../shared/components/pagination/pagination';
 })
 export class Immeubles implements OnInit {
   private readonly api = inject(LocatifApiService);
+  private readonly dialog = inject(MatDialog);
   private readonly router = inject(Router);
   private readonly notify = inject(NotificationService);
   private readonly session = inject(SessionService);
 
   /** Squelette au premier chargement seulement : une recherche garde la liste affichée. */
+  protected readonly peutExporterListe = computed(() => this.session.hasPermission('locatif:exporter'));
+  protected readonly preparationExport = signal(false);
   protected readonly premierChargement = signal(true);
   protected readonly immeubles = signal<ImmeubleResume[]>([]);
   protected readonly total = signal(0);
@@ -106,6 +112,43 @@ export class Immeubles implements OnInit {
         this.premierChargement.set(false);
         this.erreurChargement.set(true);
         this.notify.error(error, 'Impossible de charger les propriétés');
+      },
+    });
+  }
+
+  /** Exporte toutes les propriétés de la recherche en cours (pas seulement la page affichée). */
+  protected exporterListe(): void {
+    this.preparationExport.set(true);
+    chargerToutesLesPages<ImmeubleResume>(
+      (page, taille) => this.api.findImmeubles({ search: this.recherche.value.trim(), page, pageSize: taille }),
+      200,
+    ).subscribe({
+      next: (lignes) => {
+        this.preparationExport.set(false);
+        ExportListeDialog.open(
+          this.dialog,
+          sourceDepuisLignes<ImmeubleResume>(
+            { module: 'locatif', titre: 'Propriétés' },
+            [
+              { libelle: 'Référence', valeur: (i) => i.referenceInterne },
+              { libelle: 'Propriété', valeur: (i) => i.nom },
+              { libelle: 'Type', valeur: (i) => this.typeLabel(i.type) },
+              { libelle: 'Adresse', valeur: (i) => i.adresse },
+              { libelle: 'Commune', valeur: (i) => i.commune },
+              { libelle: 'Propriétaire', valeur: (i) => this.proprietaire(i) },
+              { libelle: 'Logements', type: 'nombre', valeur: (i) => i.synthese.logements },
+              { libelle: 'Loués', type: 'nombre', valeur: (i) => i.synthese.loues },
+              { libelle: 'Occupation (%)', type: 'nombre', valeur: (i) => (i.synthese.logements ? i.synthese.tauxOccupation : null) },
+              { libelle: 'Loyers attendus par mois (FCFA)', type: 'montant', valeur: (i) => i.synthese.loyerMensuelAttendu },
+              { libelle: 'Impayés (FCFA)', type: 'montant', valeur: (i) => i.synthese.impayes },
+            ],
+            lignes,
+          ),
+        ).subscribe();
+      },
+      error: (error: unknown) => {
+        this.preparationExport.set(false);
+        this.notify.error(error, 'Préparation de l’export impossible');
       },
     });
   }

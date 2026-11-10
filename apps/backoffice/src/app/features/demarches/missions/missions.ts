@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -29,8 +29,6 @@ import type {
   MissionStats,
 } from '../../../core/models/mission.model';
 import { NotificationService } from '../../../shared/services/notification.service';
-import { JustificationDialog } from '../../../shared/dialogs/justification-dialog';
-import { downloadBlob } from '../../../shared/utils/download';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import {
   DECISIONS,
@@ -43,6 +41,8 @@ import {
   nomPersonne,
   pillClass,
 } from '../mission-status';
+import { ExportListeDialog } from '../../../shared/dialogs/export-liste-dialog';
+import { sourceDepuisGrille } from '../../../shared/utils/export-grille';
 
 const FILTRES_VIDES = {
   search: '',
@@ -113,6 +113,7 @@ export class Missions implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly destroyRef = inject(DestroyRef);
 
+  private readonly grille = viewChild(AgGridAngular);
   protected readonly theme = mtmGridTheme;
   protected readonly loading = signal(true);
   protected readonly rowData = signal<MissionListItem[]>([]);
@@ -262,29 +263,6 @@ export class Missions implements OnInit {
       .subscribe(() => this.load());
   }
 
-  /**
-   * Export CSV tracé : la liste contient les coordonnées de clients et le
-   * détail de leurs missions, donc motif obligatoire et trace dans le
-   * journal d'audit.
-   */
-  protected exportCsv(): void {
-    JustificationDialog.ask(this.dialog, {
-      title: 'Exporter les missions',
-      description:
-        'L’export contient les clients, les localisations et les montants des missions. Indiquez le motif.',
-      confirmLabel: 'Exporter en CSV',
-    }).subscribe((justification) => {
-      if (!justification) return;
-      this.api.exportCsv(justification).subscribe({
-        next: (blob) => {
-          downloadBlob(blob, `verifications-${new Date().toISOString().slice(0, 10)}.csv`);
-          this.notify.success('Export téléchargé');
-        },
-        error: (error: unknown) => this.notify.error(error, 'Export impossible'),
-      });
-    });
-  }
-
   protected openCreate(): void {
     void this.router.navigate(['/demarches/missions/nouvelle']);
   }
@@ -387,5 +365,12 @@ export class Missions implements OnInit {
       span.textContent = date;
     }
     return span;
+  }
+
+  /** Exporte la liste telle qu'affichée (filtres et tri compris) en Excel ou en PDF. */
+  protected exporterListe(): void {
+    const api = this.grille()?.api;
+    if (!api) return;
+    ExportListeDialog.open(this.dialog, sourceDepuisGrille(api, { module: 'demarches', titre: 'Missions de démarches' })).subscribe();
   }
 }
