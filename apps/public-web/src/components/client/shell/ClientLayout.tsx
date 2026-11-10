@@ -51,6 +51,70 @@ const ONGLETS_COMMUNS: ClientTab[] = [
   { to: ROUTES.clientCompte, label: 'Compte', icon: UserRound, end: false },
 ];
 
+/** Les rubriques du menu : l'accueil seul, puis les espaces du client, puis ses échanges et son compte. */
+interface GroupeMenu {
+  titre: string | null;
+  onglets: ClientTab[];
+}
+
+function groupesMenu(onglets: ClientTab[]): GroupeMenu[] {
+  const espaces: string[] = [ROUTES.clientLocataire, ROUTES.clientProprietaire, ROUTES.clientChantiers, ROUTES.clientDossiers, ROUTES.clientMissions];
+  const echanges: string[] = [ROUTES.clientDemandes, ROUTES.clientDocuments];
+  const groupes: GroupeMenu[] = [
+    { titre: null, onglets: onglets.filter((onglet) => onglet.to === ROUTES.clientPortal) },
+    { titre: 'Mes espaces', onglets: onglets.filter((onglet) => espaces.includes(onglet.to)) },
+    { titre: 'Échanges', onglets: onglets.filter((onglet) => echanges.includes(onglet.to)) },
+    { titre: 'Mon compte', onglets: onglets.filter((onglet) => onglet.to === ROUTES.clientCompte) },
+  ];
+  return groupes.filter((groupe) => groupe.onglets.length > 0 || groupe.titre === 'Échanges');
+}
+
+/** Un lien du menu : page active en bleu plus clair avec une barre à gauche, pastille de compteur ou d'alerte. */
+function LienMenu({
+  to,
+  end,
+  icon: Icon,
+  label,
+  alerte = false,
+  compteur = 0,
+}: {
+  to: string;
+  end?: boolean;
+  icon: ClientTab['icon'];
+  label: string;
+  alerte?: boolean;
+  compteur?: number;
+}) {
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      className={({ isActive }) =>
+        `relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors ${
+          isActive ? 'bg-mtm-nav-active text-white' : 'text-mtm-nav-text hover:bg-mtm-nav-hover'
+        }`
+      }
+    >
+      {({ isActive }) => (
+        <>
+          {isActive && <span aria-hidden="true" className="absolute inset-y-2 left-0 w-[3px] rounded-r bg-mtm-nav-marqueur" />}
+          <Icon className={`h-[18px] w-[18px] ${isActive ? 'text-white' : 'text-mtm-nav-icon'}`} aria-hidden="true" />
+          {label}
+          {alerte && <span aria-label="Paiement en retard" className="ml-auto h-2.5 w-2.5 rounded-full bg-mtm-accent" />}
+          {compteur > 0 && (
+            <span className="ml-auto rounded-full bg-mtm-accent px-2 py-0.5 text-xs font-bold text-white">{compteur}</span>
+          )}
+        </>
+      )}
+    </NavLink>
+  );
+}
+
+/** « jeudi 5 novembre 2026 » : la date du jour, en tête de page comme au back-office. */
+function dateDuJour(): string {
+  return new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
 /** Initiales pour l'avatar : « Awa Diop » → « AD ». */
 function initials(firstName: string, lastName: string): string {
   return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || '?';
@@ -227,6 +291,8 @@ export function ClientLayout() {
   );
 
   const displayName = user ? `${user.firstName} ${user.lastName}`.trim() : '';
+  // Le rôle affiché sous le nom : ce que le client est pour MTM.
+  const libelleProfil = estLocataire ? 'Locataire' : estProprietaire ? 'Propriétaire' : (dossiers.data?.length ?? 0) > 0 ? 'Acheteur' : 'Client MTM';
 
   async function handleLogout(): Promise<void> {
     await logout();
@@ -244,70 +310,53 @@ export function ClientLayout() {
           Aller au contenu principal
         </a>
 
-        {/* ---- Barre latérale (ordinateur) ---- */}
-        <aside className="sticky top-0 hidden h-[100dvh] w-64 shrink-0 flex-col bg-mtm-primary-dark text-white lg:flex">
-          <div className="flex items-center gap-3 px-5 py-5">
-            <img src="/logomtm.jpeg" alt="" className="h-10 w-10 rounded-full object-cover ring-2 ring-white/20" />
+        {/* ---- Barre latérale (ordinateur) : le menu du back-office, avec ses rubriques ---- */}
+        <aside className="sticky top-0 hidden h-[100dvh] w-64 shrink-0 flex-col bg-mtm-nav text-mtm-nav-text lg:flex">
+          <div className="flex items-center gap-3 border-b border-mtm-nav-sep px-4 py-4">
+            <img src="/logomtm.jpeg" alt="" className="h-11 w-11 rounded-xl bg-white object-cover p-0.5" />
             <div className="min-w-0">
-              <p className="font-display text-base font-bold leading-tight">MTM Immobilier</p>
-              <p className="text-xs text-white/60">Espace client</p>
+              <p className="font-display text-[15px] font-bold uppercase leading-tight tracking-wide text-white">MTM Immobilier</p>
+              <p className="text-xs text-mtm-nav-icon">Espace client</p>
             </div>
           </div>
 
-          <nav className="mt-2 flex flex-col gap-1 px-3" aria-label="Espace client">
-            {TABS.map(({ to, label, icon: Icon, end }) => (
-              <NavLink
-                key={to}
-                to={to}
-                end={end}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold transition-colors ${
-                    isActive ? 'bg-white/15 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white'
-                  }`
-                }
-              >
-                <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
-                {label}
-              </NavLink>
+          <nav className="flex-1 overflow-y-auto px-3 py-3" aria-label="Espace client">
+            {groupesMenu(TABS).map((groupe, index) => (
+              <div key={groupe.titre ?? 'principal'} className={index > 0 ? 'mt-3 border-t border-mtm-nav-sep pt-3' : ''}>
+                {groupe.titre && <p className="px-3 pb-1.5 text-xs font-semibold text-mtm-nav-titre">{groupe.titre}</p>}
+                <div className="flex flex-col gap-0.5">
+                  {groupe.onglets.map(({ to, label, icon: Icon, end, alerte }) => (
+                    <LienMenu key={to} to={to} end={end} icon={Icon} label={label} alerte={alerte} />
+                  ))}
+                  {groupe.titre === 'Échanges' && (
+                    <LienMenu to={ROUTES.clientNotifications} icon={Bell} label="Notifications" compteur={nonLues} />
+                  )}
+                </div>
+              </div>
             ))}
           </nav>
 
-          <NavLink
-            to={ROUTES.clientNotifications}
-            className={({ isActive }) =>
-              `mx-3 mt-1 flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold transition-colors ${
-                isActive ? 'bg-white/15 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white'
-              }`
-            }
-          >
-            <Bell className="h-[18px] w-[18px]" aria-hidden="true" />
-            Notifications
-            {nonLues > 0 && (
-              <span className="ml-auto rounded-full bg-mtm-accent px-2 py-0.5 text-xs font-bold text-white">{nonLues}</span>
-            )}
-          </NavLink>
-
-          <div className="mt-auto border-t border-white/10 px-3 py-4">
+          <div className="border-t border-mtm-nav-sep px-3 py-3">
             <div className="flex items-center gap-3 px-2">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-mtm-accent text-xs font-bold text-white">
                 {user ? initials(user.firstName, user.lastName) : '?'}
               </span>
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold">{displayName}</p>
-                <p className="truncate text-xs text-white/60">{user?.email ?? user?.telephone}</p>
+                <p className="truncate text-sm font-semibold text-white">{displayName}</p>
+                <p className="truncate text-xs text-mtm-nav-icon">{user?.email ?? user?.telephone}</p>
               </div>
             </div>
-            <div className="mt-3 flex flex-col gap-0.5">
-              <NavLink to={ROUTES.home} className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-white/70 hover:bg-white/10 hover:text-white">
-                <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            <div className="mt-2 flex flex-col gap-0.5">
+              <NavLink to={ROUTES.home} className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-mtm-nav-text hover:bg-mtm-nav-hover">
+                <ArrowLeft className="h-4 w-4 text-mtm-nav-icon" aria-hidden="true" />
                 Retour au site
               </NavLink>
               <button
                 type="button"
                 onClick={() => void handleLogout()}
-                className="flex items-center gap-3 rounded-md px-3 py-2 text-left text-sm text-white/70 hover:bg-white/10 hover:text-white"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-mtm-nav-text hover:bg-mtm-nav-hover"
               >
-                <LogOut className="h-4 w-4" aria-hidden="true" />
+                <LogOut className="h-4 w-4 text-mtm-nav-icon" aria-hidden="true" />
                 Se déconnecter
               </button>
             </div>
@@ -366,32 +415,38 @@ export function ClientLayout() {
             </div>
           )}
 
-          {/* ---- Barre supérieure (ordinateur) : cloche et profil à portée, comme sur mobile ---- */}
-          <header className="sticky top-0 z-30 hidden h-14 items-center justify-end gap-2 border-b border-mtm-border/70 bg-mtm-surface/90 px-8 backdrop-blur-xl lg:flex">
-            <NavLink
-              to={ROUTES.clientNotifications}
-              aria-label={nonLues > 0 ? `Notifications, ${nonLues} non lue${nonLues > 1 ? 's' : ''}` : 'Notifications'}
-              className="relative flex h-10 w-10 items-center justify-center rounded-full text-mtm-text hover:bg-mtm-bg"
-            >
-              <Bell className="h-5 w-5" aria-hidden="true" />
-              {nonLues > 0 && (
-                <span
-                  aria-hidden="true"
-                  className="absolute right-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-mtm-surface bg-mtm-accent px-1 text-[10px] font-bold leading-none text-white"
-                >
-                  {nonLues > 9 ? '9+' : nonLues}
+          {/* ---- Barre supérieure (ordinateur) : la date, la cloche et le profil, comme le back-office ---- */}
+          <header className="sticky top-0 z-30 hidden h-[60px] items-center justify-between gap-3 border-b border-mtm-border bg-mtm-surface px-8 lg:flex">
+            <p className="text-sm font-medium text-mtm-muted first-letter:uppercase">{dateDuJour()}</p>
+            <div className="flex items-center gap-2">
+              <NavLink
+                to={ROUTES.clientNotifications}
+                aria-label={nonLues > 0 ? `Notifications, ${nonLues} non lue${nonLues > 1 ? 's' : ''}` : 'Notifications'}
+                className="relative flex h-10 w-10 items-center justify-center rounded-full text-mtm-text hover:bg-mtm-bg"
+              >
+                <Bell className="h-5 w-5" aria-hidden="true" />
+                {nonLues > 0 && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute right-0 top-0 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-mtm-surface bg-mtm-accent px-1 text-[10px] font-bold leading-none text-white"
+                  >
+                    {nonLues > 9 ? '9+' : nonLues}
+                  </span>
+                )}
+              </NavLink>
+              <NavLink
+                to={ROUTES.clientCompte}
+                className="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-3 hover:bg-mtm-bg"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-mtm-primary text-xs font-bold text-white">
+                  {user ? initials(user.firstName, user.lastName) : '?'}
                 </span>
-              )}
-            </NavLink>
-            <NavLink
-              to={ROUTES.clientCompte}
-              className="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-3 text-sm font-semibold text-mtm-text hover:bg-mtm-bg"
-            >
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-mtm-primary text-xs font-bold text-white">
-                {user ? initials(user.firstName, user.lastName) : '?'}
-              </span>
-              {user?.firstName}
-            </NavLink>
+                <span className="text-left leading-tight">
+                  <span className="block text-sm font-semibold text-mtm-text">{displayName}</span>
+                  <span className="block text-xs text-mtm-muted">{libelleProfil}</span>
+                </span>
+              </NavLink>
+            </div>
           </header>
 
           <main id={MAIN_ID} tabIndex={-1} className="flex-1 outline-none">

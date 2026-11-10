@@ -32,6 +32,15 @@ export default {
         'mtm-success': '#047857',
         'mtm-warning': '#A34A07',
         'mtm-error': '#B52C36',
+        // Menu latéral de l'espace client : mêmes teintes que le menu du back-office.
+        'mtm-nav': '#0F2A44',
+        'mtm-nav-hover': '#173A5C',
+        'mtm-nav-active': '#1F4E7C',
+        'mtm-nav-text': '#D6E2EF',
+        'mtm-nav-icon': '#9FB6CC',
+        'mtm-nav-titre': '#93AAC2',
+        'mtm-nav-marqueur': '#7DB8E8',
+        'mtm-nav-sep': '#1D3F5F',
       },
       fontFamily: {
         display: ['"Outfit"', 'system-ui', 'sans-serif'],

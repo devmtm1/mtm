@@ -236,3 +236,8 @@ export function deposerAssurance(token: string, fichier: File, dateExpiration: s
   corps.append('dateExpiration', dateExpiration);
   return apiClient.postForm<ClientAssurance>('/locatif/locataire/assurance', corps, { token });
 }
+
+/** Reçu PDF d'un paiement validé : `vente` pour un dossier d'achat, `loyer` pour un règlement de loyer. */
+export function telechargerRecu(token: string, nature: 'vente' | 'loyer', paiementId: string): Promise<Blob> {
+  return apiClient.getBlob(`/client/recus/${nature}/${paiementId}`, { token });
+}

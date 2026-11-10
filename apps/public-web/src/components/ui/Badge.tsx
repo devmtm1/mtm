@@ -16,13 +16,16 @@ interface BadgeProps {
   children: ReactNode;
   /** Classes additionnelles (ex. masquage responsive). */
   className?: string;
+  /** Petit point de couleur devant le libellé, comme les statuts du back-office. */
+  dot?: boolean;
 }
 
-export function Badge({ tone = 'neutral', children, className = '' }: BadgeProps) {
+export function Badge({ tone = 'neutral', children, className = '', dot = false }: BadgeProps) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${TONE_CLASSES[tone]} ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${TONE_CLASSES[tone]} ${className}`}
     >
+      {dot && <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-current" />}
       {children}
     </span>
   );

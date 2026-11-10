@@ -1,9 +1,11 @@
 import {
   BadRequestException,
   Injectable,
+  Optional,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CompanyProfileService } from '../company/company-profile.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 import { validateUploadedAsset } from '../../common/storage/asset-validation';
@@ -40,7 +42,38 @@ export class DocumentsChantierService {
     private readonly access: ConstructionAccessService,
     private readonly options: ConstructionOptionsService,
     private readonly company: CompanyProfileService,
+    @Optional() private readonly alertes?: NotificationsService,
   ) {}
+
+  /** Prévient le client qu'une pièce de son chantier vient de lui être ouverte. */
+  private async notifierPublication(
+    projetId: string,
+    document: { id: string; type: string; title: string | null },
+  ): Promise<void> {
+    if (!this.alertes) return;
+    const projet = await this.prisma.projetConstruction.findUnique({
+      where: { id: projetId },
+      select: { clientId: true, visibleClient: true, intitule: true },
+    });
+    if (!projet?.visibleClient) return;
+    const photo = MEDIAS.includes(document.type);
+    await this.alertes.notifierClient(
+      { prospectId: projet.clientId },
+      {
+        type: 'chantier_document',
+        titre: photo
+          ? 'Nouvelle photo de votre chantier'
+          : 'Nouveau document sur votre chantier',
+        message: document.title
+          ? `${projet.intitule} — ${document.title}`
+          : projet.intitule,
+        lien: '/espace-client/chantiers',
+        entityType: 'DocumentChantier',
+        entityId: document.id,
+        dedupeKey: `chantier-document:${document.id}`,
+      },
+    );
+  }
 
   async findAll(projetId: string, user: ConstructionUser) {
     await this.access.ensureAccessible(projetId, user);
@@ -85,7 +118,7 @@ export class DocumentsChantierService {
       `construction/${projetId}`,
       false,
     );
-    return this.prisma.documentChantier.create({
+    const cree = await this.prisma.documentChantier.create({
       data: {
         projetId,
         entreeJournalId: dto.entreeJournalId ?? null,
@@ -98,6 +131,8 @@ export class DocumentsChantierService {
       },
       include: documentInclude,
     });
+    if (visibleClient) await this.notifierPublication(projetId, cree);
+    return cree;
   }
 
   /**
@@ -230,14 +265,18 @@ export class DocumentsChantierService {
     await this.access.ensureAccessible(projetId, user);
     const document = await this.prisma.documentChantier.findFirst({
       where: { id: documentId, projetId },
-      select: { id: true },
+      select: { id: true, visibleClient: true },
     });
     if (!document) throw new NotFoundException('Document introuvable');
-    return this.prisma.documentChantier.update({
+    const maj = await this.prisma.documentChantier.update({
       where: { id: documentId },
       data: { visibleClient },
       include: documentInclude,
     });
+    if (visibleClient && !document.visibleClient) {
+      await this.notifierPublication(projetId, maj);
+    }
+    return maj;
   }
 
   async removeDocument(

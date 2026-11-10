@@ -36,6 +36,8 @@ export interface ClientBienLocatif {
   numeroLot?: string | null;
   immeuble?: { id: string; nom: string; type: string } | null;
   /** Pour un bien en courte durée : occupe | reserve | libre (null au mois). */
+  /** Première photo d'annonce du bien, quand il en a une. */
+  photo?: string | null;
   occupation: 'occupe' | 'reserve' | 'libre' | null;
   /** Séjours engagés : en cours et à venir d'abord, puis les plus récents. */
   sejours: ClientSejourResume[];

@@ -72,7 +72,23 @@ async function request<T>(path: string, init?: RequestInit, options?: RequestOpt
   return (await response.json()) as T;
 }
 
+/** Télécharge un fichier (PDF…) protégé par le jeton du client : l'adresse seule ne suffirait pas à l'ouvrir. */
+async function requestBlob(path: string, options?: RequestOptions): Promise<Blob> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    credentials: 'include',
+    headers: options?.token ? { Authorization: `Bearer ${options.token}` } : {},
+  });
+  if (!response.ok) {
+    const { message, code } = await parseError(response);
+    throw new ApiError(response.status, message, code);
+  }
+  return response.blob();
+}
+
 export const apiClient = {
+  getBlob(path: string, options?: RequestOptions): Promise<Blob> {
+    return requestBlob(path, options);
+  },
   get<T>(path: string, params?: QueryParams, options?: RequestOptions): Promise<T> {
     return request<T>(`${path}${buildQuery(params)}`, undefined, options);
   },

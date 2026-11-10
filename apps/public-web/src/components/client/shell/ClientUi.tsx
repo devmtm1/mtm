@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
  * espace ne change pas de monde.
  */
 
-/** Titre d'écran, avec action facultative à droite. */
+/** Titre d'écran dans le style du back-office : rubrique en petites capitales, grand titre, phrase d'aide, filet. */
 export function ClientPageHeader({
   eyebrow,
   title,
@@ -21,11 +21,11 @@ export function ClientPageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="mb-4 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mb-5 flex flex-col gap-3 border-b border-mtm-border pb-4 sm:mb-6 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
-        {eyebrow && <p className="text-[11px] font-bold uppercase tracking-wider text-mtm-primary">{eyebrow}</p>}
-        <h1 className="font-display text-[1.65rem] font-bold leading-tight text-mtm-text sm:text-3xl">{title}</h1>
-        {description && <p className="mt-1 text-sm leading-relaxed text-mtm-muted">{description}</p>}
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-mtm-primary-medium">{eyebrow ?? 'Espace client'}</p>
+        <h1 className="font-display text-[1.65rem] font-bold leading-tight text-mtm-text sm:text-[1.9rem]">{title}</h1>
+        {description && <p className="mt-1 max-w-2xl text-sm leading-relaxed text-mtm-muted">{description}</p>}
       </div>
       {action && <div className="shrink-0">{action}</div>}
     </div>
@@ -39,18 +39,24 @@ export function ClientCard({
   linkLabel = 'Voir tout',
   children,
   className = '',
+  subtitle,
 }: {
   title?: string;
   to?: string;
   linkLabel?: string;
   children: ReactNode;
   className?: string;
+  /** Phrase sous le titre, comme les cartes du tableau de bord du back-office. */
+  subtitle?: string;
 }) {
   return (
-    <section className={`rounded-2xl border border-mtm-border/70 bg-mtm-surface shadow-card lg:rounded-lg lg:border-mtm-border ${className}`}>
+    <section className={`rounded-[14px] border border-mtm-border bg-mtm-surface shadow-card ${className}`}>
       {title && (
-        <header className="flex items-center justify-between gap-3 px-4 pb-1 pt-4 sm:px-5 lg:border-b lg:border-mtm-border lg:pb-3 lg:pt-3">
-          <h2 className="font-display text-base font-bold text-mtm-text">{title}</h2>
+        <header className="flex items-start justify-between gap-3 border-b border-mtm-border px-4 py-3.5 sm:px-5">
+          <div className="min-w-0">
+            <h2 className="font-display text-base font-bold text-mtm-text">{title}</h2>
+            {subtitle && <p className="mt-0.5 text-[13px] text-mtm-muted">{subtitle}</p>}
+          </div>
           {to && (
             <Link to={to} className="inline-flex items-center gap-0.5 text-[13px] font-semibold text-mtm-primary active:opacity-70 lg:text-sm lg:hover:underline">
               {linkLabel}
@@ -59,7 +65,7 @@ export function ClientCard({
           )}
         </header>
       )}
-      <div className="px-4 py-3.5 sm:px-5 sm:py-4">{children}</div>
+      <div className="px-4 py-4 sm:px-5">{children}</div>
     </section>
   );
 }
@@ -143,45 +149,43 @@ export function ProgressBar({ value, label, tone = 'success', className = '' }: 
   );
 }
 
-/** Indicateur chiffré : une valeur, son libellé, une icône. */
+/** Indicateur chiffré dans le style du back-office : icône à gauche, libellé en petites capitales, grande valeur, détail. */
 export function StatTile({
   icon: Icon,
   value,
   label,
   tone = 'primary',
   to,
-  compact = false,
+  detail,
 }: {
   icon: LucideIcon;
   value: string;
   label: string;
   tone?: ClientTone;
   to?: string;
-  /** Icône à gauche du chiffre : pour une rangée de deux ou trois tuiles qui ne doivent pas dominer la page. */
+  /** Phrase sous la valeur : le contexte du chiffre. */
+  detail?: string;
+  /** Conservé pour compatibilité : tous les indicateurs ont désormais la même présentation. */
   compact?: boolean;
 }) {
-  const body = compact ? (
-    <span className="flex items-center gap-3">
-      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${ICON_TONES[tone]}`}>
-        <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
+  const alerte = tone === 'warning' || tone === 'accent';
+  const classes = `flex flex-col items-start gap-2.5 rounded-[14px] border p-3.5 shadow-card sm:flex-row sm:items-center sm:gap-3.5 sm:p-4 ${
+    alerte ? 'border-mtm-accent/25 bg-mtm-accent-subtle/60' : 'border-mtm-border bg-mtm-surface'
+  }`;
+  const body = (
+    <>
+      <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${ICON_TONES[tone]}`}>
+        <Icon className="h-5 w-5" aria-hidden="true" />
       </span>
       <span className="min-w-0">
-        <span className="block break-words font-display text-lg font-bold leading-tight text-mtm-text">{value}</span>
-        <span className="block text-xs font-semibold text-mtm-muted">{label}</span>
+        <span className="block text-[11px] font-bold uppercase tracking-[0.1em] text-mtm-muted">{label}</span>
+        <span className="block break-words font-display text-lg font-bold leading-tight text-mtm-text sm:text-xl">{value}</span>
+        {detail && <span className="block text-xs text-mtm-muted">{detail}</span>}
       </span>
-    </span>
-  ) : (
-    <>
-      <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${ICON_TONES[tone]}`}>
-        <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
-      </span>
-      <span className="mt-2 block break-words font-display text-lg font-bold leading-tight text-mtm-text">{value}</span>
-      <span className="block text-xs font-semibold text-mtm-muted">{label}</span>
     </>
   );
-  const classes = 'block rounded-2xl border border-mtm-border/70 bg-mtm-surface p-3.5 shadow-card lg:rounded-lg lg:border-mtm-border';
   return to ? (
-    <Link to={to} className={`${classes} transition-transform active:scale-[0.97]`}>
+    <Link to={to} className={`${classes} transition-transform active:scale-[0.98]`}>
       {body}
     </Link>
   ) : (
