@@ -46,7 +46,7 @@ export function HeroSection() {
       </svg>
       <div className="relative mx-auto flex w-full max-w-6xl flex-col items-start gap-4 px-4 py-10 [text-shadow:0_1px_14px_rgba(10,33,66,0.5)] sm:gap-6 sm:px-6 sm:pb-32 sm:pt-24">
         <span className="hidden rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white sm:inline-block">
-          Terrains · Gestion locative · Construction
+          Vente · Gestion · Contrôle · Construction
         </span>
         <h1 className="max-w-2xl whitespace-pre-line font-display text-3xl font-bold text-white sm:text-4xl md:text-5xl">
           {title}

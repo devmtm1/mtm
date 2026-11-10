@@ -7,6 +7,7 @@ import { toMapsHref, toTelHref, useSiteContact } from '../../hooks/useSiteContac
 import { TikTokIcon } from '../ui/TikTokIcon';
 
 const SERVICE_LINKS = [
+  { to: ROUTES.services, label: 'Tous nos services' },
   { to: ROUTES.catalog, label: 'Terrains et villas' },
   { to: ROUTES.locations, label: 'Locations disponibles' },
   { to: ROUTES.gestionLocative, label: 'Gestion locative' },
@@ -101,8 +102,8 @@ export function Footer() {
             <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/50">Construire vos projets</p>
             {/* Mobile : le logo suffit ; la phrase de présentation reprend ce que dit la page. */}
             <p className="mt-3 hidden max-w-sm text-sm leading-relaxed text-white/75 sm:mt-4 sm:block">
-              Terrains et villas vérifiés, gestion locative, construction et démarches
-              foncières — un accompagnement fiable et transparent, y compris à distance.
+              Vente, gestion, contrôle foncier, entretien et construction : tous vos services
+              immobiliers au Sénégal, avec un accompagnement fiable et transparent, y compris à distance.
             </p>
             {(contact.facebook || contact.tiktok) && (
               <ul className="mt-4 flex gap-2 sm:mt-6" aria-label="Réseaux sociaux">

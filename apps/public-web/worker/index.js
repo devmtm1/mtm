@@ -26,9 +26,9 @@ export default {
           request,
           env,
           fiche: {
-            titre: 'Terrains et villas vérifiés, gestion locative et construction au Sénégal',
+            titre: 'Terrains et villas vérifiés, gestion locative, entretien et construction au Sénégal',
             description:
-              "MTM Immobilier accompagne particuliers et diaspora dans l'achat de terrains et de villas vérifiés, la vérification foncière, la gestion locative et la construction au Sénégal.",
+              "MTM Immobilier accompagne particuliers et diaspora dans l'achat de terrains et de villas vérifiés, la vérification foncière, la gestion locative, l'entretien et la construction au Sénégal.",
             url: `${SITE_URL}/`,
             jsonLd: donneesAgence(),
           },

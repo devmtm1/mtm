@@ -36,7 +36,7 @@ describe('GestionLocativePage', () => {
   it('présente ce que MTM prend en charge, les étapes et les questions', () => {
     afficher();
     expect(screen.getByRole('heading', { level: 1, name: 'Gestion locative' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Recherche de locataires' })).toBeTruthy();
+    expect(screen.getByText('Recherche de locataires')).toBeTruthy();
     expect(screen.getByText('Vous nous confiez votre bien')).toBeTruthy();
     expect(screen.getByText('Quels biens pouvez-vous gérer ?')).toBeTruthy();
     expect(screen.getByText('Combien coûte la gestion ?')).toBeTruthy();
@@ -47,10 +47,10 @@ describe('GestionLocativePage', () => {
     expect(document.body.textContent).not.toMatch(/\d+\s*%/);
   });
 
-  it('mène du bandeau au formulaire « Confier mon bien », sur la même page', () => {
+  it('place le formulaire « Confier mon bien » à l’ancre #confier, à côté des prestations', () => {
     afficher();
-    const lien = screen.getAllByRole('link', { name: /Confier mon bien/ })[0];
-    expect(lien.getAttribute('href')).toBe('#confier');
-    expect(screen.getByRole('form', { name: 'Confier mon bien à MTM' })).toBeTruthy();
+    const ancre = document.getElementById('confier');
+    expect(ancre).not.toBeNull();
+    expect(ancre?.querySelector('form')).toBe(screen.getByRole('form', { name: 'Confier mon bien à MTM' }));
   });
 });

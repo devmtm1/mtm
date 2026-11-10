@@ -5,7 +5,6 @@ import { FeaturedProgrammesSection } from '../components/home/FeaturedProgrammes
 import { FeaturedLocationsSection } from '../components/home/FeaturedLocationsSection';
 import { ProjetsSection } from '../components/home/ProjetsSection';
 import { VideosSection } from '../components/home/VideosSection';
-import { AboutPreviewSection } from '../components/home/AboutPreviewSection';
 import { ServicesSection } from '../components/home/ServicesSection';
 import { TestimonialsSection } from '../components/home/TestimonialsSection';
 import { CtaBand } from '../components/ui/CtaBand';
@@ -63,9 +62,6 @@ export function HomePage() {
       </Reveal>
       <Reveal>
         <TestimonialsSection />
-      </Reveal>
-      <Reveal>
-        <AboutPreviewSection />
       </Reveal>
       {/* Le formulaire complet vit sur la page Contact : l'accueil se termine sur un appel à l'action, pas sur un
           second formulaire. */}

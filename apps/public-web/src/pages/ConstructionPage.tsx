@@ -1,15 +1,16 @@
 import { useState } from 'react';
-import { Eye, FileText, Hammer, HardHat } from 'lucide-react';
+import { Eye, FileText, Hammer, HardHat, MapPinned, Ruler } from 'lucide-react';
 import { BandeauPage, IMAGE_BANDEAU_PAGE } from '../components/layout/BandeauPage';
-import { AppelFinal, EnTeteSection, EtapesCourtes, ListeCompacte, NavigationPage, type Icone } from '../components/services/ServicesBlocs';
+import { AppelFinal, type Icone } from '../components/services/ServicesBlocs';
 import { FormulaireDevis } from '../components/construction/FormulaireDevis';
-import { FaqDemarches } from '../components/demarches/FaqDemarches';
 import { Modal } from '../components/ui/Modal';
 import { buttonClassName } from '../components/ui/button-styles';
 import { LinkButton } from '../components/ui/LinkButton';
 import { useEditableContent } from '../hooks/useEditableContent';
 import { useIsMobile } from '../hooks/useMediaQuery';
 import { useSiteContact } from '../hooks/useSiteContact';
+import { ServicesComplementaires } from '../components/services/ServicesComplementaires';
+import { FaqCourte, ServiceEtDemande } from '../components/services/ServiceEtDemande';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 import { donneesFaq } from '../utils/seo';
 import {
@@ -21,7 +22,7 @@ import {
 } from '../utils/construction';
 import { ROUTES } from '../routes';
 
-const ICONES_CONSTRUCTION: Icone[] = [HardHat, Hammer, Eye, FileText];
+const ICONES_CONSTRUCTION: Icone[] = [HardHat, Hammer, Eye, FileText, Ruler, MapPinned];
 const MESSAGE_WHATSAPP = 'Bonjour, je souhaite un devis pour un projet de construction.';
 
 /**
@@ -47,9 +48,11 @@ export function ConstructionPage() {
 
   return (
     <div>
+      {mobile && (
       <BandeauPage
         chevauche={false}
-        eyebrow={text('construction.eyebrow', 'Nos services')}
+        compact
+        eyebrow={text('construction.eyebrow', 'Nos services · MTM BTP')}
         title={text('construction.title', 'Construction')}
         description={text('construction.intro', INTRO_CONSTRUCTION)}
         points={lines('construction.reassurance', REASSURANCE_CONSTRUCTION)}
@@ -77,67 +80,36 @@ export function ConstructionPage() {
           </>
         }
       />
-
-      <NavigationPage
-        liens={[
-          { libelle: 'Ce que nous faisons', href: '#prestations' },
-          { libelle: 'Étapes', href: '#parcours' },
-          { libelle: 'Questions', href: '#faq' },
-          ...(mobile ? [] : [{ libelle: 'Demander un devis', href: '#devis' }]),
-        ]}
-      />
-
-      <section id="prestations" className="scroll-mt-32 bg-white py-12 lg:py-12">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <EnTeteSection
-            mention="Ce que nous faisons pour vous"
-            titre="Votre projet, de l’étude à la remise des clés"
-            texte="Que vous construisiez ou rénoviez, nous prenons en charge votre chantier et vous en tenons informé."
-          />
-          <div className="mt-8 lg:mt-10">
-            <ListeCompacte
-              elements={steps('construction.prestations', PRESTATIONS_CONSTRUCTION)}
-              icone={(_, index) => ICONES_CONSTRUCTION[index % ICONES_CONSTRUCTION.length]}
-              colonnes={2}
-            />
-          </div>
-        </div>
-      </section>
-
-      <section id="parcours" className="scroll-mt-32 bg-mtm-bg py-12 lg:py-12">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <EnTeteSection mention="Comment ça se passe" titre="En quatre étapes" />
-          <div className="mt-8 lg:mt-10">
-            <EtapesCourtes etapes={steps('construction.etapes', ETAPES_CONSTRUCTION)} />
-          </div>
-        </div>
-      </section>
-
-      {faq.length > 0 && (
-        <section id="faq" className="scroll-mt-32 bg-white py-12 lg:py-12">
-          <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.4fr] lg:gap-16">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-mtm-accent">Questions fréquentes</p>
-              <h2 className="mt-3 font-display text-[1.65rem] font-extrabold leading-tight text-mtm-text sm:text-3xl">
-                Vous vous posez une question ?
-              </h2>
-              <p className="mt-3 text-[15px] leading-relaxed text-mtm-muted sm:text-base">
-                Les réponses à ce que l’on nous demande le plus. Vous ne trouvez pas la vôtre ? Écrivez-nous.
-              </p>
-              <button
-                type="button"
-                onClick={() => (mobile ? setFeuilleOuverte(true) : document.getElementById('devis')?.scrollIntoView({ behavior: 'smooth' }))}
-                className="mt-4 inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold text-mtm-accent hover:underline"
-              >
-                Poser ma question
-              </button>
-            </div>
-            <FaqDemarches questions={faq} />
-          </div>
-        </section>
       )}
 
-      {mobile ? (
+      <ServiceEtDemande
+        eyebrow={text('construction.eyebrow', 'Nos services · MTM BTP')}
+        titrePage={text('construction.title', 'Construction')}
+        accroche="Votre projet, de l’étude à la remise des clés"
+        intro={text('construction.intro', INTRO_CONSTRUCTION)}
+        engagements={lines('construction.reassurance', REASSURANCE_CONSTRUCTION)}
+        image={text('construction.image', IMAGE_BANDEAU_PAGE)}
+        elements={steps('construction.prestations', PRESTATIONS_CONSTRUCTION)}
+        icone={(_, index) => ICONES_CONSTRUCTION[index % ICONES_CONSTRUCTION.length]}
+        etapes={steps('construction.etapes', ETAPES_CONSTRUCTION)}
+        titreEtapes="Comment ça se passe"
+        idFormulaire="devis"
+        titreFormulaire="Demander un devis"
+        iconeFormulaire={HardHat}
+        assurance="Un conseiller vous rappelle, sans engagement."
+        formulaire={<FormulaireDevis />}
+        pied={
+          <a href={lienWhatsapp} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-mtm-success hover:underline">
+            Ou discutez directement sur WhatsApp
+          </a>
+        }
+      />
+
+      <FaqCourte questions={faq} />
+
+      <ServicesComplementaires pole="btp" />
+
+      {mobile && (
         <AppelFinal
           titre="Parlons de votre projet"
           texte="Quelques informations suffisent : un conseiller vous rappelle, sans engagement, pour préparer votre devis."
@@ -145,34 +117,7 @@ export function ConstructionPage() {
           surClic={() => setFeuilleOuverte(true)}
           whatsappHref={lienWhatsapp}
         />
-      ) : (
-        <section id="devis" className="scroll-mt-32 bg-mtm-bg py-12 lg:py-12">
-          <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.4fr] lg:gap-14">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-mtm-accent">Demander un devis</p>
-              <h2 className="mt-3 font-display text-[1.65rem] font-extrabold leading-tight text-mtm-text sm:text-3xl">
-                Parlez-nous de votre projet
-              </h2>
-              <p className="mt-3 text-[15px] leading-relaxed text-mtm-muted sm:text-base">
-                Quelques informations suffisent : un conseiller vous rappelle, sans engagement, pour étudier votre projet et
-                préparer votre devis.
-              </p>
-              <a
-                href={lienWhatsapp}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-6 inline-flex items-center gap-2 rounded-md border border-mtm-success bg-mtm-success/5 px-4 py-2.5 text-sm font-semibold text-mtm-success transition-colors hover:bg-mtm-success/10"
-              >
-                Discuter directement sur WhatsApp
-              </a>
-            </div>
-            <div className="rounded-3xl border border-mtm-border/70 bg-white p-5 shadow-card sm:p-8">
-              <FormulaireDevis />
-            </div>
-          </div>
-        </section>
       )}
-
       {feuilleOuverte && (
         <Modal title="Demander un devis" onClose={() => setFeuilleOuverte(false)}>
           <FormulaireDevis />

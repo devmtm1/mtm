@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown, Heart, User } from 'lucide-react';
 import { ROUTES } from '../../routes';
 import { useAuth } from '../../contexts/auth-context-store';
@@ -29,9 +29,10 @@ interface DropdownLink {
  * Entrée du menu qui regroupe plusieurs pages (Projets, Services) : ouverte au
  * survol comme au clic, refermée par Échap ou à tout changement de route.
  */
-function NavDropdown({ label, links }: { label: string; links: DropdownLink[] }) {
+function NavDropdown({ label, links, to }: { label: string; links: DropdownLink[]; /** Page où mène le clic sur l'entrée elle-même. */ to?: string }) {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const active = links.some((link) => pathname.startsWith(link.to));
 
   // Tout changement de route referme le menu déroulant, quelle que soit la
@@ -57,7 +58,7 @@ function NavDropdown({ label, links }: { label: string; links: DropdownLink[] })
         className={`flex items-center gap-1 py-1 text-sm font-semibold transition-colors hover:text-mtm-accent ${
           active ? 'text-mtm-accent' : 'text-mtm-text'
         }`}
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => (to ? navigate(to) : setOpen((value) => !value))}
         aria-expanded={open}
       >
         {label}
@@ -112,7 +113,7 @@ export function Header() {
             </NavLink>
           ))}
           <NavDropdown label="Projets" links={PROJECT_LINKS} />
-          <NavDropdown label="Services" links={SERVICE_LINKS} />
+          <NavDropdown label="Services" links={SERVICE_LINKS} to={ROUTES.services} />
 
           <NavLink to={ROUTES.actualites} className={navLinkClass}>
             Actualités

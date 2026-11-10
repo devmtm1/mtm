@@ -1,4 +1,5 @@
 import { Mail, MapPin, MessageCircle, Navigation, Phone } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { BandeauPage, IMAGE_BANDEAU_PAGE } from '../components/layout/BandeauPage';
 import { useEditableContent } from '../hooks/useEditableContent';
 import { ContactForm } from '../components/contact/ContactForm';
@@ -8,6 +9,9 @@ import { usePageMetadata } from '../hooks/usePageMetadata';
 
 export function ContactPage() {
   const contact = useSiteContact();
+  // Un pôle de la page d'accueil (Clean, Conciergerie, Maintenance) arrive ici avec son sujet déjà choisi.
+  const [recherche] = useSearchParams();
+  const sujetDemande = recherche.get('sujet')?.trim().slice(0, 120) || undefined;
   const { text, loading: contenuEnCours } = useEditableContent();
   usePageMetadata({
     title: 'Contact',
@@ -88,7 +92,7 @@ export function ContactPage() {
         </div>
 
         <div className="rounded-lg border border-mtm-border bg-mtm-surface p-6 shadow-card">
-          <ContactForm />
+          <ContactForm initialSujet={sujetDemande} />
         </div>
       </section>
 

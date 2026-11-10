@@ -1,0 +1,102 @@
+<div class="team-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Site web</p>
+      <h1 class="page-header__title">Pôles et services</h1>
+      <p class="page-header__subtitle">
+        Les pôles d’activité présentés sur la page « Nos services » et sur l’accueil du site : une carte par pôle, avec sa
+        photo, ses prestations et son bouton. Un pôle n’apparaît qu’une fois publié. Le bandeau de la page se règle dans
+        « Contenus du site ».
+      </p>
+    </div>
+    @if (canCreate) {
+      <button mat-flat-button color="primary" type="button" (click)="openEditor()">
+        <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Ajouter un pôle
+      </button>
+    }
+  </header>
+
+  @if (!loading() && withoutImage().length > 0 && canModify) {
+    <aside class="alert-banner" role="status">
+      <div class="alert-banner__head">
+        <svg lucideImageOff aria-hidden="true"></svg>
+        <strong>{{ withoutImage().length }} pôle{{ withoutImage().length > 1 ? 's' : '' }} sans photo</strong>
+      </div>
+      <p>Le site affiche un fond de marque à la place. Ajoutez la photo avec le bouton « Photo » de chaque carte (paysage, au moins 800 × 500 px).</p>
+    </aside>
+  }
+  @if (!loading() && unpublished().length > 0 && canPublish) {
+    <aside class="alert-banner alert-banner--info" role="status">
+      <p>{{ unpublished().length }} pôle{{ unpublished().length > 1 ? 's' : '' }} non publié{{ unpublished().length > 1 ? 's' : '' }} : invisible{{ unpublished().length > 1 ? 's' : '' }} pour les visiteurs.</p>
+    </aside>
+  }
+
+  @if (loading()) {
+    <div class="skeleton" style="height: 320px"></div>
+  } @else if (items().length === 0) {
+    <section class="page-card detail-section">
+      <div class="empty-state">
+        <h3>Aucun pôle</h3>
+        <p>Ajoutez les pôles d’activité de MTM : ils apparaîtront sur la page « Nos services ».</p>
+        @if (canCreate) {
+          <button mat-flat-button color="primary" type="button" (click)="openEditor()">Ajouter un pôle</button>
+        }
+      </div>
+    </section>
+  } @else {
+    <section class="page-card detail-section" aria-label="Liste des pôles">
+      <ul class="cards">
+        @for (p of items(); track p.id) {
+          <li>
+            <article class="card" [class.is-hidden]="!p.isActive" [class.is-busy]="busyId() === p.id">
+              <div class="card__media" style="aspect-ratio: 16 / 9">
+                @if (p.imageUrl) {
+                  <img [src]="p.imageUrl" [alt]="p.nom" loading="lazy" />
+                } @else {
+                  <div class="card__placeholder" aria-hidden="true">
+                    <small>Aucune photo</small>
+                  </div>
+                }
+                <span class="status-pill card__state" [class.status-pill--success]="p.isActive" [class.status-pill--warning]="!p.isActive">{{ p.isActive ? 'Publié' : 'Non publié' }}</span>
+                <span class="card__order" matTooltip="Ordre d’affichage sur le site">#{{ p.ordre }}</span>
+              </div>
+              <div class="card__body">
+                <h3>{{ p.nom }}</h3>
+                @if (p.accroche) {
+                  <p class="card__meta">{{ p.accroche }}</p>
+                }
+                <p class="card__text">{{ p.points.length }} prestation{{ p.points.length > 1 ? 's' : '' }}@if (p.libelleLien) { · bouton « {{ p.libelleLien }} »}@if (p.surAccueil) { · sur l’accueil}</p>
+              </div>
+              <div class="card__actions">
+                @if (canModify) {
+                  <label class="upload-button" [matTooltip]="p.imageUrl ? 'Remplacer la photo' : 'Ajouter une photo'">
+                    <svg lucideUpload aria-hidden="true"></svg>Photo
+                    <input type="file" accept="image/*" (change)="selectImage($event, p)" />
+                  </label>
+                  <button mat-stroked-button type="button" (click)="openEditor(p)">
+                    <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Modifier
+                  </button>
+                }
+                <span class="card__spacer"></span>
+                @if (canPublish) {
+                  <button mat-icon-button type="button" (click)="togglePublish(p)" [matTooltip]="p.isActive ? 'Retirer du site' : 'Publier sur le site'" [attr.aria-label]="p.isActive ? 'Retirer du site' : 'Publier'">
+                    @if (p.isActive) {
+                      <svg lucideEyeOff aria-hidden="true"></svg>
+                    } @else {
+                      <svg lucideEye aria-hidden="true"></svg>
+                    }
+                  </button>
+                }
+                @if (canDelete) {
+                  <button mat-icon-button type="button" class="card__delete" (click)="remove(p)" matTooltip="Supprimer" aria-label="Supprimer">
+                    <svg lucideTrash2 aria-hidden="true"></svg>
+                  </button>
+                }
+              </div>
+            </article>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+</div>

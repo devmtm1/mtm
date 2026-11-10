@@ -1,4 +1,4 @@
-import { FileSearch, Hammer, KeyRound, Newspaper, Sparkles, type LucideIcon } from 'lucide-react';
+import { FileSearch, Hammer, KeyRound, LayoutGrid, Newspaper, Sparkles, type LucideIcon } from 'lucide-react';
 import { ROUTES } from '../../routes';
 
 interface ServiceLink {
@@ -14,6 +14,12 @@ interface ServiceLink {
  * tuile « Autres » de l'accueil.
  */
 export const SERVICES: ServiceLink[] = [
+  {
+    to: ROUTES.services,
+    label: 'Tous nos services',
+    description: 'Nos pôles d’activité, de la vente à la maintenance',
+    icon: LayoutGrid,
+  },
   {
     to: ROUTES.gestionLocative,
     label: 'Gestion locative',

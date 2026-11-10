@@ -27,6 +27,10 @@ interface BandeauPageProps {
   vague?: FormeVague;
   /** Boutons d'action sous les engagements (ex. « Confier mon bien »). */
   actions?: ReactNode;
+  /** Voile bleu plus dense sous le texte : pour une photo qui porte un logo ou du texte à l'endroit du titre. */
+  voileDense?: boolean;
+  /** Bandeau plus bas : pour les pages de services, où l'on veut voir le contenu et le formulaire sans longue descente. */
+  compact?: boolean;
 }
 
 /**
@@ -35,14 +39,16 @@ interface BandeauPageProps {
  * et une vague en bas. Un panneau (recherche, faits clés) peut le chevaucher. Tous les textes et la photo se modifient dans
  * Contenus du site.
  */
-export function BandeauPage({ eyebrow, title, description, points = [], image, chargement = false, chevauche = true, vague = 'douce', actions }: BandeauPageProps) {
+export function BandeauPage({ eyebrow, title, description, points = [], image, chargement = false, chevauche = true, vague = 'douce', actions, voileDense = false, compact = false }: BandeauPageProps) {
   const [imageMorte, setImageMorte] = useState(false);
   const source = imageMorte ? IMAGE_BANDEAU_PAGE : image;
   const srcSet = source === IMAGE_BANDEAU_PAGE ? '' : cloudinarySrcSet(source);
   const fondu = `transition-opacity duration-300 ${chargement ? 'opacity-0' : 'opacity-100'}`;
 
   return (
-    <header className="relative isolate flex min-h-[340px] items-center overflow-hidden bg-mtm-primary-dark text-white sm:min-h-[400px] lg:min-h-[460px]">
+    <header className={`relative isolate flex items-center overflow-hidden bg-mtm-primary-dark text-white ${
+        compact ? 'min-h-[260px] sm:min-h-[300px] lg:min-h-[340px]' : 'min-h-[340px] sm:min-h-[400px] lg:min-h-[460px]'
+      }`}>
       <img
         src={source}
         srcSet={srcSet || undefined}
@@ -55,7 +61,9 @@ export function BandeauPage({ eyebrow, title, description, points = [], image, c
       />
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0a2142]/90 via-[#0a2142]/40 to-transparent max-lg:via-[#0a2142]/70 max-lg:to-[#0a2142]/50"
+        className={`absolute inset-0 -z-10 bg-gradient-to-r from-[#0a2142]/90 to-transparent max-lg:via-[#0a2142]/70 max-lg:to-[#0a2142]/50 ${
+          voileDense ? 'via-[#0a2142]/75' : 'via-[#0a2142]/40'
+        }`}
       />
       {/* Vague en bas : le bandeau se fond dans le fond de la page, sous le panneau de recherche qui le chevauche. */}
       <svg
@@ -68,18 +76,18 @@ export function BandeauPage({ eyebrow, title, description, points = [], image, c
         <path d={VAGUES[vague]} />
       </svg>
 
-      <div className={`relative mx-auto w-full max-w-6xl px-4 [text-shadow:0_1px_14px_rgba(10,33,66,0.5)] pt-9 sm:px-6 sm:pt-12 lg:pt-14 ${
-          chevauche ? 'pb-24 sm:pb-28 lg:pb-32' : 'pb-16 sm:pb-20 lg:pb-24'
+      <div className={`relative mx-auto w-full max-w-6xl px-4 [text-shadow:0_1px_14px_rgba(10,33,66,0.5)] ${compact ? 'pt-7 sm:px-6 sm:pt-8 lg:pt-9' : 'pt-9 sm:px-6 sm:pt-12 lg:pt-14'} ${
+          chevauche ? 'pb-24 sm:pb-28 lg:pb-32' : compact ? 'pb-12 sm:pb-14 lg:pb-16' : 'pb-16 sm:pb-20 lg:pb-24'
         } ${fondu}`}>
         <p className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/90 sm:text-xs">
           <span aria-hidden="true" className="h-[3px] w-12 rounded-full bg-mtm-accent" />
           {eyebrow}
         </p>
-        <h1 className="mt-4 max-w-2xl font-display text-[2rem] font-extrabold leading-[1.1] sm:text-5xl">{title}</h1>
-        <p className="mt-4 max-w-xl whitespace-pre-line text-[15px] leading-relaxed text-white/85 sm:text-base">{description}</p>
+        <h1 className={`max-w-2xl font-display text-[2rem] font-extrabold leading-[1.1] ${compact ? 'mt-3 sm:text-4xl' : 'mt-4 sm:text-5xl'}`}>{title}</h1>
+        <p className={`max-w-xl whitespace-pre-line text-[15px] leading-relaxed text-white/85 sm:text-base ${compact ? 'mt-3' : 'mt-4'}`}>{description}</p>
 
         {points.length > 0 && (
-          <ul className="mt-6 flex max-w-2xl flex-wrap gap-x-7 gap-y-2.5">
+          <ul className={`flex max-w-2xl flex-wrap gap-x-7 gap-y-2.5 ${compact ? 'mt-4' : 'mt-6'}`}>
             {points.map((point, index) => {
               const Icone = ICONES[index % ICONES.length];
               return (
@@ -92,7 +100,7 @@ export function BandeauPage({ eyebrow, title, description, points = [], image, c
           </ul>
         )}
 
-        {actions && <div className="mt-7 flex flex-wrap items-center gap-3">{actions}</div>}
+        {actions && <div className={`flex flex-wrap items-center gap-3 ${compact ? 'mt-5' : 'mt-7'}`}>{actions}</div>}
       </div>
     </header>
   );

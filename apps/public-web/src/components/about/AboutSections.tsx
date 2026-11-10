@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Handshake, HeartHandshake, ShieldCheck, type LucideIcon } from 'lucide-react';
+import { usePoles } from '../../hooks/usePoles';
 import { ROUTES } from '../../routes';
 import { LinkButton } from '../ui/LinkButton';
 import { Reveal } from '../ui/Reveal';
 import { SectionHeading } from '../ui/SectionHeading';
+import { TexteReplie } from '../ui/TexteReplie';
 
 const VALEURS: { icon: LucideIcon; titre: string }[] = [
   {
@@ -20,13 +22,6 @@ const VALEURS: { icon: LucideIcon; titre: string }[] = [
   },
 ];
 
-/** Les quatre métiers en une rangée de liens : un point d'entrée vers chaque page sans une section entière. */
-const METIERS = [
-  { titre: 'Vente de terrains et villas', to: ROUTES.catalog },
-  { titre: 'Gestion locative', to: ROUTES.gestionLocative },
-  { titre: 'Construction', to: ROUTES.construction },
-  { titre: 'Démarches administratives', to: ROUTES.demarches },
-];
 
 /**
  * Qui nous sommes : le texte de présentation (modifiable au back-office), les
@@ -34,6 +29,8 @@ const METIERS = [
  * bloc plutôt que trois, pour que la page ne s'allonge pas inutilement.
  */
 export function AboutStory({ texte }: { texte: string }) {
+  // Les pôles d'activité viennent du back-office : un pôle ajouté apparaît ici sans toucher au site.
+  const { data: poles } = usePoles();
   const paragraphes = texte
     .split(/\n+/)
     .map((p) => p.trim())
@@ -47,19 +44,15 @@ export function AboutStory({ texte }: { texte: string }) {
           <h2 id="qui-sommes-nous" className="mt-2 font-display text-xl font-bold text-mtm-text sm:text-3xl">
             Une agence qui vous accompagne de bout en bout
           </h2>
-          <div className="mt-5 space-y-4 text-[15px] leading-relaxed text-mtm-muted sm:text-base">
-            {paragraphes.map((paragraphe, index) => (
-              <p key={index}>{paragraphe}</p>
-            ))}
-          </div>
+          <TexteReplie className="mt-5" paragraphes={paragraphes} visibles={1} classeParagraphe="text-[15px] leading-relaxed text-mtm-muted sm:text-base" />
           <ul className="mt-6 flex flex-wrap gap-2" aria-label="Nos métiers">
-            {METIERS.map(({ titre, to }) => (
-              <li key={titre}>
+            {(poles ?? []).map((pole) => (
+              <li key={pole.id}>
                 <Link
-                  to={to}
+                  to={`${ROUTES.services}#${pole.slug}`}
                   className="inline-flex min-h-11 items-center gap-1 rounded-full border border-mtm-border bg-mtm-surface px-3.5 py-2 text-xs font-semibold text-mtm-primary transition-colors active:scale-95 hover:border-mtm-primary-light hover:bg-mtm-primary-subtle focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mtm-primary sm:text-sm"
                 >
-                  {titre}
+                  {pole.nom}
                   <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                 </Link>
               </li>

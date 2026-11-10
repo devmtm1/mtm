@@ -18,6 +18,13 @@ interface ContactFormProps {
   sujetOptions?: string[];
   /** Nature de la demande (client connecté) : « visite » depuis une fiche terrain. */
   demandeType?: 'information' | 'visite';
+  /**
+   * Le sujet est imposé par la page (ex. la page d'un pôle) : il s'affiche en rappel au lieu d'un champ à remplir, et le
+   * formulaire gagne une ligne.
+   */
+  sujetFige?: boolean;
+  /** Texte du bouton d'envoi, quand « Envoyer le message » ne correspond pas à la demande. */
+  libelleBouton?: string;
   onSuccess?: () => void;
 }
 
@@ -27,6 +34,8 @@ export function ContactForm({
   initialSujet,
   sujetOptions,
   demandeType,
+  sujetFige = false,
+  libelleBouton = 'Envoyer le message',
   onSuccess,
 }: ContactFormProps) {
   const { values, setValue, errors, submitting, submitted, submitError, submit, client } = useContactForm({
@@ -61,6 +70,12 @@ export function ContactForm({
         void submit();
       }}
     >
+      {sujetFige && (
+        <p className="rounded-xl bg-mtm-primary-subtle px-3.5 py-2.5 text-sm text-mtm-primary-dark">
+          <span className="font-semibold">Votre demande :</span> {values.sujet}
+        </p>
+      )}
+
       {client ? (
         <ClientIdentityNotice client={client} dansEspaceClient={!bienLocatifId} />
       ) : (
@@ -94,6 +109,7 @@ export function ContactForm({
         <ChampTelephone label="Téléphone" id="contact-telephone" value={values.telephone} onChange={(valeur) => setValue('telephone', valeur)} error={errors.telephone} />
         )}
 
+        {!sujetFige && (
         <FormField label="Sujet" htmlFor="contact-sujet">
           {sujetOptions?.length ? (
             <select
@@ -124,12 +140,13 @@ export function ContactForm({
             />
           )}
         </FormField>
+        )}
       </div>
 
       <FormField label="Votre message" htmlFor="contact-message" error={errors.message} required>
         <textarea
           id="contact-message"
-          rows={5}
+          rows={sujetFige ? 4 : 5}
           className={fieldInputClass}
           value={values.message}
           onChange={(event) => setValue('message', event.target.value)}
@@ -143,7 +160,7 @@ export function ContactForm({
       )}
 
       <Button type="submit" disabled={submitting} className="w-full sm:w-auto sm:self-start">
-        {submitting ? 'Envoi en cours...' : 'Envoyer le message'}
+        {submitting ? 'Envoi en cours...' : libelleBouton}
       </Button>
     </form>
   );

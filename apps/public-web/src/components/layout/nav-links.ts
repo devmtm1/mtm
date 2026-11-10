@@ -17,6 +17,7 @@ export const PROJECT_LINKS = [
 ];
 
 export const SERVICE_LINKS = [
+  { to: ROUTES.services, label: 'Tous nos services' },
   { to: ROUTES.gestionLocative, label: 'Gestion locative' },
   { to: ROUTES.construction, label: 'Construction' },
   { to: ROUTES.demarches, label: 'Démarches administratives' },

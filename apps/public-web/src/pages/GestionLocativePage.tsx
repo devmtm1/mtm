@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { BellRing, CheckCircle2, FileSignature, FileText, KeyRound, UserSearch, Wallet } from 'lucide-react';
+import { BellRing, House, FileSignature, FileText, KeyRound, UserSearch, Wallet } from 'lucide-react';
 import { BandeauPage, IMAGE_BANDEAU_PAGE } from '../components/layout/BandeauPage';
-import { AppelFinal, EnTeteSection, EtapesCourtes, ListeCompacte, NavigationPage, type Icone } from '../components/services/ServicesBlocs';
-import { FaqDemarches } from '../components/demarches/FaqDemarches';
+import { AppelFinal, type Icone } from '../components/services/ServicesBlocs';
 import { FormulaireConfierBien } from '../components/gestion/FormulaireConfierBien';
 import { Modal } from '../components/ui/Modal';
 import { buttonClassName } from '../components/ui/button-styles';
@@ -10,6 +9,8 @@ import { LinkButton } from '../components/ui/LinkButton';
 import { useEditableContent } from '../hooks/useEditableContent';
 import { useIsMobile } from '../hooks/useMediaQuery';
 import { useSiteContact } from '../hooks/useSiteContact';
+import { ServicesComplementaires } from '../components/services/ServicesComplementaires';
+import { FaqCourte, ServiceEtDemande } from '../components/services/ServiceEtDemande';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 import { donneesFaq } from '../utils/seo';
 import { ETAPES_GESTION, FAQ_GESTION, INTRO_GESTION, REASSURANCE_GESTION, SERVICES_GESTION } from '../utils/gestionLocative';
@@ -41,9 +42,11 @@ export function GestionLocativePage() {
 
   return (
     <div>
+      {mobile && (
       <BandeauPage
         chevauche={false}
-        eyebrow={text('gestion-locative.eyebrow', 'Nos services')}
+        compact
+        eyebrow={text('gestion-locative.eyebrow', 'Nos services · MTM Gestion')}
         title={text('gestion-locative.title', 'Gestion locative')}
         description={text('gestion-locative.intro', INTRO_GESTION)}
         points={lines('gestion-locative.reassurance', REASSURANCE_GESTION)}
@@ -71,63 +74,36 @@ export function GestionLocativePage() {
           </>
         }
       />
-
-      <NavigationPage
-        liens={[
-          { libelle: 'Ce que nous faisons', href: '#prestations' },
-          { libelle: 'Étapes', href: '#parcours' },
-          { libelle: 'Questions', href: '#faq' },
-          ...(mobile ? [] : [{ libelle: 'Confier mon bien', href: '#confier' }]),
-        ]}
-      />
-
-      <section id="prestations" className="scroll-mt-32 bg-white py-12 lg:py-12">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <EnTeteSection
-            mention="Ce que nous faisons pour vous"
-            titre="Tout ce qu’un propriétaire n’a pas envie de gérer"
-            texte="Appartement, villa, immeuble, bureau ou séjour de courte durée : de la recherche du locataire au reversement des loyers, nous prenons tout en charge."
-          />
-          <div className="mt-8 lg:mt-10">
-            <ListeCompacte elements={steps('gestion-locative.prestations', SERVICES_GESTION)} icone={(_, index) => ICONES[index % ICONES.length]} />
-          </div>
-        </div>
-      </section>
-
-      <section id="parcours" className="scroll-mt-32 bg-mtm-bg py-12 lg:py-12">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <EnTeteSection mention="Comment ça se passe" titre="En quatre étapes" />
-          <div className="mt-8 lg:mt-10">
-            <EtapesCourtes etapes={steps('gestion-locative.etapes', ETAPES_GESTION)} />
-          </div>
-        </div>
-      </section>
-
-      {faq.length > 0 && (
-        <section id="faq" className="scroll-mt-32 bg-white py-12 lg:py-12">
-          <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.4fr] lg:gap-16">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-mtm-accent">Questions fréquentes</p>
-              <h2 className="mt-3 font-display text-[1.65rem] font-extrabold leading-tight text-mtm-text sm:text-3xl">
-                Vous vous posez une question ?
-              </h2>
-              <p className="mt-3 text-[15px] leading-relaxed text-mtm-muted sm:text-base">
-                Les réponses à ce que les propriétaires nous demandent le plus. Vous ne trouvez pas la vôtre ? Écrivez-nous.
-              </p>
-              <button
-                type="button"
-                onClick={() => (mobile ? setFeuilleOuverte(true) : document.getElementById('confier')?.scrollIntoView({ behavior: 'smooth' }))}
-                className="mt-4 inline-flex min-h-11 items-center gap-1.5 text-[15px] font-semibold text-mtm-accent hover:underline"
-              >
-                Poser ma question
-              </button>
-            </div>
-            <FaqDemarches questions={faq} />
-          </div>
-        </section>
       )}
 
-      {mobile ? (
+      <ServiceEtDemande
+        eyebrow={text('gestion-locative.eyebrow', 'Nos services · MTM Gestion')}
+        titrePage={text('gestion-locative.title', 'Gestion locative')}
+        accroche="Tout ce qu’un propriétaire n’a pas envie de gérer"
+        intro={text('gestion-locative.intro', INTRO_GESTION)}
+        engagements={lines('gestion-locative.reassurance', REASSURANCE_GESTION)}
+        image={text('gestion-locative.image', IMAGE_BANDEAU_PAGE)}
+        elements={steps('gestion-locative.prestations', SERVICES_GESTION)}
+        icone={(_, index) => ICONES[index % ICONES.length]}
+        etapes={steps('gestion-locative.etapes', ETAPES_GESTION)}
+        titreEtapes="Comment ça se passe"
+        idFormulaire="confier"
+        titreFormulaire="Confier mon bien"
+        iconeFormulaire={House}
+        assurance="Un conseiller vous rappelle, sans engagement."
+        formulaire={<FormulaireConfierBien />}
+        pied={
+          <a href={lienWhatsapp} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-mtm-success hover:underline">
+            Ou discutez directement sur WhatsApp
+          </a>
+        }
+      />
+
+      <FaqCourte questions={faq} />
+
+      <ServicesComplementaires pole="gestion" />
+
+      {mobile && (
         <AppelFinal
           titre="Confiez-nous votre bien"
           texte="Quelques informations suffisent : un conseiller vous rappelle, sans engagement."
@@ -135,42 +111,7 @@ export function GestionLocativePage() {
           surClic={() => setFeuilleOuverte(true)}
           whatsappHref={lienWhatsapp}
         />
-      ) : (
-        <section id="confier" className="scroll-mt-32 bg-mtm-bg py-12 lg:py-12">
-          <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.4fr] lg:gap-14">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-mtm-accent">Confier mon bien</p>
-              <h2 className="mt-3 font-display text-[1.65rem] font-extrabold leading-tight text-mtm-text sm:text-3xl">
-                Parlez-nous de votre bien
-              </h2>
-              <p className="mt-3 text-[15px] leading-relaxed text-mtm-muted sm:text-base">
-                Quelques informations suffisent : un conseiller vous rappelle, sans engagement, pour étudier votre bien et vous
-                présenter nos conditions.
-              </p>
-              <ul className="mt-5 flex flex-col gap-2.5 text-sm text-mtm-text">
-                {['Réponse d’un conseiller MTM', 'Aucune obligation de votre part', 'Un échange possible par WhatsApp'].map((point) => (
-                  <li key={point} className="flex items-center gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-mtm-success" aria-hidden="true" />
-                    {point}
-                  </li>
-                ))}
-              </ul>
-              <a
-                href={lienWhatsapp}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-6 inline-flex items-center gap-2 rounded-md border border-mtm-success bg-mtm-success/5 px-4 py-2.5 text-sm font-semibold text-mtm-success transition-colors hover:bg-mtm-success/10"
-              >
-                Discuter directement sur WhatsApp
-              </a>
-            </div>
-            <div className="rounded-3xl border border-mtm-border/70 bg-white p-5 shadow-card sm:p-8">
-              <FormulaireConfierBien />
-            </div>
-          </div>
-        </section>
       )}
-
       {feuilleOuverte && (
         <Modal title="Confier mon bien" onClose={() => setFeuilleOuverte(false)}>
           <FormulaireConfierBien />

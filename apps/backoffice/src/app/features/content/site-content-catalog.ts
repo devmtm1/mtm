@@ -115,6 +115,18 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
     ],
   },
   {
+    id: 'services',
+    title: 'Page « Nos services »',
+    where: 'Bandeau en haut de la page « Nos services » (les pôles eux-mêmes se gèrent dans Pôles et services)',
+    slots: [
+      { key: 'services.image', label: 'Image du bandeau', help: 'Photo en fond du bandeau, sous un voile bleu marine : le texte blanc se lit sur n’importe quelle image. Format paysage conseillé (au moins 1600 × 900 px). Laisser vide pour la photo par défaut.', kind: 'image' },
+      { key: 'services.eyebrow', label: 'Mention au-dessus du titre', help: 'Petit libellé précédé d’un trait rouge. Par défaut : « Nos services ».' },
+      { key: 'services.title', label: 'Titre', help: 'Le grand titre du bandeau. Par défaut : « Nos pôles d’activités ».' },
+      { key: 'services.intro', label: 'Texte de présentation', help: 'Un court paragraphe sous le titre.', multiline: true },
+      { key: 'services.video', label: 'Vidéo de présentation des services', help: 'Adresse YouTube de la vidéo (par exemple https://www.youtube.com/watch?v=…). Elle remplace les cartes de la section « Nos services » de la page d’accueil, avec la liste des services à côté. Laisser vide pour garder les cartes.' },
+    ],
+  },
+  {
     id: 'actualites',
     title: 'Page « Actualités et conseils »',
     where: 'Bandeau en haut de la page « Actualités et conseils » (les vidéos se gèrent dans Actualités et conseils)',

@@ -3,6 +3,7 @@ import { Quote, Users } from 'lucide-react';
 import type { TeamGroup, TeamPage, TeamPerson } from '../../types/team';
 import { cloudinarySrcSet } from '../../utils/cloudinary';
 import { initiales } from '../../utils/initiales';
+import { TexteReplie } from '../ui/TexteReplie';
 
 /**
  * Portrait cadré en 4/5. Sans photo — ou si son URL est morte — on affiche les
@@ -94,7 +95,7 @@ function MotDuDirecteur({ directeur }: { directeur: TeamPerson }) {
         <rect x="210" y="90" width="90" height="210" rx="4" />
       </svg>
 
-      <div className="mx-auto grid max-w-6xl gap-12 px-4 py-14 sm:px-6 md:grid-cols-[minmax(0,430px)_1fr] md:items-start lg:gap-20 lg:py-20">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 sm:px-6 md:grid-cols-[minmax(0,430px)_1fr] md:items-start lg:gap-16 lg:py-14">
         {/* Un long texte à côté d'une photo : la photo reste en haut de l'écran pendant la lecture. */}
         <figure className="mx-auto w-full max-w-[300px] sm:max-w-[400px] md:sticky md:top-28 md:mx-0 md:max-w-none">
           <div className="relative ml-6 mt-6">
@@ -138,10 +139,8 @@ function MotDuDirecteur({ directeur }: { directeur: TeamPerson }) {
             </p>
           )}
           {corps.length > 0 && (
-            <blockquote className="mt-6 space-y-4 text-base leading-7 text-slate-700">
-              {corps.map((paragraphe, index) => (
-                <p key={index}>{paragraphe}</p>
-              ))}
+            <blockquote className="mt-6">
+              <TexteReplie paragraphes={corps} visibles={2} classeParagraphe="text-base leading-7 text-slate-700" />
             </blockquote>
           )}
           <div className="mt-8">
@@ -250,7 +249,7 @@ export function TeamSection({ team }: { team: TeamPage | null }) {
       {directeur && <MotDuDirecteur directeur={directeur} />}
 
       {(groupe || membres.length > 0) && (
-        <section aria-labelledby="notre-equipe" className="mx-auto max-w-5xl px-4 py-14 sm:px-6">
+        <section aria-labelledby="notre-equipe" className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
           <div className="text-center">
             <span className="text-xs font-bold uppercase tracking-[0.25em] text-mtm-primary">
               MTM <span className="text-mtm-primary-medium">Immobilier</span>

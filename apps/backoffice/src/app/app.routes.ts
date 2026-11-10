@@ -304,6 +304,13 @@ export const routes: Routes = [
           import('./features/content/promotions/promotions').then((m) => m.Promotions),
       },
       {
+        path: 'content/poles',
+        title: 'Pôles et services',
+        canActivate: [permissionsGuard(['content:consulter'])],
+        loadComponent: () =>
+          import('./features/content/poles/poles').then((m) => m.Poles),
+      },
+      {
         path: 'content/equipe',
         title: 'Équipe du site',
         canActivate: [permissionsGuard(['content:consulter'])],

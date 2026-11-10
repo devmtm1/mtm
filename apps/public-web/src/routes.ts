@@ -11,6 +11,10 @@ export const ROUTES = {
   /** Biens et locations mis de côté par le visiteur (gardés sur son appareil). */
   favoris: '/favoris',
   about: '/a-propos',
+  /** Tous les pôles d'activité de MTM (liste gérée dans le back-office). */
+  services: '/nos-services',
+  /** Page d'un pôle (clean, conciergerie, maintenance…), sous la liste de tous les services. */
+  servicePole: (slug: string) => `/nos-services/${slug}`,
   gestionLocative: '/gestion-locative',
   construction: '/construction',
   demarches: '/demarches-administratives',
