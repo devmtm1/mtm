@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useEditableContent } from '../../hooks/useEditableContent';
 import { usePoles } from '../../hooks/usePoles';
 import { ROUTES } from '../../routes';
-import { extraireIdYoutube } from '../../utils/youtube';
+import { analyserVideo } from '../../utils/video';
 import { iconePole } from '../services/pole-icones';
 import { SectionHeading } from '../ui/SectionHeading';
 import { Skeleton } from '../ui/Skeleton';
@@ -21,7 +21,7 @@ const POLES_A_LA_UNE = 4;
 export function ServicesSection() {
   const { data: poles, loading, error } = usePoles();
   const { text } = useEditableContent();
-  const videoId = extraireIdYoutube(text('services.video', ''));
+  const video = analyserVideo(text('services.video', ''));
   const liste = poles ?? [];
   const choisis = liste.filter((pole) => pole.surAccueil);
   const misEnAvant = (choisis.length > 0 ? choisis : liste).slice(0, POLES_A_LA_UNE);
@@ -49,9 +49,9 @@ export function ServicesSection() {
         align="center"
       />
 
-      {videoId ? (
+      {video ? (
         <div className="mt-4 grid items-center gap-6 lg:mt-10 lg:grid-cols-[1.45fr_1fr] lg:gap-10">
-          <VideoPresentation videoId={videoId} titre="Découvrez MTM Immobilier en vidéo" />
+          <VideoPresentation video={video} titre="Découvrez MTM Immobilier en vidéo" />
           <div>
             <ul className="flex flex-col gap-2.5" aria-label="Nos services">
               {loading

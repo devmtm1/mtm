@@ -7,8 +7,14 @@ import { PrismaService } from '../../database/prisma.service';
 import { hasAnyRole, PUBLISHER_ROLES } from '../rbac/role-groups';
 import { AuditService } from '../audit/audit.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
-import { validateUploadedAsset } from '../../common/storage/asset-validation';
-import { publicIdDepuisUrl } from '../../common/storage/cloudinary-url';
+import {
+  MAX_VIDEO_SIZE,
+  validateUploadedAsset,
+} from '../../common/storage/asset-validation';
+import {
+  publicIdDepuisUrl,
+  typeRessourceDepuisUrl,
+} from '../../common/storage/cloudinary-url';
 import { CreateContentBlockDto } from './dto/create-content-block.dto';
 import { UpdateContentBlockDto } from './dto/update-content-block.dto';
 
@@ -142,17 +148,48 @@ export class ContentBlockService {
     file: Express.Multer.File,
     user: ContentEditor,
   ) {
-    if (!/^[a-z0-9][a-z0-9.-]{1,198}$/.test(key)) {
-      throw new BadRequestException('Emplacement invalide');
-    }
+    this.verifierEmplacement(key);
     validateUploadedAsset(file, 'media');
     if (!file.mimetype.startsWith('image/')) {
       throw new BadRequestException('Choisissez une image (JPEG, PNG ou WebP)');
     }
+    return this.enregistrerMedia(key, file, user, 'Image', 'L’image');
+  }
+
+  /**
+   * Vidéo d'un emplacement du site (présentation des services…) : même principe que l'image, avec un plafond de 50 Mo.
+   * Les vidéos YouTube ou Vimeo, elles, se collent comme une simple adresse.
+   */
+  async uploadVideo(
+    key: string,
+    file: Express.Multer.File,
+    user: ContentEditor,
+  ) {
+    this.verifierEmplacement(key);
+    validateUploadedAsset(file, 'media', MAX_VIDEO_SIZE);
+    if (!file.mimetype.startsWith('video/')) {
+      throw new BadRequestException('Choisissez une vidéo MP4 ou MOV');
+    }
+    return this.enregistrerMedia(key, file, user, 'Vidéo', 'La vidéo');
+  }
+
+  private verifierEmplacement(key: string) {
+    if (!/^[a-z0-9][a-z0-9.-]{1,198}$/.test(key)) {
+      throw new BadRequestException('Emplacement invalide');
+    }
+  }
+
+  private async enregistrerMedia(
+    key: string,
+    file: Express.Multer.File,
+    user: ContentEditor,
+    titre: string,
+    sujet: string,
+  ) {
     const envoye = await this.cloudinary.upload(file, 'mtm/pages', true);
     if (!envoye.secureUrl) {
       throw new BadRequestException(
-        'L’image n’a pas pu être enregistrée : réessayez',
+        `${sujet} n’a pas pu être enregistrée : réessayez`,
       );
     }
     const existing = await this.prisma.contentBlock.findUnique({
@@ -172,7 +209,7 @@ export class ContentBlockService {
       bloc = await this.prisma.contentBlock.create({
         data: {
           key,
-          title: 'Image',
+          title: titre,
           content: envoye.secureUrl,
           type: 'text',
           ordre: 0,
@@ -192,14 +229,18 @@ export class ContentBlockService {
     return bloc;
   }
 
-  /** Supprime de Cloudinary l'image dont l'adresse est donnée, si c'en est une ; un échec n'empêche rien. */
+  /** Supprime de Cloudinary l'image ou la vidéo dont l'adresse est donnée, si c'en est une ; un échec n'empêche rien. */
   private async supprimerImage(contenu: string | null | undefined) {
     const publicId = publicIdDepuisUrl(contenu);
     if (!publicId) return;
     try {
-      await this.cloudinary.destroy(publicId, 'image', true);
+      await this.cloudinary.destroy(
+        publicId,
+        typeRessourceDepuisUrl(contenu),
+        true,
+      );
     } catch {
-      // L'image reste chez Cloudinary : sans conséquence pour le site.
+      // Le fichier reste chez Cloudinary : sans conséquence pour le site.
     }
   }
 

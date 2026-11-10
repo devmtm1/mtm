@@ -64,6 +64,14 @@ export class ContentBlockApiService {
     return this.http.post<ContentBlock>(`${this.baseUrl}/images`, donnees);
   }
 
+  /** Envoie la vidéo d'un emplacement du site (présentation des services…) ; remplace l'ancienne. */
+  uploadVideo(key: string, fichier: File): Observable<ContentBlock> {
+    const donnees = new FormData();
+    donnees.append('key', key);
+    donnees.append('file', fichier);
+    return this.http.post<ContentBlock>(`${this.baseUrl}/videos`, donnees);
+  }
+
   remove(key: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${key}`);
   }

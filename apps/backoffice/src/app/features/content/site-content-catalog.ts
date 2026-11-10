@@ -16,6 +16,8 @@ export interface ContentSlot {
   type?: 'text' | 'hero' | 'stat';
   /** `image` : l'emplacement reçoit une image envoyée depuis le poste, pas un texte. */
   kind?: 'image';
+  /** `video` : en plus de l'adresse à coller, l'éditeur propose d'envoyer un fichier vidéo depuis le poste. */
+  televersement?: 'video';
 }
 
 export interface ContentSection {
@@ -123,7 +125,7 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
       { key: 'services.eyebrow', label: 'Mention au-dessus du titre', help: 'Petit libellé précédé d’un trait rouge. Par défaut : « Nos services ».' },
       { key: 'services.title', label: 'Titre', help: 'Le grand titre du bandeau. Par défaut : « Nos pôles d’activités ».' },
       { key: 'services.intro', label: 'Texte de présentation', help: 'Un court paragraphe sous le titre.', multiline: true },
-      { key: 'services.video', label: 'Vidéo de présentation des services', help: 'Adresse YouTube de la vidéo (par exemple https://www.youtube.com/watch?v=…). Elle remplace les cartes de la section « Nos services » de la page d’accueil, avec la liste des services à côté. Laisser vide pour garder les cartes.' },
+      { key: 'services.video', label: 'Vidéo de présentation des services', help: 'Adresse de la vidéo : YouTube (https://www.youtube.com/watch?v=…), Vimeo (https://vimeo.com/…) ou fichier vidéo en .mp4 / .webm (adresse https directe) ; ou envoyez directement un fichier MP4 ou MOV de 50 Mo au maximum. Elle remplace les cartes de la section « Nos services » de la page d’accueil, avec la liste des services à côté. Laisser vide pour garder les cartes.' , televersement: 'video' },
     ],
   },
   {

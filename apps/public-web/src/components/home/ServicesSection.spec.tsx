@@ -69,8 +69,21 @@ describe('ServicesSection', () => {
     expect(document.querySelector('iframe')?.getAttribute('src')).toContain('youtube-nocookie.com/embed/dQw4w9WgXcQ');
   });
 
-  it('une adresse qui n’est pas une vidéo YouTube laisse les cartes en place', () => {
+  it('lit aussi Vimeo et un fichier vidéo', async () => {
     etat.video = 'https://vimeo.com/123456789';
+    const premier = afficher();
+    await userEvent.click(screen.getByRole('button', { name: /Lire la vidéo/ }));
+    expect(document.querySelector('iframe')?.getAttribute('src')).toContain('player.vimeo.com/video/123456789');
+    premier.unmount();
+
+    etat.video = 'https://exemple.com/presentation.mp4';
+    afficher();
+    await userEvent.click(screen.getByRole('button', { name: /Lire la vidéo/ }));
+    expect(document.querySelector('video')?.getAttribute('src')).toBe('https://exemple.com/presentation.mp4');
+  });
+
+  it('une adresse qui n’est pas une vidéo laisse les cartes en place', () => {
+    etat.video = 'https://exemple.com/une-page';
     afficher();
     expect(screen.queryByRole('button', { name: /Lire la vidéo/ })).toBeNull();
     expect(screen.getByRole('link', { name: /MTM Gestion/ })).toBeTruthy();

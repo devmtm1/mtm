@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
-import { MAX_ASSET_SIZE } from '../../common/storage/asset-validation';
+import { MAX_ASSET_SIZE, MAX_VIDEO_SIZE } from '../../common/storage/asset-validation';
 import { Public } from '../auth/decorators/public.decorator';
 import { PublicCache } from '../../common/http/public-cache.decorator';
 import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
@@ -63,6 +63,21 @@ export class ContentBlockController {
   ) {
     if (!file) throw new BadRequestException('Une image est obligatoire');
     return this.content.uploadImage(key ?? '', file, user);
+  }
+
+  /** Envoie la vidéo d'un emplacement du site (présentation des services…) vers Cloudinary et en garde l'adresse. */
+  @Post('videos')
+  @RequirePermissions('content:modifier')
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_VIDEO_SIZE } }),
+  )
+  uploadVideo(
+    @Body('key') key: string,
+    @UploadedFile() file: Express.Multer.File | undefined,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    if (!file) throw new BadRequestException('Une vidéo est obligatoire');
+    return this.content.uploadVideo(key ?? '', file, user);
   }
 
   @Post()

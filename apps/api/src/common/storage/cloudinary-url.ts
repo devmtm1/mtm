@@ -9,8 +9,17 @@ export function publicIdDepuisUrl(
 ): string | null {
   if (!url || !/^https:\/\/res\.cloudinary\.com\//i.test(url)) return null;
   const correspondance =
-    /\/image\/upload\/(?:[^/]+\/)*?v\d+\/(.+?)(?:\.[a-z0-9]{2,5})?(?:\?.*)?$/i.exec(
+    /\/(?:image|video)\/upload\/(?:[^/]+\/)*?v\d+\/(.+?)(?:\.[a-z0-9]{2,5})?(?:\?.*)?$/i.exec(
       url,
     );
   return correspondance?.[1] ?? null;
+}
+
+/** Type de ressource Cloudinary d'une adresse de livraison : `video` pour `/video/upload/…`, `image` sinon. */
+export function typeRessourceDepuisUrl(
+  url: string | null | undefined,
+): 'image' | 'video' {
+  return /^https:\/\/res\.cloudinary\.com\/[^/]+\/video\//i.test(url ?? '')
+    ? 'video'
+    : 'image';
 }
