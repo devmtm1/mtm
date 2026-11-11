@@ -26,6 +26,10 @@ export function VideoPresentation({ video, titre }: { video: SourceVideo; titre:
               className="absolute inset-0 h-full w-full object-cover"
             />
           )}
+          {video.type === 'fichier' && (
+            // Une image du film en guise de vignette : le navigateur ne charge que les premières secondes, pas la vidéo entière.
+            <video src={`${video.url}#t=0.5`} preload="metadata" muted playsInline aria-hidden="true" tabIndex={-1} className="pointer-events-none absolute inset-0 h-full w-full object-cover" />
+          )}
           <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
           <span aria-hidden="true" className="absolute left-1/2 top-1/2 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-mtm-accent text-white shadow-card-hover ring-4 ring-white/70 transition-transform duration-200 group-hover:scale-110">
             <Play className="ml-1 h-9 w-9" fill="currentColor" />
