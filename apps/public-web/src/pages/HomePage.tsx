@@ -42,14 +42,15 @@ export function HomePage() {
       <Reveal>
         <TrustBand />
       </Reveal>
+      {/* La location est l'activité principale de MTM : elle ouvre la liste des biens, avant les ventes. */}
+      <Reveal>
+        <FeaturedLocationsSection />
+      </Reveal>
       <Reveal>
         <FeaturedTerrainsSection />
       </Reveal>
       <Reveal>
         <FeaturedProgrammesSection />
-      </Reveal>
-      <Reveal>
-        <FeaturedLocationsSection />
       </Reveal>
       <Reveal>
         <VideosSection />

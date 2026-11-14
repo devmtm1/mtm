@@ -16,6 +16,7 @@ import { ROUTES } from '../../routes';
 import { CATEGORIES_CATALOGUE, adresseCategorie } from '../../utils/categoriesCatalogue';
 import { useTerrainsCatalog } from '../../hooks/useTerrainsCatalog';
 import { useLocationsCatalog } from '../../hooks/useLocations';
+import { FeaturedLocationsSection } from './FeaturedLocationsSection';
 import { useProgrammes } from '../../hooks/useProgrammes';
 import { ProgrammeCard } from '../programmes/ProgrammeCard';
 import { SEUIL_SECTION_PROGRAMMES } from '../../utils/programmes';
@@ -43,9 +44,13 @@ interface Category {
   /** Teinte de l'icône, tirée de la palette de MTM. */
   tone: string;
   box: string;
+  /** Catégorie mise en avant (la location) : carte cerclée de rouge. */
+  mise?: boolean;
 }
 
 const CATEGORIES: Category[] = [
+  // La location d'abord : c'est l'activité principale de MTM.
+  { label: 'Location', to: ROUTES.locations, icon: KeyRound, tone: 'text-white', box: 'bg-mtm-accent', mise: true },
   // Les grandes surfaces : les terrains de plus de 500 m² (la règle est dans l'API, `categorie=hectares`).
   {
     label: CATEGORIES_CATALOGUE.hectares.libelle,
@@ -54,7 +59,6 @@ const CATEGORIES: Category[] = [
     tone: 'text-mtm-primary',
     box: 'bg-mtm-primary-subtle',
   },
-  { label: 'Location', to: ROUTES.locations, icon: KeyRound, tone: 'text-mtm-success', box: 'bg-mtm-success/10' },
   {
     label: CATEGORIES_CATALOGUE.terrains_villas.libelle,
     to: adresseCategorie(ROUTES.catalog, 'terrains_villas'),
@@ -167,7 +171,7 @@ export function MobileHome() {
       </section>
 
       <ul className={`${promotions.length > 0 ? 'mt-5' : 'mt-12'} grid grid-cols-4 gap-3 px-4`} aria-label="Catégories">
-        {CATEGORIES.map(({ label, to, icon: Icon, tone, box }) => {
+        {CATEGORIES.map(({ label, to, icon: Icon, tone, box, mise }) => {
           const inner = (
             <>
               <span className={`flex h-11 w-11 items-center justify-center rounded-xl ${box} ${tone}`}>
@@ -176,8 +180,9 @@ export function MobileHome() {
               <span className="text-center text-xs font-semibold leading-tight text-mtm-text">{label}</span>
             </>
           );
-          const cls =
-            'flex h-full w-full flex-col items-center gap-2 rounded-2xl border border-mtm-border/70 bg-mtm-surface px-1 py-3 shadow-card transition-transform active:scale-95';
+          const cls = `flex h-full w-full flex-col items-center gap-2 rounded-2xl border bg-mtm-surface px-1 py-3 shadow-card transition-transform active:scale-95 ${
+            mise ? 'border-mtm-accent ring-1 ring-mtm-accent/40' : 'border-mtm-border/70'
+          }`;
           return (
             <li key={label} className="flex">
               {to ? (
@@ -193,6 +198,11 @@ export function MobileHome() {
           );
         })}
       </ul>
+
+      {/* Les locations à la une, tout en haut : c'est la première chose que voit un visiteur sur mobile. */}
+      <div className="mt-2">
+        <FeaturedLocationsSection />
+      </div>
 
       <section className="mt-7" aria-labelledby="recents-title">
         <div className="flex items-center justify-between px-4">

@@ -46,7 +46,7 @@ export function HeroSection() {
       </svg>
       <div className="relative mx-auto flex w-full max-w-6xl flex-col items-start gap-4 px-4 py-10 [text-shadow:0_1px_14px_rgba(10,33,66,0.5)] sm:gap-6 sm:px-6 sm:pb-32 sm:pt-24">
         <span className="hidden rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white sm:inline-block">
-          Vente · Gestion · Contrôle · Construction
+          Location · Vente · Gestion · Construction
         </span>
         <h1 className="max-w-2xl whitespace-pre-line font-display text-3xl font-bold text-white sm:text-4xl md:text-5xl">
           {title}
@@ -63,7 +63,11 @@ export function HeroSection() {
         {/* Mobile : le champ de recherche et la barre d'action fixe portent
             déjà « voir nos biens » ; seule la vérification reste ici. */}
         <div className="flex w-full flex-wrap gap-3 sm:w-auto">
-          <LinkButton to={ROUTES.catalog} variant="accent" className="hidden sm:inline-flex">
+          {/* La location d'abord : c'est l'activité principale de MTM. */}
+          <LinkButton to={ROUTES.locations} variant="accent" className="hidden sm:inline-flex">
+            Voir les locations
+          </LinkButton>
+          <LinkButton to={ROUTES.catalog} variant="onDarkOutline" className="hidden sm:inline-flex">
             {ctaLabel}
           </LinkButton>
           <LinkButton to={ROUTES.demarches} variant="onDarkOutline" className="w-full sm:w-auto">

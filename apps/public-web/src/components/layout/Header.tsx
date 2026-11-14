@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { ChevronDown, Heart, User } from 'lucide-react';
+import { ChevronDown, Heart, KeyRound, User } from 'lucide-react';
 import { ROUTES } from '../../routes';
 import { useAuth } from '../../contexts/auth-context-store';
 import { useFavorites } from '../../hooks/useFavorites';
@@ -9,7 +9,7 @@ import { PRIMARY_LINKS, PROJECT_LINKS, SERVICE_LINKS } from './nav-links';
 // Lien actif : couleur + filet sous le libellé, pour que l'état ne repose pas
 // sur la seule couleur (lisibilité, daltonisme).
 function navLinkClass({ isActive }: { isActive: boolean }): string {
-  return `relative whitespace-nowrap py-1 text-sm font-semibold transition-colors after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-mtm-accent after:transition-transform after:duration-200 ${
+  return `relative whitespace-nowrap py-1 before:absolute before:-inset-y-2.5 before:inset-x-0 text-sm font-semibold transition-colors after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-mtm-accent after:transition-transform after:duration-200 ${
     isActive
       ? 'text-mtm-accent after:scale-x-100'
       : 'text-mtm-text hover:text-mtm-accent after:scale-x-0 hover:after:scale-x-100'
@@ -55,7 +55,7 @@ function NavDropdown({ label, links, to }: { label: string; links: DropdownLink[
     <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
       <button
         type="button"
-        className={`flex items-center gap-1 py-1 text-sm font-semibold transition-colors hover:text-mtm-accent ${
+        className={`relative flex items-center gap-1 py-1 before:absolute before:-inset-y-2.5 before:inset-x-0 text-sm font-semibold transition-colors hover:text-mtm-accent ${
           active ? 'text-mtm-accent' : 'text-mtm-text'
         }`}
         onClick={() => (to ? navigate(to) : setOpen((value) => !value))}
@@ -93,7 +93,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-mtm-border bg-mtm-surface/95 shadow-[0_1px_0_rgba(31,41,55,0.04)] backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
         <NavLink to={ROUTES.home} className="flex items-center gap-2" aria-label="MTM Immobilier, accueil">
           {/* Le symbole seul (le cube) : le logo rond complet, réduit à cette
               taille, rendait son texte illisible ; le nom est écrit à côté. */}
@@ -108,9 +108,25 @@ export function Header() {
               mène. Réalisations et projets à venir sont regroupés sous
               « Projets » pour alléger la barre. */}
           {PRIMARY_LINKS.filter((link) => link.to !== ROUTES.home && !PROJECT_LINKS.some((p) => p.to === link.to)).map((link) => (
-            <NavLink key={link.to} to={link.to} className={navLinkClass}>
-              {link.label}
-            </NavLink>
+            link.to === ROUTES.locations ? (
+              // La location est l'activité phare de MTM : son entrée de menu se distingue des autres.
+              <NavLink
+                key={link.to}
+                to={link.to}
+                className={({ isActive }) =>
+                  `inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-bold transition-colors ${
+                    isActive ? 'bg-mtm-accent text-white' : 'bg-mtm-accent-subtle text-mtm-accent hover:bg-mtm-accent hover:text-white'
+                  }`
+                }
+              >
+                <KeyRound className="h-4 w-4" aria-hidden="true" />
+                {link.label}
+              </NavLink>
+            ) : (
+              <NavLink key={link.to} to={link.to} className={navLinkClass}>
+                {link.label}
+              </NavLink>
+            )
           ))}
           <NavDropdown label="Projets" links={PROJECT_LINKS} />
           <NavDropdown label="Services" links={SERVICE_LINKS} to={ROUTES.services} />
