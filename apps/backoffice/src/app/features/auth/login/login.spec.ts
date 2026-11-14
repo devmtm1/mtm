@@ -2,16 +2,22 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { of, throwError } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Login } from './login';
 import { AuthService } from '../../../core/services/auth.service';
+
+/** Laisse la séquence de la porte (clé, ouverture des battants) se terminer. */
+async function laisserLaPorteSOuvrir(): Promise<void> {
+  await vi.advanceTimersByTimeAsync(3000);
+}
 
 describe('Login', () => {
   let authServiceMock: { login: ReturnType<typeof vi.fn> };
   let router: Router;
 
   beforeEach(async () => {
+    vi.useFakeTimers();
     authServiceMock = { login: vi.fn() };
 
     await TestBed.configureTestingModule({
@@ -25,6 +31,10 @@ describe('Login', () => {
 
     router = TestBed.inject(Router);
     vi.spyOn(router, 'navigate').mockResolvedValue(true);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   function createComponent() {
@@ -92,7 +102,7 @@ describe('Login', () => {
     );
   });
 
-  it('redirige vers /dashboard après un login réussi sans 2FA', () => {
+  it('redirige vers /dashboard après un login réussi sans 2FA', async () => {
     authServiceMock.login.mockReturnValue(
       of({ requiresTwoFactor: false, accessToken: 't', user: {} }),
     );
@@ -101,10 +111,12 @@ describe('Login', () => {
     fillCredentials(fixture, 'admin@mtm-immobilier.sn', 'MotDePasse123!');
     submitForm(fixture);
 
+    await laisserLaPorteSOuvrir();
+
     expect(router.navigate).toHaveBeenCalledWith(['/dashboard']);
   });
 
-  it('redirige un compte sensible sans 2FA vers /security', () => {
+  it('redirige un compte sensible sans 2FA vers /security', async () => {
     authServiceMock.login.mockReturnValue(
       of({
         requiresTwoFactor: false,
@@ -121,10 +133,12 @@ describe('Login', () => {
     fillCredentials(fixture, 'admin@mtm-immobilier.sn', 'MotDePasse123!');
     submitForm(fixture);
 
+    await laisserLaPorteSOuvrir();
+
     expect(router.navigate).toHaveBeenCalledWith(['/security']);
   });
 
-  it('redirige vers /change-password si mustChangePassword=true', () => {
+  it('redirige vers /change-password si mustChangePassword=true', async () => {
     authServiceMock.login.mockReturnValue(
       of({
         requiresTwoFactor: false,
@@ -136,6 +150,8 @@ describe('Login', () => {
 
     fillCredentials(fixture, 'admin@mtm-immobilier.sn', 'MotDePasse123!');
     submitForm(fixture);
+
+    await laisserLaPorteSOuvrir();
 
     expect(router.navigate).toHaveBeenCalledWith(['/change-password']);
   });
@@ -203,5 +219,94 @@ describe('Login', () => {
 
     const errorEl = fixture.debugElement.query(By.css('.login-error-box'));
     expect(errorEl.nativeElement.textContent).toContain('Trop de tentatives');
+  });
+
+  describe('la porte', () => {
+    const etatPorte = (fixture: ReturnType<typeof createComponent>) =>
+      fixture.debugElement.query(By.css('.porte')).nativeElement.getAttribute('data-etat');
+
+    it('ne s’ouvre pas et ne redirige pas tant que le serveur n’a pas répondu', () => {
+      authServiceMock.login.mockReturnValue(new Observable(() => undefined));
+      const fixture = createComponent();
+
+      fillCredentials(fixture, 'admin@mtm-immobilier.sn', 'MotDePasse123!');
+      submitForm(fixture);
+
+      expect(etatPorte(fixture)).toBe('approche');
+      expect(router.navigate).not.toHaveBeenCalled();
+    });
+
+    it('s’ouvre après la confirmation du serveur, puis redirige', async () => {
+      authServiceMock.login.mockReturnValue(
+        of({ requiresTwoFactor: false, accessToken: 't', user: {} }),
+      );
+      const fixture = createComponent();
+
+      fillCredentials(fixture, 'admin@mtm-immobilier.sn', 'MotDePasse123!');
+      submitForm(fixture);
+      expect(router.navigate).not.toHaveBeenCalled();
+
+      await vi.advanceTimersByTimeAsync(10);
+      fixture.detectChanges();
+      expect(etatPorte(fixture)).toBe('ouverture');
+      await laisserLaPorteSOuvrir();
+      expect(router.navigate).toHaveBeenCalledWith(['/dashboard']);
+    });
+
+    it('reste fermée sur des identifiants refusés, sans vider les champs', async () => {
+      authServiceMock.login.mockReturnValue(
+        throwError(() => new HttpErrorResponse({ status: 401 })),
+      );
+      const fixture = createComponent();
+
+      fillCredentials(fixture, 'admin@mtm-immobilier.sn', 'mauvais');
+      submitForm(fixture);
+      await laisserLaPorteSOuvrir();
+      fixture.detectChanges();
+
+      expect(etatPorte(fixture)).toBe('repos');
+      expect(router.navigate).not.toHaveBeenCalled();
+      const email = fixture.debugElement.query(By.css('input[formControlName="email"]')).nativeElement as HTMLInputElement;
+      expect(email.value).toBe('admin@mtm-immobilier.sn');
+    });
+
+    it('ne s’ouvre pas sur une erreur réseau', async () => {
+      authServiceMock.login.mockReturnValue(
+        throwError(() => new HttpErrorResponse({ status: 0 })),
+      );
+      const fixture = createComponent();
+
+      fillCredentials(fixture, 'admin@mtm-immobilier.sn', 'MotDePasse123!');
+      submitForm(fixture);
+      await laisserLaPorteSOuvrir();
+      fixture.detectChanges();
+
+      expect(etatPorte(fixture)).toBe('repos');
+      expect(router.navigate).not.toHaveBeenCalled();
+      expect(fixture.debugElement.query(By.css('.login-error-box'))).toBeTruthy();
+    });
+
+    it('ignore une seconde soumission pendant la séquence', () => {
+      authServiceMock.login.mockReturnValue(new Observable(() => undefined));
+      const fixture = createComponent();
+
+      fillCredentials(fixture, 'admin@mtm-immobilier.sn', 'MotDePasse123!');
+      submitForm(fixture);
+      submitForm(fixture);
+
+      expect(authServiceMock.login).toHaveBeenCalledTimes(1);
+    });
+
+    it('s’efface quand le serveur demande le code 2FA', async () => {
+      authServiceMock.login.mockReturnValue(of({ requiresTwoFactor: true }));
+      const fixture = createComponent();
+
+      fillCredentials(fixture, 'admin@mtm-immobilier.sn', 'MotDePasse123!');
+      submitForm(fixture);
+      await laisserLaPorteSOuvrir();
+      fixture.detectChanges();
+
+      expect(etatPorte(fixture)).toBe('repos');
+    });
   });
 });

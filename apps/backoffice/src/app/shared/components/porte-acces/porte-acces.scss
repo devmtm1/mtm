@@ -1,0 +1,335 @@
+/* La porte de l'écran de connexion : deux battants, une serrure et une clé. Présentation seulement (voir porte-sequence.ts).
+   Tout passe par transform et opacity ; le mouvement réduit (ou l'absence de CSS 3D) donne une transition simple, sans rotation. */
+.porte {
+  --p-fond: rgba(8, 26, 48, 0.92);
+  --p-fin: #eef4fb;
+  --p-texte: #ffffff;
+  --p-texte-fin: #233d5b;
+  --p-cadre: #c9d6e4;
+  --p-b1: #1f3d60;
+  --p-b2: #0e2238;
+  --p-panneau: rgba(255, 255, 255, 0.16);
+  --p-lumiere: #dcebfa;
+  --p-lumiere-2: #ffffff;
+  --p-rouge: #b52c36;
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  background-color: var(--p-fond);
+  color: var(--p-texte);
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, visibility 0s linear 0.25s;
+}
+.porte[data-variante='client'] {
+  --p-fond: rgba(35, 61, 91, 0.88);
+  --p-fin: #fffaf0;
+  --p-cadre: #ffffff;
+  --p-b1: #3a77ad;
+  --p-b2: #1a4974;
+  --p-panneau: rgba(255, 255, 255, 0.3);
+  --p-lumiere: #fff1d6;
+}
+.porte[data-etat='approche'],
+.porte[data-etat='attente'],
+.porte[data-etat='ouverture'],
+.porte[data-etat='ouvert'] {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.25s ease, visibility 0s;
+}
+/* Le fond s'éclaircit pendant que les battants s'écartent : la lumière gagne tout l'écran, puis on arrive sur la page. */
+.porte[data-etat='ouverture'],
+.porte[data-etat='ouvert'] {
+  background-color: var(--p-fin);
+  transition: opacity 0.25s ease, background-color 0.6s ease 0.95s;
+  --p-texte: var(--p-texte-fin);
+}
+
+.porte__scene {
+  position: relative;
+  height: min(56dvh, 460px);
+  width: min(78vw, calc(min(56dvh, 460px) * 0.74));
+  perspective: 1500px;
+}
+.porte__cadre {
+  position: absolute;
+  inset: -14px;
+  border: 14px solid var(--p-cadre);
+  border-radius: 12px 12px 4px 4px;
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.35);
+}
+/* L'espace derrière la porte : une pièce lumineuse, visible quand les battants s'écartent. */
+.porte__lumiere {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, rgba(35, 61, 91, 0.12), transparent 30%),
+    radial-gradient(120% 90% at 50% 62%, var(--p-lumiere-2) 0, var(--p-lumiere) 58%, #c5d8ec 100%);
+}
+.porte[data-variante='client'] .porte__lumiere {
+  background:
+    linear-gradient(to top, rgba(131, 25, 29, 0.08), transparent 30%),
+    radial-gradient(120% 90% at 50% 62%, #ffffff 0, var(--p-lumiere) 58%, #f3d9a8 100%);
+}
+
+.porte__battant {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background: linear-gradient(90deg, var(--p-b1), var(--p-b2));
+  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.07), inset 0 0 44px rgba(0, 0, 0, 0.28);
+  transition: transform 0.95s cubic-bezier(0.6, 0, 0.2, 1) 0.45s;
+  will-change: transform;
+}
+.porte__battant--g {
+  left: 0;
+  transform-origin: 0 50%;
+}
+.porte__battant--d {
+  right: 0;
+  transform-origin: 100% 50%;
+  background: linear-gradient(270deg, var(--p-b1), var(--p-b2));
+}
+.porte[data-etat='ouverture'] .porte__battant--g,
+.porte[data-etat='ouvert'] .porte__battant--g {
+  transform: rotateY(76deg);
+}
+.porte[data-etat='ouverture'] .porte__battant--d,
+.porte[data-etat='ouvert'] .porte__battant--d {
+  transform: rotateY(-76deg);
+}
+.porte__panneau {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  border: 2px solid var(--p-panneau);
+  border-radius: 3px;
+  box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.25), 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.porte__panneau:nth-of-type(1) {
+  top: 6%;
+  height: 34%;
+}
+.porte__panneau:nth-of-type(2) {
+  top: 46%;
+  height: 46%;
+}
+.porte__poignee {
+  position: absolute;
+  top: 50%;
+  width: 7px;
+  height: 22%;
+  transform: translateY(-50%);
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f4f7fa, #9fb0c2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+.porte__battant--g .porte__poignee {
+  right: 9px;
+}
+.porte__battant--d .porte__poignee {
+  left: 9px;
+}
+.porte__charniere {
+  position: absolute;
+  width: 6px;
+  height: 7%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #dfe7ef, #8da1b6);
+}
+.porte__battant--g .porte__charniere {
+  left: 5px;
+}
+.porte__battant--d .porte__charniere {
+  right: 5px;
+}
+.porte__charniere:nth-of-type(1) {
+  top: 9%;
+}
+.porte__charniere:nth-of-type(2) {
+  top: 47%;
+}
+.porte__charniere:nth-of-type(3) {
+  top: 84%;
+}
+
+.porte__serrure {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  z-index: 3;
+  width: 60px;
+  height: 60px;
+  margin: -30px 0 0 -30px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 38%, #1a2f48 0 4.5px, transparent 5px),
+    linear-gradient(#1a2f48, #1a2f48) 50% 66% / 3.5px 13px no-repeat,
+    radial-gradient(circle at 35% 30%, #fafcff, #aebdcc);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  transition: opacity 0.35s ease 0.7s;
+}
+.porte__anneau {
+  position: absolute;
+  inset: -7px;
+  border: 3px solid var(--p-rouge);
+  border-radius: 50%;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.porte[data-etat='attente'] .porte__anneau {
+  animation: porte-pulse 1.4s ease-in-out infinite;
+}
+.porte[data-etat='ouverture'] .porte__anneau,
+.porte[data-etat='ouvert'] .porte__anneau {
+  border-color: #ffffff;
+  box-shadow: 0 0 18px 4px rgba(255, 255, 255, 0.85);
+}
+.porte[data-etat='ouverture'] .porte__serrure,
+.porte[data-etat='ouvert'] .porte__serrure {
+  opacity: 0;
+}
+
+.porte__cle {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  z-index: 4;
+  width: 132px;
+  height: 40px;
+  transform-origin: 100% 50%;
+  /* Au repos, hors champ à gauche. Chaque état donne sa position finale : rien ne saute d'une étape à l'autre. */
+  transform: translate(calc(-100% - 260px), -50%) rotate(-12deg);
+  opacity: 0;
+  filter: drop-shadow(0 5px 6px rgba(0, 0, 0, 0.35));
+}
+.porte[data-etat='approche'] .porte__cle {
+  animation: porte-cle-entree 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+.porte[data-etat='attente'] .porte__cle {
+  transform: translate(calc(-100% + 8px), -50%);
+  opacity: 1;
+  animation: porte-cle-attente 1.6s ease-in-out infinite;
+}
+.porte[data-etat='ouverture'] .porte__cle,
+.porte[data-etat='ouvert'] .porte__cle {
+  transform: translate(calc(-100% + 8px), -50%) rotateX(80deg);
+  opacity: 0;
+  animation: porte-cle-tour 0.7s ease-in forwards;
+}
+.porte__halo {
+  position: absolute;
+  inset: -60%;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 70%);
+  opacity: 0;
+  transition: opacity 0.7s ease 0.9s;
+  pointer-events: none;
+}
+.porte[data-etat='ouverture'] .porte__halo,
+.porte[data-etat='ouvert'] .porte__halo {
+  opacity: 1;
+}
+
+.porte__message {
+  margin: 0;
+  min-height: 1.5em;
+  max-width: 80vw;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--p-texte);
+  transition: color 0.6s ease 0.95s;
+}
+
+/* Version simple : pas de 3D, un cercle et une icône. */
+.porte__simple {
+  display: none;
+  width: 84px;
+  height: 84px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+  color: var(--p-texte);
+  transition: color 0.3s ease;
+}
+.porte[data-reduit='true'] .porte__scene {
+  display: none;
+}
+.porte[data-reduit='true'] .porte__simple {
+  display: flex;
+}
+.porte[data-reduit='true'][data-etat='ouverture'],
+.porte[data-reduit='true'][data-etat='ouvert'] {
+  transition: opacity 0.25s ease, background-color 0.3s ease;
+}
+.porte[data-reduit='true'] .porte__message {
+  transition: color 0.3s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .porte__scene {
+    display: none;
+  }
+  .porte__simple {
+    display: flex;
+  }
+  .porte[data-etat='ouverture'],
+  .porte[data-etat='ouvert'] {
+    transition: opacity 0.25s ease, background-color 0.3s ease;
+  }
+  .porte__message {
+    transition: color 0.3s ease;
+  }
+}
+
+@keyframes porte-cle-entree {
+  from {
+    transform: translate(calc(-100% - 260px), -50%) rotate(-12deg);
+    opacity: 0;
+  }
+  to {
+    transform: translate(calc(-100% + 8px), -50%) rotate(0deg);
+    opacity: 1;
+  }
+}
+@keyframes porte-cle-attente {
+  0%,
+  100% {
+    transform: translate(calc(-100% + 8px), -50%);
+  }
+  50% {
+    transform: translate(calc(-100% + 5px), -50%) rotate(-1.5deg);
+  }
+}
+@keyframes porte-cle-tour {
+  from {
+    transform: translate(calc(-100% + 8px), -50%) rotateX(0deg);
+    opacity: 1;
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    transform: translate(calc(-100% + 8px), -50%) rotateX(80deg);
+    opacity: 0;
+  }
+}
+@keyframes porte-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(181, 44, 54, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 9px rgba(181, 44, 54, 0);
+  }
+}
