@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { BellRing, House, FileSignature, FileText, KeyRound, UserSearch, Wallet } from 'lucide-react';
 import { BandeauPage, IMAGE_BANDEAU_PAGE } from '../components/layout/BandeauPage';
-import { AppelFinal, type Icone } from '../components/services/ServicesBlocs';
+import { type Icone } from '../components/services/ServicesBlocs';
 import { FormulaireConfierBien } from '../components/gestion/FormulaireConfierBien';
 import { Modal } from '../components/ui/Modal';
 import { buttonClassName } from '../components/ui/button-styles';
-import { LinkButton } from '../components/ui/LinkButton';
 import { useEditableContent } from '../hooks/useEditableContent';
 import { useIsMobile } from '../hooks/useMediaQuery';
 import { useSiteContact } from '../hooks/useSiteContact';
@@ -14,7 +13,6 @@ import { FaqCourte, ServiceEtDemande } from '../components/services/ServiceEtDem
 import { usePageMetadata } from '../hooks/usePageMetadata';
 import { donneesFaq } from '../utils/seo';
 import { ETAPES_GESTION, FAQ_GESTION, INTRO_GESTION, REASSURANCE_GESTION, SERVICES_GESTION } from '../utils/gestionLocative';
-import { ROUTES } from '../routes';
 
 const ICONES: Icone[] = [UserSearch, FileSignature, Wallet, BellRing, KeyRound, FileText];
 const MESSAGE_WHATSAPP = 'Bonjour, je souhaite confier un bien en gestion locative à MTM.';
@@ -49,7 +47,6 @@ export function GestionLocativePage() {
         eyebrow={text('gestion-locative.eyebrow', 'Nos services · MTM Gestion')}
         title={text('gestion-locative.title', 'Gestion locative')}
         description={text('gestion-locative.intro', INTRO_GESTION)}
-        points={lines('gestion-locative.reassurance', REASSURANCE_GESTION)}
         image={text('gestion-locative.image', IMAGE_BANDEAU_PAGE)}
         chargement={contenuEnCours}
         actions={
@@ -68,9 +65,6 @@ export function GestionLocativePage() {
               <KeyRound className="h-4 w-4" aria-hidden="true" />
               Confier mon bien
             </a>
-            <LinkButton to={ROUTES.locations} variant="onDarkOutline">
-              Voir nos locations
-            </LinkButton>
           </>
         }
       />
@@ -101,17 +95,8 @@ export function GestionLocativePage() {
 
       <FaqCourte questions={faq} />
 
-      <ServicesComplementaires pole="gestion" />
+      {!mobile && <ServicesComplementaires pole="gestion" />}
 
-      {mobile && (
-        <AppelFinal
-          titre="Confiez-nous votre bien"
-          texte="Quelques informations suffisent : un conseiller vous rappelle, sans engagement."
-          libelleBouton="Confier mon bien"
-          surClic={() => setFeuilleOuverte(true)}
-          whatsappHref={lienWhatsapp}
-        />
-      )}
       {feuilleOuverte && (
         <Modal title="Confier mon bien" onClose={() => setFeuilleOuverte(false)}>
           <FormulaireConfierBien />

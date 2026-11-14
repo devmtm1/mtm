@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { ArrowRight, FileSearch } from 'lucide-react';
 import { BandeauPage } from '../components/layout/BandeauPage';
-import { AppelFinal } from '../components/services/ServicesBlocs';
 import { buttonClassName } from '../components/ui/button-styles';
 import { IMAGE_BANDEAU_DEMARCHES, iconeDemarche } from '../utils/demarches';
 import { donneesFaq } from '../utils/seo';
@@ -17,9 +16,6 @@ import { useSiteContact } from '../hooks/useSiteContact';
 
 const FALLBACK_INTRO =
   "Vous envisagez d'acheter un terrain ou une villa, notamment depuis l'étranger ? Notre équipe se déplace pour vérifier le bien avant votre engagement.";
-
-const FALLBACK_CONTACT_INTRO =
-  'Dites-nous ce dont vous avez besoin : nous vous répondons rapidement et vous disons ce que nous pouvons faire pour vous.';
 
 /**
  * Réponses de départ : elles ne reprennent que ce que la page annonce déjà (délai, devis gratuit, tarif sur devis,
@@ -171,7 +167,6 @@ export function DemarchesPage() {
         eyebrow={text('demarches.eyebrow', 'Nos services · MTM Contrôle')}
         title={text('demarches.title', 'Démarches administratives')}
         description={text('demarches.intro', FALLBACK_INTRO)}
-        points={lines('demarches.reassurance', FALLBACK_REASSURANCE)}
         image={text('demarches.image', IMAGE_BANDEAU_DEMARCHES)}
         chargement={contenuEnCours}
         actions={
@@ -214,17 +209,8 @@ export function DemarchesPage() {
 
       <FaqCourte questions={faq} />
 
-      <ServicesComplementaires pole="controle" />
+      {!mobile && <ServicesComplementaires pole="controle" />}
 
-      {mobile && (
-        <AppelFinal
-          titre="Parlons de votre projet"
-          texte={text('demarches.contact-intro', FALLBACK_CONTACT_INTRO)}
-          libelleBouton="Faire une demande"
-          surClic={() => demander()}
-          whatsappHref={`https://wa.me/${whatsappDemarches}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`}
-        />
-      )}
       {demandeOuverte && (
         <ContactModal
           title="Faire une demande"

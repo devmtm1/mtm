@@ -27,11 +27,10 @@ describe('ConstructionPage', () => {
     );
   }
 
-  it('présente ce que MTM construit, les étapes, les questions et la demande de devis', () => {
+  it('présente ce que MTM construit, les questions et la demande de devis', () => {
     afficher();
     expect(screen.getByRole('heading', { level: 1, name: 'Construction' })).toBeTruthy();
     expect(screen.getByText('Construction neuve')).toBeTruthy();
-    expect(screen.getByText('Étude et devis')).toBeTruthy();
     expect(screen.getByText('Dois-je déjà avoir un terrain ?')).toBeTruthy();
     expect(screen.getByRole('form', { name: 'Demander un devis de construction' })).toBeTruthy();
   });

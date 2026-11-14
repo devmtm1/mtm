@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Pole } from '../types/poles';
@@ -74,7 +74,7 @@ describe('PolePage', () => {
     try {
       afficher('/nos-services/clean');
       expect(screen.getByRole('heading', { level: 1, name: /MTM Clean/ })).toBeTruthy();
-      expect(screen.getByRole('link', { name: 'Demander un devis' }).getAttribute('href')).toBe('#demande');
+      expect(screen.getByRole('link', { name: 'Faire une demande' }).getAttribute('href')).toBe('#demande');
     } finally {
       window.matchMedia = ancien;
     }
@@ -85,11 +85,9 @@ describe('PolePage', () => {
     expect(screen.getByText('Formulaire : MTM Clean – Nettoyage et entretien')).toBeTruthy();
   });
 
-  it('propose les services complémentaires liés au pôle, et pas les autres', () => {
+  it('reste une page courte : pas de bloc de services complémentaires', () => {
     afficher('/nos-services/clean');
-    const bloc = screen.getByRole('region', { name: 'Services complémentaires' });
-    expect(within(bloc).getByRole('link', { name: /MTM Maintenance/ })).toBeTruthy();
-    expect(within(bloc).getAllByRole('listitem')).toHaveLength(1);
+    expect(screen.queryByRole('region', { name: 'Services complémentaires' })).toBeNull();
   });
 
   it('un pôle inconnu ou retiré donne la page « introuvable »', () => {

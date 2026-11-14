@@ -26,7 +26,7 @@ export function VideosSection() {
     <section className="py-6 lg:py-16" aria-label="Actualités et conseils en vidéo">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="flex items-end justify-between gap-4">
-          <SectionHeading app eyebrow="Vidéos" title="Actualités et conseils" />
+          <SectionHeading app eyebrow="En vidéo" title="Actualités et conseils" />
           <SeeAllLink to={ROUTES.actualites} />
         </div>
       </div>

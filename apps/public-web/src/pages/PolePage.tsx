@@ -1,8 +1,6 @@
 import { ArrowLeft, Check, CheckCircle2 } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { ContactForm } from '../components/contact/ContactForm';
-import { ServiceEtDemande } from '../components/services/ServiceEtDemande';
-import { ServicesComplementaires } from '../components/services/ServicesComplementaires';
 import { iconePole } from '../components/services/pole-icones';
 import { buttonClassName } from '../components/ui/button-styles';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -13,12 +11,6 @@ import { usePoles } from '../hooks/usePoles';
 import { useSiteContact } from '../hooks/useSiteContact';
 import { ROUTES } from '../routes';
 import { NotFoundPage } from './NotFoundPage';
-
-/** Le déroulé d'une demande, en trois mots : le détail n'apporte rien de plus au visiteur qui veut simplement écrire. */
-const ETAPES = ['Vous décrivez votre besoin', 'Un conseiller vous rappelle', 'Nous intervenons'];
-
-/** Ce que MTM s'engage à faire pour toute demande de service : les mêmes trois repères sur chaque page de pôle. */
-const ENGAGEMENTS = ['Réponse d’un conseiller MTM', 'Devis sans engagement', 'Un échange possible par WhatsApp'];
 
 /**
  * Page d'un pôle de MTM, de la forme /nos-services/clean : une page courte, pensée pour passer à l'action. En haut, ce
@@ -53,34 +45,62 @@ export function PolePage() {
   const sujet = pole.accroche ? `${pole.nom} – ${pole.accroche}` : pole.nom;
   const lienWhatsapp = `https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(`Bonjour, je souhaite une demande pour ${pole.nom}.`)}`;
 
-  // Ordinateur : la même mise en page que Gestion, Construction et Démarches. La photo ne sert de fond que si elle est assez grande
-  // (envoyée depuis le back-office) ; les photos fournies avec le site sont petites et floues une fois étirées.
+  // Ordinateur : une page épurée, le texte à gauche et la demande à droite. Rien d'autre : ni cartes, ni étapes, ni engagements répétés.
   if (!mobile) {
+    const mots = pole.nom.trim().split(/\s+/);
+    const dernier = mots.length > 1 ? mots.pop() : null;
     return (
       <div>
-        <ServiceEtDemande
-          eyebrow={`Nos services · ${pole.numero}`}
-          titrePage={pole.nom}
-          accroche={pole.accroche ?? 'Une demande, un conseiller'}
-          intro={pole.description ?? ''}
-          engagements={ENGAGEMENTS}
-          image={pole.imageUrl?.startsWith('http') ? pole.imageUrl : undefined}
-          elements={pole.points.map((point) => ({ title: point }))}
-          icone={() => Check}
-          etapes={ETAPES.map((etape) => ({ title: etape }))}
-          titreEtapes="Comment ça se passe"
-          idFormulaire="demande"
-          titreFormulaire={pole.libelleLien ?? 'Faire une demande'}
-          iconeFormulaire={Icone}
-          assurance="Un conseiller vous rappelle, devis sans engagement."
-          formulaire={<ContactForm initialSujet={sujet} sujetFige libelleBouton="Envoyer ma demande" />}
-          pied={
-            <a href={lienWhatsapp} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-mtm-success hover:underline">
-              Ou discutez directement sur WhatsApp
-            </a>
-          }
-        />
-        <ServicesComplementaires pole={pole.slug} />
+        <section className="bg-white">
+          <div className="mx-auto grid max-w-6xl items-start gap-12 px-4 pb-16 pt-14 sm:px-6 lg:grid-cols-[1fr_1fr]">
+            <div>
+              <p className="flex items-center gap-3 text-sm font-bold uppercase tracking-[0.2em] text-mtm-primary-medium">
+                <span aria-hidden="true" className="h-[3px] w-12 rounded-full bg-mtm-accent" />
+                Nos services
+              </p>
+              <h1 className="mt-4 font-display text-5xl font-extrabold leading-[1.05] text-mtm-primary-dark">
+                {dernier ? (
+                  <>
+                    {mots.join(' ')} <span className="text-mtm-accent">{dernier}</span>
+                  </>
+                ) : (
+                  pole.nom
+                )}
+              </h1>
+              {pole.accroche && <p className="mt-4 font-display text-xl font-bold text-mtm-primary-dark">{pole.accroche}</p>}
+              {pole.description && pole.points.length === 0 && <p className="mt-3 max-w-xl text-lg leading-relaxed text-mtm-muted">{pole.description}</p>}
+              {pole.points.length > 0 && (
+                <ul className="mt-8 flex flex-col gap-3">
+                  {pole.points.map((point) => (
+                    <li key={point} className="flex items-start gap-3 text-[17px] leading-snug text-mtm-text">
+                      <Check className="mt-1 h-5 w-5 shrink-0 text-mtm-accent" strokeWidth={3} aria-hidden="true" />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {pole.imageUrl && (
+                <img src={pole.imageUrl} alt="" loading="lazy" className="mt-8 h-52 w-full rounded-3xl object-cover object-[center_40%] shadow-card" />
+              )}
+            </div>
+
+            <div id="demande" className="scroll-mt-24 rounded-3xl bg-white p-7 shadow-card-hover ring-1 ring-mtm-border/60 lg:sticky lg:top-24">
+              <div className="flex items-center gap-4">
+                <Icone className="h-10 w-10 shrink-0 text-mtm-accent" strokeWidth={1.5} aria-hidden="true" />
+                <div>
+                  <h2 className="font-display text-2xl font-bold leading-tight text-mtm-text">Faire une demande</h2>
+                  <p className="mt-0.5 text-[15px] text-mtm-muted">Un conseiller vous rappelle, sans engagement.</p>
+                </div>
+              </div>
+              <div className="mt-6">
+                <ContactForm initialSujet={sujet} sujetFige avecIcones libelleBouton="Envoyer ma demande" />
+              </div>
+              <a href={lienWhatsapp} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-mtm-success hover:underline">
+                Ou discutez directement sur WhatsApp
+              </a>
+            </div>
+          </div>
+        </section>
       </div>
     );
   }
@@ -88,7 +108,10 @@ export function PolePage() {
   return (
     <div>
       {/* En-tête : le texte à gauche, la photo du pôle à droite (elle est petite : on ne l'étire pas en bandeau). */}
-      <header className="bg-gradient-to-br from-mtm-primary-dark to-mtm-primary text-white">
+      <header className="relative isolate overflow-hidden bg-gradient-to-br from-mtm-primary-dark to-mtm-primary text-white">
+        {pole.imageUrl && (
+          <img src={pole.imageUrl} alt="" aria-hidden="true" className="absolute inset-0 -z-10 h-full w-full object-cover opacity-25 sm:hidden" />
+        )}
         <div className="mx-auto grid max-w-6xl items-center gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[1.3fr_1fr] lg:gap-12 lg:py-10">
           <div>
             <Link to={ROUTES.services} className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-white/80 hover:text-white">
@@ -105,10 +128,10 @@ export function PolePage() {
               {pole.nom}
             </h1>
             {pole.accroche && <p className="mt-2 text-sm font-bold uppercase tracking-[0.12em] text-white/80">{pole.accroche}</p>}
-            {pole.description && <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-white/90 sm:text-base">{pole.description}</p>}
+            {pole.description && pole.points.length === 0 && <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-white/90 sm:text-base">{pole.description}</p>}
             <div className="mt-5 flex flex-wrap gap-3">
               <a href="#demande" className={buttonClassName('accent', 'px-6 py-3 text-[15px]')}>
-                {pole.libelleLien ?? 'Faire une demande'}
+                Faire une demande
               </a>
               <a href={lienWhatsapp} target="_blank" rel="noopener noreferrer" className={buttonClassName('onDarkOutline', 'px-6 py-3 text-[15px]')}>
                 WhatsApp
@@ -146,31 +169,21 @@ export function PolePage() {
                 </ul>
               </div>
             )}
-
-            <ol aria-label="Comment se passe une demande" className="grid grid-cols-3 gap-2 sm:gap-3">
-              {ETAPES.map((etape, index) => (
-                <li key={etape} className="flex flex-col items-center gap-1.5 rounded-2xl bg-white px-2 py-3 text-center shadow-card">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-mtm-primary text-xs font-bold text-white">{index + 1}</span>
-                  <span className="text-xs font-semibold leading-snug text-mtm-text sm:text-[13px]">{etape}</span>
-                </li>
-              ))}
-            </ol>
           </div>
 
           <div id="demande" className="scroll-mt-24 rounded-3xl border border-mtm-border/70 bg-white p-5 shadow-card sm:p-6 lg:sticky lg:top-24">
             <h2 className="font-display text-lg font-bold text-mtm-text">Faire une demande</h2>
             <p className="mt-1 flex items-center gap-2 text-sm text-mtm-muted">
               <CheckCircle2 className="h-4 w-4 shrink-0 text-mtm-success" aria-hidden="true" />
-              Un conseiller vous rappelle, devis sans engagement.
+              Un conseiller vous rappelle, sans engagement.
             </p>
             <div className="mt-4">
-              <ContactForm initialSujet={sujet} sujetFige libelleBouton="Envoyer ma demande" />
+              <ContactForm initialSujet={sujet} sujetFige avecIcones libelleBouton="Envoyer ma demande" />
             </div>
           </div>
         </div>
       </section>
 
-      <ServicesComplementaires pole={pole.slug} />
     </div>
   );
 }

@@ -223,6 +223,7 @@ export function LocationsPage() {
         title={text('locations.title', 'Trouvez votre prochain logement au Sénégal')}
         description={text('locations.intro', INTRO_DEFAUT)}
         points={lines('locations.reassurance', REASSURANCES_DEFAUT)}
+        pointsDesktopSeulement
         image={text('locations.image', IMAGE_BANDEAU_PAGE)}
         chargement={contenuEnCours}
       />
@@ -241,7 +242,7 @@ export function LocationsPage() {
                 <input
                   type="search"
                   aria-label="Recherche libre"
-                  placeholder="Quartier, commune, mot-clé…"
+                  placeholder="Quartier, commune…"
                   className={`${fieldInputClass} pl-9`}
                   value={draft.search ?? ''}
                   onChange={(event) => handleFiltersChange({ ...draft, search: event.target.value || undefined, page: 1 })}

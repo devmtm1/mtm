@@ -1,4 +1,5 @@
 import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Pole } from '../types/poles';
@@ -42,7 +43,7 @@ describe('ServicesPage', () => {
     etat.valeur = { data: [], loading: false, error: null };
   });
 
-  it('affiche chaque pôle venu de l’API : numéro, titre, mention rouge et prestations', () => {
+  it('affiche chaque pôle venu de l’API : numéro, titre, mention rouge et prestations (au verso)', async () => {
     etat.valeur.data = [
       pole({
         slug: 'clean',
@@ -55,17 +56,36 @@ describe('ServicesPage', () => {
       }),
     ];
     afficher();
+    await userEvent.click(screen.getByRole('button', { name: 'MTM Clean : voir les détails' }));
     const carte = document.getElementById('clean') as HTMLElement;
     expect(within(carte).getByRole('heading', { name: 'MTM Clean' })).toBeTruthy();
-    expect(within(carte).getByText('04')).toBeTruthy();
-    expect(within(carte).getByText('Nettoyage et entretien')).toBeTruthy();
+    expect(within(carte).getAllByText('04').length).toBeGreaterThan(0);
+    expect(within(carte).getAllByText('Nettoyage et entretien').length).toBeGreaterThan(0);
     expect(within(carte).getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Maisons et villas', 'Bureaux']);
+    // Le recto (pas le verso, caché) porte le lien d'action.
     expect(within(carte).getByRole('link', { name: /Demander un devis/ }).getAttribute('href')).toBe('/contact?sujet=Clean');
   });
 
-  it('ouvre une adresse https dans un nouvel onglet, sans la traiter comme une page du site', () => {
+  it('un clic retourne le pôle sur place : le verso montre le détail, « Retour » revient au recto', async () => {
+    etat.valeur.data = [
+      pole({ slug: 'gestion', numero: '02', nom: 'MTM Gestion', description: 'Gestion complète de vos biens.', points: ['Loyers', 'Impayés'], lienUrl: '/gestion-locative', libelleLien: 'Confier mon bien' }),
+      pole({ slug: 'clean', numero: '04', nom: 'MTM Clean' }),
+    ];
+    afficher();
+    await userEvent.click(screen.getByRole('button', { name: 'MTM Gestion : voir les détails' }));
+    const verso = screen.getByRole('region', { name: 'Détails : MTM Gestion' });
+    expect(within(verso).getByText('Loyers')).toBeTruthy();
+    expect(within(verso).getByText('Impayés')).toBeTruthy();
+    expect(within(verso).getByRole('link', { name: /Confier mon bien/ }).getAttribute('href')).toBe('/gestion-locative');
+    expect(document.querySelectorAll('.flip-inner[data-flipped="true"]').length).toBe(1);
+    await userEvent.click(within(verso).getByRole('button', { name: 'Retour' }));
+    expect(document.querySelectorAll('.flip-inner[data-flipped="true"]').length).toBe(0);
+  });
+
+  it('ouvre une adresse https dans un nouvel onglet, sans la traiter comme une page du site', async () => {
     etat.valeur.data = [pole({ slug: 'externe', numero: '01', nom: 'Externe', lienUrl: 'https://exemple.test/pole', libelleLien: 'Découvrir ce pôle' })];
     afficher();
+    await userEvent.click(screen.getByRole('button', { name: 'Externe : voir les détails' }));
     const lien = screen.getByRole('link', { name: /Découvrir ce pôle/ });
     expect(lien.getAttribute('href')).toBe('https://exemple.test/pole');
     expect(lien.getAttribute('target')).toBe('_blank');
@@ -76,14 +96,6 @@ describe('ServicesPage', () => {
     etat.valeur.data = [pole({ slug: 'seul', numero: '01', nom: 'Seul' })];
     afficher();
     expect(within(document.getElementById('seul') as HTMLElement).queryByRole('link')).toBeNull();
-  });
-
-  it('un nombre de pôles qui laisse un seul sur la dernière rangée lui donne toute la largeur', () => {
-    etat.valeur.data = ['a', 'b', 'c', 'd'].map((slug, index) => pole({ slug, numero: `0${index + 1}`, nom: `Pôle ${slug}` }));
-    afficher();
-    const derniere = (document.getElementById('d') as HTMLElement).parentElement as HTMLElement;
-    expect(derniere.className).toContain('lg:col-span-3');
-    expect(((document.getElementById('a') as HTMLElement).parentElement as HTMLElement).className).not.toContain('col-span');
   });
 
   it('prévient sans planter quand l’API ne répond pas, et quand aucun pôle n’est publié', () => {

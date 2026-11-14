@@ -281,7 +281,7 @@ export function TeamSection({ team }: { team: TeamPage | null }) {
             </ul>
           )}
 
-          <p className="mt-10 flex items-center justify-center gap-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-mtm-muted sm:text-xs">
+          <p className="mt-10 flex items-center justify-center gap-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-mtm-muted sm:text-xs">
             <span aria-hidden="true" className="h-px w-8 bg-mtm-border sm:w-14" />
             MTM Immobilier · Ensemble pour vos projets
             <span aria-hidden="true" className="h-px w-8 bg-mtm-border sm:w-14" />

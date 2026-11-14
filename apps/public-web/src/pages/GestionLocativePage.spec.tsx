@@ -33,11 +33,10 @@ describe('GestionLocativePage', () => {
     );
   }
 
-  it('présente ce que MTM prend en charge, les étapes et les questions', () => {
+  it('présente ce que MTM prend en charge et les questions', () => {
     afficher();
     expect(screen.getByRole('heading', { level: 1, name: 'Gestion locative' })).toBeTruthy();
     expect(screen.getByText('Recherche de locataires')).toBeTruthy();
-    expect(screen.getByText('Vous nous confiez votre bien')).toBeTruthy();
     expect(screen.getByText('Quels biens pouvez-vous gérer ?')).toBeTruthy();
     expect(screen.getByText('Combien coûte la gestion ?')).toBeTruthy();
   });

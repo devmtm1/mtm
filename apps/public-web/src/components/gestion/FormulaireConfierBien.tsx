@@ -50,7 +50,7 @@ export function FormulaireConfierBien() {
   async function envoyer(): Promise<void> {
     const erreurs = validateConfierBien(values);
     setErrors(erreurs);
-    if (erreurs.pays || erreurs.region || erreurs.loyerSouhaite) setDetailsOuverts(true);
+    if (erreurs.pays || erreurs.region || erreurs.loyerSouhaite || erreurs.precisions) setDetailsOuverts(true);
     if (hasErrors(erreurs)) return;
     setEnvoi(true);
     setErreurEnvoi(null);
@@ -165,21 +165,22 @@ export function FormulaireConfierBien() {
           <FormField label={plusieursLogements ? 'Loyer souhaité par logement (FCFA)' : 'Loyer souhaité par mois (FCFA)'} htmlFor="confier-loyer" error={errors.loyerSouhaite}>
             <input id="confier-loyer" type="number" min={0} step={10000} inputMode="numeric" placeholder="Facultatif" className={fieldInputClass} value={values.loyerSouhaite} onChange={(e) => set('loyerSouhaite', e.target.value)} />
           </FormField>
+          <div className="sm:col-span-2">
+        <FormField label="Précisions" htmlFor="confier-precisions" error={errors.precisions}>
+          <textarea
+            id="confier-precisions"
+            rows={4}
+            maxLength={1500}
+            placeholder="Une villa divisée en quatre appartements, un bien déjà loué, une demande particulière…"
+            className={fieldInputClass}
+            value={values.precisions}
+            onChange={(e) => set('precisions', e.target.value)}
+          />
+        </FormField>
+          </div>
           </div>
         )}
       </div>
-
-      <FormField label="Précisions" htmlFor="confier-precisions" error={errors.precisions}>
-        <textarea
-          id="confier-precisions"
-          rows={4}
-          maxLength={1500}
-          placeholder="Une villa divisée en quatre appartements, un bien déjà loué, une demande particulière…"
-          className={fieldInputClass}
-          value={values.precisions}
-          onChange={(e) => set('precisions', e.target.value)}
-        />
-      </FormField>
 
       {/* Piège à robots : hors écran, ignoré des lecteurs d'écran et de l'autocomplétion. */}
       <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">

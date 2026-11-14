@@ -1,11 +1,32 @@
-import { Mail, MapPin, MessageCircle, Navigation, Phone } from 'lucide-react';
+import { Mail, MapPin, MessageCircle, Navigation, Phone, type LucideIcon } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { BandeauPage, IMAGE_BANDEAU_PAGE } from '../components/layout/BandeauPage';
+import { BandeauPage } from '../components/layout/BandeauPage';
 import { useEditableContent } from '../hooks/useEditableContent';
+import { BandeauEngagements } from '../components/ui/BandeauEngagements';
 import { ContactForm } from '../components/contact/ContactForm';
 import { TerrainMap } from '../components/terrains/TerrainMap';
 import { toMapsHref, toTelHref, useSiteContact } from '../hooks/useSiteContact';
 import { usePageMetadata } from '../hooks/usePageMetadata';
+
+/** Photo du bandeau par défaut, tirée de la maquette ; le back-office peut la remplacer (Contenus du site › Contact). */
+const IMAGE_CONTACT = '/bandeaux/contact-banniere.jpg';
+
+const SUJETS = ['Achat d’un bien', 'Location', 'Gestion locative', 'Construction', 'Vérification foncière', 'Démarches administratives', 'Autre demande'];
+
+function LigneCoordonnee({ icone: Icone, titre, succes = false, children }: { icone: LucideIcon; titre: string; succes?: boolean; children: ReactNode }) {
+  return (
+    <li className="flex items-start gap-3.5">
+      <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${succes ? 'bg-mtm-success/10 text-mtm-success' : 'bg-mtm-primary-subtle text-mtm-primary'}`}>
+        <Icone className="h-5 w-5" aria-hidden="true" />
+      </span>
+      <div className="min-w-0">
+        <p className="text-sm font-bold text-mtm-text">{titre}</p>
+        {children}
+      </div>
+    </li>
+  );
+}
 
 export function ContactPage() {
   const contact = useSiteContact();
@@ -24,77 +45,67 @@ export function ContactPage() {
       <BandeauPage
         chevauche={false}
         eyebrow="Contact"
-        title="Parlons de votre projet"
+        title={<>Parlons de votre <span className="text-mtm-accent">projet</span></>}
         description="Une question, une visite à planifier, un dossier à vérifier ? Notre équipe vous répond rapidement."
-        image={text('contact.image', IMAGE_BANDEAU_PAGE)}
+        image={text('contact.image', IMAGE_CONTACT)}
         chargement={contenuEnCours}
       />
 
-      <section className="mx-auto grid max-w-5xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1fr_1.3fr]">
-        <div className="flex flex-col gap-6">
-          <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-mtm-primary-subtle text-mtm-primary">
-              <MapPin className="h-5 w-5" aria-hidden="true" />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-mtm-text">Adresse</p>
+      <section className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[230px_minmax(0,1fr)_minmax(0,1.6fr)] lg:gap-10 lg:py-14">
+        {/* Une photo d'immeuble, comme sur la maquette : elle ne sert qu'à habiller l'écran large. */}
+        <img
+          src="/contact-immeuble.jpg"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          className="hidden aspect-[5/8] w-full self-start rounded-2xl object-cover shadow-card lg:block"
+        />
+
+        <div className="flex flex-col">
+          <h2 className="font-display text-xl font-bold text-mtm-primary-dark">Nos coordonnées</h2>
+          <p className="mt-2 text-sm text-mtm-muted">Nous sommes à votre écoute pour vous accompagner dans tous vos projets immobiliers.</p>
+          <ul className="mt-5 flex flex-col gap-4">
+            <LigneCoordonnee icone={MapPin} titre="Adresse">
               <p className="text-sm text-mtm-muted">{contact.adresse}</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-mtm-primary-subtle text-mtm-primary">
-              <Phone className="h-5 w-5" aria-hidden="true" />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-mtm-text">Téléphone</p>
-              <a href={toTelHref(contact.telephone)} className="inline-flex min-h-11 items-center text-sm text-mtm-muted transition-colors hover:text-mtm-primary">
+            </LigneCoordonnee>
+            <LigneCoordonnee icone={Phone} titre="Téléphone">
+              <a href={toTelHref(contact.telephone)} className="inline-flex min-h-10 items-center text-sm text-mtm-muted transition-colors hover:text-mtm-primary">
                 {contact.telephone}
               </a>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-mtm-primary-subtle text-mtm-primary">
-              <Mail className="h-5 w-5" aria-hidden="true" />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-mtm-text">E-mail</p>
-              <a
-                href={`mailto:${contact.email}`}
-                className="inline-flex min-h-11 items-center text-sm text-mtm-muted transition-colors hover:text-mtm-primary"
-              >
+            </LigneCoordonnee>
+            <LigneCoordonnee icone={Mail} titre="E-mail">
+              <a href={`mailto:${contact.email}`} className="inline-flex min-h-10 items-center break-all text-sm text-mtm-muted transition-colors hover:text-mtm-primary">
                 {contact.email}
               </a>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-mtm-success/10 text-mtm-success">
-              <MessageCircle className="h-5 w-5" aria-hidden="true" />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-mtm-text">WhatsApp</p>
+            </LigneCoordonnee>
+            <LigneCoordonnee icone={MessageCircle} titre="WhatsApp" succes>
               <a
                 href={`https://wa.me/${contact.whatsapp}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-11 items-center text-sm text-mtm-muted transition-colors hover:text-mtm-primary"
+                className="inline-flex min-h-10 items-center text-sm text-mtm-muted transition-colors hover:text-mtm-primary"
               >
                 Écrire directement à un conseiller
               </a>
-            </div>
-          </div>
+            </LigneCoordonnee>
+          </ul>
 
-          {/* Réassurance : la page contact est la porte d'entrée de la
-              diaspora, qui ne peut pas passer à l'agence. */}
-          <p className="mt-2 rounded-lg border border-mtm-border bg-mtm-surface p-4 text-sm text-mtm-muted">
-            Vous êtes à l’étranger ? Nous organisons visites, vérifications et rendez-vous à distance,
-            avec photos et visioconférence.
+          {/* Réassurance : la page contact est la porte d'entrée de la diaspora, qui ne peut pas passer à l'agence. */}
+          <p className="mt-6 rounded-xl border border-mtm-border bg-mtm-surface p-4 text-sm text-mtm-muted">
+            Vous êtes à l’étranger ? Nous organisons visites, vérifications et rendez-vous à distance, avec photos et visioconférence.
           </p>
         </div>
 
-        <div className="rounded-lg border border-mtm-border bg-mtm-surface p-6 shadow-card">
-          <ContactForm initialSujet={sujetDemande} />
+        <div className="rounded-2xl border border-mtm-border/70 bg-mtm-surface p-5 shadow-card sm:p-7">
+          <div className="mb-5 border-l-4 border-mtm-primary pl-4">
+            <h2 className="font-display text-xl font-bold text-mtm-primary-dark">Envoyez-nous un message</h2>
+            <p className="mt-1 text-sm text-mtm-muted">Remplissez le formulaire, nous vous répondrons dans les plus brefs délais.</p>
+          </div>
+          <ContactForm initialSujet={sujetDemande} sujetOptions={SUJETS} avecIcones />
         </div>
       </section>
+
+      <BandeauEngagements className="mx-auto max-w-6xl px-4 pb-10 sm:px-6" />
 
       {/* Où nous trouver : la position de l'agence, et l'itinéraire en un toucher. */}
       <section aria-labelledby="nous-trouver" className="mx-auto max-w-5xl px-4 pb-14 sm:px-6">

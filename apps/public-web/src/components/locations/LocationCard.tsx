@@ -98,9 +98,9 @@ export function LocationCard({ location, compact = false, masquerALaUne = false 
           </span>
         )}
 
-        <p className="absolute bottom-2.5 left-3 right-3 text-white">
+        <p className="absolute bottom-2.5 left-3 right-11 text-white">
           <span
-            className={`font-display font-bold drop-shadow ${compact ? 'text-base sm:text-xl' : 'text-xl'}`}
+            className={`whitespace-nowrap font-display font-bold drop-shadow ${compact ? 'text-base sm:text-xl' : 'text-xl'}`}
           >
             {prix.montant}
           </span>

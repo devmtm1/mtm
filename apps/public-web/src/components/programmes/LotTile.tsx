@@ -60,7 +60,7 @@ export function LotTile({ lot, visuel = null, avecPhoto = false }: LotTileProps)
             </span>
           )}
           {emprunte && (
-            <span className="absolute bottom-2 left-2.5 rounded-full bg-black/45 px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur-sm">
+            <span className="absolute bottom-2 left-2.5 rounded-full bg-black/45 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur-sm">
               {visuel.legende}
             </span>
           )}

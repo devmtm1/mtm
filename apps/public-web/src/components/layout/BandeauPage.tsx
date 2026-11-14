@@ -10,7 +10,7 @@ const ICONES = [ShieldCheck, Wallet, KeyRound];
 
 interface BandeauPageProps {
   eyebrow: string;
-  title: string;
+  title: ReactNode;
   description: string;
   /** Engagements affichés sous le texte (« Biens contrôlés par nos équipes »…). */
   points?: string[];
@@ -31,6 +31,8 @@ interface BandeauPageProps {
   voileDense?: boolean;
   /** Bandeau plus bas : pour les pages de services, où l'on veut voir le contenu et le formulaire sans longue descente. */
   compact?: boolean;
+  /** Les engagements ne s'affichent que sur grand écran : sur téléphone, la recherche doit tenir dans le premier écran. */
+  pointsDesktopSeulement?: boolean;
 }
 
 /**
@@ -39,7 +41,7 @@ interface BandeauPageProps {
  * et une vague en bas. Un panneau (recherche, faits clés) peut le chevaucher. Tous les textes et la photo se modifient dans
  * Contenus du site.
  */
-export function BandeauPage({ eyebrow, title, description, points = [], image, chargement = false, chevauche = true, vague = 'douce', actions, voileDense = false, compact = false }: BandeauPageProps) {
+export function BandeauPage({ eyebrow, title, description, points = [], image, chargement = false, chevauche = true, vague = 'douce', actions, voileDense = false, compact = false, pointsDesktopSeulement = false }: BandeauPageProps) {
   const [imageMorte, setImageMorte] = useState(false);
   const source = imageMorte ? IMAGE_BANDEAU_PAGE : image;
   const srcSet = source === IMAGE_BANDEAU_PAGE ? '' : cloudinarySrcSet(source);
@@ -62,7 +64,7 @@ export function BandeauPage({ eyebrow, title, description, points = [], image, c
       <div
         aria-hidden="true"
         className={`absolute inset-0 -z-10 bg-gradient-to-r from-[#0a2142]/90 to-transparent max-lg:via-[#0a2142]/70 max-lg:to-[#0a2142]/50 ${
-          voileDense ? 'via-[#0a2142]/75' : 'via-[#0a2142]/40'
+          voileDense ? 'via-[#0a2142]/75' : 'via-[#0a2142]/60'
         }`}
       />
       {/* Vague en bas : le bandeau se fond dans le fond de la page, sous le panneau de recherche qui le chevauche. */}
@@ -87,7 +89,7 @@ export function BandeauPage({ eyebrow, title, description, points = [], image, c
         <p className={`max-w-xl whitespace-pre-line text-[15px] leading-relaxed text-white/85 sm:text-base ${compact ? 'mt-3' : 'mt-4'}`}>{description}</p>
 
         {points.length > 0 && (
-          <ul className={`flex max-w-2xl flex-wrap gap-x-7 gap-y-2.5 ${compact ? 'mt-4' : 'mt-6'}`}>
+          <ul className={`max-w-2xl flex-wrap gap-x-7 gap-y-2.5 ${pointsDesktopSeulement ? 'hidden sm:flex' : 'flex'} ${compact ? 'mt-4' : 'mt-6'}`}>
             {points.map((point, index) => {
               const Icone = ICONES[index % ICONES.length];
               return (

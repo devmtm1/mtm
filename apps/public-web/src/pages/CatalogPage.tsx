@@ -310,6 +310,7 @@ export function CatalogPage() {
         title={rubrique ? rubrique.libelle : text('catalogue.title', 'Nos biens')}
         description={rubrique ? rubrique.description : text('catalogue.intro', INTRO_DEFAUT)}
         points={lines('catalogue.reassurance', REASSURANCES_DEFAUT)}
+        pointsDesktopSeulement
         image={text('catalogue.image', IMAGE_BANDEAU_PAGE)}
         chargement={contenuEnCours}
       />
