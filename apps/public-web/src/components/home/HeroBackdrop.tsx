@@ -84,18 +84,18 @@ export function HeroBackdrop({ lecture = true }: { lecture?: boolean }) {
             pendant que la vidéo se charge et quand elle est écartée (économie
             de données, réseau lent, mouvement réduit). */}
         <img
-          src="/hero-poster.jpg"
+          src="/baniere-poster.jpg"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-contain"
           fetchPriority="high"
         />
         {playVideo && (
           <video
-            className="absolute inset-0 h-full w-full object-cover motion-safe:animate-fade-in"
+            className="absolute inset-0 h-full w-full object-contain motion-safe:animate-fade-in"
             ref={videoRef}
             src="/baniere.mp4"
-            poster="/hero-poster.jpg"
+            poster="/baniere-poster.jpg"
             autoPlay
             muted
             loop
