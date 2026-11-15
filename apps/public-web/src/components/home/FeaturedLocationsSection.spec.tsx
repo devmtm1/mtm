@@ -76,7 +76,7 @@ describe('FeaturedLocationsSection', () => {
   it('n’affiche que des rangées complètes de trois, sans étiquette « À la une » redondante', () => {
     etat.items = [annonce(1), annonce(2), annonce(3), annonce(4)];
     afficher();
-    expect(screen.getAllByRole('link', { name: /Annonce/ })).toHaveLength(3);
+    expect(screen.getAllByRole('link', { name: /^Annonce \d$/ })).toHaveLength(3);
     // Pas d'étiquette « À la une » répétée sur chaque carte : le titre de la section suffit.
     expect(screen.queryAllByText('À la une')).toHaveLength(0);
   });

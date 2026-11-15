@@ -10,6 +10,8 @@ interface ModalProps {
   children: ReactNode;
   /** Fiche de lecture vidéo : haute feuille qui monte du bas, croix flottante, sans barre de titre. */
   lecteur?: boolean;
+  /** Fenêtre aérée : pas de barre de titre (le contenu porte son propre en-tête), croix flottante, marges généreuses. */
+  aere?: boolean;
 }
 
 const FOCUSABLE =
@@ -24,7 +26,7 @@ const FOCUSABLE =
  * se centrerait dans la page entière, hors écran sur mobile. Sur petit écran,
  * elle s'ancre en bas (feuille) pour rester atteignable au pouce.
  */
-export function Modal({ title, onClose, children, lecteur = false }: ModalProps) {
+export function Modal({ title, onClose, children, lecteur = false, aere = false }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
 
@@ -105,7 +107,9 @@ export function Modal({ title, onClose, children, lecteur = false }: ModalProps)
         className={`relative flex w-full flex-col overflow-y-auto overflow-x-hidden bg-mtm-surface shadow-lg outline-none ${
           lecteur
             ? 'max-h-[94dvh] rounded-t-[1.75rem] motion-safe:animate-sheet-in sm:max-h-[90dvh] sm:max-w-3xl sm:rounded-2xl sm:motion-safe:animate-lecteur-in'
-            : 'max-h-[92dvh] max-w-lg rounded-t-3xl px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 motion-safe:animate-sheet-in sm:max-h-full sm:rounded-lg sm:p-6 sm:motion-safe:animate-scale-in'
+            : aere
+              ? 'max-h-[94dvh] max-w-xl rounded-t-[1.75rem] px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3 motion-safe:animate-sheet-in sm:max-h-full sm:rounded-3xl sm:p-8 sm:motion-safe:animate-scale-in'
+              : 'max-h-[92dvh] max-w-lg rounded-t-3xl px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 motion-safe:animate-sheet-in sm:max-h-full sm:rounded-lg sm:p-6 sm:motion-safe:animate-scale-in'
         }`}
       >
         {lecteur ? (
@@ -124,6 +128,22 @@ export function Modal({ title, onClose, children, lecteur = false }: ModalProps)
               <X className="h-5 w-5" aria-hidden="true" />
             </button>
             <div className="px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-16 sm:px-6 sm:pt-16">{children}</div>
+          </>
+        ) : aere ? (
+          <>
+            <span className="mx-auto mb-3 h-1.5 w-10 shrink-0 rounded-full bg-mtm-border sm:hidden" aria-hidden="true" />
+            <h2 id={titleId} className="sr-only">
+              {title}
+            </h2>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Fermer"
+              className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full text-mtm-muted transition-colors hover:bg-mtm-bg hover:text-mtm-text focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mtm-primary sm:right-5 sm:top-5"
+            >
+              <X className="h-5 w-5" aria-hidden="true" />
+            </button>
+            {children}
           </>
         ) : (
           <>

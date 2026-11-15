@@ -16,6 +16,12 @@ interface ContactModalProps {
    */
   intro?: ReactNode;
   demandeType?: 'information' | 'visite';
+  /** Rappel du bien concerné, au-dessus du formulaire (photo, titre, loyer). */
+  recap?: ReactNode;
+  /** Sujet imposé (affiché en rappel, non modifiable) : la demande part d'une fiche précise. */
+  sujetFige?: boolean;
+  libelleBouton?: string;
+  avecIcones?: boolean;
   onClose: () => void;
 }
 
@@ -27,10 +33,15 @@ export function ContactModal({
   sujetOptions,
   intro,
   demandeType,
+  recap,
+  sujetFige,
+  libelleBouton,
+  avecIcones,
   onClose,
 }: ContactModalProps) {
   return (
     <Modal title={title} onClose={onClose}>
+      {recap}
       {intro}
       <ContactForm
         terrainId={terrainId}
@@ -38,6 +49,9 @@ export function ContactModal({
         initialSujet={initialSujet}
         sujetOptions={sujetOptions}
         demandeType={demandeType}
+        sujetFige={sujetFige}
+        libelleBouton={libelleBouton}
+        avecIcones={avecIcones}
         onSuccess={onClose}
       />
     </Modal>

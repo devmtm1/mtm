@@ -61,7 +61,7 @@ describe('LocationCard', () => {
 
   it('mène à la fiche de l’annonce', () => {
     renderCard(base);
-    expect(screen.getByRole('link')).toHaveAttribute('href', '/locations/loc-1');
+    expect(screen.getByRole('link', { name: 'Appartement lumineux aux Almadies' })).toHaveAttribute('href', '/locations/loc-1');
   });
 
   it('signale « À la une », « Meublé » et le nombre de photos', () => {
@@ -97,5 +97,24 @@ describe('LocationCard', () => {
     expect(screen.getByText('Courte durée')).toBeInTheDocument();
     expect(screen.getByText('2 nuits minimum')).toBeInTheDocument();
     expect(screen.queryByText('Disponible immédiatement')).not.toBeInTheDocument();
+  });
+
+  it('annonce la caution et les charges saisies', () => {
+    renderCard(base);
+    expect(screen.getByText(/Caution : 2 mois/)).toBeInTheDocument();
+    expect(screen.getByText(/Charges : 25\s000 FCFA/)).toBeInTheDocument();
+  });
+
+  it('n’invente rien quand la caution et les charges ne sont pas renseignées', () => {
+    renderCard({ ...base, moisCaution: null, montantCaution: null, charges: null });
+    expect(screen.queryByText(/Caution/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Charges/)).not.toBeInTheDocument();
+  });
+
+  it('propose de demander une visite sur WhatsApp, avec l’annonce dans le message', () => {
+    renderCard(base);
+    const lien = screen.getByRole('link', { name: /Demander une visite sur WhatsApp/ });
+    expect(lien.getAttribute('href')).toContain('https://wa.me/');
+    expect(decodeURIComponent(lien.getAttribute('href') ?? '')).toContain('LOC-2026-0001');
   });
 });

@@ -240,7 +240,7 @@ export function SejourBooking({ location }: { location: Location }) {
               {erreur}
             </p>
           )}
-          <Button type="submit" disabled={envoi}>
+          <Button type="submit" variant="accent" disabled={envoi}>
             {envoi ? 'Envoi…' : 'Envoyer ma demande'}
           </Button>
           <p className="text-xs text-mtm-muted">

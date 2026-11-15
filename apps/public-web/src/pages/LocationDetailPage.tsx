@@ -9,6 +9,7 @@ import {
   DoorOpen,
   Globe2,
   MapPin,
+  MessageCircle,
   MessageSquare,
   Moon,
   Ruler,
@@ -19,6 +20,7 @@ import {
 import { ROUTES } from '../routes';
 import { useLocation } from '../hooks/useLocations';
 import { AutresLogements } from '../components/locations/AutresLogements';
+import { DemandeVisiteModal } from '../components/locations/DemandeVisiteModal';
 import { LocationGallery } from '../components/locations/LocationGallery';
 import { SejourBooking } from '../components/locations/SejourBooking';
 import { SimilarLocations } from '../components/locations/SimilarLocations';
@@ -28,6 +30,7 @@ import { DemandeWhatsAppCta } from '../components/contact/DemandeWhatsAppCta';
 import { TerrainDetailSkeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Badge } from '../components/ui/Badge';
+import { MediaImage } from '../components/ui/MediaImage';
 import { Button } from '../components/ui/Button';
 import { DetailActionBar } from '../components/mobile/DetailActionBar';
 import { FavoriteButton } from '../components/mobile/FavoriteButton';
@@ -36,6 +39,7 @@ import { usePageMetadata } from '../hooks/usePageMetadata';
 import { descriptionDe, donneesLocation, premierePhoto } from '../utils/seo';
 import { useVueFiche } from '../hooks/useSuiviVisites';
 import { useSiteContact } from '../hooks/useSiteContact';
+import { useIsMobile } from '../hooks/useMediaQuery';
 import { typeBienLabel } from '../utils/bienLabels';
 import { formatSuperficie } from '../utils/format';
 import {
@@ -56,6 +60,7 @@ export function LocationDetailPage() {
   const { data: location, loading, error } = useLocation(id);
   const [activeModal, setActiveModal] = useState<ActiveModal>(null);
   const contact = useSiteContact();
+  const mobile = useIsMobile();
 
   const typeLabel = location ? typeBienLabel(location.type) : '';
   const titre = location ? locationTitle(location, typeLabel) : 'Annonce';
@@ -116,6 +121,126 @@ export function LocationDetailPage() {
     ? `Bonjour, je souhaite séjourner dans « ${titre} » (réf. ${location.referenceInterne}).`
     : `Bonjour, je suis intéressé(e) par la location « ${titre} » (réf. ${location.referenceInterne}).`;
   const demandeSujet = (verbe: string) => `${verbe} — ${location.referenceInterne}`;
+  const couverture = premierePhoto(location.medias);
+  // Rappel du bien dans les fenêtres de demande : on ne perd pas de vue ce pour quoi on écrit.
+  const recap = (
+    <div className="mb-4 flex items-center gap-3 rounded-xl border border-mtm-border bg-mtm-bg p-2.5">
+      {couverture ? (
+        <MediaImage src={couverture} alt="" compact className="h-14 w-14 shrink-0 rounded-lg object-cover" />
+      ) : (
+        <span aria-hidden="true" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-mtm-primary-subtle text-mtm-primary">
+          <MapPin className="h-5 w-5" />
+        </span>
+      )}
+      <div className="min-w-0">
+        <p className="truncate font-display text-sm font-bold text-mtm-text">{titre}</p>
+        {place && <p className="truncate text-xs text-mtm-muted">{place}</p>}
+        <p className="text-sm font-bold text-mtm-primary">
+          {prix.montant}
+          <span className="ml-1 text-xs font-medium text-mtm-muted">{prix.suffixe}</span>
+        </p>
+      </div>
+    </div>
+  );
+  const lienWhatsapp = `https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(message)}`;
+
+  const lienWhatsappBouton = (
+    <a
+      href={lienWhatsapp}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-mtm-success bg-mtm-success/10 px-4 py-2.5 text-sm font-semibold text-mtm-success transition-colors hover:bg-mtm-success hover:text-white"
+    >
+      <MessageCircle className="h-4 w-4" aria-hidden="true" />
+      Écrire sur WhatsApp
+    </a>
+  );
+
+  // Les conditions et les actions : à droite, collées en défilant, sur ordinateur ; sur téléphone, juste sous les chiffres
+  // clés, là où un locataire les cherche (et non tout en bas, après la carte).
+  const carte = (
+        <aside className="h-fit rounded-2xl border border-mtm-border bg-mtm-surface p-5 shadow-card lg:sticky lg:top-24 lg:rounded-xl lg:p-6">
+      <p className="hidden text-xs font-semibold uppercase tracking-wide text-mtm-muted lg:block">
+        {courte ? 'Prix de la nuit' : 'Loyer mensuel'}
+      </p>
+      <p className="mt-1 hidden font-display text-3xl font-bold text-mtm-primary lg:block">
+        {prix.montant}
+        {courte && <span className="ml-1 text-base font-semibold text-mtm-muted">/ nuit</span>}
+      </p>
+      <h2 className="font-display text-lg font-bold text-mtm-text lg:hidden">Conditions de location</h2>
+
+      <dl className="mt-3 flex flex-col gap-2 border-t border-mtm-border pt-4 text-sm lg:mt-4">
+        {courte && location.fraisMenage !== null && location.fraisMenage > 0 && (
+          <div className="flex justify-between gap-4">
+            <dt className="text-mtm-muted">Frais de ménage</dt>
+            <dd className="font-semibold text-mtm-text">{formatLoyerMontant(location.fraisMenage)} par séjour</dd>
+          </div>
+        )}
+        {!courte && location.charges !== null && location.charges > 0 && (
+          <div className="flex justify-between gap-4">
+            <dt className="text-mtm-muted">Charges</dt>
+            <dd className="font-semibold text-mtm-text">{formatLoyerMontant(location.charges)} / mois</dd>
+          </div>
+        )}
+        {location.montantCaution !== null && (
+          <div className="flex justify-between gap-4">
+            <dt className="text-mtm-muted">
+              Caution
+              {!courte && location.moisCaution !== null && ` (${location.moisCaution} mois)`}
+            </dt>
+            <dd className="font-semibold text-mtm-text">{formatLoyerMontant(location.montantCaution)}</dd>
+          </div>
+        )}
+        {premierVersement !== null && (
+          <div className="mt-1 flex justify-between gap-4 rounded-md bg-mtm-primary-subtle px-3 py-2">
+            <dt className="font-semibold text-mtm-primary">À l’entrée</dt>
+            <dd className="font-bold text-mtm-primary">{formatLoyerMontant(premierVersement)}</dd>
+          </div>
+        )}
+      </dl>
+      {premierVersement !== null && (
+        <p className="mt-2 text-xs text-mtm-muted">Premier loyer et caution. Les modalités sont confirmées au bail.</p>
+      )}
+
+      {courte ? (
+        <div className="mt-6 flex flex-col gap-5 border-t border-mtm-border pt-5">
+          <SejourBooking location={location} />
+          {lienWhatsappBouton}
+          <Button variant="secondary" onClick={() => setActiveModal('infos')}>
+            <MessageSquare className="h-4 w-4" aria-hidden="true" />
+            Poser une question
+          </Button>
+        </div>
+      ) : (
+        <div className="mt-6 flex flex-col gap-3">
+          <Button variant="accent" onClick={() => setActiveModal('visite')}>
+            <CalendarCheck className="h-4 w-4" aria-hidden="true" />
+            Demander une visite
+          </Button>
+          {lienWhatsappBouton}
+          <Button variant="secondary" onClick={() => setActiveModal('infos')}>
+            <MessageSquare className="h-4 w-4" aria-hidden="true" />
+            Poser une question
+          </Button>
+        </div>
+      )}
+
+      <ul className="mt-6 flex flex-col gap-2 border-t border-mtm-border pt-5 text-sm text-mtm-muted">
+        <li className="flex items-start gap-2">
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-mtm-success" aria-hidden="true" />
+          Bien suivi et contrôlé par MTM Immobilier
+        </li>
+        <li className="flex items-start gap-2">
+          <Globe2 className="mt-0.5 h-4 w-4 shrink-0 text-mtm-success" aria-hidden="true" />
+          Visite et démarches possibles à distance
+        </li>
+        <li className="flex items-start gap-2">
+          <UserCheck className="mt-0.5 h-4 w-4 shrink-0 text-mtm-success" aria-hidden="true" />
+          Un interlocuteur dédié jusqu’à la remise des clés
+        </li>
+      </ul>
+    </aside>
+  );
 
   return (
     <div className="mx-auto max-w-6xl px-4 pb-6 sm:px-6 lg:py-10 lg:pb-10">
@@ -159,7 +284,6 @@ export function LocationDetailPage() {
                 </Badge>
               )}
               {courte ? <Badge tone="success"><Moon className="mr-1 h-3.5 w-3.5" aria-hidden="true" />Courte durée</Badge> : <Badge tone="success">{libre}</Badge>}
-              {location.misEnAvant && <Badge tone="accent">À la une</Badge>}
             </div>
           </div>
 
@@ -188,6 +312,8 @@ export function LocationDetailPage() {
               ))}
             </ul>
           )}
+
+          {mobile && carte}
 
           {location.description && (
             <section>
@@ -228,93 +354,16 @@ export function LocationDetailPage() {
           </div>
         </div>
 
-        <aside className="h-fit rounded-2xl border border-mtm-border bg-mtm-surface p-5 shadow-card lg:sticky lg:top-24 lg:rounded-xl lg:p-6">
-          <p className="hidden text-xs font-semibold uppercase tracking-wide text-mtm-muted lg:block">
-            {courte ? 'Prix de la nuit' : 'Loyer mensuel'}
-          </p>
-          <p className="mt-1 hidden font-display text-3xl font-bold text-mtm-primary lg:block">
-            {prix.montant}
-            {courte && <span className="ml-1 text-base font-semibold text-mtm-muted">/ nuit</span>}
-          </p>
-          <h2 className="font-display text-lg font-bold text-mtm-text lg:hidden">Conditions de location</h2>
-
-          <dl className="mt-3 flex flex-col gap-2 border-t border-mtm-border pt-4 text-sm lg:mt-4">
-            {courte && location.fraisMenage !== null && location.fraisMenage > 0 && (
-              <div className="flex justify-between gap-4">
-                <dt className="text-mtm-muted">Frais de ménage</dt>
-                <dd className="font-semibold text-mtm-text">{formatLoyerMontant(location.fraisMenage)} par séjour</dd>
-              </div>
-            )}
-            {!courte && location.charges !== null && location.charges > 0 && (
-              <div className="flex justify-between gap-4">
-                <dt className="text-mtm-muted">Charges</dt>
-                <dd className="font-semibold text-mtm-text">{formatLoyerMontant(location.charges)} / mois</dd>
-              </div>
-            )}
-            {location.montantCaution !== null && (
-              <div className="flex justify-between gap-4">
-                <dt className="text-mtm-muted">
-                  Caution
-                  {!courte && location.moisCaution !== null && ` (${location.moisCaution} mois)`}
-                </dt>
-                <dd className="font-semibold text-mtm-text">{formatLoyerMontant(location.montantCaution)}</dd>
-              </div>
-            )}
-            {premierVersement !== null && (
-              <div className="mt-1 flex justify-between gap-4 rounded-md bg-mtm-primary-subtle px-3 py-2">
-                <dt className="font-semibold text-mtm-primary">À l’entrée</dt>
-                <dd className="font-bold text-mtm-primary">{formatLoyerMontant(premierVersement)}</dd>
-              </div>
-            )}
-          </dl>
-          {premierVersement !== null && (
-            <p className="mt-2 text-xs text-mtm-muted">Premier loyer et caution. Les modalités sont confirmées au bail.</p>
-          )}
-
-          {courte ? (
-            <div className="mt-6 flex flex-col gap-5 border-t border-mtm-border pt-5">
-              <SejourBooking location={location} />
-              <Button variant="secondary" onClick={() => setActiveModal('infos')}>
-                <MessageSquare className="h-4 w-4" aria-hidden="true" />
-                Poser une question
-              </Button>
-            </div>
-          ) : (
-            <div className="mt-6 flex flex-col gap-3">
-              <Button onClick={() => setActiveModal('visite')}>
-                <CalendarCheck className="h-4 w-4" aria-hidden="true" />
-                Demander une visite
-              </Button>
-              <Button variant="secondary" onClick={() => setActiveModal('infos')}>
-                <MessageSquare className="h-4 w-4" aria-hidden="true" />
-                Poser une question
-              </Button>
-            </div>
-          )}
-
-          <ul className="mt-6 flex flex-col gap-2 border-t border-mtm-border pt-5 text-sm text-mtm-muted">
-            <li className="flex items-start gap-2">
-              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-mtm-success" aria-hidden="true" />
-              Bien suivi et contrôlé par MTM Immobilier
-            </li>
-            <li className="flex items-start gap-2">
-              <Globe2 className="mt-0.5 h-4 w-4 shrink-0 text-mtm-success" aria-hidden="true" />
-              Visite et démarches possibles à distance
-            </li>
-            <li className="flex items-start gap-2">
-              <UserCheck className="mt-0.5 h-4 w-4 shrink-0 text-mtm-success" aria-hidden="true" />
-              Un interlocuteur dédié jusqu’à la remise des clés
-            </li>
-          </ul>
-        </aside>
+        {!mobile && carte}
       </div>
 
       <SimilarLocations location={location} />
 
       {/* Mobile : le loyer et l'action principale restent sous le pouce. */}
-      <DetailActionBar label={courte ? 'Prix / nuit' : 'Loyer / mois'} price={prix.montant}>
+      <DetailActionBar label={courte ? 'Prix / nuit' : 'Loyer / mois'} price={prix.montant} whatsappHref={lienWhatsapp}>
         {courte ? (
           <Button
+            variant="accent"
             className="px-4"
             onClick={() => document.getElementById('reserver')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
           >
@@ -322,7 +371,7 @@ export function LocationDetailPage() {
             Réserver
           </Button>
         ) : (
-          <Button className="px-4" onClick={() => setActiveModal('visite')}>
+          <Button variant="accent" className="px-4" onClick={() => setActiveModal('visite')}>
             <CalendarCheck className="h-4 w-4" aria-hidden="true" />
             Visiter
           </Button>
@@ -330,12 +379,12 @@ export function LocationDetailPage() {
       </DetailActionBar>
 
       {activeModal === 'visite' && (
-        <ContactModal
-          title="Demander une visite"
-          demandeType="visite"
+        <DemandeVisiteModal
           bienLocatifId={location.id}
-          initialSujet={demandeSujet('Visite')}
-          intro={<DemandeWhatsAppCta numero={contact.whatsapp} message={message} />}
+          titre={titre}
+          reference={location.referenceInterne}
+          whatsapp={contact.whatsapp}
+          messageWhatsapp={message}
           onClose={() => setActiveModal(null)}
         />
       )}
@@ -344,6 +393,10 @@ export function LocationDetailPage() {
           title="Poser une question"
           bienLocatifId={location.id}
           initialSujet={demandeSujet('Informations')}
+          recap={recap}
+          sujetFige
+          avecIcones
+          libelleBouton="Envoyer ma question"
           intro={<DemandeWhatsAppCta numero={contact.whatsapp} message={message} />}
           onClose={() => setActiveModal(null)}
         />

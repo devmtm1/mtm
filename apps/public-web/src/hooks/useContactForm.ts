@@ -14,6 +14,10 @@ export interface UseContactFormOptions {
   initialSujet?: string;
   /** Nature de la demande quand elle part d'un client connecté. */
   demandeType?: Exclude<ClientDemandeType, 'reservation'>;
+  /** Ligne ajoutée AVANT le message saisi (ex. « Bonjour, je souhaite visiter ce bien… ») : le message saisi devient facultatif. */
+  debutMessage?: string;
+  /** Ligne ajoutée APRÈS le message saisi (ex. la date et l'heure de visite souhaitées). */
+  piedMessage?: string;
 }
 
 export function useContactForm({
@@ -21,6 +25,8 @@ export function useContactForm({
   bienLocatifId,
   initialSujet,
   demandeType = 'information',
+  debutMessage,
+  piedMessage,
 }: UseContactFormOptions = {}) {
   // Client connecté : identité prise dans son compte, envoi authentifié pour
   // que la demande soit rattachée à son espace (et non à l'e-mail saisi).
@@ -46,7 +52,9 @@ export function useContactForm({
   }, [initialSujet]);
 
   const submit = useCallback(async () => {
-    const fieldErrors = client ? validateClientMessage(values.message) : validateContactForm(values);
+    // Le message envoyé : le début, ce que le visiteur a écrit, puis le pied. Sans début ni pied, c'est son seul texte.
+    const message = [debutMessage, values.message, piedMessage].map((texte) => texte?.trim()).filter(Boolean).join('\n\n');
+    const fieldErrors = client ? validateClientMessage(message) : validateContactForm({ ...values, message });
     setErrors(fieldErrors);
     if (hasErrors(fieldErrors)) return;
 
@@ -62,7 +70,7 @@ export function useContactForm({
           email: client.email ?? undefined,
           telephone: client.telephone ?? undefined,
           sujet: values.sujet.trim() || undefined,
-          message: values.message.trim(),
+          message,
           bienLocatifId,
         });
         setSubmitted(true);
@@ -71,7 +79,7 @@ export function useContactForm({
       if (client) {
         await createClientDemande(client.token, {
           type: demandeType,
-          message: values.message.trim(),
+          message,
           sujet: values.sujet.trim() || undefined,
           terrainId,
         });
@@ -83,7 +91,7 @@ export function useContactForm({
         email: values.email.trim() || undefined,
         telephone: values.telephone.trim() || undefined,
         sujet: values.sujet.trim() || undefined,
-        message: values.message.trim(),
+        message,
         terrainId,
         bienLocatifId,
       });
@@ -95,7 +103,7 @@ export function useContactForm({
     } finally {
       setSubmitting(false);
     }
-  }, [values, terrainId, bienLocatifId, client, demandeType]);
+  }, [values, terrainId, bienLocatifId, client, demandeType, debutMessage, piedMessage]);
 
   return { values, setValue, errors, submitting, submitted, submitError, submit, reset, client };
 }
