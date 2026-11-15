@@ -131,7 +131,7 @@ export function MobileHome() {
               // La vidéo est une affiche complète : on la montre en entier, sans titre ni voile par-dessus.
               <>
                 <h1 className="sr-only">{title}</h1>
-                <HeroBackdrop lecture={!promotionsLoading} />
+                <HeroBackdrop lecture={!promotionsLoading} contenue />
               </>
             )}
           </div>
