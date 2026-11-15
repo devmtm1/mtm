@@ -117,7 +117,7 @@ export function MobileHome() {
               promotions.length > 0
                 ? // Format des affiches (16/9), grands coins : le visuel de la publicité remplit tout le cadre.
                   'relative aspect-[16/9] w-full overflow-hidden rounded-[1.75rem] bg-mtm-primary-dark shadow-[0_12px_32px_rgba(26,73,116,0.22)]'
-                : 'relative h-[12.5rem] overflow-hidden rounded-3xl bg-mtm-primary-dark shadow-card'
+                : 'relative aspect-[16/9] w-full overflow-hidden rounded-3xl bg-[#0b2349] shadow-card'
             }
           >
             {promotions.length > 0 ? (
@@ -128,14 +128,10 @@ export function MobileHome() {
                 <PromoBanner promotions={promotions} variant="card" />
               </>
             ) : (
+              // La vidéo est une affiche complète : on la montre en entier, sans titre ni voile par-dessus.
               <>
+                <h1 className="sr-only">{title}</h1>
                 <HeroBackdrop lecture={!promotionsLoading} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" aria-hidden="true" />
-                <div className="absolute inset-x-0 bottom-0 px-5 pb-9">
-                  <h1 className="line-clamp-2 whitespace-pre-line font-display text-[1.3rem] font-bold leading-tight text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.55)]">
-                    {title}
-                  </h1>
-                </div>
               </>
             )}
           </div>
@@ -145,8 +141,8 @@ export function MobileHome() {
             role="search"
             aria-label="Recherche de biens"
             className={`flex items-center gap-2 rounded-full border border-mtm-border/70 bg-mtm-surface py-1.5 pl-4 pr-1.5 shadow-[0_10px_30px_rgba(31,41,55,0.18)] ${
-              // Avec une publicité, la recherche passe sous la carte : elle ne cache pas l'affiche.
-              promotions.length > 0 ? 'mt-3' : 'absolute inset-x-4 -bottom-6'
+              // La recherche passe sous la carte : elle ne cache ni l'affiche ni la vidéo.
+              'mt-3'
             }`}
           >
             <Search className="h-[18px] w-[18px] shrink-0 text-mtm-muted" aria-hidden="true" />
@@ -170,7 +166,7 @@ export function MobileHome() {
         </div>
       </section>
 
-      <ul className={`${promotions.length > 0 ? 'mt-5' : 'mt-12'} grid grid-cols-4 gap-3 px-4`} aria-label="Catégories">
+      <ul className={`mt-5 grid grid-cols-4 gap-3 px-4`} aria-label="Catégories">
         {CATEGORIES.map(({ label, to, icon: Icon, tone, box, mise }) => {
           const inner = (
             <>
