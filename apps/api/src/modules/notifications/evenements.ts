@@ -259,6 +259,59 @@ export const EVENEMENTS_NOTIFICATION: EvenementNotification[] = [
     destinataire: 'client',
     emailParDefaut: true,
   },
+  {
+    cle: 'rappel_loyer',
+    famille: 'Rappels aux clients',
+    libelle: 'Rappel de loyer',
+    description:
+      'Le locataire est prévenu 3 jours avant, le jour de l’échéance, puis après 3 et 10 jours de retard.',
+    destinataire: 'client',
+    emailParDefaut: true,
+  },
+  {
+    cle: 'rappel_echeance_vente',
+    famille: 'Rappels aux clients',
+    libelle: 'Rappel d’échéance de vente',
+    description:
+      'L’acheteur est prévenu avant, le jour et après l’échéance d’un paiement.',
+    destinataire: 'client',
+    emailParDefaut: true,
+  },
+  {
+    cle: 'rappel_reservation',
+    famille: 'Rappels aux clients',
+    libelle: 'Réservation qui expire',
+    description:
+      'L’acheteur est prévenu 3 jours et 1 jour avant la fin de sa réservation.',
+    destinataire: 'client',
+    emailParDefaut: true,
+  },
+  {
+    cle: 'chantier_avancement',
+    famille: 'Chantier',
+    libelle: 'Avancement du chantier',
+    description: 'Le client est prévenu à chaque palier de 10 % d’avancement.',
+    destinataire: 'client',
+    emailParDefaut: false,
+  },
+  {
+    cle: 'chantier_statut',
+    famille: 'Chantier',
+    libelle: 'Changement d’état du chantier',
+    description:
+      'Le client est prévenu quand son chantier démarre, est suspendu, réceptionné ou clôturé.',
+    destinataire: 'client',
+    emailParDefaut: false,
+  },
+  {
+    cle: 'chantier_document',
+    famille: 'Chantier',
+    libelle: 'Document ou photo de chantier',
+    description:
+      'Le client est prévenu quand une pièce ou une photo lui est ouverte.',
+    destinataire: 'client',
+    emailParDefaut: false,
+  },
 ];
 
 export const CLE_REGLES_NOTIFICATION = 'notifications.regles';

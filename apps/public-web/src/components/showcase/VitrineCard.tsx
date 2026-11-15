@@ -24,7 +24,7 @@ export function VitrineCard({ item }: { item: ShowcaseItem }) {
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
         {item.date && (
-          <span className="absolute left-2.5 top-2.5 rounded-lg bg-white/95 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-mtm-primary-dark shadow-card">
+          <span className="absolute left-2.5 top-2.5 rounded-lg bg-white/95 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-mtm-primary-dark shadow-card">
             {formatMonthYear(item.date)}
           </span>
         )}

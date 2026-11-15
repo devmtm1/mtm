@@ -10,6 +10,7 @@ import {
   LucidePlus,
   LucideSearch,
   LucideStar,
+  LucideDownload,
 } from '@lucide/angular';
 import {
   type ProgrammeResume,
@@ -19,6 +20,8 @@ import { SessionService } from '../../core/services/session.service';
 import { MoneyPipe } from '../../shared/pipes/money.pipe';
 import { NotificationService } from '../../shared/services/notification.service';
 import { ProgrammeDialog } from './programme-dialog';
+import { ExportListeDialog } from '../../shared/dialogs/export-liste-dialog';
+import { sourceDepuisLignes } from '../../shared/utils/export-lignes';
 
 /** Le taux de lots vendus, en pourcentage entier (0 quand le programme n'a pas encore de lots). */
 export function tauxVendu(programme: Pick<ProgrammeResume, 'nombreLots' | 'lotsVendus'>): number {
@@ -45,7 +48,7 @@ export function initiales(nom: string): string {
 /** Les programmes de lotissement : un ensemble de lots vendus séparément, suivis d'un coup d'œil. */
 @Component({
   selector: 'app-programmes',
-  imports: [
+  imports: [LucideDownload, 
     MatButtonModule,
     LucideChevronRight,
     LucideCircleCheck,
@@ -66,6 +69,7 @@ export class Programmes implements OnInit {
   private readonly notifications = inject(NotificationService);
 
   private readonly session = inject(SessionService);
+  protected readonly peutExporterListe = computed(() => this.session.hasPermission('terrains:exporter'));
   protected readonly canCreate = this.session.hasPermission('terrains:creer');
   protected readonly canEdit = this.session.hasPermission('terrains:modifier');
   protected readonly programmes = signal<ProgrammeResume[] | null>(null);
@@ -151,5 +155,29 @@ export class Programmes implements OnInit {
         this.notifications.error(erreur, 'Les programmes n’ont pas pu être chargés');
       },
     });
+  }
+
+  /** Exporte les programmes affichés en Excel ou en PDF. */
+  protected exporterListe(): void {
+    ExportListeDialog.open(
+      this.dialog,
+      sourceDepuisLignes<ProgrammeResume>(
+        { module: 'programmes', titre: this.archives() ? 'Programmes archivés' : 'Programmes de lotissement' },
+        [
+          { libelle: 'Référence', valeur: (p) => p.reference },
+          { libelle: 'Programme', valeur: (p) => p.nom },
+          { libelle: 'Commune', valeur: (p) => p.commune },
+          { libelle: 'Région', valeur: (p) => p.region },
+          { libelle: 'Statut juridique', valeur: (p) => p.statutJuridique },
+          { libelle: 'Publié sur le site', valeur: (p) => (p.publie ? 'Oui' : 'Non') },
+          { libelle: 'Lots', type: 'nombre', valeur: (p) => p.nombreLots },
+          { libelle: 'Disponibles', type: 'nombre', valeur: (p) => p.lotsDisponibles },
+          { libelle: 'Réservés', type: 'nombre', valeur: (p) => p.lotsReserves },
+          { libelle: 'Vendus', type: 'nombre', valeur: (p) => p.lotsVendus },
+          { libelle: 'Prix de base (FCFA)', type: 'montant', valeur: (p) => (p.prixLot === null ? null : Number(p.prixLot)) },
+        ],
+        this.visibles(),
+      ),
+    ).subscribe();
   }
 }

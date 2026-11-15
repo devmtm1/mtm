@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -19,6 +19,8 @@ import {
   LucideKeyRound,
 } from '@lucide/angular';
 import { AuthService, StaffOnlyError } from '../../../core/services/auth.service';
+import { PorteAcces } from '../../../shared/components/porte-acces/porte-acces';
+import { SequencePorte, mouvementReduit, type EtatPorte } from '../../../shared/components/porte-acces/porte-sequence';
 
 interface CredentialsForm {
   email: FormControl<string>;
@@ -55,6 +57,7 @@ const SENSITIVE_ROLES = new Set([
     LucideEye,
     LucideEyeOff,
     LucideKeyRound,
+    PorteAcces,
   ],
   templateUrl: './login.html',
   styleUrl: './login.scss',
@@ -64,12 +67,20 @@ export class Login {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
+  /** La porte : simple habillage de la connexion, elle ne s'ouvre que sur la réponse positive du serveur. */
+  protected readonly etatPorte = signal<EtatPorte>('repos');
+  protected readonly mouvementReduit = mouvementReduit();
+  /** Vrai le temps du tremblement du formulaire après un refus. */
+  protected readonly refus = signal(false);
+  private readonly porte = new SequencePorte((etat) => this.etatPorte.set(etat));
+
   /** Le mot de passe est masqué par défaut ; l'œil le révèle le temps de le vérifier. */
   protected readonly hidePassword = signal(true);
 
   constructor() {
     // Le lien de réinitialisation envoyé par e-mail pointe sur /login?reset=<jeton> :
     // on l'achemine vers l'écran dédié avec le jeton prérempli.
+    inject(DestroyRef).onDestroy(() => this.porte.annuler());
     const resetToken = this.route.snapshot.queryParamMap.get('reset');
     if (resetToken) {
       void this.router.navigate(['/password-reset'], {
@@ -131,8 +142,11 @@ export class Login {
   }
 
   private attemptLogin(): void {
+    // Une seule tentative à la fois : pas de double soumission pendant que la clé tourne.
+    if (this.loading()) return;
     this.loading.set(true);
     this.errorMessage.set(null);
+    this.porte.demarrer();
 
     const { email, password } = this.credentialsForm.getRawValue();
     const twoFactorCode = this.awaitingTwoFactor()
@@ -141,8 +155,9 @@ export class Login {
 
     this.authService.login(email, password, twoFactorCode).subscribe({
       next: (response) => {
-        this.loading.set(false);
         if (response.requiresTwoFactor) {
+          this.loading.set(false);
+          this.porte.annuler();
           this.awaitingTwoFactor.set(true);
           return;
         }
@@ -153,13 +168,21 @@ export class Login {
               !user.twoFactorEnabled
             ? '/security'
             : '/dashboard';
-        void this.router.navigate([destination]);
+        // Le serveur a confirmé : la clé tourne et les battants s'ouvrent, puis on arrive sur la destination habituelle.
+        void this.porte.reussir().then(() => this.router.navigate([destination]));
       },
       error: (error: unknown) => {
         this.loading.set(false);
+        this.porte.refuser();
         this.errorMessage.set(this.toErrorMessage(error));
+        this.secouer();
       },
     });
+  }
+
+  private secouer(): void {
+    this.refus.set(true);
+    setTimeout(() => this.refus.set(false), 500);
   }
 
   private toErrorMessage(error: unknown): string {

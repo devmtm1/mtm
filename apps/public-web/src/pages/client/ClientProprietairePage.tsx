@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { Building2, CalendarCheck, Home, KeyRound, MessageSquare, TrendingUp, Wallet } from 'lucide-react';
+import { Building2, CalendarCheck, ChevronRight, Home, KeyRound, MessageSquare, TrendingUp, Wallet } from 'lucide-react';
 import { useClientData } from '../../contexts/client-data-store';
 import { usePageMetadata } from '../../hooks/usePageMetadata';
 import { ClientCard, ClientPageHeader, ClientRow, StatTile } from '../../components/client/shell/ClientUi';
@@ -20,83 +20,35 @@ import {
   situationPaiement,
 } from '../../utils/labels';
 
-/** Libellé et valeur, alignés en colonne. */
-function Fait({ label, value, hint }: { label: string; value: string; hint?: string }) {
+const TYPES_IMMEUBLE: Record<string, string> = { villa: 'Villa', immeuble: 'Immeuble', residence: 'Résidence', autre: 'Propriété' };
+
+/** Colonnes du tableau des logements : identiques en-tête et lignes, pour que tout s'aligne. */
+const COLONNES = 'md:grid-cols-[minmax(0,1.5fr)_minmax(0,1.1fr)_repeat(3,minmax(0,1fr))_minmax(0,1.1fr)]';
+
+/** Vignette du bien : sa photo d'annonce si elle existe, sinon l'icône du bien. */
+function Vignette({ photo }: { photo?: string | null }) {
+  const [enEchec, setEnEchec] = useState(false);
+  if (photo && !enEchec) {
+    return <img src={photo} alt="" loading="lazy" onError={() => setEnEchec(true)} className="h-11 w-11 shrink-0 rounded-lg border border-mtm-border object-cover" />;
+  }
   return (
-    <div>
-      <dt className="text-xs font-semibold uppercase tracking-wider text-mtm-muted">{label}</dt>
-      <dd className="mt-0.5 font-semibold text-mtm-text">
-        {value}
-        {hint && <span className="ml-1 text-xs font-normal text-mtm-muted">{hint}</span>}
-      </dd>
+    <span aria-hidden="true" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-mtm-primary-subtle text-mtm-primary">
+      <Building2 className="h-5 w-5" />
+    </span>
+  );
+}
+
+/** Une cellule du tableau : sur mobile, son libellé s'affiche au-dessus ; sur ordinateur, l'en-tête de colonne suffit. */
+function Cellule({ label, children, className = '' }: { label: string; children: ReactNode; className?: string }) {
+  return (
+    <div className={'min-w-0 ' + className}>
+      <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-mtm-muted md:hidden">{label}</p>
+      <div className="text-sm font-semibold text-mtm-text">{children}</div>
     </div>
   );
 }
 
-const TYPES_IMMEUBLE: Record<string, string> = { villa: 'Villa', immeuble: 'Immeuble', residence: 'Résidence', autre: 'Propriété' };
-
-/** Lien vers une nouvelle demande, déjà orientée sur ce bien : le client n'a pas à le décrire. */
-function QuestionSurBien({ reference }: { reference: string }) {
-  return (
-    <Link
-      to={`${ROUTES.clientDemandes}?bien=${encodeURIComponent(reference)}`}
-      className="inline-flex min-h-11 items-center gap-1.5 self-start text-sm font-semibold text-mtm-primary hover:underline"
-    >
-      <MessageSquare className="h-4 w-4" aria-hidden="true" />
-      Une question sur ce bien
-    </Link>
-  );
-}
-
-/** Ce qui se passe sur un bien : séjours en courte durée, bail en cours, ou rien (aucune ligne superflue). */
-function DetailBien({ bien }: { bien: ClientBienLocatif }) {
-  if (bien.modeLocation === 'courte_duree') {
-    return bien.sejours.length > 0 ? (
-      <div className="flex flex-col gap-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-mtm-muted">
-          Séjours · {formatMoney(bien.sejoursEncaisses)} encaissés
-        </p>
-        <ul className="flex flex-col divide-y divide-mtm-border">
-          {bien.sejours.map((sejour) => {
-            const etat = sejourStatus(sejour.statut);
-            return (
-              <li key={sejour.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2 text-sm">
-                <div className="min-w-0">
-                  <p className="font-semibold text-mtm-text">
-                    {formatDate(sejour.dateArrivee)} → {formatDate(sejour.dateDepart)} · {sejour.nuits} nuit
-                    {sejour.nuits > 1 ? 's' : ''}
-                  </p>
-                  <p className="text-mtm-muted">{sejour.voyageur}</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="font-semibold text-mtm-text">{formatMoney(sejour.montantTotal)}</span>
-                  <Badge tone={etat.tone}>{etat.label}</Badge>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-    ) : (
-      <p className="text-sm text-mtm-muted">Aucun séjour confirmé pour l’instant.</p>
-    );
-  }
-  if (!bien.bail) return null;
-  return (
-    <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-      <Fait label="Locataire" value={bien.bail.locataire ?? '—'} />
-      <Fait label="Loyer mensuel" value={formatMoney(bien.bail.loyerMensuel)} />
-      <Fait label="Encaissé" value={formatMoney(bien.bail.loyersEncaisses)} />
-      <Fait
-        label="Solde"
-        value={formatMoney(bien.bail.solde)}
-        hint={bien.bail.preavisDepartPrevu ? `départ le ${formatDate(bien.bail.preavisDepartPrevu)}` : undefined}
-      />
-    </dl>
-  );
-}
-
-/** Les pastilles d'état d'un bien : « Courte durée », libre / occupé / loué, situation du paiement. */
+/** Les pastilles d'état d'un bien, à point comme au back-office : « Courte durée », libre / occupé / loué, situation du paiement. */
 function EtatsBien({ bien }: { bien: ClientBienLocatif }) {
   const courteDuree = bien.modeLocation === 'courte_duree';
   // En courte durée, le bien reste « disponible » faute de bail : on dit plutôt s'il est occupé.
@@ -105,76 +57,193 @@ function EtatsBien({ bien }: { bien: ClientBienLocatif }) {
   // Pour un propriétaire, « disponible » veut dire « à louer » : c'est ce qu'il attend de MTM.
   const etiquette = !courteDuree && bien.statut === 'disponible' ? 'À louer' : statut.label;
   return (
-    <div className="flex flex-none flex-wrap gap-2">
+    <div className="flex flex-wrap gap-1.5">
       {courteDuree && <Badge tone="neutral">Courte durée</Badge>}
-      <Badge tone={statut.tone}>{etiquette}</Badge>
-      {situation && <Badge tone={situation.tone}>{situation.label}</Badge>}
+      <Badge tone={statut.tone} dot>
+        {etiquette}
+      </Badge>
+      {situation && (
+        <Badge tone={situation.tone} dot>
+          {situation.label}
+        </Badge>
+      )}
     </div>
   );
 }
 
-/** Un bien qui n'appartient à aucune propriété : une carte complète. */
-function CarteBien({ bien }: { bien: ClientBienLocatif }) {
+/** Les séjours d'un bien en courte durée : liste sous la ligne du bien. */
+function SejoursBien({ bien }: { bien: ClientBienLocatif }) {
+  if (bien.modeLocation !== 'courte_duree') return null;
+  if (bien.sejours.length === 0) {
+    return <p className="px-4 pb-3.5 text-sm text-mtm-muted sm:px-5">Aucun séjour confirmé pour l’instant.</p>;
+  }
   return (
-    <ClientCard>
-      <div className="flex flex-col gap-3.5">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0">
-            <h2 className="flex items-center gap-2.5 font-display text-base font-bold text-mtm-text">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-mtm-primary-subtle text-mtm-primary">
-                <Building2 className="h-[18px] w-[18px]" aria-hidden="true" />
-              </span>
-              {bien.adresse}
-            </h2>
-            <p className="mt-0.5 text-sm text-mtm-muted">
-              {[bien.commune, bien.region].filter(Boolean).join(', ')} · {bien.referenceInterne}
-            </p>
-          </div>
-          <EtatsBien bien={bien} />
-        </div>
-        <DetailBien bien={bien} />
-        <QuestionSurBien reference={bien.referenceInterne} />
-      </div>
-    </ClientCard>
+    <div className="px-4 pb-4 sm:px-5">
+      <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.1em] text-mtm-muted">
+        Séjours · {formatMoney(bien.sejoursEncaisses)} encaissés
+      </p>
+      <ul className="flex flex-col divide-y divide-mtm-border rounded-xl border border-mtm-border bg-mtm-bg/60 px-3">
+        {bien.sejours.map((sejour) => {
+          const etat = sejourStatus(sejour.statut);
+          return (
+            <li key={sejour.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2 text-sm">
+              <div className="min-w-0">
+                <p className="font-semibold text-mtm-text">
+                  {formatDate(sejour.dateArrivee)} → {formatDate(sejour.dateDepart)} · {sejour.nuits} nuit
+                  {sejour.nuits > 1 ? 's' : ''}
+                </p>
+                <p className="text-mtm-muted">{sejour.voyageur}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="font-semibold text-mtm-text">{formatMoney(sejour.montantTotal)}</span>
+                <Badge tone={etat.tone} dot>
+                  {etat.label}
+                </Badge>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
 
-/** Une propriété (villa, immeuble, résidence) et ses logements : une seule carte, un logement par ligne. */
+/** Une ligne du tableau : le bien, son locataire, ses trois montants et son état. */
+function LigneBien({ bien, titre }: { bien: ClientBienLocatif; titre: ReactNode }) {
+  const bail = bien.bail;
+  const enNuits = bien.modeLocation === 'courte_duree';
+  return (
+    <li className="border-t border-mtm-border first:border-t-0">
+      <div className={'grid grid-cols-2 gap-x-4 gap-y-3 px-4 py-3.5 sm:px-5 md:items-center ' + COLONNES}>
+        <div className="col-span-2 flex min-w-0 items-center gap-3 md:col-span-1">
+          <Vignette photo={bien.photo} />
+          <div className="min-w-0">{titre}</div>
+        </div>
+        <Cellule label="Locataire">{bail?.locataire ?? <span className="font-normal text-mtm-muted">—</span>}</Cellule>
+        <Cellule label="Loyer mensuel">
+          {bail ? formatMoney(bail.loyerMensuel) : <span className="font-normal text-mtm-muted">—</span>}
+        </Cellule>
+        <Cellule label="Encaissé">
+          {bail ? formatMoney(bail.loyersEncaisses) : enNuits ? formatMoney(bien.sejoursEncaisses) : <span className="font-normal text-mtm-muted">—</span>}
+        </Cellule>
+        <Cellule label="Solde">
+          {bail ? (
+            <span className={bail.solde > 0 ? 'text-mtm-accent' : ''}>
+              {formatMoney(bail.solde)}
+              {bail.preavisDepartPrevu && (
+                <span className="block text-xs font-normal text-mtm-muted">départ le {formatDate(bail.preavisDepartPrevu)}</span>
+              )}
+            </span>
+          ) : (
+            <span className="font-normal text-mtm-muted">—</span>
+          )}
+        </Cellule>
+        <div className="col-span-2 md:col-span-1">
+          <EtatsBien bien={bien} />
+        </div>
+      </div>
+      <SejoursBien bien={bien} />
+    </li>
+  );
+}
+
+/** En-tête des colonnes, visible à partir de la largeur tablette. */
+function EnteteTableau({ premiere }: { premiere: string }) {
+  const colonnes = [premiere, 'Locataire', 'Loyer mensuel', 'Encaissé', 'Solde', 'État'];
+  return (
+    <div className={'hidden gap-x-4 border-b border-mtm-border bg-mtm-bg px-5 py-2.5 md:grid ' + COLONNES} aria-hidden="true">
+      {colonnes.map((colonne) => (
+        <p key={colonne} className="text-[11px] font-bold uppercase tracking-[0.1em] text-mtm-muted">
+          {colonne}
+        </p>
+      ))}
+    </div>
+  );
+}
+
+/** Lien vers une nouvelle demande, déjà orientée sur ce bien : le client n'a pas à le décrire. */
+function QuestionSurBien({ reference }: { reference: string }) {
+  return (
+    <div className="border-t border-mtm-border px-4 py-3 sm:px-5">
+      <Link
+        to={`${ROUTES.clientDemandes}?bien=${encodeURIComponent(reference)}`}
+        className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-mtm-primary hover:underline"
+      >
+        <MessageSquare className="h-4 w-4" aria-hidden="true" />
+        Une question sur ce bien
+        <ChevronRight className="h-4 w-4" aria-hidden="true" />
+      </Link>
+    </div>
+  );
+}
+
+/** Une propriété (villa, immeuble, résidence) : sa carte, et un tableau avec une ligne par logement. */
 function CartePropriete({ nom, type, logements }: { nom: string; type: string; logements: ClientBienLocatif[] }) {
   const loues = logements.filter((bien) => bien.bail || bien.occupation === 'occupe').length;
   const premier = logements[0];
   return (
-    <ClientCard>
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center gap-2.5">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-mtm-primary-subtle text-mtm-primary">
-            <Home className="h-[18px] w-[18px]" aria-hidden="true" />
-          </span>
-          <div className="min-w-0">
-            <h2 className="font-display text-base font-bold text-mtm-text">{nom}</h2>
-            <p className="text-sm text-mtm-muted">
-              {TYPES_IMMEUBLE[type] ?? 'Propriété'} · {[premier.commune, premier.region].filter(Boolean).join(', ')} ·{' '}
-              {logements.length} logement{logements.length > 1 ? 's' : ''}, {loues} loué{loues > 1 ? 's' : ''}
-            </p>
-          </div>
+    <section className="overflow-hidden rounded-[14px] border border-mtm-border bg-mtm-surface shadow-card">
+      <header className="flex items-start gap-3 px-4 py-4 sm:px-5">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-mtm-primary-subtle text-mtm-primary">
+          <Home className="h-5 w-5" aria-hidden="true" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2 className="font-display text-lg font-bold leading-snug text-mtm-text">{nom}</h2>
+          <p className="text-sm text-mtm-muted">
+            {TYPES_IMMEUBLE[type] ?? 'Propriété'} · {[premier.commune, premier.region].filter(Boolean).join(', ')}
+          </p>
         </div>
-        <ul className="flex flex-col divide-y divide-mtm-border rounded-xl border border-mtm-border/70">
-          {logements.map((bien) => (
-            <li key={bien.id} className="flex flex-col gap-2.5 px-3.5 py-3">
-              <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
-                <p className="font-semibold text-mtm-text">
-                  {bien.numeroLot ? `Logement ${bien.numeroLot}` : bien.referenceInterne}
-                  {bien.numeroLot && <span className="ml-2 text-xs font-normal text-mtm-muted">{bien.referenceInterne}</span>}
+        <Badge tone={loues === logements.length ? 'success' : 'primary'} dot className="shrink-0">
+          {loues} loué{loues > 1 ? 's' : ''} sur {logements.length}
+        </Badge>
+      </header>
+      <EnteteTableau premiere="Logement" />
+      <ul>
+        {logements.map((bien) => (
+          <LigneBien
+            key={bien.id}
+            bien={bien}
+            titre={
+              <>
+                <p className="font-bold text-mtm-text">{bien.numeroLot ? `Logement ${bien.numeroLot}` : bien.referenceInterne}</p>
+                <p className="whitespace-nowrap text-xs text-mtm-muted">{bien.referenceInterne}</p>
+              </>
+            }
+          />
+        ))}
+      </ul>
+      <QuestionSurBien reference={premier.referenceInterne} />
+    </section>
+  );
+}
+
+/** Les biens qui n'appartiennent à aucune propriété : un seul tableau, une ligne par bien. */
+function CarteBiensSeuls({ biens }: { biens: ClientBienLocatif[] }) {
+  return (
+    <section className="overflow-hidden rounded-[14px] border border-mtm-border bg-mtm-surface shadow-card">
+      <header className="px-4 py-4 sm:px-5">
+        <h2 className="font-display text-lg font-bold text-mtm-text">{biens.length > 1 ? 'Mes autres biens' : 'Mon bien'}</h2>
+        <p className="text-sm text-mtm-muted">Les biens qui ne font pas partie d’une propriété à plusieurs logements.</p>
+      </header>
+      <EnteteTableau premiere="Bien" />
+      <ul>
+        {biens.map((bien) => (
+          <LigneBien
+            key={bien.id}
+            bien={bien}
+            titre={
+              <>
+                <p className="font-bold text-mtm-text">{bien.adresse}</p>
+                <p className="text-xs text-mtm-muted">
+                  {[bien.commune, bien.region].filter(Boolean).join(', ')} · <span className="whitespace-nowrap">{bien.referenceInterne}</span>
                 </p>
-                <EtatsBien bien={bien} />
-              </div>
-              <DetailBien bien={bien} />
-            </li>
-          ))}
-        </ul>
-        <QuestionSurBien reference={premier.referenceInterne} />
-      </div>
-    </ClientCard>
+              </>
+            }
+          />
+        ))}
+      </ul>
+      <QuestionSurBien reference={biens[0].referenceInterne} />
+    </section>
   );
 }
 
@@ -198,25 +267,22 @@ export function ClientProprietairePage() {
   // Les logements d'une même propriété sont regroupés ; les biens seuls gardent leur carte. L'ordre d'arrivée est conservé.
   const cartes = useMemo(() => {
     const parPropriete = new Map<string, ClientBienLocatif[]>();
-    const ordre: ({ bien: ClientBienLocatif } | { propriete: string })[] = [];
+    const seuls: ClientBienLocatif[] = [];
     for (const bien of proprietaireBiens ?? []) {
       if (!bien.immeuble) {
-        ordre.push({ bien });
+        seuls.push(bien);
         continue;
       }
       const deja = parPropriete.get(bien.immeuble.id);
       if (deja) deja.push(bien);
-      else {
-        parPropriete.set(bien.immeuble.id, [bien]);
-        ordre.push({ propriete: bien.immeuble.id });
-      }
+      else parPropriete.set(bien.immeuble.id, [bien]);
     }
     for (const logements of parPropriete.values()) {
       logements.sort((a, b) =>
         (a.numeroLot ?? a.referenceInterne).localeCompare(b.numeroLot ?? b.referenceInterne, 'fr', { numeric: true }),
       );
     }
-    return { ordre, parPropriete };
+    return { seuls, parPropriete };
   }, [proprietaireBiens]);
   const activite = proprietaireSynthese
     ? proprietaireSynthese.loues > 0 ||
@@ -250,6 +316,7 @@ export function ClientProprietairePage() {
   return (
     <div className="flex flex-col gap-4">
       <ClientPageHeader
+        eyebrow="Gestion locative"
         title="Mon bien"
         description={`${biens.length} bien${biens.length > 1 ? 's' : ''} confié${biens.length > 1 ? 's' : ''} à MTM${
           cartes.parPropriete.size > 0 ? `, dont ${cartes.parPropriete.size} propriété${cartes.parPropriete.size > 1 ? 's' : ''} à plusieurs logements` : ''
@@ -258,23 +325,39 @@ export function ClientProprietairePage() {
 
       {/* Le portefeuille en quatre chiffres. */}
       {proprietaireSynthese && activite && (
-        <section aria-label="Ma gérance" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <section aria-label="Ma gérance" className="grid grid-cols-2 gap-3 xl:grid-cols-4">
           <StatTile
             icon={KeyRound}
             value={`${proprietaireSynthese.loues} / ${proprietaireSynthese.biens}`}
             label={proprietaireSynthese.biensALaNuit > 0 ? 'Biens loués ou occupés' : 'Biens loués'}
+            detail={
+              proprietaireSynthese.biens - proprietaireSynthese.loues > 0
+                ? `${proprietaireSynthese.biens - proprietaireSynthese.loues} à louer`
+                : 'tous vos biens sont loués'
+            }
           />
-          <StatTile icon={TrendingUp} value={formatMoney(proprietaireSynthese.loyersDus)} label="Loyers appelés" />
-          <StatTile icon={Wallet} value={formatMoney(proprietaireSynthese.loyersEncaisses)} label="Loyers encaissés" tone="success" />
+          <StatTile icon={TrendingUp} value={formatMoney(proprietaireSynthese.loyersDus)} label="Loyers appelés" detail="depuis le début des baux" />
+          <StatTile
+            icon={Wallet}
+            value={formatMoney(proprietaireSynthese.loyersEncaisses)}
+            label="Loyers encaissés"
+            tone="success"
+            detail={
+              proprietaireSynthese.loyersDus > 0
+                ? `${Math.round((proprietaireSynthese.loyersEncaisses / proprietaireSynthese.loyersDus) * 100)} % des loyers appelés`
+                : undefined
+            }
+          />
           <StatTile
             icon={Wallet}
             value={formatMoney(proprietaireSynthese.solde)}
-            label={
-              proprietaireSynthese.echeancesImpayees > 0
-                ? `À recouvrer · ${proprietaireSynthese.echeancesImpayees} échéance${proprietaireSynthese.echeancesImpayees > 1 ? 's' : ''}`
-                : 'À recouvrer'
-            }
+            label="À recouvrer"
             tone={proprietaireSynthese.solde > 0 ? 'warning' : 'neutral'}
+            detail={
+              proprietaireSynthese.echeancesImpayees > 0
+                ? `${proprietaireSynthese.echeancesImpayees} échéance${proprietaireSynthese.echeancesImpayees > 1 ? 's' : ''} impayée${proprietaireSynthese.echeancesImpayees > 1 ? 's' : ''}`
+                : 'aucun impayé'
+            }
           />
           {proprietaireSynthese.biensALaNuit > 0 && (
             <>
@@ -283,12 +366,7 @@ export function ClientProprietairePage() {
                 value={String(proprietaireSynthese.sejoursAVenir)}
                 label={`Séjour${proprietaireSynthese.sejoursAVenir > 1 ? 's' : ''} à venir`}
               />
-              <StatTile
-                icon={Wallet}
-                value={formatMoney(proprietaireSynthese.sejoursEncaisses)}
-                label="Séjours encaissés"
-                tone="success"
-              />
+              <StatTile icon={Wallet} value={formatMoney(proprietaireSynthese.sejoursEncaisses)} label="Séjours encaissés" tone="success" />
             </>
           )}
         </section>
@@ -300,15 +378,12 @@ export function ClientProprietairePage() {
         </p>
       )}
 
-      <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2">
-        {cartes.ordre.map((entree) => {
-          if ('bien' in entree) return <CarteBien key={entree.bien.id} bien={entree.bien} />;
-          const logements = cartes.parPropriete.get(entree.propriete) ?? [];
+      <div className="flex flex-col gap-4">
+        {[...cartes.parPropriete.values()].map((logements) => {
           const immeuble = logements[0]?.immeuble;
-          return immeuble ? (
-            <CartePropriete key={immeuble.id} nom={immeuble.nom} type={immeuble.type} logements={logements} />
-          ) : null;
+          return immeuble ? <CartePropriete key={immeuble.id} nom={immeuble.nom} type={immeuble.type} logements={logements} /> : null;
         })}
+        {cartes.seuls.length > 0 && <CarteBiensSeuls biens={cartes.seuls} />}
       </div>
 
       {documents.length > 0 && (

@@ -131,7 +131,8 @@ describe('ClientProprietairePage — propriétés à plusieurs logements', () =>
     afficher();
 
     expect(screen.getAllByRole('heading', { name: 'Villa Fall' })).toHaveLength(1);
-    expect(screen.getByText(/Villa · Guediawaye, Dakar · 2 logements, 0 loué/)).toBeTruthy();
+    expect(screen.getByText('Villa · Guediawaye, Dakar')).toBeTruthy();
+    expect(screen.getByText('0 loué sur 2')).toBeTruthy();
     const lots = screen.getAllByText(/^Logement \d/).map((n) => n.textContent?.slice(0, 10));
     expect(lots).toEqual(['Logement 1', 'Logement 2']);
     expect(screen.getByText('RUE 11, GUEDIAWAYE')).toBeTruthy();

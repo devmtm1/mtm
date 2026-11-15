@@ -8,6 +8,7 @@ import { ClientCard, ClientPageHeader, ClientRow, IconBadge, ProgressBar } from 
 import { ShowMoreButton } from '../../components/client/shell/Disclosure';
 import { CommentRegler } from '../../components/client/CommentRegler';
 import { etatPaiementIcone } from '../../components/client/shell/etat-paiement';
+import { BoutonRecu } from '../../components/client/BoutonRecu';
 import { NewIncidentModal } from '../../components/client/NewIncidentModal';
 import { ClientEchanges } from '../../components/client/ClientEchanges';
 import { ResiliationCard } from '../../components/client/ResiliationCard';
@@ -290,7 +291,12 @@ export function ClientLocatairePage() {
                     tone={tone}
                     title={formatMoney(paiement.montant)}
                     subtitle={formatDate(paiement.datePaiement)}
-                    trailing={<Badge tone={statutPaiement.tone}>{statutPaiement.label}</Badge>}
+                    trailing={
+                      <span className="flex items-center gap-2">
+                        <Badge tone={statutPaiement.tone}>{statutPaiement.label}</Badge>
+                        {paiement.statut === 'valide' && <BoutonRecu nature="loyer" paiementId={paiement.id} />}
+                      </span>
+                    }
                   />
                 </li>
               );

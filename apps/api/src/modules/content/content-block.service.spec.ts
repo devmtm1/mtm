@@ -144,6 +144,68 @@ describe('ContentBlockService public contract', () => {
       expect(cloudinaryMock.upload).not.toHaveBeenCalled();
     });
 
+    describe('vidéo', () => {
+      const mp4 = (taille = 1000) =>
+        ({
+          buffer: Buffer.concat([
+            Buffer.from([0, 0, 0, 0x18]),
+            Buffer.from('ftypmp42'),
+          ]),
+          mimetype: 'video/mp4',
+          size: taille,
+        }) as unknown as Express.Multer.File;
+
+      it('envoie la vidéo et garde son adresse', async () => {
+        prismaMock.contentBlock.findUnique.mockResolvedValue(null);
+        prismaMock.contentBlock.create.mockImplementation(({ data }) =>
+          Promise.resolve({ id: 'b2', ...data }),
+        );
+        const bloc = await service.uploadVideo(
+          'services.video',
+          mp4(),
+          redacteur,
+        );
+        expect(cloudinaryMock.upload).toHaveBeenCalledWith(
+          expect.anything(),
+          'mtm/pages',
+          true,
+        );
+        expect(bloc.title).toBe('Vidéo');
+      });
+
+      it('supprime l’ancienne vidéo avec le bon type de ressource', async () => {
+        prismaMock.contentBlock.findUnique.mockResolvedValue({
+          id: 'b2',
+          key: 'services.video',
+          content:
+            'https://res.cloudinary.com/demo/video/upload/v1/mtm-prod/mtm/pages/ancienne',
+        });
+        prismaMock.contentBlock.update.mockImplementation(({ data }) =>
+          Promise.resolve({ id: 'b2', ...data }),
+        );
+        await service.uploadVideo('services.video', mp4(), redacteur);
+        expect(cloudinaryMock.destroy).toHaveBeenCalledWith(
+          'mtm-prod/mtm/pages/ancienne',
+          'video',
+          true,
+        );
+      });
+
+      it('refuse une image, et une vidéo au-delà de 50 Mo', async () => {
+        await expect(
+          service.uploadVideo('services.video', fichier(), redacteur),
+        ).rejects.toBeInstanceOf(BadRequestException);
+        await expect(
+          service.uploadVideo(
+            'services.video',
+            mp4(60 * 1024 * 1024),
+            redacteur,
+          ),
+        ).rejects.toBeInstanceOf(BadRequestException);
+        expect(cloudinaryMock.upload).not.toHaveBeenCalled();
+      });
+    });
+
     it('refuse un nom d’emplacement douteux', async () => {
       await expect(
         service.uploadImage('../secret', fichier(), redacteur),

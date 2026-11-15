@@ -19,6 +19,11 @@
         </p>
       </div>
       <div class="page-header__actions">
+        @if (peutExporterListe()) {
+          <button mat-stroked-button type="button" (click)="exporterListe()">
+            <svg class="btn-icon" lucideDownload aria-hidden="true"></svg>Exporter
+          </button>
+        }
         @if (canEdit) {
           <button mat-stroked-button type="button" (click)="modifier()">
             <svg class="btn-icon" lucidePencil aria-hidden="true"></svg>Modifier

@@ -1,4 +1,5 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal, viewChild } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,6 +16,7 @@ import {
   LucideSearch,
   LucideTriangleAlert,
   LucideX,
+  LucideDownload,
 } from '@lucide/angular';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { mtmGridTheme } from '../../../core/ag-grid.config';
@@ -34,6 +36,8 @@ import {
   type StatusMeaning,
 } from '../locatif-status';
 import { nombreFr } from '../../../core/utils/format';
+import { ExportListeDialog } from '../../../shared/dialogs/export-liste-dialog';
+import { sourceDepuisGrille } from '../../../shared/utils/export-grille';
 
 const FILTRES_VIDES = { search: '', statut: '', type: '', responsableId: '', vue: '' };
 
@@ -51,7 +55,7 @@ export const VUES_RAPIDES = [
 
 @Component({
   selector: 'app-biens',
-  imports: [
+  imports: [LucideDownload, 
     MoneyPipe,
     ReactiveFormsModule,
     AgGridAngular,
@@ -72,11 +76,13 @@ export const VUES_RAPIDES = [
 })
 export class Biens implements OnInit {
   private readonly api = inject(LocatifApiService);
+  private readonly dialog = inject(MatDialog);
   private readonly router = inject(Router);
   private readonly sessionService = inject(SessionService);
   private readonly notify = inject(NotificationService);
   private readonly formBuilder = inject(FormBuilder);
 
+  private readonly grille = viewChild(AgGridAngular);
   protected readonly theme = mtmGridTheme;
   protected readonly loading = signal(true);
   protected readonly rowData = signal<BienListItem[]>([]);
@@ -276,5 +282,12 @@ export class Biens implements OnInit {
       bloc.appendChild(detail);
     }
     return bloc;
+  }
+
+  /** Exporte la liste telle qu'affichée (filtres et tri compris) en Excel ou en PDF. */
+  protected exporterListe(): void {
+    const api = this.grille()?.api;
+    if (!api) return;
+    ExportListeDialog.open(this.dialog, sourceDepuisGrille(api, { module: 'locatif', titre: 'Biens en gestion locative' })).subscribe();
   }
 }

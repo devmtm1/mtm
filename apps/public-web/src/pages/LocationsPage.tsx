@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ArrowUpDown, Building2, Search, SlidersHorizontal } from 'lucide-react';
+import { ArrowUpDown, Building2, Search, Sofa, SlidersHorizontal } from 'lucide-react';
 import { BandeauPage, IMAGE_BANDEAU_PAGE } from '../components/layout/BandeauPage';
 import { LocationFilters } from '../components/locations/LocationFilters';
 import { LocationCard } from '../components/locations/LocationCard';
 import { activeLocationChips, type LocationChip } from '../components/locations/location-filter-chips';
 import { ActiveFilterChips } from '../components/terrains/ActiveFilterChips';
-import { CATALOG_GRID } from '../components/terrains/terrain-grid';
 import { CardGridSkeleton } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Button } from '../components/ui/Button';
@@ -28,6 +27,15 @@ const NUMBER_FILTERS = ['loyerMin', 'loyerMax', 'chambresMin', 'superficieMin', 
 const TYPED_FILTERS = ['search', 'loyerMin', 'loyerMax', 'superficieMin'] as const;
 const TYPING_DEBOUNCE_MS = 350;
 const PAGE_SIZE = 12;
+
+/**
+ * Grille des locations : une colonne de cartes « couchées » sur téléphone (le prix et le titre ne se coupent plus), deux sur
+ * tablette, trois ensuite. Trois et non quatre : à quatre colonnes les cartes passent sous 260 px et perdent leur lisibilité.
+ */
+const LOCATIONS_GRID = 'grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3';
+
+/** Nombre de communes proposées en raccourci. */
+const COMMUNES_RACCOURCI = 4;
 
 function parseFilters(params: URLSearchParams): LocationFiltersValue {
   const filters: LocationFiltersValue = {};
@@ -62,6 +70,11 @@ const REASSURANCES_DEFAUT = ['Biens contrôlés par nos équipes', 'Loyer, charg
 const INTRO_DEFAUT =
   'Appartements, villas, studios et bureaux gérés par MTM Immobilier. Comparez les loyers, regardez les photos et demandez une visite en quelques clics — même depuis l’étranger.';
 
+const classeRaccourci = (actif: boolean): string =>
+  `inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-colors ${
+    actif ? 'border-mtm-accent bg-mtm-accent text-white' : 'border-mtm-border bg-mtm-surface text-mtm-text hover:border-mtm-accent hover:text-mtm-accent'
+  }`;
+
 export function LocationsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const filters = useMemo(() => parseFilters(searchParams), [searchParams]);
@@ -86,6 +99,7 @@ export function LocationsPage() {
   useEffect(() => setDraft(filters), [filters]);
 
   const sortKey = sortKeyFrom(filters);
+  const raccourcisCommunes = (options?.commune ?? []).slice(0, COMMUNES_RACCOURCI);
 
   const commitFilters = useCallback(
     (next: LocationFiltersValue, tri?: LocationSortKey): void => {
@@ -219,10 +233,12 @@ export function LocationsPage() {
     <div>
       <BandeauPage
         vague="discrete"
+        compact
         eyebrow={text('locations.eyebrow', 'Locations')}
         title={text('locations.title', 'Trouvez votre prochain logement au Sénégal')}
         description={text('locations.intro', INTRO_DEFAUT)}
         points={lines('locations.reassurance', REASSURANCES_DEFAUT)}
+        pointsDesktopSeulement
         image={text('locations.image', IMAGE_BANDEAU_PAGE)}
         chargement={contenuEnCours}
       />
@@ -241,7 +257,7 @@ export function LocationsPage() {
                 <input
                   type="search"
                   aria-label="Recherche libre"
-                  placeholder="Quartier, commune, mot-clé…"
+                  placeholder="Quartier, commune…"
                   className={`${fieldInputClass} pl-9`}
                   value={draft.search ?? ''}
                   onChange={(event) => handleFiltersChange({ ...draft, search: event.target.value || undefined, page: 1 })}
@@ -276,6 +292,30 @@ export function LocationsPage() {
           </div>
         </div>
 
+        {/* Raccourcis : les critères les plus courants en un clic, sans ouvrir le panneau. */}
+        <div role="group" aria-label="Raccourcis de recherche" className="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0 [&::-webkit-scrollbar]:hidden">
+            <button
+              type="button"
+              aria-pressed={filters.meuble === true}
+              onClick={() => commitFilters({ ...filters, meuble: filters.meuble === true ? undefined : true, page: 1 })}
+              className={classeRaccourci(filters.meuble === true)}
+            >
+              <Sofa className="h-4 w-4" aria-hidden="true" />
+              Meublé
+            </button>
+            {raccourcisCommunes.map((commune) => (
+              <button
+                key={commune}
+                type="button"
+                aria-pressed={filters.commune === commune}
+                onClick={() => commitFilters({ ...filters, commune: filters.commune === commune ? undefined : commune, page: 1 })}
+                className={classeRaccourci(filters.commune === commune)}
+              >
+                {commune}
+              </button>
+            ))}
+        </div>
+
         {hasActiveFilters && (
           <div className="mt-3 lg:mt-4">
             <ActiveFilterChips chips={chips} onRemove={removeChip} onClear={() => commitFilters({})} />
@@ -304,7 +344,7 @@ export function LocationsPage() {
             {sortSelect}
           </div>
 
-          {loadingFresh && <CardGridSkeleton count={8} gridClassName={CATALOG_GRID} compact />}
+          {loadingFresh && <CardGridSkeleton count={6} gridClassName={LOCATIONS_GRID} />}
           {error && <EmptyState title="Impossible de charger les annonces" description={error} />}
 
           {!loading && !error && data && data.items.length === 0 && (
@@ -330,9 +370,9 @@ export function LocationsPage() {
 
           {!error && data && data.items.length > 0 && fresh && (
             <>
-              <div className={CATALOG_GRID}>
+              <div className={LOCATIONS_GRID}>
                 {listItems.map((location) => (
-                  <LocationCard key={location.id} location={location} compact />
+                  <LocationCard key={location.id} location={location} liste />
                 ))}
               </div>
 

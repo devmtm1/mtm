@@ -15,6 +15,8 @@ export const PRESTATIONS_CONSTRUCTION: EditableStep[] = [
   { title: 'Rénovation et extension', description: 'Remise à niveau, agrandissement et finitions de votre bien existant.' },
   { title: 'Suivi à distance', description: 'Journal de chantier, photos et rapports partagés avec vous, où que vous soyez.' },
   { title: 'Devis détaillé', description: 'Chiffrage détaillé de votre projet, présenté et validé avec vous avant le démarrage.' },
+  { title: 'Plans et faisabilité', description: 'Conception architecturale (plans 2D/3D), étude de faisabilité et dépôt du permis de construire.' },
+  { title: 'Relevés topographiques', description: 'Levé du terrain, bornage et implantation de votre projet.' },
 ];
 
 export const ETAPES_CONSTRUCTION: EditableStep[] = [

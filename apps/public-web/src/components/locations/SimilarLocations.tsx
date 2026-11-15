@@ -9,6 +9,9 @@ import { locationCard } from '../mobile/recent-properties';
 import { SeeAllLink } from '../ui/SeeAllLink';
 import { LocationCard } from './LocationCard';
 
+/** En dessous, la sélection est complétée par des annonces d'autres régions. */
+const MINIMUM_AFFICHE = 3;
+
 /**
  * « Autres locations à… » : sous la fiche d'une annonce, les annonces de la même commune (à défaut, de la même région),
  * pour qu'un visiteur qui hésite trouve un autre logement sans repasser par la liste. Sur mobile, une rangée à faire
@@ -19,15 +22,22 @@ export function SimilarLocations({ location }: { location: Location }) {
   // en tête : un locataire compare d'abord autour de lui.
   const filters = useMemo(() => (location.region ? { region: location.region, pageSize: 12 } : location.commune ? { commune: location.commune, pageSize: 12 } : { pageSize: 12 }), [location.commune, location.region]);
   const { data } = useLocationsCatalog(filters);
-  const autres = (data?.items ?? [])
+  // Quand la région n'offre pas trois annonces, on complète avec les autres : une carte seule sous la fiche ferait pauvre.
+  const toutes = useMemo(() => ({ pageSize: 12 }), []);
+  const { data: ailleurs } = useLocationsCatalog(toutes);
+  const proches = (data?.items ?? [])
     .filter((item) => item.id !== location.id)
-    .sort((a, b) => Number(b.commune === location.commune) - Number(a.commune === location.commune))
-    .slice(0, 6);
+    .sort((a, b) => Number(b.commune === location.commune) - Number(a.commune === location.commune));
+  const complement =
+    proches.length < MINIMUM_AFFICHE
+      ? (ailleurs?.items ?? []).filter((item) => item.id !== location.id && !proches.some((proche) => proche.id === item.id))
+      : [];
+  const autres = [...proches, ...complement].slice(0, 6);
 
   if (autres.length === 0) return null;
-  const sameCommune = autres.every((item) => item.commune === location.commune);
+  const sameCommune = complement.length === 0 && autres.every((item) => item.commune === location.commune);
   const lieu = sameCommune ? location.commune : location.region;
-  const titre = lieu ? `Autres locations ${sameCommune ? 'à' : 'en région de'} ${lieu}` : 'Autres locations';
+  const titre = complement.length > 0 ? 'Autres locations' : lieu ? `Autres locations ${sameCommune ? 'à' : 'en région de'} ${lieu}` : 'Autres locations';
 
   return (
     <>

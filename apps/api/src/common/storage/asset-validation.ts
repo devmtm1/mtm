@@ -9,6 +9,9 @@ export type AssetKind = 'media' | 'document';
  */
 export const MAX_ASSET_SIZE = 10 * 1024 * 1024;
 
+/** Plafond d'une vidéo de présentation envoyée depuis le back-office (limite Cloudinary gratuite : 100 Mo). */
+export const MAX_VIDEO_SIZE = 50 * 1024 * 1024;
+
 const MIME_TYPES: Record<AssetKind, ReadonlySet<string>> = {
   media: new Set([
     'image/jpeg',
@@ -29,12 +32,15 @@ const MIME_TYPES: Record<AssetKind, ReadonlySet<string>> = {
 export function validateUploadedAsset(
   file: Express.Multer.File,
   kind: AssetKind,
+  maxSize: number = MAX_ASSET_SIZE,
 ): void {
   if (!file?.buffer || !file.mimetype) {
     throw new BadRequestException('Le fichier reçu est invalide');
   }
-  if (file.size > MAX_ASSET_SIZE) {
-    throw new BadRequestException('Le fichier ne doit pas dépasser 10 Mo');
+  if (file.size > maxSize) {
+    throw new BadRequestException(
+      `Le fichier ne doit pas dépasser ${Math.round(maxSize / (1024 * 1024))} Mo`,
+    );
   }
   if (!MIME_TYPES[kind].has(file.mimetype)) {
     throw new BadRequestException('Le type de fichier n’est pas autorisé');

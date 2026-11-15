@@ -14,7 +14,7 @@ export type ContentEditorKind = 'slot' | 'testimonial' | 'news' | 'custom';
 export interface ContentEditorData {
   kind: ContentEditorKind;
   /** Emplacement du catalogue (kind = slot). */
-  slot?: { key: string; label: string; help: string; multiline?: boolean; type?: string; kind?: 'image' };
+  slot?: { key: string; label: string; help: string; multiline?: boolean; type?: string; kind?: 'image'; televersement?: 'video' };
   /** Bloc existant à modifier (slot, testimonial, custom). */
   existing?: ContentBlock | null;
   /** Actualité existante (kind = news) : ses trois blocs. */
@@ -67,9 +67,27 @@ export interface ContentEditorData {
           @if (data.slot.multiline) {
             <textarea matInput rows="6" [formControl]="form.controls.content"></textarea>
           } @else {
-            <input matInput [formControl]="form.controls.content" />
+            <input matInput [formControl]="form.controls.content" [disabled]="!!video()" />
           }
         </mat-form-field>
+        @if (data.slot.televersement === 'video') {
+          <div class="content-dialog__image">
+            <div class="content-dialog__boutons">
+              <label class="upload-button">
+                {{ video() ? 'Changer de fichier' : 'Envoyer un fichier vidéo' }}
+                <input type="file" accept="video/mp4,video/quicktime" [disabled]="saving()" (change)="choisirVideo($event)" />
+              </label>
+              @if (video(); as choisie) {
+                <span class="content-dialog__aide">{{ choisie.name }} ({{ tailleMo(choisie) }} Mo)</span>
+                <button mat-stroked-button type="button" [disabled]="saving()" (click)="video.set(null)">Annuler</button>
+              }
+            </div>
+            <small class="content-dialog__aide">MP4 ou MOV, 50 Mo au maximum. L’envoi remplace l’adresse ci-dessus. Pour une vidéo plus lourde, utilisez YouTube ou Vimeo.</small>
+            @if (erreurImage()) {
+              <p class="content-dialog__erreur" role="alert">{{ erreurImage() }}</p>
+            }
+          </div>
+        }
       }
 
       @if (data.kind === 'testimonial') {
@@ -202,6 +220,29 @@ export class ContentEditorDialog {
     this.fichier.set(fichier);
   }
 
+  protected readonly video = signal<File | null>(null);
+
+  protected tailleMo(fichier: File): string {
+    return (fichier.size / (1024 * 1024)).toFixed(1);
+  }
+
+  protected choisirVideo(evenement: Event): void {
+    const entree = evenement.target as HTMLInputElement;
+    const fichier = entree.files?.[0] ?? null;
+    entree.value = '';
+    if (!fichier) return;
+    if (!['video/mp4', 'video/quicktime'].includes(fichier.type)) {
+      this.erreurImage.set('Choisissez une vidéo MP4 ou MOV.');
+      return;
+    }
+    if (fichier.size > 50 * 1024 * 1024) {
+      this.erreurImage.set('Cette vidéo dépasse 50 Mo : compressez-la, ou mettez-la sur YouTube ou Vimeo et collez son adresse.');
+      return;
+    }
+    this.erreurImage.set(null);
+    this.video.set(fichier);
+  }
+
   protected retirerImage(): void {
     this.fichier.set(null);
     this.retiree.set(true);
@@ -274,7 +315,10 @@ export class ContentEditorDialog {
     if (this.data.kind === 'slot' && this.data.slot) {
       const slot = this.data.slot;
       const content = value.content.trim();
-      if (this.data.existing) {
+      const videoChoisie = this.video();
+      if (videoChoisie) {
+        this.api.uploadVideo(slot.key, videoChoisie).subscribe({ next: done, error: fail });
+      } else if (this.data.existing) {
         // Vider le champ = revenir au texte par défaut du site : on supprime le bloc.
         const request: Observable<unknown> = content ? this.api.update(slot.key, { content }) : this.api.remove(slot.key);
         request.subscribe({ next: done, error: fail });

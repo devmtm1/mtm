@@ -10,6 +10,8 @@ import { PublicationController } from './publication.controller';
 import { PublicationService } from './publication.service';
 import { TeamMemberController } from './team-member.controller';
 import { TeamMemberService } from './team-member.service';
+import { PoleController } from './pole.controller';
+import { PoleService } from './pole.service';
 import { CloudinaryService } from '../../common/storage/cloudinary.service';
 
 @Module({
@@ -18,6 +20,7 @@ import { CloudinaryService } from '../../common/storage/cloudinary.service';
     ContentBlockController,
     ShowcaseItemController,
     TeamMemberController,
+    PoleController,
     PromotionController,
     PublicationController,
   ],
@@ -25,6 +28,7 @@ import { CloudinaryService } from '../../common/storage/cloudinary.service';
     ContentBlockService,
     ShowcaseItemService,
     TeamMemberService,
+    PoleService,
     PromotionService,
     PublicationService,
     CloudinaryService,

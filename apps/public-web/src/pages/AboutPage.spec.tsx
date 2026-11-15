@@ -6,10 +6,14 @@ import { AboutPage } from './AboutPage';
 const donnees = vi.hoisted(() => ({
   blocs: null as null | { key: string; title: null; content: string; type: string }[],
   equipe: null as null | object,
+  poles: [] as { id: string; slug: string; nom: string }[],
 }));
 
 vi.mock('../hooks/useContentBlocks', () => ({
   useContentBlocks: () => ({ data: donnees.blocs, loading: false, error: null }),
+}));
+vi.mock('../hooks/usePoles', () => ({
+  usePoles: () => ({ data: donnees.poles, loading: false, error: null }),
 }));
 vi.mock('../hooks/useTeam', () => ({
   useTeam: () => ({ data: donnees.equipe, loading: false, error: null }),
@@ -41,6 +45,7 @@ describe('AboutPage', () => {
   it('présente MTM : accroche, histoire, valeurs, méthode — sans répéter le contact', () => {
     donnees.blocs = null;
     donnees.equipe = null;
+    donnees.poles = [];
     rendre();
 
     expect(screen.getByRole('heading', { level: 1, name: 'MTM Immobilier' })).toBeInTheDocument();
@@ -56,16 +61,15 @@ describe('AboutPage', () => {
     expect(screen.queryByRole('heading', { name: 'Nous trouver' })).not.toBeInTheDocument();
   });
 
-  it('chaque métier mène à sa page', () => {
+  it('présente chaque pôle venu du back-office et mène à sa carte sur la page des services', () => {
     donnees.blocs = null;
+    donnees.poles = [
+      { id: '1', slug: 'gestion', nom: 'MTM Gestion' },
+      { id: '2', slug: 'clean', nom: 'MTM Clean' },
+    ];
     rendre();
-    expect(screen.getByRole('link', { name: /Gestion locative/ })).toHaveAttribute('href', '/gestion-locative');
-    expect(screen.getByRole('link', { name: /Construction/ })).toHaveAttribute('href', '/construction');
-    expect(screen.getByRole('link', { name: /Démarches administratives/ })).toHaveAttribute(
-      'href',
-      '/demarches-administratives',
-    );
-    expect(screen.getByRole('link', { name: /Vente de terrains et villas/ })).toHaveAttribute('href', '/terrains');
+    expect(screen.getByRole('link', { name: /MTM Gestion/ })).toHaveAttribute('href', '/nos-services#gestion');
+    expect(screen.getByRole('link', { name: /MTM Clean/ })).toHaveAttribute('href', '/nos-services#clean');
   });
 
   it('reprend l’accroche et le texte saisis au back-office, un paragraphe par ligne', () => {

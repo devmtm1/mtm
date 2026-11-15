@@ -76,6 +76,14 @@ const projetInclude = {
   },
 } satisfies Prisma.ProjetConstructionInclude;
 
+/** Ce que le client lit quand son chantier change d'état. */
+const LIBELLE_STATUT_CLIENT: Record<string, string> = {
+  en_cours: 'Votre chantier a démarré',
+  suspendu: 'Votre chantier est suspendu',
+  receptionne: 'Votre chantier est réceptionné',
+  cloture: 'Votre chantier est clôturé',
+};
+
 /**
  * Projets de construction et suivi de chantier (J2.3, section 16 du cahier
  * des charges).
@@ -345,6 +353,10 @@ export class ProjetsConstructionService {
 
   async update(id: string, dto: UpdateProjetDto, user: ConstructionUser) {
     await this.access.ensureAccessible(id, user);
+    const avant = await this.prisma.projetConstruction.findUnique({
+      where: { id },
+      select: { avancement: true },
+    });
     if (dto.terrainId) await this.assertTerrain(dto.terrainId);
     await this.options.assertTypeProjet(dto.typeProjet);
     this.assertPeriode(dto.dateDebutPrevue, dto.dateFinPrevue);
@@ -391,7 +403,54 @@ export class ProjetsConstructionService {
       },
     });
 
+    // Le client est prévenu quand l'avancement franchit un nouveau palier de 10 %.
+    if (dto.avancement !== undefined && avant) {
+      const palier = Math.floor(dto.avancement / 10) * 10;
+      if (palier > 0 && palier > Math.floor(avant.avancement / 10) * 10) {
+        await this.notifierClientDuChantier(id, {
+          type: 'chantier_avancement',
+          titre: `Votre chantier avance : ${palier} %`,
+          message:
+            'Retrouvez le détail et les photos dans le suivi de votre chantier.',
+          dedupeKey: `chantier-avancement:${id}:${palier}`,
+        });
+      }
+    }
+
     return this.findOne(id, user);
+  }
+
+  /**
+   * Prévient le client donneur d'ordre, dans son espace, d'un fait de son chantier. Rien ne part si le chantier
+   * n'est pas publié au client : ce qu'il ne voit pas ne le notifie pas.
+   */
+  async notifierClientDuChantier(
+    projetId: string,
+    input: {
+      type: string;
+      titre: string;
+      message?: string;
+      dedupeKey?: string;
+    },
+  ): Promise<void> {
+    if (!this.alertes) return;
+    const projet = await this.prisma.projetConstruction.findUnique({
+      where: { id: projetId },
+      select: { clientId: true, visibleClient: true, intitule: true },
+    });
+    if (!projet?.visibleClient) return;
+    await this.alertes.notifierClient(
+      { prospectId: projet.clientId },
+      {
+        ...input,
+        message: input.message
+          ? `${projet.intitule} — ${input.message}`
+          : projet.intitule,
+        lien: '/espace-client/chantiers',
+        entityType: 'ProjetConstruction',
+        entityId: projetId,
+      },
+    );
   }
 
   /**
@@ -452,6 +511,14 @@ export class ProjetsConstructionService {
         ...(dto.motif ? { notes: dto.motif } : {}),
       },
     });
+
+    if (projet.statut !== dto.statut) {
+      await this.notifierClientDuChantier(id, {
+        type: 'chantier_statut',
+        titre:
+          LIBELLE_STATUT_CLIENT[dto.statut] ?? 'Votre chantier a changé d’état',
+      });
+    }
 
     return this.findOne(id, user);
   }

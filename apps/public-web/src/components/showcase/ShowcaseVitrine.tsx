@@ -69,7 +69,7 @@ export function ShowcaseVitrine({ category, prefixe, defauts, emptyLabel }: Show
         >
           <path d={VAGUES.ample} />
         </svg>
-        <div className={`relative mx-auto max-w-7xl px-4 pb-28 pt-9 sm:px-6 sm:pt-12 lg:pb-40 lg:pt-16 ${fondu}`}>
+        <div className={`relative mx-auto max-w-6xl px-4 pb-28 pt-9 sm:px-6 sm:pt-12 lg:pb-40 lg:pt-16 ${fondu}`}>
           <p className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/90 sm:text-xs">
             <span aria-hidden="true" className="h-[3px] w-12 rounded-full bg-mtm-accent" />
             {eyebrow}
@@ -80,7 +80,7 @@ export function ShowcaseVitrine({ category, prefixe, defauts, emptyLabel }: Show
         </div>
       </section>
 
-      <section className="relative mx-auto -mt-20 max-w-7xl px-4 pb-14 sm:px-6 lg:-mt-28" aria-label={eyebrow}>
+      <section className="relative mx-auto -mt-20 max-w-6xl px-4 pb-14 sm:px-6 lg:-mt-28" aria-label={eyebrow}>
         {loading && (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" aria-hidden="true">
             {[0, 1, 2, 3].map((index) => (

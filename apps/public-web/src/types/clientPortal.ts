@@ -14,6 +14,7 @@ export interface ClientDossierReservation {
 }
 
 export interface ClientDossierPaiement {
+  id: string;
   montant: number;
   datePaiement: string;
   mode: string;
@@ -80,4 +81,6 @@ export interface ClientDossier {
   echeances: ClientDossierEcheance[];
   documents: ClientDossierDocument[];
   montantPaye: number;
+  /** Prénom et initiale du commercial qui suit le dossier. */
+  conseiller?: string | null;
 }

@@ -24,7 +24,7 @@ import { useClientData } from '../../contexts/client-data-store';
 import { toTelHref, useSiteContact } from '../../hooks/useSiteContact';
 import { usePageMetadata } from '../../hooks/usePageMetadata';
 import { useProfilClient } from '../../hooks/useProfilClient';
-import { ClientCard, ProgressBar, StatTile } from '../../components/client/shell/ClientUi';
+import { ClientCard, ClientPageHeader, ProgressBar, StatTile } from '../../components/client/shell/ClientUi';
 import { ClientDemandesList } from '../../components/client/ClientDemandesSection';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
@@ -84,6 +84,8 @@ export function ClientHomePage() {
     (sum, bien) => sum + (bien.bail?.loyersEncaisses ?? 0) + bien.sejoursEncaisses,
     0,
   );
+
+  const conseiller = list.find((dossier) => dossier.conseiller)?.conseiller ?? null;
 
   const demandesEnAttente =
     (demandes?.messages.filter((demande) => !demande.traite).length ?? 0) +
@@ -157,14 +159,13 @@ export function ClientHomePage() {
 
   return (
     <div className="flex flex-col gap-5 sm:gap-6">
-      {/* Accueil : la salutation et l'essentiel, sur le fond de la marque. */}
-      <section className="rounded-3xl bg-gradient-to-br from-mtm-primary to-mtm-primary-dark p-5 text-white shadow-card lg:rounded-lg">
-        <p className="text-sm text-white/75">Bonjour,</p>
-        <h1 className="font-display text-[1.65rem] font-bold leading-tight">{user?.firstName ?? 'et bienvenue'}</h1>
-        <div className="mt-4">
-          <PrioriteBloc priorite={priorite} loading={chargement} aDesDonnees={list.length > 0 || aUnEspaceDeGestion} />
-        </div>
-      </section>
+      {/* Accueil : la salutation, puis ce qui demande l'attention du client, comme le « À traiter » du back-office. */}
+      <ClientPageHeader
+        eyebrow="Mon espace client"
+        title={`Bonjour ${user?.firstName ?? ''}`.trim()}
+        description="Vos paiements, vos documents et vos échanges avec MTM, au même endroit."
+      />
+      <PrioriteBloc priorite={priorite} loading={chargement} aDesDonnees={list.length > 0 || aUnEspaceDeGestion} />
 
       {notificationsNonLues > 0 && (
         <Link
@@ -195,8 +196,20 @@ export function ClientHomePage() {
       {/* Situation financière des ventes, seulement s'il y en a. */}
       {!dossiersLoading && !dossiersError && list.length > 0 && (
         <section aria-label="Mes paiements" className="grid grid-cols-2 gap-3">
-          <StatTile compact icon={Wallet} value={formatMoney(totalPaid)} label="Déjà payé" tone="success" />
-          <StatTile compact icon={Wallet} value={formatMoney(totalRemaining)} label="Reste à payer" tone="warning" />
+          <StatTile
+            icon={Wallet}
+            value={formatMoney(totalPaid)}
+            label="Déjà payé"
+            tone="success"
+            detail={`sur ${list.length} dossier${list.length > 1 ? 's' : ''}`}
+          />
+          <StatTile
+            icon={Wallet}
+            value={formatMoney(totalRemaining)}
+            label="Reste à payer"
+            tone={totalRemaining > 0 ? 'warning' : 'neutral'}
+            detail={totalRemaining > 0 ? 'à régler selon vos échéances' : 'tout est réglé'}
+          />
         </section>
       )}
 
@@ -249,7 +262,15 @@ export function ClientHomePage() {
           )}
 
           <ClientCard title="Votre conseiller">
-            <p className="text-sm text-mtm-muted">MTM vous répond du lundi au samedi.</p>
+            <p className="text-sm text-mtm-muted">
+              {conseiller ? (
+                <>
+                  <strong className="text-mtm-text">{conseiller}</strong> suit votre dossier. MTM vous répond du lundi au samedi.
+                </>
+              ) : (
+                'MTM vous répond du lundi au samedi.'
+              )}
+            </p>
             <ul className="mt-3 grid grid-cols-3 gap-2">
               <ContactTile href={toTelHref(contact.telephone)} icon={Phone} label="Appeler" tone="text-mtm-success" />
               <ContactTile href={`https://wa.me/${contact.whatsapp}`} icon={MessageCircle} label="WhatsApp" tone="text-mtm-success" external />
@@ -286,7 +307,7 @@ function EspaceTile({ to, icon: Icon, label, detail, alerte = false }: EspacePro
   return (
     <Link
       to={to}
-      className="flex h-full items-center gap-3 rounded-2xl border border-mtm-border/70 bg-mtm-surface p-3.5 shadow-card transition-transform active:scale-[0.97] lg:rounded-lg lg:border-mtm-border lg:hover:border-mtm-primary-light"
+      className="flex h-full items-center gap-3 rounded-[14px] border border-mtm-border bg-mtm-surface p-3.5 shadow-card transition-all active:scale-[0.97] lg:hover:border-mtm-primary-light"
     >
       <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${alerte ? 'bg-mtm-warning/10 text-mtm-warning' : 'bg-mtm-primary-subtle text-mtm-primary'}`}>
         <Icon className="h-5 w-5" aria-hidden="true" />
@@ -315,54 +336,57 @@ function ContactTile({ href, icon: Icon, label, tone, external = false }: { href
   );
 }
 
-/** Ce qui demande l'attention du client : en retard, à venir, ou rien du tout. */
+/** Ce qui demande l'attention du client : en retard, à venir, ou rien du tout. Une carte blanche, barre de couleur à gauche. */
 function PrioriteBloc({ priorite, loading, aDesDonnees }: { priorite: Priorite | null; loading: boolean; aDesDonnees: boolean }) {
-  if (loading) return <Skeleton className="h-28 rounded-2xl bg-white/15" />;
+  if (loading) return <Skeleton className="h-32 rounded-[14px]" />;
 
   if (!priorite) {
     return (
-      <div className="flex items-start gap-3 rounded-2xl bg-white/10 p-4">
-        <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 text-white" aria-hidden="true" />
+      <section className="flex items-start gap-3 rounded-[14px] border border-mtm-border border-l-4 border-l-mtm-success bg-mtm-surface p-4 shadow-card sm:p-5">
+        <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 text-mtm-success" aria-hidden="true" />
         <div>
-          <p className="font-display text-lg font-bold">{aDesDonnees ? 'Tout est à jour' : 'Bienvenue dans votre espace'}</p>
-          <p className="mt-0.5 text-sm text-white/80">
+          <h2 className="font-display text-lg font-bold text-mtm-text">{aDesDonnees ? 'Tout est à jour' : 'Bienvenue dans votre espace'}</h2>
+          <p className="mt-0.5 text-sm text-mtm-muted">
             {aDesDonnees
               ? 'Aucun paiement n’est attendu pour le moment.'
               : 'Vos dossiers, loyers et demandes apparaîtront ici dès qu’un conseiller MTM les aura rattachés à votre compte.'}
           </p>
         </div>
-      </div>
+      </section>
     );
   }
 
   const cible = priorite.cible === 'locataire' ? ROUTES.clientLocataire : ROUTES.clientDossiers;
   return (
-    <div className={`rounded-2xl p-4 ${priorite.enRetard ? 'bg-white text-mtm-text' : 'bg-white/10'}`}>
-      <p className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider ${priorite.enRetard ? 'text-mtm-accent' : 'text-white/85'}`}>
-        {priorite.enRetard ? <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" /> : <CalendarClock className="h-3.5 w-3.5" aria-hidden="true" />}
-        {priorite.enRetard ? `En retard de ${priorite.joursRetard} jour${priorite.joursRetard > 1 ? 's' : ''}` : 'À régler prochainement'}
-      </p>
-      <p className="mt-1 font-display text-2xl font-bold">{formatMoney(priorite.reste)}</p>
-      <p className={`mt-0.5 text-sm ${priorite.enRetard ? 'text-mtm-muted' : 'text-white/80'}`}>
-        {priorite.objet} · {priorite.enRetard ? 'était dû le' : 'avant le'} {formatDate(priorite.dateEcheance)}
-      </p>
-      {priorite.autresEnRetard > 0 && (
-        <p className="mt-2 text-xs font-semibold text-mtm-accent">
-          + {priorite.autresEnRetard} autre{priorite.autresEnRetard > 1 ? 's' : ''} paiement{priorite.autresEnRetard > 1 ? 's' : ''} en retard
+    <section
+      aria-label="À traiter"
+      className={`flex flex-col gap-4 rounded-[14px] border border-l-4 bg-mtm-surface p-4 shadow-card sm:flex-row sm:items-center sm:justify-between sm:p-5 ${
+        priorite.enRetard ? 'border-mtm-border border-l-mtm-accent' : 'border-mtm-border border-l-mtm-primary-medium'
+      }`}
+    >
+      <div className="min-w-0">
+        <p className={`flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.12em] ${priorite.enRetard ? 'text-mtm-accent' : 'text-mtm-primary-medium'}`}>
+          {priorite.enRetard ? <AlertTriangle className="h-3.5 w-3.5" aria-hidden="true" /> : <CalendarClock className="h-3.5 w-3.5" aria-hidden="true" />}
+          {priorite.enRetard ? `En retard de ${priorite.joursRetard} jour${priorite.joursRetard > 1 ? 's' : ''}` : 'À régler prochainement'}
         </p>
-      )}
-      <div className="mt-3.5 flex gap-2">
-        <Link
-          to={cible}
-          className={`inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-semibold transition-transform active:scale-95 ${
-            priorite.enRetard ? 'bg-mtm-primary text-white' : 'bg-white text-mtm-primary-dark'
-          }`}
-        >
-          Voir le détail
-          <ChevronRight className="h-4 w-4" aria-hidden="true" />
-        </Link>
+        <p className="mt-1 font-display text-3xl font-bold text-mtm-text">{formatMoney(priorite.reste)}</p>
+        <p className="mt-0.5 text-sm text-mtm-muted">
+          {priorite.objet} · {priorite.enRetard ? 'était dû le' : 'avant le'} {formatDate(priorite.dateEcheance)}
+        </p>
+        {priorite.autresEnRetard > 0 && (
+          <p className="mt-1.5 text-xs font-semibold text-mtm-accent">
+            + {priorite.autresEnRetard} autre{priorite.autresEnRetard > 1 ? 's' : ''} paiement{priorite.autresEnRetard > 1 ? 's' : ''} en retard
+          </p>
+        )}
       </div>
-    </div>
+      <Link
+        to={cible}
+        className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-mtm-primary px-5 text-sm font-semibold text-white transition-colors hover:bg-mtm-primary-dark active:scale-95"
+      >
+        Voir le détail
+        <ChevronRight className="h-4 w-4" aria-hidden="true" />
+      </Link>
+    </section>
   );
 }
 

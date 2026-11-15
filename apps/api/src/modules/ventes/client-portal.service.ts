@@ -202,6 +202,7 @@ export class ClientPortalService {
         statut: true,
         prixVente: true,
         createdAt: true,
+        commercialResponsable: { select: { firstName: true, lastName: true } },
         terrain: {
           select: {
             id: true,
@@ -222,6 +223,7 @@ export class ClientPortalService {
         paiements: {
           where: { statut: 'valide' },
           select: {
+            id: true,
             montant: true,
             datePaiement: true,
             mode: true,
@@ -252,8 +254,12 @@ export class ClientPortalService {
         },
       },
     });
-    return dossiers.map((dossier) => ({
+    return dossiers.map(({ commercialResponsable, ...dossier }) => ({
       ...dossier,
+      // Prénom et initiale seulement : le client sait qui le suit, sans exposer de coordonnées personnelles.
+      conseiller: commercialResponsable
+        ? `${commercialResponsable.firstName} ${commercialResponsable.lastName.charAt(0)}.`
+        : null,
       montantPaye: dossier.paiements.reduce(
         (sum, payment) => sum + Number(payment.montant),
         0,

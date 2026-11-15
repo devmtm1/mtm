@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Phone } from 'lucide-react';
+import { MessageCircle, Phone } from 'lucide-react';
 import { toTelHref, useSiteContact } from '../../hooks/useSiteContact';
 
 interface DetailActionBarProps {
@@ -8,6 +8,8 @@ interface DetailActionBarProps {
   price?: string;
   /** Action principale de l'écran (un bouton). */
   children: ReactNode;
+  /** Lien WhatsApp : ajoute un bouton de discussion directe à côté de l'appel. */
+  whatsappHref?: string;
 }
 
 /**
@@ -15,7 +17,7 @@ interface DetailActionBarProps {
  * et l'action principale restent sous le pouce, comme dans une application.
  * Masquée dès lg : le panneau latéral prend le relais.
  */
-export function DetailActionBar({ label, price, children }: DetailActionBarProps) {
+export function DetailActionBar({ label, price, children, whatsappHref }: DetailActionBarProps) {
   const contact = useSiteContact();
 
   return (
@@ -34,6 +36,17 @@ export function DetailActionBar({ label, price, children }: DetailActionBarProps
         >
           <Phone className="h-5 w-5" aria-hidden="true" />
         </a>
+        {whatsappHref && (
+          <a
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Écrire à MTM Immobilier sur WhatsApp"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-mtm-success bg-mtm-success/10 text-mtm-success active:scale-90"
+          >
+            <MessageCircle className="h-5 w-5" aria-hidden="true" />
+          </a>
+        )}
         <div className={price ? 'shrink-0' : 'min-w-0 flex-1 [&>*]:w-full'}>{children}</div>
       </div>
     </div>

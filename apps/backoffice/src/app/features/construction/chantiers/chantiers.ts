@@ -5,8 +5,10 @@ import {
   computed,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MatDialog } from '@angular/material/dialog';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -23,6 +25,7 @@ import {
   LucideTriangleAlert,
   LucideWallet,
   LucideX,
+  LucideDownload,
 } from '@lucide/angular';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { mtmGridTheme } from '../../../core/ag-grid.config';
@@ -49,6 +52,8 @@ import {
   tonAvancement,
 } from '../chantier-status';
 import { nombreFr } from '../../../core/utils/format';
+import { ExportListeDialog } from '../../../shared/dialogs/export-liste-dialog';
+import { sourceDepuisGrille } from '../../../shared/utils/export-grille';
 
 const FILTRES_VIDES = {
   search: '',
@@ -68,7 +73,7 @@ const FILTRES_VIDES = {
  */
 @Component({
   selector: 'app-chantiers',
-  imports: [
+  imports: [LucideDownload, 
     MoneyPipe,
     ReactiveFormsModule,
     AgGridAngular,
@@ -89,12 +94,15 @@ const FILTRES_VIDES = {
 })
 export class Chantiers implements OnInit {
   private readonly api = inject(ConstructionApiService);
+  private readonly dialog = inject(MatDialog);
   private readonly router = inject(Router);
   private readonly sessionService = inject(SessionService);
   private readonly notify = inject(NotificationService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
 
+  private readonly grille = viewChild(AgGridAngular);
+  protected readonly peutExporterListe = computed(() => this.sessionService.hasPermission('construction:exporter'));
   protected readonly theme = mtmGridTheme;
   protected readonly loading = signal(true);
   protected readonly rowData = signal<ChantierListItem[]>([]);
@@ -420,5 +428,12 @@ export class Chantiers implements OnInit {
 
   protected nomResponsable(chantier: ChantierListItem): string {
     return nomPersonne(chantier.responsable);
+  }
+
+  /** Exporte la liste telle qu'affichée (filtres et tri compris) en Excel ou en PDF. */
+  protected exporterListe(): void {
+    const api = this.grille()?.api;
+    if (!api) return;
+    ExportListeDialog.open(this.dialog, sourceDepuisGrille(api, { module: 'construction', titre: 'Chantiers' })).subscribe();
   }
 }

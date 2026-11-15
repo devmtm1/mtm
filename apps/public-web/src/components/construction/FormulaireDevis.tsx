@@ -45,7 +45,7 @@ export function FormulaireDevis() {
   async function envoyer(): Promise<void> {
     const erreurs = validateDevisConstruction(values);
     setErrors(erreurs);
-    if (erreurs.pays || erreurs.budget) setDetailsOuverts(true);
+    if (erreurs.pays || erreurs.budget || erreurs.precisions) setDetailsOuverts(true);
     if (hasErrors(erreurs)) return;
     setEnvoi(true);
     setErreurEnvoi(null);
@@ -93,7 +93,7 @@ export function FormulaireDevis() {
         void envoyer();
       }}
     >
-      <fieldset className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <fieldset className="grid items-end gap-4 sm:grid-cols-2 sm:[&>*:last-child]:col-span-2">
         <legend className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-mtm-accent">Vous</legend>
         <FormField label="Nom complet" htmlFor="devis-nom" error={errors.nom} required>
           <input id="devis-nom" type="text" autoComplete="name" className={fieldInputClass} value={values.nom} onChange={(e) => set('nom', e.target.value)} />
@@ -104,7 +104,7 @@ export function FormulaireDevis() {
         </FormField>
       </fieldset>
 
-      <fieldset className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <fieldset className="grid items-end gap-3 sm:grid-cols-3">
         <legend className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-mtm-accent">Votre projet</legend>
         <FormField label="Nature du projet" htmlFor="devis-type" error={errors.typeProjet} required>
           <select id="devis-type" className={fieldInputClass} value={values.typeProjet} onChange={(e) => set('typeProjet', e.target.value)}>
@@ -150,22 +150,22 @@ export function FormulaireDevis() {
           <FormField label="Budget indicatif (FCFA)" htmlFor="devis-budget" error={errors.budget}>
             <input id="devis-budget" type="number" min={0} step={1000000} inputMode="numeric" placeholder="Facultatif" className={fieldInputClass} value={values.budget} onChange={(e) => set('budget', e.target.value)} />
           </FormField>
+          <div className="sm:col-span-2">
+        <FormField label="Précisions" htmlFor="devis-precisions" error={errors.precisions}>
+          <textarea
+            id="devis-precisions"
+            rows={4}
+            maxLength={1500}
+            placeholder="Nombre de chambres, plans déjà prêts, délai souhaité…"
+            className={fieldInputClass}
+            value={values.precisions}
+            onChange={(e) => set('precisions', e.target.value)}
+          />
+        </FormField>
+          </div>
           </div>
         )}
       </div>
-
-      <FormField label="Précisions" htmlFor="devis-precisions" error={errors.precisions}>
-        <textarea
-          id="devis-precisions"
-          rows={4}
-          maxLength={1500}
-          placeholder="Nombre de chambres, plans déjà prêts, délai souhaité…"
-          className={fieldInputClass}
-          value={values.precisions}
-          onChange={(e) => set('precisions', e.target.value)}
-        />
-      </FormField>
-
       {/* Piège à robots : hors écran, ignoré des lecteurs d'écran et de l'autocomplétion. */}
       <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
         <label htmlFor="devis-site">Ne pas remplir</label>

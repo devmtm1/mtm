@@ -8,6 +8,7 @@ const PAGES_FIXES = [
   ['/terrains', 'daily', '0.9'],
   ['/locations', 'daily', '0.9'],
   ['/a-propos', 'monthly', '0.6'],
+  ['/nos-services', 'monthly', '0.8'],
   ['/gestion-locative', 'monthly', '0.7'],
   ['/construction', 'monthly', '0.7'],
   ['/demarches-administratives', 'monthly', '0.7'],

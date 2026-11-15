@@ -11,6 +11,11 @@
       </p>
     </div>
     <div class="page-header__actions">
+      @if (peutExporterListe()) {
+        <button mat-stroked-button type="button" (click)="exporterListe()" [disabled]="preparationExport()">
+          <svg class="btn-icon" lucideDownload aria-hidden="true"></svg>{{ preparationExport() ? 'Préparation…' : 'Exporter' }}
+        </button>
+      }
       <mat-form-field appearance="outline" class="relances-page__filtre">
         <mat-label>Statut</mat-label>
         <mat-select [formControl]="filtres.controls.statut">

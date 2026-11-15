@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -8,7 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { AgGridAngular } from 'ag-grid-angular';
 import type { ColDef, ICellRendererParams } from 'ag-grid-community';
-import { LucideKeyRound, LucidePlus, LucideSearch, LucideUserX } from '@lucide/angular';
+import { LucideKeyRound, LucidePlus, LucideSearch, LucideUserX, LucideDownload } from '@lucide/angular';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { mtmGridTheme } from '../../../core/ag-grid.config';
 import { LocatifApiService } from '../../../core/services/api/locatif-api.service';
@@ -17,6 +17,8 @@ import type { Locataire } from '../../../core/models/locatif.model';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { SITUATIONS_PAIEMENT, capitaliserNom, label, pillClass } from '../locatif-status';
 import { LocataireDialog } from './locataire-dialog';
+import { ExportListeDialog } from '../../../shared/dialogs/export-liste-dialog';
+import { sourceDepuisGrille } from '../../../shared/utils/export-grille';
 
 /**
  * Fiches locataires (J2.1) : indépendantes des baux, elles se créent d'abord
@@ -25,7 +27,7 @@ import { LocataireDialog } from './locataire-dialog';
  */
 @Component({
   selector: 'app-locataires',
-  imports: [
+  imports: [LucideDownload, 
     AgGridAngular,
     ReactiveFormsModule,
     MatButtonModule,
@@ -48,6 +50,8 @@ export class Locataires implements OnInit {
   private readonly notify = inject(NotificationService);
   private readonly destroyRef = inject(DestroyRef);
 
+  private readonly grille = viewChild(AgGridAngular);
+  protected readonly peutExporterListe = computed(() => this.session.hasPermission('locatif:exporter'));
   protected readonly theme = mtmGridTheme;
   protected readonly loading = signal(true);
   protected readonly locataires = signal<Locataire[]>([]);
@@ -211,5 +215,12 @@ export class Locataires implements OnInit {
   private finChargement(): void {
     this.loading.set(false);
     this.chargementInitialFait = true;
+  }
+
+  /** Exporte la liste telle qu'affichée (filtres et tri compris) en Excel ou en PDF. */
+  protected exporterListe(): void {
+    const api = this.grille()?.api;
+    if (!api) return;
+    ExportListeDialog.open(this.dialog, sourceDepuisGrille(api, { module: 'locatif', titre: 'Locataires' })).subscribe();
   }
 }

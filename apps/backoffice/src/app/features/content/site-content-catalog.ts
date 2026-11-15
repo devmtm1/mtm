@@ -16,6 +16,8 @@ export interface ContentSlot {
   type?: 'text' | 'hero' | 'stat';
   /** `image` : l'emplacement reçoit une image envoyée depuis le poste, pas un texte. */
   kind?: 'image';
+  /** `video` : en plus de l'adresse à coller, l'éditeur propose d'envoyer un fichier vidéo depuis le poste. */
+  televersement?: 'video';
 }
 
 export interface ContentSection {
@@ -112,6 +114,18 @@ export const SITE_CONTENT_SECTIONS: ContentSection[] = [
       { key: 'contact.latitude', label: 'Position de l’agence — latitude', help: 'Pour la carte et l’itinéraire (ex. 14.7753). Dans Google Maps, un clic droit sur l’agence donne les deux nombres.' },
       { key: 'contact.longitude', label: 'Position de l’agence — longitude', help: 'Ex. -17.4081 (le signe moins compte).' },
       { key: 'contact.whatsapp.demarches', label: 'Numéro WhatsApp — démarches administratives', help: 'Numéro joint depuis la page « Démarches administratives », suivi par la direction. Même format, sans espaces. Laisser vide pour réutiliser le numéro WhatsApp général.' },
+    ],
+  },
+  {
+    id: 'services',
+    title: 'Page « Nos services »',
+    where: 'Bandeau en haut de la page « Nos services » (les pôles eux-mêmes se gèrent dans Pôles et services)',
+    slots: [
+      { key: 'services.image', label: 'Image du bandeau', help: 'Photo en fond du bandeau, sous un voile bleu marine : le texte blanc se lit sur n’importe quelle image. Format paysage conseillé (au moins 1600 × 900 px). Laisser vide pour la photo par défaut.', kind: 'image' },
+      { key: 'services.eyebrow', label: 'Mention au-dessus du titre', help: 'Petit libellé précédé d’un trait rouge. Par défaut : « Nos services ».' },
+      { key: 'services.title', label: 'Titre', help: 'Le grand titre du bandeau. Par défaut : « Nos pôles d’activités ».' },
+      { key: 'services.intro', label: 'Texte de présentation', help: 'Un court paragraphe sous le titre.', multiline: true },
+      { key: 'services.video', label: 'Vidéo de présentation des services', help: 'Adresse de la vidéo : YouTube (https://www.youtube.com/watch?v=…), Vimeo (https://vimeo.com/…) ou fichier vidéo en .mp4 / .webm (adresse https directe) ; ou envoyez directement un fichier MP4 ou MOV de 50 Mo au maximum. Elle remplace les cartes de la section « Nos services » de la page d’accueil, avec la liste des services à côté. Laisser vide pour garder les cartes.' , televersement: 'video' },
     ],
   },
   {

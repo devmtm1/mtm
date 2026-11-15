@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import type { SequencePorte } from './porte/porte-sequence';
 import { Button } from '../ui/Button';
 import { FormField, fieldInputClass } from '../ui/FormField';
 import { ApiError } from '../../api/client';
@@ -9,30 +10,39 @@ interface TwoFactorFormProps {
   identifiant: string;
   password: string;
   onCancel: () => void;
+  /** La porte de l'écran de connexion (habillage seulement). */
+  porte?: SequencePorte;
 }
 
-export function TwoFactorForm({ identifiant, password, onCancel }: TwoFactorFormProps) {
+export function TwoFactorForm({ identifiant, password, onCancel, porte }: TwoFactorFormProps) {
   const { login } = useAuth();
   const [code, setCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [refus, setRefus] = useState(false);
 
   async function handleSubmit(event: FormEvent): Promise<void> {
     event.preventDefault();
+    if (submitting) return;
     setError(null);
     setSubmitting(true);
+    porte?.demarrer();
     try {
       await login(identifiant, password, code.trim());
-      // Succès : le contexte est mis à jour, la page parente redirige.
+      // Succès : le serveur a confirmé, la porte s'ouvre, puis la page parente redirige.
+      await porte?.reussir();
     } catch (caught) {
+      porte?.refuser();
       setError(caught instanceof ApiError ? caught.message : 'Code invalide.');
+      setRefus(true);
+      window.setTimeout(() => setRefus(false), 500);
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <form className="flex flex-col gap-4" onSubmit={(event) => void handleSubmit(event)}>
+    <form className={`flex flex-col gap-4 ${refus ? 'porte-refus' : ''}`} onSubmit={(event) => void handleSubmit(event)}>
       <p className="text-sm text-mtm-muted">
         Entrez le code à 6 chiffres généré par votre application d'authentification.
       </p>

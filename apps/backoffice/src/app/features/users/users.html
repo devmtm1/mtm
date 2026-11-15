@@ -10,6 +10,11 @@
     </div>
     @if (canCreate) {
       <div class="page-header__actions">
+        @if (peutExporterListe()) {
+          <button mat-stroked-button type="button" (click)="exporterListe()">
+            <svg class="btn-icon" lucideDownload aria-hidden="true"></svg>Exporter
+          </button>
+        }
         <button mat-flat-button color="primary" type="button" (click)="openCreateDialog()">
           <svg class="btn-icon" lucideUserPlus aria-hidden="true"></svg>Nouvel utilisateur
         </button>

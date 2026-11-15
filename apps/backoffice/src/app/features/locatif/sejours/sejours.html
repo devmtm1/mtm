@@ -9,6 +9,11 @@
       </p>
     </div>
     <div class="page-header__actions">
+      @if (peutExporterListe()) {
+        <button mat-stroked-button type="button" (click)="exporterListe()" [disabled]="preparationExport()">
+          <svg class="btn-icon" lucideDownload aria-hidden="true"></svg>{{ preparationExport() ? 'Préparation…' : 'Exporter' }}
+        </button>
+      }
       @if (canCreate()) {
         <button mat-flat-button color="primary" type="button" (click)="nouveau()">
           <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau séjour

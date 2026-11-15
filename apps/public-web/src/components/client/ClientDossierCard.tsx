@@ -10,6 +10,7 @@ import { ClientRow, ProgressBar } from './shell/ClientUi';
 import { ClientDisclosure } from './shell/Disclosure';
 import { Frise, type FriseItem } from './shell/Frise';
 import { ClientEchanges } from './ClientEchanges';
+import { BoutonRecu } from './BoutonRecu';
 
 function Section({ icon: Icon, title, children }: { icon: typeof Receipt; title: string; children: React.ReactNode }) {
   return (
@@ -164,14 +165,14 @@ export function ClientDossierCard({ dossier, defaultOpen = false }: { dossier: C
           <p className="text-sm text-mtm-muted">Aucun paiement enregistré pour le moment.</p>
         ) : (
           <ul>
-            {dossier.paiements.map((paiement, index) => (
-              <li key={index}>
+            {dossier.paiements.map((paiement) => (
+              <li key={paiement.id}>
                 <ClientRow
                   icon={Receipt}
                   tone="success"
                   title={formatMoney(paiement.montant)}
                   subtitle={`${formatDate(paiement.datePaiement)} · ${paymentMode(paiement.mode)}`}
-                  trailing={<span className="text-xs font-semibold text-mtm-success">Validé</span>}
+                  trailing={<BoutonRecu nature="vente" paiementId={paiement.id} />}
                 />
               </li>
             ))}

@@ -52,6 +52,13 @@ export class ProprietairePortalService {
         modeLocation: true,
         numeroLot: true,
         immeuble: { select: { id: true, nom: true, type: true } },
+        // La première photo d'annonce illustre le bien dans l'espace du propriétaire.
+        medias: {
+          where: { type: 'photo' },
+          orderBy: { sortOrder: 'asc' },
+          take: 1,
+          select: { storageKey: true, resourceType: true },
+        },
         sejours: {
           where: { statut: { in: STATUTS_SEJOUR_ENGAGES } },
           orderBy: { dateArrivee: 'desc' },
@@ -151,6 +158,13 @@ export class ProprietairePortalService {
           modeLocation: bien.modeLocation,
           numeroLot: bien.numeroLot,
           immeuble: bien.immeuble,
+          photo: bien.medias[0]
+            ? this.cloudinary.url(
+                bien.medias[0].storageKey,
+                bien.medias[0].resourceType,
+                true,
+              ) || null
+            : null,
           occupation,
           sejours: apercu,
           sejoursEncaisses: sejours.reduce(

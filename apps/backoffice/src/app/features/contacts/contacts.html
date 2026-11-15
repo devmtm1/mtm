@@ -8,6 +8,13 @@
         pour qu’un commercial rappelle la personne.
       </p>
     </div>
+    <div class="page-header__actions">
+      @if (peutExporterListe()) {
+        <button mat-stroked-button type="button" (click)="exporterListe()">
+          <svg class="btn-icon" lucideDownload aria-hidden="true"></svg>Exporter
+        </button>
+      }
+    </div>
   </header>
 
   <section class="kpi-row" aria-label="Synthèse">

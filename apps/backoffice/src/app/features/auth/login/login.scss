@@ -308,3 +308,51 @@ $motif-fond: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
     }
   }
 }
+
+/* Refus : le formulaire tremble une fois, sans rien effacer. */
+.porte-refus {
+  animation: porte-refus 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+@keyframes porte-refus {
+  10%,
+  90% {
+    transform: translateX(-2px);
+  }
+  20%,
+  80% {
+    transform: translateX(4px);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translateX(-6px);
+  }
+  40%,
+  60% {
+    transform: translateX(6px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .porte-refus {
+    animation: none;
+  }
+}
+
+/* La petite clé du titre : discrète pendant la saisie, elle se redresse et passe au rouge quand les deux champs sont prêts. */
+.login-cle {
+  width: 22px;
+  height: 22px;
+  color: var(--mtm-primary-medium);
+  transform: rotate(-35deg);
+  transition: transform 0.4s ease, color 0.3s ease;
+
+  &.login-cle--prete {
+    color: var(--mtm-accent);
+    transform: rotate(0deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .login-cle {
+    transition: color 0.2s ease;
+  }
+}

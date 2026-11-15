@@ -1,3 +1,4 @@
+import { LucideDownload } from '@lucide/angular';
 import { DatePipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -17,6 +18,8 @@ import {
   nomVoyageur,
 } from '../sejours/sejour-status';
 import { Pagination } from '../../../shared/components/pagination/pagination';
+import { ExportListeDialog } from '../../../shared/dialogs/export-liste-dialog';
+import { chargerToutesLesPages, isoJour, sourceDepuisLignes } from '../../../shared/utils/export-lignes';
 
 const ONGLETS = [
   { value: 'en_attente', label: 'À traiter' },
@@ -30,7 +33,7 @@ const ONGLETS = [
  */
 @Component({
   selector: 'app-resiliations',
-  imports: [Pagination, DatePipe, RouterLink, MatButtonModule],
+  imports: [LucideDownload, Pagination, DatePipe, RouterLink, MatButtonModule],
   templateUrl: './resiliations.html',
   styleUrl: './resiliations.scss',
 })
@@ -40,6 +43,8 @@ export class Resiliations implements OnInit {
   private readonly notify = inject(NotificationService);
   private readonly session = inject(SessionService);
 
+  protected readonly peutExporterListe = computed(() => this.session.hasPermission('locatif:exporter'));
+  protected readonly preparationExport = signal(false);
   protected readonly canModify = computed(() => this.session.hasPermission('locatif:modifier'));
 
   protected readonly onglets = ONGLETS;
@@ -118,5 +123,41 @@ export class Resiliations implements OnInit {
   private finChargement(): void {
     this.loading.set(false);
     this.chargementInitialFait = true;
+  }
+
+  /** Exporte toutes les demandes de l'onglet en cours (pas seulement la page affichée). */
+  protected exporterListe(): void {
+    this.preparationExport.set(true);
+    chargerToutesLesPages<DemandeResiliation>(
+      (page, taille) => this.api.findResiliations(this.onglet() || undefined, page, taille),
+      200,
+    ).subscribe({
+      next: (lignes) => {
+        this.preparationExport.set(false);
+        ExportListeDialog.open(
+          this.dialog,
+          sourceDepuisLignes<DemandeResiliation>(
+            { module: 'locatif', titre: 'Demandes de résiliation' },
+            [
+              { libelle: 'Locataire', valeur: (d) => this.locataire(d.bailLocatif.locataire) },
+              { libelle: 'Téléphone', valeur: (d) => d.bailLocatif.locataire.phone },
+              { libelle: 'Bail', valeur: (d) => d.bailLocatif.referenceInterne },
+              { libelle: 'Bien', valeur: (d) => d.bailLocatif.bienLocatif.titre ?? d.bailLocatif.bienLocatif.adresse },
+              { libelle: 'Demandée le', type: 'date', valeur: (d) => isoJour(d.dateDemande) },
+              { libelle: 'Canal', valeur: (d) => this.libelle(this.canaux, d.canal) },
+              { libelle: 'Départ souhaité', type: 'date', valeur: (d) => isoJour(d.dateDepartSouhaitee) },
+              { libelle: 'Départ retenu', type: 'date', valeur: (d) => isoJour(d.dateDepartRetenue) },
+              { libelle: 'Motif', valeur: (d) => (d.motif ? this.libelle(this.motifs, d.motif) : null) },
+              { libelle: 'Statut', valeur: (d) => this.statuts[d.statut].label },
+            ],
+            lignes,
+          ),
+        ).subscribe();
+      },
+      error: (error: unknown) => {
+        this.preparationExport.set(false);
+        this.notify.error(error, 'Préparation de l’export impossible');
+      },
+    });
   }
 }

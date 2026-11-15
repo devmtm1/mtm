@@ -1,4 +1,5 @@
 <div class="login-page">
+  <app-porte-acces [etat]="etatPorte()" variante="staff" [reduit]="mouvementReduit" />
   <div class="login-container">
     <div class="login-header-branding">
       <div class="login-logo-wrapper">
@@ -9,11 +10,14 @@
       <div class="login-badge-pill">Espace Back-office &amp; ERP</div>
     </div>
 
-    <mat-card class="login-card">
+    <mat-card class="login-card" [class.porte-refus]="refus()">
       <mat-card-content class="login-card-content">
         @if (!awaitingTwoFactor()) {
           <div class="login-card-header">
-            <h2>Connexion Sécurisée</h2>
+            <h2>
+              <svg lucideKeyRound class="login-cle" [class.login-cle--prete]="credentialsForm.valid" aria-hidden="true"></svg>
+              Connexion Sécurisée
+            </h2>
             <p>Entrez vos identifiants pour accéder au système ERP.</p>
           </div>
 

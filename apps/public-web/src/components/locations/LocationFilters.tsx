@@ -132,7 +132,7 @@ export function LocationFilters({ value, onChange, onSubmit, sheet = false, head
         min={0}
         step={10000}
         className={inputClass}
-        placeholder={options?.loyerMax ? String(options.loyerMax) : 'Sans limite'}
+        placeholder={options?.loyerMax ? `Ex. ${options.loyerMax.toLocaleString('fr-FR')}` : 'Sans limite'}
         value={value.loyerMax ?? ''}
         onChange={(event) => set('loyerMax', numberValue(event.target.value))}
       />

@@ -3290,3 +3290,38 @@ model CategorieLot {
   @@unique([programmeId, nom])
   @@map("categories_lot")
 }
+
+/// Pôles d'activité de MTM (page « Nos services » et section de l'accueil du site public).
+/// Tout ce que le visiteur lit vient d'ici : modifiable depuis le back-office, rien n'est écrit dans le site.
+model Pole {
+  id           String   @id @default(uuid())
+  /// Identifiant lisible, stable : sert d'ancre dans l'adresse de la page (/nos-services#clean).
+  slug         String   @unique
+  nom          String
+  /// Sous-titre du pôle (« Achat – Vente – Commercialisation »).
+  accroche     String?
+  /// Phrase courte affichée sur les cartes de l'accueil.
+  description  String?
+  /// Les prestations, une par puce.
+  points       String[]
+  /// Photo Cloudinary envoyée depuis le back-office.
+  storageKey   String?
+  resourceType String   @default("image")
+  /// Photo fournie avec le site, utilisée tant qu'aucune n'a été envoyée.
+  imageDefaut  String?
+  /// Où mène le bouton : un chemin du site (/nos-biens) ou une adresse https.
+  lienUrl      String?
+  libelleLien  String?
+  ordre        Int      @default(0)
+  /// Montré parmi les services de l'accueil (les autres se trouvent sur la page « Nos services »).
+  surAccueil   Boolean  @default(false)
+  /// Identifiants des pôles proposés en complément sur la page de celui-ci.
+  lies         String[]
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([ordre])
+  @@map("poles")
+}

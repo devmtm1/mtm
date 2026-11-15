@@ -3,6 +3,8 @@ import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { FileText, ShieldCheck, Wallet } from 'lucide-react';
 import { PageIntro } from '../components/layout/PageIntro';
 import { LoginForm } from '../components/auth/LoginForm';
+import { PorteAcces } from '../components/auth/porte/PorteAcces';
+import { usePorte } from '../components/auth/porte/usePorte';
 import { TwoFactorForm } from '../components/auth/TwoFactorForm';
 import { ForgotPasswordForm } from '../components/auth/ForgotPasswordForm';
 import { ChangePasswordForm } from '../components/auth/ChangePasswordForm';
@@ -20,16 +22,22 @@ export function LoginPage() {
   const resetToken = searchParams.get('reset') ?? undefined;
   const [mode, setMode] = useState<ViewMode>(resetToken ? 'forgotPassword' : 'login');
   const [pendingCredentials, setPendingCredentials] = useState<{ identifiant: string; password: string } | null>(null);
+  const { etat, porte, enCours } = usePorte();
 
   if (bootstrapping) return null;
 
   // Connecté et mot de passe à jour : rien à faire ici.
-  if (user && !user.mustChangePassword) {
+  // Tant que la porte s'ouvre, on attend la fin de la séquence avant de rediriger.
+  if (user && !user.mustChangePassword && !enCours) {
     return <Navigate to={ROUTES.clientPortal} replace />;
   }
 
+  // Mot de passe à changer : la porte a fait son effet, on montre le formulaire sans la laisser recouvrir la page.
+  const etatPorte = user?.mustChangePassword && etat === 'ouvert' ? 'repos' : etat;
+
   return (
     <div className="bg-mtm-surface">
+      <PorteAcces etat={etatPorte} variante="client" />
       <PageIntro
         eyebrow="Espace client"
         title="Accédez à votre espace"
@@ -44,6 +52,7 @@ export function LoginPage() {
               identifiant={pendingCredentials.identifiant}
               password={pendingCredentials.password}
               onCancel={() => setMode('login')}
+              porte={porte}
             />
           ) : mode === 'forgotPassword' ? (
             <ForgotPasswordForm onBackToLogin={() => setMode('login')} initialToken={resetToken} />
@@ -54,6 +63,7 @@ export function LoginPage() {
                 setMode('twoFactor');
               }}
               onForgotPassword={() => setMode('forgotPassword')}
+              porte={porte}
             />
           )}
         </div>

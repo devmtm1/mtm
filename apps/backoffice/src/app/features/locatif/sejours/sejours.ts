@@ -7,7 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { LucideBedDouble, LucideCalendarCheck, LucideInbox, LucidePlus, LucideSearch, LucideShieldAlert } from '@lucide/angular';
+import { LucideBedDouble, LucideCalendarCheck, LucideInbox, LucidePlus, LucideSearch, LucideShieldAlert, LucideDownload } from '@lucide/angular';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { SejoursApiService } from '../../../core/services/api/sejours-api.service';
 import { SessionService } from '../../../core/services/session.service';
@@ -27,6 +27,8 @@ import {
   periodeSejour,
 } from './sejour-status';
 import { Pagination } from '../../../shared/components/pagination/pagination';
+import { ExportListeDialog } from '../../../shared/dialogs/export-liste-dialog';
+import { chargerToutesLesPages, isoJour, sourceDepuisLignes } from '../../../shared/utils/export-lignes';
 
 const VUES = [
   { value: '', label: 'Tous' },
@@ -43,7 +45,7 @@ const VUES = [
  */
 @Component({
   selector: 'app-sejours',
-  imports: [
+  imports: [LucideDownload, 
     Pagination,
     DatePipe,
     MoneyPipe,
@@ -69,6 +71,8 @@ export class Sejours implements OnInit {
   private readonly notify = inject(NotificationService);
   private readonly session = inject(SessionService);
 
+  protected readonly peutExporterListe = computed(() => this.session.hasPermission('locatif:exporter'));
+  protected readonly preparationExport = signal(false);
   protected readonly canCreate = computed(() => this.session.hasPermission('locatif:creer'));
 
   protected readonly vues = VUES;
@@ -168,5 +172,50 @@ export class Sejours implements OnInit {
   private finChargement(): void {
     this.loading.set(false);
     this.chargementInitialFait = true;
+  }
+
+  /** Exporte tous les séjours de la recherche en cours (pas seulement la page affichée). */
+  protected exporterListe(): void {
+    this.preparationExport.set(true);
+    chargerToutesLesPages<SejourListItem>(
+      (page, taille) =>
+        this.api.findAll({
+          search: this.search.value.trim() || undefined,
+          statut: this.statut.value || undefined,
+          vue: this.vue() || undefined,
+          page,
+          pageSize: taille,
+        }),
+      200,
+    ).subscribe({
+      next: (lignes) => {
+        this.preparationExport.set(false);
+        ExportListeDialog.open(
+          this.dialog,
+          sourceDepuisLignes<SejourListItem>(
+            { module: 'locatif', titre: 'Séjours' },
+            [
+              { libelle: 'Séjour', valeur: (s) => s.referenceInterne },
+              { libelle: 'Origine', valeur: (s) => this.libelle(this.sources, s.source) },
+              { libelle: 'Voyageur', valeur: (s) => this.voyageur(s.locataire) },
+              { libelle: 'Personnes', type: 'nombre', valeur: (s) => s.nombreVoyageurs },
+              { libelle: 'Bien', valeur: (s) => this.bien(s.bienLocatif) },
+              { libelle: 'Arrivée', type: 'date', valeur: (s) => isoJour(s.dateArrivee) },
+              { libelle: 'Départ', type: 'date', valeur: (s) => isoJour(s.dateDepart) },
+              { libelle: 'Nuits', type: 'nombre', valeur: (s) => s.nuits },
+              { libelle: 'Total (FCFA)', type: 'montant', valeur: (s) => Number(s.montantTotal) },
+              { libelle: 'Reste à régler (FCFA)', type: 'montant', valeur: (s) => s.synthese.reste },
+              { libelle: 'Règlement', valeur: (s) => this.reglements[s.synthese.statut].label },
+              { libelle: 'Statut', valeur: (s) => this.statuts[s.statut].label },
+            ],
+            lignes,
+          ),
+        ).subscribe();
+      },
+      error: (error: unknown) => {
+        this.preparationExport.set(false);
+        this.notify.error(error, 'Préparation de l’export impossible');
+      },
+    });
   }
 }

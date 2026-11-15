@@ -1,4 +1,5 @@
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal, viewChild } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
@@ -20,6 +21,7 @@ import {
   LucideSearch,
   LucideTrendingUp,
   LucideX,
+  LucideDownload,
 } from '@lucide/angular';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { mtmGridTheme } from '../../../core/ag-grid.config';
@@ -29,6 +31,8 @@ import type { MandatExpirant, MandatListItem, MandatOptions, MandatStats } from 
 import { NotificationService } from '../../../shared/services/notification.service';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { ALERT_WINDOW_DAYS, MANDAT_STATUS, echeanceInfo, joursRestants, pillClass, statusHelp } from '../mandat-status';
+import { ExportListeDialog } from '../../../shared/dialogs/export-liste-dialog';
+import { sourceDepuisGrille } from '../../../shared/utils/export-grille';
 
 const EMPTY_FILTERS = { search: '', statut: '', typeMandat: '' };
 
@@ -39,7 +43,7 @@ const EMPTY_FILTERS = { search: '', statut: '', typeMandat: '' };
  */
 @Component({
   selector: 'app-mandats',
-  imports: [
+  imports: [LucideDownload, 
     MoneyPipe,
     DatePipe,
     ReactiveFormsModule,
@@ -64,12 +68,15 @@ const EMPTY_FILTERS = { search: '', statut: '', typeMandat: '' };
 })
 export class Mandats implements OnInit {
   private readonly mandatsApi = inject(MandatsApiService);
+  private readonly dialog = inject(MatDialog);
   private readonly router = inject(Router);
   private readonly sessionService = inject(SessionService);
   private readonly notify = inject(NotificationService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
 
+  private readonly grille = viewChild(AgGridAngular);
+  protected readonly peutExporterListe = computed(() => this.sessionService.hasPermission('mandats:exporter'));
   protected readonly theme = mtmGridTheme;
   protected readonly loading = signal(true);
   protected readonly rowData = signal<MandatListItem[]>([]);
@@ -269,5 +276,12 @@ export class Mandats implements OnInit {
       onClick();
     });
     return button;
+  }
+
+  /** Exporte la liste telle qu'affichée (filtres et tri compris) en Excel ou en PDF. */
+  protected exporterListe(): void {
+    const api = this.grille()?.api;
+    if (!api) return;
+    ExportListeDialog.open(this.dialog, sourceDepuisGrille(api, { module: 'mandats', titre: 'Mandats' })).subscribe();
   }
 }

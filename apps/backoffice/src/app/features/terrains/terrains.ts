@@ -1,4 +1,5 @@
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal, viewChild } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -38,6 +39,7 @@ import {
   LucideSlidersHorizontal,
   LucideStar,
   LucideX,
+  LucideDownload,
 } from '@lucide/angular';
 import { forkJoin } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -63,6 +65,8 @@ import {
   typeBienLabel,
 } from './terrain-status';
 import { nombreFr } from '../../core/utils/format';
+import { ExportListeDialog } from '../../shared/dialogs/export-liste-dialog';
+import { sourceDepuisGrille } from '../../shared/utils/export-grille';
 
 const EMPTY_FILTERS = {
   search: '',
@@ -112,7 +116,7 @@ const OPTIONAL_COLUMNS: { colId: string; label: string }[] = [
  */
 @Component({
   selector: 'app-terrains',
-  imports: [
+  imports: [LucideDownload, 
     DecimalPipe,
     MoneyPipe,
     ReactiveFormsModule,
@@ -155,6 +159,7 @@ const OPTIONAL_COLUMNS: { colId: string; label: string }[] = [
 })
 export class Terrains implements OnInit {
   private readonly terrainsApi = inject(TerrainsApiService);
+  private readonly dialog = inject(MatDialog);
   private readonly router = inject(Router);
   private readonly sessionService = inject(SessionService);
   private readonly notify = inject(NotificationService);
@@ -162,6 +167,8 @@ export class Terrains implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly money = new MoneyPipe();
 
+  private readonly grille = viewChild(AgGridAngular);
+  protected readonly peutExporterListe = computed(() => this.sessionService.hasPermission('terrains:exporter'));
   protected readonly theme = mtmGridTheme;
   protected readonly loading = signal(true);
   protected readonly rowData = signal<TerrainListItem[]>([]);
@@ -664,5 +671,12 @@ export class Terrains implements OnInit {
 
   protected filterArchives(): void {
     this.filters.patchValue({ ...EMPTY_FILTERS, archivage: 'archives' });
+  }
+
+  /** Exporte la liste telle qu'affichée (filtres et tri compris) en Excel ou en PDF. */
+  protected exporterListe(): void {
+    const api = this.grille()?.api;
+    if (!api) return;
+    ExportListeDialog.open(this.dialog, sourceDepuisGrille(api, { module: 'terrains', titre: 'Biens à vendre' })).subscribe();
   }
 }

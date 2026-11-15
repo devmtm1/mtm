@@ -237,6 +237,7 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
           { label: 'Réalisations & projets', route: '/content/showcase', permission: 'content:consulter' },
           { label: 'Actualités et conseils', route: '/content/actualites', permission: 'content:consulter' },
           { label: 'Publicités du bandeau', route: '/content/promotions', permission: 'content:consulter' },
+          { label: 'Pôles et services', route: '/content/poles', permission: 'content:consulter' },
           { label: 'Équipe du site', route: '/content/equipe', permission: 'content:consulter' },
         ],
       },

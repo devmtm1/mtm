@@ -76,14 +76,21 @@ describe('FeaturedLocationsSection', () => {
   it('n’affiche que des rangées complètes de trois, sans étiquette « À la une » redondante', () => {
     etat.items = [annonce(1), annonce(2), annonce(3), annonce(4)];
     afficher();
-    expect(screen.getAllByRole('link', { name: /Annonce/ })).toHaveLength(3);
-    // Un seul « À la une » : le titre de la section, pas une étiquette sur chaque carte.
-    expect(screen.getAllByText('À la une')).toHaveLength(1);
+    expect(screen.getAllByRole('link', { name: /^Annonce \d$/ })).toHaveLength(3);
+    // Pas d'étiquette « À la une » répétée sur chaque carte : le titre de la section suffit.
+    expect(screen.queryAllByText('À la une')).toHaveLength(0);
   });
 
-  it('disparaît quand aucune annonce n’est à la une', () => {
+  it('sans annonce à la une, ne montre pas de grille mais garde un accès aux locations', () => {
     etat.items = [];
     afficher();
     expect(screen.queryByRole('heading', { name: 'Locations à la une' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'Voir les locations' }).getAttribute('href')).toBe('/locations');
+  });
+
+  it('invite les propriétaires à confier leur bien', () => {
+    etat.items = [annonce(1), annonce(2), annonce(3)];
+    afficher();
+    expect(screen.getByRole('link', { name: 'Confier mon bien' })).toBeTruthy();
   });
 });

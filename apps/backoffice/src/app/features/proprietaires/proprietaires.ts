@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -16,6 +16,7 @@ import {
   LucideSearch,
   LucideUserX,
   LucideX,
+  LucideDownload,
 } from '@lucide/angular';
 import { mtmGridTheme } from '../../core/ag-grid.config';
 import { ProprietairesApiService } from '../../core/services/api/proprietaires-api.service';
@@ -34,6 +35,8 @@ import {
   ecrireVue,
   lireVue,
 } from '../../shared/components/contact-cards/vue-toggle';
+import { ExportListeDialog } from '../../shared/dialogs/export-liste-dialog';
+import { sourceDepuisGrille } from '../../shared/utils/export-grille';
 
 type Scope = '' | 'sans-terrain' | 'avec-mandat';
 
@@ -48,7 +51,7 @@ function biensConfies(item: { _count?: { terrains?: number; biensLocatifs?: numb
 
 @Component({
   selector: 'app-proprietaires',
-  imports: [
+  imports: [LucideDownload, 
     AgGridAngular,
     ContactCards,
     VueToggle,
@@ -76,6 +79,8 @@ export class Proprietaires implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly notify = inject(NotificationService);
 
+  private readonly grille = viewChild(AgGridAngular);
+  protected readonly peutExporterListe = computed(() => this.session.hasPermission('proprietaires:exporter'));
   protected readonly theme = mtmGridTheme;
   protected readonly loading = signal(true);
   protected readonly proprietaires = signal<ProprietaireSummary[]>([]);
@@ -299,5 +304,12 @@ export class Proprietaires implements OnInit {
   private finChargement(): void {
     this.loading.set(false);
     this.chargementInitialFait = true;
+  }
+
+  /** Exporte la liste telle qu'affichée (filtres et tri compris) en Excel ou en PDF. */
+  protected exporterListe(): void {
+    const api = this.grille()?.api;
+    if (!api) return;
+    ExportListeDialog.open(this.dialog, sourceDepuisGrille(api, { module: 'proprietaires', titre: 'Propriétaires' })).subscribe();
   }
 }

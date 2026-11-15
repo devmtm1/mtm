@@ -38,6 +38,8 @@ const LAZY_ROUTES: { path: string; Page: ComponentType }[] = [
   },
   { path: ROUTES.favoris, Page: lazyPage(() => import('./pages/FavorisPage').then((m) => m.FavorisPage)) },
   { path: ROUTES.about, Page: lazyPage(() => import('./pages/AboutPage').then((m) => m.AboutPage)) },
+  { path: ROUTES.services, Page: lazyPage(() => import('./pages/ServicesPage').then((m) => m.ServicesPage)) },
+  { path: ROUTES.servicePole(':slug'), Page: lazyPage(() => import('./pages/PolePage').then((m) => m.PolePage)) },
   {
     path: ROUTES.gestionLocative,
     Page: lazyPage(() => import('./pages/GestionLocativePage').then((m) => m.GestionLocativePage)),

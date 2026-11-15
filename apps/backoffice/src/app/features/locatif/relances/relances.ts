@@ -8,7 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { LucideChevronDown, LucideMail } from '@lucide/angular';
+import { LucideChevronDown, LucideMail, LucideDownload } from '@lucide/angular';
 import type { Observable } from 'rxjs';
 import { LocatifApiService } from '../../../core/services/api/locatif-api.service';
 import type { LocatifOptions, RelanceLoyer } from '../../../core/models/locatif.model';
@@ -26,6 +26,8 @@ import {
   pillClass,
   simpleLabel,
 } from '../locatif-status';
+import { ExportListeDialog } from '../../../shared/dialogs/export-liste-dialog';
+import { chargerToutesLesPages, isoJour, sourceDepuisLignes } from '../../../shared/utils/export-lignes';
 
 /**
  * File de relances de loyer (section 15 : « modèles configurables et calendrier
@@ -34,7 +36,7 @@ import {
  */
 @Component({
   selector: 'app-relances',
-  imports: [
+  imports: [LucideDownload, 
     Pagination,
     DatePipe,
     MoneyPipe,
@@ -58,6 +60,8 @@ export class Relances implements OnInit {
   private readonly formBuilder = inject(FormBuilder);
   private readonly sessionService = inject(SessionService);
 
+  protected readonly peutExporterListe = computed(() => this.sessionService.hasPermission('locatif:exporter'));
+  protected readonly preparationExport = signal(false);
   protected readonly relances = signal<RelanceLoyer[]>([]);
   protected readonly page = signal(1);
   protected readonly pageSize = signal(25);
@@ -204,6 +208,41 @@ export class Relances implements OnInit {
       error: (error: unknown) => {
         this.saving.set(false);
         this.notify.error(error, 'Action impossible');
+      },
+    });
+  }
+
+  /** Exporte toutes les relances du filtre en cours (pas seulement la page affichée). */
+  protected exporterListe(): void {
+    this.preparationExport.set(true);
+    chargerToutesLesPages<RelanceLoyer>(
+      (page, taille) => this.api.findRelancesPage({ statut: this.filtres.controls.statut.value, page, pageSize: taille }),
+      100,
+    ).subscribe({
+      next: (lignes) => {
+        this.preparationExport.set(false);
+        ExportListeDialog.open(
+          this.dialog,
+          sourceDepuisLignes<RelanceLoyer>(
+            { module: 'locatif', titre: 'Relances d’impayés' },
+            [
+              { libelle: 'Locataire', valeur: (r) => this.locataireNom(r) },
+              { libelle: 'Bail', valeur: (r) => r.bailLocatif?.referenceInterne },
+              { libelle: 'Bien', valeur: (r) => r.bailLocatif?.bienLocatif.adresse },
+              { libelle: 'Période', type: 'date', valeur: (r) => isoJour(r.echeance?.periode) },
+              { libelle: 'Palier', valeur: (r) => this.modeleLabel(r.modeleCode) },
+              { libelle: 'Retard (jours)', type: 'nombre', valeur: (r) => r.joursRetard },
+              { libelle: 'Montant dû (FCFA)', type: 'montant', valeur: (r) => this.montantDu(r) },
+              { libelle: 'Statut', valeur: (r) => this.statutLabel(r.statut) },
+              { libelle: 'Envoyée le', type: 'date', valeur: (r) => isoJour(r.envoyeeLe) },
+            ],
+            lignes,
+          ),
+        ).subscribe();
+      },
+      error: (error: unknown) => {
+        this.preparationExport.set(false);
+        this.notify.error(error, 'Préparation de l’export impossible');
       },
     });
   }
