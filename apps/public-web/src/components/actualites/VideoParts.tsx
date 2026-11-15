@@ -1,4 +1,6 @@
 import { Play } from 'lucide-react';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { adapterVignette } from '../../utils/video';
 import { Badge } from '../ui/Badge';
 import type { Publication } from '../../types/publication';
 import { formatDate } from '../../utils/format';
@@ -10,12 +12,14 @@ export const FOCUS =
 /** Image de la vidéo + bouton lecture + durée. Sans image, un fond aux couleurs de la marque. */
 export function Vignette({ publication, grande = false }: { publication: Publication; grande?: boolean }) {
   const duree = formaterDureeLecteur(publication.dureeSecondes);
+  // La version haute définition n'est demandée que pour la grande vignette sur grand écran : ailleurs, la taille réelle suffit.
+  const telephone = useMediaQuery('(max-width: 639px)');
   return (
     <>
       <span className="absolute inset-0 bg-gradient-to-br from-mtm-primary-dark to-mtm-primary-medium" aria-hidden="true" />
       {publication.posterUrl && (
         <img
-          src={publication.posterUrl}
+          src={adapterVignette(publication.posterUrl, grande && !telephone ? 'grande' : 'moyenne')}
           alt=""
           loading={grande ? 'eager' : 'lazy'}
           decoding="async"

@@ -39,3 +39,26 @@ export function analyserVideo(valeur: string | null | undefined): SourceVideo | 
   }
   return null;
 }
+
+/**
+ * Taille d'une vignette YouTube selon la place qu'elle occupe. YouTube ne publie la version haute définition
+ * (`maxresdefault`, ~100 Ko) que pour les vidéos filmées en 720p ou plus : la demander d'abord coûte une requête perdue
+ * (404) pour les autres, et un fichier bien trop lourd pour une miniature de 150 px.
+ *  - `petite`  : 320 × 180, 16/9, pour une miniature de liste ;
+ *  - `moyenne` : 480 × 360, existe toujours, pour une carte ou un écran de téléphone ;
+ *  - `grande`  : haute définition, pour une vignette pleine largeur (avec repli côté composant si elle manque).
+ */
+export type TailleVignette = 'petite' | 'moyenne' | 'grande';
+
+const NOM_VIGNETTE: Record<TailleVignette, string> = { petite: 'mqdefault', moyenne: 'hqdefault', grande: 'maxresdefault' };
+
+/** Adresse de la vignette d'une vidéo YouTube dans la taille voulue. */
+export function adresseVignetteYoutube(id: string, taille: TailleVignette): string {
+  return `https://i.ytimg.com/vi/${id}/${NOM_VIGNETTE[taille]}.jpg`;
+}
+
+/** Même chose pour une adresse de vignette déjà enregistrée : seules celles d'YouTube sont retouchées. */
+export function adapterVignette(adresse: string, taille: TailleVignette): string {
+  if (!/^https:\/\/(i\.ytimg\.com|img\.youtube\.com)\//.test(adresse)) return adresse;
+  return adresse.replace(/\/(maxresdefault|sddefault|hqdefault|mqdefault)\.jpg/, `/${NOM_VIGNETTE[taille]}.jpg`);
+}

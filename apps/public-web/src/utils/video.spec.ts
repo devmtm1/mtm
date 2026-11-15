@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { analyserVideo } from './video';
+import { adapterVignette, adresseVignetteYoutube, analyserVideo } from './video';
 
 describe('analyserVideo', () => {
   it('reconnaît YouTube', () => {
@@ -25,5 +25,23 @@ describe('analyserVideo', () => {
     expect(analyserVideo('')).toBeNull();
     expect(analyserVideo(undefined)).toBeNull();
     expect(analyserVideo('pas une adresse')).toBeNull();
+  });
+});
+
+describe('vignettes YouTube', () => {
+  it('demande directement la taille utile, sans passer par la haute définition', () => {
+    expect(adresseVignetteYoutube('abc123', 'petite')).toBe('https://i.ytimg.com/vi/abc123/mqdefault.jpg');
+    expect(adresseVignetteYoutube('abc123', 'moyenne')).toBe('https://i.ytimg.com/vi/abc123/hqdefault.jpg');
+    expect(adresseVignetteYoutube('abc123', 'grande')).toBe('https://i.ytimg.com/vi/abc123/maxresdefault.jpg');
+  });
+
+  it('retouche une adresse YouTube déjà enregistrée', () => {
+    expect(adapterVignette('https://i.ytimg.com/vi/abc123/maxresdefault.jpg', 'petite')).toBe('https://i.ytimg.com/vi/abc123/mqdefault.jpg');
+    expect(adapterVignette('https://img.youtube.com/vi/abc123/hqdefault.jpg', 'grande')).toBe('https://img.youtube.com/vi/abc123/maxresdefault.jpg');
+  });
+
+  it('laisse intacte une image qui n’est pas une vignette YouTube', () => {
+    const cloudinary = 'https://res.cloudinary.com/mtm/video/upload/v1/poster.jpg';
+    expect(adapterVignette(cloudinary, 'petite')).toBe(cloudinary);
   });
 });

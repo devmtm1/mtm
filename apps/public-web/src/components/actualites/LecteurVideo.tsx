@@ -8,6 +8,7 @@ import { useVideosEnregistrees } from '../../hooks/useVideosEnregistrees';
 import type { Publication } from '../../types/publication';
 import { ROUTES } from '../../routes';
 import { formatDate } from '../../utils/format';
+import { adapterVignette } from '../../utils/video';
 import { etiquetteRubrique, formaterDureeLecteur, lienDeLaVideo } from '../../utils/publications';
 
 const FOCUS =
@@ -51,7 +52,7 @@ function AutreVideo({ publication, onChoisir }: { publication: Publication; onCh
         <span className="relative block aspect-video w-[9.5rem] shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-mtm-primary-dark to-mtm-primary-medium">
           {publication.posterUrl && (
             <img
-              src={publication.posterUrl}
+              src={adapterVignette(publication.posterUrl, 'petite')}
               alt=""
               loading="lazy"
               decoding="async"
