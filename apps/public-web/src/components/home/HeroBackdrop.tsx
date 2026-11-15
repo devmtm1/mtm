@@ -94,7 +94,7 @@ export function HeroBackdrop({ lecture = true }: { lecture?: boolean }) {
           <video
             className="absolute inset-0 h-full w-full object-cover motion-safe:animate-fade-in"
             ref={videoRef}
-            src="/video.mp4"
+            src="/baniere.mp4"
             poster="/hero-poster.jpg"
             autoPlay
             muted
