@@ -6,12 +6,6 @@ import { ServicesSheet } from './ServicesSheet';
 import { isServiceRoute } from './services-links';
 import { montrerBarre, reinitialiserBarre, useBarreVisible } from './barre-flottante';
 
-/**
- * Place que la barre occupe en bas de l'écran (sa hauteur plus sa marge) : la mise en page la
- * réserve sous le pied de page, et le bouton d'actions rapides se pose au-dessus.
- */
-export const TAB_BAR_HEIGHT = '4.75rem';
-
 interface LinkTab {
   to: string;
   label: string;

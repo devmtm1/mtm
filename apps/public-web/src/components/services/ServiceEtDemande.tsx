@@ -16,27 +16,6 @@ function TitreBicolore({ titre }: { titre: string }) {
   );
 }
 
-/** Les étapes en une rangée : un numéro et un titre, sans phrases. Le détail n'aide pas celui qui veut seulement agir. */
-export function EtapesEnLigne({ etapes, titre }: { etapes: ElementService[]; titre: string }) {
-  return (
-    <div>
-      <p className="text-xs font-bold uppercase tracking-[0.2em] text-mtm-accent">{titre}</p>
-      <ol className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-[repeat(auto-fit,minmax(8.25rem,1fr))]">
-        {etapes.map((etape, index) => (
-          <li key={etape.title} className="flex items-center gap-2.5 rounded-2xl bg-white p-3 shadow-card">
-            <span
-              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${index === etapes.length - 1 ? 'bg-mtm-accent' : 'bg-mtm-primary-dark'}`}
-            >
-              {index + 1}
-            </span>
-            <span className="min-w-0 text-[13px] font-semibold leading-snug text-mtm-text">{etape.title}</span>
-          </li>
-        ))}
-      </ol>
-    </div>
-  );
-}
-
 interface ServiceEtDemandeProps {
   /** Petite mention rouge au-dessus du titre (« Nos services · MTM Gestion »). */
   eyebrow: string;
@@ -84,7 +63,7 @@ export function ServiceEtDemande(props: ServiceEtDemandeProps) {
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-mtm-accent">Ce que nous faisons</p>
             <h2 className="mt-2 font-display text-[1.5rem] font-extrabold leading-tight text-mtm-text">{props.accroche}</h2>
             <div className="mt-5">
-              <ListeCompacte elements={elements} icone={icone} action={action} colonnes={2} />
+              <ListeCompacte elements={elements} icone={icone} action={action} />
             </div>
           </div>
         </div>

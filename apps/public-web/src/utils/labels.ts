@@ -343,10 +343,6 @@ export function reservationStatus(code: string): StatusLabel {
   return RESERVATION_STATUS[code] ?? { ...FALLBACK, label: humanize(code) };
 }
 
-export function echeanceStatus(code: string): StatusLabel {
-  return ECHEANCE_STATUS[code] ?? { ...FALLBACK, label: humanize(code) };
-}
-
 export function paymentMode(code: string): string {
   return PAYMENT_MODES[code] ?? humanize(code);
 }
