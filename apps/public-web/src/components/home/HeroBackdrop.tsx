@@ -66,7 +66,13 @@ function useShouldPlayBackgroundVideo(): boolean {
  * quand les réserves ci-dessus le permettent. Partagé par le hero ordinateur et
  * la carte d'accueil mobile : les deux montrent la même vidéo.
  */
-export function HeroBackdrop({ lecture = true }: { lecture?: boolean }) {
+/** `contenue` : la vidéo est montrée entière (sans rognage) ; sinon elle remplit le cadre et déborde. */
+export function HeroBackdrop({ lecture = true, contenue = false }: { lecture?: boolean; contenue?: boolean }) {
+  // Grands écrans : la vidéo de la villa, plein cadre. Mobile (`contenue`) : la vidéo 1920 × 840 dont on ne montre que l'affiche
+  // centrale (le cadre 16/9 de l'accueil mobile en recadre exactement les bords flous) : rien d'écrit n'est coupé.
+  const ajustement = 'object-cover';
+  const film = contenue ? '/baniere-large.mp4' : '/video.mp4';
+  const image = contenue ? '/baniere-large-poster.jpg' : '/hero-poster.jpg';
   const playVideo = useShouldPlayBackgroundVideo() && lecture;
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -84,18 +90,18 @@ export function HeroBackdrop({ lecture = true }: { lecture?: boolean }) {
             pendant que la vidéo se charge et quand elle est écartée (économie
             de données, réseau lent, mouvement réduit). */}
         <img
-          src="/baniere-poster.jpg"
+          src={image}
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-contain"
+          className={`absolute inset-0 h-full w-full ${ajustement}`}
           fetchPriority="high"
         />
         {playVideo && (
           <video
-            className="absolute inset-0 h-full w-full object-contain motion-safe:animate-fade-in"
+            className={`absolute inset-0 h-full w-full ${ajustement} motion-safe:animate-fade-in`}
             ref={videoRef}
-            src="/baniere.mp4"
-            poster="/baniere-poster.jpg"
+            src={film}
+            poster={image}
             autoPlay
             muted
             loop

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { KeyRound, MapPin, Search, Tag } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { TerrainFilters } from '../terrains/TerrainFilters';
 import { Button } from '../ui/Button';
 import { useLocationFilterOptions } from '../../hooks/useLocations';
@@ -46,7 +46,7 @@ export function QuickSearchSection() {
     }`;
 
   return (
-    <section className="relative z-10 mx-auto mt-8 hidden max-w-6xl px-4 sm:px-6 lg:block" aria-label="Recherche rapide">
+    <section className="relative z-10 mx-auto -mt-14 hidden max-w-6xl px-4 sm:px-6 lg:block" aria-label="Recherche rapide">
       <div role="tablist" aria-label="Que cherchez-vous ?" className="flex gap-1.5 px-2">
         <button type="button" role="tab" id="onglet-louer" aria-selected={onglet === 'louer'} aria-controls="panneau-recherche" onClick={() => setOnglet('louer')} className={classeOnglet(onglet === 'louer')}>
           <KeyRound className="h-4 w-4" aria-hidden="true" />
@@ -84,19 +84,6 @@ export function QuickSearchSection() {
           </form>
         )}
       </div>
-
-      {/* Les deux autres chemins, qui n'ont plus de bouton sur la vidéo. */}
-      <p className="mt-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-sm font-semibold text-mtm-primary">
-        <Link to={ROUTES.catalog} className="hover:text-mtm-accent hover:underline">
-          Découvrir nos biens
-        </Link>
-        <span aria-hidden="true" className="text-mtm-border">
-          ·
-        </span>
-        <Link to={ROUTES.demarches} className="hover:text-mtm-accent hover:underline">
-          Demander une vérification
-        </Link>
-      </p>
     </section>
   );
 }

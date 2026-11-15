@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Play } from 'lucide-react';
-import type { SourceVideo } from '../../utils/video';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { adresseVignetteYoutube, type SourceVideo } from '../../utils/video';
 
 /**
  * Lecteur léger d'une vidéo (YouTube, Vimeo ou fichier). Au départ, seulement un bouton de lecture — avec la vignette pour
@@ -8,6 +9,8 @@ import type { SourceVideo } from '../../utils/video';
  */
 export function VideoPresentation({ video, titre }: { video: SourceVideo; titre: string }) {
   const [enLecture, setEnLecture] = useState(false);
+  // Sur téléphone, la vignette fait ~360 px : la version 480 px suffit et existe toujours (pas de requête perdue ni de fichier lourd).
+  const telephone = useMediaQuery('(max-width: 639px)');
 
   return (
     <div className="relative aspect-video overflow-hidden rounded-3xl bg-gradient-to-br from-mtm-primary-dark to-mtm-primary-medium shadow-card-hover ring-1 ring-mtm-border/60">
@@ -15,7 +18,7 @@ export function VideoPresentation({ video, titre }: { video: SourceVideo; titre:
         <button type="button" onClick={() => setEnLecture(true)} aria-label={`Lire la vidéo : ${titre}`} className="group absolute inset-0 block w-full">
           {video.type === 'youtube' && (
             <img
-              src={`https://i.ytimg.com/vi/${video.id}/maxresdefault.jpg`}
+              src={adresseVignetteYoutube(video.id, telephone ? 'moyenne' : 'grande')}
               alt=""
               loading="lazy"
               decoding="async"

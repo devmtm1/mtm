@@ -47,16 +47,13 @@ describe('HeroSection', () => {
     })) as unknown as typeof window.matchMedia;
   });
 
-  it('sans publicité, montre la vidéo seule : le titre reste dans la page mais aucun texte ne la recouvre', () => {
+  it('sans publicité, garde la vidéo habituelle et le texte du bandeau', () => {
     const { container } = rendre();
-    const titre = screen.getByRole('heading', { level: 1 });
-    expect(titre).toHaveTextContent('Investissez en toute confiance');
-    expect(titre).toHaveClass('sr-only');
-    // La vidéo porte déjà son propre texte : pas de bouton ni de recherche par-dessus.
-    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Investissez en toute confiance');
+    expect(screen.getByRole('link', { name: 'Demander une vérification' })).toBeInTheDocument();
     expect(screen.queryByRole('region', { name: 'Publicités et promotions' })).not.toBeInTheDocument();
-    // L'image fixe (tirée de la vidéo) est là d'emblée ; la vidéo se monte ensuite, au repos de la page.
-    expect(container.querySelector('img[src="/baniere-poster.jpg"]')).not.toBeNull();
+    // L'image fixe est là d'emblée ; la vidéo se monte ensuite, au repos de la page.
+    expect(container.querySelector('img[src="/hero-poster.jpg"]')).not.toBeNull();
   });
 
   it('avec des publicités en ligne, elles remplacent la vidéo et le texte du bandeau', () => {
@@ -67,7 +64,7 @@ describe('HeroSection', () => {
     expect(screen.getByRole('img', { name: 'Promotion de rentrée' })).toBeInTheDocument();
     expect(screen.getByText('Frais de dossier offerts')).toBeInTheDocument();
     expect(container.querySelector('video')).toBeNull();
-    expect(container.querySelector('img[src="/baniere-poster.jpg"]')).toBeNull();
+    expect(container.querySelector('img[src="/hero-poster.jpg"]')).toBeNull();
     // Le titre de la page reste, mais invisible : il ne doit pas masquer l'affiche.
     expect(screen.getByRole('heading', { level: 1 })).toHaveClass('sr-only');
     expect(screen.queryByRole('link', { name: 'Demander une vérification' })).not.toBeInTheDocument();
