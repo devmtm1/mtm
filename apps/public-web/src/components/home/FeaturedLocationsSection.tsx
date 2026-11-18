@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Home, KeyRound } from 'lucide-react';
+import { Home } from 'lucide-react';
 import { useLocationsCatalog } from '../../hooks/useLocations';
 import { LocationCard } from '../locations/LocationCard';
 import { FEATURED_GRID } from '../terrains/terrain-grid';
@@ -23,9 +23,8 @@ export function FeaturedLocationsSection() {
   // dernière ligne (4 annonces → 3).
   const items = data ? data.items.slice(0, data.items.length < 3 ? data.items.length : data.items.length - (data.items.length % 3)) : [];
 
-  // Aucune annonce à la une (ou API indisponible) : on ne montre pas de grille vide, mais la location reste mise en avant
-  // par un bandeau qui mène à la page Locations.
-  if (!loading && (error || items.length === 0)) return <BandeauLocations />;
+  // Aucune annonce à la une (ou API indisponible) : la section disparaît, la page Locations explique déjà l'absence d'annonces.
+  if (!loading && (error || items.length === 0)) return null;
 
   return (
     <section aria-label="Locations" className="bg-gradient-to-b from-mtm-primary-subtle/70 to-transparent">
@@ -86,27 +85,5 @@ function ProprietaireInvitation() {
         Confier mon bien
       </LinkButton>
     </div>
-  );
-}
-
-/** Quand aucune annonce n'est à la une : un appel à découvrir toutes les locations, plutôt que rien. */
-function BandeauLocations() {
-  return (
-    <section aria-label="Nos locations" className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-12">
-      <div className="flex flex-col items-start gap-4 rounded-3xl bg-gradient-to-r from-mtm-primary-dark to-mtm-primary p-6 text-white shadow-card-hover sm:flex-row sm:items-center sm:justify-between sm:p-8">
-        <div className="flex items-start gap-4">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/15">
-            <KeyRound className="h-6 w-6" aria-hidden="true" />
-          </span>
-          <div>
-            <h2 className="font-display text-xl font-bold sm:text-2xl">Nos locations</h2>
-            <p className="mt-1 max-w-xl text-sm text-white/85 sm:text-base">Appartements, villas et studios gérés par MTM : découvrez toutes les annonces disponibles.</p>
-          </div>
-        </div>
-        <LinkButton to={ROUTES.locations} variant="accent" className="w-full shrink-0 sm:w-auto">
-          Voir les locations
-        </LinkButton>
-      </div>
-    </section>
   );
 }

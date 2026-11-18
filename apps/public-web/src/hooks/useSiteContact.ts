@@ -1,4 +1,5 @@
 import { useContentBlocks } from './useContentBlocks';
+import { afficherNumero, NUMEROS_MTM } from '../utils/numeros';
 
 /**
  * Coordonnées de l'entreprise, administrables depuis le back-office
@@ -8,6 +9,8 @@ import { useContentBlocks } from './useContentBlocks';
 export interface SiteContact {
   adresse: string;
   telephone: string;
+  /** Tous les numéros à appeler, dans l'ordre où ils sont proposés : le visiteur choisit celui qu'il veut. */
+  telephones: string[];
   email: string;
   /** Numéro WhatsApp au format international sans « + » (ex. 221770000000). */
   whatsapp: string;
@@ -28,7 +31,8 @@ export interface SiteContact {
 
 const FALLBACK: SiteContact = {
   adresse: 'Malibou, Cité Dalal Diam, non loin de l’hôpital Dalal Diam, Dakar',
-  telephone: '+221 78 366 26 51',
+  telephone: afficherNumero(NUMEROS_MTM[0]),
+  telephones: NUMEROS_MTM,
   email: 'contact@mtm-immobilier.sn',
   whatsapp: '221783662651',
   whatsappDemarches: '221771551810',
@@ -59,10 +63,15 @@ export function useSiteContact(): SiteContact {
     data?.find((block) => block.key === key)?.content?.trim() || fallback;
 
   const whatsapp = get('contact.whatsapp', FALLBACK.whatsapp);
+  const telephone = get('contact.telephone', FALLBACK.telephone);
+  // Un numéro saisi au back-office qui ne figure pas dans la liste s'y ajoute en tête ; sinon la liste officielle reste telle quelle.
+  const chiffres = (valeur: string): string => valeur.replace(/\D/g, '').replace(/^221/, '');
+  const telephones = NUMEROS_MTM.some((numero) => chiffres(numero) === chiffres(telephone)) ? NUMEROS_MTM : [telephone, ...NUMEROS_MTM];
 
   return {
     adresse: get('contact.adresse', FALLBACK.adresse),
-    telephone: get('contact.telephone', FALLBACK.telephone),
+    telephone,
+    telephones,
     email: get('contact.email', FALLBACK.email),
     whatsapp,
     whatsappDemarches: get('contact.whatsapp.demarches', whatsapp),

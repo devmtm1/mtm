@@ -22,6 +22,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/auth-context-store';
 import { useClientData } from '../../contexts/client-data-store';
 import { toTelHref, useSiteContact } from '../../hooks/useSiteContact';
+import { surClicAppel } from '../../components/contact/choix-numero-store';
 import { usePageMetadata } from '../../hooks/usePageMetadata';
 import { useProfilClient } from '../../hooks/useProfilClient';
 import { ClientCard, ClientPageHeader, ProgressBar, StatTile } from '../../components/client/shell/ClientUi';
@@ -272,7 +273,7 @@ export function ClientHomePage() {
               )}
             </p>
             <ul className="mt-3 grid grid-cols-3 gap-2">
-              <ContactTile href={toTelHref(contact.telephone)} icon={Phone} label="Appeler" tone="text-mtm-success" />
+              <ContactTile href={toTelHref(contact.telephone)} icon={Phone} label="Appeler" tone="text-mtm-success" appel />
               <ContactTile href={`https://wa.me/${contact.whatsapp}`} icon={MessageCircle} label="WhatsApp" tone="text-mtm-success" external />
               <ContactTile href={`mailto:${contact.email}`} icon={Mail} label="E-mail" tone="text-mtm-primary" />
             </ul>
@@ -321,12 +322,13 @@ function EspaceTile({ to, icon: Icon, label, detail, alerte = false }: EspacePro
   );
 }
 
-function ContactTile({ href, icon: Icon, label, tone, external = false }: { href: string; icon: LucideIcon; label: string; tone: string; external?: boolean }) {
+function ContactTile({ href, icon: Icon, label, tone, external = false, appel = false }: { href: string; icon: LucideIcon; label: string; tone: string; external?: boolean; appel?: boolean }) {
   return (
     <li>
       <a
         href={href}
         {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+        {...(appel ? { onClick: surClicAppel } : {})}
         className="flex flex-col items-center gap-1.5 rounded-2xl border border-mtm-border bg-mtm-bg px-2 py-3 text-xs font-semibold text-mtm-text transition-transform active:scale-95"
       >
         <Icon className={`h-5 w-5 ${tone}`} aria-hidden="true" />

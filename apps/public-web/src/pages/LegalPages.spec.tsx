@@ -7,6 +7,7 @@ vi.mock('../hooks/useSiteContact', () => ({
   useSiteContact: () => ({
     adresse: 'Dakar, Sénégal',
     telephone: '+221 78 000 00 00',
+    telephones: ['780000000', '770000000'],
     email: 'contact@exemple.sn',
     whatsapp: '221780000000',
     whatsappDemarches: '221780000000',

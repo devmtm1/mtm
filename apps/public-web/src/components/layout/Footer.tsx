@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { ChevronDown, Facebook, Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
 import { ROUTES } from '../../routes';
 import { toMapsHref, toTelHref, useSiteContact } from '../../hooks/useSiteContact';
+import { surClicAppel } from '../contact/choix-numero-store';
 import { TikTokIcon } from '../ui/TikTokIcon';
 
 const SERVICE_LINKS = [
@@ -65,9 +66,9 @@ export function Footer() {
   const accueil = useLocation().pathname === ROUTES.home;
 
   const contactActions = [
-    { href: toTelHref(contact.telephone), icon: Phone, label: 'Appeler', external: false },
-    { href: `https://wa.me/${contact.whatsapp}`, icon: MessageCircle, label: 'WhatsApp', external: true },
-    { href: `mailto:${contact.email}`, icon: Mail, label: 'E-mail', external: false },
+    { href: toTelHref(contact.telephone), icon: Phone, label: 'Appeler', external: false, appel: true },
+    { href: `https://wa.me/${contact.whatsapp}`, icon: MessageCircle, label: 'WhatsApp', external: true, appel: false },
+    { href: `mailto:${contact.email}`, icon: Mail, label: 'E-mail', external: false, appel: false },
   ];
 
   return (
@@ -141,11 +142,12 @@ export function Footer() {
           <div className="order-first sm:order-none sm:col-span-2 lg:col-span-1 lg:col-start-4 lg:row-start-1">
             <h2 className="hidden text-sm font-semibold uppercase tracking-wide text-white/70 sm:block sm:relative sm:pb-3 sm:after:absolute sm:after:bottom-0 sm:after:left-0 sm:after:h-0.5 sm:after:w-8 sm:after:rounded-full sm:after:bg-mtm-accent">Contact</h2>
             <ul className={`grid-cols-3 gap-2 sm:mt-5 sm:flex sm:flex-col sm:gap-3 ${accueil ? 'hidden sm:flex' : 'grid'}`}>
-              {contactActions.map(({ href, icon: Icon, label, external }) => (
+              {contactActions.map(({ href, icon: Icon, label, external, appel }) => (
                 <li key={label}>
                   <a
                     href={href}
                     {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                    {...(appel ? { onClick: surClicAppel } : {})}
                     className="group flex min-h-11 flex-col items-center justify-center gap-1 rounded-md border border-white/20 bg-white/5 px-2 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/10 hover:text-mtm-accent sm:min-h-0 sm:flex-row sm:justify-start sm:gap-3 sm:border-0 sm:bg-transparent sm:p-0 sm:text-sm sm:font-normal sm:text-white/85 sm:hover:bg-transparent sm:hover:text-mtm-accent"
                   >
                     <span className="inline-flex shrink-0 transition-colors sm:h-8 sm:w-8 sm:items-center sm:justify-center sm:rounded-lg sm:bg-white/10">
@@ -153,7 +155,7 @@ export function Footer() {
                     </span>
                     <span className="sm:hidden">{label}</span>
                     <span className="hidden sm:inline">
-                      {label === 'Appeler' ? contact.telephone : label === 'E-mail' ? contact.email : 'WhatsApp'}
+                      {label === 'Appeler' ? 'Appeler MTM' : label === 'E-mail' ? contact.email : 'WhatsApp'}
                     </span>
                   </a>
                 </li>

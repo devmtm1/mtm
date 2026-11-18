@@ -81,11 +81,12 @@ describe('FeaturedLocationsSection', () => {
     expect(screen.queryAllByText('À la une')).toHaveLength(0);
   });
 
-  it('sans annonce à la une, ne montre pas de grille mais garde un accès aux locations', () => {
+  it('disparaît quand aucune annonce n’est à la une', () => {
     etat.items = [];
     afficher();
     expect(screen.queryByRole('heading', { name: 'Locations à la une' })).toBeNull();
-    expect(screen.getByRole('link', { name: 'Voir les locations' }).getAttribute('href')).toBe('/locations');
+    expect(screen.queryByRole('link', { name: 'Voir les locations' })).toBeNull();
+    expect(screen.queryByText('Nos locations')).toBeNull();
   });
 
   it('invite les propriétaires à confier leur bien', () => {

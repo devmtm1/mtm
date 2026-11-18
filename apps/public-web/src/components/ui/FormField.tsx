@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 interface FormFieldProps {
-  label: string;
+  label: ReactNode;
   htmlFor: string;
   error?: string;
   required?: boolean;

@@ -2,6 +2,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { WhatsAppButton } from './WhatsAppButton';
+import { ChoixNumero } from '../contact/ChoixNumero';
 import { ScrollManager } from './ScrollManager';
 import { RouteAnnouncer } from './RouteAnnouncer';
 import { PageTransition } from './PageTransition';
@@ -11,6 +12,7 @@ import { QuickActionsFab } from '../mobile/QuickActionsFab';
 import { showsQuickActions, showsTabBar } from '../mobile/mobile-routes';
 import { useIsMobile } from '../../hooks/useMediaQuery';
 import { useSuiviVisites } from '../../hooks/useSuiviVisites';
+import { ROUTES } from '../../routes';
 
 const MAIN_ID = 'contenu-principal';
 
@@ -23,6 +25,8 @@ export function Layout() {
   const isMobile = useIsMobile();
   const tabBar = isMobile && showsTabBar(pathname);
   useSuiviVisites();
+  // Connexion à l'espace client sur ordinateur : une page pleine hauteur, sans l'en-tête ni le pied de page du site.
+  const pleinePage = pathname === ROUTES.clientLogin && !isMobile;
 
   return (
     <div className="flex min-h-screen flex-col bg-mtm-bg text-mtm-text">
@@ -37,7 +41,7 @@ export function Layout() {
         Aller au contenu principal
       </a>
 
-      {isMobile ? <MobileAppBar /> : <Header />}
+      {isMobile ? <MobileAppBar /> : pleinePage ? null : <Header />}
       {/* `tabIndex={-1}` rend le conteneur focusable par programme : c'est la
           cible du focus après chaque changement de route (voir RouteAnnouncer). */}
       <main id={MAIN_ID} tabIndex={-1} className="flex-1 outline-none">
@@ -47,10 +51,16 @@ export function Layout() {
       </main>
       {/* Le pied de page reste sur mobile : la barre d'onglets, fixe, ne doit pas
           en recouvrir le bas. Le fond de la réserve est celui du pied de page. */}
-      <div className={isMobile ? 'bg-mtm-primary-dark pb-[calc(5.5rem+env(safe-area-inset-bottom))]' : undefined}>
-        <Footer />
-      </div>
-      <WhatsAppButton />
+      {pathname === ROUTES.clientLogin ? (
+        // Connexion : pas de pied de page. Sur mobile, une réserve laisse le bas de la page au-dessus de la barre d'onglets.
+        isMobile && <div aria-hidden="true" className="h-[calc(5.5rem+env(safe-area-inset-bottom))] bg-mtm-surface" />
+      ) : (
+        <div className={isMobile ? 'bg-mtm-primary-dark pb-[calc(5.5rem+env(safe-area-inset-bottom))]' : undefined}>
+          <Footer />
+        </div>
+      )}
+      {!pleinePage && <WhatsAppButton />}
+      <ChoixNumero />
       {tabBar && <MobileTabBar />}
       {isMobile && showsQuickActions(pathname) && <QuickActionsFab />}
       <RouteAnnouncer mainId={MAIN_ID} />

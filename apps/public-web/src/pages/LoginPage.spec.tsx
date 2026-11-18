@@ -141,3 +141,16 @@ describe('LoginPage : la porte', () => {
     expect(screen.getByLabelText(/code de vérification/i)).toBeTruthy();
   });
 });
+
+describe('LoginPage : bloc propriétaire', () => {
+  it('propose de confier un bien, par le formulaire ou par WhatsApp', () => {
+    afficher(async () => ({ requiresTwoFactor: false, accessToken: 't', user: CLIENT }));
+    expect(screen.getByRole('heading', { name: 'Vous avez un bien à confier ?' })).toBeTruthy();
+    const confier = screen.getAllByRole('link', { name: 'Confier mon bien' });
+    expect(confier.length).toBeGreaterThan(0);
+    expect(confier.every((lien) => lien.getAttribute('href') === '/gestion-locative#confier')).toBe(true);
+    const liens = screen.getAllByRole('link', { name: /écrire sur whatsapp/i }).map((lien) => decodeURIComponent(lien.getAttribute('href') ?? ''));
+    expect(liens.every((lien) => lien.startsWith('https://wa.me/'))).toBe(true);
+    expect(liens.some((lien) => lien.includes('confier mon bien en gestion locative'))).toBe(true);
+  });
+});

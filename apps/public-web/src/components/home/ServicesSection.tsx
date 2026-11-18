@@ -50,9 +50,9 @@ export function ServicesSection() {
       />
 
       {video ? (
-        <div className="mt-4 grid items-center gap-6 lg:mt-10 lg:grid-cols-[1.45fr_1fr] lg:gap-10">
+        <div className="mt-4 grid grid-cols-1 items-center gap-6 lg:mt-10 lg:grid-cols-[1.45fr_1fr] lg:gap-10">
           <VideoPresentation video={video} titre="Découvrez MTM Immobilier en vidéo" />
-          <div>
+          <div className="min-w-0">
             <ul className="flex flex-col gap-2.5" aria-label="Nos services">
               {loading
                 ? [0, 1, 2, 3].map((index) => (

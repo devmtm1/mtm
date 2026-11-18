@@ -50,7 +50,8 @@ describe('HeroSection', () => {
   it('sans publicité, garde la vidéo habituelle et le texte du bandeau', () => {
     const { container } = rendre();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Investissez en toute confiance');
-    expect(screen.getByRole('link', { name: 'Demander une vérification' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Découvrir nos services' }).getAttribute('href')).toBe('/nos-services');
+    expect(screen.queryByRole('link', { name: 'Demander une vérification' })).not.toBeInTheDocument();
     expect(screen.queryByRole('region', { name: 'Publicités et promotions' })).not.toBeInTheDocument();
     // L'image fixe est là d'emblée ; la vidéo se monte ensuite, au repos de la page.
     expect(container.querySelector('img[src="/hero-poster.jpg"]')).not.toBeNull();

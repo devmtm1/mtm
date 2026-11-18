@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { fieldInputClass } from '../ui/FormField';
 
@@ -8,6 +9,9 @@ interface PasswordInputProps {
   onChange: (value: string) => void;
   autoComplete: 'current-password' | 'new-password';
   required?: boolean;
+  placeholder?: string;
+  /** Une icône à gauche du champ. */
+  icone?: ReactNode;
 }
 
 /**
@@ -15,11 +19,16 @@ interface PasswordInputProps {
  * téléphone, une faute de frappe est vite faite et invisible. Le mot de passe
  * redevient masqué dès que le champ n'est plus affiché.
  */
-export function PasswordInput({ id, value, onChange, autoComplete, required = true }: PasswordInputProps) {
+export function PasswordInput({ id, value, onChange, autoComplete, required = true, placeholder, icone }: PasswordInputProps) {
   const [visible, setVisible] = useState(false);
 
   return (
     <div className="relative">
+      {icone && (
+        <span aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-mtm-muted lg:hidden [&>svg]:h-[18px] [&>svg]:w-[18px]">
+          {icone}
+        </span>
+      )}
       <input
         id={id}
         type={visible ? 'text' : 'password'}
@@ -27,7 +36,8 @@ export function PasswordInput({ id, value, onChange, autoComplete, required = tr
         autoComplete={autoComplete}
         autoCapitalize="none"
         spellCheck={false}
-        className={`${fieldInputClass} pr-12`}
+        placeholder={placeholder}
+        className={`${fieldInputClass} pr-12 ${icone ? 'pl-10 sm:pl-10 lg:pl-3.5' : ''}`}
         value={value}
         onChange={(event) => onChange(event.target.value)}
       />

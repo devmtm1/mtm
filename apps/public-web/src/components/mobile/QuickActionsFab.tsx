@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Check, Facebook, MapPin, MessageCircle, Phone, Plus, type LucideIcon } from 'lucide-react';
 import { toMapsHref, toTelHref, useSiteContact } from '../../hooks/useSiteContact';
+import { surClicAppel } from '../contact/choix-numero-store';
 import { TikTokIcon } from '../ui/TikTokIcon';
 
 interface Action {
@@ -15,6 +16,8 @@ interface Action {
   tone: string;
   href?: string;
   external?: boolean;
+  /** Bouton d'appel : le clic ouvre le choix du numéro. */
+  appel?: boolean;
   /** Message affiché un instant après le toucher (ex. « Ouverture de WhatsApp… »). */
   toast?: string;
 }
@@ -132,7 +135,7 @@ export function QuickActionsFab() {
   }, [toast]);
 
   const actions: Action[] = [
-    { key: 'call', label: 'Appeler', short: 'Appeler', icon: Phone, tone: 'bg-mtm-success', href: toTelHref(contact.telephone) },
+    { key: 'call', label: 'Appeler', short: 'Appeler', icon: Phone, tone: 'bg-mtm-success', href: toTelHref(contact.telephone), appel: true },
     {
       key: 'whatsapp',
       label: 'WhatsApp',
@@ -235,7 +238,8 @@ export function QuickActionsFab() {
                         href={action.href}
                         aria-label={action.label}
                         {...(action.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                        onClick={() => {
+                        onClick={(event) => {
+                          if (action.appel) surClicAppel(event);
                           if (action.toast) setToast(action.toast);
                           close();
                         }}

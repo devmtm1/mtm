@@ -19,6 +19,8 @@ import {
 import { ROUTES } from '../../routes';
 import { useAuth } from '../../contexts/auth-context-store';
 import { toTelHref, useSiteContact } from '../../hooks/useSiteContact';
+import { surClicAppel } from '../contact/choix-numero-store';
+
 import { useFavorites } from '../../hooks/useFavorites';
 import { InstallAppRow } from './InstallAppRow';
 import { MobileSheet } from './MobileSheet';
@@ -121,6 +123,7 @@ export function MobileMenuSheet({ onClose }: { onClose: () => void }) {
       <div className="grid grid-cols-3 gap-2">
         <a
           href={toTelHref(contact.telephone)}
+          onClick={surClicAppel}
           className="flex flex-col items-center gap-1.5 rounded-2xl border border-mtm-border bg-mtm-surface px-2 py-3 text-xs font-semibold text-mtm-text active:scale-95"
         >
           <Phone className="h-5 w-5 text-mtm-success" aria-hidden="true" />
