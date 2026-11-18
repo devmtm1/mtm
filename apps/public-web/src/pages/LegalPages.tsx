@@ -1,3 +1,4 @@
+import { afficherNumero } from '../utils/numeros';
 import type { ReactNode } from 'react';
 import { PageIntro } from '../components/layout/PageIntro';
 import { useSiteContact } from '../hooks/useSiteContact';
@@ -45,7 +46,7 @@ export function MentionsLegalesPage() {
           <br />
           Adresse : {contact.adresse}
           <br />
-          Téléphone : {contact.telephone}
+          Téléphone : {contact.telephones.map(afficherNumero).join(' · ')}
           <br />
           E-mail : {contact.email}
         </p>

@@ -1,6 +1,8 @@
 import { CheckCircle2, MessageCircle, Phone } from 'lucide-react';
 import { useContentBlocks } from '../../hooks/useContentBlocks';
 import { toTelHref, useSiteContact } from '../../hooks/useSiteContact';
+import { surClicAppel } from '../contact/choix-numero-store';
+
 import { formatMoney } from '../../utils/format';
 import { ClientCard } from './shell/ClientUi';
 
@@ -52,6 +54,7 @@ export function CommentRegler({ reference, montant }: { reference: string; monta
         </a>
         <a
           href={toTelHref(contact.telephone)}
+          onClick={surClicAppel}
           className="col-span-2 inline-flex items-center justify-center gap-2 rounded-xl border border-mtm-border px-4 py-3 text-sm font-semibold text-mtm-text transition-transform active:scale-[0.98] sm:col-span-1"
         >
           <Phone className="h-4 w-4 text-mtm-primary" aria-hidden="true" />

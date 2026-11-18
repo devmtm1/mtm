@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { MessageCircle, Phone } from 'lucide-react';
 import { toTelHref, useSiteContact } from '../../hooks/useSiteContact';
+import { surClicAppel } from '../contact/choix-numero-store';
+
 
 interface DetailActionBarProps {
   /** Petit libellé au-dessus du prix (« Prix public », « Loyer / mois »). Sans prix, l'action prend toute la largeur. */
@@ -31,6 +33,7 @@ export function DetailActionBar({ label, price, children, whatsappHref }: Detail
         )}
         <a
           href={toTelHref(contact.telephone)}
+          onClick={surClicAppel}
           aria-label="Appeler MTM Immobilier"
           className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-mtm-border bg-mtm-surface text-mtm-success active:scale-90"
         >

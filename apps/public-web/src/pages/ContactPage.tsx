@@ -6,7 +6,8 @@ import { useEditableContent } from '../hooks/useEditableContent';
 import { BandeauEngagements } from '../components/ui/BandeauEngagements';
 import { ContactForm } from '../components/contact/ContactForm';
 import { TerrainMap } from '../components/terrains/TerrainMap';
-import { toMapsHref, toTelHref, useSiteContact } from '../hooks/useSiteContact';
+import { toMapsHref, useSiteContact } from '../hooks/useSiteContact';
+import { afficherNumero, lienAppel } from '../utils/numeros';
 import { usePageMetadata } from '../hooks/usePageMetadata';
 
 /** Photo du bandeau par défaut, tirée de la maquette ; le back-office peut la remplacer (Contenus du site › Contact). */
@@ -69,9 +70,15 @@ export function ContactPage() {
               <p className="text-sm text-mtm-muted">{contact.adresse}</p>
             </LigneCoordonnee>
             <LigneCoordonnee icone={Phone} titre="Téléphone">
-              <a href={toTelHref(contact.telephone)} className="inline-flex min-h-10 items-center text-sm text-mtm-muted transition-colors hover:text-mtm-primary">
-                {contact.telephone}
-              </a>
+              <ul className="flex flex-col">
+                {contact.telephones.map((numero) => (
+                  <li key={numero}>
+                    <a href={lienAppel(numero)} className="inline-flex min-h-10 items-center text-sm text-mtm-muted transition-colors hover:text-mtm-primary">
+                      {afficherNumero(numero)}
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </LigneCoordonnee>
             <LigneCoordonnee icone={Mail} titre="E-mail">
               <a href={`mailto:${contact.email}`} className="inline-flex min-h-10 items-center break-all text-sm text-mtm-muted transition-colors hover:text-mtm-primary">

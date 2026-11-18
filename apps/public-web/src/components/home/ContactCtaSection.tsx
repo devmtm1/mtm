@@ -3,6 +3,8 @@ import { ContactForm } from '../contact/ContactForm';
 import { SectionHeading } from '../ui/SectionHeading';
 import { LinkButton } from '../ui/LinkButton';
 import { toTelHref, useSiteContact } from '../../hooks/useSiteContact';
+import { surClicAppel } from '../contact/choix-numero-store';
+
 import { ROUTES } from '../../routes';
 
 export function ContactCtaSection() {
@@ -24,12 +26,13 @@ export function ContactCtaSection() {
           <div className="grid grid-cols-3 gap-2 md:flex md:flex-col md:gap-3">
             <a
               href={toTelHref(contact.telephone)}
+              onClick={surClicAppel}
               className="flex flex-col items-center gap-1.5 rounded-2xl border border-mtm-border bg-mtm-bg px-2 py-3 text-xs font-semibold text-mtm-text transition-colors active:scale-95 md:flex-row md:gap-3 md:rounded-md md:bg-transparent md:px-4 md:text-sm md:hover:border-mtm-primary md:hover:text-mtm-primary"
             >
               <Phone className="h-5 w-5 shrink-0 text-mtm-success md:h-4 md:w-4 md:text-mtm-primary" aria-hidden="true" />
               <span className="truncate">
                 <span className="md:hidden">Appeler</span>
-                <span className="hidden md:inline">Appeler {contact.telephone}</span>
+                <span className="hidden md:inline">Appeler MTM</span>
               </span>
             </a>
             <a
