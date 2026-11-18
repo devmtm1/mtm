@@ -28,6 +28,76 @@
 }
 
 @layer components {
+  /* Boutons animés de l'accueil : ils se soulèvent au survol et s'enfoncent au toucher ; une lueur les traverse en boucle (chacun
+     à son tour), la flèche du bouton « services » invite à cliquer et un halo pulse autour de lui. Ce sont de petits mouvements
+     sans déplacement de page : ils restent actifs même avec « réduire les animations », sinon le réglage de Windows les éteint
+     chez beaucoup de visiteurs sans qu'ils le sachent. */
+  .btn-anime {
+    transition: transform 200ms ease, box-shadow 200ms ease, background-color 200ms ease, color 200ms ease;
+  }
+  .btn-anime:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 26px -10px rgba(10, 33, 66, 0.6);
+  }
+  .btn-anime:active {
+    transform: translateY(0) scale(0.97);
+  }
+  .btn-brillance {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .btn-brillance::after {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 50%;
+    z-index: -1;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+    transform: translateX(-130%) skewX(-18deg);
+    animation: btn-brillance 3.6s ease-in-out var(--btn-delai, 1s) infinite;
+    pointer-events: none;
+  }
+  .btn-fleche {
+    animation: btn-fleche 1.4s ease-in-out infinite;
+  }
+  .btn-anime:hover .btn-fleche {
+    animation: none;
+    transform: translateX(6px);
+  }
+  .btn-halo {
+    animation: btn-halo 2.2s ease-out infinite;
+  }
+  .btn-anime:hover.btn-halo {
+    animation: none;
+  }
+  @keyframes btn-brillance {
+    0%,
+    55% {
+      transform: translateX(-130%) skewX(-18deg);
+    }
+    100% {
+      transform: translateX(320%) skewX(-18deg);
+    }
+  }
+  @keyframes btn-fleche {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    50% {
+      transform: translateX(5px);
+    }
+  }
+  @keyframes btn-halo {
+    0% {
+      box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.65);
+    }
+    70%,
+    100% {
+      box-shadow: 0 0 0 12px rgba(255, 255, 255, 0);
+    }
+  }
   /* Carte à deux faces (FlipCard) : la scène donne la profondeur, la pièce tourne de 180° sur l'axe vertical, chaque face cache
      son dos. Hauteur fixe : rien ne saute pendant le retournement. */
   .flip-scene {

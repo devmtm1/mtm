@@ -17,6 +17,7 @@ import { CATEGORIES_CATALOGUE, adresseCategorie } from '../../utils/categoriesCa
 import { useTerrainsCatalog } from '../../hooks/useTerrainsCatalog';
 import { useLocationsCatalog } from '../../hooks/useLocations';
 import { FeaturedLocationsSection } from './FeaturedLocationsSection';
+import { BoutonServices } from './BoutonServices';
 import { useProgrammes } from '../../hooks/useProgrammes';
 import { ProgrammeCard } from '../programmes/ProgrammeCard';
 import { SEUIL_SECTION_PROGRAMMES } from '../../utils/programmes';
@@ -166,7 +167,11 @@ export function MobileHome() {
         </div>
       </section>
 
-      <ul className={`mt-5 grid grid-cols-4 gap-3 px-4`} aria-label="Catégories">
+      <div className="mt-5 px-4">
+        <BoutonServices />
+      </div>
+
+      <ul className="mt-4 grid grid-cols-4 gap-3 px-4" aria-label="Catégories">
         {CATEGORIES.map(({ label, to, icon: Icon, tone, box, mise }) => {
           const inner = (
             <>

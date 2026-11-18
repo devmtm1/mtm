@@ -1,3 +1,4 @@
+import { ArrowRight } from 'lucide-react';
 import { ROUTES } from '../../routes';
 import { LinkButton } from '../ui/LinkButton';
 import { useHeroContent } from './hero-content';
@@ -56,14 +57,16 @@ export function HeroSection() {
             déjà « voir nos biens » ; seule la vérification reste ici. */}
         <div className="flex w-full flex-wrap gap-3 sm:w-auto">
           {/* La location d'abord : c'est l'activité principale de MTM. */}
-          <LinkButton to={ROUTES.locations} variant="accent" className="hidden sm:inline-flex">
+          <LinkButton to={ROUTES.locations} variant="accent" className="btn-anime btn-brillance hidden sm:inline-flex" style={{ ['--btn-delai' as string]: '0.6s' }}>
             Voir les locations
           </LinkButton>
-          <LinkButton to={ROUTES.catalog} variant="onDarkOutline" className="hidden sm:inline-flex">
+          <LinkButton to={ROUTES.catalog} variant="onDarkOutline" className="btn-anime btn-brillance hidden sm:inline-flex" style={{ ['--btn-delai' as string]: '1.4s' }}>
             {ctaLabel}
           </LinkButton>
-          <LinkButton to={ROUTES.demarches} variant="onDarkOutline" className="w-full sm:w-auto">
-            Demander une vérification
+          {/* Le chemin vers l'offre complète : blanc plein, le plus lumineux des trois, avec une flèche qui invite au clic. */}
+          <LinkButton to={ROUTES.services} variant="onDark" className="btn-anime btn-brillance btn-halo w-full gap-2 sm:w-auto" style={{ ['--btn-delai' as string]: '2.2s' }}>
+            Découvrir nos services
+            <ArrowRight className="btn-fleche h-4 w-4" aria-hidden="true" />
           </LinkButton>
         </div>
       </div>
