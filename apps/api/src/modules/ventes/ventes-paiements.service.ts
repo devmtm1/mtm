@@ -1,4 +1,9 @@
 import {
+  CLE_DEBUT_SUIVI,
+  STATUTS_SIGNES,
+  lireDebutSuivi,
+} from '../protocoles/protocoles.regles';
+import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
@@ -132,6 +137,12 @@ export class VentesPaiementsService {
         },
         user.id,
       );
+      await this.alerterSignatureManquante(
+        id,
+        referenceDossier,
+        reponse.payment,
+        user.id,
+      );
       return reponse;
     } catch (error) {
       if (
@@ -143,6 +154,57 @@ export class VentesPaiementsService {
         );
       }
       throw error;
+    }
+  }
+
+  /**
+   * « PAIEMENT REÇU – SIGNATURE MANQUANTE » : un paiement vient d'être saisi alors qu'aucun protocole du dossier n'est signé.
+   * Un paiement ne vaut jamais protocole signé : la Direction est prévenue tout de suite. Sans effet sur l'enregistrement.
+   */
+  private async alerterSignatureManquante(
+    dossierId: string,
+    reference: string | null,
+    paiement: { id: string; montant: unknown },
+    auteurId: string,
+  ): Promise<void> {
+    try {
+      // Un dossier ouvert avant le début du suivi (réglage « protocoles.suiviDepuis ») ne déclenche pas d'alerte.
+      const debut = lireDebutSuivi(
+        (
+          await this.prisma.systemSetting.findUnique({
+            where: { key: CLE_DEBUT_SUIVI },
+          })
+        )?.value,
+      );
+      if (debut) {
+        const dossier = await this.prisma.dossierVente.findUnique({
+          where: { id: dossierId },
+          select: { createdAt: true },
+        });
+        if (dossier && dossier.createdAt < debut) return;
+      }
+      const signes = await this.prisma.protocoleDossier.count({
+        where: {
+          dossierVenteId: dossierId,
+          statut: { in: [...STATUTS_SIGNES] },
+        },
+      });
+      if (signes > 0) return;
+      await this.notifications.notifierPermission(
+        'protocoles:valider',
+        {
+          type: 'paiement_sans_signature',
+          titre: `PAIEMENT REÇU – SIGNATURE MANQUANTE — dossier ${reference ?? dossierId}`,
+          message: `${Number(paiement.montant).toLocaleString('fr-FR')} FCFA enregistrés sans protocole signé.`,
+          lien: `/protocoles?filtre=sans_signature`,
+          entityType: 'Paiement',
+          entityId: paiement.id,
+          dedupeKey: `paiement-sans-signature:${paiement.id}`,
+        },
+        auteurId,
+      );
+    } catch {
+      // Une alerte non envoyée ne doit jamais faire échouer l'enregistrement du paiement.
     }
   }
 

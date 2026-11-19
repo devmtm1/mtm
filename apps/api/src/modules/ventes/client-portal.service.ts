@@ -12,6 +12,7 @@ import { ContactService } from '../contact/contact.service';
 import { CreateClientAccountDto } from './dto/create-client-account.dto';
 import { CreateClientDemandeDto } from './dto/create-client-demande.dto';
 import { VentesService } from './ventes.service';
+import { etapeClient } from '../protocoles/protocoles.regles';
 
 /**
  * Espace client (section 4 CDC) : ouverture du compte rattaché à un prospect,
@@ -240,6 +241,18 @@ export class ClientPortalService {
             statut: true,
           },
         },
+        protocoles: {
+          where: { statut: { not: 'annule' } },
+          orderBy: { createdAt: 'asc' },
+          select: {
+            id: true,
+            titre: true,
+            type: true,
+            statut: true,
+            dateEnvoi: true,
+            dateReceptionSignee: true,
+          },
+        },
         documents: {
           where: { isPublic: true },
           select: {
@@ -265,6 +278,11 @@ export class ClientPortalService {
         0,
       ),
       prixVente: dossier.prixVente === null ? null : Number(dossier.prixVente),
+      // Les statuts internes (vérification, validation Direction, motifs) ne sortent pas : le client voit une étape simple.
+      protocoles: dossier.protocoles.flatMap(({ statut, ...protocole }) => {
+        const etape = etapeClient(statut);
+        return etape ? [{ ...protocole, ...etape }] : [];
+      }),
       echeances: dossier.echeances.map((echeance) => ({
         ...echeance,
         montantPrevu: Number(echeance.montantPrevu),

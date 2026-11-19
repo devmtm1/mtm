@@ -79,6 +79,15 @@ Tables — original : 9 / restauré : 9
 ✅ Test de restauration réussi : 9 tables, structure identique.
 ```
 
+**Protocoles et signatures** : les tables `protocoles_dossier` et
+`protocoles_historique` sont dans la sauvegarde comme le reste de la base. Cycle
+vérifié le 19/11/2026 sur une base jetable : dump (`pg_dump -Fc`) puis
+`pg_restore` dans une base neuve → 3 protocoles, 8 lignes d'historique et
+91 tables sur 91, identiques à l'original. Les copies signées elles-mêmes sont
+des documents du dossier (Cloudinary) : leur sauvegarde relève de ce stockage ;
+la base ne garde que les références. Le contrôle hebdomadaire
+(`verify-restored-backup.sh`) vérifie désormais la présence des deux tables.
+
 Testé avec des données réelles présentes (pas une base vide) pour
 valider un cycle significatif, pas un cas dégénéré.
 

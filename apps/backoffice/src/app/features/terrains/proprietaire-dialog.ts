@@ -1,3 +1,7 @@
+import { Observable, of } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
+import { ProprietairesApiService } from '../../core/services/api/proprietaires-api.service';
+import { NotificationService } from '../../shared/services/notification.service';
 import { Component, inject } from '@angular/core';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -26,6 +30,29 @@ interface ProprietaireForm {
   urgenceNom: FormControl<string>;
   urgenceLien: FormControl<string>;
   urgenceTelephone: FormControl<string>;
+}
+
+/**
+ * Crée le propriétaire renvoyé par le dialogue, puis envoie la copie de sa pièce si elle est jointe. La fiche est créée même
+ * si le PDF ne part pas : on prévient, et il se rajoute depuis la fiche sans tout refaire.
+ */
+export function creerProprietaireAvecPiece(
+  creer: (payload: Omit<ProprietaireSummary, 'id'>) => Observable<ProprietaireSummary>,
+  api: ProprietairesApiService,
+  resultat: ProprietaireDialogResult,
+  notify: NotificationService,
+): Observable<ProprietaireSummary> {
+  return creer(resultat.payload).pipe(
+    switchMap((cree) =>
+      api.enregistrerPiece(cree.id, resultat.fichierPiece, false).pipe(
+        catchError((error: unknown) => {
+          notify.error(error, 'Propriétaire créé, mais la copie de la pièce n’a pas pu être envoyée');
+          return of(null);
+        }),
+        map(() => cree),
+      ),
+    ),
+  );
 }
 
 /** Ce que renvoie le dialogue : la fiche, plus la copie PDF de la pièce à envoyer ou à retirer. */

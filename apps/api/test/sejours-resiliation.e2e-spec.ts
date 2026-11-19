@@ -303,7 +303,7 @@ describeE2e('Séjours de courte durée et résiliation (e2e)', () => {
       nombreVoyageurs: 9,
     });
     expect(groupe.status).toBe(400);
-    expect(groupe.body.message).toMatch(/4 voyageurs au plus/);
+    expect(groupe.body.message).toMatch(/4 personnes au plus/);
     const inverse = await creerSejour({
       dateArrivee: jour(33),
       dateDepart: jour(30),

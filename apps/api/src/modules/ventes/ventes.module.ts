@@ -37,6 +37,7 @@ import { VentesReportingService } from './ventes-reporting.service';
     VentesService,
     VentesAccessService,
     VentesWorkflowService,
+    VentesDocumentsService,
     ObjectifsService,
   ],
 })

@@ -400,6 +400,13 @@ export const routes: Routes = [
           import('./features/documents/documents').then((m) => m.DocumentsPage),
       },
       {
+        path: 'protocoles',
+        title: 'Protocoles et signatures',
+        canActivate: [permissionsGuard(['protocoles:consulter'])],
+        loadComponent: () =>
+          import('./features/protocoles/protocoles').then((m) => m.ProtocolesPage),
+      },
+      {
         path: 'ventes/commissions',
         title: 'Commissions',
         canActivate: [permissionsGuard(['ventes:consulter'])],

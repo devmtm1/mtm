@@ -11,6 +11,7 @@ import {
   LucideCircleCheck,
   LucideClipboardCheck,
   LucideDynamicIcon,
+  LucideFileCheck,
   LucideFileX,
   LucideHardHat,
   LucideLandPlot,
@@ -26,6 +27,7 @@ import { catchError } from 'rxjs/operators';
 import { SessionService } from '../../core/services/session.service';
 import { NotificationsFeedService, type FeedItem } from '../../core/services/notifications-feed.service';
 import { VentesApiService } from '../../core/services/api/ventes-api.service';
+import { ProtocolesApiService, type TableauProtocoles } from '../../core/services/api/protocoles-api.service';
 import { MandatsApiService } from '../../core/services/api/mandats-api.service';
 import { TerrainsApiService } from '../../core/services/api/terrains-api.service';
 import { CrmApiService } from '../../core/services/api/crm-api.service';
@@ -51,7 +53,7 @@ const MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet'
 type Vue = 'accueil' | 'moi' | 'equipe' | 'direction';
 
 /** Un domaine d'activité : de lui dépendent les chiffres et les blocs de l'accueil. */
-type Domaine = 'ventes' | 'crm' | 'terrains' | 'mandats' | 'locatif' | 'chantiers' | 'finances';
+type Domaine = 'protocoles' | 'ventes' | 'crm' | 'terrains' | 'mandats' | 'locatif' | 'chantiers' | 'finances';
 
 /** Un chiffre de l'accueil : ce qu'on compte, une ligne d'explication, et où cliquer pour agir. */
 interface Indicateur {
@@ -61,6 +63,7 @@ interface Indicateur {
   aide: string;
   icone: LucideIcon;
   route: string;
+  queryParams?: Record<string, string>;
   /** « alerte » : quelque chose demande une action (carte rouge) ; « ok » : rien à faire (carte verte). */
   ton?: 'alerte' | 'ok';
   /** Part en pourcentage, pour l'anneau à côté du chiffre. */
@@ -101,6 +104,7 @@ export class Dashboard implements OnInit {
   private readonly session = inject(SessionService);
   private readonly feed = inject(NotificationsFeedService);
   private readonly ventesApi = inject(VentesApiService);
+  private readonly protocolesApi = inject(ProtocolesApiService);
   private readonly mandatsApi = inject(MandatsApiService);
   private readonly terrainsApi = inject(TerrainsApiService);
   private readonly crmApi = inject(CrmApiService);
@@ -123,6 +127,7 @@ export class Dashboard implements OnInit {
   protected readonly commercialId = signal<string | undefined>(undefined);
 
   private readonly canViewVentes = this.session.hasPermission('ventes:consulter');
+  private readonly canViewProtocoles = this.session.hasPermission('protocoles:consulter');
   private readonly canViewMandats = this.session.hasPermission('mandats:consulter');
   private readonly canViewTerrains = this.session.hasPermission('terrains:consulter');
   private readonly canViewCrm = this.session.hasPermission('crm:consulter');
@@ -134,11 +139,12 @@ export class Dashboard implements OnInit {
   protected readonly today = new Date();
   protected readonly monthLabel = `${MONTHS[this.today.getMonth()]} ${this.today.getFullYear()}`;
   protected readonly hasAnyModule =
-    this.canViewVentes || this.canViewMandats || this.canViewTerrains || this.canViewCrm || this.canViewLocatif || this.canViewConstruction || this.canViewFinances;
+    this.canViewVentes || this.canViewProtocoles || this.canViewMandats || this.canViewTerrains || this.canViewCrm || this.canViewLocatif || this.canViewConstruction || this.canViewFinances;
 
   /** Le fil partagé avec la cloche : lire une notification la retire des deux. */
   protected readonly feedItems = this.feed.items;
   private readonly ventesStats = signal<VenteDashboardStats | null>(null);
+  private readonly protocoleStats = signal<TableauProtocoles | null>(null);
   private readonly mandatStats = signal<MandatStats | null>(null);
   private readonly terrainStats = signal<TerrainStats | null>(null);
   private readonly crmStats = signal<ProspectStats | null>(null);
@@ -153,15 +159,16 @@ export class Dashboard implements OnInit {
   /** Les domaines de la personne, du plus important au moins important pour son métier, limités à ses droits. */
   private readonly domaines = computed<Domaine[]>(() => {
     const roles = this.session.hasPermission('rapports:administrer')
-      ? (['ventes', 'locatif', 'chantiers', 'crm', 'mandats', 'terrains', 'finances'] as Domaine[])
+      ? (['protocoles', 'ventes', 'locatif', 'chantiers', 'crm', 'mandats', 'terrains', 'finances'] as Domaine[])
       : this.session.hasRole('comptable')
-        ? (['finances', 'ventes', 'locatif', 'chantiers'] as Domaine[])
+        ? (['finances', 'ventes', 'protocoles', 'locatif', 'chantiers'] as Domaine[])
         : this.session.hasRole('responsable_gestion_locative')
           ? (['locatif', 'mandats', 'finances'] as Domaine[])
           : this.session.hasRole('commercial')
-            ? (['crm', 'ventes', 'terrains', 'mandats'] as Domaine[])
-            : (['ventes', 'crm', 'mandats', 'terrains', 'locatif', 'chantiers', 'finances'] as Domaine[]);
+            ? (['crm', 'ventes', 'protocoles', 'terrains', 'mandats'] as Domaine[])
+            : (['protocoles', 'ventes', 'crm', 'mandats', 'terrains', 'locatif', 'chantiers', 'finances'] as Domaine[]);
     const permis: Record<Domaine, boolean> = {
+      protocoles: this.canViewProtocoles,
       ventes: this.canViewVentes,
       crm: this.canViewCrm,
       terrains: this.canViewTerrains,
@@ -181,6 +188,34 @@ export class Dashboard implements OnInit {
     const compteurs = this.compteurs();
     const plurielS = (n: number) => (n > 1 ? 's' : '');
     switch (domaine) {
+      case 'protocoles': {
+        const t = this.protocoleStats();
+        if (!t) return [];
+        const sansSignature = t.paiements.sansSignature;
+        const aValider = t.protocoles.aValider;
+        return [
+          {
+            domaine,
+            libelle: 'Paiements sans signature',
+            valeur: String(sansSignature),
+            aide: sansSignature > 0 ? 'Paiement reçu, protocole non signé' : 'Tous les paiements ont un protocole signé',
+            icone: LucideTriangleAlert,
+            route: '/protocoles',
+            queryParams: sansSignature > 0 ? { filtre: 'sans_signature' } : undefined,
+            ton: sansSignature > 0 ? 'alerte' : 'ok',
+          },
+          {
+            domaine,
+            libelle: 'Signatures à valider',
+            valeur: String(aValider),
+            aide: aValider > 0 ? 'En attente de la Direction' : 'Rien en attente de validation',
+            icone: LucideFileCheck,
+            route: '/protocoles',
+            queryParams: aValider > 0 ? { filtre: 'a_valider' } : undefined,
+            ton: aValider > 0 ? 'alerte' : undefined,
+          },
+        ];
+      }
       case 'ventes': {
         const s = this.ventesStats();
         if (!s) return [];
@@ -462,6 +497,7 @@ export class Dashboard implements OnInit {
         },
       });
     }
+    if (this.canViewProtocoles) this.protocolesApi.tableau().subscribe({ next: (t) => { this.protocoleStats.set(t); pret('protocoles'); }, error: () => pret('protocoles') });
     if (this.canViewMandats) this.mandatsApi.getStats().subscribe({ next: (s) => { this.mandatStats.set(s); pret('mandats'); }, error: () => pret('mandats') });
     if (this.canViewTerrains) this.terrainsApi.getStats().subscribe({ next: (s) => { this.terrainStats.set(s); pret('terrains'); }, error: () => pret('terrains') });
     if (this.canViewCrm) this.crmApi.getStats().subscribe({ next: (s) => { this.crmStats.set(s); pret('crm'); }, error: () => pret('crm') });
@@ -477,8 +513,8 @@ export class Dashboard implements OnInit {
     void this.router.navigate(item.route, { queryParams: item.queryParams });
   }
 
-  protected goTo(path: string): void {
-    void this.router.navigate([path]);
+  protected goTo(path: string, queryParams?: Record<string, string>): void {
+    void this.router.navigate([path], { queryParams });
   }
 
   protected openVente(id: string): void {

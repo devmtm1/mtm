@@ -16,7 +16,11 @@ export class VentesAccessService {
 
   /** La comptabilité voit aussi tous les dossiers : elle valide et paie. */
   hasGlobalScope(user: MandatUser): boolean {
-    return hasSupervisionScope(user, 'ventes', ['comptable']);
+    // Le suivi des protocoles (secrétaire, direction) porte sur tous les dossiers, pas seulement ceux d'un commercial.
+    return (
+      hasSupervisionScope(user, 'ventes', ['comptable']) ||
+      user.permissions.includes('protocoles:consulter')
+    );
   }
 
   ownershipFilter(user: MandatUser): Prisma.DossierVenteWhereInput {

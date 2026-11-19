@@ -133,6 +133,8 @@ export const SETTING_GROUPS: SettingGroup[] = [
       { key: 'ventes.reglesCommissions', label: 'Règles de commission', help: 'Règles appliquées au calcul de la commission d’un commercial (pourcentage, montant fixe, palier). Format technique : à modifier avec le développeur.', kind: 'json', warning: 'Une règle mal formée bloque le calcul des commissions.' },
       { key: 'ventes.statuts', label: 'Statuts des dossiers de vente', help: 'Valeurs techniques du cycle de vente. À ne modifier qu’avec le développeur.', kind: 'list', warning: 'Les écrans de vente reposent sur ces valeurs : ne les modifiez qu’avec le développeur.' },
       { key: 'ventes.transitions', label: 'Transitions autorisées', help: 'Depuis quel statut on peut passer à quel autre. Format technique : à modifier avec le développeur.', kind: 'json', warning: 'Une transition manquante empêche de faire avancer un dossier.' },
+      { key: 'protocoles.suiviDepuis', label: 'Suivi des signatures depuis le', help: 'Date au format AAAA-MM-JJ. Les dossiers ouverts avant cette date ne déclenchent pas l’alerte « paiement reçu – signature manquante ». Fixée au jour de la mise en service ; videz le champ pour suivre tous les dossiers.', kind: 'text' },
+      { key: 'protocoles.delaiRappelJours', label: 'Délai avant rappel d’une signature', help: 'Un protocole envoyé sans retour signé au-delà de ce délai passe « en retard » et le secrétariat comme la Direction sont rappelés, puis de nouveau à chaque période.', kind: 'number', unit: 'jours' },
       { key: 'ventes.documentTypes', label: 'Types de documents de vente', help: 'Proposés lors de l’ajout d’un document à un dossier. Une valeur par ligne.', kind: 'list' },
     ],
   },

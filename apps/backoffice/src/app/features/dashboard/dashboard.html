@@ -86,7 +86,7 @@
                   class="chiffre chiffre--lien"
                   [class.chiffre--du]="i.ton === 'alerte'"
                   [class.chiffre--ok]="i.ton === 'ok'"
-                  (click)="goTo(i.route)"
+                  (click)="goTo(i.route, i.queryParams)"
                 >
                   <span class="chiffre__icone"><svg [lucideIcon]="i.icone" aria-hidden="true"></svg></span>
                   <span class="chiffre__corps">

@@ -27,6 +27,131 @@ describe('VentesPaiementsService', () => {
     ).rejects.toThrow(ConflictException);
   });
 
+  describe('alerte « paiement reçu – signature manquante »', () => {
+    const user = {
+      id: 'u1',
+      roles: ['secretaire'],
+      permissions: ['protocoles:consulter'],
+    };
+
+    function preparerPaiement() {
+      prismaMock.dossierVente.findFirst.mockResolvedValue({ id: 'd1' });
+      prismaMock.dossierVente.findUnique.mockResolvedValue({
+        id: 'd1',
+        statut: 'reserve',
+        prixVente: 10_000_000,
+        referenceInterne: 'VTE-0001',
+      });
+      prismaMock.systemSetting.findUnique.mockResolvedValue(null);
+      prismaMock.paiement.aggregate.mockResolvedValue({ _sum: { montant: 0 } });
+      prismaMock.paiement.create.mockResolvedValue({
+        id: 'p1',
+        montant: 500_000,
+      });
+    }
+
+    it('prévient la Direction quand un paiement est saisi alors qu’aucun protocole n’est signé', async () => {
+      preparerPaiement();
+      prismaMock.protocoleDossier.count.mockResolvedValue(0);
+
+      await paiements.createPaiement(
+        'd1',
+        { montant: 500_000, mode: 'virement' },
+        user,
+      );
+
+      expect(notifierMock.notifierPermission).toHaveBeenCalledWith(
+        'protocoles:valider',
+        expect.objectContaining({
+          type: 'paiement_sans_signature',
+          titre: expect.stringContaining('SIGNATURE MANQUANTE'),
+          dedupeKey: 'paiement-sans-signature:p1',
+        }),
+        'u1',
+      );
+    });
+
+    it('ne dit rien quand le dossier a déjà un protocole signé', async () => {
+      preparerPaiement();
+      prismaMock.protocoleDossier.count.mockResolvedValue(1);
+
+      await paiements.createPaiement(
+        'd1',
+        { montant: 500_000, mode: 'virement' },
+        user,
+      );
+
+      const types = notifierMock.notifierPermission.mock.calls.map(
+        (appel: unknown[]) => (appel[1] as { type: string }).type,
+      );
+      expect(types).toContain('paiement_a_valider');
+      expect(types).not.toContain('paiement_sans_signature');
+    });
+
+    it('ne dit rien pour un dossier ouvert avant le début du suivi, mais prévient pour un dossier récent', async () => {
+      preparerPaiement();
+      prismaMock.protocoleDossier.count.mockResolvedValue(0);
+      prismaMock.systemSetting.findUnique.mockImplementation(
+        ({ where }: { where: { key: string } }) =>
+          Promise.resolve(
+            where.key === 'protocoles.suiviDepuis'
+              ? { value: '2026-11-01' }
+              : null,
+          ),
+      );
+      const dossier = {
+        id: 'd1',
+        statut: 'reserve',
+        prixVente: 10_000_000,
+        referenceInterne: 'VTE-0001',
+      };
+
+      prismaMock.dossierVente.findUnique.mockResolvedValue({
+        ...dossier,
+        createdAt: new Date('2026-01-15T00:00:00Z'),
+      });
+      await paiements.createPaiement(
+        'd1',
+        { montant: 500_000, mode: 'virement' },
+        user,
+      );
+      const typesAncien = notifierMock.notifierPermission.mock.calls.map(
+        (appel: unknown[]) => (appel[1] as { type: string }).type,
+      );
+      expect(typesAncien).not.toContain('paiement_sans_signature');
+
+      notifierMock.notifierPermission.mockClear();
+      prismaMock.dossierVente.findUnique.mockResolvedValue({
+        ...dossier,
+        createdAt: new Date('2026-11-10T00:00:00Z'),
+      });
+      await paiements.createPaiement(
+        'd1',
+        { montant: 500_000, mode: 'virement' },
+        user,
+      );
+      const typesRecent = notifierMock.notifierPermission.mock.calls.map(
+        (appel: unknown[]) => (appel[1] as { type: string }).type,
+      );
+      expect(typesRecent).toContain('paiement_sans_signature');
+    });
+
+    it('n’empêche pas l’enregistrement du paiement si l’alerte échoue', async () => {
+      preparerPaiement();
+      prismaMock.protocoleDossier.count.mockRejectedValue(
+        new Error('base indisponible'),
+      );
+
+      await expect(
+        paiements.createPaiement(
+          'd1',
+          { montant: 500_000, mode: 'virement' },
+          user,
+        ),
+      ).resolves.toMatchObject({ payment: { id: 'p1' } });
+    });
+  });
+
   it('valider un paiement sur un dossier « en cours » le passe en paiement partiel et bloque le terrain', async () => {
     const user = {
       id: 'u1',

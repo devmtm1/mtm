@@ -20,6 +20,7 @@ export const MODULES_EXPORTABLES = {
   crm: 'crm',
   proprietaires: 'proprietaires',
   ventes: 'ventes',
+  protocoles: 'protocoles',
   demarches: 'demarches',
   locatif: 'locatif',
   construction: 'construction',

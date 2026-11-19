@@ -1,0 +1,221 @@
+<section class="protocoles-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Dossiers de vente</p>
+      <h1 class="page-header__title">Protocoles et signatures</h1>
+      <p class="page-header__subtitle">
+        Où en est chaque protocole : préparé, envoyé, signé, validé. Un protocole envoyé n’est jamais considéré comme signé :
+        il faut la copie signée.
+      </p>
+    </div>
+    <div class="page-header__actions">
+      @if (peutExporter) {
+        <button mat-stroked-button type="button" (click)="exporter()" [disabled]="exportEnCours() || !total()">
+          <svg class="btn-icon" lucideDownload aria-hidden="true"></svg>{{ exportEnCours() ? 'Préparation…' : 'Exporter' }}
+        </button>
+      }
+      @if (canCreate) {
+        <button mat-flat-button color="primary" type="button" (click)="nouveau()">
+          <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau protocole
+        </button>
+      }
+    </div>
+  </header>
+
+  @if (tableau()?.suiviDepuis; as depuis) {
+    <p class="protocoles__suivi">
+      Suivi des signatures appliqué aux dossiers ouverts depuis le {{ depuis | date: 'dd/MM/yyyy' }}. Les dossiers plus anciens n'apparaissent pas dans l'alerte (réglage dans Paramètres).
+    </p>
+  }
+
+  @if (alertes().length) {
+    <aside class="alert-banner alert-banner--danger" aria-label="Paiements reçus sans protocole signé">
+      <div class="alert-banner__head">
+        <svg lucideTriangleAlert aria-hidden="true"></svg>
+        <strong>PAIEMENT REÇU – SIGNATURE MANQUANTE</strong>
+        <span>{{ alertes().length }} dossier{{ alertes().length > 1 ? 's' : '' }} à régulariser</span>
+      </div>
+      <ul class="alert-banner__list">
+        @for (alerte of alertes().slice(0, 6); track alerte.id) {
+          <li>
+            <button type="button" class="alert-banner__item" (click)="nouveau(alerte.id)" [disabled]="!canCreate">
+              <strong>{{ alerte.reference || 'Dossier' }}</strong>
+              <span>{{ alerte.client }}</span>
+              <small>
+                {{ alerte.montantEncaisse | mtmMoney }} encaissés
+                @if (alerte.montantConvenu !== null) {
+                  sur {{ alerte.montantConvenu | mtmMoney }}
+                }
+                · {{ alerte.protocoleActuel }}
+              </small>
+            </button>
+          </li>
+        }
+      </ul>
+      @if (alertes().length > 6) {
+        <button mat-button type="button" (click)="appliquerIndicateur(indicateurs[6])">Voir les {{ alertes().length }} dossiers</button>
+      }
+    </aside>
+  }
+
+  <section class="kpi-row" aria-label="Tableau de bord">
+    @if (!tableau()) {
+      @for (i of [1, 2, 3, 4]; track i) {
+        <div class="kpi skeleton" aria-hidden="true"></div>
+      }
+    } @else {
+      @for (indicateur of indicateurs; track indicateur.cle) {
+        <button type="button" class="kpi" [class]="'kpi kpi--' + indicateur.ton" (click)="appliquerIndicateur(indicateur)">
+          <span class="kpi__icon">
+            @switch (indicateur.icone) {
+              @case ('preparer') { <svg lucideFilePen aria-hidden="true"></svg> }
+              @case ('envoyer') { <svg lucideSend aria-hidden="true"></svg> }
+              @case ('attente') { <svg lucideFileClock aria-hidden="true"></svg> }
+              @case ('retard') { <svg lucideClockAlert aria-hidden="true"></svg> }
+              @case ('signe') { <svg lucideFileCheck aria-hidden="true"></svg> }
+              @case ('valider') { <svg lucideStamp aria-hidden="true"></svg> }
+              @case ('alerte') { <svg lucideTriangleAlert aria-hidden="true"></svg> }
+              @default { <svg lucideFileSignature aria-hidden="true"></svg> }
+            }
+          </span>
+          <span class="kpi__body">
+            <strong>{{ indicateur.valeur(tableau()!) }}</strong>
+            <span>{{ indicateur.libelle }}</span>
+            <small>{{ indicateur.detail }}</small>
+          </span>
+        </button>
+      }
+    }
+  </section>
+
+  <section class="page-section" aria-labelledby="protocoles-titre">
+    <div class="list-toolbar">
+      <div class="list-toolbar__title">
+        <h2 id="protocoles-titre">Protocoles</h2>
+        <p>
+          @if (chargement()) {
+            Chargement…
+          } @else {
+            {{ total() }} protocole{{ total() > 1 ? 's' : '' }}
+            @if (libelleFiltre()) {
+              · {{ libelleFiltre() }}
+            }
+          }
+        </p>
+      </div>
+      <form class="list-filters" [formGroup]="filters" (ngSubmit)="$event.preventDefault()">
+        <mat-form-field appearance="outline" class="list-filters__search" subscriptSizing="dynamic">
+          <mat-label>Rechercher</mat-label>
+          <svg matPrefix class="list-filters__icon" lucideSearch aria-hidden="true"></svg>
+          <input matInput formControlName="q" placeholder="Client, référence, bien…" autocomplete="off" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Statut</mat-label>
+          <mat-select formControlName="statut">
+            <mat-option value="">Tous</mat-option>
+            @for (statut of options()?.statuts ?? []; track statut.valeur) {
+              <mat-option [value]="statut.valeur">{{ statut.libelle }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Collaborateur</mat-label>
+          <mat-select formControlName="responsableId">
+            <mat-option value="">Tous</mat-option>
+            @for (responsable of responsables(); track responsable.id) {
+              <mat-option [value]="responsable.id">{{ responsable.nom }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Dossiers créés du</mat-label>
+          <input matInput type="date" formControlName="depuis" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>au</mat-label>
+          <input matInput type="date" formControlName="jusqua" />
+        </mat-form-field>
+        @if (filtreActif()) {
+          <button mat-button type="button" class="list-filters__reset" (click)="effacerFiltres()">
+            <svg class="btn-icon" lucideX aria-hidden="true"></svg>Effacer
+          </button>
+        }
+      </form>
+    </div>
+
+    @if (chargement()) {
+      <div class="protocoles-skeleton">
+        <div class="skeleton" style="height: 52px"></div>
+        <div class="skeleton" style="height: 52px"></div>
+        <div class="skeleton" style="height: 52px"></div>
+      </div>
+    } @else if (erreur()) {
+      <div class="empty-state">
+        <svg lucideTriangleAlert aria-hidden="true"></svg>
+        <h3>Les protocoles ne se chargent pas</h3>
+        <p>Réessayez dans un instant.</p>
+        <button mat-stroked-button type="button" (click)="charger()">Réessayer</button>
+      </div>
+    } @else if (!protocoles().length) {
+      <div class="empty-state">
+        <svg lucideFileSignature aria-hidden="true"></svg>
+        @if (filtreActif()) {
+          <h3>Aucun protocole ne correspond</h3>
+          <p>Modifiez la recherche ou effacez les filtres.</p>
+          <button mat-stroked-button type="button" (click)="effacerFiltres()">Effacer les filtres</button>
+        } @else {
+          <h3>Aucun protocole pour le moment</h3>
+          <p>Créez le protocole d’un dossier de vente, déposez-le, puis suivez son envoi et sa signature.</p>
+          @if (canCreate) {
+            <button mat-flat-button color="primary" type="button" (click)="nouveau()">Nouveau protocole</button>
+          }
+        }
+      </div>
+    } @else {
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Dossier</th>
+              <th>Client</th>
+              <th>Protocole</th>
+              <th>Statut</th>
+              <th>Encaissé</th>
+              <th>Mis à jour</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (protocole of protocoles(); track protocole.id) {
+              <tr class="is-clickable" (click)="ouvrir(protocole.id)">
+                <td>
+                  <strong>{{ protocole.dossier.reference || 'Dossier' }}</strong>
+                  @if (protocole.dossier.bien) {
+                    <small class="cell-sub">{{ protocole.dossier.bien }}</small>
+                  }
+                </td>
+                <td>{{ protocole.dossier.client }}</td>
+                <td>{{ protocole.titre || libelleType(protocole.type) }}</td>
+                <td>
+                  <span class="status-pill" [class]="'status-pill ' + ton(protocole.statut)">{{ protocole.libelleStatut }}</span>
+                  @if (protocole.enRetard) {
+                    <span class="status-pill status-pill--danger">En retard</span>
+                  }
+                </td>
+                <td>
+                  {{ protocole.dossier.montantEncaisse | mtmMoney }}
+                  @if (protocole.dossier.montantConvenu !== null) {
+                    <small class="cell-sub">sur {{ protocole.dossier.montantConvenu | mtmMoney }}</small>
+                  }
+                </td>
+                <td>{{ protocole.modifieLe | date: 'dd/MM/yyyy' }}</td>
+                <td class="is-right"><button mat-button type="button" (click)="ouvrir(protocole.id); $event.stopPropagation()">Ouvrir</button></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <app-pagination [page]="page()" [pageSize]="pageSize()" [total]="total()" nom="protocole" (pageChange)="changerPage($event)" (pageSizeChange)="changerTaille($event)" />
+    }
+  </section>
+</section>

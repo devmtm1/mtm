@@ -85,6 +85,34 @@
       </aside>
     }
 
+    @if (peutVoirProtocoles && protocoles() !== null) {
+      <aside
+        class="alert-banner"
+        [class.alert-banner--danger]="signatureManquante()"
+        aria-label="Protocole et signature"
+      >
+        <div class="alert-banner__head">
+          <strong>{{ signatureManquante() ? 'PAIEMENT REÇU – SIGNATURE MANQUANTE' : 'Protocole et signature' }}</strong>
+          <a class="alert-banner__lien" [routerLink]="['/protocoles']" [queryParams]="{ q: d.referenceInterne }">Suivre dans Protocoles</a>
+        </div>
+        @if (signatureManquante()) {
+          <p class="alert-banner__texte">Un paiement est enregistré, mais aucun protocole de ce dossier n'est signé. Un paiement ne remplace pas la signature.</p>
+        }
+        @if (protocoles()?.length) {
+          <ul class="alert-banner__list">
+            @for (protocole of protocoles(); track protocole.id) {
+              <li>
+                <span>{{ protocole.titre || 'Protocole' }}</span>
+                <span class="status-pill" [class]="'status-pill ' + tonProtocole(protocole.statut)">{{ protocole.libelleStatut }}</span>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="alert-banner__texte">Aucun protocole n'est encore déposé pour ce dossier.</p>
+        }
+      </aside>
+    }
+
     <!-- Où en est le paiement -->
     <section class="chiffres" aria-label="Avancement du paiement">
       <div class="chiffre">
