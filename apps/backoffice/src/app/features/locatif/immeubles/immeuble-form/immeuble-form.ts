@@ -20,7 +20,7 @@ import type {
 } from '../../../../core/models/locatif.model';
 import type { ProprietaireSummary } from '../../../../core/models/terrain.model';
 import { NotificationService } from '../../../../shared/services/notification.service';
-import { ProprietaireDialog } from '../../../terrains/proprietaire-dialog';
+import { ProprietaireDialog, creerProprietaireAvecPiece, type ProprietaireDialogResult } from '../../../terrains/proprietaire-dialog';
 import { TYPES_BIEN, TYPES_IMMEUBLE, nomPersonne, simpleLabel } from '../../locatif-status';
 import { nombreOuUndefined } from '../../locatif-form';
 
@@ -182,9 +182,9 @@ export class ImmeubleForm implements OnInit, AvecModifications {
         data: depuisDemande ? { prefill: depuisDemande.proprietaire } : undefined,
       })
       .afterClosed()
-      .subscribe((payload: Omit<ProprietaireSummary, 'id'> | undefined) => {
-        if (!payload) return;
-        this.proprietairesApi.create(payload).subscribe({
+      .subscribe((resultat: ProprietaireDialogResult | undefined) => {
+        if (!resultat) return;
+        creerProprietaireAvecPiece((payload) => this.proprietairesApi.create(payload), this.proprietairesApi, resultat, this.notify).subscribe({
           next: (proprietaire) => {
             this.proprietaires.update((liste) =>
               [...liste, proprietaire].sort((a, b) =>

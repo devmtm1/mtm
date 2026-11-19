@@ -69,6 +69,18 @@ export interface ClientDemandes {
   reservations: ClientReservationRequest[];
 }
 
+/** Le protocole du dossier tel que le client le voit : une étape simple, jamais les statuts internes de MTM. */
+export interface ClientDossierProtocole {
+  id: string;
+  titre: string | null;
+  type: string;
+  etape: 'en_preparation' | 'a_signer' | 'signe' | 'valide';
+  libelle: string;
+  aide: string;
+  dateEnvoi: string | null;
+  dateReceptionSignee: string | null;
+}
+
 export interface ClientDossier {
   id: string;
   referenceInterne: string | null;
@@ -80,6 +92,8 @@ export interface ClientDossier {
   paiements: ClientDossierPaiement[];
   echeances: ClientDossierEcheance[];
   documents: ClientDossierDocument[];
+  /** Absent des anciennes réponses de l'API. */
+  protocoles?: ClientDossierProtocole[];
   montantPaye: number;
   /** Prénom et initiale du commercial qui suit le dossier. */
   conseiller?: string | null;

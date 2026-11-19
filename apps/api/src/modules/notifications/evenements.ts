@@ -304,6 +304,36 @@ export const EVENEMENTS_NOTIFICATION: EvenementNotification[] = [
     emailParDefaut: false,
   },
   {
+    cle: 'paiement_sans_signature',
+    famille: 'Protocoles',
+    libelle: 'PAIEMENT REÇU – SIGNATURE MANQUANTE',
+    description:
+      'Un paiement est saisi sur un dossier dont aucun protocole n’est signé. Alerte prioritaire pour la Direction.',
+    destinataire: 'permission',
+    permission: 'protocoles:valider',
+    emailParDefaut: true,
+  },
+  {
+    cle: 'protocole_rappel',
+    famille: 'Protocoles',
+    libelle: 'Rappel : signature en attente',
+    description:
+      'Un protocole envoyé au client n’est pas revenu signé après le délai réglé (7 jours par défaut) : le secrétariat et la Direction sont rappelés, puis de nouveau à chaque période.',
+    destinataire: 'permission',
+    permission: 'protocoles:modifier',
+    emailParDefaut: false,
+  },
+  {
+    cle: 'protocole_statut',
+    famille: 'Protocoles',
+    libelle: 'Protocole préparé, envoyé, signé ou à valider',
+    description:
+      'Un protocole change d’étape : la Direction suit le parcours de chaque dossier.',
+    destinataire: 'permission',
+    permission: 'protocoles:valider',
+    emailParDefaut: false,
+  },
+  {
     cle: 'chantier_document',
     famille: 'Chantier',
     libelle: 'Document ou photo de chantier',

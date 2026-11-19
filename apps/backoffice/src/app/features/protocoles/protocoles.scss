@@ -1,0 +1,37 @@
+.protocoles-page {
+  display: grid;
+  gap: 16px;
+}
+
+.protocoles-skeleton {
+  display: grid;
+  gap: 8px;
+  padding: 16px 20px;
+}
+
+.cell-sub {
+  display: block;
+  color: var(--mtm-text-muted);
+  font-size: 0.74rem;
+}
+
+.status-pill + .status-pill {
+  margin-left: 6px;
+}
+
+app-pagination {
+  --pagination-gutter: 0px;
+}
+
+/* Huit indicateurs : deux rangées de quatre sur grand écran, au lieu d'une rangée qui se coupe en 6 + 2. */
+.protocoles-page .kpi-row {
+  @media (min-width: 1100px) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.protocoles__suivi {
+  margin: 0 0 16px;
+  color: var(--mtm-text-muted);
+  font-size: 0.85rem;
+}

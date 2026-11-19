@@ -1,6 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
@@ -27,6 +27,7 @@ import {
 } from '@lucide/angular';
 import { MenuActions, type GroupeMenu } from '../../../shared/components/menu-actions/menu-actions';
 import { CrmApiService } from '../../../core/services/api/crm-api.service';
+import { ProtocolesApiService, STATUTS_SIGNES, type Protocole } from '../../../core/services/api/protocoles-api.service';
 import { VentesApiService } from '../../../core/services/api/ventes-api.service';
 import { SessionService } from '../../../core/services/session.service';
 import type { VenteCommission, VenteDetail, VenteEcheance, VenteOptions, VentePaiement, VenteReservation } from '../../../core/models/vente.model';
@@ -73,6 +74,7 @@ import { TachesDossier } from '../../../shared/components/taches-dossier/taches-
   selector: 'app-vente-detail',
   standalone: true,
   imports: [
+    RouterLink,
     MenuActions,
     LucideCalendarDays,
     LucideChartPie,
@@ -120,6 +122,17 @@ export class VenteDetailPage implements OnInit {
   protected readonly busy = signal(false);
 
   protected readonly canModify = this.session.hasPermission('ventes:modifier');
+  private readonly protocolesApi = inject(ProtocolesApiService);
+  protected readonly peutVoirProtocoles = this.session.hasPermission('protocoles:consulter');
+  /** Les protocoles du dossier ; `null` tant qu'ils ne sont pas chargés ou si l'utilisateur n'y a pas droit. */
+  protected readonly protocoles = signal<Protocole[] | null>(null);
+  /** Un paiement est encaissé mais aucun protocole du dossier n'est signé : l'alerte de la page Protocoles, rappelée sur la fiche. */
+  protected readonly signatureManquante = computed(() => {
+    const liste = this.protocoles();
+    const d = this.dossier();
+    if (liste === null || !d || d.statut === 'annule' || !(Number(d.montantPaye) > 0)) return false;
+    return !liste.some((protocole) => STATUTS_SIGNES.includes(protocole.statut));
+  });
   protected readonly canValidate = this.session.hasPermission('ventes:valider');
   protected readonly canPay = this.session.hasPermission('ventes:payer');
   protected readonly canPublish = this.session.hasPermission('ventes:publier');
@@ -227,6 +240,13 @@ export class VenteDetailPage implements OnInit {
   }
 
   // --- Libellés -------------------------------------------------------------
+
+  protected tonProtocole(statut: string): string {
+    if (STATUTS_SIGNES.includes(statut)) return 'status-pill--success';
+    if (['a_corriger', 'annule'].includes(statut)) return 'status-pill--danger';
+    if (['envoye', 'en_attente_signature'].includes(statut)) return 'status-pill--warning';
+    return '';
+  }
 
   protected statusLabel(statut: string | null | undefined): string {
     return label(DOSSIER_STATUS, statut);
@@ -526,6 +546,12 @@ export class VenteDetailPage implements OnInit {
   private load(id: string): void {
     // Les échéances ne dépendent que de l'identifiant : on les demande en même temps que le dossier.
     this.api.getEcheances(id).subscribe({ next: (echeances) => this.echeances.set(echeances), error: () => this.echeances.set([]) });
+    if (this.peutVoirProtocoles) {
+      this.protocolesApi.lister({ dossierVenteId: id, pageSize: 20 }).subscribe({
+        next: (page) => this.protocoles.set(page.items),
+        error: () => this.protocoles.set(null),
+      });
+    }
     this.api.findOne(id).subscribe({
       next: (dossier) => {
         this.dossier.set(dossier);

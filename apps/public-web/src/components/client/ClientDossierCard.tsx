@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { CalendarClock, CalendarDays, Download, FileText, Info, MapPin, Receipt } from 'lucide-react';
+import { CalendarClock, CalendarDays, Download, FileSignature, FileText, Info, MapPin, Receipt } from 'lucide-react';
 import type { ClientDossier } from '../../types/clientPortal';
 import { construireFrise, echeanceAMettreEnAvant } from '../../utils/clientFrise';
 import { formatDate, formatMoney } from '../../utils/format';
@@ -160,6 +160,30 @@ export function ClientDossierCard({ dossier, defaultOpen = false }: { dossier: C
         </div>
       )}
 
+      {(dossier.protocoles ?? []).length > 0 && (
+        <Section icon={FileSignature} title="Protocole et signature">
+          <ul className="flex flex-col gap-2">
+            {(dossier.protocoles ?? []).map((protocole) => (
+              <li
+                key={protocole.id}
+                className={`rounded-xl border px-3 py-2.5 ${protocole.etape === 'a_signer' ? 'border-mtm-warning/40 bg-mtm-warning/5' : 'border-mtm-border'}`}
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-[15px] font-semibold text-mtm-text">{protocole.titre ?? 'Protocole d’accord'}</span>
+                  <Badge tone={protocole.etape === 'a_signer' ? 'warning' : protocole.etape === 'en_preparation' ? 'neutral' : 'success'} dot>
+                    {protocole.libelle}
+                  </Badge>
+                </div>
+                <p className="mt-1 text-[13px] text-mtm-muted">{protocole.aide}</p>
+                {protocole.dateReceptionSignee && (
+                  <p className="mt-0.5 text-xs text-mtm-muted">Copie signée reçue le {formatDate(protocole.dateReceptionSignee)}.</p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
       <Section icon={Receipt} title="Paiements validés">
         {dossier.paiements.length === 0 ? (
           <p className="text-sm text-mtm-muted">Aucun paiement enregistré pour le moment.</p>
@@ -182,7 +206,7 @@ export function ClientDossierCard({ dossier, defaultOpen = false }: { dossier: C
 
       <Section icon={FileText} title="Documents">
         {dossier.documents.length === 0 ? (
-          <p className="text-sm text-mtm-muted">Vos reçus et contrats apparaîtront ici.</p>
+          <p className="text-sm text-mtm-muted">Vos contrats apparaîtront ici. Les reçus se téléchargent depuis chaque paiement.</p>
         ) : (
           <ul>
             {dossier.documents.map((document) => (

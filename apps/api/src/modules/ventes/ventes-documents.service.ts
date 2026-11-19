@@ -16,6 +16,7 @@ import {
   DEFAULT_DOCUMENT_TYPES,
   GENERATED_DOCUMENT_TYPES,
 } from './ventes-workflow.service';
+import { TYPES_DOCUMENT_PROTOCOLE } from '../protocoles/protocoles.regles';
 import {
   renderVenteDocument,
   type VenteDocumentData,
@@ -45,11 +46,13 @@ export class VentesDocumentsService {
     private readonly company: CompanyProfileService,
   ) {}
 
-  private getAllowedDocumentTypes(): Promise<string[]> {
-    return this.settings.getStringList(
+  private async getAllowedDocumentTypes(): Promise<string[]> {
+    const types = await this.settings.getStringList(
       'ventes.documentTypes',
       DEFAULT_DOCUMENT_TYPES,
     );
+    // Les pièces du suivi des protocoles (version préparée, copie signée) sont toujours acceptées.
+    return [...new Set([...types, ...TYPES_DOCUMENT_PROTOCOLE])];
   }
 
   async addDocument(
@@ -238,6 +241,21 @@ export class VentesDocumentsService {
       where: { id: documentId, dossierVenteId: id },
     });
     if (!document) throw new NotFoundException('Document de vente introuvable');
+    // Une pièce qui sert de preuve (version préparée ou copie signée d'un protocole) s'archive, elle ne s'efface pas.
+    const protocoleLie = await this.prisma.protocoleDossier.findFirst({
+      where: {
+        OR: [
+          { documentPrepareId: documentId },
+          { documentSigneId: documentId },
+        ],
+      },
+      select: { id: true },
+    });
+    if (protocoleLie) {
+      throw new ForbiddenException(
+        'Cette pièce est rattachée à un protocole : elle ne peut pas être supprimée.',
+      );
+    }
     await this.cloudinary.destroy(
       document.storageKey,
       document.resourceType,

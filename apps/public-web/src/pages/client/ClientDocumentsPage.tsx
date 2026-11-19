@@ -11,6 +11,7 @@ import { LIBELLES_ORIGINE, rassemblerDocuments, type OrigineDocument } from '../
 import { formatDate } from '../../utils/format';
 import { documentType, locatifDocumentType } from '../../utils/labels';
 import { ROUTES } from '../../routes';
+import { BoutonRecu } from '../../components/client/BoutonRecu';
 
 const PAR_PAGE = 8;
 
@@ -86,11 +87,17 @@ export function ClientDocumentsPage() {
               {visibles.map((document) => (
                 <li key={document.id}>
                   <ClientRow
-                    href={document.url}
+                    href={document.recu ? undefined : document.url}
                     icon={documentIcone(document.type)}
                     title={document.titre ?? (document.origine === 'vente' ? documentType(document.type) : locatifDocumentType(document.type))}
                     subtitle={`${LIBELLES_ORIGINE[document.origine]} · ${document.objet} · ${formatDate(document.date)}`}
-                    trailing={<Download className="h-4 w-4 shrink-0 text-mtm-primary" aria-label="Télécharger" />}
+                    trailing={
+                      document.recu ? (
+                        <BoutonRecu nature={document.recu.nature} paiementId={document.recu.paiementId} />
+                      ) : (
+                        <Download className="h-4 w-4 shrink-0 text-mtm-primary" aria-label="Télécharger" />
+                      )
+                    }
                   />
                 </li>
               ))}

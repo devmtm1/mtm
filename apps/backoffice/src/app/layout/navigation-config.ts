@@ -141,9 +141,10 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         label: 'Dossiers de vente',
         route: '/ventes',
         icon: LucideReceipt,
-        racines: ['/ventes'],
+        racines: ['/ventes', '/protocoles'],
         children: [
           { label: 'Tous les dossiers', route: '/ventes', permission: 'ventes:consulter', exact: true, compteur: 'paiementsAValider' },
+          { label: 'Protocoles et signatures', route: '/protocoles', permission: 'protocoles:consulter' },
           { label: 'Mes commissions', route: '/ventes/commissions', permission: 'ventes:consulter' },
           { label: 'Objectifs commerciaux', route: '/ventes/objectifs', permission: 'ventes:consulter' },
         ],

@@ -30,6 +30,7 @@ const PHASE_1_RESOURCES = [
   'contact',
   'proprietaires',
   'ventes',
+  'protocoles',
   'clients',
   'demarches',
   'locatif',
@@ -50,6 +51,11 @@ const INITIAL_ROLES = [
     isSystem: true,
   },
   { name: 'direction', description: 'Direction MTM Immobilier' },
+  {
+    name: 'secretaire',
+    description:
+      'Secrétariat : crée les dossiers, dépose les protocoles et les pièces, suit les signatures (sans suppression définitive)',
+  },
   {
     name: 'manager',
     description:
@@ -621,6 +627,23 @@ async function main(): Promise<void> {
       'ventes:administrer',
       'ventes:publier',
       'clients:creer',
+      // Suivi des protocoles : la Direction contrôle et valide.
+      'protocoles:consulter',
+      'protocoles:creer',
+      'protocoles:modifier',
+      'protocoles:valider',
+      'protocoles:exporter',
+    ],
+    // Le secrétariat crée les dossiers, dépose les protocoles et les pièces, fait avancer les statuts. Il ne supprime rien
+    // (aucune permission « supprimer ») et ne valide pas : le contrôle final revient à la Direction.
+    secretaire: [
+      'ventes:consulter',
+      'ventes:creer',
+      'ventes:modifier',
+      'clients:creer',
+      'protocoles:consulter',
+      'protocoles:creer',
+      'protocoles:modifier',
     ],
   };
   for (const [roleName, permissionNames] of Object.entries(

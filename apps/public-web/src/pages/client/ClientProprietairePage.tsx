@@ -235,7 +235,11 @@ function CarteBiensSeuls({ biens }: { biens: ClientBienLocatif[] }) {
               <>
                 <p className="font-bold text-mtm-text">{bien.adresse}</p>
                 <p className="text-xs text-mtm-muted">
-                  {[bien.commune, bien.region].filter(Boolean).join(', ')} · <span className="whitespace-nowrap">{bien.referenceInterne}</span>
+                  {/* Quand l'adresse se réduit à « commune, région », on ne la répète pas sous le titre. */}
+                  {[bien.commune, bien.region].filter(Boolean).join(', ') !== bien.adresse && (
+                    <>{[bien.commune, bien.region].filter(Boolean).join(', ')} · </>
+                  )}
+                  <span className="whitespace-nowrap">{bien.referenceInterne}</span>
                 </p>
               </>
             }

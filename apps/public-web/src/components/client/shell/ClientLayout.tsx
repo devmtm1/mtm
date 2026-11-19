@@ -168,7 +168,7 @@ export function ClientLayout() {
     // « Dossiers » et « Vérifications » concernent les acheteurs : un propriétaire ou un locataire ne les voit pas au
     // même rang que son bien (« Vérifications » reste accessible depuis l'accueil dès qu'il en a demandé une).
     const aDesDocuments =
-      (dossiers.data ?? []).some((dossier) => dossier.documents.length > 0) ||
+      (dossiers.data ?? []).some((dossier) => dossier.documents.length > 0 || (dossier.paiements ?? []).length > 0) ||
       (locataireBaux.data ?? []).some((bail) => bail.documents.length > 0) ||
       (proprietaireDocuments.data?.length ?? 0) > 0;
     const profil = profilClient({

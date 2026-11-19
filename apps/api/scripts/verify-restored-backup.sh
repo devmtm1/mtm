@@ -58,7 +58,7 @@ check "migrations appliquées" "$attendues" "$appliquees"
 tables="$(sql "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'")"
 check_min "tables" 40 "$tables"
 
-for table in users roles permissions role_permissions system_settings audit_logs terrains dossiers_vente paiements; do
+for table in users roles permissions role_permissions system_settings audit_logs terrains dossiers_vente paiements protocoles_dossier protocoles_historique; do
   existe="$(sql "SELECT to_regclass('public.${table}') IS NOT NULL")"
   check "table ${table}" "t" "$existe"
 done

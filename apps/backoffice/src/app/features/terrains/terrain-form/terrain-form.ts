@@ -32,7 +32,8 @@ import { SessionService } from '../../../core/services/session.service';
 import { nombreFr } from '../../../core/utils/format';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
-import { ProprietaireDialog } from '../proprietaire-dialog';
+import { ProprietaireDialog, creerProprietaireAvecPiece, type ProprietaireDialogResult } from '../proprietaire-dialog';
+import { ProprietairesApiService } from '../../../core/services/api/proprietaires-api.service';
 import {
   COMMERCIAL_STATUS,
   ETAT_BIEN,
@@ -118,6 +119,7 @@ export class TerrainForm implements OnInit, AvecModifications {
   private readonly crmApi = inject(CrmApiService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly notify = inject(NotificationService);
+  private readonly proprietairesApi = inject(ProprietairesApiService);
   private readonly dialog = inject(MatDialog);
   private readonly session = inject(SessionService);
   private readonly destroyRef = inject(DestroyRef);
@@ -468,9 +470,9 @@ export class TerrainForm implements OnInit, AvecModifications {
     this.dialog
       .open(ProprietaireDialog, { width: '520px', maxWidth: 'calc(100vw - 32px)' })
       .afterClosed()
-      .subscribe((payload: Omit<ProprietaireSummary, 'id'> | undefined) => {
-        if (!payload) return;
-        this.api.createProprietaire(payload).subscribe({
+      .subscribe((resultat: ProprietaireDialogResult | undefined) => {
+        if (!resultat) return;
+        creerProprietaireAvecPiece((payload) => this.api.createProprietaire(payload), this.proprietairesApi, resultat, this.notify).subscribe({
           next: (proprietaire) => {
             this.proprietaires.update((list) => [...list, proprietaire].sort((a, b) => `${a.lastName}${a.firstName}`.localeCompare(`${b.lastName}${b.firstName}`)));
             this.form.controls.proprietaireId.setValue(proprietaire.id);

@@ -1535,6 +1535,46 @@ ag-grid-angular {
   gap: 4px;
 }
 
+/* Alerte la plus prioritaire (paiement reçu sans signature) : rouge MTM, pas l'orange des avertissements. */
+.alert-banner--danger {
+  border-color: var(--mtm-error);
+  background: var(--mtm-error-bg);
+
+  .alert-banner__head > svg,
+  .alert-banner__item small {
+    color: var(--mtm-error);
+  }
+
+  .alert-banner__head strong {
+    letter-spacing: 0.04em;
+  }
+}
+
+/* Texte d'explication et lien d'un bandeau (fiche d'un dossier) */
+.alert-banner__texte {
+  margin: 6px 0 0;
+  font-size: 0.86rem;
+}
+
+.alert-banner__lien {
+  margin-left: auto;
+  color: var(--mtm-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.alert-banner__list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.86rem;
+}
+
 .alert-banner--info {
   border-color: var(--mtm-primary);
   background: var(--mtm-primary-subtle);

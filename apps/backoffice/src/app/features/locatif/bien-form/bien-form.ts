@@ -19,7 +19,7 @@ import type { ProprietaireSummary } from '../../../core/models/terrain.model';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { TYPES_BIEN, nomPersonne, simpleLabel } from '../locatif-status';
 import { MODES_LOCATION } from '../sejours/sejour-status';
-import { ProprietaireDialog } from '../../terrains/proprietaire-dialog';
+import { ProprietaireDialog, creerProprietaireAvecPiece, type ProprietaireDialogResult } from '../../terrains/proprietaire-dialog';
 import { TYPES_PHOTOS, nombreOuUndefined, trierFichiers } from '../locatif-form';
 
 /** Fiche bien locatif (section 15 du cahier des charges, étape 1 de J2.1). */
@@ -203,9 +203,9 @@ export class BienForm implements OnInit, OnDestroy, AvecModifications {
         data: depuisDemande ? { prefill: depuisDemande.proprietaire } : undefined,
       })
       .afterClosed()
-      .subscribe((payload: Omit<ProprietaireSummary, 'id'> | undefined) => {
-        if (!payload) return;
-        this.proprietairesApi.create(payload).subscribe({
+      .subscribe((resultat: ProprietaireDialogResult | undefined) => {
+        if (!resultat) return;
+        creerProprietaireAvecPiece((payload) => this.proprietairesApi.create(payload), this.proprietairesApi, resultat, this.notify).subscribe({
           next: (proprietaire) => {
             this.proprietaires.update((liste) =>
               [...liste, proprietaire].sort((a, b) => `${a.lastName}${a.firstName}`.localeCompare(`${b.lastName}${b.firstName}`)),

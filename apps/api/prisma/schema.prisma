@@ -20,12 +20,12 @@ datasource db {
 // ============================================================
 
 model User {
-  id       String  @id @default(uuid())
+  id                 String  @id @default(uuid())
   /// Facultatif : un espace client peut s'ouvrir avec un numéro de téléphone seul (au moins l'un des deux est requis).
-  email    String? @unique
+  email              String? @unique
   /// Identifiant de connexion par téléphone, au format international (+221771234567), unique.
   telephoneConnexion String? @unique
-  password String // hash bcrypt, jamais en clair
+  password           String // hash bcrypt, jamais en clair
 
   firstName String
   lastName  String
@@ -79,6 +79,8 @@ model User {
   clientProspectId         String?                @unique
   clientProspect           Prospect?              @relation("ProspectClientUser", fields: [clientProspectId], references: [id], onDelete: SetNull)
   dossiersVenteResponsable DossierVente[]         @relation("DossierVenteCommercial")
+  protocolesCrees          ProtocoleDossier[]     @relation("ProtocoleCreator")
+  protocolesHistorique     ProtocoleHistorique[]  @relation("ProtocoleHistoriqueUser")
   reservationsCreees       Reservation[]          @relation("ReservationCreator")
   paiementsEnregistres     Paiement[]             @relation("PaiementRecorder")
   commissionsVente         CommissionVente[]      @relation("CommissionCommercial")
@@ -149,33 +151,33 @@ model User {
 // ============================================================
 
 model Proprietaire {
-  id        String   @id @default(uuid())
+  id                String    @id @default(uuid())
   // Identifiant lisible (PRO-2026-0004) : seul l'administrateur voit les coordonnées,
   // les autres reconnaissent le propriétaire par ce matricule.
-  matricule String   @unique
-  firstName String
-  lastName  String
-  email     String?
-  phone     String?
-  notes     String?
+  matricule         String    @unique
+  firstName         String
+  lastName          String
+  email             String?
+  phone             String?
+  notes             String?
   /// Pièce d'identité (facultative) : type, numéro et copie PDF conservée en privé.
-  typePiece          String?
-  numeroPiece        String?
-  pieceStorageKey    String?
-  pieceResourceType  String?
+  typePiece         String?
+  numeroPiece       String?
+  pieceStorageKey   String?
+  pieceResourceType String?
   /// État civil (facultatif) : l'identité complète tient sur la fiche, comme pour un prospect.
-  adresse            String?
-  dateNaissance      DateTime? @db.Date
-  lieuNaissance      String?
-  nationalite        String?
-  profession         String?
+  adresse           String?
+  dateNaissance     DateTime? @db.Date
+  lieuNaissance     String?
+  nationalite       String?
+  profession        String?
   /// Validité de la pièce et personne à prévenir en cas d'urgence (facultatifs).
-  pieceValiditeLe    DateTime? @db.Date
-  urgenceNom         String?
-  urgenceLien        String?
-  urgenceTelephone   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  pieceValiditeLe   DateTime? @db.Date
+  urgenceNom        String?
+  urgenceLien       String?
+  urgenceTelephone  String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   terrains      Terrain[]
   programmes    ProgrammeLotissement[]
@@ -236,6 +238,7 @@ model Terrain {
    * /**
    * /**
    * /**
+   * /**
    * Surface habitable, distincte de la parcelle. Les deux coexistent : une
    * villa de 120 m² habitables peut occuper une parcelle de 300 m², et les
    * confondre fausserait toute comparaison au catalogue.
@@ -285,6 +288,7 @@ model Terrain {
   notesInternes            String?
   // --- Suivi du portefeuille (reprise du tableur « Bd terrains ») ---
   /**
+   * /**
    * /**
    * /**
    * /**
@@ -359,6 +363,7 @@ model Terrain {
   categorieLot             CategorieLot?         @relation(fields: [categorieLotId], references: [id], onDelete: SetNull)
   numeroLot                String?
 
+  @@unique([programmeId, numeroLot])
   @@index([statutJuridique])
   @@index([niveauVerification])
   @@index([statutCommercial])
@@ -372,7 +377,6 @@ model Terrain {
   @@index([dateEntree])
   @@index([programmeId])
   @@index([categorieLotId])
-  @@unique([programmeId, numeroLot])
   @@map("terrains")
 }
 
@@ -663,7 +667,9 @@ model Contact {
   bienLocatifId String? // bien en location de référence si la demande vient d'une annonce
   bienLocatif   BienLocatif? @relation("BienLocatifContacts", fields: [bienLocatifId], references: [id], onDelete: SetNull)
   nom           String
-  /** Au moins un des deux : l'e-mail ou le téléphone (beaucoup de clients n'ont pas d'e-mail). */
+  /**
+   * Au moins un des deux : l'e-mail ou le téléphone (beaucoup de clients n'ont pas d'e-mail).
+   */
   email         String?
   telephone     String?
   sujet         String? // "Acquérir un terrain" / "Vérification foncière" / "Gestion locative" / ...
@@ -698,7 +704,9 @@ model ReservationRequest {
   terrainId    String
   terrain      Terrain       @relation(fields: [terrainId], references: [id], onDelete: Restrict)
   nom          String
-  /** Au moins un des deux : l'e-mail ou le téléphone. */
+  /**
+   * Au moins un des deux : l'e-mail ou le téléphone.
+   */
   email        String?
   telephone    String?
   message      String?
@@ -758,6 +766,7 @@ model Prospect {
   // vivre dans une table à part, pour qu'une seule fiche porte le budget et
   // la zone du client — deux exemplaires finiraient par diverger.
   /**
+   * /**
    * /**
    * /**
    * /**
@@ -959,6 +968,7 @@ model DossierVente {
   paiements    Paiement[]
   commissions  CommissionVente[]
   documents    DocumentVente[]
+  protocoles   ProtocoleDossier[]
 
   reversements   ReversementProprietaire[]
   remboursements DemandeRemboursement[]
@@ -1076,9 +1086,70 @@ model DocumentVente {
   createdBy      User?        @relation("DocumentVenteCreator", fields: [createdById], references: [id], onDelete: SetNull)
   createdAt      DateTime     @default(now())
 
+  protocolesPrepares ProtocoleDossier[] @relation("ProtocoleDocumentPrepare")
+  protocolesSignes   ProtocoleDossier[] @relation("ProtocoleDocumentSigne")
+
   @@index([dossierVenteId, type])
   @@index([isPublic])
   @@map("documents_vente")
+}
+
+// ============================================================
+// Suivi des protocoles et des signatures (cahier des charges « Suivi des documents et signatures »)
+// ============================================================
+
+/// Un protocole d'accord ou un contrat d'un dossier de vente, de sa préparation à sa validation par la Direction.
+/// Un protocole « envoyé » n'est jamais « signé » : le statut « signé par le client » exige la copie signée déposée et sa date de réception.
+model ProtocoleDossier {
+  id             String       @id @default(uuid())
+  dossierVenteId String
+  dossierVente   DossierVente @relation(fields: [dossierVenteId], references: [id], onDelete: Cascade)
+  /// protocole_accord | contrat | autre
+  type           String       @default("protocole_accord")
+  titre          String?
+  /// a_preparer | prepare_a_verifier | envoye | en_attente_signature | signe_client | signe_mtm | a_valider_direction | valide | a_corriger | annule
+  statut         String       @default("a_preparer")
+
+  documentPrepareId String?
+  documentPrepare   DocumentVente? @relation("ProtocoleDocumentPrepare", fields: [documentPrepareId], references: [id], onDelete: SetNull)
+  documentSigneId   String?
+  documentSigne     DocumentVente? @relation("ProtocoleDocumentSigne", fields: [documentSigneId], references: [id], onDelete: SetNull)
+
+  dateEnvoi           DateTime?
+  /// Moyen d'envoi : email, whatsapp, main_propre, courrier, autre
+  moyenEnvoi          String?
+  dateReceptionSignee DateTime?
+  dateSignatureMtm    DateTime?
+  /// Motif d'une correction ou d'une annulation.
+  motif               String?
+
+  createdById String?
+  createdBy   User?    @relation("ProtocoleCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  historique ProtocoleHistorique[]
+
+  @@index([dossierVenteId])
+  @@index([statut])
+  @@index([dateEnvoi])
+  @@map("protocoles_dossier")
+}
+
+/// Chaque changement de statut d'un protocole : qui, quand, de quoi à quoi.
+model ProtocoleHistorique {
+  id          String           @id @default(uuid())
+  protocoleId String
+  protocole   ProtocoleDossier @relation(fields: [protocoleId], references: [id], onDelete: Cascade)
+  deStatut    String?
+  versStatut  String
+  note        String?
+  userId      String?
+  user        User?            @relation("ProtocoleHistoriqueUser", fields: [userId], references: [id], onDelete: SetNull)
+  createdAt   DateTime         @default(now())
+
+  @@index([protocoleId, createdAt])
+  @@map("protocoles_historique")
 }
 
 model ActiviteCrm {
@@ -1498,30 +1569,30 @@ model DocumentMission {
 // ============================================================
 
 model Locataire {
-  id        String   @id @default(uuid())
-  firstName String
-  lastName  String
-  email     String?
-  phone     String?
-  notes     String?
+  id                String    @id @default(uuid())
+  firstName         String
+  lastName          String
+  email             String?
+  phone             String?
+  notes             String?
   /// Pièce d'identité (facultative) : type, numéro et copie PDF conservée en privé.
-  typePiece          String?
-  numeroPiece        String?
-  pieceStorageKey    String?
-  pieceResourceType  String?
+  typePiece         String?
+  numeroPiece       String?
+  pieceStorageKey   String?
+  pieceResourceType String?
   /// État civil (facultatif) : l'identité complète tient sur la fiche, comme pour un prospect.
-  adresse            String?
-  dateNaissance      DateTime? @db.Date
-  lieuNaissance      String?
-  nationalite        String?
-  profession         String?
+  adresse           String?
+  dateNaissance     DateTime? @db.Date
+  lieuNaissance     String?
+  nationalite       String?
+  profession        String?
   /// Validité de la pièce et personne à prévenir en cas d'urgence (facultatifs).
-  pieceValiditeLe    DateTime? @db.Date
-  urgenceNom         String?
-  urgenceLien        String?
-  urgenceTelephone   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  pieceValiditeLe   DateTime? @db.Date
+  urgenceNom        String?
+  urgenceLien       String?
+  urgenceTelephone  String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   baux       BailLocatif[]
   sejours    SejourLocatif[]
@@ -1576,6 +1647,7 @@ model BienLocatif {
    * /**
    * /**
    * /**
+   * /**
    * Visible sur le site tant que le bien est « disponible ». Réservé à la
    * permission locatif:publier ; exige un loyer et au moins une photo.
    */
@@ -1601,6 +1673,7 @@ model BienLocatif {
 
   // --- Courte durée (type Airbnb) ---
   /**
+   * /**
    * /**
    * /**
    * /**
@@ -1682,6 +1755,7 @@ model BailLocatif {
 
   // --- Sortie et cas particuliers (section 15) ---
   /**
+   * /**
    * /**
    * /**
    * /**
@@ -3145,14 +3219,14 @@ model ImmeubleLocatif {
   responsableId    String?
   responsable      User?        @relation("ImmeubleLocatifResponsable", fields: [responsableId], references: [id], onDelete: SetNull)
 
-  adresse   String
-  commune   String?
-  region    String?
-  latitude  Decimal? @db.Decimal(9, 6)
-  longitude Decimal? @db.Decimal(9, 6)
+  adresse     String
+  commune     String?
+  region      String?
+  latitude    Decimal? @db.Decimal(9, 6)
+  longitude   Decimal? @db.Decimal(9, 6)
   /// Taux de gestion par défaut des logements de la propriété (en %).
   tauxGestion Decimal? @db.Decimal(5, 2)
-  notes     String?
+  notes       String?
 
   createdById String?
   createdBy   User?    @relation("ImmeubleLocatifCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
@@ -3217,36 +3291,36 @@ model ReleveImmeuble {
  * sont celles par défaut, copiées sur chaque lot à la génération.
  */
 model ProgrammeLotissement {
-  id                  String         @id @default(uuid())
-  reference           String         @unique
+  id                  String           @id @default(uuid())
+  reference           String           @unique
   nom                 String
   region              String?
   commune             String?
   localisationDetail  String?
   description         String?
   proprietaireId      String?
-  proprietaire        Proprietaire?  @relation(fields: [proprietaireId], references: [id], onDelete: SetNull)
+  proprietaire        Proprietaire?    @relation(fields: [proprietaireId], references: [id], onDelete: SetNull)
   statutJuridique     String
   typeDocumentFoncier String?
   niveauVerification  String
-  prixLot             Decimal?       @db.Decimal(15, 2)
+  prixLot             Decimal?         @db.Decimal(15, 2)
   modalitePaiement    String?
   dureeMoratoireMois  Int?
-  acompteMontant      Decimal?       @db.Decimal(15, 2)
+  acompteMontant      Decimal?         @db.Decimal(15, 2)
   /// Produit détenu en direct par MTM (sans propriétaire intermédiaire) : copié sur chaque lot.
-  produitDirect       Boolean        @default(false)
+  produitDirect       Boolean          @default(false)
   /// Commission de MTM par lot vendu (bien confié par un propriétaire) : copiée sur chaque lot. Donnée sensible.
-  commissionLot       Decimal?       @db.Decimal(15, 2)
+  commissionLot       Decimal?         @db.Decimal(15, 2)
   /// Marge de MTM par lot vendu (bien en propre ou produit direct) : copiée sur chaque lot. Donnée sensible.
-  margeLot            Decimal?       @db.Decimal(15, 2)
+  margeLot            Decimal?         @db.Decimal(15, 2)
   /// Visible sur le site public (tant qu'il reste un lot à vendre). On peut le préparer sans l'annoncer.
-  publie              Boolean        @default(true)
+  publie              Boolean          @default(true)
   archiveLe           DateTime?
   categories          CategorieLot[]
   medias              ProgrammeMedia[]
   lots                Terrain[]
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
 
   @@index([proprietaireId])
   @@index([archiveLe])
@@ -3270,7 +3344,9 @@ model ProgrammeMedia {
   @@map("programme_medias")
 }
 
-/** Groupe de lots aux mêmes conditions (façade, angle, standard…). */
+/**
+ * Groupe de lots aux mêmes conditions (façade, angle, standard…).
+ */
 model CategorieLot {
   id                 String               @id @default(uuid())
   programmeId        String

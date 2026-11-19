@@ -180,7 +180,7 @@ export function ClientLocatairePage() {
             <Fait
               label="Loyer mensuel"
               value={formatMoney(bailActif.loyerMensuel)}
-              hint={bailActif.charges ? `+ ${formatMoney(bailActif.charges)} charges` : undefined}
+              hint={bailActif.charges ? `Charges : ${formatMoney(bailActif.charges)}, non comprises dans les échéances` : undefined}
             />
             <Fait label="Loyers appelés" value={formatMoney(solde.loyersDus)} />
           </dl>

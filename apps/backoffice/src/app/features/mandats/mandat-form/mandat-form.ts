@@ -21,7 +21,8 @@ import { SessionService } from '../../../core/services/session.service';
 import type { CreateMandatPayload, MandatDetail, MandatOptions, ProprietaireSummary } from '../../../core/models/mandat.model';
 import type { CommercialSummary } from '../../../core/models/prospect.model';
 import { NotificationService } from '../../../shared/services/notification.service';
-import { ProprietaireDialog } from '../../terrains/proprietaire-dialog';
+import { ProprietaireDialog, creerProprietaireAvecPiece, type ProprietaireDialogResult } from '../../terrains/proprietaire-dialog';
+import { ProprietairesApiService } from '../../../core/services/api/proprietaires-api.service';
 import { MANDAT_STATUS, RESTRICTION_OPTIONS, TYPE_MANDAT_HELP, joursRestants, statusHelp } from '../mandat-status';
 
 /** La date de fin doit suivre la date de début. */
@@ -68,6 +69,7 @@ export class MandatForm implements OnInit, AvecModifications {
   private readonly session = inject(SessionService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly notify = inject(NotificationService);
+  private readonly proprietairesApi = inject(ProprietairesApiService);
   private readonly dialog = inject(MatDialog);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -166,9 +168,9 @@ export class MandatForm implements OnInit, AvecModifications {
     this.dialog
       .open(ProprietaireDialog, { width: '520px', maxWidth: 'calc(100vw - 32px)' })
       .afterClosed()
-      .subscribe((payload: Omit<ProprietaireSummary, 'id'> | undefined) => {
-        if (!payload) return;
-        this.api.createProprietaire(payload).subscribe({
+      .subscribe((resultat: ProprietaireDialogResult | undefined) => {
+        if (!resultat) return;
+        creerProprietaireAvecPiece((payload) => this.api.createProprietaire(payload), this.proprietairesApi, resultat, this.notify).subscribe({
           next: (proprietaire) => {
             this.proprietaires.update((list) => [...list, proprietaire].sort((a, b) => `${a.lastName}${a.firstName}`.localeCompare(`${b.lastName}${b.firstName}`)));
             this.form.controls.proprietaireId.setValue(proprietaire.id);

@@ -11,6 +11,7 @@ export type ModuleExportable =
   | 'crm'
   | 'proprietaires'
   | 'ventes'
+  | 'protocoles'
   | 'demarches'
   | 'locatif'
   | 'construction'

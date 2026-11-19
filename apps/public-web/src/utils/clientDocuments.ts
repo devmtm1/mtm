@@ -16,6 +16,8 @@ export interface DocumentClient {
   objet: string;
   /** Écran où le document est présenté avec son contexte. */
   lien: string;
+  /** Un reçu n'a pas d'adresse publique : il se télécharge avec le jeton du client (BoutonRecu). */
+  recu?: { nature: 'vente'; paiementId: string };
 }
 
 export const LIBELLES_ORIGINE: Record<OrigineDocument, string> = {
@@ -47,6 +49,20 @@ export function rassemblerDocuments({ dossiers, baux, releves, liens }: Sources)
         origine: 'vente' as const,
         objet: dossier.terrain?.nom ?? dossier.referenceInterne ?? 'Dossier de vente',
         lien: liens.vente,
+      })),
+    ),
+    // Un reçu de paiement validé : produit à la demande, il se télécharge avec le jeton du client.
+    ...(dossiers ?? []).flatMap((dossier) =>
+      (dossier.paiements ?? []).map((paiement) => ({
+        id: `recu-${paiement.id}`,
+        type: 'recu',
+        titre: 'Reçu de paiement',
+        date: paiement.datePaiement,
+        url: '',
+        origine: 'vente' as const,
+        objet: dossier.terrain?.nom ?? dossier.referenceInterne ?? 'Dossier de vente',
+        lien: liens.vente,
+        recu: { nature: 'vente' as const, paiementId: paiement.id },
       })),
     ),
     ...(baux ?? []).flatMap((bail) =>
