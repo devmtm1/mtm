@@ -34,6 +34,7 @@ import { TYPES_PIECE, erreurFichierPiece } from '../../../core/models/piece-iden
         <input matInput type="date" formControlName="pieceValiditeLe" />
       </mat-form-field>
 
+      @if (fichierAutorise()) {
       <div class="piece__fichier">
         <label class="piece__choix">
           <svg lucideUpload aria-hidden="true"></svg>
@@ -60,6 +61,7 @@ import { TYPES_PIECE, erreurFichierPiece } from '../../../core/models/piece-iden
           PDF uniquement, 10 Mo au maximum.
         }
       </p>
+      }
     </fieldset>
   `,
   styles: `
@@ -138,6 +140,8 @@ export class PieceIdentiteChamps {
   readonly groupe = input.required<FormGroup>();
   /** Lien du PDF déjà enregistré (modification d'une fiche). */
   readonly pieceUrl = input<string | null>(null);
+  /** Faux pour qui n'a pas le droit d'envoyer le PDF (le serveur le refuserait) : seuls le numéro et la validité restent saisissables. */
+  readonly fichierAutorise = input(true);
   readonly fichierChange = output<File | null>();
   readonly retraitChange = output<boolean>();
 

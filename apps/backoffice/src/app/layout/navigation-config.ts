@@ -164,13 +164,6 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
           { label: 'Programmes', route: '/programmes', permission: 'terrains:consulter' },
         ],
       },
-      { label: 'Mandats', route: '/mandats', icon: LucideScrollText, permission: 'mandats:consulter' },
-      { label: 'Propriétaires', route: '/proprietaires', icon: LucideContact, permission: 'proprietaires:consulter' },
-    ],
-  },
-  {
-    title: 'Location et services',
-    items: [
       {
         label: 'Gestion locative',
         route: '/locatif/biens',
@@ -185,6 +178,14 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
           { label: 'Relances d’impayés', route: '/locatif/relances', permission: 'locatif:consulter', compteur: 'relancesLocatives' },
         ],
       },
+      { label: 'Mandats', route: '/mandats', icon: LucideScrollText, permission: 'mandats:consulter' },
+      { label: 'Propriétaires', route: '/proprietaires', icon: LucideContact, permission: 'proprietaires:consulter' },
+    ],
+  },
+  {
+    // Les services de MTM autres que la vente et la location : un service de plus s'ajoute ici sans toucher au reste du menu.
+    title: 'Services',
+    items: [
       { label: 'Vérifications et démarches', libelleMenu: 'Vérifications', route: '/demarches/missions', icon: LucideClipboardCheck, permission: 'demarches:consulter' },
       { label: 'Chantiers', route: '/construction/chantiers', icon: LucideHardHat, permission: 'construction:consulter' },
     ],

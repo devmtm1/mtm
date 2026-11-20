@@ -91,6 +91,8 @@ export class ProprietaireDialog {
    */
   protected readonly voitCoordonnees = inject(SessionService).hasRole('administrateur');
   protected readonly coordonneesEditables = this.voitCoordonnees || !this.isEdit;
+  /** Envoyer la copie de la pièce demande « modifier un propriétaire » : un commercial peut créer la fiche, pas joindre le PDF. */
+  protected readonly peutJoindrePiece = inject(SessionService).hasPermission('proprietaires:modifier');
 
   protected readonly form = new FormGroup<ProprietaireForm>({
     firstName: new FormControl('', {
@@ -186,8 +188,8 @@ export class ProprietaireDialog {
     };
     const result: ProprietaireDialogResult = {
       payload,
-      fichierPiece: this.coordonneesEditables ? this.fichierPiece : null,
-      retirerPiece: this.coordonneesEditables && this.retirerPiece,
+      fichierPiece: this.coordonneesEditables && this.peutJoindrePiece ? this.fichierPiece : null,
+      retirerPiece: this.coordonneesEditables && this.peutJoindrePiece && this.retirerPiece,
     };
     this.dialogRef.close(result);
   }
