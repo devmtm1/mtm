@@ -64,6 +64,7 @@
         class="full-width"
         [groupe]="form"
         [pieceUrl]="dialogData?.proprietaire?.pieceUrl ?? null"
+        [fichierAutorise]="peutJoindrePiece"
         (fichierChange)="fichierPiece = $event"
         (retraitChange)="retirerPiece = $event"
       />

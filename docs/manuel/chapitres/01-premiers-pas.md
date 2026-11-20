@@ -35,7 +35,7 @@ Les comptes qui touchent à des données sensibles — **direction, administrate
 
 | Zone | À quoi elle sert |
 | --- | --- |
-| **Menu à gauche** | Aller d’un module à l’autre. Il ne montre que ce que votre rôle permet. Il est rangé par rubriques (Mon travail, Commercial, Biens, Location et services…) et tient en une vingtaine de lignes. Un sujet qui compte plusieurs pages (**Dossiers de vente**, **Gestion locative**, **Finances**, **Comptabilité**…) n’a **qu’une ligne** : ses pages sont les **onglets** affichés en haut de l’écran. **Administration** est repliée au départ. |
+| **Menu à gauche** | Aller d’un module à l’autre. Il ne montre que ce que votre rôle permet. Il est rangé par rubriques (Mon travail, Commercial, Biens, Services…) et tient en une vingtaine de lignes. Un sujet qui compte plusieurs pages (**Dossiers de vente**, **Gestion locative**, **Finances**, **Comptabilité**…) n’a **qu’une ligne** : ses pages sont les **onglets** affichés en haut de l’écran. **Administration** est repliée au départ. |
 | **Barre de recherche** | Retrouver un prospect, un bien, un dossier, **ou aller directement à une page** en tapant son nom (« trésorerie », « locataires »…). Raccourci : <kbd>Ctrl</kbd> + <kbd>K</kbd>. |
 | **Point d’interrogation** | Ouvre ce guide d’utilisation dans un nouvel onglet. |
 | **Lune** | Passer du thème clair au thème sombre. |
@@ -45,7 +45,7 @@ Les comptes qui touchent à des données sensibles — **direction, administrate
 
 ### Le menu
 
-Le menu est rangé par ce que vous faites : le **Tableau de bord** en tête, puis **Mon travail** (tâches, agenda, documents), **Commercial**, **Biens**, **Location et services** (gestion locative, vérifications, chantiers), **Pilotage et finances** et **Administration** (repliée : site web, utilisateurs et accès, réglages). Une **pastille** rouge sur une entrée indique ce qui vous attend : messages du site non lus, paiements à valider, relances à envoyer, résiliations, saisies financières à valider, tâches en retard. Sur une ligne qui compte plusieurs pages, la pastille additionne celles de ses onglets, et chaque onglet a la sienne. Le choix de replier **Administration** est retenu sur votre appareil. L’icône à gauche du titre de la page **replie** le menu pour gagner de la place. Vos notifications, la sécurité de votre compte et le **Guide d’utilisation** se trouvent dans le menu de **votre nom**, en haut à droite.
+Le menu est rangé par ce que vous faites : le **Tableau de bord** en tête, puis **Mon travail** (tâches, agenda, documents), **Commercial**, **Biens** (biens à vendre, gestion locative, mandats, propriétaires), **Services** (vérifications, chantiers), **Pilotage et finances** et **Administration** (repliée : site web, utilisateurs et accès, réglages). Une **pastille** rouge sur une entrée indique ce qui vous attend : messages du site non lus, paiements à valider, relances à envoyer, résiliations, saisies financières à valider, tâches en retard. Sur une ligne qui compte plusieurs pages, la pastille additionne celles de ses onglets, et chaque onglet a la sienne. Le choix de replier **Administration** est retenu sur votre appareil. L’icône à gauche du titre de la page **replie** le menu pour gagner de la place. Vos notifications, la sécurité de votre compte et le **Guide d’utilisation** se trouvent dans le menu de **votre nom**, en haut à droite.
 
 ### Retrouver quelqu’un ou quelque chose
 

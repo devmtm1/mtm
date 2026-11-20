@@ -56,7 +56,7 @@ Elle est **repliée au départ** : cliquez sur son titre pour la déplier. Elle 
 | **Réglages** | **Paramètres**, **Identité de l’entreprise**, **Étapes des dossiers**, **Règles de notification**, **Alertes et rapports automatiques** |
 | **Site web** | **Contenus du site**, **Réalisations & projets**, **Publicités du bandeau**, **Équipe du site**, **Actualités et conseils** |
 
-Les autres rubriques (Commercial, Biens, Location et services, Pilotage et finances) vous sont ouvertes comme à la direction.
+Les autres rubriques (Commercial, Biens, Services, Pilotage et finances) vous sont ouvertes comme à la direction.
 
 ## Les utilisateurs
 

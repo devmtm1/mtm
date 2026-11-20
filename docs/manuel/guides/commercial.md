@@ -40,7 +40,7 @@ Ce guide est **le vôtre** : il ne parle que de ce qu’un **commercial** fait d
 
 | Zone | À quoi elle sert |
 | --- | --- |
-| **Menu à gauche** | Aller d’un module à l’autre. Vous y trouvez **Mon travail**, **Commercial**, **Biens**, **Location et services**. |
+| **Menu à gauche** | Aller d’un module à l’autre. Vous y trouvez **Mon travail**, **Commercial**, **Biens**, **Services**. |
 | **Barre de recherche** | Retrouver un prospect, un bien, un dossier ou une page. Raccourci : <kbd>Ctrl</kbd> + <kbd>K</kbd>. |
 | **Point d’interrogation** | Ouvre ce guide. |
 | **Cloche** | Vos alertes. Un point rouge signale du nouveau. |
@@ -54,8 +54,8 @@ Les **pastilles rouges** du menu comptent ce qui vous attend (tâches en retard,
 | --- | --- |
 | **Mon travail** | **Tâches**, **Agenda**, **Documents**. |
 | **Commercial** | **Demandes du site** (les contacts reçus du site public), **Prospects**, **Dossiers de vente**. |
-| **Biens** | **Biens à vendre**, **Mandats**, **Propriétaires**. |
-| **Location et services** | **Gestion locative** (vos biens en location), **Vérifications et démarches**. |
+| **Biens** | **Biens à vendre**, **Gestion locative** (vos biens en location), **Mandats**, **Propriétaires**. |
+| **Services** | **Vérifications et démarches**. |
 
 Un sujet à plusieurs pages (par exemple **Dossiers de vente**) n’a **qu’une ligne** dans le menu : ses pages sont les **onglets** affichés en haut de l’écran.
 
@@ -315,7 +315,7 @@ Cliquez sur **Enregistrer un paiement** :
 
 ## La location, si elle fait partie de votre travail
 
-La location est **portée par les commerciaux** : vous créez et suivez **vos propres biens** (fiche, bail, séjours, locataires, loyers) dans **Location et services › Gestion locative**, et vous ne voyez que les vôtres. La **publication sur le site**, la **validation** (résiliations, versements) et les **sorties d’argent** restent à la gestion locative.
+La location est **portée par les commerciaux** : vous créez et suivez **vos propres biens** (fiche, bail, séjours, locataires, loyers) dans **Biens › Gestion locative**, et vous ne voyez que les vôtres. La **publication sur le site**, la **validation** (résiliations, versements) et les **sorties d’argent** restent à la gestion locative.
 
 Pour le détail pas à pas (créer un bien locatif, un bail, un séjour, encaisser un loyer), ouvrez le chapitre **La gestion locative** du [guide complet](index.html#gestion-locative).
 
