@@ -47,6 +47,8 @@ export interface ClientDataValue {
   notificationsNonLues: number;
   marquerNotificationLue: (id: string) => Promise<void>;
   toutMarquerNotificationsLues: () => Promise<void>;
+  /** À appeler après l'acceptation d'un protocole en ligne. */
+  refetchDossiers?: () => void;
   /** À appeler après l'envoi d'une demande depuis l'espace client. */
   refetchDemandes: () => void;
   /** À appeler après avoir demandé une nouvelle vérification. */

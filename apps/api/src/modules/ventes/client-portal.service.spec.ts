@@ -15,6 +15,7 @@ describe('ClientPortalService – demandes depuis l’espace client', () => {
       contacts as never,
       ventes as never,
       {} as never,
+      {} as never,
     );
     prisma.user.findUnique.mockResolvedValue({
       clientProspect: {

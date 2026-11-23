@@ -3,6 +3,7 @@ import { useClientData } from '../../contexts/client-data-store';
 import { usePageMetadata } from '../../hooks/usePageMetadata';
 import { ClientPageHeader, StatTile } from '../../components/client/shell/ClientUi';
 import { ClientDossierCard } from '../../components/client/ClientDossierCard';
+import { ClientProtocolesAutres } from '../../components/client/ClientProtocolesAutres';
 import { CommentRegler } from '../../components/client/CommentRegler';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { LinkButton } from '../../components/ui/LinkButton';
@@ -16,7 +17,7 @@ import { ROUTES } from '../../routes';
  * un seul dossier, il s'ouvre d'emblée.
  */
 export function ClientDossiersPage() {
-  const { dossiers, dossiersLoading, dossiersError } = useClientData();
+  const { dossiers, dossiersLoading, dossiersError, refetchDossiers } = useClientData();
   usePageMetadata({ title: 'Mes dossiers' });
   const list = dossiers ?? [];
   const actifs = list.filter((dossier) => dossier.statut !== 'annule');
@@ -29,6 +30,7 @@ export function ClientDossiersPage() {
         title="Mes dossiers"
         description={list.length > 0 ? `${list.length} dossier${list.length > 1 ? 's' : ''} suivi${list.length > 1 ? 's' : ''} par votre conseiller.` : undefined}
       />
+      <ClientProtocolesAutres />
       {dossiersLoading && (
         <div className="flex flex-col gap-4">
           <Skeleton className="h-24 rounded-2xl" />
@@ -52,7 +54,7 @@ export function ClientDossiersPage() {
             <StatTile compact icon={Wallet} value={formatMoney(totalRemaining)} label="Reste à payer" tone={totalRemaining > 0 ? 'warning' : 'neutral'} />
           </section>
           {list.map((dossier) => (
-            <ClientDossierCard key={dossier.id} dossier={dossier} defaultOpen={list.length === 1} />
+            <ClientDossierCard key={dossier.id} dossier={dossier} defaultOpen={list.length === 1} onProtocoleAccepte={refetchDossiers} />
           ))}
           {totalRemaining > 0 && (
             <CommentRegler

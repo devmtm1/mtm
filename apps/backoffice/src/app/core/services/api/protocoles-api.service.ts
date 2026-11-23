@@ -24,16 +24,26 @@ export interface ProtocoleDocument {
   url: string;
 }
 
+export type TypeDossierProtocole = 'vente' | 'bail' | 'chantier';
+
+export const LIBELLES_TYPE_DOSSIER: Record<TypeDossierProtocole, string> = {
+  vente: 'Vente',
+  bail: 'Bail',
+  chantier: 'Chantier',
+};
+
 export interface ProtocoleDossierResume {
+  typeDossier: TypeDossierProtocole;
   id: string;
   reference: string | null;
   statut: string;
   client: string | null;
   telephone: string | null;
+  email: string | null;
   bien: string | null;
   responsable: string | null;
   montantConvenu: number | null;
-  montantEncaisse: number;
+  montantEncaisse: number | null;
   soldeRestant: number | null;
   paiementsEnregistres: number;
 }
@@ -55,6 +65,14 @@ export interface Protocole {
   documentPrepare: ProtocoleDocument | null;
   documentSigne: ProtocoleDocument | null;
   dossier: ProtocoleDossierResume;
+  /** Preuve de l'acceptation faite par le client dans son espace ; `null` si le protocole n'a pas été accepté en ligne. */
+  acceptationEnLigne: {
+    le: string;
+    nom: string | null;
+    adresse: string | null;
+    appareil: string | null;
+    empreinte: string | null;
+  } | null;
 }
 
 export interface LigneHistorique {
@@ -78,7 +96,11 @@ export interface PageProtocoles {
   items: Protocole[];
 }
 
-export interface AlerteSignature extends ProtocoleDossierResume {
+export interface AlerteSignature extends Omit<
+  ProtocoleDossierResume,
+  'typeDossier' | 'montantEncaisse'
+> {
+  montantEncaisse: number;
   protocoleActuel: string;
   dernierPaiement: string | null;
 }
@@ -108,10 +130,16 @@ export interface OptionsProtocoles {
   transitions: Record<StatutProtocole, StatutProtocole[]>;
 }
 
-export type FiltreProtocoles = 'sans_signature' | 'en_retard' | 'incomplets' | 'a_valider' | 'en_attente';
+export type FiltreProtocoles =
+  'sans_signature' | 'en_retard' | 'incomplets' | 'a_valider' | 'en_attente';
 
 /** Statuts où la copie signée est bien reçue (« envoyé » n'en fait jamais partie). */
-export const STATUTS_SIGNES: readonly string[] = ['signe_client', 'signe_mtm', 'a_valider_direction', 'valide'];
+export const STATUTS_SIGNES: readonly string[] = [
+  'signe_client',
+  'signe_mtm',
+  'a_valider_direction',
+  'valide',
+];
 
 /**
  * « PAIEMENT REÇU – SIGNATURE MANQUANTE » : de l'argent est encaissé sur un dossier non annulé alors qu'aucun de ses protocoles
@@ -141,6 +169,7 @@ export interface FiltresProtocoles {
 
 export interface RechercheProtocoles extends FiltresProtocoles {
   dossierVenteId?: string;
+  typeDossier?: TypeDossierProtocole | '';
   statut?: string;
   filtre?: FiltreProtocoles | '';
   page?: number;
@@ -171,11 +200,15 @@ export class ProtocolesApiService {
   }
 
   tableau(filtres: FiltresProtocoles = {}): Observable<TableauProtocoles> {
-    return this.http.get<TableauProtocoles>(`${this.baseUrl}/tableau`, { params: this.parametres(filtres) });
+    return this.http.get<TableauProtocoles>(`${this.baseUrl}/tableau`, {
+      params: this.parametres(filtres),
+    });
   }
 
   alertes(filtres: FiltresProtocoles = {}): Observable<AlerteSignature[]> {
-    return this.http.get<AlerteSignature[]>(`${this.baseUrl}/alertes`, { params: this.parametres(filtres) });
+    return this.http.get<AlerteSignature[]>(`${this.baseUrl}/alertes`, {
+      params: this.parametres(filtres),
+    });
   }
 
   lister(recherche: RechercheProtocoles): Observable<PageProtocoles> {
@@ -185,7 +218,8 @@ export class ProtocolesApiService {
   private parametres(valeurs: object): HttpParams {
     let params = new HttpParams();
     for (const [cle, valeur] of Object.entries(valeurs)) {
-      if (valeur !== undefined && valeur !== '' && valeur !== null) params = params.set(cle, String(valeur));
+      if (valeur !== undefined && valeur !== '' && valeur !== null)
+        params = params.set(cle, String(valeur));
     }
     return params;
   }
@@ -194,7 +228,23 @@ export class ProtocolesApiService {
     return this.http.get<ProtocoleDetail>(`${this.baseUrl}/${id}`);
   }
 
-  creer(payload: { dossierVenteId: string; type?: string; titre?: string }): Observable<ProtocoleDetail> {
+  /** Les baux ou chantiers auxquels rattacher un protocole. */
+  dossiersPossibles(
+    type: 'bail' | 'chantier',
+    q = '',
+  ): Observable<{ id: string; libelle: string }[]> {
+    return this.http.get<{ id: string; libelle: string }[]>(`${this.baseUrl}/dossiers-possibles`, {
+      params: this.parametres({ type, q }),
+    });
+  }
+
+  creer(payload: {
+    dossierVenteId?: string;
+    bailLocatifId?: string;
+    projetConstructionId?: string;
+    type?: string;
+    titre?: string;
+  }): Observable<ProtocoleDetail> {
     return this.http.post<ProtocoleDetail>(this.baseUrl, payload);
   }
 
@@ -202,7 +252,12 @@ export class ProtocolesApiService {
     return this.http.patch<ProtocoleDetail>(`${this.baseUrl}/${id}/statut`, changement);
   }
 
-  deposerDocument(id: string, role: 'prepare' | 'signe', fichier: File, titre?: string): Observable<ProtocoleDetail> {
+  deposerDocument(
+    id: string,
+    role: 'prepare' | 'signe',
+    fichier: File,
+    titre?: string,
+  ): Observable<ProtocoleDetail> {
     const corps = new FormData();
     corps.append('role', role);
     if (titre) corps.append('title', titre);

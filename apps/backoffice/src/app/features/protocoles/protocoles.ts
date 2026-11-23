@@ -24,8 +24,10 @@ import {
 } from '@lucide/angular';
 import { debounceTime } from 'rxjs/operators';
 import {
+  LIBELLES_TYPE_DOSSIER,
   ProtocolesApiService,
   type AlerteSignature,
+  type TypeDossierProtocole,
   type FiltreProtocoles,
   type FiltresProtocoles,
   type OptionsProtocoles,
@@ -38,7 +40,11 @@ import { NotificationService } from '../../shared/services/notification.service'
 import { MoneyPipe } from '../../shared/pipes/money.pipe';
 import { Pagination, TAILLE_PAGE_DEFAUT } from '../../shared/components/pagination/pagination';
 import { ExportListeDialog } from '../../shared/dialogs/export-liste-dialog';
-import { chargerToutesLesPages, isoJour, sourceDepuisLignes } from '../../shared/utils/export-lignes';
+import {
+  chargerToutesLesPages,
+  isoJour,
+  sourceDepuisLignes,
+} from '../../shared/utils/export-lignes';
 import { ProtocoleDetailDialog, type ProtocoleDetailDialogData } from './protocole-detail-dialog';
 import { ProtocoleNouveauDialog } from './protocole-nouveau-dialog';
 
@@ -49,19 +55,84 @@ interface Indicateur {
   detail: string;
   valeur: (tableau: TableauProtocoles) => number;
   filtre: { filtre?: FiltreProtocoles; statut?: string };
-  icone: 'preparer' | 'envoyer' | 'attente' | 'signe' | 'valider' | 'alerte' | 'retard' | 'incomplet';
+  icone:
+    'preparer' | 'envoyer' | 'attente' | 'signe' | 'valider' | 'alerte' | 'retard' | 'incomplet';
   ton: 'primary' | 'success' | 'warning' | 'attention';
 }
 
 const TOUS_LES_INDICATEURS: Indicateur[] = [
-  { cle: 'aPreparer', libelle: 'À préparer', detail: 'Protocoles pas encore déposés', valeur: (t) => t.protocoles.aPreparer, filtre: { statut: 'a_preparer' }, icone: 'preparer', ton: 'primary' },
-  { cle: 'prepares', libelle: 'Préparés', detail: 'À vérifier avant envoi', valeur: (t) => t.protocoles.prepares, filtre: { statut: 'prepare_a_verifier' }, icone: 'envoyer', ton: 'primary' },
-  { cle: 'attente', libelle: 'En attente de signature', detail: 'Envoyés, sans retour signé', valeur: (t) => t.protocoles.enAttenteSignature, filtre: { filtre: 'en_attente' }, icone: 'attente', ton: 'warning' },
-  { cle: 'retard', libelle: 'En retard', detail: 'Sans retour au-delà du délai', valeur: (t) => t.protocoles.enRetard, filtre: { filtre: 'en_retard' }, icone: 'retard', ton: 'attention' },
-  { cle: 'signes', libelle: 'Signés par le client', detail: 'Copie signée déposée', valeur: (t) => t.protocoles.signesClient, filtre: { statut: 'signe_client' }, icone: 'signe', ton: 'success' },
-  { cle: 'valider', libelle: 'À valider', detail: 'En attente de la Direction', valeur: (t) => t.protocoles.aValider, filtre: { filtre: 'a_valider' }, icone: 'valider', ton: 'primary' },
-  { cle: 'sansSignature', libelle: 'Paiements sans signature', detail: 'Paiement reçu, protocole non signé', valeur: (t) => t.paiements.sansSignature, filtre: { filtre: 'sans_signature' }, icone: 'alerte', ton: 'attention' },
-  { cle: 'incomplets', libelle: 'Dossiers incomplets', detail: 'Aucun protocole validé', valeur: (t) => t.dossiers.incomplets, filtre: { filtre: 'incomplets' }, icone: 'incomplet', ton: 'warning' },
+  {
+    cle: 'aPreparer',
+    libelle: 'À préparer',
+    detail: 'Protocoles pas encore déposés',
+    valeur: (t) => t.protocoles.aPreparer,
+    filtre: { statut: 'a_preparer' },
+    icone: 'preparer',
+    ton: 'primary',
+  },
+  {
+    cle: 'prepares',
+    libelle: 'Préparés',
+    detail: 'À vérifier avant envoi',
+    valeur: (t) => t.protocoles.prepares,
+    filtre: { statut: 'prepare_a_verifier' },
+    icone: 'envoyer',
+    ton: 'primary',
+  },
+  {
+    cle: 'attente',
+    libelle: 'En attente de signature',
+    detail: 'Envoyés, sans retour signé',
+    valeur: (t) => t.protocoles.enAttenteSignature,
+    filtre: { filtre: 'en_attente' },
+    icone: 'attente',
+    ton: 'warning',
+  },
+  {
+    cle: 'retard',
+    libelle: 'En retard',
+    detail: 'Sans retour au-delà du délai',
+    valeur: (t) => t.protocoles.enRetard,
+    filtre: { filtre: 'en_retard' },
+    icone: 'retard',
+    ton: 'attention',
+  },
+  {
+    cle: 'signes',
+    libelle: 'Signés par le client',
+    detail: 'Copie signée déposée',
+    valeur: (t) => t.protocoles.signesClient,
+    filtre: { statut: 'signe_client' },
+    icone: 'signe',
+    ton: 'success',
+  },
+  {
+    cle: 'valider',
+    libelle: 'À valider',
+    detail: 'En attente de la Direction',
+    valeur: (t) => t.protocoles.aValider,
+    filtre: { filtre: 'a_valider' },
+    icone: 'valider',
+    ton: 'primary',
+  },
+  {
+    cle: 'sansSignature',
+    libelle: 'Paiements sans signature',
+    detail: 'Paiement reçu, protocole non signé',
+    valeur: (t) => t.paiements.sansSignature,
+    filtre: { filtre: 'sans_signature' },
+    icone: 'alerte',
+    ton: 'attention',
+  },
+  {
+    cle: 'incomplets',
+    libelle: 'Dossiers incomplets',
+    detail: 'Aucun protocole validé',
+    valeur: (t) => t.dossiers.incomplets,
+    filtre: { filtre: 'incomplets' },
+    icone: 'incomplet',
+    ton: 'warning',
+  },
 ];
 
 /**
@@ -107,7 +178,9 @@ export class ProtocolesPage implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   /** Quatre chiffres seulement : ceux qui demandent une action. Les autres statuts se choisissent dans le filtre « Statut ». */
-  protected readonly indicateurs = TOUS_LES_INDICATEURS.filter((i) => ['attente', 'retard', 'valider', 'sansSignature'].includes(i.cle));
+  protected readonly indicateurs = TOUS_LES_INDICATEURS.filter((i) =>
+    ['attente', 'retard', 'valider', 'sansSignature'].includes(i.cle),
+  );
   protected readonly canCreate = this.session.hasPermission('protocoles:creer');
   protected readonly peutExporter = this.session.hasPermission('protocoles:exporter');
   protected readonly exportEnCours = signal(false);
@@ -125,14 +198,26 @@ export class ProtocolesPage implements OnInit {
   /** Filtre posé par un indicateur (ou par l'adresse) : il s'ajoute à la recherche et au statut. */
   protected readonly filtre = signal<FiltreProtocoles | ''>('');
 
-  protected readonly filters = this.formBuilder.nonNullable.group({ q: '', statut: '', responsableId: '', depuis: '', jusqua: '' });
+  protected readonly filters = this.formBuilder.nonNullable.group({
+    q: '',
+    statut: '',
+    typeDossier: '' as TypeDossierProtocole | '',
+    responsableId: '',
+    depuis: '',
+    jusqua: '',
+  });
   /** Compte les saisies : le formulaire n'est pas un signal, ce compteur relance le calcul de `filtreActif`. */
   private readonly saisies = signal(0);
   protected readonly filtreActif = computed(() => {
     this.saisies();
-    return this.filtre() !== '' || Object.values(this.filters.getRawValue()).some((valeur) => valeur !== '');
+    return (
+      this.filtre() !== '' ||
+      Object.values(this.filters.getRawValue()).some((valeur) => valeur !== '')
+    );
   });
-  protected readonly libelleFiltre = computed(() => TOUS_LES_INDICATEURS.find((i) => i.filtre.filtre === this.filtre())?.libelle ?? '');
+  protected readonly libelleFiltre = computed(
+    () => TOUS_LES_INDICATEURS.find((i) => i.filtre.filtre === this.filtre())?.libelle ?? '',
+  );
 
   /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place. */
   private chargementInitialFait = false;
@@ -145,23 +230,43 @@ export class ProtocolesPage implements OnInit {
     if (recherche) this.filters.controls.q.setValue(recherche, { emitEvent: false });
     this.saisies.update((n) => n + 1);
     this.api.options().subscribe({ next: (options) => this.options.set(options) });
-    this.api.responsables().subscribe({ next: (responsables) => this.responsables.set(responsables), error: () => this.responsables.set([]) });
+    this.api.responsables().subscribe({
+      next: (responsables) => this.responsables.set(responsables),
+      error: () => this.responsables.set([]),
+    });
     this.rafraichirSynthese();
     this.charger();
     // « + Nouveau › Protocole » dans la barre du haut arrive ici avec ?nouveau=1 : on ouvre le formulaire, puis on retire le paramètre.
     if (params.get('nouveau') && this.canCreate) {
-      void this.router.navigate([], { queryParams: { nouveau: null }, queryParamsHandling: 'merge', replaceUrl: true });
+      void this.router.navigate([], {
+        queryParams: { nouveau: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
       this.nouveau();
     }
-    this.filters.controls.q.valueChanges.pipe(debounceTime(350), takeUntilDestroyed(this.destroyRef)).subscribe(() => this.recharger());
-    this.filters.controls.statut.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.recharger());
-    for (const champ of [this.filters.controls.responsableId, this.filters.controls.depuis, this.filters.controls.jusqua]) {
+    this.filters.controls.q.valueChanges
+      .pipe(debounceTime(350), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.recharger());
+    this.filters.controls.statut.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.recharger());
+    this.filters.controls.typeDossier.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.recharger());
+    for (const champ of [
+      this.filters.controls.responsableId,
+      this.filters.controls.depuis,
+      this.filters.controls.jusqua,
+    ]) {
       champ.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
         this.recharger();
         this.rafraichirSynthese();
       });
     }
-    this.filters.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.saisies.update((n) => n + 1));
+    this.filters.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.saisies.update((n) => n + 1));
   }
 
   private recharger(): void {
@@ -172,20 +277,38 @@ export class ProtocolesPage implements OnInit {
   /** Les filtres de personne et de période valent aussi pour le tableau de bord et l'alerte ; la recherche et le statut, non. */
   private filtresSynthese(): FiltresProtocoles {
     const valeurs = this.filters.getRawValue();
-    return { responsableId: valeurs.responsableId || undefined, depuis: valeurs.depuis || undefined, jusqua: valeurs.jusqua || undefined };
+    return {
+      responsableId: valeurs.responsableId || undefined,
+      depuis: valeurs.depuis || undefined,
+      jusqua: valeurs.jusqua || undefined,
+    };
   }
 
   protected rafraichirSynthese(): void {
     const filtres = this.filtresSynthese();
-    this.api.tableau(filtres).subscribe({ next: (tableau) => this.tableau.set(tableau), error: () => this.tableau.set(null) });
-    this.api.alertes(filtres).subscribe({ next: (alertes) => this.alertes.set(alertes), error: () => this.alertes.set([]) });
+    this.api.tableau(filtres).subscribe({
+      next: (tableau) => this.tableau.set(tableau),
+      error: () => this.tableau.set(null),
+    });
+    this.api.alertes(filtres).subscribe({
+      next: (alertes) => this.alertes.set(alertes),
+      error: () => this.alertes.set([]),
+    });
   }
 
   protected charger(): void {
     if (!this.chargementInitialFait) this.chargement.set(true);
     const valeurs = this.filters.getRawValue();
     this.api
-      .lister({ q: valeurs.q || undefined, statut: valeurs.statut || undefined, ...this.filtresSynthese(), filtre: this.filtre(), page: this.page(), pageSize: this.pageSize() })
+      .lister({
+        q: valeurs.q || undefined,
+        statut: valeurs.statut || undefined,
+        typeDossier: valeurs.typeDossier || undefined,
+        ...this.filtresSynthese(),
+        filtre: this.filtre(),
+        page: this.page(),
+        pageSize: this.pageSize(),
+      })
       .subscribe({
         next: (reponse) => {
           this.protocoles.set(reponse.items);
@@ -209,15 +332,31 @@ export class ProtocolesPage implements OnInit {
 
   /** Un indicateur ouvre la liste qui le compose. */
   protected appliquerIndicateur(indicateur: Indicateur): void {
-    this.filters.reset({ q: '', statut: indicateur.filtre.statut ?? '', responsableId: this.filters.controls.responsableId.value, depuis: this.filters.controls.depuis.value, jusqua: this.filters.controls.jusqua.value }, { emitEvent: false });
+    this.filters.reset(
+      {
+        q: '',
+        statut: indicateur.filtre.statut ?? '',
+        typeDossier: this.filters.controls.typeDossier.value,
+        responsableId: this.filters.controls.responsableId.value,
+        depuis: this.filters.controls.depuis.value,
+        jusqua: this.filters.controls.jusqua.value,
+      },
+      { emitEvent: false },
+    );
     this.saisies.update((n) => n + 1);
     this.filtre.set(indicateur.filtre.filtre ?? '');
-    void this.router.navigate([], { queryParams: indicateur.filtre.filtre ? { filtre: indicateur.filtre.filtre } : {}, replaceUrl: true });
+    void this.router.navigate([], {
+      queryParams: indicateur.filtre.filtre ? { filtre: indicateur.filtre.filtre } : {},
+      replaceUrl: true,
+    });
     this.recharger();
   }
 
   protected effacerFiltres(): void {
-    this.filters.reset({ q: '', statut: '', responsableId: '', depuis: '', jusqua: '' }, { emitEvent: false });
+    this.filters.reset(
+      { q: '', statut: '', typeDossier: '', responsableId: '', depuis: '', jusqua: '' },
+      { emitEvent: false },
+    );
     this.saisies.update((n) => n + 1);
     this.filtre.set('');
     void this.router.navigate([], { queryParams: {}, replaceUrl: true });
@@ -250,7 +389,12 @@ export class ProtocolesPage implements OnInit {
 
   protected nouveau(dossierVenteId?: string): void {
     this.dialog
-      .open(ProtocoleNouveauDialog, { data: { dossierVenteId: dossierVenteId ?? null }, width: '560px', maxWidth: '96vw', autoFocus: false })
+      .open(ProtocoleNouveauDialog, {
+        data: { dossierVenteId: dossierVenteId ?? null },
+        width: '560px',
+        maxWidth: '96vw',
+        autoFocus: false,
+      })
       .afterClosed()
       .subscribe((id: string | undefined) => {
         if (!id) return;
@@ -268,7 +412,15 @@ export class ProtocolesPage implements OnInit {
     const valeurs = this.filters.getRawValue();
     chargerToutesLesPages<Protocole>(
       (page, taille) =>
-        this.api.lister({ q: valeurs.q || undefined, statut: valeurs.statut || undefined, ...this.filtresSynthese(), filtre: this.filtre(), page, pageSize: taille }),
+        this.api.lister({
+          q: valeurs.q || undefined,
+          statut: valeurs.statut || undefined,
+          typeDossier: valeurs.typeDossier || undefined,
+          ...this.filtresSynthese(),
+          filtre: this.filtre(),
+          page,
+          pageSize: taille,
+        }),
       100,
     ).subscribe({
       next: (lignes) => {
@@ -278,16 +430,35 @@ export class ProtocolesPage implements OnInit {
           sourceDepuisLignes<Protocole>(
             { module: 'protocoles', titre: 'Protocoles et signatures' },
             [
+              {
+                libelle: 'Type de dossier',
+                valeur: (p) => LIBELLES_TYPE_DOSSIER[p.dossier.typeDossier],
+              },
               { libelle: 'Dossier', valeur: (p) => p.dossier.reference },
               { libelle: 'Client', valeur: (p) => p.dossier.client },
               { libelle: 'Bien', valeur: (p) => p.dossier.bien },
               { libelle: 'Responsable', valeur: (p) => p.dossier.responsable },
               { libelle: 'Protocole', valeur: (p) => p.titre ?? this.libelleType(p.type) },
-              { libelle: 'Statut', valeur: (p) => p.libelleStatut + (p.enRetard ? ' (en retard)' : '') },
+              {
+                libelle: 'Statut',
+                valeur: (p) => p.libelleStatut + (p.enRetard ? ' (en retard)' : ''),
+              },
               { libelle: 'Envoyé le', type: 'date', valeur: (p) => isoJour(p.dateEnvoi) },
-              { libelle: 'Signature reçue le', type: 'date', valeur: (p) => isoJour(p.dateReceptionSignee) },
-              { libelle: 'Montant convenu', type: 'montant', valeur: (p) => p.dossier.montantConvenu },
-              { libelle: 'Montant encaissé', type: 'montant', valeur: (p) => p.dossier.montantEncaisse },
+              {
+                libelle: 'Signature reçue le',
+                type: 'date',
+                valeur: (p) => isoJour(p.dateReceptionSignee),
+              },
+              {
+                libelle: 'Montant convenu',
+                type: 'montant',
+                valeur: (p) => p.dossier.montantConvenu,
+              },
+              {
+                libelle: 'Montant encaissé',
+                type: 'montant',
+                valeur: (p) => p.dossier.montantEncaisse,
+              },
               { libelle: 'Solde restant', type: 'montant', valeur: (p) => p.dossier.soldeRestant },
             ],
             lignes,
@@ -304,11 +475,20 @@ export class ProtocolesPage implements OnInit {
   protected ton(statut: string): string {
     if (['signe_client', 'signe_mtm', 'valide'].includes(statut)) return 'status-pill--success';
     if (['a_corriger', 'annule'].includes(statut)) return 'status-pill--danger';
-    if (['envoye', 'en_attente_signature', 'a_valider_direction'].includes(statut)) return 'status-pill--warning';
+    if (['envoye', 'en_attente_signature', 'a_valider_direction'].includes(statut))
+      return 'status-pill--warning';
     return '';
   }
 
+  protected libelleTypeDossier(type: TypeDossierProtocole): string {
+    return LIBELLES_TYPE_DOSSIER[type];
+  }
+
   protected libelleType(type: string): string {
-    return { protocole_accord: 'Protocole d’accord', contrat: 'Contrat', autre: 'Autre document' }[type] ?? type;
+    return (
+      { protocole_accord: 'Protocole d’accord', contrat: 'Contrat', autre: 'Autre document' }[
+        type
+      ] ?? type
+    );
   }
 }

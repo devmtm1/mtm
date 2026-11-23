@@ -96,12 +96,6 @@ export const DELAI_RAPPEL_DEFAUT_JOURS = 7;
 export const CLE_DELAI_RAPPEL = 'protocoles.delaiRappelJours';
 
 /**
- * Date (AAAA-MM-JJ) à partir de laquelle le suivi des signatures s'applique. Les dossiers ouverts avant n'entrent ni dans
- * l'alerte « paiement reçu – signature manquante » ni dans les compteurs « sans signature » et « incomplets » : sans cela, la
- * mise en service ferait remonter d'un coup tout l'historique. La migration fixe ce réglage au jour de la mise en service ;
- * vide ou absent, tous les dossiers sont suivis. Les protocoles saisis restent visibles dans la liste dans tous les cas.
- */
-/**
  * Ce que le client voit de son protocole : une étape simple, jamais les statuts internes (vérification, validation Direction,
  * motifs de correction…). Un protocole annulé n'est pas montré.
  */
@@ -109,6 +103,7 @@ export type EtapeClient = 'en_preparation' | 'a_signer' | 'signe' | 'valide';
 
 export function etapeClient(
   statut: string,
+  signatureEnLigne = false,
 ): { etape: EtapeClient; libelle: string; aide: string } | null {
   switch (statut) {
     case 'a_preparer':
@@ -124,7 +119,9 @@ export function etapeClient(
       return {
         etape: 'a_signer',
         libelle: 'À signer',
-        aide: 'Votre protocole vous a été envoyé. Signez-le et rendez-le à votre conseiller.',
+        aide: signatureEnLigne
+          ? 'Votre protocole est prêt. Lisez-le, puis acceptez-le en ligne ou rendez-le signé à votre conseiller.'
+          : 'Votre protocole vous a été envoyé. Signez-le et rendez-le à votre conseiller.',
       };
     case 'signe_client':
     case 'signe_mtm':
@@ -145,7 +142,20 @@ export function etapeClient(
   }
 }
 
+/**
+ * Date (AAAA-MM-JJ) à partir de laquelle le suivi des signatures s'applique. Les dossiers ouverts avant n'entrent ni dans
+ * l'alerte « paiement reçu – signature manquante » ni dans les compteurs « sans signature » et « incomplets » : sans cela, la
+ * mise en service ferait remonter d'un coup tout l'historique. La migration fixe ce réglage au jour de la mise en service ;
+ * vide ou absent, tous les dossiers sont suivis. Les protocoles saisis restent visibles dans la liste dans tous les cas.
+ */
 export const CLE_DEBUT_SUIVI = 'protocoles.suiviDepuis';
+
+/**
+ * Réglage (booléen, désactivé par défaut) : le client peut accepter son protocole en ligne depuis son espace. C'est une
+ * signature électronique simple (nom saisi, date, adresse, empreinte du document) ; sa valeur juridique est à faire valider
+ * par le conseil juridique de MTM avant activation (voir docs/PROTOCOLES.md).
+ */
+export const CLE_SIGNATURE_EN_LIGNE = 'protocoles.signatureEnLigne';
 
 /** Lit le réglage ci-dessus : une date valide, sinon `null` (aucune limite). */
 export function lireDebutSuivi(valeur: unknown): Date | null {

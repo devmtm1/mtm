@@ -80,6 +80,7 @@ model User {
   clientProspect           Prospect?              @relation("ProspectClientUser", fields: [clientProspectId], references: [id], onDelete: SetNull)
   dossiersVenteResponsable DossierVente[]         @relation("DossierVenteCommercial")
   protocolesCrees          ProtocoleDossier[]     @relation("ProtocoleCreator")
+  protocolesFichiers       ProtocoleFichier[]     @relation("ProtocoleFichierCreator")
   protocolesHistorique     ProtocoleHistorique[]  @relation("ProtocoleHistoriqueUser")
   reservationsCreees       Reservation[]          @relation("ReservationCreator")
   paiementsEnregistres     Paiement[]             @relation("PaiementRecorder")
@@ -1101,9 +1102,14 @@ model DocumentVente {
 /// Un protocole d'accord ou un contrat d'un dossier de vente, de sa préparation à sa validation par la Direction.
 /// Un protocole « envoyé » n'est jamais « signé » : le statut « signé par le client » exige la copie signée déposée et sa date de réception.
 model ProtocoleDossier {
-  id             String       @id @default(uuid())
-  dossierVenteId String
-  dossierVente   DossierVente @relation(fields: [dossierVenteId], references: [id], onDelete: Cascade)
+  id             String        @id @default(uuid())
+  /// Le dossier suivi : une vente, un bail locatif ou un chantier, jamais plusieurs à la fois (contrainte en base).
+  dossierVenteId String?
+  dossierVente   DossierVente? @relation(fields: [dossierVenteId], references: [id], onDelete: Cascade)
+  bailLocatifId  String?
+  bailLocatif    BailLocatif?  @relation(fields: [bailLocatifId], references: [id], onDelete: Cascade)
+  projetConstructionId String?
+  projetConstruction   ProjetConstruction? @relation(fields: [projetConstructionId], references: [id], onDelete: Cascade)
   /// protocole_accord | contrat | autre
   type           String       @default("protocole_accord")
   titre          String?
@@ -1114,6 +1120,12 @@ model ProtocoleDossier {
   documentPrepare   DocumentVente? @relation("ProtocoleDocumentPrepare", fields: [documentPrepareId], references: [id], onDelete: SetNull)
   documentSigneId   String?
   documentSigne     DocumentVente? @relation("ProtocoleDocumentSigne", fields: [documentSigneId], references: [id], onDelete: SetNull)
+  /// Pièces d'un protocole de bail ou de chantier (les protocoles de vente gardent leurs pièces dans documents_vente).
+  fichierPrepareId  String?
+  fichierPrepare    ProtocoleFichier? @relation("ProtocoleFichierPrepare", fields: [fichierPrepareId], references: [id], onDelete: SetNull)
+  fichierSigneId    String?
+  fichierSigne      ProtocoleFichier? @relation("ProtocoleFichierSigne", fields: [fichierSigneId], references: [id], onDelete: SetNull)
+  fichiers          ProtocoleFichier[] @relation("ProtocoleFichierProtocole")
 
   dateEnvoi           DateTime?
   /// Moyen d'envoi : email, whatsapp, main_propre, courrier, autre
@@ -1123,6 +1135,15 @@ model ProtocoleDossier {
   /// Motif d'une correction ou d'une annulation.
   motif               String?
 
+  /// Empreinte SHA-256 du document préparé tel qu'il a été déposé : prouve ce que le client a lu et accepté.
+  empreinteDocument    String?
+  /// Acceptation en ligne par le client (signature électronique simple) : quand, nom saisi, adresse, appareil, empreinte acceptée.
+  acceptationLe        DateTime?
+  acceptationNom       String?
+  acceptationIp        String?
+  acceptationAgent     String?
+  acceptationEmpreinte String?
+
   createdById String?
   createdBy   User?    @relation("ProtocoleCreator", fields: [createdById], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
@@ -1131,9 +1152,33 @@ model ProtocoleDossier {
   historique ProtocoleHistorique[]
 
   @@index([dossierVenteId])
+  @@index([bailLocatifId])
+  @@index([projetConstructionId])
   @@index([statut])
   @@index([dateEnvoi])
   @@map("protocoles_dossier")
+}
+
+/// Une version d'un document de protocole pour un bail ou un chantier : la version préparée ou la copie signée.
+model ProtocoleFichier {
+  id           String           @id @default(uuid())
+  protocoleId  String
+  protocole    ProtocoleDossier @relation("ProtocoleFichierProtocole", fields: [protocoleId], references: [id], onDelete: Cascade)
+  /// prepare | signe
+  role         String
+  title        String?
+  storageKey   String
+  resourceType String           @default("raw")
+  version      Int              @default(1)
+  createdById  String?
+  createdBy    User?            @relation("ProtocoleFichierCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt    DateTime         @default(now())
+
+  preparePour ProtocoleDossier[] @relation("ProtocoleFichierPrepare")
+  signePour   ProtocoleDossier[] @relation("ProtocoleFichierSigne")
+
+  @@index([protocoleId, role])
+  @@map("protocoles_fichiers")
 }
 
 /// Chaque changement de statut d'un protocole : qui, quand, de quoi à quoi.
@@ -1806,6 +1851,8 @@ model BailLocatif {
   @@index([statut])
   @@index([situationPaiement])
   @@map("baux_locatifs")
+
+  protocoles ProtocoleDossier[]
 }
 
 /**
@@ -2338,6 +2385,8 @@ model ProjetConstruction {
   @@index([situationAlerte])
   @@index([dateFinPrevue])
   @@map("projets_construction")
+
+  protocoles ProtocoleDossier[]
 }
 
 /**

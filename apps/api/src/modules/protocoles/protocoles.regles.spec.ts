@@ -225,4 +225,12 @@ describe('ce que voit le client de son protocole', () => {
   it('un protocole « à corriger » reste « en préparation » pour le client, sans révéler le motif', () => {
     expect(etapeClient('a_corriger')?.etape).toBe('en_preparation');
   });
+
+  it('annonce l’acceptation en ligne au client seulement quand elle est activée', () => {
+    expect(etapeClient('envoye')?.aide).toContain(
+      'rendez-le à votre conseiller',
+    );
+    expect(etapeClient('envoye')?.aide).not.toContain('en ligne');
+    expect(etapeClient('envoye', true)?.aide).toContain('acceptez-le en ligne');
+  });
 });

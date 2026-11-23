@@ -30,13 +30,21 @@ const protocole = (id: string, jours: number) => ({
 });
 
 describe('ProtocolesRappelsService', () => {
-  it('ne cherche que les protocoles envoyés sans retour signé, au-delà du délai, sur un dossier non annulé', async () => {
+  it('ne cherche que les protocoles envoyés sans retour signé, au-delà du délai, sur un dossier (vente, bail ou chantier) non clos', async () => {
     const { service, prisma } = montage(7);
     await service.rappeler(MAINTENANT);
     const where = prisma.protocoleDossier.findMany.mock.calls[0][0].where;
     expect(where.statut).toEqual({ in: ['envoye', 'en_attente_signature'] });
     expect(where.dateEnvoi.lt).toEqual(ilYa(7));
-    expect(where.dossierVente).toEqual({ statut: { not: 'annule' } });
+    expect(where.OR).toEqual([
+      { dossierVente: { statut: { not: 'annule' } } },
+      {
+        bailLocatif: {
+          statut: { notIn: ['termine', 'resilie_sans_preavis'] },
+        },
+      },
+      { projetConstruction: { statut: { not: 'annule' } } },
+    ]);
   });
 
   it('prévient les titulaires de « protocoles:modifier » avec le dossier, le client et le nombre de jours', async () => {

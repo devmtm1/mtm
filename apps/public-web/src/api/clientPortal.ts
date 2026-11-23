@@ -1,5 +1,5 @@
 import { apiClient, ApiError } from './client';
-import type { ClientDemandes, ClientDossier } from '../types/clientPortal';
+import type { ClientDemandes, ClientDossier, ClientProtocoleAutre } from '../types/clientPortal';
 import type { ClientMission } from '../types/mission';
 import type {
   ClientBailLocataire,
@@ -35,6 +35,16 @@ async function videSiNonClient<T>(promesse: Promise<T>, vide: T): Promise<T> {
 
 export function fetchClientPortal(token: string): Promise<ClientDossier[]> {
   return videSiNonClient(apiClient.get<ClientDossier[]>('/ventes/client/portal', undefined, { token }), []);
+}
+
+/** Protocoles des baux et chantiers du client connecté (vide pour un compte qui n'en a pas). */
+export function fetchMesAutresProtocoles(token: string): Promise<ClientProtocoleAutre[]> {
+  return videSiNonClient(apiClient.get<ClientProtocoleAutre[]>('/protocoles/client/mes-protocoles', undefined, { token }), []);
+}
+
+/** Le client accepte son protocole en ligne (signature électronique simple) : nom saisi et case « j'ai lu et j'accepte ». */
+export function accepterProtocoleEnLigne(token: string, protocoleId: string, nom: string): Promise<{ id: string; acceptationLe: string }> {
+  return apiClient.post(`/protocoles/client/${protocoleId}/accepter`, { nom, accepte: true }, { token });
 }
 
 export function fetchClientDemandes(token: string): Promise<ClientDemandes> {

@@ -18,9 +18,22 @@ import {
 } from '../protocoles.regles';
 
 export class CreateProtocoleDto {
-  @ApiProperty()
+  @ApiPropertyOptional({
+    description: 'Une vente… (un seul des trois dossiers)',
+  })
+  @IsOptional()
   @IsUUID()
-  dossierVenteId!: string;
+  dossierVenteId?: string;
+
+  @ApiPropertyOptional({ description: '…ou un bail locatif…' })
+  @IsOptional()
+  @IsUUID()
+  bailLocatifId?: string;
+
+  @ApiPropertyOptional({ description: '…ou un chantier.' })
+  @IsOptional()
+  @IsUUID()
+  projetConstructionId?: string;
 
   @ApiPropertyOptional({ enum: TYPES_PROTOCOLE })
   @IsOptional()
@@ -32,6 +45,21 @@ export class CreateProtocoleDto {
   @IsString()
   @MaxLength(200)
   titre?: string;
+}
+
+export class AccepterProtocoleDto {
+  @ApiProperty({
+    description: 'Nom complet saisi par le client pour accepter.',
+  })
+  @IsString()
+  @MaxLength(200)
+  nom!: string;
+
+  @ApiProperty({
+    description: 'Le client confirme avoir lu et accepté le document.',
+  })
+  @IsIn([true])
+  accepte!: true;
 }
 
 export class ChangerStatutProtocoleDto {
@@ -111,6 +139,21 @@ export class ListerProtocolesDto {
   @IsOptional()
   @IsUUID()
   dossierVenteId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsUUID()
+  bailLocatifId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsUUID()
+  projetConstructionId?: string;
+
+  @ApiPropertyOptional({ enum: ['vente', 'bail', 'chantier'] })
+  @IsOptional()
+  @IsIn(['vente', 'bail', 'chantier'])
+  typeDossier?: 'vente' | 'bail' | 'chantier';
 
   @ApiPropertyOptional({ description: 'Collaborateur responsable du dossier.' })
   @IsOptional()

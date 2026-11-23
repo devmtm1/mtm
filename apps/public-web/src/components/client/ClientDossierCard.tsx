@@ -11,6 +11,8 @@ import { ClientDisclosure } from './shell/Disclosure';
 import { Frise, type FriseItem } from './shell/Frise';
 import { ClientEchanges } from './ClientEchanges';
 import { BoutonRecu } from './BoutonRecu';
+import { AccepterProtocoleModal } from './AccepterProtocoleModal';
+import type { ClientDossierProtocole } from '../../types/clientPortal';
 
 function Section({ icon: Icon, title, children }: { icon: typeof Receipt; title: string; children: React.ReactNode }) {
   return (
@@ -30,7 +32,17 @@ function Section({ icon: Icon, title, children }: { icon: typeof Receipt; title:
  * l'explication du statut, la réservation, l'échéancier en frise, les
  * paiements validés et les documents à télécharger.
  */
-export function ClientDossierCard({ dossier, defaultOpen = false }: { dossier: ClientDossier; defaultOpen?: boolean }) {
+export function ClientDossierCard({
+  dossier,
+  defaultOpen = false,
+  onProtocoleAccepte,
+}: {
+  dossier: ClientDossier;
+  defaultOpen?: boolean;
+  /** Appelé après une acceptation en ligne : la page recharge les dossiers. */
+  onProtocoleAccepte?: () => void;
+}) {
+  const [aAccepter, setAAccepter] = useState<ClientDossierProtocole | null>(null);
   const status = dossierStatus(dossier.statut);
   const price = dossier.prixVente ?? 0;
   const paid = dossier.montantPaye;
@@ -175,7 +187,21 @@ export function ClientDossierCard({ dossier, defaultOpen = false }: { dossier: C
                   </Badge>
                 </div>
                 <p className="mt-1 text-[13px] text-mtm-muted">{protocole.aide}</p>
-                {protocole.dateReceptionSignee && (
+                {protocole.peutAccepterEnLigne && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setAAccepter(protocole)}
+                      className="inline-flex min-h-10 items-center rounded-xl bg-mtm-primary px-4 text-sm font-semibold text-white transition-colors hover:bg-mtm-primary/90"
+                    >
+                      Lire et accepter en ligne
+                    </button>
+                  </div>
+                )}
+                {protocole.accepteLe && (
+                  <p className="mt-0.5 text-xs text-mtm-muted">Accepté en ligne le {formatDate(protocole.accepteLe)}.</p>
+                )}
+                {protocole.dateReceptionSignee && !protocole.accepteLe && (
                   <p className="mt-0.5 text-xs text-mtm-muted">Copie signée reçue le {formatDate(protocole.dateReceptionSignee)}.</p>
                 )}
               </li>
@@ -226,6 +252,9 @@ export function ClientDossierCard({ dossier, defaultOpen = false }: { dossier: C
       <div className="mt-5">
         <ClientEchanges type="vente" dossierId={dossier.id} />
       </div>
+      {aAccepter && (
+        <AccepterProtocoleModal protocole={aAccepter} onClose={() => setAAccepter(null)} onAccepte={() => onProtocoleAccepte?.()} />
+      )}
     </ClientDisclosure>
   );
 }

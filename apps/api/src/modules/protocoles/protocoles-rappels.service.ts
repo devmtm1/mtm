@@ -49,7 +49,15 @@ export class ProtocolesRappelsService {
       where: {
         statut: { in: [...STATUTS_EN_ATTENTE_RETOUR] },
         dateEnvoi: { lt: new Date(maintenant.getTime() - delai * JOUR_MS) },
-        dossierVente: { statut: { not: 'annule' } },
+        OR: [
+          { dossierVente: { statut: { not: 'annule' } } },
+          {
+            bailLocatif: {
+              statut: { notIn: ['termine', 'resilie_sans_preavis'] },
+            },
+          },
+          { projetConstruction: { statut: { not: 'annule' } } },
+        ],
       },
       select: {
         id: true,
@@ -60,6 +68,18 @@ export class ProtocolesRappelsService {
             id: true,
             referenceInterne: true,
             prospect: { select: { nom: true, prenom: true } },
+          },
+        },
+        bailLocatif: {
+          select: {
+            referenceInterne: true,
+            locataire: { select: { firstName: true, lastName: true } },
+          },
+        },
+        projetConstruction: {
+          select: {
+            referenceInterne: true,
+            client: { select: { nom: true, prenom: true } },
           },
         },
       },
@@ -75,17 +95,28 @@ export class ProtocolesRappelsService {
       );
       // Un rappel par période de `delai` jours écoulée : le 7e jour, le 14e, le 21e…
       const periode = Math.floor(jours / delai);
-      const client = [
-        protocole.dossierVente.prospect.prenom,
-        protocole.dossierVente.prospect.nom,
-      ]
-        .filter(Boolean)
-        .join(' ');
+      const personne =
+        protocole.dossierVente?.prospect ??
+        protocole.projetConstruction?.client ??
+        null;
+      const client = personne
+        ? [personne.prenom, personne.nom].filter(Boolean).join(' ')
+        : [
+            protocole.bailLocatif?.locataire.firstName,
+            protocole.bailLocatif?.locataire.lastName,
+          ]
+            .filter(Boolean)
+            .join(' ');
+      const reference =
+        protocole.dossierVente?.referenceInterne ??
+        protocole.bailLocatif?.referenceInterne ??
+        protocole.projetConstruction?.referenceInterne ??
+        protocole.id;
       const envoyes = await this.notifications.notifierPermission(
         'protocoles:modifier',
         {
           type: 'protocole_rappel',
-          titre: `Signature en attente depuis ${jours} jours — dossier ${protocole.dossierVente.referenceInterne ?? protocole.dossierVente.id}`,
+          titre: `Signature en attente depuis ${jours} jours — ${reference}`,
           message: `${client}${protocole.titre ? ` · ${protocole.titre}` : ''} : relancer le client pour la copie signée.`,
           lien: '/protocoles?filtre=en_retard',
           entityType: 'ProtocoleDossier',

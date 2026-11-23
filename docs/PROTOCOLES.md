@@ -4,7 +4,7 @@ Module « Protocoles » du back-office (menu **Protocoles**), qui répond au cah
 
 ## Ce que fait le module
 
-- **Classement numérique** : chaque protocole est rattaché à un dossier de vente ; le document préparé et la copie signée sont des documents du dossier (types `protocole` et `protocole_signe`).
+- **Classement numérique** : chaque protocole est rattaché à un dossier (vente, bail ou chantier) ; le document préparé et la copie signée sont des documents du dossier (types `protocole` et `protocole_signe`).
 - **Dépôt par la secrétaire** : création d'un protocole, dépôt du document préparé, puis de la copie signée.
 - **Suivi des signatures** : statuts `a_preparer`, `prepare_a_verifier`, `envoye`, `en_attente_signature`, `signe_client`, `signe_mtm`, `a_valider_direction`, `valide`, `a_corriger`, `annule`. Les transitions autorisées sont définies dans `apps/api/src/modules/protocoles/protocoles.regles.ts`.
 - **« Envoyé » n'est pas « signé »** : passer à `signe_client` exige la copie signée déposée et la date de réception. Un motif est obligatoire pour `a_corriger` et `annule`.
@@ -27,13 +27,39 @@ Ressource `protocoles` : `consulter`, `creer`, `modifier`, `valider`, `exporter`
 
 ## Mise en production
 
-1. `prisma migrate deploy` (migrations `20261118170000_protocoles_signatures` et `20261119120000_protocoles_suivi_depuis`) puis le seed (ressource, rôle, permissions). La seconde fixe le début du suivi à la date du déploiement : ajustez-le dans Paramètres si MTM veut suivre aussi des dossiers plus anciens.
+1. `prisma migrate deploy` (migrations `20261118170000_protocoles_signatures`, `20261119120000_protocoles_suivi_depuis` et `20261123100000_protocoles_autres_dossiers_signature_en_ligne`) puis le seed (ressource, rôle, permissions). La seconde fixe le début du suivi à la date du déploiement : ajustez-le dans Paramètres si MTM veut suivre aussi des dossiers plus anciens.
 2. Attribuer le rôle `secretaire` aux comptes concernés dans le back-office.
 
-## Limites connues (à revoir avec le DG)
+## Ventes, baux et chantiers
 
-- Périmètre : dossiers de **vente** uniquement.
-- Pas de canal WhatsApp pour les alertes (notifications du back-office et e-mail selon les préférences).
-- Pas de signature électronique : la copie signée est numérisée puis déposée.
-- Le dépôt n'a été testé qu'avec des PDF.
+Un protocole se rattache à **un seul** dossier : une vente, un bail locatif ou un chantier (contrainte en base `protocoles_un_seul_dossier`). La fenêtre « Nouveau protocole » demande d'abord le type de dossier, puis propose les dossiers correspondants (`GET /protocoles/dossiers-possibles`).
+
+- Les pièces d'un protocole de vente restent des documents du dossier de vente ; celles d'un bail ou d'un chantier sont stockées dans `protocoles_fichiers` (versionnées, privées sur Cloudinary).
+- Le suivi, les statuts, les rappels, la recherche, les filtres et l'export valent pour les trois types. La liste a un filtre « Dossier » (ventes, baux, chantiers).
+- L'alerte « paiement reçu – signature manquante » et ses compteurs ne concernent que les **ventes** (c'est là que les paiements du cahier des charges sont suivis). Les montants ne sont affichés que pour une vente.
+- Espace client : le protocole d'une vente s'affiche dans la carte du dossier ; ceux d'un **bail** (compte locataire) et d'un **chantier** (compte client) s'affichent en tête de « Mes dossiers » (`GET /protocoles/client/mes-protocoles`), avec la même étape simple.
+
+## Canaux : e-mail, SMS, WhatsApp
+
+- Quand un protocole passe à « envoyé », le client est prévenu dans son espace et par e-mail ; par SMS ou WhatsApp s'il les a choisis **et** qu'un fournisseur est configuré (`SMS_PROVIDER`, `WHATSAPP_PROVIDER`), comme pour ses paiements.
+- Dans la fiche du protocole, la secrétaire dispose de boutons « WhatsApp », « E-mail » et « Appeler » pré-remplis pour relancer le client sans fournisseur.
+- Les alertes internes (rappels, paiement sans signature) restent des notifications du back-office et des e-mails.
+
+## Formats de fichier
+
+PDF, JPEG, PNG, WebP et Word (.docx), 10 Mo au plus. Le contenu est contrôlé (signature binaire), pas seulement l'extension. Tous ces formats sont couverts par les tests ; une copie signée prise en photo (JPEG) est acceptée.
+
+## Acceptation en ligne par le client (signature électronique simple)
+
+**Désactivée par défaut** (réglage `protocoles.signatureEnLigne`, booléen, dans Paramètres). Une fois activée, le client voit « Lire et accepter en ligne » sur un protocole envoyé (vente, bail ou chantier) : il lit le document, saisit son nom complet et coche « j'ai lu et j'accepte ».
+
+- MTM conserve : la date, le nom saisi, l'adresse de connexion, l'appareil et l'**empreinte SHA-256 du document** déposé (calculée au dépôt). La preuve s'affiche dans la fiche du protocole.
+- Le protocole passe à « signé par le client » (date de réception = date d'acceptation), l'historique et le journal d'audit le notent, l'équipe est prévenue. Une seule acceptation est possible ; le document doit avoir été déposé avec le dépôt d'après cette version (sinon pas d'empreinte, pas d'acceptation en ligne).
+- **À valider par le conseil juridique de MTM avant activation** : il s'agit d'une signature électronique *simple*, pas d'une signature qualifiée ou avancée (Yousign, DocuSign…). Pour les actes qui exigent la forme authentique ou une signature qualifiée, la copie signée reste nécessaire.
+
+## Limites connues
+
 - Les copies signées sont stockées sur Cloudinary ; voir `docs/BACKUP.md`.
+- Envoi automatique par SMS/WhatsApp : dépend de la configuration d'un fournisseur (non vérifiable hors production).
+- L'alerte « paiement reçu – signature manquante » ne concerne que les ventes : pour un bail ou un chantier, la règle (quel paiement, quel seuil) reste à définir avec le DG.
+- L'empreinte est celle du fichier déposé ; le lien de lecture du client pointe vers ce même fichier.

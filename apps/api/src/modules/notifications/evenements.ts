@@ -324,6 +324,15 @@ export const EVENEMENTS_NOTIFICATION: EvenementNotification[] = [
     emailParDefaut: false,
   },
   {
+    cle: 'protocole_a_signer',
+    famille: 'Protocoles',
+    libelle: 'Protocole prêt à signer',
+    description:
+      'Le client est prévenu dès que son protocole lui est envoyé : dans son espace, par e-mail, et par SMS ou WhatsApp s’il les a demandés et qu’un fournisseur est configuré.',
+    destinataire: 'client',
+    emailParDefaut: true,
+  },
+  {
     cle: 'protocole_statut',
     famille: 'Protocoles',
     libelle: 'Protocole préparé, envoyé, signé ou à valider',
