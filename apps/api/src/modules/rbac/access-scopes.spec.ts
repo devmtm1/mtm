@@ -184,6 +184,31 @@ describe('périmètres d’accès', () => {
     },
   );
 
+  describe('suivi des protocoles (secrétaire)', () => {
+    const secretaire = () =>
+      utilisateur(['secretaire'], ['ventes:consulter', 'protocoles:consulter']);
+    const service = () => new VentesAccessService(prisma);
+
+    it('ouvre tous les dossiers de vente, pas seulement ceux d’un commercial', () => {
+      expect(service().ownershipFilter(secretaire())).toEqual({});
+      expect(service().voitTousLesDossiers(secretaire())).toBe(true);
+    });
+
+    it('n’ouvre rien d’autre : ni périmètre de supervision, ni chiffres financiers globaux', () => {
+      // Commissions des autres, totaux, demandes de réservation et performances d'un commercial en dépendent.
+      expect(service().hasGlobalScope(secretaire())).toBe(false);
+      expect(service().canViewFinancials(secretaire())).toBe(false);
+    });
+
+    it('un commercial sans ce droit reste limité à ses dossiers', () => {
+      const commercial = utilisateur(['commercial'], ['ventes:consulter']);
+      expect(service().voitTousLesDossiers(commercial)).toBe(false);
+      expect(service().ownershipFilter(commercial)).toEqual({
+        commercialResponsableId: 'u1',
+      });
+    });
+  });
+
   describe('accès à un enregistrement', () => {
     it('un dossier de vente hors périmètre est introuvable, jamais « interdit »', async () => {
       prismaMock.dossierVente.findFirst.mockResolvedValue(null);

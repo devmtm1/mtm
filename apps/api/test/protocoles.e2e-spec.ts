@@ -494,4 +494,23 @@ describeE2e('Protocoles et signatures (e2e)', () => {
     expect(vide.status).toBe(200);
     expect(JSON.stringify(vide.body)).not.toContain('VTE-E2E-1');
   });
+
+  it('le droit « consulter les protocoles » ouvre les dossiers, pas la supervision commerciale', async () => {
+    const appel = (chemin: string) =>
+      request(app.getHttpServer())
+        .get(`/api${chemin}`)
+        .set('Authorization', `Bearer ${tokenSecretaire}`);
+
+    // Elle ouvre bien tous les dossiers de vente (c'est son travail)…
+    const dossiers = await appel('/ventes');
+    expect(dossiers.status).toBe(200);
+    expect(JSON.stringify(dossiers.body)).toContain('VTE-E2E-1');
+
+    // …mais pas la performance d'un autre commercial ni les demandes de réservation du site.
+    const autreCommercial = '3f2c7d9e-6b1a-4c55-9a0e-1d2e3f4a5b6c';
+    expect((await appel(`/ventes/dashboard/commercial/${autreCommercial}`)).status).toBe(403);
+    const demandes = await appel('/ventes/reservation-requests');
+    expect(demandes.status).toBe(200);
+    expect(demandes.body).toEqual([]);
+  });
 });

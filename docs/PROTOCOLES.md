@@ -23,6 +23,8 @@ Module « Protocoles » du back-office (menu **Protocoles**), qui répond au cah
 
 Ressource `protocoles` : `consulter`, `creer`, `modifier`, `valider`, `exporter`. Nouveau rôle **secrétaire**. La Direction reçoit la validation et l'export.
 
+`protocoles:consulter` ouvre **tous les dossiers de vente** (le suivi porte sur l'ensemble), et rien de plus : ni les commissions des autres commerciaux, ni les totaux financiers globaux, ni les demandes de réservation du site, ni les performances d'un commercial. Ces vues restent réservées au périmètre de supervision (`VentesAccessService.hasGlobalScope`) ; la règle est verrouillée par des tests.
+
 ## Mise en production
 
 1. `prisma migrate deploy` (migrations `20261118170000_protocoles_signatures` et `20261119120000_protocoles_suivi_depuis`) puis le seed (ressource, rôle, permissions). La seconde fixe le début du suivi à la date du déploiement : ajustez-le dans Paramètres si MTM veut suivre aussi des dossiers plus anciens.
