@@ -15,7 +15,7 @@
   flex-wrap: wrap;
   gap: 2px 6px;
   margin: 8px 0 0;
-  font-size: 0.92rem;
+  font-size: var(--mtm-fs-md);
   line-height: 1.5;
 }
 
@@ -68,7 +68,7 @@
 
   span {
     color: var(--mtm-text-muted);
-    font-size: 0.72rem;
+    font-size: var(--mtm-fs-xs);
     font-weight: 600;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -76,7 +76,7 @@
 
   strong {
     font-family: var(--mtm-font-display);
-    font-size: 1.28rem;
+    font-size: var(--mtm-fs-xl);
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.01em;
@@ -84,7 +84,7 @@
 
   small {
     color: var(--mtm-text-muted);
-    font-size: 0.76rem;
+    font-size: var(--mtm-fs-xs);
   }
 
   /* Un budget dépassé se signale par la couleur, pas par un encadré de plus. */
@@ -145,7 +145,7 @@
     top: -18px;
     left: 3px;
     color: var(--mtm-accent);
-    font-size: 0.68rem;
+    font-size: var(--mtm-fs-xs);
     font-weight: 700;
     white-space: nowrap;
   }
@@ -173,7 +173,7 @@
   position: absolute;
   bottom: 2px;
   color: var(--mtm-text-muted);
-  font-size: 0.68rem;
+  font-size: var(--mtm-fs-xs);
   line-height: 1;
   white-space: nowrap;
   transform: translateX(-50%);
@@ -198,13 +198,13 @@
   gap: 4px 8px;
   margin: 12px 0 0;
   color: var(--mtm-text-muted);
-  font-size: 0.76rem;
+  font-size: var(--mtm-fs-xs);
 }
 
 .gantt__puce {
   width: 10px;
   height: 10px;
-  border-radius: 3px;
+  border-radius: var(--mtm-radius-sm);
   background: var(--mtm-primary);
 
   &:not(:first-child) {
@@ -266,13 +266,13 @@
 
   small {
     color: var(--mtm-text-muted);
-    font-size: 0.74rem;
+    font-size: var(--mtm-fs-xs);
   }
 }
 
 .gantt__name {
   overflow: hidden;
-  font-size: 0.9rem;
+  font-size: var(--mtm-fs-md);
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -281,7 +281,7 @@
 .gantt__track {
   position: relative;
   height: 20px;
-  border-radius: 6px;
+  border-radius: var(--mtm-radius-sm);
   background: var(--mtm-bg-hover);
   min-width: 0;
 }
@@ -291,14 +291,14 @@
   position: absolute;
   top: 3px;
   height: 14px;
-  border-radius: 999px;
+  border-radius: var(--mtm-radius-pill);
   background: color-mix(in srgb, var(--mtm-primary) 22%, transparent);
   overflow: hidden;
 
   i {
     display: block;
     height: 100%;
-    border-radius: 999px;
+    border-radius: var(--mtm-radius-pill);
     background: var(--mtm-primary);
   }
 
@@ -334,7 +334,7 @@
   display: inline-block;
   padding: 2px 8px;
   color: var(--mtm-text-muted);
-  font-size: 0.72rem;
+  font-size: var(--mtm-fs-xs);
   font-style: italic;
 }
 
@@ -351,7 +351,7 @@
 }
 
 .gantt__done {
-  font-size: 0.78rem;
+  font-size: var(--mtm-fs-xs);
 }
 
 /* --- Journal de chantier --- */
@@ -382,21 +382,21 @@
   margin-bottom: 2px;
 
   strong {
-    font-size: 0.92rem;
+    font-size: var(--mtm-fs-md);
   }
 }
 
 .journal__jalon {
   padding: 1px 8px;
-  border-radius: 999px;
+  border-radius: var(--mtm-radius-pill);
   background: var(--mtm-bg-hover);
   color: var(--mtm-text-muted);
-  font-size: 0.74rem;
+  font-size: var(--mtm-fs-xs);
 }
 
 .journal__avancement {
   color: var(--mtm-primary);
-  font-size: 0.8rem;
+  font-size: var(--mtm-fs-sm);
   font-weight: 700;
 }
 
@@ -409,7 +409,7 @@
   button {
     min-width: 0;
     padding: 0 8px;
-    font-size: 0.76rem;
+    font-size: var(--mtm-fs-xs);
   }
 
   .journal__entry:hover &,
@@ -421,26 +421,26 @@
 .journal__meta {
   margin: 0 0 4px;
   color: var(--mtm-text-muted);
-  font-size: 0.8rem;
+  font-size: var(--mtm-fs-sm);
 }
 
 .journal__texte {
   margin: 0 0 4px;
-  font-size: 0.88rem;
+  font-size: var(--mtm-fs-md);
   line-height: 1.5;
 }
 
 .journal__probleme {
   margin: 0 0 4px;
   color: var(--mtm-accent);
-  font-size: 0.88rem;
+  font-size: var(--mtm-fs-md);
   line-height: 1.5;
 }
 
 .journal__suite {
   margin: 0;
   color: var(--mtm-text-muted);
-  font-size: 0.82rem;
+  font-size: var(--mtm-fs-sm);
   font-style: italic;
 }
 
@@ -449,7 +449,7 @@
   flex-wrap: wrap;
   gap: 8px 12px;
   margin: 6px 0 0;
-  font-size: 0.8rem;
+  font-size: var(--mtm-fs-sm);
 }
 
 .journal__piece {
@@ -460,17 +460,17 @@
   img {
     width: 56px;
     height: 56px;
-    border-radius: 6px;
+    border-radius: var(--mtm-radius-sm);
     object-fit: cover;
   }
 }
 
 .journal__publie {
   padding: 1px 6px;
-  border-radius: 999px;
+  border-radius: var(--mtm-radius-pill);
   background: var(--mtm-info-bg, #e8f1fb);
   color: var(--mtm-info, #1a4974);
-  font-size: 0.7rem;
+  font-size: var(--mtm-fs-xs);
 }
 
 .detail-section__actions {
@@ -519,20 +519,20 @@
 
   strong {
     overflow: hidden;
-    font-size: 0.88rem;
+    font-size: var(--mtm-fs-md);
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   small {
     color: var(--mtm-text-muted);
-    font-size: 0.74rem;
+    font-size: var(--mtm-fs-xs);
   }
 }
 
 .budget-list__amount {
   flex-shrink: 0;
-  font-size: 0.86rem;
+  font-size: var(--mtm-fs-md);
   font-variant-numeric: tabular-nums;
   font-weight: 600;
 }
@@ -540,7 +540,7 @@
 /* Comparer prévu et dépensé dans une colonne étroite : les montants sont
    alignés à droite et tabulaires pour se lire en diagonale. */
 .budget-table {
-  font-size: 0.84rem;
+  font-size: var(--mtm-fs-sm);
 
   .num {
     text-align: right;
@@ -561,7 +561,7 @@
 
   &__over small {
     display: block;
-    font-size: 0.72rem;
+    font-size: var(--mtm-fs-xs);
     font-weight: 600;
   }
 }
@@ -596,14 +596,14 @@
 
     strong {
       overflow: hidden;
-      font-size: 0.88rem;
+      font-size: var(--mtm-fs-md);
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
     small {
       color: var(--mtm-text-muted);
-      font-size: 0.74rem;
+      font-size: var(--mtm-fs-xs);
     }
   }
 
@@ -615,7 +615,7 @@
 
     small {
       color: var(--mtm-text-muted);
-      font-size: 0.74rem;
+      font-size: var(--mtm-fs-xs);
       font-variant-numeric: tabular-nums;
     }
   }
@@ -638,12 +638,12 @@
       /* Un titre de rapport est long : il passe à la ligne plutôt que
          d'élargir la colonne latérale au-delà de la page. */
       overflow-wrap: anywhere;
-      font-size: 0.86rem;
+      font-size: var(--mtm-fs-md);
     }
 
     small {
       color: var(--mtm-text-muted);
-      font-size: 0.74rem;
+      font-size: var(--mtm-fs-xs);
     }
 
     &:hover strong {
@@ -662,7 +662,7 @@
     border-top: 1px solid var(--mtm-border);
 
     summary strong {
-      font-size: 0.86rem;
+      font-size: var(--mtm-fs-md);
     }
   }
 
@@ -680,13 +680,13 @@
 
     strong {
       font-family: var(--mtm-font-display);
-      font-size: 1rem;
+      font-size: var(--mtm-fs-lg);
       font-weight: 700;
     }
 
     small {
       color: var(--mtm-text-muted);
-      font-size: 0.8rem;
+      font-size: var(--mtm-fs-sm);
     }
 
     &::after {

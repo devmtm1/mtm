@@ -68,7 +68,7 @@ import { COMMISSION_STATUS, label, pillClass } from '../../ventes/ventes-status'
         }
       </section>
     } @else {
-      <div class="skeleton" style="height: 120px; border-radius: 14px"></div>
+      <div class="skeleton" style="height: 120px; border-radius: var(--mtm-radius-lg)"></div>
     }
 
     @if (commissions().length > 0) {

@@ -62,7 +62,7 @@ export interface ExportDialogData {
     }
     .export__periode {
       margin: 0;
-      font-size: 0.9rem;
+      font-size: var(--mtm-fs-md);
       color: var(--mtm-text-muted);
     }
     .export__formats {

@@ -57,17 +57,17 @@
 }
 
 .operation__meta {
-  font-size: 0.82rem;
+  font-size: var(--mtm-fs-sm);
   color: var(--mtm-text-muted);
 }
 
 .operation__rejet {
-  font-size: 0.85rem;
+  font-size: var(--mtm-fs-md);
   color: var(--mtm-error);
 }
 
 .operation__piece {
-  font-size: 0.85rem;
+  font-size: var(--mtm-fs-md);
 }
 
 .operation__droite {
@@ -98,13 +98,13 @@
 
 .aide {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--mtm-fs-md);
   color: var(--mtm-text-muted);
 }
 
 .meta-numero {
   margin-left: 8px;
-  font-size: 0.75rem;
+  font-size: var(--mtm-fs-xs);
   font-weight: 400;
   color: var(--mtm-text-muted);
 }

@@ -19,6 +19,7 @@ import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { nombreOuUndefined } from '../locatif-form';
 import { LocataireQuickAddDialog } from '../bien-detail/locataire-quick-add-dialog';
 import { SOURCES_SEJOUR } from './sejour-status';
+import { chargerTout } from '../../../shared/utils/charger-tout';
 
 export interface SejourDialogData {
   /** Bien présélectionné (création depuis sa fiche). */
@@ -167,7 +168,7 @@ const nombre = (valeur: number | string | null | undefined): number | null =>
   styles: `
     .sejour-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; min-width: min(640px, calc(100vw - 96px)); }
     .sejour-wide { grid-column: 1 / -1; }
-    .sejour-resume { margin: 0 0 8px; padding: 10px 14px; border-radius: 10px; background: var(--mtm-bg-surface); font-size: 0.92rem; }
+    .sejour-resume { margin: 0 0 8px; padding: 10px 14px; border-radius: var(--mtm-radius-md); background: var(--mtm-bg-surface); font-size: var(--mtm-fs-md); }
     .sejour-resume--erreur { color: var(--mtm-accent); }
     @media (max-width: 640px) { .sejour-grid { grid-template-columns: 1fr; } }
   `,
@@ -240,7 +241,7 @@ export class SejourDialog implements OnInit {
       this.chargement.set(false);
       return;
     }
-    this.locatifApi.findBiens({ modeLocation: 'courte_duree', pageSize: 200 }).subscribe({
+    chargerTout((page, pageSize) => this.locatifApi.findBiens({ modeLocation: 'courte_duree', page, pageSize })).subscribe({
       next: (page) => {
         this.biens.set(page.items as BienSejour[]);
         this.chargement.set(false);

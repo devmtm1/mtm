@@ -113,6 +113,19 @@ export type FiltreProtocoles = 'sans_signature' | 'en_retard' | 'incomplets' | '
 /** Statuts où la copie signée est bien reçue (« envoyé » n'en fait jamais partie). */
 export const STATUTS_SIGNES: readonly string[] = ['signe_client', 'signe_mtm', 'a_valider_direction', 'valide'];
 
+/**
+ * « PAIEMENT REÇU – SIGNATURE MANQUANTE » : de l'argent est encaissé sur un dossier non annulé alors qu'aucun de ses protocoles
+ * n'est signé. `null` tant que les protocoles ne sont pas chargés (ou sans droit de les voir) : on n'alerte pas dans le doute.
+ */
+export function signatureManquante(
+  protocoles: readonly { statut: string }[] | null,
+  dossier: { statut: string; montantPaye: number | string | null } | null,
+): boolean {
+  if (protocoles === null || !dossier || dossier.statut === 'annule') return false;
+  if (!(Number(dossier.montantPaye) > 0)) return false;
+  return !protocoles.some((protocole) => STATUTS_SIGNES.includes(protocole.statut));
+}
+
 export interface ResponsableProtocoles {
   id: string;
   nom: string;

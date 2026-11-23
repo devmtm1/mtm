@@ -28,13 +28,13 @@
 
     strong {
       font-family: var(--mtm-font-display);
-      font-size: 1rem;
+      font-size: var(--mtm-fs-lg);
       font-weight: 700;
     }
 
     small {
       color: var(--mtm-text-muted);
-      font-size: 0.8rem;
+      font-size: var(--mtm-fs-sm);
     }
 
     &::after {
@@ -77,9 +77,9 @@
     height: 22px;
     padding: 0 4px;
     border: 0;
-    border-radius: 5px !important;
+    border-radius: var(--mtm-radius-sm) !important;
     font: inherit;
-    font-size: 0.72rem;
+    font-size: var(--mtm-fs-xs);
     font-weight: 700;
     cursor: pointer;
 
@@ -103,7 +103,7 @@
     background: none;
     color: var(--mtm-text-muted);
     font: inherit;
-    font-size: 0.72rem;
+    font-size: var(--mtm-fs-xs);
     cursor: pointer;
 
     &:hover {
@@ -141,10 +141,10 @@
   border: 1px solid var(--mtm-border);
   background: var(--mtm-surface);
   color: var(--mtm-text-muted);
-  border-radius: 999px;
+  border-radius: var(--mtm-radius-pill);
   padding: 6px 14px;
   font: inherit;
-  font-size: 0.82rem;
+  font-size: var(--mtm-fs-sm);
   font-weight: 600;
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s, background-color 0.15s;
@@ -169,7 +169,7 @@
 .perf-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.9rem;
+  font-size: var(--mtm-fs-md);
   min-width: 540px;
 }
 
@@ -181,7 +181,7 @@
 }
 
 .perf-table th {
-  font-size: 0.75rem;
+  font-size: var(--mtm-fs-xs);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--mtm-text-muted);

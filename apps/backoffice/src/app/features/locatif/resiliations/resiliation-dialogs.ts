@@ -80,7 +80,7 @@ export interface DemandeResiliationDialogData {
   `,
   styles: `
     .demande { display: grid; gap: 4px; min-width: min(480px, calc(100vw - 96px)); }
-    .demande__hint { margin: 0 0 8px; color: var(--mtm-text-muted); font-size: 0.86rem; }
+    .demande__hint { margin: 0 0 8px; color: var(--mtm-text-muted); font-size: var(--mtm-fs-md); }
   `,
 })
 export class DemandeResiliationDialog {
@@ -205,13 +205,13 @@ export interface TraiterResiliationDialogData {
   `,
   styles: `
     .traiter { display: grid; gap: 4px; min-width: min(520px, calc(100vw - 96px)); }
-    .traiter__resume { display: grid; gap: 6px; margin: 0 0 12px; padding: 12px 14px; border-radius: 10px; background: var(--mtm-bg-surface); font-size: 0.9rem; }
+    .traiter__resume { display: grid; gap: 6px; margin: 0 0 12px; padding: 12px 14px; border-radius: var(--mtm-radius-md); background: var(--mtm-bg-surface); font-size: var(--mtm-fs-md); }
     .traiter__resume div { display: flex; gap: 10px; }
     .traiter__resume dt { flex: 0 0 120px; color: var(--mtm-text-muted); }
     .traiter__resume dd { margin: 0; font-weight: 600; }
     .traiter__message dd { font-weight: 400; white-space: pre-line; }
-    .traiter__hint { margin: 0; color: var(--mtm-text-muted); font-size: 0.82rem; }
-    .traiter__alerte { margin: 0 0 8px; color: var(--mtm-warning); font-size: 0.84rem; }
+    .traiter__hint { margin: 0; color: var(--mtm-text-muted); font-size: var(--mtm-fs-sm); }
+    .traiter__alerte { margin: 0 0 8px; color: var(--mtm-warning); font-size: var(--mtm-fs-sm); }
   `,
 })
 export class TraiterResiliationDialog {

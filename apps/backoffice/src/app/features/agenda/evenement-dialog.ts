@@ -147,7 +147,7 @@ const RAPPELS: { minutes: number | null; label: string }[] = [
     }
     .evenement__dossier {
       margin: 0 0 10px;
-      font-size: 0.88rem;
+      font-size: var(--mtm-fs-md);
       color: var(--mtm-text-muted);
     }
     .evenement__supprimer {

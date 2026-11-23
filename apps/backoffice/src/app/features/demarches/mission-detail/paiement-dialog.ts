@@ -106,10 +106,10 @@ function versChampLocal(date: Date): string {
     </mat-dialog-actions>
   `,
   styles: `
-    .paiement__intro { margin: 0 0 14px; font-size: 0.88rem; color: var(--mtm-text-muted, #6b7280); }
+    .paiement__intro { margin: 0 0 14px; font-size: var(--mtm-fs-md); color: var(--mtm-text-muted, #6b7280); }
     .paiement__form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 14px; min-width: min(560px, calc(100vw - 96px)); }
     .paiement__wide { grid-column: 1 / -1; }
-    .paiement__net { grid-column: 1 / -1; margin: 0 0 14px; padding: 8px 12px; border-radius: 8px; background: var(--mtm-bg, #f5f7fa); font-size: 0.9rem; }
+    .paiement__net { grid-column: 1 / -1; margin: 0 0 14px; padding: 8px 12px; border-radius: var(--mtm-radius-md); background: var(--mtm-bg, #f5f7fa); font-size: var(--mtm-fs-md); }
     .paiement__net--erreur { background: var(--mtm-error-bg); color: var(--mtm-error); }
     @media (max-width: 640px) { .paiement__form { grid-template-columns: 1fr; } }
   `,

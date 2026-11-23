@@ -25,7 +25,7 @@
 .bouton-ligne {
   min-width: 96px;
   height: 34px;
-  font-size: 0.86rem;
+  font-size: var(--mtm-fs-md);
 }
 
 /* Échéances : des colonnes de largeur raisonnable (sur un grand écran, le mois et le montant ne sont plus aux deux bouts de la page), l'action la plus discrète possible sauf pour la plus ancienne. */

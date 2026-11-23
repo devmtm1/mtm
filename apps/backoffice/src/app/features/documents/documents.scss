@@ -32,7 +32,7 @@
     flex: 0 0 36px;
     width: 36px;
     height: 36px;
-    border-radius: 10px;
+    border-radius: var(--mtm-radius-md);
     background: var(--mtm-bg-hover);
     color: var(--mtm-text-muted);
 
@@ -73,7 +73,7 @@
 
     small {
       color: var(--mtm-text-muted);
-      font-size: 0.76rem;
+      font-size: var(--mtm-fs-xs);
     }
   }
 }
@@ -109,11 +109,11 @@
 .periode-doc {
   padding: 6px 14px;
   border: 1px solid var(--mtm-border);
-  border-radius: 999px;
+  border-radius: var(--mtm-radius-pill);
   background: var(--mtm-card-bg);
   color: var(--mtm-text-dark);
   font: inherit;
-  font-size: 0.86rem;
+  font-size: var(--mtm-fs-md);
   cursor: pointer;
 
   &:hover {
@@ -133,12 +133,12 @@
     align-items: center;
     gap: 8px;
     color: var(--mtm-text-muted);
-    font-size: 0.86rem;
+    font-size: var(--mtm-fs-md);
 
     input {
       padding: 5px 8px;
       border: 1px solid var(--mtm-border);
-      border-radius: 8px;
+      border-radius: var(--mtm-radius-md);
       background: var(--mtm-card-bg);
       color: var(--mtm-text-dark);
       font: inherit;

@@ -2,7 +2,7 @@
   padding-bottom: 0;
 
   label {
-    font-size: 0.86rem;
+    font-size: var(--mtm-fs-md);
   }
 
   mat-slider {
@@ -26,7 +26,7 @@
 
   small {
     color: var(--mtm-text-muted);
-    font-size: 0.82rem;
+    font-size: var(--mtm-fs-sm);
   }
 
   &:hover,

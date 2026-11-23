@@ -159,7 +159,7 @@ const TYPES_JUSTIFICATIF = 'application/pdf,image/jpeg,image/png,image/webp';
       flex-wrap: wrap;
       align-items: center;
       gap: 12px;
-      font-size: 0.85rem;
+      font-size: var(--mtm-fs-md);
       color: var(--mtm-text-muted);
     }
     .operation__upload {
@@ -168,7 +168,7 @@ const TYPES_JUSTIFICATIF = 'application/pdf,image/jpeg,image/png,image/webp';
       gap: 8px;
       padding: 8px 14px;
       border: 1px solid var(--mtm-border);
-      border-radius: 8px;
+      border-radius: var(--mtm-radius-md);
       cursor: pointer;
       color: var(--mtm-text-dark);
     }

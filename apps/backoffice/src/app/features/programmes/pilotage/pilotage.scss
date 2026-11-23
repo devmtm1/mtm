@@ -23,14 +23,14 @@
   h2 {
     margin: 0;
     font-family: var(--mtm-font-display);
-    font-size: 1.05rem;
+    font-size: var(--mtm-fs-lg);
     font-weight: 700;
   }
 
   p {
     margin: 2px 0 0;
     color: var(--mtm-text-muted);
-    font-size: 0.82rem;
+    font-size: var(--mtm-fs-sm);
   }
 }
 
@@ -50,10 +50,10 @@
 .perimetre {
   margin: 0;
   padding: 10px 14px;
-  border-radius: 10px;
+  border-radius: var(--mtm-radius-md);
   background: var(--mtm-primary-subtle);
   color: var(--mtm-primary);
-  font-size: 0.84rem;
+  font-size: var(--mtm-fs-sm);
 }
 
 .sans-acces {
@@ -109,12 +109,12 @@
   min-width: 0;
 
   strong {
-    font-size: 0.9rem;
+    font-size: var(--mtm-fs-md);
   }
 
   small {
     color: var(--mtm-text-muted);
-    font-size: 0.76rem;
+    font-size: var(--mtm-fs-xs);
   }
 }
 
@@ -137,7 +137,7 @@
   width: 96px;
   height: 6px;
   overflow: hidden;
-  border-radius: 999px;
+  border-radius: var(--mtm-radius-pill);
   background: var(--mtm-bg-hover);
 
   span {
@@ -177,7 +177,7 @@
 
   a {
     color: var(--mtm-primary);
-    font-size: 0.86rem;
+    font-size: var(--mtm-fs-md);
     font-weight: 600;
     text-decoration: none;
 
@@ -190,10 +190,10 @@
 .alerte-ligne {
   margin: 12px 20px 0;
   padding: 10px 14px;
-  border-radius: 10px;
+  border-radius: var(--mtm-radius-md);
   background: var(--mtm-warning-bg);
   color: var(--mtm-text-dark);
-  font-size: 0.86rem;
+  font-size: var(--mtm-fs-md);
 }
 
 /* Les chiffres comptables : un libellé, sa valeur, trois colonnes. */
@@ -206,7 +206,7 @@
 
   dt {
     color: var(--mtm-text-muted);
-    font-size: 0.76rem;
+    font-size: var(--mtm-fs-xs);
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -214,7 +214,7 @@
 
   dd {
     margin: 2px 0 0;
-    font-size: 1rem;
+    font-size: var(--mtm-fs-lg);
     font-weight: 600;
     font-variant-numeric: tabular-nums;
   }
@@ -249,10 +249,10 @@
   min-height: 36px;
   padding: 0 14px;
   border: 1px solid var(--mtm-border);
-  border-radius: 10px;
+  border-radius: var(--mtm-radius-md);
   background: var(--mtm-card-bg);
   color: var(--mtm-primary);
-  font-size: 0.86rem;
+  font-size: var(--mtm-fs-md);
   font-weight: 600;
   cursor: pointer;
 
@@ -279,7 +279,7 @@
   position: relative;
   overflow: hidden;
   border: 1px solid var(--mtm-border);
-  border-radius: 12px;
+  border-radius: var(--mtm-radius-lg);
   background: var(--mtm-bg-hover);
 
   img {
@@ -294,10 +294,10 @@
     top: 8px;
     left: 8px;
     padding: 3px 10px;
-    border-radius: 999px;
+    border-radius: var(--mtm-radius-pill);
     background: rgba(255, 255, 255, 0.94);
     color: var(--mtm-text-dark);
-    font-size: 0.72rem;
+    font-size: var(--mtm-fs-xs);
     font-weight: 700;
 
     &--couverture {
@@ -311,7 +311,7 @@
     right: 4px;
     bottom: 4px;
     display: flex;
-    border-radius: 999px;
+    border-radius: var(--mtm-radius-pill);
     background: rgba(255, 255, 255, 0.94);
 
     svg {

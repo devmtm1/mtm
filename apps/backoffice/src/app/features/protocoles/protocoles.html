@@ -22,12 +22,6 @@
     </div>
   </header>
 
-  @if (tableau()?.suiviDepuis; as depuis) {
-    <p class="protocoles__suivi">
-      Suivi des signatures appliqué aux dossiers ouverts depuis le {{ depuis | date: 'dd/MM/yyyy' }}. Les dossiers plus anciens n'apparaissent pas dans l'alerte (réglage dans Paramètres).
-    </p>
-  }
-
   @if (alertes().length) {
     <aside class="alert-banner alert-banner--danger" aria-label="Paiements reçus sans protocole signé">
       <div class="alert-banner__head">
@@ -218,4 +212,9 @@
       <app-pagination [page]="page()" [pageSize]="pageSize()" [total]="total()" nom="protocole" (pageChange)="changerPage($event)" (pageSizeChange)="changerTaille($event)" />
     }
   </section>
+  @if (tableau()?.suiviDepuis; as depuis) {
+    <p class="protocoles__suivi">
+      Suivi des signatures appliqué aux dossiers ouverts depuis le {{ depuis | date: 'dd/MM/yyyy' }}. Les dossiers plus anciens n'apparaissent pas dans l'alerte (réglage dans Paramètres).
+    </p>
+  }
 </section>

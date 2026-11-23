@@ -90,7 +90,7 @@ import { humaniserCode } from '../../../shared/utils/humaniser';
         </section>
       }
     } @else {
-      <div class="skeleton" style="height: 120px; border-radius: 14px"></div>
+      <div class="skeleton" style="height: 120px; border-radius: var(--mtm-radius-lg)"></div>
     }
   `,
 })

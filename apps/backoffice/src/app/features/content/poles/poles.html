@@ -51,7 +51,7 @@
             <article class="card" [class.is-hidden]="!p.isActive" [class.is-busy]="busyId() === p.id">
               <div class="card__media" style="aspect-ratio: 16 / 9">
                 @if (p.imageUrl) {
-                  <img [src]="p.imageUrl" [alt]="p.nom" loading="lazy" />
+                  <img [src]="imageSite(p.imageUrl)" [alt]="p.nom" loading="lazy" />
                 } @else {
                   <div class="card__placeholder" aria-hidden="true">
                     <small>Aucune photo</small>

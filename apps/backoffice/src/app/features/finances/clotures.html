@@ -46,9 +46,11 @@
               @if (m.cloture) {
                 <button mat-stroked-button type="button" (click)="rouvrir(m)" [disabled]="occupe() === m.periode">Rouvrir</button>
               } @else if (m.peutEtreCloture) {
-                <button mat-flat-button color="primary" type="button" (click)="cloturer(m)" [disabled]="occupe() === m.periode">
-                  Clôturer ce mois
-                </button>
+                @if (m.periode === premierACloturer()) {
+                  <button mat-flat-button color="primary" type="button" (click)="cloturer(m)" [disabled]="occupe() === m.periode">Clôturer ce mois</button>
+                } @else {
+                  <button mat-stroked-button type="button" (click)="cloturer(m)" [disabled]="occupe() === m.periode">Clôturer ce mois</button>
+                }
               }
             </div>
           }

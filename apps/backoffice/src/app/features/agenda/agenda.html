@@ -1,6 +1,7 @@
 <div class="agenda-page">
   <header class="page-header agenda-entete">
     <div>
+      <p class="eyebrow">Mon travail</p>
       <h1 class="page-header__title">Agenda</h1>
       <p class="page-header__subtitle">
         Rendez-vous, visites et réunions, avec les échéances de vos dossiers : tâches, mandats, chantiers, séjours, loyers
@@ -177,7 +178,7 @@
                 {{ item.source === 'tache' ? 'Ouvrir la tâche' : 'Ouvrir le dossier' }}
               </a>
             }
-            @if (item.source === 'evenement' && item.modifiable) {
+            @if (item.source === 'evenement' && item.modifiable && canModify) {
               <button mat-flat-button color="primary" type="button" (click)="modifier(item)">Modifier</button>
             }
           </div>

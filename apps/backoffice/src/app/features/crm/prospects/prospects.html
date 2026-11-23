@@ -95,6 +95,7 @@
           <small>Prospects actifs à reprendre</small>
         </span>
       </button>
+      @if (s.visitesProgrammees > 0 || s.retoursASaisir > 0) {
       <button type="button" class="kpi" [class.kpi--muted]="s.visitesProgrammees === 0" (click)="applyQuickView('visites_a_venir')">
         <span class="kpi__icon"><svg lucideCalendarClock aria-hidden="true"></svg></span>
         <span class="kpi__body">
@@ -109,6 +110,7 @@
           </small>
         </span>
       </button>
+      }
     } @else {
       @for (i of [1, 2, 3, 4]; track i) {
         <div class="kpi skeleton" aria-hidden="true"></div>

@@ -31,18 +31,18 @@ export interface ClientAccountDialogData {
   templateUrl: './client-account-dialog.html',
   styles: `
     .account-dialog { display: grid; gap: 12px; min-width: min(480px, calc(100vw - 96px)); }
-    .account-dialog__intro { margin: 0; color: var(--mtm-text-muted); font-size: 0.86rem; line-height: 1.5; }
+    .account-dialog__intro { margin: 0; color: var(--mtm-text-muted); font-size: var(--mtm-fs-md); line-height: 1.5; }
     .account-dialog__field { width: 100%; }
-    .account-dialog__box { display: grid; gap: 6px; margin: 0; padding: 12px 14px; border: 1px solid; border-radius: 10px; font-size: 0.86rem; line-height: 1.5; }
+    .account-dialog__box { display: grid; gap: 6px; margin: 0; padding: 12px 14px; border: 1px solid; border-radius: var(--mtm-radius-md); font-size: var(--mtm-fs-md); line-height: 1.5; }
     .account-dialog__box p { margin: 0; }
     .account-dialog__box--success { border-color: var(--mtm-success); background: var(--mtm-success-bg); color: var(--mtm-text-dark); }
     .account-dialog__box--warning { border-color: var(--mtm-warning); background: var(--mtm-warning-bg); color: var(--mtm-text-dark); }
     .account-dialog__box--error { border-color: var(--mtm-error); background: var(--mtm-error-bg); color: var(--mtm-error); }
     .account-dialog__box dl { display: grid; gap: 6px; margin: 4px 0 0; }
-    .account-dialog__box dt { color: var(--mtm-text-muted); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .account-dialog__box dt { color: var(--mtm-text-muted); font-size: var(--mtm-fs-xs); text-transform: uppercase; letter-spacing: 0.04em; }
     .account-dialog__box dd { margin: 0; font-weight: 600; }
     .is-break { overflow-wrap: anywhere; }
-    code { padding: 1px 6px; border-radius: 4px; background: var(--mtm-card-bg); font-size: 0.9em; }
+    code { padding: 1px 6px; border-radius: var(--mtm-radius-sm); background: var(--mtm-card-bg); font-size: var(--mtm-fs-sm); }
   `,
 })
 export class ClientAccountDialog {

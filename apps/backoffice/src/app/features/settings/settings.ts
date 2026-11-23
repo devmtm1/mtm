@@ -1,3 +1,4 @@
+import { TAILLE_PAGE_DEFAUT } from '../../shared/components/pagination/pagination';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -70,7 +71,7 @@ export class Settings implements OnInit {
   });
 
   protected readonly pageSizes = [10, 25, 50];
-  protected readonly pageSize = signal(10);
+  protected readonly pageSize = signal(TAILLE_PAGE_DEFAUT);
   private readonly pageIndex = signal(0);
   protected readonly totalPages = computed(() => Math.max(1, Math.ceil(this.visibleOthers().length / this.pageSize())));
   /** Page affichée, ramenée dans les bornes quand une recherche réduit la liste. */

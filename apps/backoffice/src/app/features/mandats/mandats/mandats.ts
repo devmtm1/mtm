@@ -19,7 +19,6 @@ import {
   LucidePlus,
   LucideScrollText,
   LucideSearch,
-  LucideTrendingUp,
   LucideX,
   LucideDownload,
 } from '@lucide/angular';
@@ -33,6 +32,7 @@ import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { ALERT_WINDOW_DAYS, MANDAT_STATUS, echeanceInfo, joursRestants, pillClass, statusHelp } from '../mandat-status';
 import { ExportListeDialog } from '../../../shared/dialogs/export-liste-dialog';
 import { sourceDepuisGrille } from '../../../shared/utils/export-grille';
+import { chargerTout } from '../../../shared/utils/charger-tout';
 
 const EMPTY_FILTERS = { search: '', statut: '', typeMandat: '' };
 
@@ -60,7 +60,6 @@ const EMPTY_FILTERS = { search: '', statut: '', typeMandat: '' };
     LucidePlus,
     LucideScrollText,
     LucideSearch,
-    LucideTrendingUp,
     LucideX,
   ],
   templateUrl: './mandats.html',
@@ -205,7 +204,7 @@ export class Mandats implements OnInit {
     if (!this.chargementInitialFait) this.loading.set(true);
     const value = this.filters.getRawValue();
     this.hasActiveFilters.set(Object.values(value).some((item) => item !== ''));
-    this.mandatsApi.findAll({ search: value.search, statut: value.statut, pageSize: 200 }).subscribe({
+    chargerTout((page, pageSize) => this.mandatsApi.findAll({ search: value.search, statut: value.statut, page, pageSize })).subscribe({
       next: (page) => {
         const items = value.typeMandat ? page.items.filter((item) => item.typeMandat === value.typeMandat) : page.items;
         this.rowData.set(items);

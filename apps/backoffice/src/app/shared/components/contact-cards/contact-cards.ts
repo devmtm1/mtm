@@ -103,7 +103,7 @@ function couleurs(id: string): string[] {
       align-content: start;
       padding: 16px;
       border: 1px solid var(--mtm-border);
-      border-radius: 14px;
+      border-radius: var(--mtm-radius-lg);
       background: var(--mtm-surface);
       box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
       color: inherit;
@@ -134,7 +134,7 @@ function couleurs(id: string): string[] {
       width: 44px;
       height: 44px;
       border-radius: 50%;
-      font-size: 0.95rem;
+      font-size: var(--mtm-fs-md);
       font-weight: 700;
       letter-spacing: 0.02em;
     }
@@ -146,19 +146,19 @@ function couleurs(id: string): string[] {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      font-size: 0.95rem;
+      font-size: var(--mtm-fs-md);
     }
     .carte__identite small,
     .carte__pied {
       color: var(--mtm-text-muted);
-      font-size: 0.78rem;
+      font-size: var(--mtm-fs-xs);
     }
     .carte__contact {
       display: grid;
       gap: 6px;
       padding-top: 10px;
       border-top: 1px solid var(--mtm-border);
-      font-size: 0.85rem;
+      font-size: var(--mtm-fs-md);
     }
     .carte__contact > span {
       display: flex;

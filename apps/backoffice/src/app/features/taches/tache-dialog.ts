@@ -94,7 +94,7 @@ export interface TacheDialogData {
     }
     .tache-dialog__dossier {
       margin: 0 0 10px;
-      font-size: 0.88rem;
+      font-size: var(--mtm-fs-md);
       color: var(--mtm-text-muted);
     }
     @media (max-width: 620px) {

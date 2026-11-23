@@ -36,7 +36,7 @@ import {
 import { SessionService } from '../../core/services/session.service';
 import { NotificationService } from '../../shared/services/notification.service';
 import { MoneyPipe } from '../../shared/pipes/money.pipe';
-import { Pagination } from '../../shared/components/pagination/pagination';
+import { Pagination, TAILLE_PAGE_DEFAUT } from '../../shared/components/pagination/pagination';
 import { ExportListeDialog } from '../../shared/dialogs/export-liste-dialog';
 import { chargerToutesLesPages, isoJour, sourceDepuisLignes } from '../../shared/utils/export-lignes';
 import { ProtocoleDetailDialog, type ProtocoleDetailDialogData } from './protocole-detail-dialog';
@@ -53,7 +53,7 @@ interface Indicateur {
   ton: 'primary' | 'success' | 'warning' | 'attention';
 }
 
-const INDICATEURS: Indicateur[] = [
+const TOUS_LES_INDICATEURS: Indicateur[] = [
   { cle: 'aPreparer', libelle: 'À préparer', detail: 'Protocoles pas encore déposés', valeur: (t) => t.protocoles.aPreparer, filtre: { statut: 'a_preparer' }, icone: 'preparer', ton: 'primary' },
   { cle: 'prepares', libelle: 'Préparés', detail: 'À vérifier avant envoi', valeur: (t) => t.protocoles.prepares, filtre: { statut: 'prepare_a_verifier' }, icone: 'envoyer', ton: 'primary' },
   { cle: 'attente', libelle: 'En attente de signature', detail: 'Envoyés, sans retour signé', valeur: (t) => t.protocoles.enAttenteSignature, filtre: { filtre: 'en_attente' }, icone: 'attente', ton: 'warning' },
@@ -106,7 +106,8 @@ export class ProtocolesPage implements OnInit {
   private readonly session = inject(SessionService);
   private readonly destroyRef = inject(DestroyRef);
 
-  protected readonly indicateurs = INDICATEURS;
+  /** Quatre chiffres seulement : ceux qui demandent une action. Les autres statuts se choisissent dans le filtre « Statut ». */
+  protected readonly indicateurs = TOUS_LES_INDICATEURS.filter((i) => ['attente', 'retard', 'valider', 'sansSignature'].includes(i.cle));
   protected readonly canCreate = this.session.hasPermission('protocoles:creer');
   protected readonly peutExporter = this.session.hasPermission('protocoles:exporter');
   protected readonly exportEnCours = signal(false);
@@ -118,7 +119,7 @@ export class ProtocolesPage implements OnInit {
   protected readonly protocoles = signal<Protocole[]>([]);
   protected readonly total = signal(0);
   protected readonly page = signal(1);
-  protected readonly pageSize = signal(20);
+  protected readonly pageSize = signal(TAILLE_PAGE_DEFAUT);
   protected readonly chargement = signal(true);
   protected readonly erreur = signal(false);
   /** Filtre posé par un indicateur (ou par l'adresse) : il s'ajoute à la recherche et au statut. */
@@ -131,7 +132,7 @@ export class ProtocolesPage implements OnInit {
     this.saisies();
     return this.filtre() !== '' || Object.values(this.filters.getRawValue()).some((valeur) => valeur !== '');
   });
-  protected readonly libelleFiltre = computed(() => INDICATEURS.find((i) => i.filtre.filtre === this.filtre())?.libelle ?? '');
+  protected readonly libelleFiltre = computed(() => TOUS_LES_INDICATEURS.find((i) => i.filtre.filtre === this.filtre())?.libelle ?? '');
 
   /** Le squelette ne s'affiche qu'au premier chargement : ensuite l'écran se met à jour en place. */
   private chargementInitialFait = false;
@@ -147,6 +148,11 @@ export class ProtocolesPage implements OnInit {
     this.api.responsables().subscribe({ next: (responsables) => this.responsables.set(responsables), error: () => this.responsables.set([]) });
     this.rafraichirSynthese();
     this.charger();
+    // « + Nouveau › Protocole » dans la barre du haut arrive ici avec ?nouveau=1 : on ouvre le formulaire, puis on retire le paramètre.
+    if (params.get('nouveau') && this.canCreate) {
+      void this.router.navigate([], { queryParams: { nouveau: null }, queryParamsHandling: 'merge', replaceUrl: true });
+      this.nouveau();
+    }
     this.filters.controls.q.valueChanges.pipe(debounceTime(350), takeUntilDestroyed(this.destroyRef)).subscribe(() => this.recharger());
     this.filters.controls.statut.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.recharger());
     for (const champ of [this.filters.controls.responsableId, this.filters.controls.depuis, this.filters.controls.jusqua]) {

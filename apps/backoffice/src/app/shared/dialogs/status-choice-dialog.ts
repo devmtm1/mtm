@@ -85,12 +85,12 @@ export function pillClassFor(tone: StatusTone | undefined): string {
   `,
   styles: `
     .status-dialog { display: grid; gap: 14px; max-width: 520px; }
-    .status-dialog__intro { margin: 0; color: var(--mtm-text-muted); font-size: 0.88rem; line-height: 1.5; }
-    .status-dialog__subject { margin: 0; font-size: 0.86rem; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .status-dialog__intro { margin: 0; color: var(--mtm-text-muted); font-size: var(--mtm-fs-md); line-height: 1.5; }
+    .status-dialog__subject { margin: 0; font-size: var(--mtm-fs-md); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
     .status-dialog__options { display: grid; gap: 8px; }
     .status-option {
       display: block; padding: 4px 10px 4px 0;
-      border: 1px solid var(--mtm-border); border-radius: 10px;
+      border: 1px solid var(--mtm-border); border-radius: var(--mtm-radius-md);
       transition: border-color 0.15s ease, background 0.15s ease;
     }
     .status-option ::ng-deep .mdc-form-field { align-items: flex-start; width: 100%; }
@@ -98,7 +98,7 @@ export function pillClassFor(tone: StatusTone | undefined): string {
     .status-option:hover { background: var(--mtm-bg-hover); }
     .status-option.is-selected { border-color: var(--mtm-primary); background: var(--mtm-primary-subtle); }
     .status-option__body { display: grid; gap: 4px; padding: 6px 0; justify-items: start; }
-    .status-option__body small { color: var(--mtm-text-muted); font-size: 0.78rem; line-height: 1.4; }
+    .status-option__body small { color: var(--mtm-text-muted); font-size: var(--mtm-fs-xs); line-height: 1.4; }
     .w-full { width: 100%; }
   `,
 })

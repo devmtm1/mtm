@@ -40,7 +40,7 @@
           <article class="card" [class.is-hidden]="publication.statut !== 'en_ligne'" [class.is-busy]="busyId() === publication.id">
             <div class="card__media">
               @if (publication.posterUrl) {
-                <img [src]="publication.posterUrl" [alt]="publication.titre" loading="lazy" />
+                <img [src]="publication.posterUrl" [alt]="publication.titre" loading="lazy" (error)="vignetteDeSecours($event)" />
               } @else {
                 <div class="card__placeholder" aria-hidden="true">
                   <svg lucideVideo></svg>

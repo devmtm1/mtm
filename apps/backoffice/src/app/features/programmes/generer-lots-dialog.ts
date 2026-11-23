@@ -111,7 +111,7 @@ export function numeroApercu(prefixe: string, rang: number, largeur: number): st
     .generer__aide {
       margin: 0 0 8px;
       color: var(--mtm-text-muted);
-      font-size: 0.88rem;
+      font-size: var(--mtm-fs-md);
     }
     .generer__ligne {
       display: grid;
@@ -121,7 +121,7 @@ export function numeroApercu(prefixe: string, rang: number, largeur: number): st
     .generer__apercu {
       margin: 4px 0 0;
       padding: 10px 12px;
-      border-radius: 10px;
+      border-radius: var(--mtm-radius-md);
       background: var(--mtm-primary-subtle);
       color: var(--mtm-primary);
       font-weight: 600;

@@ -89,7 +89,7 @@ import type { CompteEspaceClient } from '../../../core/models/fiche-client';
       max-width: 720px;
       padding: 20px 24px 24px;
       border: 1px solid var(--mtm-border);
-      border-radius: 12px;
+      border-radius: var(--mtm-radius-lg);
       background: var(--mtm-surface, #fff);
       box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
     }
@@ -109,15 +109,15 @@ import type { CompteEspaceClient } from '../../../core/models/fiche-client';
       flex: 1;
       margin: 0;
       font-family: inherit;
-      font-size: 1.02rem;
+      font-size: var(--mtm-fs-lg);
       font-weight: 600;
     }
     .etat {
       padding: 2px 10px;
-      border-radius: 999px;
+      border-radius: var(--mtm-radius-pill);
       background: var(--mtm-surface-muted, #eef0f3);
       color: var(--mtm-text-muted);
-      font-size: 0.78rem;
+      font-size: var(--mtm-fs-xs);
       font-weight: 600;
     }
     .etat--actif {
@@ -136,7 +136,7 @@ import type { CompteEspaceClient } from '../../../core/models/fiche-client';
       align-items: baseline;
     }
     dt {
-      font-size: 0.74rem;
+      font-size: var(--mtm-fs-xs);
       font-weight: 500;
       letter-spacing: 0.04em;
       text-transform: uppercase;
@@ -163,7 +163,7 @@ import type { CompteEspaceClient } from '../../../core/models/fiche-client';
       color: var(--mtm-warning, #a34a07);
     }
     .aide {
-      font-size: 0.86rem;
+      font-size: var(--mtm-fs-md);
     }
     .action {
       display: flex;

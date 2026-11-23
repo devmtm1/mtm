@@ -75,15 +75,15 @@ const TYPE_HELP: Record<string, string> = {
   `,
   styles: `
     .doc-dialog { display: grid; gap: 14px; min-width: min(440px, calc(100vw - 96px)); }
-    .doc-dialog__intro { margin: 0; color: var(--mtm-text-muted); font-size: 0.86rem; }
+    .doc-dialog__intro { margin: 0; color: var(--mtm-text-muted); font-size: var(--mtm-fs-md); }
     .doc-dialog__drop {
       display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 18px;
-      border: 1px dashed var(--mtm-primary); border-radius: 10px; background: var(--mtm-primary-subtle);
+      border: 1px dashed var(--mtm-primary); border-radius: var(--mtm-radius-md); background: var(--mtm-primary-subtle);
       color: var(--mtm-primary); text-align: center; cursor: pointer;
     }
     .doc-dialog__drop.has-file { border-style: solid; }
     .doc-dialog__drop svg { width: 22px; height: 22px; }
-    .doc-dialog__drop small { color: var(--mtm-text-muted); font-size: 0.76rem; }
+    .doc-dialog__drop small { color: var(--mtm-text-muted); font-size: var(--mtm-fs-xs); }
     .doc-dialog__drop input { display: none; }
     .doc-dialog__form { display: grid; gap: 6px; }
   `,

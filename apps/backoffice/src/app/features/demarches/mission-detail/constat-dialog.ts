@@ -159,7 +159,7 @@ export interface ConstatDialogData {
     </mat-dialog-actions>
   `,
   styles: `
-    .constat__intro { margin: 0 0 14px; color: var(--mtm-text-muted); font-size: 0.86rem; line-height: 1.5; }
+    .constat__intro { margin: 0 0 14px; color: var(--mtm-text-muted); font-size: var(--mtm-fs-md); line-height: 1.5; }
     .constat__form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 12px; min-width: min(620px, calc(100vw - 96px)); }
     .constat__wide { grid-column: 1 / -1; }
     @media (max-width: 720px) { .constat__form { grid-template-columns: minmax(0, 1fr); } }

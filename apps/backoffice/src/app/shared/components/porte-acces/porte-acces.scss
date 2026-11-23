@@ -112,7 +112,7 @@
   left: 14%;
   right: 14%;
   border: 2px solid var(--p-panneau);
-  border-radius: 3px;
+  border-radius: var(--mtm-radius-sm);
   box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.25), 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 .porte__panneau:nth-of-type(1) {
@@ -129,7 +129,7 @@
   width: 7px;
   height: 22%;
   transform: translateY(-50%);
-  border-radius: 4px;
+  border-radius: var(--mtm-radius-sm);
   background: linear-gradient(90deg, #f4f7fa, #9fb0c2);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
@@ -143,7 +143,7 @@
   position: absolute;
   width: 6px;
   height: 7%;
-  border-radius: 2px;
+  border-radius: var(--mtm-radius-sm);
   background: linear-gradient(90deg, #dfe7ef, #8da1b6);
 }
 .porte__battant--g .porte__charniere {
@@ -243,7 +243,7 @@
   min-height: 1.5em;
   max-width: 80vw;
   text-align: center;
-  font-size: 15px;
+  font-size: var(--mtm-fs-md);
   font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--p-texte);

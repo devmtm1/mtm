@@ -106,7 +106,7 @@
         } @else {
           <section class="chiffres chiffres--compact" aria-busy="true" aria-label="Chargement des chiffres">
             @for (n of [1, 2, 3, 4]; track n) {
-              <div class="skeleton" style="height: 94px; border-radius: 14px"></div>
+              <div class="skeleton" style="height: 94px; border-radius: var(--mtm-radius-lg)"></div>
             }
           </section>
         }

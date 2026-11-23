@@ -9,7 +9,7 @@
 h2 {
   margin: 0 0 12px;
   font-family: var(--mtm-font-display);
-  font-size: 1.05rem;
+  font-size: var(--mtm-fs-lg);
   font-weight: 700;
 }
 
@@ -18,11 +18,11 @@ h2 {
   margin: 20px 0 10px;
   padding-top: 18px;
   border-top: 1px solid var(--mtm-border);
-  font-size: 0.95rem;
+  font-size: var(--mtm-fs-md);
 
   a {
     color: var(--mtm-primary);
-    font-size: 0.85rem;
+    font-size: var(--mtm-fs-md);
     font-weight: 600;
     text-underline-offset: 3px;
   }
@@ -36,7 +36,7 @@ h2 {
   border-radius: var(--mtm-radius-md);
   background: var(--mtm-bg-surface);
   color: var(--mtm-text-muted);
-  font-size: 0.88rem;
+  font-size: var(--mtm-fs-md);
   line-height: 1.5;
 
   a {
@@ -72,17 +72,17 @@ h2 {
   max-width: 100%;
   padding: 3px;
   border: 1px solid var(--mtm-border);
-  border-radius: 12px;
+  border-radius: var(--mtm-radius-lg);
   background: var(--mtm-bg-hover);
 
   button {
     padding: 6px 14px;
     border: 0;
-    border-radius: 9px;
+    border-radius: var(--mtm-radius-md);
     background: transparent;
     color: var(--mtm-text-muted);
     font: inherit;
-    font-size: 0.85rem;
+    font-size: var(--mtm-fs-md);
     cursor: pointer;
     transition:
       background-color 0.15s ease,
@@ -113,14 +113,14 @@ h2 {
    -------------------------------------------------------------------------- */
 .table-equipe {
   min-width: 860px;
-  font-size: 0.9rem;
+  font-size: var(--mtm-fs-md);
 
   thead th {
     padding: 11px 14px;
     border-bottom: 0;
     background: var(--mtm-bg-surface);
     color: var(--mtm-text-muted);
-    font-size: 0.78rem;
+    font-size: var(--mtm-fs-xs);
     font-weight: 600;
     letter-spacing: 0;
     text-transform: none;
@@ -184,7 +184,7 @@ h2 {
 
   tfoot th {
     text-align: left;
-    font-size: 0.85rem;
+    font-size: var(--mtm-fs-md);
     letter-spacing: 0;
     text-transform: none;
     color: var(--mtm-text-dark);
@@ -223,7 +223,7 @@ h2 {
   &:focus-visible {
     outline: 2px solid var(--mtm-primary-light);
     outline-offset: 3px;
-    border-radius: 8px;
+    border-radius: var(--mtm-radius-md);
   }
 }
 
@@ -237,7 +237,7 @@ h2 {
   border-radius: 50%;
   background: var(--mtm-primary-subtle);
   color: var(--mtm-primary);
-  font-size: 0.78rem;
+  font-size: var(--mtm-fs-xs);
   font-weight: 700;
   letter-spacing: 0.02em;
 }
@@ -252,7 +252,7 @@ h2 {
   border-radius: var(--mtm-radius-md);
   background: var(--mtm-success-bg);
   color: var(--mtm-success);
-  font-size: 0.9rem;
+  font-size: var(--mtm-fs-md);
   font-weight: 600;
 
   &::before {
@@ -266,7 +266,7 @@ h2 {
     border-radius: 50%;
     background: var(--mtm-success);
     color: #fff;
-    font-size: 0.8rem;
+    font-size: var(--mtm-fs-sm);
   }
 }
 
@@ -291,7 +291,7 @@ h2 {
 .aide,
 .note {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--mtm-fs-md);
   color: var(--mtm-text-muted);
 }
 
@@ -315,7 +315,7 @@ h2 {
     gap: 2px;
     padding: 6px 0 6px 12px;
     border-left: 3px solid var(--mtm-border);
-    font-size: 0.9rem;
+    font-size: var(--mtm-fs-md);
 
     a {
       color: var(--mtm-text-dark);
@@ -331,7 +331,7 @@ h2 {
     }
 
     span {
-      font-size: 0.8rem;
+      font-size: var(--mtm-fs-sm);
       color: var(--mtm-text-muted);
     }
 
@@ -354,13 +354,13 @@ h2 {
   }
 
   dt {
-    font-size: 0.76rem;
+    font-size: var(--mtm-fs-xs);
     color: var(--mtm-text-muted);
   }
 
   dd {
     margin: 0;
-    font-size: 1.05rem;
+    font-size: var(--mtm-fs-lg);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     overflow-wrap: anywhere;
@@ -385,19 +385,19 @@ h2 {
   justify-content: space-between;
   gap: 4px 12px;
   margin-bottom: 4px;
-  font-size: 0.88rem;
+  font-size: var(--mtm-fs-md);
 }
 
 .barre {
   height: 8px;
-  border-radius: 999px;
+  border-radius: var(--mtm-radius-pill);
   background: var(--mtm-bg-hover);
   overflow: hidden;
 
   span {
     display: block;
     height: 100%;
-    border-radius: 999px;
+    border-radius: var(--mtm-radius-pill);
     background: var(--mtm-primary);
   }
 }
@@ -439,7 +439,7 @@ h2 {
       content: '›';
       margin-left: auto;
       color: var(--mtm-text-muted);
-      font-size: 1.5rem;
+      font-size: var(--mtm-fs-2xl);
       line-height: 1;
     }
 
@@ -455,7 +455,7 @@ h2 {
     min-width: 2ch;
     color: var(--mtm-text-muted);
     font-family: var(--mtm-font-display);
-    font-size: 1.6rem;
+    font-size: var(--mtm-fs-3xl);
     font-weight: 700;
     line-height: 1;
     text-align: center;
@@ -469,13 +469,13 @@ h2 {
 
     strong {
       color: var(--mtm-text-muted);
-      font-size: 0.88rem;
+      font-size: var(--mtm-fs-md);
       font-weight: 600;
     }
 
     small {
       color: var(--mtm-text-muted);
-      font-size: 0.78rem;
+      font-size: var(--mtm-fs-xs);
     }
   }
 
@@ -525,7 +525,7 @@ h2 {
 
   h3 {
     margin: 0;
-    font-size: 0.95rem;
+    font-size: var(--mtm-fs-md);
   }
 }
 

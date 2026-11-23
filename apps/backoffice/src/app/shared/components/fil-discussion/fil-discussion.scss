@@ -9,13 +9,13 @@
 
 .fil__tete h2 {
   margin: 0 0 2px;
-  font-size: 1rem;
+  font-size: var(--mtm-fs-lg);
 }
 
 .fil__tete p,
 .fil__vide {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--mtm-fs-md);
   color: var(--mtm-text-muted);
 }
 
@@ -34,7 +34,7 @@
   gap: 4px;
   padding: 8px 12px;
   border-left: 3px solid var(--mtm-border);
-  border-radius: 6px;
+  border-radius: var(--mtm-radius-sm);
   background: rgba(15, 23, 42, 0.03);
 
   &--public {
@@ -52,27 +52,27 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 4px 10px;
-  font-size: 0.85rem;
+  font-size: var(--mtm-fs-md);
 }
 
 .message__nature {
   padding: 1px 8px;
-  border-radius: 999px;
+  border-radius: var(--mtm-radius-pill);
   background: rgba(15, 23, 42, 0.08);
-  font-size: 0.72rem;
+  font-size: var(--mtm-fs-xs);
 }
 
 .message time {
   margin-left: auto;
   color: var(--mtm-text-muted);
-  font-size: 0.78rem;
+  font-size: var(--mtm-fs-xs);
 }
 
 .message__corps {
   margin: 0;
   white-space: pre-line;
   overflow-wrap: anywhere;
-  font-size: 0.9rem;
+  font-size: var(--mtm-fs-md);
 }
 
 .fil__saisie {

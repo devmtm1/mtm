@@ -7,7 +7,7 @@
 h2 {
   margin: 0 0 12px;
   font-family: var(--mtm-font-display);
-  font-size: 1.05rem;
+  font-size: var(--mtm-fs-lg);
   font-weight: 700;
 }
 
@@ -29,7 +29,7 @@ h2 {
 .vide,
 .note {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--mtm-fs-md);
   color: var(--mtm-text-muted);
 }
 
@@ -66,7 +66,7 @@ h2 {
 
   h3 {
     margin: 0;
-    font-size: 0.92rem;
+    font-size: var(--mtm-fs-md);
   }
 
   ul {
@@ -81,12 +81,12 @@ h2 {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 0 12px;
-    font-size: 0.85rem;
+    font-size: var(--mtm-fs-md);
 
     span {
       grid-column: 1;
       color: var(--mtm-text-muted);
-      font-size: 0.78rem;
+      font-size: var(--mtm-fs-xs);
     }
 
     strong {
@@ -102,46 +102,22 @@ h2 {
 }
 
 /* Filtres : une barre compacte, des champs bien marqués, l'explication à côté. */
+/* Les filtres de la page : les mêmes champs que partout dans l'application (Material), et non plus les listes natives du navigateur. */
 .filtres-direction {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: center;
   gap: 10px 16px;
   padding: 14px 18px;
 
-  label {
-    display: grid;
-    gap: 4px;
-    color: var(--mtm-text-muted);
-    font-size: 0.8rem;
-    font-weight: 600;
-  }
-
-  select {
-    min-width: 210px;
-    padding: 9px 12px;
-    border: 1px solid var(--mtm-field-border);
-    border-radius: 10px;
-    background: var(--mtm-card-bg);
-    color: var(--mtm-text-dark);
-    font: inherit;
-    font-weight: 400;
-
-    &:hover {
-      border-color: var(--mtm-primary);
-    }
-
-    &:focus-visible {
-      outline: 2px solid var(--mtm-primary-light);
-      outline-offset: 1px;
-    }
+  mat-form-field {
+    width: 220px;
   }
 
   small {
     flex: 1 1 280px;
-    padding-bottom: 8px;
     color: var(--mtm-text-muted);
-    font-size: 0.8rem;
+    font-size: var(--mtm-fs-sm);
     line-height: 1.45;
   }
 }
@@ -155,10 +131,10 @@ h2 {
   a {
     padding: 4px 12px;
     border: 1px solid var(--mtm-border);
-    border-radius: 999px;
+    border-radius: var(--mtm-radius-pill);
     background: var(--mtm-card-bg);
     color: var(--mtm-primary);
-    font-size: 0.82rem;
+    font-size: var(--mtm-fs-sm);
     font-weight: 600;
     text-decoration: none;
     transition:
@@ -193,14 +169,14 @@ h2 {
 
   strong {
     font-family: var(--mtm-font-display);
-    font-size: 1.25rem;
+    font-size: var(--mtm-fs-xl);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
   }
 
   span,
   small {
-    font-size: 0.82rem;
+    font-size: var(--mtm-fs-sm);
     color: var(--mtm-text-muted);
   }
 
@@ -220,7 +196,7 @@ h2 {
 
     strong {
       color: var(--mtm-primary);
-      font-size: 1.7rem;
+      font-size: var(--mtm-fs-3xl);
     }
 
     @media (max-width: 520px) {
@@ -255,7 +231,7 @@ h2 {
   margin: 0 0 12px;
   padding: 0;
   list-style: none;
-  font-size: 0.9rem;
+  font-size: var(--mtm-fs-md);
 
   li {
     padding: 10px 14px;

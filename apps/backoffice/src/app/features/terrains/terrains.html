@@ -18,9 +18,6 @@
           <svg class="btn-icon" lucideDownload aria-hidden="true"></svg>Exporter
         </button>
       }
-      <button mat-stroked-button type="button" (click)="openProgrammes()" matTooltip="Un lotissement de plusieurs lots, saisi une seule fois">
-        <svg class="btn-icon" lucideLayoutGrid aria-hidden="true"></svg>Programmes
-      </button>
       @if (canCreate()) {
         <button mat-stroked-button type="button" (click)="openImport()" matTooltip="Créer plusieurs biens d’un coup à partir d’un fichier Excel">
           <svg class="btn-icon" lucideFileSpreadsheet aria-hidden="true"></svg>Importer depuis Excel
@@ -58,6 +55,7 @@
           <small>Dossier de vente en cours</small>
         </span>
       </button>
+      @if ((s.parStatut['Vendu'] ?? 0) > 0) {
       <button type="button" class="kpi kpi--primary" [class.kpi--zero]="(s.parStatut['Vendu'] ?? 0) === 0" (click)="filterByStatus('Vendu')">
         <span class="kpi__icon"><svg lucideCircleCheck aria-hidden="true"></svg></span>
         <span class="kpi__body">
@@ -65,6 +63,8 @@
           <span>Vendus</span>
         </span>
       </button>
+      }
+      @if ((s.archives ?? 0) > 0) {
       <button type="button" class="kpi kpi--muted" [class.kpi--zero]="(s.archives ?? 0) === 0" (click)="filterArchives()">
         <span class="kpi__icon"><svg lucideArchive aria-hidden="true"></svg></span>
         <span class="kpi__body">
@@ -73,27 +73,26 @@
           <small>Hors portefeuille actif</small>
         </span>
       </button>
-      <div class="kpi kpi--attention" [class.kpi--muted]="toComplete() === 0">
-        <span class="kpi__icon"><svg lucideAlertTriangle aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          <strong>{{ toComplete() }}</strong>
-          <span>Fiches à compléter</span>
-          <small>
-            @if (toComplete() === 0) {
-              Toutes les fiches sont complètes
-            } @else {
+      }
+      @if (toComplete() > 0) {
+        <div class="kpi kpi--attention">
+          <span class="kpi__icon"><svg lucideAlertTriangle aria-hidden="true"></svg></span>
+          <span class="kpi__body">
+            <strong>{{ toComplete() }}</strong>
+            <span>Fiches à compléter</span>
+            <small>
               <span matTooltip="Sans coordonnées GPS : pas de carte sur le site"
                 ><svg lucideMapPinOff aria-hidden="true"></svg>{{ s.sansGps }} sans GPS</span
               >
               <span matTooltip="Sans photo publique : fiche peu attractive sur le site"
                 ><svg lucideCamera aria-hidden="true"></svg>{{ s.sansPhotoPublique }} sans photo</span
               >
-            }
-          </small>
-        </span>
-      </div>
+            </small>
+          </span>
+        </div>
+      }
     } @else {
-      @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+      @for (i of [1, 2, 3, 4]; track i) {
         <div class="kpi skeleton" aria-hidden="true"></div>
       }
     }
@@ -167,6 +166,8 @@
             </button>
             @for (option of options().typeBien; track option) {
               @let nombre = stats()?.parType?.[option] ?? 0;
+              <!-- Un choix qui ne donnerait aucun bien n'est pas proposé (sauf s'il est déjà sélectionné). -->
+              @if (!stats() || nombre > 0 || filters.controls.typeBien.value === option) {
               <button type="button" class="puce" [class.is-actif]="filters.controls.typeBien.value === option" [class.is-vide]="stats() && nombre === 0" [attr.aria-pressed]="filters.controls.typeBien.value === option" (click)="choisirNature(option)">
                 @switch (option) {
                   @case ('terrain') { <svg lucideLandPlot aria-hidden="true"></svg> }
@@ -182,6 +183,7 @@
                   <span class="puce__n">{{ nombre }}</span>
                 }
               </button>
+              }
             }
           </div>
         </div>
@@ -196,12 +198,14 @@
             </button>
             @for (option of options().statutCommercial; track option) {
               @let nombre = stats()?.parStatut?.[option] ?? 0;
+              @if (!stats() || nombre > 0 || filters.controls.statutCommercial.value === option) {
               <button type="button" class="puce puce--statut" [class]="'puce puce--statut puce--' + tonStatut(option)" [class.is-actif]="filters.controls.statutCommercial.value === option" [class.is-vide]="stats() && nombre === 0" [attr.aria-pressed]="filters.controls.statutCommercial.value === option" (click)="choisirStatut(option)">
                 <span class="puce__point" aria-hidden="true"></span>{{ option }}
                 @if (stats()) {
                   <span class="puce__n">{{ nombre }}</span>
                 }
               </button>
+              }
             }
           </div>
         </div>

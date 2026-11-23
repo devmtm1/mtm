@@ -20,7 +20,7 @@
     gap: 6px;
     padding: 12px 14px;
     border: 1px solid var(--mtm-border);
-    border-radius: 10px;
+    border-radius: var(--mtm-radius-md);
     background: var(--mtm-surface);
     font: inherit;
     text-align: left;
@@ -37,28 +37,28 @@
 
   &__count {
     font-family: var(--mtm-font-display, inherit);
-    font-size: 1.35rem;
+    font-size: var(--mtm-fs-2xl);
     font-weight: 700;
     line-height: 1;
     color: var(--mtm-text-dark);
   }
 
   &__label {
-    font-size: 0.78rem;
+    font-size: var(--mtm-fs-xs);
     color: var(--mtm-text-muted);
   }
 
   &__bar {
     display: block;
     height: 4px;
-    border-radius: 999px;
+    border-radius: var(--mtm-radius-pill);
     background: var(--mtm-border);
 
     i {
       display: block;
       height: 100%;
       min-width: 2px;
-      border-radius: 999px;
+      border-radius: var(--mtm-radius-pill);
       background: var(--mtm-primary);
     }
   }
@@ -79,10 +79,10 @@
   border: 1px solid var(--mtm-border);
   background: var(--mtm-surface);
   color: var(--mtm-text-muted);
-  border-radius: 999px;
+  border-radius: var(--mtm-radius-pill);
   padding: 6px 14px;
   font: inherit;
-  font-size: 0.82rem;
+  font-size: var(--mtm-fs-sm);
   font-weight: 600;
   cursor: pointer;
   transition:

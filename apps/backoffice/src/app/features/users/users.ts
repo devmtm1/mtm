@@ -95,8 +95,9 @@ export class Users implements OnInit {
     {
       headerName: 'Rôle',
       colId: 'role',
-      flex: 1.3,
-      minWidth: 170,
+      flex: 1.6,
+      // Assez large pour « Responsable gestion locative » en entier dans sa pastille.
+      minWidth: 230,
       valueGetter: (params) => (params.data?.roles ?? []).map(roleLabel).join(', ') || 'Aucun rôle',
       cellRenderer: (params: ICellRendererParams<UserListItem>) => {
         const roles = params.data?.roles ?? [];

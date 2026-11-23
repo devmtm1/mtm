@@ -323,7 +323,7 @@ export interface ComplementFiche {
     .carte {
       padding: 20px 24px 22px;
       border: 1px solid var(--mtm-border);
-      border-radius: 12px;
+      border-radius: var(--mtm-radius-lg);
       background: var(--mtm-surface, #fff);
       box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
     }
@@ -351,7 +351,7 @@ export interface ComplementFiche {
       flex: 1;
       margin: 0;
       font-family: inherit;
-      font-size: 1.02rem;
+      font-size: var(--mtm-fs-lg);
       font-weight: 600;
     }
     .crayon,
@@ -361,11 +361,11 @@ export interface ComplementFiche {
       gap: 6px;
       padding: 6px;
       border: 0;
-      border-radius: 6px;
+      border-radius: var(--mtm-radius-sm);
       background: none;
       color: var(--mtm-primary);
       font: inherit;
-      font-size: 0.9rem;
+      font-size: var(--mtm-fs-md);
       cursor: pointer;
     }
     .crayon:hover,
@@ -392,7 +392,7 @@ export interface ComplementFiche {
       grid-template-columns: minmax(110px, 220px) minmax(0, 1fr);
     }
     dt {
-      font-size: 0.74rem;
+      font-size: var(--mtm-fs-xs);
       font-weight: 500;
       letter-spacing: 0.04em;
       text-transform: uppercase;
@@ -426,8 +426,8 @@ export interface ComplementFiche {
     .pastille {
       margin-left: 10px;
       padding: 2px 10px;
-      border-radius: 999px;
-      font-size: 0.76rem;
+      border-radius: var(--mtm-radius-pill);
+      font-size: var(--mtm-fs-xs);
       font-weight: 600;
     }
     .pastille--warning {
@@ -440,11 +440,11 @@ export interface ComplementFiche {
     }
     .completude h2 {
       margin-bottom: 12px;
-      font-size: 1.05rem;
+      font-size: var(--mtm-fs-lg);
     }
     .completude__barre {
       height: 8px;
-      border-radius: 999px;
+      border-radius: var(--mtm-radius-pill);
       background: var(--mtm-border);
       overflow: hidden;
     }
@@ -456,13 +456,13 @@ export interface ComplementFiche {
     }
     .completude p {
       margin: 10px 0 0;
-      font-size: 0.88rem;
+      font-size: var(--mtm-fs-md);
       color: var(--mtm-text-muted);
     }
     .reservee {
       margin: 0;
       color: var(--mtm-text-muted);
-      font-size: 0.9rem;
+      font-size: var(--mtm-fs-md);
     }
     .reservee svg {
       width: 14px;

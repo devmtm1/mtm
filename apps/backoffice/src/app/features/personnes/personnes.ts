@@ -138,6 +138,7 @@ const LIBELLES_ROLE: Record<RolePersonne, string> = {
               </span>
             </button>
           }
+          @if (compteurs().doublon > 0 || filtre() === 'doublon') {
           <button
             type="button"
             class="kpi"
@@ -153,6 +154,7 @@ const LIBELLES_ROLE: Record<RolePersonne, string> = {
               <small>Doublons possibles</small>
             </span>
           </button>
+          }
         }
       </section>
 
@@ -327,7 +329,7 @@ const LIBELLES_ROLE: Record<RolePersonne, string> = {
       margin: 0;
       padding: 12px 20px 16px;
       color: var(--mtm-text-muted);
-      font-size: 0.82rem;
+      font-size: var(--mtm-fs-sm);
     }
     .table-scroll--attente {
       opacity: 0.55;
@@ -368,7 +370,7 @@ const LIBELLES_ROLE: Record<RolePersonne, string> = {
       border-radius: 50%;
       background: var(--mtm-primary-subtle);
       color: var(--mtm-primary);
-      font-size: 0.8rem;
+      font-size: var(--mtm-fs-sm);
       font-weight: 700;
       letter-spacing: 0.02em;
     }
@@ -383,12 +385,12 @@ const LIBELLES_ROLE: Record<RolePersonne, string> = {
     .identite__texte small,
     .muet {
       color: var(--mtm-text-muted);
-      font-size: 0.82rem;
+      font-size: var(--mtm-fs-sm);
     }
     .contact {
       display: grid;
       gap: 3px;
-      font-size: 0.86rem;
+      font-size: var(--mtm-fs-md);
     }
     .contact a,
     .fiches a {
@@ -410,7 +412,7 @@ const LIBELLES_ROLE: Record<RolePersonne, string> = {
     .fiches a.status-pill {
       gap: 6px;
       padding: 4px 11px;
-      font-size: 0.78rem;
+      font-size: var(--mtm-fs-xs);
     }
     .fiches a.status-pill:hover {
       filter: brightness(0.96);
@@ -455,7 +457,7 @@ const LIBELLES_ROLE: Record<RolePersonne, string> = {
         display: block;
         margin-bottom: 2px;
         color: var(--mtm-text-muted);
-        font-size: 0.68rem;
+        font-size: var(--mtm-fs-xs);
         font-weight: 700;
         letter-spacing: 0.06em;
         text-transform: uppercase;

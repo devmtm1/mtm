@@ -19,10 +19,10 @@
   border: 1px solid var(--mtm-border);
   background: var(--mtm-surface);
   color: var(--mtm-text-muted);
-  border-radius: 999px;
+  border-radius: var(--mtm-radius-pill);
   padding: 6px 14px;
   font: inherit;
-  font-size: 0.82rem;
+  font-size: var(--mtm-fs-sm);
   font-weight: 600;
   cursor: pointer;
   transition:

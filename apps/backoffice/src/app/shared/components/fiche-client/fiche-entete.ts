@@ -13,6 +13,9 @@ import { LucideArrowLeft } from '@lucide/angular';
   template: `
     <header class="entete">
       <div class="entete__titre">
+        @if (surtitre()) {
+          <p class="eyebrow">{{ surtitre() }}</p>
+        }
         <h1>{{ titre() }}</h1>
         @if (sousTitre()) {
           <p class="entete__sous-titre">{{ sousTitre() }}</p>
@@ -48,14 +51,14 @@ import { LucideArrowLeft } from '@lucide/angular';
     h1 {
       margin: 0;
       font-family: var(--mtm-font-display);
-      font-size: clamp(1.5rem, 1.25rem + 0.7vw, 2rem);
+      font-size: var(--mtm-title-page);
       line-height: 1.15;
       letter-spacing: -0.02em;
     }
     .entete__sous-titre {
       margin: 0;
       color: var(--mtm-text-muted);
-      font-size: 0.95rem;
+      font-size: var(--mtm-fs-md);
       overflow-wrap: anywhere;
     }
     .entete__actions {
@@ -74,5 +77,7 @@ export class FicheEntete {
   readonly titre = input.required<string>();
   /** Identification de la personne : « Alassane Sow · P-2026-0010 · Vérification foncière ». */
   readonly sousTitre = input<string | null>(null);
+  /** Petit titre au-dessus du nom (« Fiche du prospect ») : le nom de la personne reste le titre de la page, comme sur les autres fiches. */
+  readonly surtitre = input<string | null>(null);
   readonly retour = output<void>();
 }

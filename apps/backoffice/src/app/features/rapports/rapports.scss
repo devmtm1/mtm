@@ -25,7 +25,7 @@
   cursor: pointer;
 
   span {
-    font-size: 0.82rem;
+    font-size: var(--mtm-fs-sm);
     color: var(--mtm-text-muted);
   }
 
@@ -69,13 +69,13 @@
 .rapport__tete {
   h2 {
     margin: 0 0 2px;
-    font-size: 1.15rem;
+    font-size: var(--mtm-fs-xl);
   }
 
   p {
     margin: 0;
     color: var(--mtm-text-muted);
-    font-size: 0.9rem;
+    font-size: var(--mtm-fs-md);
   }
 }
 
@@ -95,7 +95,7 @@
   }
 
   dt {
-    font-size: 0.78rem;
+    font-size: var(--mtm-fs-xs);
     color: var(--mtm-text-muted);
   }
 
@@ -112,13 +112,13 @@
 
 .section h3 {
   margin: 0 0 10px;
-  font-size: 1rem;
+  font-size: var(--mtm-fs-lg);
 }
 
 .vide,
 .note {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--mtm-fs-md);
   color: var(--mtm-text-muted);
 }
 

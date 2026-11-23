@@ -496,7 +496,7 @@ export const routes: Routes = [
       },
       {
         path: 'locatif/immeubles/nouveau',
-        title: 'Nouvelle propriété',
+        title: 'Nouvel immeuble',
         canDeactivate: [modificationsNonEnregistreesGuard],
         canActivate: [permissionsGuard(['locatif:creer'])],
         loadComponent: () =>
@@ -521,7 +521,7 @@ export const routes: Routes = [
       },
       {
         path: 'locatif/immeubles',
-        title: 'Propriétés',
+        title: 'Immeubles',
         canActivate: [permissionsGuard(['locatif:consulter'])],
         loadComponent: () =>
           import('./features/locatif/immeubles/immeubles').then((m) => m.Immeubles),

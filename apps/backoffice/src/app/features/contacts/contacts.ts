@@ -19,7 +19,7 @@ import type { CommercialSummary } from '../../core/models/prospect.model';
 import { NotificationService } from '../../shared/services/notification.service';
 import { StatusChoiceDialog } from '../../shared/dialogs/status-choice-dialog';
 import { RepondreDialog } from './repondre-dialog';
-import { Pagination } from '../../shared/components/pagination/pagination';
+import { Pagination, TAILLE_PAGE_DEFAUT } from '../../shared/components/pagination/pagination';
 import { ExportListeDialog } from '../../shared/dialogs/export-liste-dialog';
 import { isoJour, sourceDepuisLignes } from '../../shared/utils/export-lignes';
 
@@ -82,7 +82,7 @@ export class Contacts implements OnInit {
   });
 
   protected readonly pageSizes = [10, 25, 50];
-  protected readonly pageSize = signal(10);
+  protected readonly pageSize = signal(TAILLE_PAGE_DEFAUT);
   private readonly pageIndex = signal(0);
   protected readonly totalPages = computed(() => Math.max(1, Math.ceil(this.filtered().length / this.pageSize())));
   /** Page affichée, ramenée dans les bornes quand un filtre réduit la liste. */

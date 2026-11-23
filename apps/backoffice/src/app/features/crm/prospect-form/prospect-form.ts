@@ -87,6 +87,8 @@ export class ProspectForm implements OnInit, AvecModifications {
   protected readonly isEdit = this.prospectId !== null;
   /** À la création, le projet du client se déplie à la demande : un nom et un contact suffisent pour commencer. */
   protected readonly detailsOuverts = signal(false);
+  /** Création : adresse, état civil, pièce et urgence restent repliés jusqu'à demande. */
+  protected readonly identiteOuverte = signal(false);
   /** Identité du client (naissance, pièce) : réservée à la permission crm:identite. */
   protected readonly peutSaisirIdentite = computed(() => this.session.hasPermission('crm:identite'));
   protected readonly parcoursOptions = Object.entries(PARCOURS_CLIENT).map(([value, sens]) => ({ value, label: sens.label, help: sens.help }));

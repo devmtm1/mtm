@@ -225,34 +225,34 @@ const aujourdhui = (): string => new Date().toISOString().slice(0, 10);
   `,
   styles: `
     mat-dialog-content { display: grid; gap: 14px; }
-    .statut { margin-left: 10px; padding: 3px 10px; border-radius: 9999px; background: var(--mtm-bg-hover); color: var(--mtm-text-muted); font-size: 0.74rem; font-weight: 600; vertical-align: middle; }
+    .statut { margin-left: 10px; padding: 3px 10px; border-radius: var(--mtm-radius-pill); background: var(--mtm-bg-hover); color: var(--mtm-text-muted); font-size: var(--mtm-fs-xs); font-weight: 600; vertical-align: middle; }
     .statut--success { background: var(--mtm-success-bg); color: var(--mtm-success); }
     .statut--warning { background: var(--mtm-warning-bg); color: var(--mtm-warning); }
     .statut--danger { background: var(--mtm-error-bg); color: var(--mtm-error); }
-    .bloc { display: grid; gap: 8px; padding: 12px 14px; border: 1px solid var(--mtm-border); border-radius: 10px; }
-    .bloc h3 { margin: 0; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--mtm-text-muted); }
-    .dossier__titre, .dossier__montants, .envoi, .motif { margin: 0; font-size: 0.88rem; }
+    .bloc { display: grid; gap: 8px; padding: 12px 14px; border: 1px solid var(--mtm-border); border-radius: var(--mtm-radius-md); }
+    .bloc h3 { margin: 0; font-size: var(--mtm-fs-sm); text-transform: uppercase; letter-spacing: 0.06em; color: var(--mtm-text-muted); }
+    .dossier__titre, .dossier__montants, .envoi, .motif { margin: 0; font-size: var(--mtm-fs-md); }
     .dossier__montants { color: var(--mtm-text-muted); }
-    .avertissement { display: flex; gap: 8px; align-items: flex-start; margin: 0; padding: 8px 10px; border-radius: 8px; background: var(--mtm-error-bg); color: var(--mtm-error); font-size: 0.84rem; font-weight: 600; }
+    .avertissement { display: flex; gap: 8px; align-items: flex-start; margin: 0; padding: 8px 10px; border-radius: var(--mtm-radius-md); background: var(--mtm-error-bg); color: var(--mtm-error); font-size: var(--mtm-fs-sm); font-weight: 600; }
     .avertissement svg { flex: 0 0 18px; width: 18px; height: 18px; }
     .pieces { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
-    .piece { display: grid; gap: 4px; align-content: start; padding: 10px; border: 1px dashed var(--mtm-border); border-radius: 8px; }
-    .piece__titre { font-size: 0.8rem; font-weight: 700; color: var(--mtm-text-dark); }
-    .piece__vide { color: var(--mtm-text-muted); font-size: 0.84rem; }
-    .piece a { display: inline-flex; align-items: center; gap: 6px; font-size: 0.86rem; word-break: break-all; }
+    .piece { display: grid; gap: 4px; align-content: start; padding: 10px; border: 1px dashed var(--mtm-border); border-radius: var(--mtm-radius-md); }
+    .piece__titre { font-size: var(--mtm-fs-sm); font-weight: 700; color: var(--mtm-text-dark); }
+    .piece__vide { color: var(--mtm-text-muted); font-size: var(--mtm-fs-sm); }
+    .piece a { display: inline-flex; align-items: center; gap: 6px; font-size: var(--mtm-fs-md); word-break: break-all; }
     .piece svg, .depot svg { width: 15px; height: 15px; }
     .piece small { color: var(--mtm-text-muted); }
-    .depot { display: inline-flex; align-items: center; gap: 6px; width: fit-content; margin-top: 4px; padding: 5px 10px; border: 1px solid var(--mtm-primary); border-radius: 6px; color: var(--mtm-primary); font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+    .depot { display: inline-flex; align-items: center; gap: 6px; width: fit-content; margin-top: 4px; padding: 5px 10px; border: 1px solid var(--mtm-primary); border-radius: var(--mtm-radius-sm); color: var(--mtm-primary); font-size: var(--mtm-fs-sm); font-weight: 600; cursor: pointer; }
     .depot input { position: absolute; width: 1px; height: 1px; opacity: 0; }
     .depot:focus-within { outline: 2px solid var(--mtm-primary); outline-offset: 2px; }
     .formulaire { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
     .formulaire__large { grid-column: 1 / -1; }
-    .dialog-erreur { margin: 0; color: var(--mtm-error); font-size: 0.84rem; font-weight: 600; }
-    .dialog-aide { margin: 0; color: var(--mtm-text-muted); font-size: 0.82rem; }
+    .dialog-erreur { margin: 0; color: var(--mtm-error); font-size: var(--mtm-fs-sm); font-weight: 600; }
+    .dialog-aide { margin: 0; color: var(--mtm-text-muted); font-size: var(--mtm-fs-sm); }
     .historique { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-    .historique li { display: grid; gap: 1px; padding-left: 12px; border-left: 3px solid var(--mtm-primary-light); font-size: 0.86rem; }
-    .historique span { color: var(--mtm-text-muted); font-size: 0.76rem; }
-    .historique em { font-size: 0.82rem; }
+    .historique li { display: grid; gap: 1px; padding-left: 12px; border-left: 3px solid var(--mtm-primary-light); font-size: var(--mtm-fs-md); }
+    .historique span { color: var(--mtm-text-muted); font-size: var(--mtm-fs-xs); }
+    .historique em { font-size: var(--mtm-fs-sm); }
   `,
 })
 export class ProtocoleDetailDialog implements OnInit {

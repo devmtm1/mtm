@@ -66,6 +66,8 @@ export class Agenda implements OnInit {
   private readonly router = inject(Router);
 
   protected readonly canCreate = this.session.hasPermission('agenda:creer');
+  /** Modifier un événement demande « modifier » : l'API le refuse sinon, même pour son créateur. */
+  protected readonly canModify = this.session.hasPermission('agenda:modifier');
 
   protected readonly vue = signal<Vue>('mois');
   protected readonly scope = signal<'moi' | 'equipe'>('moi');

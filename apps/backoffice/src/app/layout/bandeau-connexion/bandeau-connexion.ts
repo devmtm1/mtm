@@ -38,11 +38,11 @@ export const DUREE_RETABLIE_MS = 3000;
       padding: 10px 16px;
       transform: translateX(-50%);
       border: 1px solid var(--mtm-warning);
-      border-radius: 12px;
+      border-radius: var(--mtm-radius-lg);
       background: var(--mtm-warning-bg, #fdf0d9);
       color: var(--mtm-text-dark);
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-      font-size: 0.88rem;
+      font-size: var(--mtm-fs-md);
     }
     .bandeau.is-ok {
       border-color: var(--mtm-success);

@@ -9,7 +9,7 @@
     <header class="detail-header">
       <div>
         <button mat-button type="button" class="back-link" (click)="retour()">
-          <svg class="btn-icon" lucideArrowLeft aria-hidden="true"></svg>Retour aux propriétés
+          <svg class="btn-icon" lucideArrowLeft aria-hidden="true"></svg>Retour aux immeubles
         </button>
         <p class="eyebrow">{{ i.referenceInterne }} · {{ typeLabel(i.type) }}</p>
         <h1>{{ i.nom }}</h1>
@@ -24,7 +24,7 @@
       }
     </header>
 
-    <section class="chiffres" aria-label="Synthèse de la propriété">
+    <section class="chiffres" aria-label="Synthèse de l’immeuble">
       <div class="chiffre">
         <span class="chiffre__icone"><svg lucideBuilding2 aria-hidden="true"></svg></span>
         <div class="chiffre__corps">
@@ -300,7 +300,7 @@
       @case ('releve') {
     <section class="page-card">
       <div class="card-head">
-        <h2>Relevé de la propriété</h2>
+        <h2>Relevé de l’immeuble</h2>
         <div class="card-head__actions">
           @if (canEdit()) {
             <button mat-flat-button color="primary" type="button" [disabled]="generation()" (click)="genererReleve()">
@@ -310,7 +310,7 @@
         </div>
       </div>
       <p class="sous-texte charges-note">
-        Un seul document pour toute la propriété : le détail de chaque logement, les charges communes et le net qui
+        Un seul document pour tout l’immeuble : le détail de chaque logement, les charges communes et le net qui
         revient au propriétaire. Il est publié dans son espace client dès sa génération.
       </p>
       @if (releves().length === 0) {

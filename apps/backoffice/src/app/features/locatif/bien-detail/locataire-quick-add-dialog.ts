@@ -48,7 +48,7 @@ import { NotificationService } from '../../../shared/services/notification.servi
       </button>
     </mat-dialog-actions>
   `,
-  styles: `.quick-add-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; min-width: 360px; } .wide { grid-column: 1 / -1; } .contact-error { margin: 0; color: var(--mtm-danger, #b52c36); font-size: 0.82rem; }`,
+  styles: `.quick-add-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; min-width: 360px; } .wide { grid-column: 1 / -1; } .contact-error { margin: 0; color: var(--mtm-danger, #b52c36); font-size: var(--mtm-fs-sm); }`,
 })
 export class LocataireQuickAddDialog {
   private readonly dialogRef = inject(MatDialogRef<LocataireQuickAddDialog>);

@@ -6,13 +6,13 @@
 
 h2 {
   margin: 0 0 8px;
-  font-size: 1rem;
+  font-size: var(--mtm-fs-lg);
 }
 
 .aide {
   margin: 0 0 12px;
   color: var(--mtm-muted, #6b7280);
-  font-size: 0.875rem;
+  font-size: var(--mtm-fs-md);
 }
 
 .logo-section {
@@ -42,7 +42,7 @@ h2 {
   &__defaut {
     padding: 8px;
     color: var(--mtm-muted, #6b7280);
-    font-size: 0.75rem;
+    font-size: var(--mtm-fs-xs);
     text-align: center;
   }
 
@@ -52,7 +52,7 @@ h2 {
     p {
       margin: 0 0 12px;
       color: var(--mtm-muted, #6b7280);
-      font-size: 0.875rem;
+      font-size: var(--mtm-fs-md);
     }
   }
 
@@ -72,7 +72,7 @@ h2 {
   border: 1px solid var(--mtm-border);
   border-radius: var(--mtm-radius-md);
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: var(--mtm-fs-md);
 
   svg {
     width: 16px;

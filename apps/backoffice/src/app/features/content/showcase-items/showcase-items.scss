@@ -7,10 +7,10 @@
 .count {
   margin-left: 6px;
   padding: 1px 8px;
-  border-radius: 999px;
+  border-radius: var(--mtm-radius-pill);
   background: var(--mtm-primary-subtle);
   color: var(--mtm-primary);
-  font-size: 0.78rem;
+  font-size: var(--mtm-fs-xs);
   font-weight: 700;
 }
 
@@ -64,7 +64,7 @@
     gap: 6px;
     height: 100%;
     color: var(--mtm-text-muted);
-    font-size: 0.82rem;
+    font-size: var(--mtm-fs-sm);
 
     svg {
       width: 28px;
@@ -83,10 +83,10 @@
     top: 10px;
     right: 10px;
     padding: 2px 8px;
-    border-radius: 999px;
+    border-radius: var(--mtm-radius-pill);
     background: rgba(26, 73, 116, 0.85);
     color: #fff;
-    font-size: 0.74rem;
+    font-size: var(--mtm-fs-xs);
     font-weight: 700;
   }
 
@@ -98,7 +98,7 @@
     h3 {
       margin: 0;
       font-family: var(--mtm-font-display);
-      font-size: 1rem;
+      font-size: var(--mtm-fs-lg);
       font-weight: 700;
     }
   }
@@ -109,7 +109,7 @@
     gap: 4px 14px;
     margin: 0;
     color: var(--mtm-text-muted);
-    font-size: 0.8rem;
+    font-size: var(--mtm-fs-sm);
 
     span {
       display: inline-flex;
@@ -129,7 +129,7 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
     margin: 0;
-    font-size: 0.86rem;
+    font-size: var(--mtm-fs-md);
     line-height: 1.5;
   }
 

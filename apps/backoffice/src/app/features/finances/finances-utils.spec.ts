@@ -46,6 +46,11 @@ describe('mises en forme', () => {
     expect(variationDite(80, 100)).toBe('-20 %');
     expect(variationDite(10, 0)).toBe('nouveau');
     expect(variationDite(0, 0)).toBe('stable');
+    // Une très forte hausse se dit en multiple : « +4333 % » ne veut rien dire quand la période précédente était presque vide.
+    expect(variationDite(4434, 100)).toBe('× 44');
+    expect(comparaisonDite(4434, 100)).toBe('Environ 44 fois la période précédente');
+    expect(variationDite(600, 100)).toBe('+500 %');
+    expect(variationDite(700, 100)).toBe('× 7');
     expect(comparaisonDite(150, 100)).toBe('+50 % par rapport à la période précédente');
     expect(comparaisonDite(0, 0)).toBe('Stable par rapport à la période précédente');
     expect(comparaisonDite(10, 0)).toBe('Rien sur la période précédente : pas de comparaison');

@@ -2,6 +2,8 @@ import { LucideCreditCard, LucideScale, LucideTrendingUp, LucideWallet } from '@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
 import { NgxEchartsDirective } from 'ngx-echarts';
 import { type BlocDu } from '../../core/services/api/finances-api.service';
 import { type TableauDirection, TresorerieApiService } from '../../core/services/api/tresorerie-api.service';
@@ -38,6 +40,8 @@ import {
     LucideWallet,
     RouterLink,
     MatButtonModule,
+    MatFormFieldModule,
+    MatSelectModule,
     NgxEchartsDirective,
   ],
   templateUrl: './tableau-financier.html',
@@ -92,6 +96,14 @@ export class TableauFinancierPage implements OnInit {
 
   protected fcfa = fcfa;
   protected dateFr = dateFr;
+
+  /** Les comptes actifs sans solde ne méritent pas une carte chacun : ils sont cités sur une ligne. */
+  protected comptesAZero(d: TableauDirection): string {
+    return d.tresorerie.comptes
+      .filter((c) => c.actif && c.solde === 0)
+      .map((c) => c.nom)
+      .join(', ');
+  }
 
   protected filtrer(activite: string, mode: string): void {
     this.activiteFiltre.set(activite);

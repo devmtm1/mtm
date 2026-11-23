@@ -7,17 +7,17 @@
   display: inline-flex;
   padding: 3px;
   border: 1px solid var(--mtm-border);
-  border-radius: 999px;
+  border-radius: var(--mtm-radius-pill);
   background: var(--mtm-card-bg);
 
   &__bouton {
     padding: 6px 14px;
     border: 0;
-    border-radius: 999px;
+    border-radius: var(--mtm-radius-pill);
     background: transparent;
     color: var(--mtm-text-muted);
     font: inherit;
-    font-size: 0.82rem;
+    font-size: var(--mtm-fs-sm);
     font-weight: 600;
     white-space: nowrap;
     cursor: pointer;
@@ -73,11 +73,11 @@
 .stats-note {
   margin: -6px 0 0;
   color: var(--mtm-text-muted);
-  font-size: 0.78rem;
+  font-size: var(--mtm-fs-xs);
 
   &--petite {
     margin: 10px 0 0;
-    font-size: 0.74rem;
+    font-size: var(--mtm-fs-xs);
   }
 }
 
@@ -107,7 +107,7 @@
   h2 {
     margin: 0;
     font-family: var(--mtm-font-display);
-    font-size: 1rem;
+    font-size: var(--mtm-fs-lg);
     font-weight: 700;
   }
 
@@ -118,7 +118,7 @@
     min-height: 120px;
     margin: 0;
     color: var(--mtm-text-muted);
-    font-size: 0.86rem;
+    font-size: var(--mtm-fs-md);
   }
 
   &--attention {
@@ -144,7 +144,7 @@
     grid-template-columns: 108px minmax(0, 1fr) 42px;
     align-items: center;
     gap: 10px;
-    font-size: 0.84rem;
+    font-size: var(--mtm-fs-sm);
   }
 
   &__nom {
@@ -155,7 +155,7 @@
 
   &__barre {
     height: 8px;
-    border-radius: 999px;
+    border-radius: var(--mtm-radius-pill);
     background: var(--mtm-primary-subtle);
     overflow: hidden;
   }
@@ -163,7 +163,7 @@
   &__remplissage {
     display: block;
     height: 100%;
-    border-radius: 999px;
+    border-radius: var(--mtm-radius-pill);
     background: var(--mtm-primary);
   }
 
@@ -191,6 +191,6 @@
     display: block;
     margin-top: 1px;
     color: var(--mtm-text-muted);
-    font-size: 0.74rem;
+    font-size: var(--mtm-fs-xs);
   }
 }

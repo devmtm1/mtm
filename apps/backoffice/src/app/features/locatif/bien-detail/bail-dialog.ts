@@ -149,7 +149,7 @@ export interface BailDialogResult {
       </button>
     </mat-dialog-actions>
   `,
-  styles: `.bail-dialog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; min-width: 420px; } .wide { grid-column: 1 / -1; } .pieces { display: flex; flex-direction: column; gap: 6px; } .pieces__title { margin: 0; font-weight: 600; font-size: 0.9rem; } .pieces__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 0.85rem; } .pieces__hint { color: var(--mtm-text-muted); }`,
+  styles: `.bail-dialog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; min-width: 420px; } .wide { grid-column: 1 / -1; } .pieces { display: flex; flex-direction: column; gap: 6px; } .pieces__title { margin: 0; font-weight: 600; font-size: var(--mtm-fs-md); } .pieces__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: var(--mtm-fs-md); } .pieces__hint { color: var(--mtm-text-muted); }`,
 })
 export class BailDialog {
   private readonly dialogRef = inject(MatDialogRef<BailDialog, BailDialogResult>);

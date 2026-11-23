@@ -105,15 +105,15 @@ const IGNORED_FIELDS = new Set(['id', 'createdAt', 'updatedAt']);
   `,
   styles: `
     .history-body { display: grid; gap: 10px; max-height: 70vh; min-width: min(560px, calc(100vw - 96px)); }
-    .history-intro { margin: 0; color: var(--mtm-text-muted); font-size: 0.84rem; }
-    .history-error, .history-empty { padding: 20px; border-radius: 10px; background: var(--mtm-bg-surface); color: var(--mtm-text-muted); text-align: center; font-size: 0.86rem; }
+    .history-intro { margin: 0; color: var(--mtm-text-muted); font-size: var(--mtm-fs-sm); }
+    .history-error, .history-empty { padding: 20px; border-radius: var(--mtm-radius-md); background: var(--mtm-bg-surface); color: var(--mtm-text-muted); text-align: center; font-size: var(--mtm-fs-md); }
     .history-error { color: var(--mtm-error); }
     .history-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-    .history-item { padding: 10px 14px; border: 1px solid var(--mtm-border); border-left: 3px solid var(--mtm-primary); border-radius: 8px; }
-    .history-item__head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; font-size: 0.86rem; }
-    .history-item__head span { color: var(--mtm-text-muted); font-size: 0.78rem; }
-    .history-item__justification { margin: 8px 0 0; color: var(--mtm-text-muted); font-size: 0.8rem; font-style: italic; }
-    .history-changes { display: grid; gap: 4px; margin: 8px 0 0; font-size: 0.8rem; }
+    .history-item { padding: 10px 14px; border: 1px solid var(--mtm-border); border-left: 3px solid var(--mtm-primary); border-radius: var(--mtm-radius-md); }
+    .history-item__head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; font-size: var(--mtm-fs-md); }
+    .history-item__head span { color: var(--mtm-text-muted); font-size: var(--mtm-fs-xs); }
+    .history-item__justification { margin: 8px 0 0; color: var(--mtm-text-muted); font-size: var(--mtm-fs-sm); font-style: italic; }
+    .history-changes { display: grid; gap: 4px; margin: 8px 0 0; font-size: var(--mtm-fs-sm); }
     .history-changes > div { display: grid; grid-template-columns: minmax(120px, 0.6fr) minmax(0, 1.4fr); gap: 8px; }
     .history-changes dt { color: var(--mtm-text-muted); }
     .history-changes dd { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; margin: 0; min-width: 0; overflow-wrap: anywhere; }

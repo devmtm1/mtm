@@ -432,14 +432,14 @@
         @if (ventes(); as v) {
           <app-programme-clients [ventes]="v" [peutEnregistrer]="canPay" (versement)="enregistrerVersement($event)" />
         } @else {
-          <div class="skeleton" style="height: 120px; border-radius: 14px"></div>
+          <div class="skeleton" style="height: 120px; border-radius: var(--mtm-radius-lg)"></div>
         }
       }
       @case ('versements') {
         @if (ventes(); as v) {
           <app-programme-versements [ventes]="v" />
         } @else {
-          <div class="skeleton" style="height: 120px; border-radius: 14px"></div>
+          <div class="skeleton" style="height: 120px; border-radius: var(--mtm-radius-lg)"></div>
         }
       }
       @case ('visites') {
@@ -456,6 +456,6 @@
       }
     }
   } @else {
-    <div class="skeleton" style="height: 120px; border-radius: 14px"></div>
+    <div class="skeleton" style="height: 120px; border-radius: var(--mtm-radius-lg)"></div>
   }
 </div>

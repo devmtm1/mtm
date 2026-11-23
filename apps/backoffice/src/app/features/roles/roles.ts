@@ -67,6 +67,28 @@ export class Roles implements OnInit {
   }
 
   /** Résumé lisible des permissions d'un rôle, module par module. */
+  /** Nombre de modules montrés d'emblée sur une carte : le reste se déplie (un rôle peut en compter une quinzaine). */
+  protected readonly MODULES_VISIBLES = 5;
+  private readonly deployes = signal<ReadonlySet<string>>(new Set());
+
+  protected estDeploye(role: RoleListItem): boolean {
+    return this.deployes().has(role.id);
+  }
+
+  protected basculer(role: RoleListItem): void {
+    this.deployes.update((ensemble) => {
+      const suivant = new Set(ensemble);
+      if (!suivant.delete(role.id)) suivant.add(role.id);
+      return suivant;
+    });
+  }
+
+  /** Les modules affichés : tous si la carte est dépliée, sinon les premiers. */
+  protected modulesAffiches(role: RoleListItem): ModuleSummary[] {
+    const tous = this.modules(role);
+    return this.estDeploye(role) ? tous : tous.slice(0, this.MODULES_VISIBLES);
+  }
+
   protected modules(role: RoleListItem): ModuleSummary[] {
     const byResource = new Map<string, string[]>();
     for (const { permission } of role.permissions) {
@@ -89,7 +111,9 @@ export class Roles implements OnInit {
   }
 
   protected openCreateDialog(): void {
-    RoleFormDialog.open(this.dialog, {}).subscribe((saved) => saved && this.load());
+    // Les rôles sensibles (administrateur, direction…) ne servent pas de modèle : on ne duplique pas leurs pouvoirs d'un clic.
+    const modeles = this.canAdminister ? this.roles().filter((r) => r.name !== 'client' && !SENSITIVE_ROLES.has(r.name) && r.permissions.length > 0) : [];
+    RoleFormDialog.open(this.dialog, { modeles }).subscribe((saved) => saved && this.load());
   }
 
   protected openEditDialog(role: RoleListItem): void {

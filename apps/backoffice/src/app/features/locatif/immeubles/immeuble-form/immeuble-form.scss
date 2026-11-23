@@ -15,7 +15,7 @@
   min-width: 90px;
   padding: 6px 8px;
   border: 1px solid var(--mtm-border);
-  border-radius: 6px;
+  border-radius: var(--mtm-radius-sm);
   background: var(--mtm-surface);
   color: inherit;
   font: inherit;

@@ -76,7 +76,7 @@ export interface PaiementSejourDialogData {
   `,
   styles: `
     .paiement-sejour { display: grid; gap: 4px; min-width: min(420px, calc(100vw - 96px)); }
-    .paiement-sejour__reste { margin: 0 0 8px; padding: 8px 12px; border-radius: 8px; background: var(--mtm-bg-surface); }
+    .paiement-sejour__reste { margin: 0 0 8px; padding: 8px 12px; border-radius: var(--mtm-radius-md); background: var(--mtm-bg-surface); }
   `,
 })
 export class PaiementSejourDialog {
@@ -169,8 +169,8 @@ export interface RestitutionCautionResultat {
   `,
   styles: `
     .caution-sejour { display: grid; gap: 4px; min-width: min(460px, calc(100vw - 96px)); }
-    .caution-sejour__info { margin: 0 0 8px; font-size: 0.9rem; line-height: 1.5; }
-    .caution-sejour__rendu { margin: 0 0 12px; padding: 8px 12px; border-radius: 8px; background: var(--mtm-bg-surface); }
+    .caution-sejour__info { margin: 0 0 8px; font-size: var(--mtm-fs-md); line-height: 1.5; }
+    .caution-sejour__rendu { margin: 0 0 12px; padding: 8px 12px; border-radius: var(--mtm-radius-md); background: var(--mtm-bg-surface); }
   `,
 })
 export class CautionSejourDialog {
@@ -309,7 +309,7 @@ export interface EtatDesLieuxDialogData {
   `,
   styles: `
     .edl { display: grid; gap: 8px; min-width: min(760px, calc(100vw - 96px)); }
-    .edl__hint { margin: 0; color: var(--mtm-text-muted); font-size: 0.84rem; }
+    .edl__hint { margin: 0; color: var(--mtm-text-muted); font-size: var(--mtm-fs-sm); }
     .edl__pieces { display: grid; gap: 8px; }
     .edl__piece { display: grid; grid-template-columns: 1.1fr 1fr 1.6fr auto; gap: 8px; align-items: start; }
     .edl__ajout { justify-self: start; }

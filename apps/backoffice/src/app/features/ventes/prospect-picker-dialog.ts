@@ -49,18 +49,18 @@ import { CrmApiService } from '../../core/services/api/crm-api.service';
     </mat-dialog-actions>
   `,
   styles: `
-    .intro { margin: 0 0 12px; color: var(--mtm-text-muted); font-size: 0.9rem; }
+    .intro { margin: 0 0 12px; color: var(--mtm-text-muted); font-size: var(--mtm-fs-md); }
     .recherche { width: 100%; }
     .icone { width: 16px; height: 16px; margin: 0 4px 0 10px; color: var(--mtm-text-muted); }
     .liste { display: grid; gap: 6px; max-height: 300px; margin: 12px 0 0; padding: 2px; overflow-y: auto; list-style: none; }
     .option {
-      display: flex; width: 100%; padding: 9px 12px; border: 1px solid var(--mtm-border); border-radius: 10px;
+      display: flex; width: 100%; padding: 9px 12px; border: 1px solid var(--mtm-border); border-radius: var(--mtm-radius-md);
       background: var(--mtm-card-bg); color: var(--mtm-text-dark); font: inherit; text-align: left; cursor: pointer;
     }
     .option:hover, .option:focus-visible { border-color: var(--mtm-primary); outline: none; }
     .option__texte { display: grid; gap: 2px; min-width: 0; }
-    .option__texte small { color: var(--mtm-text-muted); font-size: 0.78rem; }
-    .vide { padding: 14px 4px; color: var(--mtm-text-muted); font-size: 0.88rem; }
+    .option__texte small { color: var(--mtm-text-muted); font-size: var(--mtm-fs-xs); }
+    .vide { padding: 14px 4px; color: var(--mtm-text-muted); font-size: var(--mtm-fs-md); }
   `,
 })
 export class ProspectPickerDialog implements OnInit {

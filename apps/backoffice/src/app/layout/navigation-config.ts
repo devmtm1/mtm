@@ -171,7 +171,7 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         racines: ['/locatif'],
         children: [
           { label: 'Biens en gestion', route: '/locatif/biens', permission: 'locatif:consulter' },
-          { label: 'Propriétés', route: '/locatif/immeubles', permission: 'locatif:consulter' },
+          { label: 'Immeubles', route: '/locatif/immeubles', permission: 'locatif:consulter' },
           { label: 'Locataires', route: '/locatif/locataires', permission: 'locatif:consulter' },
           { label: 'Séjours', route: '/locatif/sejours', permission: 'locatif:consulter' },
           { label: 'Résiliations', route: '/locatif/resiliations', permission: 'locatif:consulter', compteur: 'resiliations' },

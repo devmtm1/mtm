@@ -166,7 +166,7 @@ export interface OngletFiche {
       background: none;
       color: var(--mtm-text-muted);
       font: inherit;
-      font-size: 0.95rem;
+      font-size: var(--mtm-fs-md);
       font-weight: 500;
       white-space: nowrap;
       cursor: pointer;
@@ -190,10 +190,10 @@ export interface OngletFiche {
     .onglet__compte {
       min-width: 20px;
       padding: 0 7px;
-      border-radius: 999px;
+      border-radius: var(--mtm-radius-pill);
       background: var(--mtm-primary-subtle, #e4edf6);
       color: var(--mtm-primary);
-      font-size: 0.78rem;
+      font-size: var(--mtm-fs-xs);
       font-weight: 600;
       line-height: 20px;
       text-align: center;

@@ -94,9 +94,9 @@ export interface PieceDialogResult {
       justify-self: start;
       padding: 8px 14px;
       border: 1px solid var(--mtm-border);
-      border-radius: 8px;
+      border-radius: var(--mtm-radius-md);
       cursor: pointer;
-      font-size: 0.875rem;
+      font-size: var(--mtm-fs-md);
     }
     .piece-dialog__upload svg {
       width: 16px;
@@ -107,7 +107,7 @@ export interface PieceDialogResult {
     }
     .piece-dialog__fichier {
       margin: 0 0 10px;
-      font-size: 0.82rem;
+      font-size: var(--mtm-fs-sm);
       color: var(--mtm-text-muted);
     }
     .piece-dialog__fichier--erreur {

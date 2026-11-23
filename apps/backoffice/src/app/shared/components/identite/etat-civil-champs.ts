@@ -67,7 +67,7 @@ import { MatInputModule } from '@angular/material/input';
     .civil legend {
       padding: 0;
       margin-bottom: 8px;
-      font-size: 0.86rem;
+      font-size: var(--mtm-fs-md);
       font-weight: 600;
     }
     .civil legend span {

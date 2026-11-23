@@ -51,8 +51,25 @@
   --mtm-card-bg: #FFFFFF;
   --mtm-shadow-soft: 0 6px 18px rgba(31, 41, 55, 0.06);
   --mtm-shadow-card: 0 2px 10px rgba(31, 41, 55, 0.04);
-  --mtm-radius-md: 10px;
-  --mtm-radius-lg: 14px;
+  // Échelle typographique : huit pas, pas une taille de plus. Un texte ne descend pas sous 12 px.
+  --mtm-fs-xs: 0.75rem; // 12 px : légendes, étiquettes, pastilles
+  --mtm-fs-sm: 0.8125rem; // 13 px : tableaux, textes d'aide
+  --mtm-fs-md: 0.875rem; // 14 px : texte courant
+  --mtm-fs-lg: 1rem; // 16 px : sous-titres, champs
+  --mtm-fs-xl: 1.125rem; // 18 px : titres de carte
+  --mtm-fs-2xl: 1.375rem; // 22 px : grands chiffres
+  --mtm-fs-3xl: 1.625rem; // 26 px : titre de page
+  --mtm-fs-4xl: 2rem; // 32 px : chiffre vedette
+
+  // Titre de page : le même partout (26 px sur grand écran, un peu moins sur petit écran).
+  --mtm-title-page: clamp(1.375rem, 1.25rem + 0.5vw, 1.625rem);
+
+  // Coins arrondis : trois pas et la pastille.
+  --mtm-radius-sm: 6px; // pastilles, étiquettes, cellules
+  --mtm-radius-md: 10px; // champs, boutons, cartes
+  --mtm-radius-lg: 14px; // grandes cartes, fenêtres
+  --mtm-radius-pill: 999px;
+  --mat-sys-corner-full: var(--mtm-radius-pill); // les pastilles de Material (9999 px par défaut) suivent la même valeur
 
   // Statuts sémantiques
   --mtm-success: #047857;
@@ -95,6 +112,8 @@
 
   --mat-sys-on-surface: var(--mtm-text-dark);
   --mat-sys-on-surface-variant: var(--mtm-text-muted);
+  // Le conteneur principal (mat-drawer-container) lit la couleur « arrière-plan » : sans elle, titres et gras restaient en #1A1B1F.
+  --mat-sys-on-background: var(--mtm-text-dark);
 }
 
 [data-theme='dark'] {
@@ -207,6 +226,11 @@ p {
   margin-top: 0;
 }
 
+/* Un <small> sans taille propre se réduisait de 17 % de plus que son parent (10 à 11,7 px) : il prend la taille « légende » de l'échelle, jamais moins de 12 px. */
+small {
+  font-size: var(--mtm-fs-xs);
+}
+
 button,
 input,
 select,
@@ -232,7 +256,7 @@ textarea {
 .page-header__title {
   margin: 0;
   font-family: var(--mtm-font-display);
-  font-size: clamp(1.4rem, 1.3rem + 0.4vw, 2rem);
+  font-size: var(--mtm-title-page);
   line-height: 1.2;
   letter-spacing: -0.02em;
   color: var(--mtm-text-dark);
@@ -241,7 +265,7 @@ textarea {
 .page-header__subtitle {
   margin: 6px 0 0;
   color: var(--mtm-text-muted);
-  font-size: 0.9rem;
+  font-size: var(--mtm-fs-md);
   line-height: 1.5;
 }
 
@@ -295,7 +319,7 @@ textarea {
 .section-header h3 {
   margin: 0;
   font-family: var(--mtm-font-display);
-  font-size: 1.05rem;
+  font-size: var(--mtm-fs-lg);
   font-weight: 700;
   color: var(--mtm-text-dark);
 }
@@ -361,7 +385,7 @@ ag-grid-angular {
 /* Aides lisibles : assez grandes (12,8 px) et assez foncées pour se lire sans effort. */
 .mat-mdc-form-field-hint,
 .mat-mdc-form-field-error {
-  font-size: 0.8rem !important;
+  font-size: var(--mtm-fs-sm) !important;
   line-height: 1.35 !important;
 }
 
@@ -388,7 +412,7 @@ ag-grid-angular {
 .form-legend {
   margin: -6px 0 0;
   color: var(--mtm-text-muted);
-  font-size: 0.82rem;
+  font-size: var(--mtm-fs-sm);
 
   span {
     color: var(--mtm-accent);
@@ -402,7 +426,7 @@ ag-grid-angular {
 
 .mat-mdc-table thead th {
   color: var(--mtm-text-muted);
-  font-size: 0.72rem;
+  font-size: var(--mtm-fs-xs);
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -420,7 +444,7 @@ ag-grid-angular {
 @media (max-width: 600px) {
   .mat-mdc-card,
   .mat-mdc-dialog-container .mdc-dialog__surface {
-    border-radius: 8px !important;
+    border-radius: var(--mtm-radius-md) !important;
   }
 
   .mat-mdc-button,
@@ -464,7 +488,7 @@ ag-grid-angular {
 .mtm-layer-switch {
   display: inline-flex;
   padding: 2px;
-  border-radius: 6px;
+  border-radius: var(--mtm-radius-sm);
   background: rgba(255, 255, 255, 0.95);
   box-shadow: 0 1px 3px rgba(31, 41, 55, 0.25);
 
@@ -472,10 +496,10 @@ ag-grid-angular {
     appearance: none;
     border: 0;
     background: transparent;
-    border-radius: 4px;
+    border-radius: var(--mtm-radius-sm);
     padding: 4px 10px;
     font: inherit;
-    font-size: 12px;
+    font-size: var(--mtm-fs-xs);
     font-weight: 600;
     color: var(--mtm-text-muted);
     cursor: pointer;
@@ -499,7 +523,7 @@ ag-grid-angular {
   align-items: center;
   gap: 6px;
   color: var(--mtm-text-muted);
-  font-size: 0.82rem;
+  font-size: var(--mtm-fs-sm);
   font-weight: 600;
   text-decoration: none;
 
@@ -521,7 +545,7 @@ ag-grid-angular {
 .mat-mdc-menu-panel.menu-actions {
   min-width: 340px;
   max-width: 380px;
-  border-radius: 14px;
+  border-radius: var(--mtm-radius-lg);
 
   .mat-mdc-menu-content {
     padding: 8px 0;
@@ -531,7 +555,7 @@ ag-grid-angular {
     margin: 0;
     padding: 10px 20px 4px;
     color: var(--mtm-text-muted);
-    font-size: 0.8rem;
+    font-size: var(--mtm-fs-sm);
     font-weight: 600;
   }
 
@@ -560,7 +584,7 @@ ag-grid-angular {
   }
 
   .menu-line strong {
-    font-size: 0.92rem;
+    font-size: var(--mtm-fs-md);
     font-weight: 600;
   }
 
@@ -580,7 +604,7 @@ ag-grid-angular {
 
   small {
     color: var(--mtm-text-muted);
-    font-size: 0.72rem;
+    font-size: var(--mtm-fs-xs);
   }
 }
 
@@ -678,7 +702,7 @@ ag-grid-angular {
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--mtm-radius-md);
   border: 1px solid var(--mtm-border);
   background-color: var(--mtm-card-bg);
   color: var(--mtm-primary);
@@ -732,7 +756,7 @@ ag-grid-angular {
   --ag-row-hover-color: var(--mtm-primary-subtle) !important;
   --ag-selected-row-background-color: var(--mtm-primary-light) !important;
   --ag-font-family: 'Plus Jakarta Sans', sans-serif !important;
-  --ag-font-size: 13px !important;
+  --ag-font-size: var(--mtm-fs-sm) !important;
   --ag-border-color: var(--mtm-border) !important;
 
   .ag-header-cell-text {
@@ -771,7 +795,7 @@ ag-grid-angular {
 
   .ag-header-cell-text {
     color: var(--mtm-text-muted) !important;
-    font-size: 0.7rem;
+    font-size: var(--mtm-fs-xs);
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -779,7 +803,7 @@ ag-grid-angular {
 
   .ag-row {
     color: var(--mtm-text-dark);
-    font-size: 0.82rem;
+    font-size: var(--mtm-fs-sm);
   }
 
   .ag-cell {
@@ -797,7 +821,7 @@ ag-grid-angular {
     min-height: 48px;
     border-top: 1px solid var(--mtm-border) !important;
     color: var(--mtm-text-muted);
-    font-size: 0.74rem;
+    font-size: var(--mtm-fs-xs);
   }
 
   .ag-paging-button,
@@ -817,8 +841,8 @@ ag-grid-angular {
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  border-radius: 9999px;
-  font-size: 0.75rem;
+  border-radius: var(--mtm-radius-pill);
+  font-size: var(--mtm-fs-xs);
   font-weight: 600;
   letter-spacing: 0.02em;
 
@@ -859,7 +883,7 @@ ag-grid-angular {
   padding: 0 !important;
   overflow: hidden !important;
   border: 1px solid var(--mtm-border) !important;
-  border-radius: 10px !important;
+  border-radius: var(--mtm-radius-md) !important;
   box-shadow: 0 12px 28px rgba(25, 21, 40, 0.14) !important;
 
   .mat-mdc-menu-content {
@@ -869,7 +893,7 @@ ag-grid-angular {
   .menu-header {
     padding: 14px 16px 11px;
     color: var(--mtm-text-dark);
-    font-size: 0.82rem;
+    font-size: var(--mtm-fs-sm);
     font-weight: 700;
   }
 
@@ -893,7 +917,7 @@ ag-grid-angular {
   .menu-empty__title {
     margin: 0;
     color: var(--mtm-text-dark);
-    font-size: 0.84rem;
+    font-size: var(--mtm-fs-sm);
     font-weight: 600;
   }
 
@@ -901,7 +925,7 @@ ag-grid-angular {
     max-width: 220px;
     margin: 0;
     color: var(--mtm-text-muted);
-    font-size: 0.72rem;
+    font-size: var(--mtm-fs-xs);
     line-height: 1.45;
   }
 
@@ -922,7 +946,7 @@ ag-grid-angular {
     border-radius: 50%;
     background: var(--mtm-primary);
     color: #ffffff;
-    font-size: 0.78rem;
+    font-size: var(--mtm-fs-xs);
     font-weight: 700;
   }
 
@@ -941,20 +965,20 @@ ag-grid-angular {
 
   .menu-user__name {
     color: var(--mtm-text-dark);
-    font-size: 0.82rem;
+    font-size: var(--mtm-fs-sm);
     font-weight: 600;
   }
 
   .menu-user__email {
     margin-top: 3px;
     color: var(--mtm-text-muted);
-    font-size: 0.72rem;
+    font-size: var(--mtm-fs-xs);
   }
 
   .mat-mdc-menu-item {
     min-height: 44px;
     color: var(--mtm-text-dark);
-    font-size: 0.8rem;
+    font-size: var(--mtm-fs-sm);
   }
 
   .mat-mdc-menu-item:hover {
@@ -1016,13 +1040,13 @@ ag-grid-angular {
 
   .feed-item__title {
     color: var(--mtm-text-dark);
-    font-size: 0.8rem;
+    font-size: var(--mtm-fs-sm);
     font-weight: 600;
   }
 
   .feed-item__detail {
     color: var(--mtm-text-muted);
-    font-size: 0.72rem;
+    font-size: var(--mtm-fs-xs);
   }
 
   .mat-mdc-menu-item[disabled] {
@@ -1074,7 +1098,7 @@ ag-grid-angular {
 .skeleton {
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: var(--mtm-radius-md);
   background: var(--mtm-bg-hover);
   color: transparent;
 }
@@ -1107,8 +1131,8 @@ ag-grid-angular {
   gap: 6px;
   width: fit-content;
   padding: 3px 10px;
-  border-radius: 9999px;
-  font-size: 0.74rem;
+  border-radius: var(--mtm-radius-pill);
+  font-size: var(--mtm-fs-xs);
   font-weight: 600;
   line-height: 1.4;
   white-space: nowrap;
@@ -1163,7 +1187,7 @@ ag-grid-angular {
 .eyebrow {
   margin: 0 0 4px;
   color: var(--mtm-primary);
-  font-size: 0.72rem;
+  font-size: var(--mtm-fs-xs);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1191,7 +1215,7 @@ ag-grid-angular {
     }
 
     .kpi__body strong {
-      font-size: 1.2rem;
+      font-size: var(--mtm-fs-xl);
     }
   }
 }
@@ -1229,7 +1253,7 @@ ag-grid-angular {
     flex: 0 0 40px;
     width: 40px;
     height: 40px;
-    border-radius: 10px;
+    border-radius: var(--mtm-radius-md);
     background: var(--mtm-primary-subtle);
     color: var(--mtm-primary);
 
@@ -1247,12 +1271,12 @@ ag-grid-angular {
 
     strong {
       font-family: var(--mtm-font-display);
-      font-size: 1.45rem;
+      font-size: var(--mtm-fs-2xl);
       line-height: 1.1;
     }
 
     > span {
-      font-size: 0.82rem;
+      font-size: var(--mtm-fs-sm);
       font-weight: 600;
     }
 
@@ -1261,7 +1285,7 @@ ag-grid-angular {
       flex-wrap: wrap;
       gap: 4px 10px;
       color: var(--mtm-text-muted);
-      font-size: 0.72rem;
+      font-size: var(--mtm-fs-xs);
 
       span {
         display: inline-flex;
@@ -1310,7 +1334,7 @@ ag-grid-angular {
     display: inline;
     margin-left: 4px;
     color: var(--mtm-text-muted);
-    font-size: 0.85rem;
+    font-size: var(--mtm-fs-md);
     font-weight: 500;
   }
 }
@@ -1327,14 +1351,14 @@ ag-grid-angular {
   &__title h2 {
     margin: 0;
     font-family: var(--mtm-font-display);
-    font-size: 1.05rem;
+    font-size: var(--mtm-fs-lg);
     font-weight: 700;
   }
 
   &__title p {
     margin: 2px 0 0;
     color: var(--mtm-text-muted);
-    font-size: 0.82rem;
+    font-size: var(--mtm-fs-sm);
   }
 }
 
@@ -1379,7 +1403,7 @@ ag-grid-angular {
   display: inline-flex;
   padding: 3px;
   border: 1px solid var(--mtm-border);
-  border-radius: 9px;
+  border-radius: var(--mtm-radius-md);
   background: var(--mtm-bg-surface);
 
   button {
@@ -1389,7 +1413,7 @@ ag-grid-angular {
     width: 34px;
     height: 32px;
     border: 0;
-    border-radius: 7px;
+    border-radius: var(--mtm-radius-sm);
     background: transparent;
     color: var(--mtm-text-muted);
     cursor: pointer;
@@ -1411,7 +1435,7 @@ ag-grid-angular {
     width: auto !important;
     padding: 0 12px;
     font: inherit;
-    font-size: 0.82rem;
+    font-size: var(--mtm-fs-sm);
     font-weight: 600;
   }
 }
@@ -1435,14 +1459,14 @@ ag-grid-angular {
   h3 {
     margin: 0;
     font-family: var(--mtm-font-display);
-    font-size: 1.05rem;
+    font-size: var(--mtm-fs-lg);
   }
 
   p {
     max-width: 520px;
     margin: 0 0 8px;
     color: var(--mtm-text-muted);
-    font-size: 0.88rem;
+    font-size: var(--mtm-fs-md);
     line-height: 1.5;
   }
 }
@@ -1464,7 +1488,7 @@ ag-grid-angular {
   border-radius: 50%;
   background: var(--mtm-bg-hover);
   color: var(--mtm-text-muted);
-  font-size: 0.7rem;
+  font-size: var(--mtm-fs-xs);
   font-weight: 700;
   cursor: help;
   vertical-align: middle;
@@ -1483,7 +1507,7 @@ ag-grid-angular {
     flex-wrap: wrap;
     align-items: center;
     gap: 6px 10px;
-    font-size: 0.86rem;
+    font-size: var(--mtm-fs-md);
 
     > svg {
       width: 18px;
@@ -1512,10 +1536,10 @@ ag-grid-angular {
     gap: 1px;
     padding: 6px 12px;
     border: 1px solid var(--mtm-border);
-    border-radius: 8px;
+    border-radius: var(--mtm-radius-md);
     background: var(--mtm-card-bg);
     font: inherit;
-    font-size: 0.8rem;
+    font-size: var(--mtm-fs-sm);
     text-align: left;
     cursor: pointer;
 
@@ -1553,13 +1577,13 @@ ag-grid-angular {
 /* Texte d'explication et lien d'un bandeau (fiche d'un dossier) */
 .alert-banner__texte {
   margin: 6px 0 0;
-  font-size: 0.86rem;
+  font-size: var(--mtm-fs-md);
 }
 
 .alert-banner__lien {
   margin-left: auto;
   color: var(--mtm-primary);
-  font-size: 0.82rem;
+  font-size: var(--mtm-fs-sm);
   font-weight: 600;
   text-decoration: none;
 
@@ -1572,7 +1596,7 @@ ag-grid-angular {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.86rem;
+  font-size: var(--mtm-fs-md);
 }
 
 .alert-banner--info {
@@ -1590,7 +1614,7 @@ ag-grid-angular {
   display: grid;
   gap: 3px;
   width: 100%;
-  font-size: 0.76rem;
+  font-size: var(--mtm-fs-xs);
 
   &--none {
     color: var(--mtm-text-muted);
@@ -1601,14 +1625,14 @@ ag-grid-angular {
     width: 100%;
     height: 6px;
     overflow: hidden;
-    border-radius: 3px;
+    border-radius: var(--mtm-radius-sm);
     background: var(--mtm-bg-hover);
   }
 
   &__fill {
     display: block;
     height: 100%;
-    border-radius: 3px;
+    border-radius: var(--mtm-radius-sm);
     background: var(--mtm-primary);
     transition: width 0.3s ease;
 
@@ -1639,7 +1663,7 @@ ag-grid-angular {
 
   small {
     color: var(--mtm-text-muted);
-    font-size: 0.74rem;
+    font-size: var(--mtm-fs-xs);
   }
 }
 
@@ -1668,21 +1692,21 @@ ag-grid-angular {
     flex: 1;
     min-width: 40px;
     height: 6px;
-    border-radius: 999px;
+    border-radius: var(--mtm-radius-pill);
     background: var(--mtm-border);
     overflow: hidden;
 
     i {
       display: block;
       height: 100%;
-      border-radius: 999px;
+      border-radius: var(--mtm-radius-pill);
       background: var(--mtm-primary);
     }
   }
 
   &__value {
     min-width: 40px;
-    font-size: 0.82rem;
+    font-size: var(--mtm-fs-sm);
     font-variant-numeric: tabular-nums;
     text-align: right;
   }
@@ -1705,7 +1729,7 @@ ag-grid-angular {
   display: inline-block;
   max-width: 100%;
   overflow: hidden;
-  font-size: 0.82rem;
+  font-size: var(--mtm-fs-sm);
   text-overflow: ellipsis;
   white-space: nowrap;
 
@@ -1768,7 +1792,7 @@ ag-grid-angular {
   h1 {
     margin: 0;
     font-family: var(--mtm-font-display);
-    font-size: clamp(1.4rem, 1.2rem + 0.6vw, 1.9rem);
+    font-size: var(--mtm-title-page);
     line-height: 1.2;
     letter-spacing: -0.02em;
   }
@@ -1779,7 +1803,7 @@ ag-grid-angular {
     gap: 6px;
     margin: 6px 0 10px;
     color: var(--mtm-text-muted);
-    font-size: 0.9rem;
+    font-size: var(--mtm-fs-md);
 
     svg {
       width: 16px;
@@ -1831,7 +1855,7 @@ ag-grid-angular {
   border-left-width: 4px;
   border-radius: var(--mtm-radius-md);
   background: var(--mtm-warning-bg);
-  font-size: 0.86rem;
+  font-size: var(--mtm-fs-md);
 
   strong {
     color: var(--mtm-text-dark);
@@ -1878,7 +1902,7 @@ ag-grid-angular {
   h2 {
     margin: 0;
     font-family: var(--mtm-font-display);
-    font-size: 1rem;
+    font-size: var(--mtm-fs-lg);
     font-weight: 700;
   }
 
@@ -1887,7 +1911,7 @@ ag-grid-angular {
     align-items: center;
     gap: 8px;
     margin: 6px 0 0;
-    font-size: 0.86rem;
+    font-size: var(--mtm-fs-md);
     font-weight: 700;
   }
 
@@ -1901,7 +1925,7 @@ ag-grid-angular {
   &__text {
     margin: 0;
     color: var(--mtm-text-dark);
-    font-size: 0.88rem;
+    font-size: var(--mtm-fs-md);
     line-height: 1.55;
     white-space: pre-line;
   }
@@ -1915,21 +1939,21 @@ ag-grid-angular {
 
   dt {
     color: var(--mtm-text-muted);
-    font-size: 0.74rem;
+    font-size: var(--mtm-fs-xs);
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
 
   dd {
     margin: 3px 0 0;
-    font-size: 0.9rem;
+    font-size: var(--mtm-fs-md);
     font-weight: 500;
 
     small {
       display: block;
       margin-top: 3px;
       color: var(--mtm-text-muted);
-      font-size: 0.76rem;
+      font-size: var(--mtm-fs-xs);
       font-weight: 400;
     }
   }
@@ -1940,7 +1964,7 @@ ag-grid-angular {
   align-items: center;
   gap: 6px;
   color: var(--mtm-primary);
-  font-size: 0.84rem;
+  font-size: var(--mtm-fs-sm);
   font-weight: 600;
   text-decoration: none;
 
@@ -1957,10 +1981,10 @@ ag-grid-angular {
   justify-content: space-between;
   gap: 8px;
   padding: 12px 14px;
-  border-radius: 10px;
+  border-radius: var(--mtm-radius-md);
   background: var(--mtm-bg-surface);
   color: var(--mtm-text-muted);
-  font-size: 0.86rem;
+  font-size: var(--mtm-fs-md);
 }
 
 .upload-button {
@@ -1969,9 +1993,9 @@ ag-grid-angular {
   gap: 6px;
   padding: 6px 12px;
   border: 1px solid var(--mtm-border);
-  border-radius: 8px;
+  border-radius: var(--mtm-radius-md);
   color: var(--mtm-primary);
-  font-size: 0.82rem;
+  font-size: var(--mtm-fs-sm);
   font-weight: 600;
   cursor: pointer;
 
@@ -2002,7 +2026,7 @@ ag-grid-angular {
     gap: 10px;
     padding: 6px 0;
     border-bottom: 1px solid var(--mtm-border);
-    font-size: 0.86rem;
+    font-size: var(--mtm-fs-md);
 
     &:last-child {
       border-bottom: 0;
@@ -2044,7 +2068,7 @@ ag-grid-angular {
   gap: 6px 16px;
   margin: 6px 0 10px;
   color: var(--mtm-text-muted);
-  font-size: 0.88rem;
+  font-size: var(--mtm-fs-md);
 
   span {
     display: inline-flex;
@@ -2061,7 +2085,7 @@ ag-grid-angular {
 .detail-section__hint {
   margin: 2px 0 0;
   color: var(--mtm-text-muted);
-  font-size: 0.8rem;
+  font-size: var(--mtm-fs-sm);
 }
 
 .info-list > .is-wide {
@@ -2114,7 +2138,7 @@ ag-grid-angular {
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.86rem;
+  font-size: var(--mtm-fs-md);
 
   th,
   td {
@@ -2126,7 +2150,7 @@ ag-grid-angular {
 
   th {
     color: var(--mtm-text-muted);
-    font-size: 0.7rem;
+    font-size: var(--mtm-fs-xs);
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -2203,17 +2227,17 @@ ag-grid-angular {
   max-width: 100%;
   padding: 3px;
   border: 1px solid var(--mtm-border);
-  border-radius: 12px;
+  border-radius: var(--mtm-radius-lg);
   background: var(--mtm-bg-hover);
 
   button {
     padding: 6px 14px;
     border: 0;
-    border-radius: 9px;
+    border-radius: var(--mtm-radius-md);
     background: transparent;
     color: var(--mtm-text-muted);
     font: inherit;
-    font-size: 0.85rem;
+    font-size: var(--mtm-fs-md);
     cursor: pointer;
     transition:
       background-color 0.15s ease,
@@ -2247,7 +2271,7 @@ ag-grid-angular {
   border-radius: var(--mtm-radius-md);
   background: var(--mtm-success-bg);
   color: var(--mtm-success);
-  font-size: 0.9rem;
+  font-size: var(--mtm-fs-md);
   font-weight: 600;
 
   &::before {
@@ -2261,7 +2285,7 @@ ag-grid-angular {
     border-radius: 50%;
     background: var(--mtm-success);
     color: #fff;
-    font-size: 0.8rem;
+    font-size: var(--mtm-fs-sm);
   }
 }
 
@@ -2272,7 +2296,7 @@ ag-grid-angular {
   border-radius: var(--mtm-radius-md);
   background: var(--mtm-bg-surface);
   color: var(--mtm-text-muted);
-  font-size: 0.88rem;
+  font-size: var(--mtm-fs-md);
   line-height: 1.5;
 }
 
@@ -2282,7 +2306,7 @@ ag-grid-angular {
     padding: 11px 14px;
     border-bottom: 0;
     background: var(--mtm-bg-surface);
-    font-size: 0.78rem;
+    font-size: var(--mtm-fs-xs);
     font-weight: 600;
     letter-spacing: 0;
     text-transform: none;
@@ -2331,7 +2355,7 @@ ag-grid-angular {
       flex: 0 0 42px;
       width: 42px;
       height: 42px;
-      border-radius: 12px;
+      border-radius: var(--mtm-radius-lg);
 
       svg {
         width: 21px;
@@ -2346,13 +2370,13 @@ ag-grid-angular {
       > span {
         order: 1;
         color: var(--mtm-text-muted);
-        font-size: 0.85rem;
+        font-size: var(--mtm-fs-md);
         font-weight: 600;
       }
 
       strong {
         order: 2;
-        font-size: 1.7rem;
+        font-size: var(--mtm-fs-3xl);
         font-weight: 700;
         letter-spacing: -0.02em;
         line-height: 1.15;
@@ -2361,7 +2385,7 @@ ag-grid-angular {
       small {
         order: 3;
         margin-top: 2px;
-        font-size: 0.78rem;
+        font-size: var(--mtm-fs-xs);
         line-height: 1.35;
       }
     }
@@ -2382,7 +2406,7 @@ ag-grid-angular {
     }
 
     .kpi__body strong {
-      font-size: 1.3rem;
+      font-size: var(--mtm-fs-xl);
     }
   }
 }
@@ -2401,7 +2425,7 @@ ag-grid-angular {
 
   span {
     color: var(--mtm-text-muted);
-    font-size: 0.72rem;
+    font-size: var(--mtm-fs-xs);
     font-weight: 600;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -2409,7 +2433,7 @@ ag-grid-angular {
 
   strong {
     font-family: var(--mtm-font-display);
-    font-size: 1.28rem;
+    font-size: var(--mtm-fs-xl);
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.01em;
@@ -2417,7 +2441,7 @@ ag-grid-angular {
 
   small {
     color: var(--mtm-text-muted);
-    font-size: 0.76rem;
+    font-size: var(--mtm-fs-xs);
   }
 
   /* Un reste dû se signale par la couleur, pas par un encadré de plus. */
@@ -2472,7 +2496,7 @@ ag-grid-angular {
 
     small {
       color: var(--mtm-text-muted);
-      font-size: 0.74rem;
+      font-size: var(--mtm-fs-xs);
       font-weight: 400;
     }
   }
@@ -2490,7 +2514,7 @@ ag-grid-angular {
   margin: 8px 0 0;
   padding: 0;
   list-style: none;
-  font-size: 0.84rem;
+  font-size: var(--mtm-fs-sm);
 
   li {
     display: grid;
@@ -2500,7 +2524,7 @@ ag-grid-angular {
   }
 
   small {
-    font-size: 0.76rem;
+    font-size: var(--mtm-fs-xs);
   }
 }
 
@@ -2520,13 +2544,13 @@ ag-grid-angular {
 
     strong {
       font-family: var(--mtm-font-display);
-      font-size: 1rem;
+      font-size: var(--mtm-fs-lg);
       font-weight: 700;
     }
 
     small {
       color: var(--mtm-text-muted);
-      font-size: 0.8rem;
+      font-size: var(--mtm-fs-sm);
     }
 
     /* Chevron dessiné en CSS : pas d'icône à charger pour un simple repli. */
@@ -2566,11 +2590,11 @@ ag-grid-angular {
 .doc-alert {
   margin: 0 0 10px;
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: var(--mtm-radius-md);
   border: 1px solid var(--mtm-warning, #a34a07);
   background: color-mix(in srgb, var(--mtm-warning, #a34a07) 10%, white);
   color: var(--mtm-warning, #a34a07);
-  font-size: 0.84rem;
+  font-size: var(--mtm-fs-sm);
   font-weight: 600;
 }
 
@@ -2619,7 +2643,7 @@ ag-grid-angular {
 .bien-detail__couverture {
   width: 216px;
   height: 128px;
-  border-radius: 12px;
+  border-radius: var(--mtm-radius-lg);
   object-fit: cover;
   box-shadow: var(--mtm-shadow-card);
 
@@ -2672,7 +2696,7 @@ ag-grid-angular {
     justify-content: center;
     width: 40px;
     height: 40px;
-    border-radius: 12px;
+    border-radius: var(--mtm-radius-lg);
     background: var(--mtm-primary-subtle);
     color: var(--mtm-primary);
 
@@ -2690,7 +2714,7 @@ ag-grid-angular {
 
     > span {
       color: var(--mtm-text-muted);
-      font-size: 0.74rem;
+      font-size: var(--mtm-fs-xs);
       font-weight: 600;
       letter-spacing: 0.05em;
       text-transform: uppercase;
@@ -2698,7 +2722,7 @@ ag-grid-angular {
 
     strong {
       font-family: var(--mtm-font-display);
-      font-size: 1.22rem;
+      font-size: var(--mtm-fs-xl);
       font-weight: 700;
       line-height: 1.2;
       letter-spacing: -0.01em;
@@ -2707,7 +2731,7 @@ ag-grid-angular {
 
     small {
       color: var(--mtm-text-muted);
-      font-size: 0.78rem;
+      font-size: var(--mtm-fs-xs);
     }
   }
 
@@ -2717,7 +2741,7 @@ ag-grid-angular {
     align-items: center;
     width: fit-content;
     padding: 2px 9px;
-    border-radius: 999px;
+    border-radius: var(--mtm-radius-pill);
     background: var(--mtm-bg-hover);
     color: var(--mtm-text-muted);
     font-weight: 600;
@@ -2753,7 +2777,7 @@ ag-grid-angular {
 
   /* Avec un anneau à côté, le montant se resserre pour ne pas le toucher. */
   &:has(.chiffre__anneau) .chiffre__corps strong {
-    font-size: 1.08rem;
+    font-size: var(--mtm-fs-lg);
   }
 
   &--du {
@@ -2798,7 +2822,7 @@ ag-grid-angular {
       border-radius: 50%;
       background: var(--mtm-card-bg);
       color: var(--mtm-text-dark);
-      font-size: 0.72rem;
+      font-size: var(--mtm-fs-xs);
       font-weight: 700;
     }
   }
@@ -2821,11 +2845,11 @@ ag-grid-angular {
       }
 
       .chiffre__corps strong {
-        font-size: 1.1rem;
+        font-size: var(--mtm-fs-lg);
       }
 
       .chiffre__corps small {
-        font-size: 0.74rem;
+        font-size: var(--mtm-fs-xs);
         line-height: 1.3;
         white-space: normal;
       }
@@ -2914,7 +2938,7 @@ ag-grid-angular {
       gap: 8px;
       margin: 0;
       font-family: var(--mtm-font-display);
-      font-size: 1.05rem;
+      font-size: var(--mtm-fs-lg);
       font-weight: 700;
 
       svg {
@@ -2927,15 +2951,15 @@ ag-grid-angular {
     p {
       margin: 0;
       color: var(--mtm-text-muted);
-      font-size: 0.84rem;
+      font-size: var(--mtm-fs-sm);
       line-height: 1.55;
     }
 
     code {
       padding: 1px 5px;
-      border-radius: 4px;
+      border-radius: var(--mtm-radius-sm);
       background: var(--mtm-bg-hover);
-      font-size: 0.8rem;
+      font-size: var(--mtm-fs-sm);
     }
   }
 
@@ -2991,7 +3015,7 @@ ag-grid-angular {
 
     small {
       color: var(--mtm-text-muted);
-      font-size: 0.76rem;
+      font-size: var(--mtm-fs-xs);
     }
   }
 }
@@ -3002,10 +3026,10 @@ ag-grid-angular {
   gap: 8px;
   margin: 0;
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: var(--mtm-radius-md);
   background: var(--mtm-bg-surface);
   color: var(--mtm-text-muted);
-  font-size: 0.82rem;
+  font-size: var(--mtm-fs-sm);
 
   svg {
     width: 15px;
@@ -3043,7 +3067,7 @@ ag-grid-angular {
   &__title {
     margin: 0;
     color: var(--mtm-text-muted);
-    font-size: 0.72rem;
+    font-size: var(--mtm-fs-xs);
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -3052,14 +3076,14 @@ ag-grid-angular {
   &__card {
     overflow: hidden;
     border: 1px solid var(--mtm-border);
-    border-radius: 10px;
+    border-radius: var(--mtm-radius-md);
     background: var(--mtm-card-bg);
   }
 
   /* Nature du bien, posée au-dessus du nom comme sur la carte du site. */
   &__type {
     color: var(--mtm-primary);
-    font-size: 0.68rem;
+    font-size: var(--mtm-fs-xs);
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -3084,10 +3108,10 @@ ag-grid-angular {
     display: grid;
     gap: 2px;
     padding: 10px 12px;
-    font-size: 0.8rem;
+    font-size: var(--mtm-fs-sm);
 
     strong {
-      font-size: 0.9rem;
+      font-size: var(--mtm-fs-md);
     }
 
     span {
@@ -3105,7 +3129,7 @@ ag-grid-angular {
   &__status {
     margin: 0;
     color: var(--mtm-text-muted);
-    font-size: 0.78rem;
+    font-size: var(--mtm-fs-xs);
 
     &.is-published {
       color: var(--mtm-success);
@@ -3137,7 +3161,7 @@ ag-grid-angular {
 
   &__step {
     color: var(--mtm-text-muted);
-    font-size: 0.82rem;
+    font-size: var(--mtm-fs-sm);
   }
 }
 
@@ -3153,7 +3177,7 @@ ag-grid-angular {
   gap: 10px;
   margin: 10px 0 0;
   color: var(--mtm-text-muted);
-  font-size: 0.78rem;
+  font-size: var(--mtm-fs-xs);
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -3177,7 +3201,7 @@ ag-grid-angular {
     gap: 10px;
     padding: 12px 0 8px;
     color: var(--mtm-primary);
-    font-size: 0.88rem;
+    font-size: var(--mtm-fs-md);
     font-weight: 600;
     cursor: pointer;
     list-style: none;
@@ -3197,14 +3221,14 @@ ag-grid-angular {
       border: 1px solid var(--mtm-primary-light);
       border-radius: 50%;
       background: var(--mtm-primary-subtle);
-      font-size: 1rem;
+      font-size: var(--mtm-fs-lg);
       line-height: 1;
     }
 
     &:focus-visible {
       outline: 2px solid var(--mtm-primary-light);
       outline-offset: 2px;
-      border-radius: 6px;
+      border-radius: var(--mtm-radius-sm);
     }
   }
 
@@ -3221,7 +3245,7 @@ ag-grid-angular {
   display: grid;
   gap: 6px;
   margin: 0;
-  font-size: 0.82rem;
+  font-size: var(--mtm-fs-sm);
 
   > div {
     display: flex;
@@ -3245,13 +3269,13 @@ ag-grid-angular {
   padding-top: 8px;
   border-top: 1px dashed var(--mtm-border);
   color: var(--mtm-text-muted);
-  font-size: 0.78rem;
+  font-size: var(--mtm-fs-xs);
 }
 
 /* Note « module à venir » sur les rôles de phase 2 (panneau du select, hors composant). */
 .role-panel .role-option__note {
   color: var(--mtm-text-muted);
-  font-size: 0.8em;
+  font-size: var(--mtm-fs-xs);
 }
 
 /* ---------------------------------------------------------------------------

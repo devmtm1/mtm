@@ -134,7 +134,7 @@ export type FormDialogResultat = Record<string, string | number | boolean>;
     .form-dialog__description {
       margin: 0 0 8px;
       color: var(--mtm-text-muted);
-      font-size: 0.9rem;
+      font-size: var(--mtm-fs-md);
     }
     .form-dialog__aide {
       margin: -4px 0 8px 32px;

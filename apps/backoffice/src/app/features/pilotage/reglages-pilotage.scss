@@ -8,19 +8,19 @@
 h2 {
   margin: 0 0 6px;
   font-family: var(--mtm-font-display);
-  font-size: 1.1rem;
+  font-size: var(--mtm-fs-lg);
   font-weight: 700;
 }
 
 h3 {
   margin: 24px 0 8px;
-  font-size: 1rem;
+  font-size: var(--mtm-fs-lg);
 }
 
 .aide {
   margin: 0 0 14px;
   color: var(--mtm-text-muted);
-  font-size: 0.88rem;
+  font-size: var(--mtm-fs-md);
   line-height: 1.5;
 }
 
@@ -47,7 +47,7 @@ fieldset {
 
 legend {
   margin-bottom: 6px;
-  font-size: 0.82rem;
+  font-size: var(--mtm-fs-sm);
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -81,5 +81,5 @@ legend {
 .erreur {
   margin: 0;
   color: var(--mtm-error);
-  font-size: 0.88rem;
+  font-size: var(--mtm-fs-md);
 }

@@ -97,11 +97,11 @@
   gap: 8px;
   padding: 7px 14px;
   border: 1px solid var(--mtm-border);
-  border-radius: 999px;
+  border-radius: var(--mtm-radius-pill);
   background: var(--mtm-card-bg);
   color: var(--mtm-text-dark);
   font: inherit;
-  font-size: 0.88rem;
+  font-size: var(--mtm-fs-md);
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
@@ -128,10 +128,10 @@
   &__compte {
     min-width: 20px;
     padding: 0 6px;
-    border-radius: 999px;
+    border-radius: var(--mtm-radius-pill);
     background: var(--mtm-bg-hover);
     color: var(--mtm-text-muted);
-    font-size: 0.78rem;
+    font-size: var(--mtm-fs-xs);
     font-weight: 600;
     line-height: 20px;
     text-align: center;
@@ -156,7 +156,7 @@
   margin: 6px 0 -4px;
   color: var(--mtm-text-muted);
   font-family: inherit;
-  font-size: 0.82rem;
+  font-size: var(--mtm-fs-sm);
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -167,9 +167,9 @@
 
   &__compte {
     padding: 0 7px;
-    border-radius: 999px;
+    border-radius: var(--mtm-radius-pill);
     background: var(--mtm-bg-hover);
-    font-size: 0.74rem;
+    font-size: var(--mtm-fs-xs);
     line-height: 18px;
   }
 }
@@ -293,12 +293,12 @@
   &:focus-visible {
     outline: 2px solid var(--mtm-primary-light);
     outline-offset: 3px;
-    border-radius: 6px;
+    border-radius: var(--mtm-radius-sm);
   }
 }
 
 .ligne__titre {
-  font-size: 0.98rem;
+  font-size: var(--mtm-fs-lg);
   font-weight: 600;
   overflow-wrap: anywhere;
 }
@@ -308,17 +308,17 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 6px 10px;
-  font-size: 0.82rem;
+  font-size: var(--mtm-fs-sm);
   color: var(--mtm-text-muted);
 }
 
 /* L'échéance en pastille de texte : la couleur seule ne porte pas l'information, les mots restent. */
 .echeance {
   padding: 2px 9px;
-  border-radius: 999px;
+  border-radius: var(--mtm-radius-pill);
   background: var(--mtm-bg-hover);
   color: var(--mtm-text-muted);
-  font-size: 0.78rem;
+  font-size: var(--mtm-fs-xs);
   font-weight: 600;
 
   &--retard {
@@ -362,7 +362,7 @@
 }
 
 .ligne__dossier {
-  font-size: 0.82rem;
+  font-size: var(--mtm-fs-sm);
   font-weight: 600;
   color: var(--mtm-primary);
   text-underline-offset: 3px;

@@ -6,7 +6,7 @@ resume: Biens loués, baux, loyers et quittances, impayés, locations de courte 
 roles: commercial responsable_commercial gestion_locative direction administrateur
 ---
 
-La **gestion locative** suit les biens que les propriétaires confient à MTM pour la location : **baux, loyers, cautions, impayés, séjours de courte durée, résiliations**. **La location est portée par les commerciaux** : chacun crée et suit **ses propres biens** (fiche, bail, séjours, locataires, loyers) et ne voit que ceux-là ; le responsable de la gestion locative, le manager et la direction voient tout le portefeuille. La **publication sur le site**, la **validation** (résiliations, versements) et les **sorties d’argent** (restitution de caution) restent à la gestion locative. La ligne **Gestion locative** du menu (rubrique *Biens*) ouvre un écran à **onglets** : *Biens en gestion*, *Propriétés*, *Locataires*, *Séjours*, *Résiliations*, *Relances d’impayés*.
+La **gestion locative** suit les biens que les propriétaires confient à MTM pour la location : **baux, loyers, cautions, impayés, séjours de courte durée, résiliations**. **La location est portée par les commerciaux** : chacun crée et suit **ses propres biens** (fiche, bail, séjours, locataires, loyers) et ne voit que ceux-là ; le responsable de la gestion locative, le manager et la direction voient tout le portefeuille. La **publication sur le site**, la **validation** (résiliations, versements) et les **sorties d’argent** (restitution de caution) restent à la gestion locative. La ligne **Gestion locative** du menu (rubrique *Biens*) ouvre un écran à **onglets** : *Biens en gestion*, *Immeubles*, *Locataires*, *Séjours*, *Résiliations*, *Relances d’impayés*.
 
 ## Les biens locatifs
 
@@ -49,7 +49,7 @@ La page **Gestion locative** du site public comporte un formulaire **« Confier 
 
 Quand un propriétaire confie **une villa divisée en appartements, un immeuble ou une résidence**, on crée **une propriété** qui regroupe ses **logements**. Chaque logement reste un bien à part entière (son loyer, son bail, son locataire, ses photos, son annonce) ; la propriété apporte la **vue d’ensemble**.
 
-1. **Propriétés › Nouvelle propriété** : nom (« Villa Fall »), nature, **propriétaire**, adresse, taux de gestion éventuel.
+1. **Immeubles › Nouvel immeuble** : nom (« Villa Fall »), nature, **propriétaire**, adresse, taux de gestion éventuel.
 2. Dans *Les logements*, indiquez « 4 logements, repères A » puis **Générer les lignes** : A1 à A4 apparaissent, à compléter (type, chambres, surface, loyer). Vous pouvez aussi les ajouter plus tard.
 3. La **fiche de la propriété** affiche le nombre de logements, le **taux d’occupation**, les **loyers attendus** par mois, les **impayés**, puis la liste des logements avec leur statut et leur locataire. **Ajouter un logement** crée le suivant ; un clic sur une ligne ouvre la fiche du logement.
 

@@ -87,7 +87,7 @@ function dansJours(jours: number): string {
     .na-description {
       margin: 0 0 14px;
       color: var(--mtm-text-muted);
-      font-size: 0.88rem;
+      font-size: var(--mtm-fs-md);
     }
 
     .na-form {
@@ -105,10 +105,10 @@ function dansJours(jours: number): string {
     .na-raccourci {
       padding: 6px 14px;
       border: 1px solid var(--mtm-border);
-      border-radius: 999px;
+      border-radius: var(--mtm-radius-pill);
       background: var(--mtm-card-bg);
       color: var(--mtm-text-muted);
-      font-size: 0.82rem;
+      font-size: var(--mtm-fs-sm);
       font-weight: 600;
       cursor: pointer;
 

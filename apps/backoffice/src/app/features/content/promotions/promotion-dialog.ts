@@ -119,11 +119,11 @@ export interface PromotionDialogData {
   styles: `
     .promo-dialog { display: grid; gap: 12px; padding-top: 8px !important; min-width: min(560px, calc(100vw - 96px)); }
     .promo-dialog__media { display: grid; gap: 6px; padding: 12px; border: 1px dashed var(--mtm-border); border-radius: var(--mtm-radius-md); }
-    .promo-dialog__fichier { font-size: 0.84rem; color: var(--mtm-text-muted); word-break: break-all; }
+    .promo-dialog__fichier { font-size: var(--mtm-fs-sm); color: var(--mtm-text-muted); word-break: break-all; }
     .promo-dialog__row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
     .promo-dialog__order { max-width: 220px; }
-    .promo-dialog__erreur { margin: 0; color: var(--mtm-accent); font-size: 0.84rem; }
-    .promo-dialog__note { margin: 0; color: var(--mtm-text-muted); font-size: 0.82rem; }
+    .promo-dialog__erreur { margin: 0; color: var(--mtm-accent); font-size: var(--mtm-fs-sm); }
+    .promo-dialog__note { margin: 0; color: var(--mtm-text-muted); font-size: var(--mtm-fs-sm); }
     @media (max-width: 640px) { .promo-dialog__row { grid-template-columns: 1fr; } }
   `,
 })

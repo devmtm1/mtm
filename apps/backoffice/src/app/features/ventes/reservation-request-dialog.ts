@@ -64,13 +64,13 @@ export interface ReservationRequestDialogResult {
   `,
   styles: `
     .request-dialog { display: grid; gap: 12px; min-width: min(500px, calc(100vw - 96px)); }
-    .request-dialog__intro { margin: 0; color: var(--mtm-text-muted); font-size: 0.86rem; line-height: 1.5; }
-    .request-dialog__facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; margin: 0; padding: 12px; border-radius: 10px; background: var(--mtm-bg-surface); }
-    .request-dialog__facts dt { color: var(--mtm-text-muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
-    .request-dialog__facts dd { margin: 2px 0 0; font-size: 0.86rem; font-weight: 500; }
+    .request-dialog__intro { margin: 0; color: var(--mtm-text-muted); font-size: var(--mtm-fs-md); line-height: 1.5; }
+    .request-dialog__facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; margin: 0; padding: 12px; border-radius: var(--mtm-radius-md); background: var(--mtm-bg-surface); }
+    .request-dialog__facts dt { color: var(--mtm-text-muted); font-size: var(--mtm-fs-xs); text-transform: uppercase; letter-spacing: 0.04em; }
+    .request-dialog__facts dd { margin: 2px 0 0; font-size: var(--mtm-fs-md); font-weight: 500; }
     .request-dialog__facts .is-wide { grid-column: 1 / -1; }
     .request-dialog__facts .is-text { white-space: pre-line; font-weight: 400; }
-    .request-dialog__warn { margin: 0; padding: 10px 12px; border-radius: 8px; background: var(--mtm-warning-bg); color: var(--mtm-warning); font-size: 0.82rem; }
+    .request-dialog__warn { margin: 0; padding: 10px 12px; border-radius: var(--mtm-radius-md); background: var(--mtm-warning-bg); color: var(--mtm-warning); font-size: var(--mtm-fs-sm); }
     .request-dialog__form { display: grid; gap: 4px; }
   `,
 })

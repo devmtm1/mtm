@@ -47,7 +47,7 @@ import { LucideLock, LucideSparkles } from '@lucide/angular';
     }
     .matricule__label {
       color: var(--mtm-text-muted);
-      font-size: 0.78rem;
+      font-size: var(--mtm-fs-xs);
       font-weight: 600;
       letter-spacing: 0.02em;
     }
@@ -65,7 +65,7 @@ import { LucideLock, LucideSparkles } from '@lucide/angular';
     .matricule__valeur code {
       padding: 0;
       background: transparent;
-      font-size: 1.05rem;
+      font-size: var(--mtm-fs-lg);
       font-weight: 700;
       letter-spacing: 0.04em;
     }
@@ -76,7 +76,7 @@ import { LucideLock, LucideSparkles } from '@lucide/angular';
     }
     .matricule__aide {
       color: var(--mtm-text-muted);
-      font-size: 0.8rem;
+      font-size: var(--mtm-fs-sm);
     }
   `,
 })

@@ -136,7 +136,7 @@ export interface ChangementLocataireDialogData {
       </button>
     </mat-dialog-actions>
   `,
-  styles: `.changement-dialog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; min-width: 460px; } .wide { grid-column: 1 / -1; } .form-section-title { margin: 4px 0 0; color: var(--mtm-text-muted); font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }`,
+  styles: `.changement-dialog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; min-width: 460px; } .wide { grid-column: 1 / -1; } .form-section-title { margin: 4px 0 0; color: var(--mtm-text-muted); font-size: var(--mtm-fs-xs); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }`,
 })
 export class ChangementLocataireDialog {
   private readonly dialogRef = inject(

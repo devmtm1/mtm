@@ -9,7 +9,7 @@
   border: 1px solid var(--mtm-info, var(--mtm-primary));
   border-radius: var(--mtm-radius-md);
   background: var(--mtm-primary-subtle);
-  font-size: 0.9rem;
+  font-size: var(--mtm-fs-md);
 
   &__actions {
     display: flex;
@@ -25,7 +25,7 @@
 
 .form-footer__brouillon {
   color: var(--mtm-text-muted);
-  font-size: 0.76rem;
+  font-size: var(--mtm-fs-xs);
 }
 
 .stepper {
@@ -52,7 +52,7 @@
     gap: 12px;
     padding: 10px 14px;
     border: 0;
-    border-radius: 10px;
+    border-radius: var(--mtm-radius-md);
     background: transparent;
     color: var(--mtm-text-muted);
     font: inherit;
@@ -103,7 +103,7 @@
     height: 30px;
     border-radius: 50%;
     background: var(--mtm-bg-hover);
-    font-size: 0.82rem;
+    font-size: var(--mtm-fs-sm);
     font-weight: 700;
 
     svg {
@@ -119,12 +119,12 @@
     line-height: 1.25;
 
     strong {
-      font-size: 0.88rem;
+      font-size: var(--mtm-fs-md);
     }
 
     small {
       overflow: hidden;
-      font-size: 0.74rem;
+      font-size: var(--mtm-fs-xs);
       text-overflow: ellipsis;
       white-space: nowrap;
     }
@@ -147,13 +147,13 @@
 
     h3 {
       margin: 0;
-      font-size: 0.9rem;
+      font-size: var(--mtm-fs-md);
       font-weight: 700;
     }
 
     small {
       color: var(--mtm-text-muted);
-      font-size: 0.78rem;
+      font-size: var(--mtm-fs-xs);
     }
   }
 
@@ -212,12 +212,12 @@
   }
 
   strong {
-    font-size: 0.88rem;
+    font-size: var(--mtm-fs-md);
   }
 
   small {
     color: var(--mtm-text-muted);
-    font-size: 0.76rem;
+    font-size: var(--mtm-fs-xs);
   }
 
   input {
@@ -250,7 +250,7 @@
   gap: 12px;
   padding: 8px;
   border: 1px solid var(--mtm-border);
-  border-radius: 10px;
+  border-radius: var(--mtm-radius-md);
 
   &__thumb {
     display: flex;
@@ -258,7 +258,7 @@
     justify-content: center;
     width: 64px;
     height: 48px;
-    border-radius: 6px;
+    border-radius: var(--mtm-radius-sm);
     object-fit: cover;
     background: var(--mtm-bg-hover);
     color: var(--mtm-text-muted);

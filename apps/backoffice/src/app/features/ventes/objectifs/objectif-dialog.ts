@@ -76,9 +76,9 @@ export interface ObjectifDialogData {
     </mat-dialog-actions>
   `,
   styles: `
-    .dialog-intro { margin: 0 0 12px; color: var(--mtm-text-muted); font-size: 0.86rem; line-height: 1.5; max-width: 480px; }
+    .dialog-intro { margin: 0 0 12px; color: var(--mtm-text-muted); font-size: var(--mtm-fs-md); line-height: 1.5; max-width: 480px; }
     .dialog-form { display: grid; gap: 4px; min-width: min(460px, calc(100vw - 96px)); }
-    .dialog-warn { margin: 8px 0 0; color: var(--mtm-warning); font-size: 0.82rem; }
+    .dialog-warn { margin: 8px 0 0; color: var(--mtm-warning); font-size: var(--mtm-fs-sm); }
   `,
 })
 export class ObjectifDialog {

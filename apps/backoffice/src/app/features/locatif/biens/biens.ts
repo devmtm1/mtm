@@ -38,6 +38,7 @@ import {
 import { nombreFr } from '../../../core/utils/format';
 import { ExportListeDialog } from '../../../shared/dialogs/export-liste-dialog';
 import { sourceDepuisGrille } from '../../../shared/utils/export-grille';
+import { chargerTout } from '../../../shared/utils/charger-tout';
 
 const FILTRES_VIDES = { search: '', statut: '', type: '', responsableId: '', vue: '' };
 
@@ -234,7 +235,7 @@ export class Biens implements OnInit {
     if (!this.chargementInitialFait) this.loading.set(true);
     const valeur = this.filters.getRawValue();
     this.hasActiveFilters.set(Object.values(valeur).some((item) => item !== ''));
-    this.api.findBiens({ ...valeur, pageSize: 200 }).subscribe({
+    chargerTout((page, pageSize) => this.api.findBiens({ ...valeur, page, pageSize })).subscribe({
       next: (page) => {
         this.rowData.set(page.items);
         this.total.set(page.total);
