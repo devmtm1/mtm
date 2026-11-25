@@ -67,12 +67,12 @@ export const LIGNES_EXPORT_MAX = 5000;
     }
     .export__resume {
       margin: 0;
-      font-size: 0.9rem;
+      font-size: var(--mtm-fs-md);
       color: var(--mtm-text-muted);
     }
     .export__alerte {
       margin: 0;
-      font-size: 0.9rem;
+      font-size: var(--mtm-fs-md);
       font-weight: 600;
       color: var(--mtm-error, #b42318);
     }

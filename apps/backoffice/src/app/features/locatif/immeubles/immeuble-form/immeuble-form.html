@@ -3,11 +3,11 @@
     <div>
       <button mat-button type="button" class="back-link" (click)="retour()">
         <svg class="btn-icon" lucideArrowLeft aria-hidden="true"></svg
-        >{{ modification ? 'Retour à la propriété' : 'Retour aux propriétés' }}
+        >{{ modification ? 'Retour à l’immeuble' : 'Retour aux immeubles' }}
       </button>
       <p class="eyebrow">Gestion locative</p>
       <h1 id="immeuble-form-title" class="page-header__title">
-        {{ modification ? 'Modifier la propriété' : 'Nouvelle propriété' }}
+        {{ modification ? 'Modifier l’immeuble' : 'Nouvel immeuble' }}
       </h1>
       <p class="page-header__subtitle">
         Une villa divisée, un immeuble ou une résidence confiés par un propriétaire. Chaque logement
@@ -26,14 +26,14 @@
   <form class="form-body" [formGroup]="form" (ngSubmit)="submit()">
     <section class="page-card form-block">
       <div class="form-block__head">
-        <h2>La propriété</h2>
+        <h2>L’immeuble</h2>
         <p>Son nom, son propriétaire et son adresse : les logements les reprennent.</p>
       </div>
       <div class="form-grid">
         <mat-form-field appearance="outline">
           <mat-label>Nom</mat-label>
           <input matInput formControlName="nom" placeholder="Villa Fall, Résidence Les Palmiers…" />
-          <mat-error>Donnez un nom à la propriété.</mat-error>
+          <mat-error>Donnez un nom à l’immeuble.</mat-error>
         </mat-form-field>
         <mat-form-field appearance="outline">
           <mat-label>Nature</mat-label>
@@ -107,7 +107,7 @@
         <div class="form-block__head">
           <h2>Les logements</h2>
           <p>
-            Facultatif : vous pouvez aussi les ajouter plus tard depuis la fiche de la propriété.
+            Facultatif : vous pouvez aussi les ajouter plus tard depuis la fiche de l’immeuble.
           </p>
         </div>
 
@@ -219,7 +219,7 @@
               ? 'Enregistrement…'
               : modification
                 ? 'Enregistrer les modifications'
-                : 'Enregistrer la propriété'
+                : 'Enregistrer l’immeuble'
           }}
         </button>
       </div>

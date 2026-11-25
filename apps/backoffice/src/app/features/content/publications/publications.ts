@@ -30,6 +30,15 @@ export class Publications implements OnInit {
   private readonly notify = inject(NotificationService);
   private readonly session = inject(SessionService);
 
+  /**
+   * YouTube ne fournit la grande vignette (« maxresdefault ») que pour les vidéos filmées en 720p ou plus ; sinon l'adresse
+   * répond 404. On bascule alors sur la vignette standard, qui existe toujours.
+   */
+  protected vignetteDeSecours(evenement: Event): void {
+    const image = evenement.target as HTMLImageElement;
+    if (image.src.includes('maxresdefault')) image.src = image.src.replace('maxresdefault', 'hqdefault');
+  }
+
   protected readonly canCreate = this.session.hasPermission('content:creer');
   protected readonly canModify = this.session.hasPermission('content:modifier');
   protected readonly canPublish = this.session.hasPermission('content:publier');

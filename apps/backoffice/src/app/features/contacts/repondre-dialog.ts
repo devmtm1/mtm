@@ -53,7 +53,7 @@ export interface RepondreDialogData {
     </mat-dialog-actions>
   `,
   styles: `
-    .repondre-original { margin: 0 0 16px; padding: 10px 14px; border-left: 3px solid var(--mtm-border, #d1d5db); background: var(--mtm-bg, #f5f7fa); border-radius: 0 8px 8px 0; font-size: 0.88rem; }
+    .repondre-original { margin: 0 0 16px; padding: 10px 14px; border-left: 3px solid var(--mtm-border, #d1d5db); background: var(--mtm-bg, #f5f7fa); border-radius: 0 8px 8px 0; font-size: var(--mtm-fs-md); }
     .repondre-original p { margin: 4px 0 0; white-space: pre-line; color: var(--mtm-text-muted, #6b7280); }
     .repondre-champ { width: 100%; min-width: min(520px, calc(100vw - 96px)); }
   `,

@@ -6,7 +6,7 @@
   padding: 24px 24px 10px;
   color: var(--mtm-text-dark);
   font-family: var(--mtm-font-display);
-  font-size: 1.25rem;
+  font-size: var(--mtm-fs-xl);
   font-weight: 700;
 }
 
@@ -14,7 +14,7 @@
   padding: 0;
   color: var(--mtm-text-muted);
   font-family: var(--mtm-font-body);
-  font-size: 0.75rem;
+  font-size: var(--mtm-fs-xs);
   font-weight: 600;
 }
 
@@ -36,7 +36,7 @@
 .permissions-group-title {
   margin: 0 0 12px;
   color: var(--mtm-primary);
-  font-size: 0.72rem;
+  font-size: var(--mtm-fs-xs);
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -51,7 +51,7 @@
 .permissions-group-items mat-checkbox {
   min-width: 0;
   color: var(--mtm-text-dark);
-  font-size: 0.78rem;
+  font-size: var(--mtm-fs-xs);
 }
 
 .permissions-dialog-loading {
@@ -79,6 +79,6 @@
 .permissions-dialog-hint {
   margin: 0 24px 4px;
   color: var(--mtm-text-muted);
-  font-size: 0.8rem;
+  font-size: var(--mtm-fs-sm);
   line-height: 1.45;
 }

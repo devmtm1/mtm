@@ -59,7 +59,7 @@ export interface TacheDetailData {
           }
         </ul>
 
-        @if (t.peutModifier) {
+        @if (t.peutModifier && droitModifier) {
           <div class="detail__actions">
             @if (t.statut === 'a_faire') {
               <button mat-stroked-button type="button" (click)="changer('en_cours')">Commencer</button>
@@ -93,15 +93,19 @@ export interface TacheDetailData {
           }
         </ol>
 
-        <mat-form-field appearance="outline" class="detail__commentaire">
-          <mat-label>Ajouter un commentaire</mat-label>
-          <input matInput [formControl]="commentaire" maxlength="1000" (keydown.enter)="commenter()" />
-        </mat-form-field>
+        @if (droitModifier) {
+          <mat-form-field appearance="outline" class="detail__commentaire">
+            <mat-label>Ajouter un commentaire</mat-label>
+            <input matInput [formControl]="commentaire" maxlength="1000" (keydown.enter)="commenter()" />
+          </mat-form-field>
+        }
       </mat-dialog-content>
       <mat-dialog-actions align="end">
-        <button mat-stroked-button type="button" (click)="commenter()" [disabled]="!commentaire.value.trim()">
-          Commenter
-        </button>
+        @if (droitModifier) {
+          <button mat-stroked-button type="button" (click)="commenter()" [disabled]="!commentaire.value.trim()">
+            Commenter
+          </button>
+        }
         <button mat-flat-button color="primary" type="button" (click)="fermer()">Fermer</button>
       </mat-dialog-actions>
     } @else {
@@ -129,7 +133,7 @@ export interface TacheDetailData {
       margin: 0;
       padding: 0;
       list-style: none;
-      font-size: 0.9rem;
+      font-size: var(--mtm-fs-md);
     }
     .detail__infos li {
       display: flex;
@@ -146,7 +150,7 @@ export interface TacheDetailData {
     }
     .detail__titre {
       margin: 6px 0 0;
-      font-size: 0.95rem;
+      font-size: var(--mtm-fs-md);
     }
     .detail__historique {
       display: grid;
@@ -154,7 +158,7 @@ export interface TacheDetailData {
       margin: 0;
       padding: 0;
       list-style: none;
-      font-size: 0.85rem;
+      font-size: var(--mtm-fs-md);
     }
     .detail__historique li {
       display: grid;
@@ -187,6 +191,8 @@ export class TacheDetailDialog implements OnInit {
   protected readonly tache = signal<TacheDetail | null>(null);
   protected readonly commentaire = new FormControl('', { nonNullable: true });
   protected readonly peutSupprimer = this.session.hasPermission('taches:supprimer');
+  /** Changer le statut, modifier ou commenter demande « modifier » : l'API le refuse sinon. */
+  protected readonly droitModifier = this.session.hasPermission('taches:modifier');
   private modifie = false;
 
   ngOnInit(): void {

@@ -3,21 +3,26 @@ import {
   Body,
   Controller,
   Get,
+  ParseEnumPipe,
   Param,
   ParseUUIDPipe,
   Patch,
   Post,
   Query,
+  Req,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import type { Request } from 'express';
 import { ApiTags } from '@nestjs/swagger';
 import { MAX_ASSET_SIZE } from '../../common/storage/asset-validation';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../auth/auth.types';
+import { Authenticated } from '../auth/decorators/authenticated.decorator';
 import { RequirePermissions } from '../auth/decorators/require-permissions.decorator';
 import {
+  AccepterProtocoleDto,
   ChangerStatutProtocoleDto,
   CreateProtocoleDto,
   DeposerDocumentProtocoleDto,
@@ -60,6 +65,39 @@ export class ProtocolesController {
   @RequirePermissions('protocoles:consulter')
   responsables() {
     return this.protocoles.responsables();
+  }
+
+  /** Les baux et chantiers auxquels on peut rattacher un protocole : le choix de la fenêtre « Nouveau protocole ». */
+  @Get('dossiers-possibles')
+  @RequirePermissions('protocoles:creer')
+  dossiersPossibles(
+    @Query('type', new ParseEnumPipe(['bail', 'chantier']))
+    type: 'bail' | 'chantier',
+    @Query('q') q?: string,
+  ) {
+    return this.protocoles.dossiersPossibles(type, q);
+  }
+
+  /** Espace client : les protocoles de ses baux et chantiers. */
+  @Authenticated()
+  @Get('client/mes-protocoles')
+  mesProtocoles(@CurrentUser() user: AuthenticatedUser) {
+    return this.protocoles.mesProtocolesAutres(user.id);
+  }
+
+  /** Espace client : le client connecté accepte son protocole en ligne (si MTM l'a activé). */
+  @Authenticated()
+  @Post('client/:id/accepter')
+  accepterEnLigne(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: AccepterProtocoleDto,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    return this.protocoles.accepterEnLigne(user.id, id, dto.nom, {
+      ip: req.ip,
+      agent: req.headers['user-agent'],
+    });
   }
 
   @Get('tableau')

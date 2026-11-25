@@ -24,16 +24,26 @@
     @if (catalogue(); as c) {
       @if (!c.canaux.sms || !c.canaux.whatsapp) {
         <aside class="alert-banner alert-banner--info" role="status">
-          <div class="alert-banner__head"><strong>Canaux SMS et WhatsApp</strong></div>
+          <div class="alert-banner__head">
+            <strong>
+              @if (!c.canaux.sms && !c.canaux.whatsapp) {
+                SMS et WhatsApp non activés
+              } @else if (!c.canaux.sms) {
+                SMS non activé
+              } @else {
+                WhatsApp non activé
+              }
+            </strong>
+          </div>
           <p>
-            Ils partent par le <strong>fournisseur de messagerie</strong> configuré sur le serveur (il se change sans toucher à
-            l’application). Tant qu’un canal n’a pas de fournisseur, rien ne part par lui, même si la case est cochée.
+            Les alertes partent par e-mail et dans la cloche. Ces canaux s’afficheront ici dès qu’un fournisseur de messagerie
+            sera configuré sur le serveur
             @if (!c.canaux.sms) {
-              <br />SMS inactif : aucun fournisseur n’est configuré (<code>SMS_PROVIDER</code>).
+              (<code>SMS_PROVIDER</code>)
             }
             @if (!c.canaux.whatsapp) {
-              <br />WhatsApp inactif : aucun fournisseur n’est configuré (<code>WHATSAPP_PROVIDER</code>).
-            }
+              (<code>WHATSAPP_PROVIDER</code>)
+            }.
           </p>
         </aside>
       }
@@ -81,20 +91,17 @@
                 >
                   E-mail
                 </mat-slide-toggle>
-                <mat-slide-toggle
-                  [checked]="ligne.sms"
-                  (change)="changer(ligne, 'sms', $event.checked)"
-                  [disabled]="!ligne.actif || !catalogue()?.canaux?.sms"
-                >
-                  SMS
-                </mat-slide-toggle>
-                <mat-slide-toggle
-                  [checked]="ligne.whatsapp"
-                  (change)="changer(ligne, 'whatsapp', $event.checked)"
-                  [disabled]="!ligne.actif || !catalogue()?.canaux?.whatsapp"
-                >
-                  WhatsApp
-                </mat-slide-toggle>
+                <!-- Un canal sans fournisseur n'est pas proposé : un interrupteur grisé sur chaque ligne ne sert à rien. -->
+                @if (catalogue()?.canaux?.sms) {
+                  <mat-slide-toggle [checked]="ligne.sms" (change)="changer(ligne, 'sms', $event.checked)" [disabled]="!ligne.actif">
+                    SMS
+                  </mat-slide-toggle>
+                }
+                @if (catalogue()?.canaux?.whatsapp) {
+                  <mat-slide-toggle [checked]="ligne.whatsapp" (change)="changer(ligne, 'whatsapp', $event.checked)" [disabled]="!ligne.actif">
+                    WhatsApp
+                  </mat-slide-toggle>
+                }
               </div>
             </li>
           }

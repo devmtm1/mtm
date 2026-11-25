@@ -56,14 +56,24 @@ function detail(surcharge: Partial<ProtocoleDetail> = {}): ProtocoleDetail {
     enRetard: false,
     creeLe: '2026-11-01',
     modifieLe: '2026-11-10',
-    documentPrepare: { id: 'd1', titre: 'Protocole', type: 'protocole', version: 1, ajouteLe: '2026-11-02', url: 'https://x.test/d1' },
+    documentPrepare: {
+      id: 'd1',
+      titre: 'Protocole',
+      type: 'protocole',
+      version: 1,
+      ajouteLe: '2026-11-02',
+      url: 'https://x.test/d1',
+    },
     documentSigne: null,
+    acceptationEnLigne: null,
     dossier: {
+      typeDossier: 'vente',
       id: 'dv-1',
       reference: 'VTE-0001',
       statut: 'reserve',
       client: 'Awa Diop',
       telephone: null,
+      email: null,
       bien: 'Terrain Saly',
       responsable: null,
       montantConvenu: 10_000_000,
@@ -71,14 +81,29 @@ function detail(surcharge: Partial<ProtocoleDetail> = {}): ProtocoleDetail {
       soldeRestant: 8_000_000,
       paiementsEnregistres: 1,
     },
-    historique: [{ id: 'h1', de: null, vers: 'a_preparer', libelle: 'À préparer', note: 'Protocole créé', par: 'Marie', le: '2026-11-01T09:00:00Z' }],
+    historique: [
+      {
+        id: 'h1',
+        de: null,
+        vers: 'a_preparer',
+        libelle: 'À préparer',
+        note: 'Protocole créé',
+        par: 'Marie',
+        le: '2026-11-01T09:00:00Z',
+      },
+    ],
     ...surcharge,
   };
 }
 
 /** Les membres internes du composant que les tests lisent ou pilotent. */
 interface Interne {
-  form: { controls: { statut: { setValue(valeur: string): void }; motif: { setValue(valeur: string): void } } };
+  form: {
+    controls: {
+      statut: { setValue(valeur: string): void };
+      motif: { setValue(valeur: string): void };
+    };
+  };
   suivants(): { valeur: string }[];
   blocage(): string | null;
   valider(): void;
@@ -96,8 +121,14 @@ function monter(protocole: ProtocoleDetail, permissions: string[]) {
     providers: [
       provideNoopAnimations(),
       { provide: ProtocolesApiService, useValue: api },
-      { provide: SessionService, useValue: { hasPermission: (nom: string) => permissions.includes(nom) } },
-      { provide: NotificationService, useValue: { success: vi.fn(), error: vi.fn().mockReturnValue('erreur') } },
+      {
+        provide: SessionService,
+        useValue: { hasPermission: (nom: string) => permissions.includes(nom) },
+      },
+      {
+        provide: NotificationService,
+        useValue: { success: vi.fn(), error: vi.fn().mockReturnValue('erreur') },
+      },
       { provide: MAT_DIALOG_DATA, useValue: { id: 'p-1' } },
       { provide: MatDialogRef, useValue: { close: vi.fn() } },
     ],
@@ -119,12 +150,14 @@ describe('ProtocoleDetailDialog', () => {
 
   it('avertit qu’un paiement ne remplace pas la signature quand le protocole n’est pas signé', () => {
     const { fixture } = monter(detail(), ['protocoles:consulter']);
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('un paiement ne remplace pas la signature');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'un paiement ne remplace pas la signature',
+    );
   });
 
   it('ne propose que les étapes permises depuis « envoyé »', () => {
     const { instance } = monter(detail(), ['protocoles:consulter', 'protocoles:modifier']);
-    const valeurs = (instance.suivants()).map((statut) => statut.valeur);
+    const valeurs = instance.suivants().map((statut) => statut.valeur);
     expect(valeurs).toEqual(['en_attente_signature', 'signe_client', 'a_corriger', 'annule']);
   });
 
@@ -133,13 +166,24 @@ describe('ProtocoleDetailDialog', () => {
     instance.form.controls.statut.setValue('signe_client');
     fixture.detectChanges();
     expect(instance.blocage()).toMatch(/copie signée/);
-    const bouton = fixture.debugElement.queryAll(By.css('button')).find((b) => (b.nativeElement as HTMLElement).textContent?.includes('Enregistrer'));
+    const bouton = fixture.debugElement
+      .queryAll(By.css('button'))
+      .find((b) => (b.nativeElement as HTMLElement).textContent?.includes('Enregistrer'));
     expect((bouton?.nativeElement as HTMLButtonElement).disabled).toBe(true);
   });
 
   it('« signé par le client » devient possible avec la copie signée et sa date', () => {
     const { fixture, instance } = monter(
-      detail({ documentSigne: { id: 'd2', titre: 'Signé', type: 'protocole_signe', version: 1, ajouteLe: '2026-11-12', url: 'https://x.test/d2' } }),
+      detail({
+        documentSigne: {
+          id: 'd2',
+          titre: 'Signé',
+          type: 'protocole_signe',
+          version: 1,
+          ajouteLe: '2026-11-12',
+          url: 'https://x.test/d2',
+        },
+      }),
       ['protocoles:consulter', 'protocoles:modifier'],
     );
     instance.form.controls.statut.setValue('signe_client');
@@ -156,12 +200,19 @@ describe('ProtocoleDetailDialog', () => {
   });
 
   it('« validé » n’est proposé qu’à la Direction', () => {
-    const aValider = detail({ statut: 'a_valider_direction', libelleStatut: 'À valider par la Direction' });
+    const aValider = detail({
+      statut: 'a_valider_direction',
+      libelleStatut: 'À valider par la Direction',
+    });
     const secretaire = monter(aValider, ['protocoles:consulter', 'protocoles:modifier']);
-    expect((secretaire.instance.suivants()).map((s) => s.valeur)).toEqual(['a_corriger']);
+    expect(secretaire.instance.suivants().map((s) => s.valeur)).toEqual(['a_corriger']);
     TestBed.resetTestingModule();
-    const direction = monter(aValider, ['protocoles:consulter', 'protocoles:modifier', 'protocoles:valider']);
-    expect((direction.instance.suivants()).map((s) => s.valeur)).toEqual(['valide', 'a_corriger']);
+    const direction = monter(aValider, [
+      'protocoles:consulter',
+      'protocoles:modifier',
+      'protocoles:valider',
+    ]);
+    expect(direction.instance.suivants().map((s) => s.valeur)).toEqual(['valide', 'a_corriger']);
   });
 
   it('en lecture seule (sans « modifier »), aucune action n’est proposée', () => {
@@ -172,16 +223,25 @@ describe('ProtocoleDetailDialog', () => {
   });
 
   it('enregistre le changement et envoie les champs de l’étape', () => {
-    const { fixture, api, instance } = monter(detail(), ['protocoles:consulter', 'protocoles:modifier']);
+    const { fixture, api, instance } = monter(detail(), [
+      'protocoles:consulter',
+      'protocoles:modifier',
+    ]);
     instance.form.controls.statut.setValue('en_attente_signature');
     fixture.detectChanges();
     instance.valider();
-    expect(api.changerStatut).toHaveBeenCalledWith('p-1', expect.objectContaining({ statut: 'en_attente_signature' }));
+    expect(api.changerStatut).toHaveBeenCalledWith(
+      'p-1',
+      expect.objectContaining({ statut: 'en_attente_signature' }),
+    );
   });
 
   it('affiche une erreur claire quand le protocole ne se charge pas', () => {
     TestBed.resetTestingModule();
-    const api = { options: vi.fn().mockReturnValue(of(OPTIONS)), detail: vi.fn().mockReturnValue(throwError(() => new Error('x'))) };
+    const api = {
+      options: vi.fn().mockReturnValue(of(OPTIONS)),
+      detail: vi.fn().mockReturnValue(throwError(() => new Error('x'))),
+    };
     TestBed.configureTestingModule({
       imports: [ProtocoleDetailDialog],
       providers: [
@@ -196,5 +256,87 @@ describe('ProtocoleDetailDialog', () => {
     const fixture = TestBed.createComponent(ProtocoleDetailDialog);
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('ne se charge pas');
+  });
+});
+
+describe('ProtocoleDetailDialog — relancer le client', () => {
+  function monterAvec(surcharge: Partial<ProtocoleDetail>) {
+    const api = {
+      options: () => of(OPTIONS),
+      detail: () => of(detail(surcharge)),
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        provideNoopAnimations(),
+        { provide: ProtocolesApiService, useValue: api },
+        { provide: SessionService, useValue: { hasPermission: () => true } },
+        { provide: NotificationService, useValue: { success: vi.fn(), error: vi.fn() } },
+        { provide: MatDialogRef, useValue: { close: vi.fn() } },
+        { provide: MAT_DIALOG_DATA, useValue: { id: 'p-1' } },
+      ],
+    });
+    const fixture = TestBed.createComponent(ProtocoleDetailDialog);
+    fixture.detectChanges();
+    return fixture.nativeElement as HTMLElement;
+  }
+  const dossierAvecContacts = {
+    ...detail().dossier,
+    telephone: '77 123 45 67',
+    email: 'awa@exemple.sn',
+    client: 'Awa Diop',
+    reference: 'VTE-1',
+  };
+
+  it('propose WhatsApp, e-mail et appel avec un message rédigé quand le protocole est parti sans retour', () => {
+    const racine = monterAvec({ statut: 'envoye', dossier: dossierAvecContacts });
+    const liens = [...racine.querySelectorAll<HTMLAnchorElement>('.relance a')].map(
+      (a) => a.getAttribute('href') ?? '',
+    );
+    expect(liens).toHaveLength(3);
+    expect(liens[0]).toMatch(/^https:\/\/wa\.me\/221771234567\?text=/);
+    expect(decodeURIComponent(liens[0])).toContain('Bonjour Awa');
+    expect(decodeURIComponent(liens[0])).toContain('VTE-1');
+    expect(liens[1]).toMatch(/^mailto:awa@exemple\.sn\?subject=/);
+    expect(liens[2]).toBe('tel:771234567');
+  });
+
+  it('ne propose rien tant que le protocole n’est pas parti, ni quand le client n’a aucun contact', () => {
+    expect(
+      monterAvec({ statut: 'prepare_a_verifier', dossier: dossierAvecContacts }).querySelector(
+        '.relance',
+      ),
+    ).toBeNull();
+  });
+
+  it('ne propose rien quand le client n’a ni téléphone ni e-mail', () => {
+    const sansContact = { ...dossierAvecContacts, telephone: null, email: null };
+    expect(
+      monterAvec({ statut: 'envoye', dossier: sansContact }).querySelector('.relance'),
+    ).toBeNull();
+  });
+
+  it('ne montre aucune preuve d’acceptation en ligne quand le client n’a pas accepté', () => {
+    const page = monter(detail({ statut: 'signe_client' }), []).fixture
+      .nativeElement as HTMLElement;
+    expect(page.querySelector('[aria-label="Acceptation en ligne"]')).toBeNull();
+  });
+
+  it('montre la preuve d’une acceptation faite en ligne par le client', () => {
+    const page = monter(
+      detail({
+        statut: 'signe_client',
+        acceptationEnLigne: {
+          le: '2026-11-20T10:30:00Z',
+          nom: 'Fatou Ba',
+          adresse: '41.82.0.1',
+          appareil: 'Navigateur',
+          empreinte: 'a'.repeat(64),
+        },
+      }),
+      [],
+    ).fixture.nativeElement as HTMLElement;
+    const bloc = page.querySelector('[aria-label="Acceptation en ligne"]');
+    expect(bloc?.textContent).toContain('Fatou Ba');
+    expect(bloc?.textContent).toContain('a'.repeat(64));
   });
 });

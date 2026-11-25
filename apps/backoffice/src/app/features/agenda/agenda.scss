@@ -13,18 +13,23 @@
 [data-famille='evenements'] {
   --couleur: var(--f-evenements);
   --fond: var(--f-evenements-fond);
+  --texte: #1d4ed8;
 }
 [data-famille='taches'] {
   --couleur: var(--f-taches);
   --fond: var(--f-taches-fond);
+  --texte: #92400e;
 }
 [data-famille='visites'] {
   --couleur: var(--f-visites);
   --fond: var(--f-visites-fond);
+  --texte: #166534;
 }
+/* --texte : la version foncée de la couleur de la famille, pour du texte lisible (4,5:1 au moins) sur son fond clair. */
 [data-famille='echeances'] {
   --couleur: var(--f-echeances);
   --fond: var(--f-echeances-fond);
+  --texte: #be123c;
 }
 
 .agenda-page {
@@ -53,11 +58,11 @@
 .barre__aujourdhui {
   height: 40px;
   border: 1px solid var(--mtm-border);
-  border-radius: 10px;
+  border-radius: var(--mtm-radius-md);
   background: var(--mtm-surface);
   color: var(--mtm-text-dark);
   font: inherit;
-  font-size: 0.88rem;
+  font-size: var(--mtm-fs-md);
   font-weight: 500;
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease;
@@ -90,7 +95,7 @@
   gap: 10px;
   margin: 0 0 0 12px;
   font-family: var(--mtm-font-display);
-  font-size: 1.3rem;
+  font-size: var(--mtm-fs-xl);
   font-weight: 700;
 
   svg {
@@ -111,17 +116,17 @@
   gap: 2px;
   padding: 3px;
   border: 1px solid var(--mtm-border);
-  border-radius: 12px;
+  border-radius: var(--mtm-radius-lg);
   background: var(--mtm-surface);
 
   button {
     padding: 8px 16px;
     border: 0;
-    border-radius: 9px;
+    border-radius: var(--mtm-radius-md);
     background: transparent;
     color: var(--mtm-text-muted);
     font: inherit;
-    font-size: 0.88rem;
+    font-size: var(--mtm-fs-md);
     font-weight: 500;
     cursor: pointer;
     transition: background 0.15s ease, color 0.15s ease;
@@ -151,11 +156,11 @@
   gap: 8px;
   padding: 7px 14px 7px 10px;
   border: 1px solid var(--mtm-border);
-  border-radius: 999px;
+  border-radius: var(--mtm-radius-pill);
   background: var(--mtm-surface);
   color: var(--mtm-text-dark);
   font: inherit;
-  font-size: 0.86rem;
+  font-size: var(--mtm-fs-md);
   cursor: pointer;
   transition: opacity 0.15s ease, border-color 0.15s ease;
 
@@ -180,7 +185,7 @@
   width: 20px;
   height: 20px;
   border: 2px solid var(--couleur);
-  border-radius: 6px;
+  border-radius: var(--mtm-radius-sm);
   background: var(--couleur);
   color: #fff;
 
@@ -201,10 +206,10 @@
 .legende__nombre {
   min-width: 20px;
   padding: 0 6px;
-  border-radius: 999px;
+  border-radius: var(--mtm-radius-pill);
   background: var(--mtm-bg-hover);
   color: var(--mtm-text-muted);
-  font-size: 0.76rem;
+  font-size: var(--mtm-fs-xs);
   font-weight: 600;
   line-height: 20px;
   text-align: center;
@@ -241,7 +246,7 @@
 
 .mois__entete span {
   padding: 8px 10px;
-  font-size: 0.74rem;
+  font-size: var(--mtm-fs-xs);
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -255,7 +260,7 @@
   min-height: 118px;
   padding: 8px;
   border: 1px solid var(--mtm-border);
-  border-radius: 12px;
+  border-radius: var(--mtm-radius-lg);
   background: var(--mtm-card-bg);
   cursor: pointer;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -283,7 +288,7 @@
     min-width: 28px;
     height: 28px;
     padding: 0 6px;
-    border-radius: 999px;
+    border-radius: var(--mtm-radius-pill);
     background: var(--mtm-primary);
     color: var(--mat-sys-on-primary);
   }
@@ -297,13 +302,13 @@
 
 .case__numero {
   justify-self: start;
-  font-size: 0.82rem;
+  font-size: var(--mtm-fs-sm);
   font-weight: 700;
 }
 
 .case__plus {
   padding: 0 4px;
-  font-size: 0.72rem;
+  font-size: var(--mtm-fs-xs);
   color: var(--mtm-text-muted);
 }
 
@@ -314,7 +319,7 @@
   min-width: 0;
   padding: 3px 4px;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--mtm-radius-sm);
   background: transparent;
   font: inherit;
   text-align: left;
@@ -339,13 +344,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.76rem;
+  font-size: var(--mtm-fs-xs);
   font-weight: 500;
 }
 
 .element__heure {
   color: var(--mtm-text-muted);
-  font-size: 0.7rem;
+  font-size: var(--mtm-fs-xs);
 }
 
 .puce {
@@ -368,7 +373,7 @@
 
   h3 {
     margin: 8px 0 2px;
-    font-size: 0.92rem;
+    font-size: var(--mtm-fs-md);
   }
 
   &--aujourdhui h3 {
@@ -384,10 +389,10 @@
   padding: 8px 10px;
   border: 0;
   border-left: 3px solid var(--couleur, transparent);
-  border-radius: 8px;
+  border-radius: var(--mtm-radius-md);
   background: transparent;
   font: inherit;
-  font-size: 0.88rem;
+  font-size: var(--mtm-fs-md);
   text-align: left;
   cursor: pointer;
 
@@ -399,7 +404,7 @@
 
 .ligne__heure {
   color: var(--mtm-text-muted);
-  font-size: 0.8rem;
+  font-size: var(--mtm-fs-sm);
 }
 
 .ligne__titre {
@@ -409,7 +414,7 @@
 .vide {
   margin: 0;
   color: var(--mtm-text-muted);
-  font-size: 0.85rem;
+  font-size: var(--mtm-fs-md);
 }
 
 .panneau {
@@ -419,7 +424,7 @@
 
 .panneau__titre {
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--mtm-fs-lg);
   overflow-wrap: anywhere;
 }
 
@@ -429,7 +434,7 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 0.88rem;
+  font-size: var(--mtm-fs-md);
 
   li {
     display: grid;
@@ -438,14 +443,14 @@
 
   span {
     color: var(--mtm-text-muted);
-    font-size: 0.78rem;
+    font-size: var(--mtm-fs-xs);
   }
 }
 
 .panneau__texte {
   margin: 0;
   white-space: pre-line;
-  font-size: 0.88rem;
+  font-size: var(--mtm-fs-md);
 }
 
 .panneau__actions {
@@ -479,7 +484,7 @@
   background: transparent;
   color: var(--mtm-primary);
   font: inherit;
-  font-size: 0.82rem;
+  font-size: var(--mtm-fs-sm);
   font-weight: 600;
   cursor: pointer;
 
@@ -506,7 +511,7 @@
   padding: 10px 12px 10px 10px;
   border: 1px solid var(--mtm-border);
   border-left: 4px solid var(--couleur);
-  border-radius: 10px;
+  border-radius: var(--mtm-radius-md);
   background: var(--mtm-card-bg);
   color: inherit;
   font: inherit;
@@ -543,21 +548,21 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 0.86rem;
+    font-size: var(--mtm-fs-md);
   }
 
   small {
     color: var(--mtm-text-muted);
-    font-size: 0.76rem;
+    font-size: var(--mtm-fs-xs);
   }
 }
 
 .prochain__etiquette {
   padding: 3px 9px;
-  border-radius: 6px;
+  border-radius: var(--mtm-radius-sm);
   background: var(--fond);
-  color: var(--couleur);
-  font-size: 0.7rem;
+  color: var(--texte, var(--couleur));
+  font-size: var(--mtm-fs-xs);
   font-weight: 600;
   white-space: nowrap;
 }
@@ -569,7 +574,7 @@
 
   .barre__titre {
     margin-left: 0;
-    font-size: 1.1rem;
+    font-size: var(--mtm-fs-lg);
   }
 }
 
@@ -601,7 +606,7 @@
 
   .mois__entete span {
     padding: 6px 0;
-    font-size: 0.62rem;
+    font-size: var(--mtm-fs-xs);
     letter-spacing: 0;
     text-align: center;
   }
@@ -614,7 +619,7 @@
     gap: 3px;
     min-height: 54px;
     padding: 4px 2px;
-    border-radius: 8px;
+    border-radius: var(--mtm-radius-md);
 
     .case__numero {
       width: 100%;

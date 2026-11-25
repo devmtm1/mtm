@@ -102,7 +102,7 @@ const LIBELLES: Record<TeamKind, { titre: string; nom: string; nomAide: string; 
     .team-dialog__note {
       margin: 0;
       color: var(--mtm-text-muted);
-      font-size: 0.82rem;
+      font-size: var(--mtm-fs-sm);
     }
   `,
 })

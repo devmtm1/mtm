@@ -55,7 +55,7 @@ import { type ProgrammeResume, ProgrammesApiService } from '../../../core/servic
     .prog-dialog__intro {
       margin: 0 0 8px;
       color: var(--mtm-text-muted);
-      font-size: 0.88rem;
+      font-size: var(--mtm-fs-md);
     }
   `,
 })

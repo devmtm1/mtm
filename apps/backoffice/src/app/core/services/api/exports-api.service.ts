@@ -12,6 +12,7 @@ export type ModuleExportable =
   | 'proprietaires'
   | 'ventes'
   | 'protocoles'
+  | 'materiel'
   | 'demarches'
   | 'locatif'
   | 'construction'

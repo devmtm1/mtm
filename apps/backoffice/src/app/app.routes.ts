@@ -400,6 +400,30 @@ export const routes: Routes = [
           import('./features/documents/documents').then((m) => m.DocumentsPage),
       },
       {
+        path: 'materiel',
+        title: 'Patrimoine matériel',
+        canActivate: [permissionsGuard(['materiel:consulter'])],
+        loadComponent: () => import('./features/materiel/materiel').then((m) => m.MaterielPage),
+      },
+      {
+        path: 'materiel/inventaire',
+        title: 'Inventaire du matériel',
+        canActivate: [permissionsGuard(['materiel:modifier'])],
+        loadComponent: () => import('./features/materiel/inventaire').then((m) => m.InventaireMaterielPage),
+      },
+      {
+        path: 'materiel/nouveau',
+        title: 'Nouveau matériel',
+        canActivate: [permissionsGuard(['materiel:creer'])],
+        loadComponent: () => import('./features/materiel/materiel-nouveau').then((m) => m.MaterielNouveauPage),
+      },
+      {
+        path: 'materiel/:id',
+        title: 'Fiche du matériel',
+        canActivate: [permissionsGuard(['materiel:consulter'])],
+        loadComponent: () => import('./features/materiel/materiel-fiche').then((m) => m.MaterielFichePage),
+      },
+      {
         path: 'protocoles',
         title: 'Protocoles et signatures',
         canActivate: [permissionsGuard(['protocoles:consulter'])],
@@ -496,7 +520,7 @@ export const routes: Routes = [
       },
       {
         path: 'locatif/immeubles/nouveau',
-        title: 'Nouvelle propriété',
+        title: 'Nouvel immeuble',
         canDeactivate: [modificationsNonEnregistreesGuard],
         canActivate: [permissionsGuard(['locatif:creer'])],
         loadComponent: () =>
@@ -521,7 +545,7 @@ export const routes: Routes = [
       },
       {
         path: 'locatif/immeubles',
-        title: 'Propriétés',
+        title: 'Immeubles',
         canActivate: [permissionsGuard(['locatif:consulter'])],
         loadComponent: () =>
           import('./features/locatif/immeubles/immeubles').then((m) => m.Immeubles),

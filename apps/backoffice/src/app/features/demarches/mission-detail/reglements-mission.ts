@@ -164,12 +164,12 @@ const STATUTS: Record<StatutReglement, { libelle: string; pill: string }> = {
   `,
   styles: `
     .reglements__resume { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin: 4px 0 16px; }
-    .reglements__resume > div { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border: 1px solid var(--mtm-border, #e5e7eb); border-radius: 10px; background: var(--mtm-surface, #fff); }
-    .reglements__resume span { font-size: 0.75rem; color: var(--mtm-text-muted, #6b7280); }
-    .reglements__resume strong { font-size: 1.02rem; }
+    .reglements__resume > div { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border: 1px solid var(--mtm-border, #e5e7eb); border-radius: var(--mtm-radius-md); background: var(--mtm-surface, #fff); }
+    .reglements__resume span { font-size: var(--mtm-fs-xs); color: var(--mtm-text-muted, #6b7280); }
+    .reglements__resume strong { font-size: var(--mtm-fs-lg); }
     .reglements__resume em { align-self: flex-start; margin-top: 4px; font-style: normal; }
     .reglements__solde { border-color: var(--mtm-primary, #1a4974) !important; }
-    .reglements__facture { margin: 0 0 14px; font-size: 0.88rem; color: var(--mtm-text-muted, #6b7280); }
+    .reglements__facture { margin: 0 0 14px; font-size: var(--mtm-fs-md); color: var(--mtm-text-muted, #6b7280); }
     @media (max-width: 900px) { .reglements__resume { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   `,
 })

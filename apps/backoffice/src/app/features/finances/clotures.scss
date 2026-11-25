@@ -36,7 +36,7 @@
   }
 
   dt {
-    font-size: 0.76rem;
+    font-size: var(--mtm-fs-xs);
     color: var(--mtm-text-muted);
   }
 
@@ -58,7 +58,7 @@
 
 .ligne__meta {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: var(--mtm-fs-sm);
   color: var(--mtm-text-muted);
 }
 

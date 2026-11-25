@@ -38,17 +38,17 @@ export function ecrireVue(cle: string, vue: Vue): void {
       display: inline-flex;
       padding: 3px;
       border: 1px solid var(--mtm-border);
-      border-radius: 10px;
+      border-radius: var(--mtm-radius-md);
       background: var(--mtm-bg-hover);
     }
     button {
       padding: 6px 14px;
       border: 0;
-      border-radius: 8px;
+      border-radius: var(--mtm-radius-md);
       background: transparent;
       color: var(--mtm-text-muted);
       font: inherit;
-      font-size: 0.85rem;
+      font-size: var(--mtm-fs-md);
       cursor: pointer;
     }
     button.is-actif {

@@ -80,10 +80,23 @@ export function variation(actuel: number, precedent: number): number | null {
   return Math.round(((actuel - precedent) / Math.abs(precedent)) * 100);
 }
 
+/**
+ * Au-delà de +500 %, un pourcentage ne se lit plus (« +4333 % » quand la période précédente était presque vide) :
+ * on dit alors « × 44 ».
+ */
+const SEUIL_MULTIPLE = 500;
+
+function multiple(actuel: number, precedent: number): number | null {
+  const v = variation(actuel, precedent);
+  return v !== null && v > SEUIL_MULTIPLE && precedent > 0 ? Math.round(actuel / precedent) : null;
+}
+
 export function variationDite(actuel: number, precedent: number): string {
   const v = variation(actuel, precedent);
   if (v === null) return 'nouveau';
   if (v === 0) return 'stable';
+  const fois = multiple(actuel, precedent);
+  if (fois !== null) return `× ${fois}`;
   return `${v > 0 ? '+' : ''}${v} %`;
 }
 
@@ -92,6 +105,8 @@ export function comparaisonDite(actuel: number, precedent: number): string {
   const v = variation(actuel, precedent);
   if (v === null) return 'Rien sur la période précédente : pas de comparaison';
   if (v === 0) return 'Stable par rapport à la période précédente';
+  const fois = multiple(actuel, precedent);
+  if (fois !== null) return `Environ ${fois} fois la période précédente`;
   return `${v > 0 ? '+' : ''}${v} % par rapport à la période précédente`;
 }
 

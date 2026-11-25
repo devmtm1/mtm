@@ -12,7 +12,7 @@
 .cell-sub {
   display: block;
   color: var(--mtm-text-muted);
-  font-size: 0.74rem;
+  font-size: var(--mtm-fs-xs);
 }
 
 .status-pill + .status-pill {
@@ -31,7 +31,7 @@ app-pagination {
 }
 
 .protocoles__suivi {
-  margin: 0 0 16px;
+  margin: 0;
   color: var(--mtm-text-muted);
-  font-size: 0.85rem;
+  font-size: var(--mtm-fs-sm);
 }

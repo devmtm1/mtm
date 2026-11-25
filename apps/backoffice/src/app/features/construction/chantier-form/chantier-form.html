@@ -14,7 +14,8 @@
   </header>
   <p class="form-legend"><span aria-hidden="true">*</span> champ obligatoire</p>
 
-  <form [formGroup]="form" class="page-card form-block" (ngSubmit)="submit()">
+  <form [formGroup]="form" class="form-body" (ngSubmit)="submit()">
+    <section class="page-card form-block">
     <div class="form-block__head">
       <h2>Le projet</h2>
       <p>Le client, ce qui sera construit, et sur quel terrain.</p>
@@ -68,6 +69,9 @@
       </mat-form-field>
     </div>
 
+    </section>
+
+    <section class="page-card form-block">
     <div class="form-block__head">
       <h2>Où</h2>
       <p>Localisation et gabarit de l’ouvrage.</p>
@@ -99,6 +103,9 @@
       </mat-form-field>
     </div>
 
+    </section>
+
+    <section class="page-card form-block">
     <div class="form-block__head">
       <h2>Devis et budget</h2>
       <p>Le devis engage le client ; le budget sert de base aux alertes.</p>
@@ -117,6 +124,9 @@
       </mat-form-field>
     </div>
 
+    </section>
+
+    <section class="page-card form-block">
     <div class="form-block__head">
       <h2>Planning</h2>
       <p>Les dates prévues, et le déroulé des travaux.</p>
@@ -147,6 +157,8 @@
         <textarea matInput rows="2" formControlName="notes"></textarea>
       </mat-form-field>
     </div>
+
+    </section>
 
     <div class="form-actions">
       <button mat-stroked-button type="button" (click)="retour()">Annuler</button>

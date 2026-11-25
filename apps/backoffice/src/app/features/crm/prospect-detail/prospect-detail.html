@@ -10,7 +10,7 @@
   </section>
 } @else if (prospect(); as p) {
   <section class="detail-page" [class.is-busy]="busy()">
-    <app-fiche-entete titre="Fiche du prospect" [sousTitre]="sousTitre()" (retour)="goBack()">
+    <app-fiche-entete surtitre="Fiche du prospect" [titre]="name()" [sousTitre]="sousTitre()" (retour)="goBack()">
       @if ((!clientServices() && !isClosed() && !isLost() && needsRelance()) || overdueCount() > 0) {
         <p alertes class="alertes-fiche">
           @if (!clientServices() && !isClosed() && !isLost() && needsRelance()) {

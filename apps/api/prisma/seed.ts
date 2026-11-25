@@ -31,6 +31,7 @@ const PHASE_1_RESOURCES = [
   'proprietaires',
   'ventes',
   'protocoles',
+  'materiel',
   'clients',
   'demarches',
   'locatif',
@@ -633,6 +634,12 @@ async function main(): Promise<void> {
       'protocoles:modifier',
       'protocoles:valider',
       'protocoles:exporter',
+      // Patrimoine matériel : la Direction contrôle, fait sortir un objet du parc et exporte.
+      'materiel:consulter',
+      'materiel:creer',
+      'materiel:modifier',
+      'materiel:valider',
+      'materiel:exporter',
     ],
     // Le secrétariat crée les dossiers, dépose les protocoles et les pièces, fait avancer les statuts. Il ne supprime rien
     // (aucune permission « supprimer ») et ne valide pas : le contrôle final revient à la Direction.
@@ -644,6 +651,10 @@ async function main(): Promise<void> {
       'protocoles:consulter',
       'protocoles:creer',
       'protocoles:modifier',
+      // Le secrétariat tient le registre du matériel (sans sortie du parc : c'est une décision de la Direction).
+      'materiel:consulter',
+      'materiel:creer',
+      'materiel:modifier',
     ],
   };
   for (const [roleName, permissionNames] of Object.entries(

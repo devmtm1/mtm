@@ -1,3 +1,6 @@
+// Plusieurs comptes se connectent à la suite : on relève la limite de connexions.
+process.env.LOGIN_RATE_LIMIT_MAX = '100';
+
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { createE2eApp, type E2eContext } from './helpers/e2e-app';
@@ -394,9 +397,9 @@ describeE2e('Protocoles et signatures (e2e)', () => {
       },
     });
     const references = async () =>
-      ((await get(tokenDirection, '/alertes')).body as { reference: string }[]).map(
-        (alerte) => alerte.reference,
-      );
+      (
+        (await get(tokenDirection, '/alertes')).body as { reference: string }[]
+      ).map((alerte) => alerte.reference);
 
     // En production la migration fixe ce réglage au jour de la mise en service (vérifié à part, sur une base neuve) ;
     // ici le harnais vide les tables, on le pose donc comme la migration le ferait.
@@ -493,5 +496,716 @@ describeE2e('Protocoles et signatures (e2e)', () => {
     const vide = await portail('autre@client.test');
     expect(vide.status).toBe(200);
     expect(JSON.stringify(vide.body)).not.toContain('VTE-E2E-1');
+  });
+
+  it('le droit « consulter les protocoles » ouvre les dossiers, pas la supervision commerciale', async () => {
+    const appel = (chemin: string) =>
+      request(app.getHttpServer())
+        .get(`/api${chemin}`)
+        .set('Authorization', `Bearer ${tokenSecretaire}`);
+
+    // Elle ouvre bien tous les dossiers de vente (c'est son travail)…
+    const dossiers = await appel('/ventes');
+    expect(dossiers.status).toBe(200);
+    expect(JSON.stringify(dossiers.body)).toContain('VTE-E2E-1');
+
+    // …mais pas la performance d'un autre commercial ni les demandes de réservation du site.
+    const autreCommercial = '3f2c7d9e-6b1a-4c55-9a0e-1d2e3f4a5b6c';
+    expect(
+      (await appel(`/ventes/dashboard/commercial/${autreCommercial}`)).status,
+    ).toBe(403);
+    const demandes = await appel('/ventes/reservation-requests');
+    expect(demandes.status).toBe(200);
+    expect(demandes.body).toEqual([]);
+  });
+
+  it('prévient le client dans son espace dès que son protocole lui est envoyé (une seule fois)', async () => {
+    const { prisma } = context;
+    const client = await prisma.user.findUniqueOrThrow({
+      where: { email: 'awa.diop@client.test' },
+    });
+    const creation = await request(app.getHttpServer())
+      .post('/api/protocoles')
+      .set('Authorization', `Bearer ${tokenSecretaire}`)
+      .send({ dossierVenteId: dossierId, titre: 'Protocole à signer par Awa' });
+    const id = creation.body.id as string;
+    expect((await deposer(tokenSecretaire, id, 'prepare')).status).toBe(201);
+    expect(
+      (await statut(tokenSecretaire, id, { statut: 'prepare_a_verifier' }))
+        .status,
+    ).toBe(200);
+    // Préparé : le client n'est pas encore prévenu.
+    expect(
+      await prisma.notification.count({
+        where: { userId: client.id, type: 'protocole_a_signer', entityId: id },
+      }),
+    ).toBe(0);
+    expect(
+      (
+        await statut(tokenSecretaire, id, {
+          statut: 'envoye',
+          dateEnvoi: '2026-11-20',
+          moyenEnvoi: 'whatsapp',
+        })
+      ).status,
+    ).toBe(200);
+    const notifications = await prisma.notification.findMany({
+      where: { userId: client.id, type: 'protocole_a_signer', entityId: id },
+    });
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0]).toMatchObject({
+      titre: 'Votre protocole est prêt à signer',
+      lien: '/espace-client/dossiers',
+    });
+    // Un autre client n'est pas prévenu.
+    const autre = await prisma.user.findUniqueOrThrow({
+      where: { email: 'autre@client.test' },
+    });
+    expect(
+      await prisma.notification.count({
+        where: { userId: autre.id, type: 'protocole_a_signer' },
+      }),
+    ).toBe(0);
+  });
+
+  describe('formats de fichier acceptés', () => {
+    // De vrais en-têtes de fichier : le serveur contrôle le contenu, pas seulement l'extension.
+    const FORMATS: [string, string, Buffer][] = [
+      ['PDF', 'application/pdf', PDF],
+      [
+        'JPEG (photo ou scan)',
+        'image/jpeg',
+        Buffer.from([
+          0xff, 0xd8, 0xff, 0xe0, 0, 16, 0x4a, 0x46, 0x49, 0x46, 0, 1,
+        ]),
+      ],
+      [
+        'PNG',
+        'image/png',
+        Buffer.from([
+          0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49,
+          0x48, 0x44, 0x52,
+        ]),
+      ],
+      [
+        'WebP',
+        'image/webp',
+        Buffer.concat([
+          Buffer.from('RIFF'),
+          Buffer.from([0x1a, 0, 0, 0]),
+          Buffer.from('WEBPVP8 '),
+        ]),
+      ],
+      [
+        'Word (.docx)',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        Buffer.from([0x50, 0x4b, 0x03, 0x04, 0x14, 0, 0, 0]),
+      ],
+    ];
+
+    const nouveauProtocole = async (titre: string) => {
+      const creation = await request(app.getHttpServer())
+        .post('/api/protocoles')
+        .set('Authorization', `Bearer ${tokenSecretaire}`)
+        .send({ dossierVenteId: dossierId, titre });
+      expect(creation.status).toBe(201);
+      return creation.body.id as string;
+    };
+    const deposerFichier = (
+      id: string,
+      role: 'prepare' | 'signe',
+      contenu: Buffer,
+      nom: string,
+      type: string,
+    ) =>
+      request(app.getHttpServer())
+        .post(`/api/protocoles/${id}/documents`)
+        .set('Authorization', `Bearer ${tokenSecretaire}`)
+        .field('role', role)
+        .attach('file', contenu, { filename: nom, contentType: type });
+
+    it.each(FORMATS)(
+      'accepte le dépôt du protocole préparé en %s',
+      async (_nom, type, contenu) => {
+        const id = await nouveauProtocole(`Format ${type}`);
+        const reponse = await deposerFichier(
+          id,
+          'prepare',
+          contenu,
+          'protocole',
+          type,
+        );
+        expect(reponse.status).toBe(201);
+        expect(reponse.body.documentPrepare).toBeTruthy();
+      },
+    );
+
+    it('accepte une copie signée prise en photo (JPEG) : le cas le plus courant sur le terrain', async () => {
+      const id = await nouveauProtocole('Copie signée en photo');
+      const [, , jpeg] = FORMATS[1];
+      expect(
+        (
+          await deposerFichier(
+            id,
+            'prepare',
+            PDF,
+            'protocole.pdf',
+            'application/pdf',
+          )
+        ).status,
+      ).toBe(201);
+      for (const etape of [
+        { statut: 'prepare_a_verifier' },
+        { statut: 'envoye', dateEnvoi: '2026-11-10', moyenEnvoi: 'whatsapp' },
+      ]) {
+        expect((await statut(tokenSecretaire, id, etape)).status).toBe(200);
+      }
+      // Sans copie signée, « signé » reste refusé…
+      expect(
+        (
+          await statut(tokenSecretaire, id, {
+            statut: 'signe_client',
+            dateReceptionSignee: '2026-11-12',
+          })
+        ).status,
+      ).toBe(400);
+      // …avec la photo de la copie signée, il passe.
+      expect(
+        (await deposerFichier(id, 'signe', jpeg, 'signe.jpg', 'image/jpeg'))
+          .status,
+      ).toBe(201);
+      const signe = await statut(tokenSecretaire, id, {
+        statut: 'signe_client',
+        dateReceptionSignee: '2026-11-12',
+      });
+      expect(signe.status).toBe(200);
+      expect(signe.body.statut).toBe('signe_client');
+    });
+
+    it('refuse un fichier dont le contenu ne correspond pas à son type, et les types inconnus', async () => {
+      const id = await nouveauProtocole('Fichiers refusés');
+      const fauxJpeg = await deposerFichier(
+        id,
+        'prepare',
+        Buffer.from('ceci est du texte'),
+        'faux.jpg',
+        'image/jpeg',
+      );
+      expect(fauxJpeg.status).toBe(400);
+      const executable = await deposerFichier(
+        id,
+        'prepare',
+        Buffer.from('MZ '),
+        'virus.exe',
+        'application/x-msdownload',
+      );
+      expect(executable.status).toBe(400);
+      const texte = await deposerFichier(
+        id,
+        'prepare',
+        Buffer.from('bonjour'),
+        'note.txt',
+        'text/plain',
+      );
+      expect(texte.status).toBe(400);
+    });
+  });
+
+  describe('autres dossiers : bail locatif et chantier', () => {
+    let bailId: string;
+    let chantierId: string;
+
+    beforeAll(async () => {
+      const { data, prisma } = context;
+      const proprietaire = await data.seedProprietaire();
+      const bien = await prisma.bienLocatif.create({
+        data: {
+          referenceInterne: 'BL-PROTO-1',
+          proprietaireId: proprietaire.id,
+          type: 'appartement',
+          adresse: 'Rue des Almadies',
+        },
+      });
+      const locataire = await prisma.locataire.create({
+        data: { firstName: 'Moussa', lastName: 'Ndiaye', phone: '770000000' },
+      });
+      bailId = (
+        await prisma.bailLocatif.create({
+          data: {
+            referenceInterne: 'B-PROTO-1',
+            bienLocatifId: bien.id,
+            locataireId: locataire.id,
+            loyerMensuel: 150_000,
+            dateDebut: new Date('2026-01-01T00:00:00Z'),
+          },
+        })
+      ).id;
+      const client = await prisma.prospect.create({
+        data: { nom: 'Fall', prenom: 'Ibou', telephone: '779999999' },
+      });
+      chantierId = (
+        await prisma.projetConstruction.create({
+          data: {
+            referenceInterne: 'CH-PROTO-1',
+            clientId: client.id,
+            intitule: 'Villa Fall',
+            typeProjet: 'villa',
+          },
+        })
+      ).id;
+    });
+
+    const creer = (corps: Record<string, unknown>) =>
+      request(app.getHttpServer())
+        .post('/api/protocoles')
+        .set('Authorization', `Bearer ${tokenSecretaire}`)
+        .send(corps);
+
+    it('exige un seul dossier : ni aucun, ni plusieurs', async () => {
+      expect((await creer({ titre: 'Sans dossier' })).status).toBe(400);
+      expect(
+        (await creer({ dossierVenteId: dossierId, bailLocatifId: bailId }))
+          .status,
+      ).toBe(400);
+    });
+
+    it('suit un protocole de bail jusqu’à la signature, avec sa copie signée', async () => {
+      const cree = await creer({
+        bailLocatifId: bailId,
+        titre: 'Protocole de bail',
+      });
+      expect(cree.status).toBe(201);
+      expect(cree.body.dossier).toMatchObject({
+        typeDossier: 'bail',
+        reference: 'B-PROTO-1',
+        client: 'Moussa Ndiaye',
+        montantConvenu: null,
+      });
+      const id = cree.body.id as string;
+      // Sans pièce préparée, on ne peut pas faire vérifier le protocole.
+      expect(
+        (await statut(tokenSecretaire, id, { statut: 'prepare_a_verifier' }))
+          .status,
+      ).toBe(400);
+      const prepare = await deposer(tokenSecretaire, id, 'prepare');
+      expect(prepare.status).toBe(201);
+      expect(prepare.body.documentPrepare.version).toBe(1);
+      for (const etape of [
+        { statut: 'prepare_a_verifier' },
+        { statut: 'envoye', dateEnvoi: '2026-11-10', moyenEnvoi: 'whatsapp' },
+      ]) {
+        expect((await statut(tokenSecretaire, id, etape)).status).toBe(200);
+      }
+      // Envoyé n’est pas signé : la copie signée est exigée.
+      expect(
+        (
+          await statut(tokenSecretaire, id, {
+            statut: 'signe_client',
+            dateReceptionSignee: '2026-11-12',
+          })
+        ).status,
+      ).toBe(400);
+      expect((await deposer(tokenSecretaire, id, 'signe')).status).toBe(201);
+      const signe = await statut(tokenSecretaire, id, {
+        statut: 'signe_client',
+        dateReceptionSignee: '2026-11-12',
+      });
+      expect(signe.status).toBe(200);
+      expect(signe.body.documentSigne).toBeTruthy();
+    });
+
+    it('suit un protocole de chantier et le retrouve par type de dossier', async () => {
+      const cree = await creer({
+        projetConstructionId: chantierId,
+        titre: 'Protocole chantier',
+      });
+      expect(cree.status).toBe(201);
+      expect(cree.body.dossier).toMatchObject({
+        typeDossier: 'chantier',
+        reference: 'CH-PROTO-1',
+        bien: 'Villa Fall',
+      });
+      const chantiers = await get(tokenSecretaire, '?typeDossier=chantier');
+      expect(chantiers.body.items.map((p: { id: string }) => p.id)).toContain(
+        cree.body.id,
+      );
+      expect(
+        chantiers.body.items.every(
+          (p: { dossier: { typeDossier: string } }) =>
+            p.dossier.typeDossier === 'chantier',
+        ),
+      ).toBe(true);
+      const parClient = await get(tokenSecretaire, '?q=Fall');
+      expect(parClient.body.items.map((p: { id: string }) => p.id)).toContain(
+        cree.body.id,
+      );
+      const parBail = await get(tokenSecretaire, `?bailLocatifId=${bailId}`);
+      expect(
+        parBail.body.items.every(
+          (p: { dossier: { typeDossier: string } }) =>
+            p.dossier.typeDossier === 'bail',
+        ),
+      ).toBe(true);
+    });
+
+    it('propose les baux et les chantiers à rattacher, avec recherche', async () => {
+      const baux = await get(
+        tokenSecretaire,
+        '/dossiers-possibles?type=bail&q=Ndiaye',
+      );
+      expect(baux.status).toBe(200);
+      expect(baux.body).toEqual([
+        expect.objectContaining({
+          id: bailId,
+          libelle: expect.stringContaining('B-PROTO-1'),
+        }),
+      ]);
+      const chantiers = await get(
+        tokenSecretaire,
+        '/dossiers-possibles?type=chantier',
+      );
+      expect(chantiers.body.map((c: { id: string }) => c.id)).toContain(
+        chantierId,
+      );
+      expect(
+        (await get(tokenSecretaire, '/dossiers-possibles?type=vente')).status,
+      ).toBe(400);
+      expect(
+        (await get(tokenSansDroit, '/dossiers-possibles?type=bail')).status,
+      ).toBe(403);
+    });
+
+    it('refuse un bail ou un chantier inconnu', async () => {
+      const inconnu = '00000000-0000-4000-8000-000000000000';
+      expect((await creer({ bailLocatifId: inconnu })).status).toBe(404);
+      expect((await creer({ projetConstructionId: inconnu })).status).toBe(404);
+    });
+  });
+
+  describe('acceptation en ligne par le client', () => {
+    let tokenClient: string;
+    let tokenAutreClient: string;
+    let protocoleId: string;
+
+    const reglage = (actif: boolean) =>
+      context.prisma.systemSetting.upsert({
+        where: { key: 'protocoles.signatureEnLigne' },
+        update: { value: actif },
+        create: { key: 'protocoles.signatureEnLigne', value: actif },
+      });
+    const accepter = (
+      token: string,
+      id: string,
+      corps: Record<string, unknown>,
+    ) =>
+      request(app.getHttpServer())
+        .post(`/api/protocoles/client/${id}/accepter`)
+        .set('Authorization', `Bearer ${token}`)
+        .set('User-Agent', 'Navigateur-de-test')
+        .send(corps);
+    const portail = async () =>
+      (
+        await request(app.getHttpServer())
+          .get('/api/ventes/client/portal')
+          .set('Authorization', `Bearer ${tokenClient}`)
+      ).body[0].protocoles as {
+        id: string;
+        etape: string;
+        peutAccepterEnLigne: boolean;
+        documentUrl: string | null;
+      }[];
+
+    beforeAll(async () => {
+      const { prisma, data } = context;
+      const roleClient = await data.seedRoleWithPermissions(
+        'client_en_ligne',
+        [],
+      );
+      const prospect = await prisma.prospect.create({
+        data: { nom: 'Ba', prenom: 'Fatou', telephone: '772222222' },
+      });
+      const dossier = await prisma.dossierVente.create({
+        data: {
+          prospectId: prospect.id,
+          referenceInterne: 'VTE-LIGNE-1',
+          prixVente: 5_000_000,
+          statut: 'reserve',
+        },
+      });
+      const client = await data.seedUser({
+        email: 'fatou.ba@client.test',
+        password: PASSWORD,
+        firstName: 'Fatou',
+        clientProspectId: prospect.id,
+      });
+      await data.linkUserRole(client.id, roleClient.id);
+      const autre = await prisma.prospect.create({
+        data: { nom: 'Sow', prenom: 'Omar', telephone: '773333333' },
+      });
+      const autreUser = await data.seedUser({
+        email: 'omar.sow@client.test',
+        password: PASSWORD,
+        firstName: 'Omar',
+        clientProspectId: autre.id,
+      });
+      await data.linkUserRole(autreUser.id, roleClient.id);
+      tokenClient = await login('fatou.ba@client.test');
+      tokenAutreClient = await login('omar.sow@client.test');
+
+      const cree = await request(app.getHttpServer())
+        .post('/api/protocoles')
+        .set('Authorization', `Bearer ${tokenSecretaire}`)
+        .send({
+          dossierVenteId: dossier.id,
+          titre: 'Protocole à accepter en ligne',
+        });
+      protocoleId = cree.body.id as string;
+    });
+
+    it('n’offre pas l’acceptation tant que la signature en ligne n’est pas activée', async () => {
+      await deposer(tokenSecretaire, protocoleId, 'prepare');
+      await statut(tokenSecretaire, protocoleId, {
+        statut: 'prepare_a_verifier',
+      });
+      await statut(tokenSecretaire, protocoleId, {
+        statut: 'envoye',
+        dateEnvoi: '2026-11-10',
+        moyenEnvoi: 'email',
+      });
+      const protocole = (await portail()).find((p) => p.id === protocoleId);
+      expect(protocole?.etape).toBe('a_signer');
+      expect(protocole?.peutAccepterEnLigne).toBe(false);
+      expect(protocole?.documentUrl).toBeTruthy();
+      const refus = await accepter(tokenClient, protocoleId, {
+        nom: 'Fatou Ba',
+        accepte: true,
+      });
+      expect(refus.status).toBe(403);
+    });
+
+    it('enregistre l’acceptation avec sa preuve et passe le protocole « signé par le client »', async () => {
+      await reglage(true);
+      expect(
+        (await portail()).find((p) => p.id === protocoleId)
+          ?.peutAccepterEnLigne,
+      ).toBe(true);
+      // Le nom est obligatoire, et la case « j’ai lu et j’accepte » aussi.
+      expect(
+        (await accepter(tokenClient, protocoleId, { nom: 'F', accepte: true }))
+          .status,
+      ).toBe(400);
+      expect(
+        (
+          await accepter(tokenClient, protocoleId, {
+            nom: 'Fatou Ba',
+            accepte: false,
+          })
+        ).status,
+      ).toBe(400);
+      // Un autre client ne peut pas accepter à sa place.
+      expect(
+        (
+          await accepter(tokenAutreClient, protocoleId, {
+            nom: 'Omar Sow',
+            accepte: true,
+          })
+        ).status,
+      ).toBe(404);
+
+      const reponse = await accepter(tokenClient, protocoleId, {
+        nom: '  Fatou   Ba ',
+        accepte: true,
+      });
+      expect(reponse.status).toBe(201);
+
+      const detail = await get(tokenSecretaire, `/${protocoleId}`);
+      expect(detail.body.statut).toBe('signe_client');
+      expect(detail.body.acceptationEnLigne).toMatchObject({
+        nom: 'Fatou Ba',
+        appareil: 'Navigateur-de-test',
+      });
+      expect(detail.body.acceptationEnLigne.empreinte).toMatch(
+        /^[0-9a-f]{64}$/,
+      );
+      const historique = JSON.stringify(detail.body.historique);
+      expect(historique).toContain('Accepté en ligne');
+
+      // Une seule acceptation : la deuxième est refusée, et le portail n’offre plus rien.
+      expect(
+        (
+          await accepter(tokenClient, protocoleId, {
+            nom: 'Fatou Ba',
+            accepte: true,
+          })
+        ).status,
+      ).toBe(409);
+      const protocole = (await portail()).find((p) => p.id === protocoleId);
+      expect(protocole?.etape).toBe('signe');
+      expect(protocole?.peutAccepterEnLigne).toBe(false);
+    });
+
+    it('un client de chantier voit son protocole et peut l’accepter en ligne ; un locataire voit celui de son bail', async () => {
+      const { prisma, data } = context;
+      await reglage(true);
+      const roleClient = await data.seedRoleWithPermissions(
+        'client_chantier',
+        [],
+      );
+      const prospect = await prisma.prospect.create({
+        data: { nom: 'Kane', prenom: 'Salif', telephone: '774444444' },
+      });
+      const chantier = await prisma.projetConstruction.create({
+        data: {
+          referenceInterne: 'CH-LIGNE-1',
+          clientId: prospect.id,
+          intitule: 'Villa Kane',
+          typeProjet: 'villa',
+        },
+      });
+      const proprietaire = await data.seedProprietaire();
+      const bien = await prisma.bienLocatif.create({
+        data: {
+          referenceInterne: 'BL-LIGNE-1',
+          proprietaireId: proprietaire.id,
+          type: 'studio',
+          adresse: 'Mermoz',
+        },
+      });
+      const locataire = await prisma.locataire.create({
+        data: { firstName: 'Awa', lastName: 'Gaye' },
+      });
+      const bail = await prisma.bailLocatif.create({
+        data: {
+          referenceInterne: 'B-LIGNE-1',
+          bienLocatifId: bien.id,
+          locataireId: locataire.id,
+          loyerMensuel: 100_000,
+          dateDebut: new Date('2026-01-01T00:00:00Z'),
+        },
+      });
+      const userChantier = await data.seedUser({
+        email: 'salif.kane@client.test',
+        password: PASSWORD,
+        firstName: 'Salif',
+        clientProspectId: prospect.id,
+      });
+      const userLocataire = await data.seedUser({
+        email: 'awa.gaye@client.test',
+        password: PASSWORD,
+        firstName: 'Awa',
+        clientLocataireId: locataire.id,
+      });
+      await data.linkUserRole(userChantier.id, roleClient.id);
+      await data.linkUserRole(userLocataire.id, roleClient.id);
+      const jetonChantier = await login('salif.kane@client.test');
+      const jetonLocataire = await login('awa.gaye@client.test');
+
+      const envoyer = async (corps: Record<string, unknown>) => {
+        const id = (
+          await request(app.getHttpServer())
+            .post('/api/protocoles')
+            .set('Authorization', `Bearer ${tokenSecretaire}`)
+            .send(corps)
+        ).body.id as string;
+        await deposer(tokenSecretaire, id, 'prepare');
+        await statut(tokenSecretaire, id, { statut: 'prepare_a_verifier' });
+        await statut(tokenSecretaire, id, {
+          statut: 'envoye',
+          dateEnvoi: '2026-11-10',
+          moyenEnvoi: 'email',
+        });
+        return id;
+      };
+      const idChantier = await envoyer({
+        projetConstructionId: chantier.id,
+        titre: 'Protocole chantier',
+      });
+      const idBail = await envoyer({
+        bailLocatifId: bail.id,
+        titre: 'Protocole bail',
+      });
+
+      const mes = (jeton: string) =>
+        request(app.getHttpServer())
+          .get('/api/protocoles/client/mes-protocoles')
+          .set('Authorization', `Bearer ${jeton}`);
+      const duChantier = (await mes(jetonChantier)).body as {
+        id: string;
+        peutAccepterEnLigne: boolean;
+        reference: string;
+      }[];
+      expect(duChantier.map((p) => p.id)).toEqual([idChantier]);
+      expect(duChantier[0].peutAccepterEnLigne).toBe(true);
+      expect(
+        ((await mes(jetonLocataire)).body as { id: string }[]).map((p) => p.id),
+      ).toEqual([idBail]);
+      expect(JSON.stringify((await mes(jetonLocataire)).body)).not.toMatch(
+        /moyenEnvoi|a_valider_direction/,
+      );
+
+      // Le locataire ne peut pas accepter le protocole du chantier d'un autre.
+      expect(
+        (
+          await accepter(jetonLocataire, idChantier, {
+            nom: 'Awa Gaye',
+            accepte: true,
+          })
+        ).status,
+      ).toBe(404);
+      expect(
+        (
+          await accepter(jetonChantier, idChantier, {
+            nom: 'Salif Kane',
+            accepte: true,
+          })
+        ).status,
+      ).toBe(201);
+      expect((await get(tokenSecretaire, `/${idChantier}`)).body.statut).toBe(
+        'signe_client',
+      );
+      expect(
+        (
+          await accepter(jetonLocataire, idBail, {
+            nom: 'Awa Gaye',
+            accepte: true,
+          })
+        ).status,
+      ).toBe(201);
+    });
+
+    it('refuse un protocole sans document préparé ou pas encore envoyé', async () => {
+      const { prisma } = context;
+      const dossier = await prisma.dossierVente.findFirstOrThrow({
+        where: { referenceInterne: 'VTE-LIGNE-1' },
+      });
+      const brouillon = await prisma.protocoleDossier.create({
+        data: {
+          dossierVenteId: dossier.id,
+          statut: 'envoye',
+          dateEnvoi: new Date(),
+          moyenEnvoi: 'email',
+        },
+      });
+      // Envoyé « à la main » sans document ni empreinte : rien à accepter.
+      expect(
+        (
+          await accepter(tokenClient, brouillon.id, {
+            nom: 'Fatou Ba',
+            accepte: true,
+          })
+        ).status,
+      ).toBe(409);
+      const preparation = await prisma.protocoleDossier.create({
+        data: { dossierVenteId: dossier.id, statut: 'a_preparer' },
+      });
+      expect(
+        (
+          await accepter(tokenClient, preparation.id, {
+            nom: 'Fatou Ba',
+            accepte: true,
+          })
+        ).status,
+      ).toBe(409);
+    });
   });
 });

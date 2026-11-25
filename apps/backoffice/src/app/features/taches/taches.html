@@ -1,6 +1,7 @@
 <div class="taches-page">
   <header class="page-header">
     <div>
+      <p class="eyebrow">Mon travail</p>
       <h1 class="page-header__title">Tâches</h1>
       <p class="page-header__subtitle">Ce qu’il y a à faire, par qui et pour quand.</p>
     </div>
@@ -80,7 +81,7 @@
       <ul class="liste">
         @for (tache of groupe.taches; track tache.id) {
         <li class="ligne" [class.is-retard]="tache.enRetard" [class.is-fermee]="!ouvrable(tache)">
-          @if (ouvrable(tache) && tache.peutModifier) {
+          @if (ouvrable(tache) && tache.peutModifier && canModify) {
             <button type="button" class="ligne__coche" (click)="terminer(tache, $event)" [attr.aria-label]="'Terminer la tâche ' + tache.titre">
               <svg lucideCheck aria-hidden="true"></svg>
             </button>

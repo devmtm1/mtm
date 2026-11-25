@@ -5,6 +5,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { LucideEye, LucideEyeOff, LucideImageOff, LucidePencil, LucidePlus, LucideTrash2, LucideUpload } from '@lucide/angular';
 import { PolesApiService, type Pole } from '../../../core/services/api/poles-api.service';
 import { SessionService } from '../../../core/services/session.service';
+import { urlSitePublic } from '../../../core/utils/site-public';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { ConfirmService } from '../../../shared/dialogs/confirm-dialog';
 import { PoleEditorDialog } from './pole-editor-dialog';
@@ -39,6 +40,11 @@ export class Poles implements OnInit {
   protected readonly items = signal<Pole[]>([]);
 
   protected readonly unpublished = computed(() => this.items().filter((p) => !p.isActive));
+  /** Les photos fournies avec le site sont des chemins relatifs : on les prend sur le site public. */
+  protected imageSite(adresse: string | null): string | null {
+    return urlSitePublic(adresse);
+  }
+
   protected readonly withoutImage = computed(() => this.items().filter((p) => !p.imageUrl));
 
   ngOnInit(): void {

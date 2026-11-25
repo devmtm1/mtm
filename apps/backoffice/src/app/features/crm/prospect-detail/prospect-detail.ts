@@ -265,12 +265,12 @@ export class ProspectDetail implements OnInit {
       },
     ];
   });
-  /** « Alassane Sow · P-2026-0010 · Vérification foncière » : de quelle fiche il s'agit, sans rouvrir l'identité. */
+  /** « P-2026-0010 · Vérification foncière » : de quelle fiche il s'agit, sans rouvrir l'identité (le nom est le titre de la page). */
   protected readonly sousTitre = computed(() => {
     const p = this.prospect();
     if (!p) return null;
     const etat = this.clientServices() ? this.parcoursSens().label : this.stageLabel(p.statutPipeline);
-    return [this.name(), p.referenceInterne, etat].filter(Boolean).join(' · ');
+    return [p.referenceInterne, etat].filter(Boolean).join(' · ');
   });
   /** Le bouton principal invite à compléter tant qu'il manque des informations. */
   protected readonly libelleEdition = computed(() => {

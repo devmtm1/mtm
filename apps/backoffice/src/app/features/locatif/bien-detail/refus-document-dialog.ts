@@ -27,7 +27,7 @@ import type { Observable } from 'rxjs';
   `,
   styles: `
     .refus-dialog-field { width: 100%; min-width: 340px; }
-    .refus-dialog-hint { margin: 0 0 8px; color: var(--mtm-text-muted, #5f6673); font-size: 0.875rem; }
+    .refus-dialog-hint { margin: 0 0 8px; color: var(--mtm-text-muted, #5f6673); font-size: var(--mtm-fs-md); }
   `,
 })
 export class RefusDocumentDialog {

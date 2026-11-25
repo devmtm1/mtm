@@ -176,12 +176,12 @@ export interface ProgrammeDialogData {
     }
     .programme-dialog__titre {
       margin: 8px 0 0;
-      font-size: 0.95rem;
+      font-size: var(--mtm-fs-md);
     }
     .programme-dialog__aide {
       margin: 0 0 6px;
       color: var(--mtm-text-muted);
-      font-size: 0.84rem;
+      font-size: var(--mtm-fs-sm);
     }
     @media (max-width: 600px) {
       .programme-dialog__ligne {

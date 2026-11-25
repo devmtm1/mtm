@@ -90,10 +90,10 @@ export interface VentePaiementDialogResult {
   `,
   styles: `
     .pay-dialog { display: grid; gap: 12px; min-width: min(520px, calc(100vw - 96px)); }
-    .pay-dialog__intro { margin: 0; color: var(--mtm-text-muted); font-size: 0.86rem; line-height: 1.5; }
-    .pay-dialog__facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 12px; border-radius: 10px; background: var(--mtm-bg-surface); }
-    .pay-dialog__facts dt { color: var(--mtm-text-muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
-    .pay-dialog__facts dd { margin: 2px 0 0; font-size: 0.9rem; font-weight: 700; }
+    .pay-dialog__intro { margin: 0; color: var(--mtm-text-muted); font-size: var(--mtm-fs-md); line-height: 1.5; }
+    .pay-dialog__facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 12px; border-radius: var(--mtm-radius-md); background: var(--mtm-bg-surface); }
+    .pay-dialog__facts dt { color: var(--mtm-text-muted); font-size: var(--mtm-fs-xs); text-transform: uppercase; letter-spacing: 0.04em; }
+    .pay-dialog__facts dd { margin: 2px 0 0; font-size: var(--mtm-fs-md); font-weight: 700; }
     .pay-dialog__facts .is-accent { color: var(--mtm-primary); }
     .pay-dialog__form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 12px; }
     .pay-dialog__wide { grid-column: 1 / -1; }

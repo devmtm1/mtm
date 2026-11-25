@@ -79,6 +79,19 @@ export interface ClientDossierProtocole {
   aide: string;
   dateEnvoi: string | null;
   dateReceptionSignee: string | null;
+  /** Le document à lire avant d'accepter (lien protégé) ; `null` tant qu'il n'est pas prêt. */
+  documentUrl?: string | null;
+  /** Vrai seulement si MTM a activé l'acceptation en ligne et que le document est prêt. */
+  peutAccepterEnLigne?: boolean;
+  accepteLe?: string | null;
+  accepteParNom?: string | null;
+}
+
+/** Protocole d'un bail ou d'un chantier vu par le client (même principe que celui d'une vente). */
+export interface ClientProtocoleAutre extends ClientDossierProtocole {
+  typeDossier: 'bail' | 'chantier' | 'vente';
+  reference: string | null;
+  bien: string | null;
 }
 
 export interface ClientDossier {

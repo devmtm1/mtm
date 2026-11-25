@@ -128,10 +128,10 @@ export class Immeubles implements OnInit {
         ExportListeDialog.open(
           this.dialog,
           sourceDepuisLignes<ImmeubleResume>(
-            { module: 'locatif', titre: 'Propriétés' },
+            { module: 'locatif', titre: 'Immeubles' },
             [
               { libelle: 'Référence', valeur: (i) => i.referenceInterne },
-              { libelle: 'Propriété', valeur: (i) => i.nom },
+              { libelle: 'Immeuble', valeur: (i) => i.nom },
               { libelle: 'Type', valeur: (i) => this.typeLabel(i.type) },
               { libelle: 'Adresse', valeur: (i) => i.adresse },
               { libelle: 'Commune', valeur: (i) => i.commune },

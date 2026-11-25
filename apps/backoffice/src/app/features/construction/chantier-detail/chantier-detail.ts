@@ -23,6 +23,7 @@ import {
   LucideBanknote,
   LucideUserPlus,
   LucideCirclePlay,
+  LucideTrash2,
 } from '@lucide/angular';
 import { MenuActions, type GroupeMenu } from '../../../shared/components/menu-actions/menu-actions';
 import { ConstructionApiService } from '../../../core/services/api/construction-api.service';
@@ -140,6 +141,9 @@ export class ChantierDetailPage implements OnInit {
   );
   protected readonly canPay = computed(() =>
     this.sessionService.hasPermission('construction:payer'),
+  );
+  protected readonly canDelete = computed(() =>
+    this.sessionService.hasPermission('construction:supprimer'),
   );
   protected readonly canPublish = computed(() =>
     this.sessionService.hasPermission('construction:publier'),
@@ -384,6 +388,18 @@ export class ChantierDetailPage implements OnInit {
       actions: [
         { libelle: 'Générer le rapport d’avancement', aide: 'Publié d’office dans l’espace client', icone: LucideFileText, action: () => this.genererRapport() },
         { libelle: 'Faire avancer le chantier', aide: 'Démarrage, suspension, réception, clôture', icone: LucideCirclePlay, action: () => this.changerStatut() },
+      ],
+    },
+    {
+      titre: 'Zone sensible',
+      actions: [
+        this.canDelete() && {
+          libelle: 'Supprimer le chantier',
+          aide: 'Pour un chantier créé par erreur. Impossible dès qu’une dépense est validée : on l’abandonne alors.',
+          icone: LucideTrash2,
+          danger: true,
+          action: () => this.supprimerChantier(),
+        },
       ],
     },
   ]);
@@ -783,6 +799,32 @@ export class ChantierDetailPage implements OnInit {
           this.charger();
         },
         error: (error: unknown) => this.notify.error(error, 'Modification impossible'),
+      });
+  }
+
+  /**
+   * Un chantier créé par erreur se supprime ; dès qu'une dépense est validée, l'API refuse (il s'archive en « abandonné »)
+   * et son message explique pourquoi.
+   */
+  protected supprimerChantier(): void {
+    const nom = this.chantier()?.intitule ?? 'ce chantier';
+    this.confirmer
+      .ask({
+        title: 'Supprimer ce chantier ?',
+        message: `« ${nom} » sera supprimé définitivement, avec son planning, son budget et ses pièces. Cette action ne peut pas être annulée.`,
+        confirmLabel: 'Supprimer définitivement',
+        cancelLabel: 'Conserver le chantier',
+        danger: true,
+      })
+      .subscribe((confirme) => {
+        if (!confirme) return;
+        this.api.remove(this.chantierId).subscribe({
+          next: () => {
+            this.notify.success('Chantier supprimé');
+            this.retour();
+          },
+          error: (error: unknown) => this.notify.error(error, 'Suppression impossible'),
+        });
       });
   }
 

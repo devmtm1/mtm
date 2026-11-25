@@ -27,7 +27,7 @@ import {
 } from '@lucide/angular';
 import { MenuActions, type GroupeMenu } from '../../../shared/components/menu-actions/menu-actions';
 import { CrmApiService } from '../../../core/services/api/crm-api.service';
-import { ProtocolesApiService, STATUTS_SIGNES, type Protocole } from '../../../core/services/api/protocoles-api.service';
+import { ProtocolesApiService, STATUTS_SIGNES, signatureManquante, type Protocole } from '../../../core/services/api/protocoles-api.service';
 import { VentesApiService } from '../../../core/services/api/ventes-api.service';
 import { SessionService } from '../../../core/services/session.service';
 import type { VenteCommission, VenteDetail, VenteEcheance, VenteOptions, VentePaiement, VenteReservation } from '../../../core/models/vente.model';
@@ -127,12 +127,7 @@ export class VenteDetailPage implements OnInit {
   /** Les protocoles du dossier ; `null` tant qu'ils ne sont pas chargés ou si l'utilisateur n'y a pas droit. */
   protected readonly protocoles = signal<Protocole[] | null>(null);
   /** Un paiement est encaissé mais aucun protocole du dossier n'est signé : l'alerte de la page Protocoles, rappelée sur la fiche. */
-  protected readonly signatureManquante = computed(() => {
-    const liste = this.protocoles();
-    const d = this.dossier();
-    if (liste === null || !d || d.statut === 'annule' || !(Number(d.montantPaye) > 0)) return false;
-    return !liste.some((protocole) => STATUTS_SIGNES.includes(protocole.statut));
-  });
+  protected readonly signatureManquante = computed(() => signatureManquante(this.protocoles(), this.dossier()));
   protected readonly canValidate = this.session.hasPermission('ventes:valider');
   protected readonly canPay = this.session.hasPermission('ventes:payer');
   protected readonly canPublish = this.session.hasPermission('ventes:publier');

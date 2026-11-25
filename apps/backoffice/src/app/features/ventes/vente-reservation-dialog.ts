@@ -68,7 +68,7 @@ export interface VenteReservationDialogResult {
   `,
   styles: `
     .res-dialog { display: grid; gap: 12px; min-width: min(520px, calc(100vw - 96px)); }
-    .res-dialog__intro { margin: 0; color: var(--mtm-text-muted); font-size: 0.86rem; line-height: 1.5; }
+    .res-dialog__intro { margin: 0; color: var(--mtm-text-muted); font-size: var(--mtm-fs-md); line-height: 1.5; }
     .res-dialog__form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 12px; }
     .res-dialog__wide { grid-column: 1 / -1; }
     @media (max-width: 560px) { .res-dialog__form { grid-template-columns: minmax(0, 1fr); } }

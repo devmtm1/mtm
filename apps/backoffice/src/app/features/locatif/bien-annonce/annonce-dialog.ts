@@ -168,7 +168,7 @@ const nombre = (valeur: number | string | null): number | undefined => {
     .annonce-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; min-width: min(640px, calc(100vw - 96px)); }
     .annonce-wide { grid-column: 1 / -1; }
     .annonce-heures { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .annonce-hint { margin: 0 0 4px; color: var(--mtm-text-muted); font-size: 0.84rem; line-height: 1.5; }
+    .annonce-hint { margin: 0 0 4px; color: var(--mtm-text-muted); font-size: var(--mtm-fs-sm); line-height: 1.5; }
     @media (max-width: 640px) { .annonce-grid { grid-template-columns: 1fr; } }
   `,
 })

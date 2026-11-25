@@ -87,12 +87,12 @@ export interface SortieDialogData {
   styles: `
     .sortie-dialog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; min-width: 460px; }
     .wide { grid-column: 1 / -1; }
-    .sortie-dialog__calcul { background: var(--mtm-primary-subtle); border-radius: 8px; padding: 12px 14px; }
-    .sortie-dialog__calcul h3 { margin: 0 0 8px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .sortie-dialog__calcul { background: var(--mtm-primary-subtle); border-radius: var(--mtm-radius-md); padding: 12px 14px; }
+    .sortie-dialog__calcul h3 { margin: 0 0 8px; font-size: var(--mtm-fs-sm); text-transform: uppercase; letter-spacing: 0.04em; }
     .sortie-dialog__calcul dl { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; margin: 0; }
     .sortie-dialog__calcul div { display: flex; justify-content: space-between; gap: 8px; }
-    .sortie-dialog__calcul dt { color: var(--mtm-text-muted); font-size: 0.78rem; }
-    .sortie-dialog__calcul dd { margin: 0; font-weight: 600; font-size: 0.82rem; }
+    .sortie-dialog__calcul dt { color: var(--mtm-text-muted); font-size: var(--mtm-fs-xs); }
+    .sortie-dialog__calcul dd { margin: 0; font-weight: 600; font-size: var(--mtm-fs-sm); }
   `,
 })
 export class SortieDialog {

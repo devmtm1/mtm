@@ -10,7 +10,7 @@
   gap: 6px;
   width: fit-content;
   color: var(--mtm-text-muted);
-  font-size: 0.88rem;
+  font-size: var(--mtm-fs-md);
   text-decoration: none;
 
   svg {
@@ -30,7 +30,7 @@
   gap: 6px 18px;
   margin: 6px 0 0;
   color: var(--mtm-text-muted);
-  font-size: 0.88rem;
+  font-size: var(--mtm-fs-md);
 
   span {
     display: inline-flex;
@@ -57,7 +57,7 @@
     h2 {
       margin: 0;
       font-family: var(--mtm-font-display);
-      font-size: 1.05rem;
+      font-size: var(--mtm-fs-lg);
       font-weight: 700;
     }
   }
@@ -65,12 +65,12 @@
   &__taux {
     margin: 0;
     color: var(--mtm-text-muted);
-    font-size: 0.9rem;
+    font-size: var(--mtm-fs-md);
 
     strong {
       color: var(--mtm-text-dark);
       font-family: var(--mtm-font-display);
-      font-size: 1.7rem;
+      font-size: var(--mtm-fs-3xl);
     }
   }
 }
@@ -83,7 +83,7 @@
   padding: 0;
   list-style: none;
   color: var(--mtm-text-muted);
-  font-size: 0.84rem;
+  font-size: var(--mtm-fs-sm);
 
   strong {
     margin-left: 4px;
@@ -130,7 +130,7 @@
 
   dt {
     color: var(--mtm-text-muted);
-    font-size: 0.76rem;
+    font-size: var(--mtm-fs-xs);
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -138,7 +138,7 @@
 
   dd {
     margin: 2px 0 0;
-    font-size: 0.92rem;
+    font-size: var(--mtm-fs-md);
     font-weight: 600;
     font-variant-numeric: tabular-nums;
     overflow-wrap: anywhere;
@@ -200,7 +200,7 @@
 
   .compte-filtre {
     color: var(--mtm-text-muted);
-    font-size: 0.84rem;
+    font-size: var(--mtm-fs-sm);
   }
 }
 
@@ -215,7 +215,7 @@
   display: flex;
   height: 8px;
   overflow: hidden;
-  border-radius: 999px;
+  border-radius: var(--mtm-radius-pill);
   background: var(--mtm-bg-hover);
 
   &__vendus {
@@ -241,7 +241,7 @@
   gap: 8px 16px;
   margin: 8px 20px 0;
   padding: 10px 14px;
-  border-radius: 10px;
+  border-radius: var(--mtm-radius-md);
   background: var(--mtm-primary-subtle);
 
   &__actions {
@@ -258,7 +258,7 @@
     min-width: 220px;
     padding: 6px 10px;
     border: 1px solid var(--mtm-border);
-    border-radius: 8px;
+    border-radius: var(--mtm-radius-md);
     background: var(--mtm-card-bg);
   }
 }
@@ -356,13 +356,13 @@
 
 /* Les montants en FCFA sont longs : un cran de moins que les nombres de lots, pour ne pas toucher l'icône. */
 .montants .kpi__body strong {
-  font-size: 1.2rem;
+  font-size: var(--mtm-fs-xl);
   white-space: nowrap;
 }
 
 .autres-dossiers {
   color: var(--mtm-text-muted);
-  font-size: 0.74rem;
+  font-size: var(--mtm-fs-xs);
 }
 
 .cellule-client {
@@ -372,7 +372,7 @@
 
   small {
     color: var(--mtm-text-muted);
-    font-size: 0.74rem;
+    font-size: var(--mtm-fs-xs);
   }
 }
 
@@ -384,7 +384,7 @@
   gap: 10px 14px;
   padding: 12px 16px;
   border: 1px solid var(--mtm-warning);
-  border-radius: 12px;
+  border-radius: var(--mtm-radius-lg);
   background: var(--mtm-warning-bg);
 
   svg {
@@ -397,7 +397,7 @@
   p {
     flex: 1 1 320px;
     margin: 0;
-    font-size: 0.9rem;
+    font-size: var(--mtm-fs-md);
   }
 }
 

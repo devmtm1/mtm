@@ -79,21 +79,21 @@ export interface SalesDossierDialogData {
   `,
   styles: `
     .dossier-dialog { display: grid; gap: 12px; min-width: min(520px, calc(100vw - 96px)); }
-    .dossier-dialog__intro { margin: 0; color: var(--mtm-text-muted); font-size: 0.86rem; line-height: 1.5; }
-    .dossier-dialog__empty { margin: 0; padding: 14px; border-radius: 10px; background: var(--mtm-bg-surface); color: var(--mtm-text-muted); font-size: 0.84rem; text-align: center; }
-    .dossier-dialog__warn { margin: 0; padding: 10px 12px; border-radius: 8px; background: var(--mtm-warning-bg); color: var(--mtm-warning); font-size: 0.82rem; }
+    .dossier-dialog__intro { margin: 0; color: var(--mtm-text-muted); font-size: var(--mtm-fs-md); line-height: 1.5; }
+    .dossier-dialog__empty { margin: 0; padding: 14px; border-radius: var(--mtm-radius-md); background: var(--mtm-bg-surface); color: var(--mtm-text-muted); font-size: var(--mtm-fs-sm); text-align: center; }
+    .dossier-dialog__warn { margin: 0; padding: 10px 12px; border-radius: var(--mtm-radius-md); background: var(--mtm-warning-bg); color: var(--mtm-warning); font-size: var(--mtm-fs-sm); }
     .dossier-dialog__list { display: grid; gap: 6px; max-height: 240px; margin: 0; padding: 2px; overflow-y: auto; list-style: none; }
     .dossier-dialog__form { display: grid; gap: 4px; }
     .pick-option {
       display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; padding: 8px 12px;
-      border: 1px solid var(--mtm-border); border-radius: 10px; background: var(--mtm-card-bg); font: inherit; text-align: left; cursor: pointer;
+      border: 1px solid var(--mtm-border); border-radius: var(--mtm-radius-md); background: var(--mtm-card-bg); font: inherit; text-align: left; cursor: pointer;
     }
     .pick-option:hover { border-color: var(--mtm-primary); }
     .pick-option.is-selected { border-color: var(--mtm-primary); background: var(--mtm-primary-subtle); }
     .pick-option__main { display: grid; gap: 2px; min-width: 0; }
-    .pick-option__main strong { font-size: 0.86rem; }
-    .pick-option__main small { color: var(--mtm-text-muted); font-size: 0.76rem; }
-    .pick-option__aside { font-size: 0.84rem; font-weight: 700; color: var(--mtm-primary); white-space: nowrap; }
+    .pick-option__main strong { font-size: var(--mtm-fs-md); }
+    .pick-option__main small { color: var(--mtm-text-muted); font-size: var(--mtm-fs-xs); }
+    .pick-option__aside { font-size: var(--mtm-fs-sm); font-weight: 700; color: var(--mtm-primary); white-space: nowrap; }
     .w-full { width: 100%; }
   `,
 })

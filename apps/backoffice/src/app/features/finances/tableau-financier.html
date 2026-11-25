@@ -122,35 +122,33 @@
     }
 
     <section class="page-card filtres-direction" aria-label="Filtres">
-      <label>
-        Activité
-        <select #activite (change)="filtrer(activite.value, mode.value)">
-          <option value="">Toutes</option>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Activité</mat-label>
+        <mat-select [value]="activiteFiltre()" (selectionChange)="filtrer($event.value, modeFiltre())">
+          <mat-option value="">Toutes</mat-option>
           @for (a of activites; track a.code) {
-            <option [value]="a.code" [selected]="activiteFiltre() === a.code">{{ a.label }}</option>
+            <mat-option [value]="a.code">{{ a.label }}</mat-option>
           }
-        </select>
-      </label>
-      <label>
-        Moyen de paiement
-        <select #mode (change)="filtrer(activite.value, mode.value)">
-          <option value="">Tous</option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Moyen de paiement</mat-label>
+        <mat-select [value]="modeFiltre()" (selectionChange)="filtrer(activiteFiltre(), $event.value)">
+          <mat-option value="">Tous</mat-option>
           @for (m of modes; track m.valeur) {
-            <option [value]="m.valeur" [selected]="modeFiltre() === m.valeur">{{ m.label }}</option>
+            <mat-option [value]="m.valeur">{{ m.label }}</mat-option>
           }
-        </select>
-      </label>
+        </mat-select>
+      </mat-form-field>
       <small>Les filtres s’appliquent aux chiffres de la période ; la trésorerie, les créances et les propriétaires restent à la date du jour.</small>
     </section>
 
     <section class="direction" aria-label="Situation de trésorerie">
       <div class="titre-ligne">
         <h2>Trésorerie à la date du jour</h2>
+        <!-- Trésorerie, reversements et rapport du soir sont déjà des onglets juste au-dessus : seuls les états financiers (autre sujet) gardent leur raccourci. -->
         <nav class="liens-rapides" aria-label="Aller plus loin">
-          <a routerLink="/finances/tresorerie">Trésorerie et caisse</a>
-          <a routerLink="/finances/reversements">Reversements</a>
           <a routerLink="/finances/etats">États financiers</a>
-          <a routerLink="/finances/rapport-quotidien">Rapport du soir</a>
         </nav>
       </div>
       <div class="direction__tuiles">
@@ -160,8 +158,8 @@
           <small>Tous les comptes réunis</small>
         </article>
         @for (c of d.tresorerie.comptes; track c.id) {
-          @if (c.actif) {
-            <article class="mini" [class.mini--zero]="c.solde === 0">
+          @if (c.actif && c.solde !== 0) {
+            <article class="mini">
               <span>{{ c.nom }}</span>
               <strong [class.negatif]="c.solde < 0">{{ fcfa(c.solde) }}</strong>
             </article>
@@ -178,6 +176,9 @@
           <small>Loyers, ventes en retard, démarches</small>
         </article>
       </div>
+      @if (comptesAZero(d); as nuls) {
+        <p class="note comptes-zero">Comptes à zéro : {{ nuls }}.</p>
+      }
       @if (d.rapportDuJour === null) {
         <p class="note rapport-jour">
           <strong>Le rapport du jour n’est pas encore préparé.</strong>

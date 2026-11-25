@@ -21,6 +21,7 @@ import { TYPES_BIEN, nomPersonne, simpleLabel } from '../locatif-status';
 import { MODES_LOCATION } from '../sejours/sejour-status';
 import { ProprietaireDialog, creerProprietaireAvecPiece, type ProprietaireDialogResult } from '../../terrains/proprietaire-dialog';
 import { TYPES_PHOTOS, nombreOuUndefined, trierFichiers } from '../locatif-form';
+import { chargerTout } from '../../../shared/utils/charger-tout';
 
 /** Fiche bien locatif (section 15 du cahier des charges, étape 1 de J2.1). */
 @Component({
@@ -127,7 +128,7 @@ export class BienForm implements OnInit, OnDestroy, AvecModifications {
     if (proprietaireId) this.form.controls.proprietaireId.setValue(proprietaireId);
     const contactId = this.route.snapshot.queryParamMap.get('contactId');
     if (contactId) this.preparerDepuisDemande(contactId);
-    this.api.findImmeubles({ pageSize: 200 }).subscribe({
+    chargerTout((page, pageSize) => this.api.findImmeubles({ page, pageSize })).subscribe({
       next: (page) => {
         this.immeubles.set(page.items);
         // Arrivé depuis la fiche d'une propriété : le bien est déjà un de ses logements.

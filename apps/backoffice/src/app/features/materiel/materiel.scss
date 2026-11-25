@@ -1,0 +1,50 @@
+.materiel-page {
+  display: grid;
+  gap: 16px;
+}
+
+.materiel-skeleton {
+  display: grid;
+  gap: 8px;
+  padding: 16px 20px;
+}
+
+.cell-sub {
+  display: block;
+  color: var(--mtm-text-muted);
+  font-size: var(--mtm-fs-xs);
+}
+
+.numero {
+  white-space: nowrap;
+}
+
+.status-pill + .status-pill {
+  margin-left: 6px;
+}
+
+app-pagination {
+  --pagination-gutter: 0px;
+}
+
+/* Confié : le bleu de la charte (les autres tons existent déjà dans les styles communs). */
+.status-pill--primary {
+  background: var(--mtm-primary-subtle);
+  color: var(--mtm-primary);
+}
+
+/* L'état se lit d'un coup d'œil : sobre quand tout va bien, coloré seulement quand il demande de l'attention. */
+.etat {
+  font-size: var(--mtm-fs-sm);
+  color: var(--mtm-text-muted);
+}
+
+.etat--usage {
+  color: var(--mtm-warning);
+  font-weight: 600;
+}
+
+.etat--en_panne {
+  color: var(--mtm-error);
+  font-weight: 700;
+}

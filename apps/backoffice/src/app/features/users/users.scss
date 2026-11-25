@@ -14,12 +14,12 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 0.9rem;
+      font-size: var(--mtm-fs-md);
     }
 
     .status-pill {
       margin-left: 6px;
-      font-size: 0.66rem;
+      font-size: var(--mtm-fs-xs);
       padding: 1px 6px;
     }
   }

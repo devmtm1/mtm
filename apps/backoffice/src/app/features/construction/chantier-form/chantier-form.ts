@@ -20,6 +20,7 @@ import type { ProspectListItem } from '../../../core/models/prospect.model';
 import type { TerrainListItem } from '../../../core/models/terrain.model';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { TYPES_PROJET, label } from '../chantier-status';
+import { chargerTout } from '../../../shared/utils/charger-tout';
 
 /** Création d'un chantier (J2.3, section 16 du cahier des charges). */
 @Component({
@@ -81,11 +82,11 @@ export class ChantierForm implements OnInit, AvecModifications {
       next: (options) => this.options.set(options),
       error: () => this.options.set({}),
     });
-    this.crmApi.findAll({ pageSize: 200 }).subscribe({
+    chargerTout((page, pageSize) => this.crmApi.findAll({ page, pageSize })).subscribe({
       next: (page) => this.clients.set(page.items),
       error: () => this.clients.set([]),
     });
-    this.terrainsApi.findAll({ pageSize: 200 }).subscribe({
+    chargerTout((page, pageSize) => this.terrainsApi.findAll({ page, pageSize })).subscribe({
       next: (page) => this.terrains.set(page.items),
       error: () => this.terrains.set([]),
     });

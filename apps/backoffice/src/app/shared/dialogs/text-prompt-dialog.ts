@@ -59,7 +59,7 @@ export interface TextPromptData {
     .prompt-description {
       margin: 0 0 14px;
       color: var(--mtm-text-muted);
-      font-size: 0.9rem;
+      font-size: var(--mtm-fs-md);
       line-height: 1.5;
     }
 

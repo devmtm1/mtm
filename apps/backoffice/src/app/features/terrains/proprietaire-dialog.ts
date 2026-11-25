@@ -2,7 +2,7 @@ import { Observable, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { ProprietairesApiService } from '../../core/services/api/proprietaires-api.service';
 import { NotificationService } from '../../shared/services/notification.service';
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -85,6 +85,8 @@ export class ProprietaireDialog {
   } | null>(MAT_DIALOG_DATA, { optional: true });
 
   protected readonly isEdit = !!this.dialogData?.proprietaire;
+  /** Création : on ne montre que l'essentiel ; modification : tout est déplié. */
+  protected readonly detailsOuverts = signal(!!this.dialogData?.proprietaire);
   /**
    * Les coordonnées sont réservées à l'administrateur : un autre peut les saisir à la création
    * (sans pouvoir les relire), mais pas les modifier ensuite.

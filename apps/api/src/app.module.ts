@@ -26,6 +26,7 @@ import { CrmModule } from './modules/crm/crm.module';
 import { PersonnesModule } from './modules/personnes/personnes.module';
 import { DemarchesModule } from './modules/demarches/demarches.module';
 import { VentesModule } from './modules/ventes/ventes.module';
+import { MaterielModule } from './modules/materiel/materiel.module';
 import { ProtocolesModule } from './modules/protocoles/protocoles.module';
 import { LocatifModule } from './modules/locatif/locatif.module';
 import { ConstructionModule } from './modules/construction/construction.module';
@@ -78,6 +79,7 @@ import { NavigationModule } from './modules/navigation/navigation.module';
     DemarchesModule,
     VentesModule,
     ProtocolesModule,
+    MaterielModule,
     LocatifModule,
     ConstructionModule,
     NotificationsModule,

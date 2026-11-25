@@ -47,7 +47,7 @@ export type IconeCarte = 'mission' | 'chantier' | 'dossier' | 'parcours';
     .carte {
       padding: 20px 24px 22px;
       border: 1px solid var(--mtm-border);
-      border-radius: 12px;
+      border-radius: var(--mtm-radius-lg);
       background: var(--mtm-surface, #fff);
       box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
     }
@@ -73,13 +73,13 @@ export type IconeCarte = 'mission' | 'chantier' | 'dossier' | 'parcours';
     h2 {
       margin: 0;
       font-family: inherit;
-      font-size: 1.02rem;
+      font-size: var(--mtm-fs-lg);
       font-weight: 600;
     }
     .titre p {
       margin: 2px 0 0;
       color: var(--mtm-text-muted);
-      font-size: 0.86rem;
+      font-size: var(--mtm-fs-md);
     }
     .actions {
       display: flex;

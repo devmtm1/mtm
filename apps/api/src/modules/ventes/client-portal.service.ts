@@ -12,7 +12,11 @@ import { ContactService } from '../contact/contact.service';
 import { CreateClientAccountDto } from './dto/create-client-account.dto';
 import { CreateClientDemandeDto } from './dto/create-client-demande.dto';
 import { VentesService } from './ventes.service';
-import { etapeClient } from '../protocoles/protocoles.regles';
+import { SettingsService } from '../settings/settings.service';
+import {
+  CLE_SIGNATURE_EN_LIGNE,
+  etapeClient,
+} from '../protocoles/protocoles.regles';
 
 /**
  * Espace client (section 4 CDC) : ouverture du compte rattaché à un prospect,
@@ -27,6 +31,7 @@ export class ClientPortalService {
     private readonly contacts: ContactService,
     private readonly ventes: VentesService,
     private readonly comptesClient: ClientAccountsService,
+    private readonly settings: SettingsService,
   ) {}
 
   /**
@@ -194,6 +199,10 @@ export class ClientPortalService {
     });
     if (!user?.clientProspectId)
       throw new ForbiddenException('Ce compte n’est pas rattaché à un client');
+    const signatureEnLigne = await this.settings.getBoolean(
+      CLE_SIGNATURE_EN_LIGNE,
+      false,
+    );
     const dossiers = await this.prisma.dossierVente.findMany({
       where: { prospectId: user.clientProspectId },
       orderBy: { createdAt: 'desc' },
@@ -251,6 +260,12 @@ export class ClientPortalService {
             statut: true,
             dateEnvoi: true,
             dateReceptionSignee: true,
+            empreinteDocument: true,
+            acceptationLe: true,
+            acceptationNom: true,
+            documentPrepare: {
+              select: { storageKey: true, resourceType: true },
+            },
           },
         },
         documents: {
@@ -279,10 +294,44 @@ export class ClientPortalService {
       ),
       prixVente: dossier.prixVente === null ? null : Number(dossier.prixVente),
       // Les statuts internes (vérification, validation Direction, motifs) ne sortent pas : le client voit une étape simple.
-      protocoles: dossier.protocoles.flatMap(({ statut, ...protocole }) => {
-        const etape = etapeClient(statut);
-        return etape ? [{ ...protocole, ...etape }] : [];
-      }),
+      protocoles: dossier.protocoles.flatMap(
+        ({
+          statut,
+          documentPrepare,
+          empreinteDocument,
+          acceptationLe,
+          acceptationNom,
+          ...protocole
+        }) => {
+          const etape = etapeClient(statut, signatureEnLigne);
+          if (!etape) return [];
+          const aSigner = etape.etape === 'a_signer';
+          return [
+            {
+              ...protocole,
+              ...etape,
+              // Le client lit le document avant de l'accepter ; l'acceptation en ligne n'est offerte que si MTM l'a activée,
+              // et seulement quand l'empreinte du document est connue (c'est elle qui prouve ce qui est accepté).
+              documentUrl:
+                documentPrepare && (aSigner || etape.etape !== 'en_preparation')
+                  ? this.cloudinary.url(
+                      documentPrepare.storageKey,
+                      documentPrepare.resourceType,
+                      false,
+                    )
+                  : null,
+              peutAccepterEnLigne:
+                signatureEnLigne &&
+                aSigner &&
+                !!documentPrepare &&
+                !!empreinteDocument &&
+                !acceptationLe,
+              accepteLe: acceptationLe,
+              accepteParNom: acceptationNom,
+            },
+          ];
+        },
+      ),
       echeances: dossier.echeances.map((echeance) => ({
         ...echeance,
         montantPrevu: Number(echeance.montantPrevu),

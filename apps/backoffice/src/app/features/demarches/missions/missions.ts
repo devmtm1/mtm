@@ -43,6 +43,7 @@ import {
 } from '../mission-status';
 import { ExportListeDialog } from '../../../shared/dialogs/export-liste-dialog';
 import { sourceDepuisGrille } from '../../../shared/utils/export-grille';
+import { chargerTout } from '../../../shared/utils/charger-tout';
 
 const FILTRES_VIDES = {
   search: '',
@@ -313,7 +314,7 @@ export class Missions implements OnInit {
     if (!this.chargementInitialFait) this.loading.set(true);
     const valeur = this.filters.getRawValue();
     this.hasActiveFilters.set(Object.values(valeur).some((item) => item !== ''));
-    this.api.findAll({ ...valeur, pageSize: 200 }).subscribe({
+    chargerTout((page, pageSize) => this.api.findAll({ ...valeur, page, pageSize })).subscribe({
       next: (page) => {
         this.rowData.set(page.items);
         this.total.set(page.total);

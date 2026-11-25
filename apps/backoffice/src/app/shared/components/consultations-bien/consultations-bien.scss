@@ -17,7 +17,7 @@
       align-items: center;
       gap: 8px;
       margin: 0;
-      font-size: 1rem;
+      font-size: var(--mtm-fs-lg);
     }
 
     svg {
@@ -29,7 +29,7 @@
 
   &__periode {
     color: var(--mtm-text-muted);
-    font-size: 0.78rem;
+    font-size: var(--mtm-fs-xs);
   }
 
   &__squelette {
@@ -52,14 +52,14 @@
 
     strong {
       font-family: var(--mtm-font-display);
-      font-size: 1.35rem;
+      font-size: var(--mtm-fs-2xl);
       font-variant-numeric: tabular-nums;
       line-height: 1.1;
     }
 
     span {
       color: var(--mtm-text-muted);
-      font-size: 0.76rem;
+      font-size: var(--mtm-fs-xs);
     }
   }
 
@@ -76,7 +76,7 @@
   &__conseil {
     margin: 0;
     color: var(--mtm-text-muted);
-    font-size: 0.8rem;
+    font-size: var(--mtm-fs-sm);
   }
 
   &__conseil {

@@ -81,12 +81,12 @@ const MAX_FILE_SIZE = 15 * 1024 * 1024;
     </mat-dialog-actions>
   `,
   styles: `
-    .dialog-context { margin: 0 0 12px; color: var(--mtm-text-muted); font-size: 0.86rem; }
+    .dialog-context { margin: 0 0 12px; color: var(--mtm-text-muted); font-size: var(--mtm-fs-md); }
     .dialog-form { display: grid; gap: 4px; min-width: min(460px, calc(100vw - 96px)); }
-    .file-field { display: grid; gap: 6px; padding: 12px; border: 1px dashed var(--mtm-border); border-radius: 8px; background: var(--mtm-bg-surface); cursor: pointer; }
-    .file-field__label { font-size: 0.8rem; font-weight: 600; color: var(--mtm-text-dark); }
-    .file-field__name { font-size: 0.8rem; color: var(--mtm-primary); }
-    .file-field__error { font-size: 0.78rem; color: var(--mtm-error); }
+    .file-field { display: grid; gap: 6px; padding: 12px; border: 1px dashed var(--mtm-border); border-radius: var(--mtm-radius-md); background: var(--mtm-bg-surface); cursor: pointer; }
+    .file-field__label { font-size: var(--mtm-fs-sm); font-weight: 600; color: var(--mtm-text-dark); }
+    .file-field__name { font-size: var(--mtm-fs-sm); color: var(--mtm-primary); }
+    .file-field__error { font-size: var(--mtm-fs-xs); color: var(--mtm-error); }
   `,
 })
 export class VenteDocumentDialog {

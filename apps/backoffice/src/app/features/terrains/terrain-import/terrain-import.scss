@@ -16,7 +16,7 @@
   }
 
   h3 {
-    font-size: 0.95rem;
+    font-size: var(--mtm-fs-md);
   }
 
   &.is-loading {
@@ -28,7 +28,7 @@
 .import-hint {
   margin: 0;
   color: var(--mtm-text-muted);
-  font-size: 0.84rem;
+  font-size: var(--mtm-fs-sm);
 }
 
 .dropzone {
@@ -87,13 +87,13 @@
   border-radius: var(--mtm-radius-md);
 
   strong {
-    font-size: 1.5rem;
+    font-size: var(--mtm-fs-2xl);
     line-height: 1.1;
   }
 
   span {
     color: var(--mtm-text-muted);
-    font-size: 0.8rem;
+    font-size: var(--mtm-fs-sm);
   }
 
   &--ok {
@@ -118,7 +118,7 @@
 .import-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.82rem;
+  font-size: var(--mtm-fs-sm);
 
   th,
   td {
@@ -130,7 +130,7 @@
 
   th {
     color: var(--mtm-text-muted);
-    font-size: 0.72rem;
+    font-size: var(--mtm-fs-xs);
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
@@ -160,7 +160,7 @@
   padding: 0;
   overflow-y: auto;
   list-style: none;
-  font-size: 0.84rem;
+  font-size: var(--mtm-fs-sm);
 
   li {
     padding: 6px 10px;

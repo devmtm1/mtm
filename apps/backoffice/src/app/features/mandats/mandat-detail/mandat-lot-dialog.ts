@@ -10,6 +10,7 @@ import type { MandatDetail, MandatOptions } from '../../../core/models/mandat.mo
 import type { TerrainListItem } from '../../../core/models/terrain.model';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { LOT_STATUS, lotLabel, pillClass, statusHelp } from '../mandat-status';
+import { chargerTout } from '../../../shared/utils/charger-tout';
 
 export interface MandatLotDialogData {
   mandat: MandatDetail;
@@ -77,18 +78,18 @@ export interface MandatLotDialogData {
   `,
   styles: `
     .lot-dialog { display: grid; gap: 12px; min-width: min(500px, calc(100vw - 96px)); }
-    .lot-dialog__intro { margin: 0; color: var(--mtm-text-muted); font-size: 0.86rem; line-height: 1.5; }
-    .lot-dialog__empty { margin: 0; padding: 16px; border-radius: 10px; background: var(--mtm-bg-surface); color: var(--mtm-text-muted); font-size: 0.86rem; text-align: center; }
+    .lot-dialog__intro { margin: 0; color: var(--mtm-text-muted); font-size: var(--mtm-fs-md); line-height: 1.5; }
+    .lot-dialog__empty { margin: 0; padding: 16px; border-radius: var(--mtm-radius-md); background: var(--mtm-bg-surface); color: var(--mtm-text-muted); font-size: var(--mtm-fs-md); text-align: center; }
     .lot-dialog__list { display: grid; gap: 6px; max-height: 260px; margin: 0; padding: 2px; overflow-y: auto; list-style: none; }
     .lot-option {
       display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; padding: 8px 12px;
-      border: 1px solid var(--mtm-border); border-radius: 10px; background: var(--mtm-card-bg); font: inherit; text-align: left; cursor: pointer;
+      border: 1px solid var(--mtm-border); border-radius: var(--mtm-radius-md); background: var(--mtm-card-bg); font: inherit; text-align: left; cursor: pointer;
     }
     .lot-option:hover { border-color: var(--mtm-primary); }
     .lot-option.is-selected { border-color: var(--mtm-primary); background: var(--mtm-primary-subtle); }
     .lot-option__main { display: grid; gap: 2px; min-width: 0; }
-    .lot-option__main strong { font-size: 0.86rem; }
-    .lot-option__main small { color: var(--mtm-text-muted); font-size: 0.76rem; }
+    .lot-option__main strong { font-size: var(--mtm-fs-md); }
+    .lot-option__main small { color: var(--mtm-text-muted); font-size: var(--mtm-fs-xs); }
     .w-full { width: 100%; }
   `,
 })
@@ -119,7 +120,7 @@ export class MandatLotDialog {
   });
 
   constructor() {
-    this.terrainsApi.findAll({ pageSize: 200 }).subscribe({
+    chargerTout((page, pageSize) => this.terrainsApi.findAll({ page, pageSize })).subscribe({
       next: (page) => {
         this.terrains.set(page.items);
         this.loading.set(false);

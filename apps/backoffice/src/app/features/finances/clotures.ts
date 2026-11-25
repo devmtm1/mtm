@@ -37,6 +37,9 @@ export class CloturesFinancieres implements OnInit {
   protected readonly affiches = computed(() =>
     this.toutAfficher() ? this.mois() : this.mois().filter((m, i) => i < 6 || m.cloture),
   );
+
+  /** Un seul bouton plein par écran : le mois à clôturer en premier. Les autres restent disponibles en contour. */
+  protected readonly premierACloturer = computed(() => this.affiches().find((m) => !m.cloture && m.peutEtreCloture)?.periode ?? null);
   protected readonly masques = computed(() => this.mois().length - this.affiches().length);
   protected readonly occupe = signal<string | null>(null);
 

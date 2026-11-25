@@ -7,6 +7,9 @@ import { fenetrePages, plageAffichee } from '../../../core/utils/pagination';
 /** Tailles de page proposées par défaut. */
 export const TAILLES_PAGE: readonly number[] = [10, 25, 50, 100];
 
+/** Nombre de lignes par page à l'ouverture d'une liste : le même partout, et toujours l'une des tailles proposées. */
+export const TAILLE_PAGE_DEFAUT = 25;
+
 /**
  * La barre de pagination de toutes les listes : « 26–50 sur 132 relances », le choix du nombre de lignes par page et les
  * numéros de page (avec « … » pour les pages sautées). La liste garde son état (page, taille) et lui dit où elle en est ;
@@ -104,14 +107,14 @@ export const TAILLES_PAGE: readonly number[] = [10, 25, 50, 100];
     .pagination__etat {
       margin: 0;
       color: var(--mtm-text-muted);
-      font-size: 0.86rem;
+      font-size: var(--mtm-fs-md);
     }
     .pagination__taille {
       display: inline-flex;
       align-items: center;
       gap: 10px;
       color: var(--mtm-text-muted);
-      font-size: 0.86rem;
+      font-size: var(--mtm-fs-md);
     }
     .pagination__taille .mat-mdc-form-field {
       width: 84px;
@@ -130,11 +133,11 @@ export const TAILLES_PAGE: readonly number[] = [10, 25, 50, 100];
       height: 36px;
       padding: 0 8px;
       border: 1px solid transparent;
-      border-radius: 8px;
+      border-radius: var(--mtm-radius-md);
       background: none;
       color: var(--mtm-text-dark, inherit);
       font: inherit;
-      font-size: 0.88rem;
+      font-size: var(--mtm-fs-md);
       cursor: pointer;
     }
     .pagination__bouton svg {

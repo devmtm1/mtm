@@ -157,14 +157,14 @@ export interface ContentEditorData {
   `,
   styles: `
     .content-dialog { display: grid; gap: 6px; min-width: min(560px, calc(100vw - 96px)); }
-    .content-dialog__intro { margin: 0 0 8px; color: var(--mtm-text-muted); font-size: 0.86rem; line-height: 1.5; }
+    .content-dialog__intro { margin: 0 0 8px; color: var(--mtm-text-muted); font-size: var(--mtm-fs-md); line-height: 1.5; }
     .w-full { width: 100%; }
     .content-dialog__image { display: grid; gap: 10px; }
-    .content-dialog__image img { display: block; width: 100%; max-height: 260px; border: 1px solid var(--mtm-border); border-radius: 10px; object-fit: cover; }
-    .content-dialog__vide { display: grid; place-items: center; min-height: 120px; padding: 12px; border: 1px dashed var(--mtm-border); border-radius: 10px; background: var(--mtm-bg-surface); color: var(--mtm-text-muted); font-size: 0.88rem; text-align: center; }
+    .content-dialog__image img { display: block; width: 100%; max-height: 260px; border: 1px solid var(--mtm-border); border-radius: var(--mtm-radius-md); object-fit: cover; }
+    .content-dialog__vide { display: grid; place-items: center; min-height: 120px; padding: 12px; border: 1px dashed var(--mtm-border); border-radius: var(--mtm-radius-md); background: var(--mtm-bg-surface); color: var(--mtm-text-muted); font-size: var(--mtm-fs-md); text-align: center; }
     .content-dialog__boutons { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
     .content-dialog__aide { color: var(--mtm-text-muted); }
-    .content-dialog__erreur { margin: 0; color: var(--mtm-accent); font-size: 0.84rem; }
+    .content-dialog__erreur { margin: 0; color: var(--mtm-accent); font-size: var(--mtm-fs-sm); }
   `,
 })
 export class ContentEditorDialog {

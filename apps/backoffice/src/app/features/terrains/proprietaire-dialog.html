@@ -59,15 +59,27 @@
           matricule.
         </p>
       }
-      <app-etat-civil-champs class="full-width" [groupe]="form" />
-      <app-piece-identite-champs
-        class="full-width"
-        [groupe]="form"
-        [pieceUrl]="dialogData?.proprietaire?.pieceUrl ?? null"
-        [fichierAutorise]="peutJoindrePiece"
-        (fichierChange)="fichierPiece = $event"
-        (retraitChange)="retirerPiece = $event"
-      />
+      <!-- Saisie rapide : prénom, nom, téléphone et e-mail suffisent. L'état civil et la pièce d'identité se complètent à la demande. -->
+      <button
+        mat-button
+        type="button"
+        class="details-bascule full-width"
+        [attr.aria-expanded]="detailsOuverts()"
+        (click)="detailsOuverts.set(!detailsOuverts())"
+      >
+        {{ detailsOuverts() ? 'Masquer l’état civil et la pièce d’identité' : 'Ajouter l’état civil et la pièce d’identité (facultatif)' }}
+      </button>
+      @if (detailsOuverts()) {
+        <app-etat-civil-champs class="full-width" [groupe]="form" />
+        <app-piece-identite-champs
+          class="full-width"
+          [groupe]="form"
+          [pieceUrl]="dialogData?.proprietaire?.pieceUrl ?? null"
+          [fichierAutorise]="peutJoindrePiece"
+          (fichierChange)="fichierPiece = $event"
+          (retraitChange)="retirerPiece = $event"
+        />
+      }
     } @else {
       <p class="coordonnees-note">
         Téléphone, e-mail et identité (pièce, état civil, adresse) réservés à l’administrateur.

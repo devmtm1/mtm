@@ -11,7 +11,7 @@
 .page-header__title .status-pill {
   margin-left: 10px;
   vertical-align: middle;
-  font-size: 0.78rem;
+  font-size: var(--mtm-fs-xs);
 }
 
 .danger {
@@ -45,7 +45,7 @@
     display: flex;
     justify-content: space-between;
     gap: 12px;
-    font-size: 0.92rem;
+    font-size: var(--mtm-fs-md);
   }
 
   dt,
@@ -61,7 +61,7 @@
 
   &__reste {
     padding: 8px 10px;
-    border-radius: 8px;
+    border-radius: var(--mtm-radius-md);
     background: var(--mtm-bg-surface);
     font-weight: 700;
     color: var(--mtm-primary);
@@ -82,25 +82,25 @@
   h3 {
     margin: 0 0 4px;
     font-family: var(--mtm-font-display);
-    font-size: 1rem;
+    font-size: var(--mtm-fs-lg);
   }
 
   &__meta {
     margin: 0 0 8px;
     color: var(--mtm-text-muted);
-    font-size: 0.82rem;
+    font-size: var(--mtm-fs-sm);
   }
 
   &__note {
     margin: 8px 0;
-    font-size: 0.88rem;
+    font-size: var(--mtm-fs-md);
     white-space: pre-line;
   }
 
   &__vide {
     margin: 6px 0 10px;
     color: var(--mtm-text-muted);
-    font-size: 0.88rem;
+    font-size: var(--mtm-fs-md);
   }
 
   &__pieces {
@@ -115,7 +115,7 @@
       flex-wrap: wrap;
       align-items: baseline;
       gap: 4px 10px;
-      font-size: 0.9rem;
+      font-size: var(--mtm-fs-md);
     }
 
     small {
@@ -141,13 +141,13 @@
       width: 100%;
       aspect-ratio: 1;
       object-fit: cover;
-      border-radius: 8px;
+      border-radius: var(--mtm-radius-md);
     }
 
     small {
       display: block;
       margin-top: 2px;
-      font-size: 0.74rem;
+      font-size: var(--mtm-fs-xs);
       color: var(--mtm-text-muted);
     }
   }
@@ -163,8 +163,8 @@
 .etat-pastille {
   font-style: normal;
   padding: 1px 8px;
-  border-radius: 999px;
-  font-size: 0.76rem;
+  border-radius: var(--mtm-radius-pill);
+  font-size: var(--mtm-fs-xs);
   font-weight: 600;
   background: var(--mtm-success-bg);
   color: var(--mtm-success);
@@ -193,7 +193,7 @@
     align-items: center;
     gap: 10px;
     margin: 0 0 8px;
-    font-size: 1rem;
+    font-size: var(--mtm-fs-lg);
   }
 
   .is-degradee {

@@ -29,7 +29,7 @@
   padding: 0 12px;
   height: 40px;
   border: 1px solid var(--mtm-border);
-  border-radius: 10px;
+  border-radius: var(--mtm-radius-md);
   background: var(--mtm-card-bg);
   color: var(--mtm-text-muted);
 
@@ -47,7 +47,7 @@
     background: transparent;
     color: var(--mtm-text-dark);
     font: inherit;
-    font-size: 0.88rem;
+    font-size: var(--mtm-fs-md);
   }
 
   &:focus-within {
@@ -104,13 +104,13 @@
   }
 
   strong {
-    font-size: 0.92rem;
+    font-size: var(--mtm-fs-md);
     overflow-wrap: anywhere;
   }
 
   small {
     color: var(--mtm-text-muted);
-    font-size: 0.78rem;
+    font-size: var(--mtm-fs-xs);
   }
 }
 
@@ -120,11 +120,11 @@
   place-items: center;
   width: 38px;
   height: 38px;
-  border-radius: 10px;
+  border-radius: var(--mtm-radius-md);
   background: var(--mtm-primary-subtle);
   color: var(--mtm-primary);
   font-family: var(--mtm-font-display);
-  font-size: 0.82rem;
+  font-size: var(--mtm-fs-sm);
   font-weight: 700;
   letter-spacing: 0.02em;
 }
@@ -139,7 +139,7 @@
 
   small {
     color: var(--mtm-text-muted);
-    font-size: 0.74rem;
+    font-size: var(--mtm-fs-xs);
   }
 }
 
@@ -148,7 +148,7 @@
   display: flex;
   height: 8px;
   overflow: hidden;
-  border-radius: 999px;
+  border-radius: var(--mtm-radius-pill);
   background: var(--mtm-bg-hover);
 
   &__vendus {
@@ -167,7 +167,7 @@
 
 .sans-lots {
   color: var(--mtm-text-muted);
-  font-size: 0.82rem;
+  font-size: var(--mtm-fs-sm);
 }
 
 .nombre {
@@ -211,7 +211,7 @@
   padding: 12px 20px;
   border-top: 1px solid var(--mtm-border);
   color: var(--mtm-text-muted);
-  font-size: 0.84rem;
+  font-size: var(--mtm-fs-sm);
 }
 
 .etats {

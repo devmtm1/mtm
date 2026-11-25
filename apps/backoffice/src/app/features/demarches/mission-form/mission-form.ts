@@ -17,6 +17,7 @@ import type { TerrainCatalogueItem } from '../../../core/models/terrain.model';
 import { NotificationService } from '../../../shared/services/notification.service';
 import { MoneyPipe } from '../../../shared/pipes/money.pipe';
 import { TYPES_VERIFICATION, URGENCES, label } from '../mission-status';
+import { chargerTout } from '../../../shared/utils/charger-tout';
 
 /**
  * Étape 1 du cahier des charges : enregistrer la demande du client.
@@ -102,7 +103,7 @@ export class MissionForm implements OnInit, AvecModifications {
     });
     // Une mission se rattache toujours à un client : on liste les fiches
     // existantes plutôt que de laisser saisir un nom en double.
-    this.crmApi.findAll({ pageSize: 200 }).subscribe({
+    chargerTout((page, pageSize) => this.crmApi.findAll({ page, pageSize })).subscribe({
       next: (page) => this.clients.set(page.items),
       error: () => this.clients.set([]),
     });

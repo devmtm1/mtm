@@ -77,7 +77,7 @@ import { TYPES_PIECE, erreurFichierPiece } from '../../../core/models/piece-iden
     .piece legend {
       padding: 0;
       margin-bottom: 8px;
-      font-size: 0.86rem;
+      font-size: var(--mtm-fs-md);
       font-weight: 600;
     }
     .piece legend span {
@@ -100,9 +100,9 @@ import { TYPES_PIECE, erreurFichierPiece } from '../../../core/models/piece-iden
       gap: 8px;
       padding: 8px 14px;
       border: 1px solid var(--mtm-border);
-      border-radius: 8px;
+      border-radius: var(--mtm-radius-md);
       cursor: pointer;
-      font-size: 0.875rem;
+      font-size: var(--mtm-fs-md);
     }
     .piece__choix svg {
       width: 16px;
@@ -117,13 +117,13 @@ import { TYPES_PIECE, erreurFichierPiece } from '../../../core/models/piece-iden
       background: none;
       color: var(--mtm-primary, inherit);
       font: inherit;
-      font-size: 0.85rem;
+      font-size: var(--mtm-fs-md);
       text-decoration: underline;
       cursor: pointer;
     }
     .piece__etat {
       margin: 0 0 8px;
-      font-size: 0.82rem;
+      font-size: var(--mtm-fs-sm);
       color: var(--mtm-text-muted);
     }
     .piece__etat--erreur {

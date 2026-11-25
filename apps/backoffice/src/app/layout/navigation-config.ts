@@ -14,6 +14,7 @@ import {
   LucideLandPlot,
   LucideLayoutDashboard,
   LucideListChecks,
+  LucidePackage,
   LucideReceipt,
   LucideScrollText,
   LucideSettings,
@@ -171,7 +172,7 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         racines: ['/locatif'],
         children: [
           { label: 'Biens en gestion', route: '/locatif/biens', permission: 'locatif:consulter' },
-          { label: 'Propriétés', route: '/locatif/immeubles', permission: 'locatif:consulter' },
+          { label: 'Immeubles', route: '/locatif/immeubles', permission: 'locatif:consulter' },
           { label: 'Locataires', route: '/locatif/locataires', permission: 'locatif:consulter' },
           { label: 'Séjours', route: '/locatif/sejours', permission: 'locatif:consulter' },
           { label: 'Résiliations', route: '/locatif/resiliations', permission: 'locatif:consulter', compteur: 'resiliations' },
@@ -188,6 +189,7 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
     items: [
       { label: 'Vérifications et démarches', libelleMenu: 'Vérifications', route: '/demarches/missions', icon: LucideClipboardCheck, permission: 'demarches:consulter' },
       { label: 'Chantiers', route: '/construction/chantiers', icon: LucideHardHat, permission: 'construction:consulter' },
+      { label: 'Patrimoine matériel', libelleMenu: 'Matériel', route: '/materiel', icon: LucidePackage, permission: 'materiel:consulter', racines: ['/materiel'] },
     ],
   },
   {

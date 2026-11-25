@@ -77,7 +77,7 @@ export interface LocataireDialogData {
       </button>
     </mat-dialog-actions>
   `,
-  styles: `.locataire-dialog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; min-width: 400px; } .wide { grid-column: 1 / -1; } .contact-error { margin: 0; color: var(--mtm-danger, #b52c36); font-size: 0.82rem; }`,
+  styles: `.locataire-dialog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; min-width: 400px; } .wide { grid-column: 1 / -1; } .contact-error { margin: 0; color: var(--mtm-danger, #b52c36); font-size: var(--mtm-fs-sm); }`,
 })
 export class LocataireDialog {
   private readonly dialogRef = inject(MatDialogRef<LocataireDialog, Locataire>);

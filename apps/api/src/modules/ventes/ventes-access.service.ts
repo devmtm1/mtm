@@ -16,15 +16,24 @@ export class VentesAccessService {
 
   /** La comptabilité voit aussi tous les dossiers : elle valide et paie. */
   hasGlobalScope(user: MandatUser): boolean {
-    // Le suivi des protocoles (secrétaire, direction) porte sur tous les dossiers, pas seulement ceux d'un commercial.
+    return hasSupervisionScope(user, 'ventes', ['comptable']);
+  }
+
+  /**
+   * Qui ouvre tous les dossiers, et non seulement les siens. Le suivi des protocoles (secrétaire, direction) porte sur tous
+   * les dossiers : ce droit ouvre la consultation des dossiers, rien de plus. Il n'ouvre ni les chiffres financiers globaux
+   * (commissions des autres, totaux), ni les demandes de réservation, ni les performances d'un commercial : ceux-là restent
+   * réservés au périmètre de supervision (`hasGlobalScope`).
+   */
+  voitTousLesDossiers(user: MandatUser): boolean {
     return (
-      hasSupervisionScope(user, 'ventes', ['comptable']) ||
+      this.hasGlobalScope(user) ||
       user.permissions.includes('protocoles:consulter')
     );
   }
 
   ownershipFilter(user: MandatUser): Prisma.DossierVenteWhereInput {
-    if (this.hasGlobalScope(user)) return {};
+    if (this.voitTousLesDossiers(user)) return {};
     return { commercialResponsableId: user.id };
   }
 

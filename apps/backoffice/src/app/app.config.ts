@@ -51,6 +51,6 @@ export const appConfig: ApplicationConfig = {
     // initial avec une librairie ~1 Mo inutilisée à ce stade — le provider
     // est prêt, le poids réel n'est payé qu'à la Phase 3 (reporting) quand
     // un premier graphique est réellement rendu. Voir docs/FRONTEND_STACK.md.
-    provideEchartsCore({ echarts: () => import('echarts') }),
+    provideEchartsCore({ echarts: () => import('./core/charts/echarts-mtm') }),
   ],
 };

@@ -6,14 +6,14 @@
 
   h3 {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: var(--mtm-fs-md);
     font-weight: 700;
   }
 
   &__hint {
     margin: 0 0 4px;
     color: var(--mtm-text-muted);
-    font-size: 0.78rem;
+    font-size: var(--mtm-fs-xs);
   }
 
   &__item ::ng-deep .mdc-label {
@@ -24,12 +24,12 @@
   }
 
   &__label {
-    font-size: 0.86rem;
+    font-size: var(--mtm-fs-md);
     font-weight: 500;
   }
 
   small {
     color: var(--mtm-text-muted);
-    font-size: 0.76rem;
+    font-size: var(--mtm-fs-xs);
   }
 }

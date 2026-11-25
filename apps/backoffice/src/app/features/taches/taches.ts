@@ -86,6 +86,8 @@ export class Taches implements OnInit {
 
   protected readonly canCreate = this.session.hasPermission('taches:creer');
   protected readonly canAdmin = this.session.hasPermission('taches:administrer');
+  /** Terminer ou rouvrir une tâche demande « modifier » : l'API le refuse sinon (un rôle peut avoir « créer » sans « modifier »). */
+  protected readonly canModify = this.session.hasPermission('taches:modifier');
 
   protected readonly vue = signal<Vue>('mes');
   protected readonly statut = signal('a_faire,en_cours');

@@ -56,7 +56,7 @@ $motif-fond: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
   margin-bottom: 10px;
   overflow: hidden;
   border: 3px solid var(--mtm-primary-light);
-  border-radius: 14px;
+  border-radius: var(--mtm-radius-lg);
   background: #ffffff;
   filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
 }
@@ -70,7 +70,7 @@ $motif-fond: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 .login-title {
   margin: 0;
   font-family: var(--mtm-font-display);
-  font-size: 1.45rem;
+  font-size: var(--mtm-fs-2xl);
   font-weight: 800;
   letter-spacing: 0.05em;
   color: #ffffff;
@@ -79,13 +79,13 @@ $motif-fond: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 
 .login-tagline {
   margin: 2px 0 10px;
-  font-size: 0.78rem;
+  font-size: var(--mtm-fs-xs);
   color: rgba(255, 255, 255, 0.78);
   font-weight: 500;
 }
 
 .login-badge-pill {
-  font-size: 0.68rem;
+  font-size: var(--mtm-fs-xs);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -93,13 +93,13 @@ $motif-fond: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
   color: #ffffff;
   border: 1px solid var(--mtm-accent);
   padding: 3px 10px;
-  border-radius: 9999px;
+  border-radius: var(--mtm-radius-pill);
 }
 
 // Carte claire, texte foncé : le contraste reste fort quel que soit le décor derrière.
 .login-card {
   width: 100%;
-  border-radius: 18px !important;
+  border-radius: var(--mtm-radius-lg) !important;
   // Effet verre dépoli : la carte laisse deviner le décor, flouté, derrière elle. Opacité assez
   // haute (76 à 86 %) pour que le texte foncé reste lisible sur les rayures.
   border: 1px solid rgba(255, 255, 255, 0.6) !important;
@@ -143,14 +143,14 @@ $motif-fond: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
     gap: 8px;
     margin: 0 0 6px;
     font-family: var(--mtm-font-display);
-    font-size: 1.32rem;
+    font-size: var(--mtm-fs-2xl);
     font-weight: 700;
     color: var(--mtm-text-dark);
   }
 
   p {
     margin: 0;
-    font-size: 0.86rem;
+    font-size: var(--mtm-fs-md);
     line-height: 1.5;
     // Un peu plus foncé que le gris habituel : le fond de la carte est translucide.
     color: color-mix(in srgb, var(--mtm-text-muted) 72%, black);
@@ -182,7 +182,7 @@ $motif-fond: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
     --mdc-outlined-text-field-outline-color: color-mix(in srgb, var(--mtm-text-muted) 48%, white);
     --mdc-outlined-text-field-hover-outline-color: var(--mtm-primary);
     --mdc-outlined-text-field-focus-outline-color: var(--mtm-primary);
-    font-size: 1rem;
+    font-size: var(--mtm-fs-lg);
   }
 
   .mat-mdc-input-element {
@@ -205,7 +205,7 @@ $motif-fond: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 
   // Anneau de focus net autour du champ actif.
   .mdc-text-field--focused {
-    border-radius: 10px;
+    border-radius: var(--mtm-radius-md);
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--mtm-primary) 16%, transparent);
   }
 }
@@ -230,9 +230,9 @@ $motif-fond: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
 .login-submit {
   margin-top: 6px;
   height: 52px;
-  font-size: 1rem;
+  font-size: var(--mtm-fs-lg);
   letter-spacing: 0.02em;
-  border-radius: 10px !important;
+  border-radius: var(--mtm-radius-md) !important;
   background: linear-gradient(135deg, var(--mtm-primary-medium) 0%, var(--mtm-primary-dark) 100%) !important;
   box-shadow: 0 8px 20px rgba(26, 73, 116, 0.32) !important;
   transition:
@@ -269,13 +269,13 @@ $motif-fond: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
   border: 1px solid var(--mtm-error);
   color: var(--mtm-error);
   padding: 10px 12px;
-  border-radius: 10px;
-  font-size: 0.84rem;
+  border-radius: var(--mtm-radius-md);
+  font-size: var(--mtm-fs-sm);
   font-weight: 500;
 }
 
 .login-2fa-hint {
-  font-size: 0.86rem;
+  font-size: var(--mtm-fs-md);
   color: var(--mtm-text-muted);
   margin: 0 0 12px;
 }
@@ -286,7 +286,7 @@ $motif-fond: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' v
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  font-size: 0.74rem;
+  font-size: var(--mtm-fs-xs);
   color: rgba(255, 255, 255, 0.7);
   text-align: center;
 }

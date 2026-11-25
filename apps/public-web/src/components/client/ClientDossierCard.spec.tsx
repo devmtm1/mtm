@@ -1,10 +1,11 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import { ClientDossierCard } from './ClientDossierCard';
 import type { ClientDossier, ClientDossierProtocole } from '../../types/clientPortal';
 
-vi.mock('../../api/clientPortal', () => ({ telechargerRecu: vi.fn() }));
+vi.mock('../../api/clientPortal', () => ({ telechargerRecu: vi.fn(), accepterProtocoleEnLigne: vi.fn() }));
 vi.mock('../../contexts/auth-context-store', () => ({ useAuth: () => ({ accessToken: 'jeton' }) }));
 vi.mock('../ui/toast-store', () => ({ useToast: () => ({ show: vi.fn() }) }));
 vi.mock('./ClientEchanges', () => ({ ClientEchanges: () => null }));
@@ -65,5 +66,51 @@ describe('ClientDossierCard — protocole et signature', () => {
     expect(screen.queryByText('Protocole et signature')).toBeNull();
     afficher({ ...base });
     expect(screen.queryByText('Protocole et signature')).toBeNull();
+  });
+});
+
+describe('ClientDossierCard — acceptation en ligne', () => {
+  it('n’offre le bouton que si l’API autorise l’acceptation en ligne', () => {
+    const { unmount } = afficher({ ...base, protocoles: [protocole({ peutAccepterEnLigne: false })] });
+    expect(screen.queryByRole('button', { name: /accepter en ligne/i })).not.toBeInTheDocument();
+    unmount();
+    afficher({ ...base, protocoles: [protocole({ peutAccepterEnLigne: true, documentUrl: 'https://x.test/doc' })] });
+    expect(screen.getByRole('button', { name: /lire et accepter en ligne/i })).toBeInTheDocument();
+  });
+
+  it('exige le nom et la case « j’ai lu » avant d’envoyer l’acceptation', async () => {
+    const { accepterProtocoleEnLigne } = await import('../../api/clientPortal');
+    const accepter = vi.mocked(accepterProtocoleEnLigne);
+    accepter.mockResolvedValue({ id: 'pr1', acceptationLe: '2026-11-23T10:00:00Z' });
+    const surAccepte = vi.fn();
+    render(
+      <MemoryRouter>
+        <ClientDossierCard
+          dossier={{ ...base, protocoles: [protocole({ peutAccepterEnLigne: true, documentUrl: 'https://x.test/doc' })] }}
+          defaultOpen
+          onProtocoleAccepte={surAccepte}
+        />
+      </MemoryRouter>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: /lire et accepter en ligne/i }));
+    await userEvent.click(screen.getByRole('button', { name: 'J’accepte' }));
+    expect(await screen.findByText(/Saisissez votre nom complet/)).toBeInTheDocument();
+    expect(accepter).not.toHaveBeenCalled();
+    await userEvent.type(screen.getByLabelText(/Votre nom complet/), 'Fatou Ba');
+    await userEvent.click(screen.getByRole('button', { name: 'J’accepte' }));
+    expect(await screen.findByText(/Cochez la case/)).toBeInTheDocument();
+    await userEvent.click(screen.getByLabelText(/J’ai lu le document/));
+    await userEvent.click(screen.getByRole('button', { name: 'J’accepte' }));
+    expect(accepter).toHaveBeenCalledWith('jeton', 'pr1', 'Fatou Ba');
+    expect(surAccepte).toHaveBeenCalled();
+  });
+
+  it('indique quand le protocole a été accepté en ligne', () => {
+    afficher({
+      ...base,
+      protocoles: [protocole({ etape: 'signe', libelle: 'Signé, en cours de validation', accepteLe: '2026-11-20T00:00:00Z', dateReceptionSignee: '2026-11-20T00:00:00Z' })],
+    });
+    expect(screen.getByText(/Accepté en ligne le/)).toBeInTheDocument();
+    expect(screen.queryByText(/Copie signée reçue le/)).not.toBeInTheDocument();
   });
 });

@@ -79,7 +79,7 @@ export interface PaiementDialogData {
       </button>
     </mat-dialog-actions>
   `,
-  styles: `.paiement-dialog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; min-width: 420px; } .wide { grid-column: 1 / -1; } .echeance-info { margin: 0 0 4px; font-size: 0.85rem; color: var(--mtm-text-muted); }`,
+  styles: `.paiement-dialog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; min-width: 420px; } .wide { grid-column: 1 / -1; } .echeance-info { margin: 0 0 4px; font-size: var(--mtm-fs-md); color: var(--mtm-text-muted); }`,
 })
 export class PaiementDialog {
   private readonly dialogRef = inject(MatDialogRef<PaiementDialog, CreatePaiementPayload>);

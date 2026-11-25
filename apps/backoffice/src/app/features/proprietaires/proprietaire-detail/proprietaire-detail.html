@@ -10,8 +10,9 @@
 } @else if (proprietaire(); as p) {
   <section class="detail-page">
     <app-fiche-entete
-      titre="Fiche du propriétaire"
-      [sousTitre]="p.firstName + ' ' + p.lastName + (p.matricule ? ' · ' + p.matricule : '')"
+      surtitre="Fiche du propriétaire"
+      [titre]="p.firstName + ' ' + p.lastName"
+      [sousTitre]="p.matricule ?? null"
       (retour)="goBack()"
     >
       <div actions class="actions-fiche">
@@ -42,7 +43,7 @@
             (click)="newTerrain()"
             matTooltip="Créer un terrain rattaché à ce propriétaire"
           >
-            <svg class="btn-icon" lucideLandPlot aria-hidden="true"></svg>Nouveau terrain
+            <svg class="btn-icon" lucideLandPlot aria-hidden="true"></svg>Nouveau bien
           </button>
         }
         @if (canModify) {

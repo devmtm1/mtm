@@ -216,9 +216,9 @@ export interface JourneeDialogData {
       justify-self: start;
       padding: 7px 12px;
       border: 1px solid var(--mtm-border);
-      border-radius: 8px;
+      border-radius: var(--mtm-radius-md);
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: var(--mtm-fs-md);
     }
     .journee-dialog__upload svg {
       width: 16px;
@@ -233,7 +233,7 @@ export interface JourneeDialogData {
       margin: 0;
       padding: 0;
       list-style: none;
-      font-size: 0.82rem;
+      font-size: var(--mtm-fs-sm);
     }
     .journee-dialog__liste li {
       display: flex;
@@ -257,12 +257,12 @@ export interface JourneeDialogData {
     }
     .journee-dialog__aide {
       margin: 0;
-      font-size: 0.8rem;
+      font-size: var(--mtm-fs-sm);
       color: var(--mtm-text-muted);
     }
     .journee-dialog__erreur {
       margin: 0;
-      font-size: 0.8rem;
+      font-size: var(--mtm-fs-sm);
       color: var(--mtm-error);
     }
     .journee-dialog__check {
@@ -276,11 +276,11 @@ export interface JourneeDialogData {
       margin: 2px 0 10px;
       padding: 10px 12px;
       border: 1px solid var(--mtm-border);
-      border-radius: 8px;
+      border-radius: var(--mtm-radius-md);
     }
     .journee-dialog__plus summary {
       cursor: pointer;
-      font-size: 0.88rem;
+      font-size: var(--mtm-fs-md);
       font-weight: 600;
       color: var(--mtm-text-muted);
     }

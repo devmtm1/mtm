@@ -324,6 +324,15 @@ export const EVENEMENTS_NOTIFICATION: EvenementNotification[] = [
     emailParDefaut: false,
   },
   {
+    cle: 'protocole_a_signer',
+    famille: 'Protocoles',
+    libelle: 'Protocole prêt à signer',
+    description:
+      'Le client est prévenu dès que son protocole lui est envoyé : dans son espace, par e-mail, et par SMS ou WhatsApp s’il les a demandés et qu’un fournisseur est configuré.',
+    destinataire: 'client',
+    emailParDefaut: true,
+  },
+  {
     cle: 'protocole_statut',
     famille: 'Protocoles',
     libelle: 'Protocole préparé, envoyé, signé ou à valider',
@@ -331,6 +340,26 @@ export const EVENEMENTS_NOTIFICATION: EvenementNotification[] = [
       'Un protocole change d’étape : la Direction suit le parcours de chaque dossier.',
     destinataire: 'permission',
     permission: 'protocoles:valider',
+    emailParDefaut: false,
+  },
+  {
+    cle: 'materiel_entretien',
+    famille: 'Matériel',
+    libelle: 'Entretien de matériel à prévoir ou en retard',
+    description:
+      'Un entretien prévu arrive dans la semaine, ou sa date est passée : le secrétariat et la Direction sont rappelés une fois par échéance.',
+    destinataire: 'permission',
+    permission: 'materiel:modifier',
+    emailParDefaut: false,
+  },
+  {
+    cle: 'materiel_garantie',
+    famille: 'Matériel',
+    libelle: 'Garantie de matériel bientôt terminée',
+    description:
+      'La garantie d’un objet se termine dans le mois : un défaut doit être signalé avant.',
+    destinataire: 'permission',
+    permission: 'materiel:modifier',
     emailParDefaut: false,
   },
   {

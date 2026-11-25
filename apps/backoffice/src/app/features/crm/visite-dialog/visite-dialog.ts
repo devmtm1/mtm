@@ -155,12 +155,12 @@ export type VisiteDialogResult = VisiteProspectPayload;
   `,
   styles: `
     .visite-dialog { display: grid; gap: 12px; min-width: min(620px, calc(100vw - 96px)); }
-    .visite-dialog__intro { margin: 0; color: var(--mtm-text-muted); font-size: 0.86rem; line-height: 1.5; }
+    .visite-dialog__intro { margin: 0; color: var(--mtm-text-muted); font-size: var(--mtm-fs-md); line-height: 1.5; }
     .visite-dialog__form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 12px; }
     .visite-dialog__wide { grid-column: 1 / -1; }
-    .visite-dialog__section { grid-column: 1 / -1; margin: 10px 0 0; font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--mtm-text-muted); }
+    .visite-dialog__section { grid-column: 1 / -1; margin: 10px 0 0; font-weight: 600; font-size: var(--mtm-fs-sm); text-transform: uppercase; letter-spacing: 0.05em; color: var(--mtm-text-muted); }
     .visite-dialog__check { display: flex; align-items: center; min-height: 56px; }
-    .visite-dialog__option-meta { margin-left: 8px; color: var(--mtm-text-muted); font-size: 0.8rem; }
+    .visite-dialog__option-meta { margin-left: 8px; color: var(--mtm-text-muted); font-size: var(--mtm-fs-sm); }
     @media (max-width: 620px) { .visite-dialog__form { grid-template-columns: minmax(0, 1fr); } }
   `,
 })

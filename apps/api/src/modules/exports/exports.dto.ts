@@ -21,6 +21,7 @@ export const MODULES_EXPORTABLES = {
   proprietaires: 'proprietaires',
   ventes: 'ventes',
   protocoles: 'protocoles',
+  materiel: 'materiel',
   demarches: 'demarches',
   locatif: 'locatif',
   construction: 'construction',

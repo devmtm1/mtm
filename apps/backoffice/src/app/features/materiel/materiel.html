@@ -1,0 +1,245 @@
+<section class="materiel-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Services</p>
+      <h1 class="page-header__title">Patrimoine matériel</h1>
+      <p class="page-header__subtitle">
+        Tout ce que MTM possède : mobilier, informatique, véhicules, outillage. Chaque objet porte
+        un autocollant « MTM 0003 » : tapez ce numéro pour retrouver sa fiche.
+      </p>
+    </div>
+    <div class="page-header__actions">
+      @if (peutExporter) {
+        <button
+          mat-stroked-button
+          type="button"
+          (click)="exporter()"
+          [disabled]="exportEnCours() || !total()"
+        >
+          <svg class="btn-icon" lucideDownload aria-hidden="true"></svg
+          >{{ exportEnCours() ? 'Préparation…' : 'Exporter' }}
+        </button>
+      }
+      @if (canModify) {
+        <a mat-stroked-button routerLink="/materiel/inventaire">
+          <svg class="btn-icon" lucideClipboardList aria-hidden="true"></svg>Faire l’inventaire
+        </a>
+      }
+      @if (canCreate) {
+        <a mat-flat-button color="primary" routerLink="/materiel/nouveau">
+          <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Nouveau matériel
+        </a>
+      }
+    </div>
+  </header>
+
+  <section class="kpi-row" aria-label="Tableau de bord">
+    @if (!tableau()) {
+      @for (i of [1, 2, 3, 4]; track i) {
+        <div class="kpi skeleton" aria-hidden="true"></div>
+      }
+    } @else {
+      @for (indicateur of indicateurs; track indicateur.cle) {
+        <button
+          type="button"
+          class="kpi"
+          [class]="'kpi kpi--' + indicateur.ton"
+          (click)="appliquerIndicateur(indicateur)"
+        >
+          <span class="kpi__icon">
+            @switch (indicateur.icone) {
+              @case ('panne') {
+                <svg lucideWrench aria-hidden="true"></svg>
+              }
+              @case ('entretien') {
+                <svg lucideCalendarClock aria-hidden="true"></svg>
+              }
+              @case ('garantie') {
+                <svg lucideShieldAlert aria-hidden="true"></svg>
+              }
+              @default {
+                <svg lucidePackage aria-hidden="true"></svg>
+              }
+            }
+          </span>
+          <span class="kpi__body">
+            <strong>{{ indicateur.valeur(tableau()!) }}</strong>
+            <span>{{ indicateur.libelle }}</span>
+            <small>{{ indicateur.detail }}</small>
+          </span>
+        </button>
+      }
+    }
+  </section>
+
+  <section class="page-section" aria-labelledby="materiel-titre">
+    <div class="list-toolbar">
+      <div class="list-toolbar__title">
+        <h2 id="materiel-titre">Parc</h2>
+        <p>
+          @if (chargement()) {
+            Chargement…
+          } @else {
+            {{ total() }} objet{{ total() > 1 ? 's' : '' }}
+            @if (libelleFiltre()) {
+              · {{ libelleFiltre() }}
+            }
+          }
+        </p>
+      </div>
+      <form class="list-filters" [formGroup]="filters" (ngSubmit)="$event.preventDefault()">
+        <mat-form-field appearance="outline" class="list-filters__search" subscriptSizing="dynamic">
+          <mat-label>Rechercher</mat-label>
+          <svg matPrefix class="list-filters__icon" lucideSearch aria-hidden="true"></svg>
+          <input
+            matInput
+            formControlName="q"
+            placeholder="N° d’autocollant, désignation, série…"
+            autocomplete="off"
+          />
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Catégorie</mat-label>
+          <mat-select formControlName="categorie">
+            <mat-option value="">Toutes</mat-option>
+            @for (categorie of options()?.categories ?? []; track categorie) {
+              <mat-option [value]="categorie">{{ categorie }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Lieu</mat-label>
+          <mat-select formControlName="lieu">
+            <mat-option value="">Tous</mat-option>
+            @for (lieu of options()?.lieux ?? []; track lieu) {
+              <mat-option [value]="lieu">{{ lieu }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>État</mat-label>
+          <mat-select formControlName="etat">
+            <mat-option value="">Tous</mat-option>
+            @for (etat of options()?.etats ?? []; track etat.valeur) {
+              <mat-option [value]="etat.valeur">{{ etat.libelle }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Statut</mat-label>
+          <mat-select formControlName="statut">
+            <mat-option value="">En service</mat-option>
+            @for (statut of options()?.statuts ?? []; track statut.valeur) {
+              <mat-option [value]="statut.valeur">{{ statut.libelle }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        @if (filtreActif()) {
+          <button mat-button type="button" class="list-filters__reset" (click)="effacerFiltres()">
+            <svg class="btn-icon" lucideX aria-hidden="true"></svg>Effacer
+          </button>
+        }
+      </form>
+    </div>
+
+    @if (chargement()) {
+      <div class="materiel-skeleton">
+        <div class="skeleton" style="height: 52px"></div>
+        <div class="skeleton" style="height: 52px"></div>
+        <div class="skeleton" style="height: 52px"></div>
+      </div>
+    } @else if (erreur()) {
+      <div class="empty-state">
+        <svg lucideTriangleAlert aria-hidden="true"></svg>
+        <h3>Le parc ne se charge pas</h3>
+        <p>Réessayez dans un instant.</p>
+        <button mat-stroked-button type="button" (click)="charger()">Réessayer</button>
+      </div>
+    } @else if (!materiels().length) {
+      <div class="empty-state">
+        <svg lucidePackage aria-hidden="true"></svg>
+        @if (filtreActif()) {
+          <h3>Aucun objet ne correspond</h3>
+          <p>Modifiez la recherche ou effacez les filtres.</p>
+          <button mat-stroked-button type="button" (click)="effacerFiltres()">
+            Effacer les filtres
+          </button>
+        } @else {
+          <h3>Aucun matériel enregistré</h3>
+          <p>
+            Ajoutez un objet avec le numéro de son autocollant (ou laissez le numéro suivant). Vous
+            pourrez ensuite le confier, suivre ses entretiens et faire l’inventaire.
+          </p>
+          @if (canCreate) {
+            <a mat-flat-button color="primary" routerLink="/materiel/nouveau">Nouveau matériel</a>
+          }
+        }
+      </div>
+    } @else {
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>N°</th>
+              <th>Désignation</th>
+              <th>Catégorie</th>
+              <th>Lieu</th>
+              <th>Confié à</th>
+              <th>État</th>
+              <th>Statut</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (materiel of materiels(); track materiel.id) {
+              <tr class="is-clickable" (click)="ouvrir(materiel.id)">
+                <td>
+                  <strong class="numero">{{ materiel.reference }}</strong>
+                </td>
+                <td>
+                  {{ materiel.designation }}
+                  @if (materiel.marque || materiel.modele) {
+                    <small class="cell-sub">{{ materiel.marque }} {{ materiel.modele }}</small>
+                  }
+                </td>
+                <td>{{ materiel.categorie }}</td>
+                <td>{{ materiel.lieu || '—' }}</td>
+                <td>{{ materiel.affectation?.libelle || '—' }}</td>
+                <td>
+                  <span class="etat" [class]="'etat etat--' + materiel.etat">{{
+                    materiel.libelleEtat
+                  }}</span>
+                </td>
+                <td>
+                  <span class="status-pill" [class]="'status-pill ' + tonStatut(materiel.statut)">{{
+                    materiel.libelleStatut
+                  }}</span>
+                  @if (materiel.entretienEnRetard) {
+                    <span class="status-pill status-pill--danger">Entretien en retard</span>
+                  }
+                </td>
+                <td class="is-right">
+                  <button
+                    mat-button
+                    type="button"
+                    (click)="ouvrir(materiel.id); $event.stopPropagation()"
+                  >
+                    Ouvrir
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <app-pagination
+        [page]="page()"
+        [pageSize]="pageSize()"
+        [total]="total()"
+        nom="objet"
+        (pageChange)="changerPage($event)"
+        (pageSizeChange)="changerTaille($event)"
+      />
+    }
+  </section>
+</section>

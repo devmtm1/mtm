@@ -151,7 +151,7 @@ export interface DepenseDialogData {
     .depense-dialog__note {
       margin: 4px 0 0;
       color: var(--mtm-text-muted);
-      font-size: 0.82rem;
+      font-size: var(--mtm-fs-sm);
       line-height: 1.5;
     }
     @media (max-width: 560px) {

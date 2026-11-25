@@ -84,19 +84,11 @@
         <span class="kpi__body">
           <strong>{{ s.financial.chiffreAffaires | mtmMoney }}</strong>
           <span>Chiffre d’affaires</span>
-          <small>Lots vendus, au prix public</small>
-        </span>
-      </div>
-      <div class="kpi">
-        <span class="kpi__icon"><svg lucideTrendingUp aria-hidden="true"></svg></span>
-        <span class="kpi__body">
-          <strong>{{ s.financial.resteACommercialiser | mtmMoney }}</strong>
-          <span>Reste à commercialiser</span>
-          <small>Commissions estimées : {{ s.financial.commissionsEstimees | mtmMoney }}</small>
+          <small>Reste à commercialiser : {{ s.financial.resteACommercialiser | mtmMoney }}</small>
         </span>
       </div>
     } @else {
-      @for (i of [1, 2, 3, 4, 5]; track i) {
+      @for (i of [1, 2, 3, 4]; track i) {
         <div class="kpi skeleton" aria-hidden="true"></div>
       }
     }

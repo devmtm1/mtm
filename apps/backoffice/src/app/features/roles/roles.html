@@ -90,13 +90,18 @@
             <p class="detail-note">Ce rôle ne donne encore accès à aucun module.</p>
           } @else {
             <ul class="role-card__modules">
-              @for (module of modules(role); track module.resource) {
+              @for (module of modulesAffiches(role); track module.resource) {
                 <li>
                   <strong>{{ module.label }}</strong>
                   <span>{{ module.full ? 'Accès complet (administrer)' : module.actions.join(', ') }}</span>
                 </li>
               }
             </ul>
+            @if (modules(role).length > MODULES_VISIBLES) {
+              <button mat-button type="button" class="role-card__plus" (click)="basculer(role)" [attr.aria-expanded]="estDeploye(role)">
+                {{ estDeploye(role) ? 'Réduire la liste' : 'Voir les ' + (modules(role).length - MODULES_VISIBLES) + ' autres modules' }}
+              </button>
+            }
           }
 
           <div class="role-card__actions">

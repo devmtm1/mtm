@@ -10,8 +10,9 @@
 } @else if (locataire(); as l) {
   <section class="detail-page">
     <app-fiche-entete
-      titre="Fiche du locataire"
-      [sousTitre]="nom(l) + ' · ' + (bauxActifs() > 0 ? bauxActifs() + ' bail(s) en cours' : 'aucun bail en cours')"
+      surtitre="Fiche du locataire"
+      [titre]="nom(l)"
+      [sousTitre]="bauxActifs() > 0 ? bauxActifs() + ' bail(s) en cours' : 'Aucun bail en cours'"
       (retour)="goBack()"
     >
       <div actions class="actions-fiche">
