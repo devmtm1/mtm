@@ -81,6 +81,12 @@ model User {
   dossiersVenteResponsable DossierVente[]         @relation("DossierVenteCommercial")
   protocolesCrees          ProtocoleDossier[]     @relation("ProtocoleCreator")
   protocolesFichiers       ProtocoleFichier[]     @relation("ProtocoleFichierCreator")
+  materielAffecte          Materiel[]             @relation("MaterielAffecteA")
+  materielCree             Materiel[]             @relation("MaterielCreateur")
+  materielMouvements       MaterielMouvement[]    @relation("MaterielMouvementAuteur")
+  materielEntretiens       MaterielEntretien[]    @relation("MaterielEntretienAuteur")
+  materielFichiers         MaterielFichier[]      @relation("MaterielFichierAuteur")
+  materielInventaires      MaterielInventaire[]   @relation("MaterielInventaireAuteur")
   protocolesHistorique     ProtocoleHistorique[]  @relation("ProtocoleHistoriqueUser")
   reservationsCreees       Reservation[]          @relation("ReservationCreator")
   paiementsEnregistres     Paiement[]             @relation("PaiementRecorder")
@@ -2386,6 +2392,7 @@ model ProjetConstruction {
   @@index([dateFinPrevue])
   @@map("projets_construction")
 
+  materiels  Materiel[]
   protocoles ProtocoleDossier[]
 }
 
@@ -3449,4 +3456,155 @@ model Pole {
   @@index([isActive])
   @@index([ordre])
   @@map("poles")
+}
+
+
+// ---------------------------------------------------------------------------
+// Patrimoine matériel de l'entreprise : mobilier, informatique, véhicules, outillage…
+// Chaque objet porte un autocollant « MTM 0003 » : `numero` est ce nombre (unique, jamais réutilisé).
+// ---------------------------------------------------------------------------
+
+model Materiel {
+  id          String   @id @default(uuid())
+  /// Le numéro de l'autocollant (3 pour « MTM 0003 »).
+  numero      Int      @unique
+  designation String
+  /// Catégorie parmi la liste réglable `materiel.categories`.
+  categorie   String
+  marque      String?
+  modele      String?
+  numeroSerie String?
+  dateAchat   DateTime? @db.Date
+  prixAchat   Decimal?  @db.Decimal(15, 2)
+  fournisseur String?
+  garantieJusqua DateTime? @db.Date
+  /// neuf | bon | usage | en_panne
+  etat        String   @default("bon")
+  /// disponible | affecte | en_maintenance | sorti
+  statut      String   @default("disponible")
+  /// Où l'objet est rangé : liste réglable `materiel.lieux`.
+  lieu        String?
+
+  /// À qui il est confié : un collaborateur, un chantier, ou un nom libre (prestataire, visiteur…).
+  affecteAId  String?
+  affecteA    User?               @relation("MaterielAffecteA", fields: [affecteAId], references: [id], onDelete: SetNull)
+  projetId    String?
+  projet      ProjetConstruction? @relation(fields: [projetId], references: [id], onDelete: SetNull)
+  affecteANom String?
+  affecteLe   DateTime?
+
+  /// Prochain entretien ou contrôle prévu (recopié de l'entretien « prévu » le plus proche).
+  prochainEntretien DateTime? @db.Date
+  notes       String?
+
+  /// Sortie du parc : vendu | reforme | perdu | vole | donne. Rien n'est supprimé.
+  sortieType  String?
+  sortieMotif String?
+  sortieLe    DateTime?
+
+  createdById String?
+  createdBy   User?    @relation("MaterielCreateur", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  mouvements MaterielMouvement[]
+  entretiens MaterielEntretien[]
+  fichiers   MaterielFichier[]
+  lignesInventaire MaterielInventaireLigne[]
+
+  @@index([categorie])
+  @@index([statut])
+  @@index([lieu])
+  @@index([affecteAId])
+  @@index([projetId])
+  @@map("materiels")
+}
+
+/// L'historique d'un objet : création, affectation, retour, changement d'état, entretien, sortie.
+model MaterielMouvement {
+  id         String   @id @default(uuid())
+  materielId String
+  materiel   Materiel @relation(fields: [materielId], references: [id], onDelete: Cascade)
+  /// creation | affectation | retour | etat | lieu | entretien | sortie
+  type       String
+  /// Phrase lisible : « Confié à Awa Diop », « Retour en bon état »…
+  resume     String
+  note       String?
+  userId     String?
+  user       User?    @relation("MaterielMouvementAuteur", fields: [userId], references: [id], onDelete: SetNull)
+  createdAt  DateTime @default(now())
+
+  @@index([materielId, createdAt])
+  @@map("materiels_mouvements")
+}
+
+model MaterielEntretien {
+  id          String    @id @default(uuid())
+  materielId  String
+  materiel    Materiel  @relation(fields: [materielId], references: [id], onDelete: Cascade)
+  /// preventif | reparation | controle
+  type        String
+  /// prevu | fait
+  statut      String    @default("prevu")
+  /// Date prévue (statut prévu) ou date de réalisation (statut fait).
+  date        DateTime  @db.Date
+  description String
+  cout        Decimal?  @db.Decimal(15, 2)
+  prestataire String?
+  createdById String?
+  createdBy   User?     @relation("MaterielEntretienAuteur", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([materielId, statut])
+  @@index([statut, date])
+  @@map("materiels_entretiens")
+}
+
+model MaterielFichier {
+  id           String   @id @default(uuid())
+  materielId   String
+  materiel     Materiel @relation(fields: [materielId], references: [id], onDelete: Cascade)
+  /// photo | etiquette | facture | autre
+  role         String
+  title        String?
+  storageKey   String
+  resourceType String   @default("image")
+  createdById  String?
+  createdBy    User?    @relation("MaterielFichierAuteur", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+
+  @@index([materielId])
+  @@map("materiels_fichiers")
+}
+
+/// Un inventaire physique : on parcourt un lieu et on saisit le numéro de chaque objet vu.
+model MaterielInventaire {
+  id          String    @id @default(uuid())
+  lieu        String
+  /// en_cours | termine
+  statut      String    @default("en_cours")
+  termineLe   DateTime?
+  createdById String?
+  createdBy   User?     @relation("MaterielInventaireAuteur", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+
+  lignes MaterielInventaireLigne[]
+
+  @@index([statut])
+  @@map("materiels_inventaires")
+}
+
+model MaterielInventaireLigne {
+  id           String             @id @default(uuid())
+  inventaireId String
+  inventaire   MaterielInventaire @relation(fields: [inventaireId], references: [id], onDelete: Cascade)
+  /// Le numéro lu sur l'autocollant ; `materielId` est vide si aucun objet n'a ce numéro.
+  numero       Int
+  materielId   String?
+  materiel     Materiel?          @relation(fields: [materielId], references: [id], onDelete: SetNull)
+  createdAt    DateTime           @default(now())
+
+  @@unique([inventaireId, numero])
+  @@map("materiels_inventaires_lignes")
 }

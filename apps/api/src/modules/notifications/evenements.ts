@@ -343,6 +343,26 @@ export const EVENEMENTS_NOTIFICATION: EvenementNotification[] = [
     emailParDefaut: false,
   },
   {
+    cle: 'materiel_entretien',
+    famille: 'Matériel',
+    libelle: 'Entretien de matériel à prévoir ou en retard',
+    description:
+      'Un entretien prévu arrive dans la semaine, ou sa date est passée : le secrétariat et la Direction sont rappelés une fois par échéance.',
+    destinataire: 'permission',
+    permission: 'materiel:modifier',
+    emailParDefaut: false,
+  },
+  {
+    cle: 'materiel_garantie',
+    famille: 'Matériel',
+    libelle: 'Garantie de matériel bientôt terminée',
+    description:
+      'La garantie d’un objet se termine dans le mois : un défaut doit être signalé avant.',
+    destinataire: 'permission',
+    permission: 'materiel:modifier',
+    emailParDefaut: false,
+  },
+  {
     cle: 'chantier_document',
     famille: 'Chantier',
     libelle: 'Document ou photo de chantier',

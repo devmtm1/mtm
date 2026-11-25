@@ -14,6 +14,7 @@ import {
   LucideLandPlot,
   LucideLayoutDashboard,
   LucideListChecks,
+  LucidePackage,
   LucideReceipt,
   LucideScrollText,
   LucideSettings,
@@ -188,6 +189,7 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
     items: [
       { label: 'Vérifications et démarches', libelleMenu: 'Vérifications', route: '/demarches/missions', icon: LucideClipboardCheck, permission: 'demarches:consulter' },
       { label: 'Chantiers', route: '/construction/chantiers', icon: LucideHardHat, permission: 'construction:consulter' },
+      { label: 'Patrimoine matériel', libelleMenu: 'Matériel', route: '/materiel', icon: LucidePackage, permission: 'materiel:consulter', racines: ['/materiel'] },
     ],
   },
   {

@@ -123,6 +123,15 @@ export const SETTING_GROUPS: SettingGroup[] = [
     ],
   },
   {
+    id: 'materiel',
+    title: 'Patrimoine matériel',
+    help: 'Les listes proposées quand on ajoute ou range un objet du parc. Un objet garde sa catégorie et son lieu même si vous les retirez de la liste.',
+    slots: [
+      { key: 'materiel.categories', label: 'Catégories de matériel', help: 'Mobilier, informatique, véhicule… Une valeur par ligne.', kind: 'list' },
+      { key: 'materiel.lieux', label: 'Lieux de rangement', help: 'Bureau, accueil, dépôt… Sert à ranger les objets et à faire l’inventaire pièce par pièce. Une valeur par ligne.', kind: 'list' },
+    ],
+  },
+  {
     id: 'ventes',
     title: 'Ventes, réservations & paiements',
     help: 'Règles du parcours de vente. Les valeurs techniques (en_cours, reserve…) sont traduites à l’écran par l’application.',

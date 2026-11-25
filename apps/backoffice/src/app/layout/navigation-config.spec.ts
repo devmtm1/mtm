@@ -63,9 +63,9 @@ describe('navigation du back-office', () => {
     expect(new Set(titres).size).toBe(titres.length);
   });
 
-  it('reste court : sept rubriques au plus, vingt lignes au plus', () => {
+  it('reste court : sept rubriques au plus, vingt et une lignes au plus', () => {
     expect(NAVIGATION_SECTIONS.length).toBeLessThanOrEqual(7);
-    expect(items().length).toBeLessThanOrEqual(20);
+    expect(items().length).toBeLessThanOrEqual(21);
   });
 
   it('ne replie que l’administration, rarement utilisée', () => {

@@ -1,0 +1,599 @@
+@if (erreur()) {
+  <div class="detail-page">
+    <a class="back-link" routerLink="/materiel"
+      ><svg lucideArrowLeft aria-hidden="true"></svg>Retour au matériel</a
+    >
+    <div class="empty-state">
+      <svg lucideTriangleAlert aria-hidden="true"></svg>
+      <h3>Cette fiche ne se charge pas</h3>
+      <p>L’objet n’existe pas, ou vous n’avez pas le droit de le voir.</p>
+      <a mat-stroked-button routerLink="/materiel">Retour au parc</a>
+    </div>
+  </div>
+} @else if (!materiel()) {
+  <div class="detail-page" aria-busy="true">
+    <div class="skeleton" style="height: 20px; width: 160px"></div>
+    <div class="skeleton" style="height: 36px; width: 45%"></div>
+    <div class="skeleton" style="height: 240px"></div>
+  </div>
+} @else {
+  @let m = materiel()!;
+  <div class="detail-page" [class.is-busy]="envoi()">
+    <!-- Identité, statut et gestes du jour -->
+    <header class="detail-header">
+      <div class="fiche__id">
+        <a class="back-link" routerLink="/materiel"
+          ><svg lucideArrowLeft aria-hidden="true"></svg>Retour au matériel</a
+        >
+        <p class="eyebrow">Fiche du matériel</p>
+        <h1>
+          <span class="fiche__numero">{{ m.reference }}</span> {{ m.designation }}
+        </h1>
+        <p class="detail-header__location">
+          <svg lucideMapPin aria-hidden="true"></svg>{{ m.categorie }} ·
+          {{ m.lieu || 'Pas encore rangé' }}
+        </p>
+        <div class="status-line">
+          <span class="status-pill" [class]="'status-pill ' + tonStatut(m.statut)">{{
+            m.libelleStatut
+          }}</span>
+          @if (m.etat !== 'bon') {
+            <span class="status-pill" [class]="'status-pill ' + tonEtat(m.etat)">{{
+              m.libelleEtat
+            }}</span>
+          }
+          @if (m.entretienEnRetard) {
+            <span class="status-pill status-pill--danger">Entretien en retard</span>
+          }
+        </div>
+      </div>
+
+      @if (peutModifier && m.statut !== 'sorti') {
+        <div class="detail-header__actions">
+          @if (m.statut === 'affecte') {
+            <button mat-flat-button color="primary" type="button" (click)="ouvrir('retour')">
+              Enregistrer le retour
+            </button>
+            <button mat-stroked-button type="button" (click)="ouvrir('confier')">Transférer</button>
+          } @else if (m.statut === 'disponible') {
+            <button mat-flat-button color="primary" type="button" (click)="ouvrir('confier')">
+              Confier à…
+            </button>
+          }
+          <button mat-stroked-button type="button" (click)="ouvrir('modifier')">Modifier</button>
+          @if (peutSortir) {
+            <button mat-stroked-button type="button" class="danger" (click)="ouvrir('sortie')">
+              Sortir du parc
+            </button>
+          }
+        </div>
+      }
+    </header>
+
+    <!-- Où est l'objet en ce moment -->
+    <p class="detail-note" [class]="'detail-note situation--' + tonStatut(m.statut)">
+      @switch (m.statut) {
+        @case ('affecte') {
+          <span>
+            <strong>Confié à {{ m.affectation?.libelle }}</strong>
+            @if (m.affecteLe) {
+              depuis le {{ m.affecteLe | date: 'dd/MM/yyyy' }}
+            }
+          </span>
+        }
+        @case ('en_maintenance') {
+          <span
+            ><strong>En maintenance.</strong> Terminez l’entretien en cours pour le remettre en
+            service.</span
+          >
+        }
+        @case ('sorti') {
+          <span>
+            <strong>{{ m.sortie?.libelle }} le {{ m.sortie?.le | date: 'dd/MM/yyyy' }}.</strong>
+            {{ m.sortie?.motif }}
+            La fiche reste consultable mais ne se modifie plus.
+          </span>
+        }
+        @default {
+          <span
+            ><strong>Disponible</strong> ·
+            {{ m.lieu ? 'rangé : ' + m.lieu : 'pas encore rangé' }}</span
+          >
+        }
+      }
+    </p>
+
+    <!-- Formulaires d'action : un seul à la fois, juste sous l'en-tête -->
+    @switch (action()) {
+      @case ('confier') {
+        <section class="page-card detail-section" aria-label="Confier">
+          <h2>{{ m.statut === 'affecte' ? 'Transférer à' : 'Confier à' }}</h2>
+          <form [formGroup]="formConfier" class="formulaire" (ngSubmit)="confier()">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Type</mat-label>
+              <mat-select formControlName="cible">
+                <mat-option value="collaborateur">Un collaborateur</mat-option>
+                <mat-option value="chantier">Un chantier</mat-option>
+                <mat-option value="libre">Une autre personne (nom libre)</mat-option>
+              </mat-select>
+            </mat-form-field>
+            @switch (formConfier.controls.cible.value) {
+              @case ('collaborateur') {
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <mat-label>Collaborateur</mat-label>
+                  <mat-select formControlName="userId">
+                    @for (p of destinataires()?.collaborateurs ?? []; track p.id) {
+                      <mat-option [value]="p.id">{{ p.nom }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              }
+              @case ('chantier') {
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <mat-label>Chantier</mat-label>
+                  <mat-select formControlName="projetId">
+                    @for (c of destinataires()?.chantiers ?? []; track c.id) {
+                      <mat-option [value]="c.id">{{ c.libelle }}</mat-option>
+                    } @empty {
+                      <mat-option disabled>Aucun chantier en cours</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              }
+              @default {
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <mat-label>Nom</mat-label>
+                  <input
+                    matInput
+                    formControlName="nom"
+                    maxlength="200"
+                    placeholder="Prestataire, visiteur…"
+                  />
+                </mat-form-field>
+              }
+            }
+            <mat-form-field
+              appearance="outline"
+              subscriptSizing="dynamic"
+              class="formulaire__large"
+            >
+              <mat-label>Remarque (facultatif)</mat-label>
+              <input matInput formControlName="note" maxlength="500" />
+            </mat-form-field>
+            <div class="formulaire__actions formulaire__large">
+              <button mat-button type="button" (click)="ouvrir(null)">Annuler</button>
+              <button
+                mat-flat-button
+                color="primary"
+                type="submit"
+                [disabled]="envoi() || !cibleValide()"
+              >
+                Confier
+              </button>
+            </div>
+          </form>
+        </section>
+      }
+      @case ('retour') {
+        <section class="page-card detail-section" aria-label="Retour">
+          <h2>Retour de l’objet</h2>
+          <form [formGroup]="formRetour" class="formulaire" (ngSubmit)="retourner()">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>État au retour</mat-label>
+              <mat-select formControlName="etat">
+                @for (e of options()?.etats ?? []; track e.valeur) {
+                  <mat-option [value]="e.valeur">{{ e.libelle }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Rangé à</mat-label>
+              <mat-select formControlName="lieu">
+                <mat-option value="">Inchangé</mat-option>
+                @for (l of options()?.lieux ?? []; track l) {
+                  <mat-option [value]="l">{{ l }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field
+              appearance="outline"
+              subscriptSizing="dynamic"
+              class="formulaire__large"
+            >
+              <mat-label>Remarque (facultatif)</mat-label>
+              <input matInput formControlName="note" maxlength="500" />
+            </mat-form-field>
+            <div class="formulaire__actions formulaire__large">
+              <button mat-button type="button" (click)="ouvrir(null)">Annuler</button>
+              <button mat-flat-button color="primary" type="submit" [disabled]="envoi()">
+                Enregistrer le retour
+              </button>
+            </div>
+          </form>
+        </section>
+      }
+      @case ('modifier') {
+        <section class="page-card detail-section" aria-label="Modifier la fiche">
+          <h2>Modifier la fiche</h2>
+          <form [formGroup]="formModifier" class="formulaire" (ngSubmit)="enregistrerFiche()">
+            <mat-form-field
+              appearance="outline"
+              subscriptSizing="dynamic"
+              class="formulaire__large"
+            >
+              <mat-label>Désignation</mat-label>
+              <input matInput formControlName="designation" maxlength="200" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Catégorie</mat-label>
+              <mat-select formControlName="categorie">
+                @for (c of options()?.categories ?? []; track c) {
+                  <mat-option [value]="c">{{ c }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Lieu de rangement</mat-label>
+              <mat-select formControlName="lieu">
+                <mat-option value="">Pas rangé</mat-option>
+                @for (l of options()?.lieux ?? []; track l) {
+                  <mat-option [value]="l">{{ l }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>État</mat-label>
+              <mat-select formControlName="etat">
+                @for (e of options()?.etats ?? []; track e.valeur) {
+                  <mat-option [value]="e.valeur">{{ e.libelle }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Marque</mat-label>
+              <input matInput formControlName="marque" maxlength="100" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Modèle</mat-label>
+              <input matInput formControlName="modele" maxlength="100" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>N° de série</mat-label>
+              <input matInput formControlName="numeroSerie" maxlength="100" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Garantie jusqu’au</mat-label>
+              <input matInput type="date" formControlName="garantieJusqua" />
+            </mat-form-field>
+            <mat-form-field
+              appearance="outline"
+              subscriptSizing="dynamic"
+              class="formulaire__large"
+            >
+              <mat-label>Notes</mat-label>
+              <textarea matInput rows="2" formControlName="notes" maxlength="1000"></textarea>
+            </mat-form-field>
+            <div class="formulaire__actions formulaire__large">
+              <button mat-button type="button" (click)="ouvrir(null)">Annuler</button>
+              <button
+                mat-flat-button
+                color="primary"
+                type="submit"
+                [disabled]="envoi() || formModifier.invalid"
+              >
+                Enregistrer
+              </button>
+            </div>
+          </form>
+        </section>
+      }
+      @case ('sortie') {
+        <section class="page-card detail-section sortie" aria-label="Sortie du parc">
+          <h2>Sortir du parc</h2>
+          <p class="aide">
+            La fiche et son historique sont conservés ; l’objet n’apparaît plus dans le parc en
+            service. Cette décision ne se défait pas.
+          </p>
+          <form [formGroup]="formSortie" class="formulaire" (ngSubmit)="sortir()">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Raison</mat-label>
+              <mat-select formControlName="type">
+                @for (t of options()?.typesSortie ?? []; track t.valeur) {
+                  <mat-option [value]="t.valeur">{{ t.libelle }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field
+              appearance="outline"
+              subscriptSizing="dynamic"
+              class="formulaire__large"
+            >
+              <mat-label>Motif (obligatoire)</mat-label>
+              <input matInput formControlName="motif" maxlength="500" />
+            </mat-form-field>
+            <div class="formulaire__actions formulaire__large">
+              <button mat-button type="button" (click)="ouvrir(null)">Annuler</button>
+              <button
+                mat-flat-button
+                color="warn"
+                type="submit"
+                [disabled]="envoi() || formSortie.invalid"
+              >
+                Sortir du parc
+              </button>
+            </div>
+          </form>
+        </section>
+      }
+    }
+
+    <div class="content-grid">
+      <!-- Colonne de gauche : ce qu'est l'objet -->
+      <div class="colonne">
+        <section class="page-card detail-section" aria-label="Informations">
+          <h2>Informations</h2>
+          <dl class="info-list">
+            <div>
+              <dt>Catégorie</dt>
+              <dd>{{ m.categorie }}</dd>
+            </div>
+            <div>
+              <dt>Marque, modèle</dt>
+              <dd>{{ marqueModele(m) }}</dd>
+            </div>
+            <div>
+              <dt>N° de série</dt>
+              <dd>{{ m.numeroSerie || '—' }}</dd>
+            </div>
+            <div>
+              <dt>Lieu de rangement</dt>
+              <dd>{{ m.lieu || 'Pas encore rangé' }}</dd>
+            </div>
+            <div>
+              <dt>État</dt>
+              <dd [class.alerte]="m.etat === 'en_panne'">{{ m.libelleEtat }}</dd>
+            </div>
+            <div>
+              <dt>Prochain entretien</dt>
+              <dd [class.alerte]="m.entretienEnRetard">
+                @if (m.prochainEntretien) {
+                  {{ m.prochainEntretien | date: 'dd/MM/yyyy'
+                  }}{{ m.entretienEnRetard ? ' (en retard)' : '' }}
+                } @else {
+                  Aucun prévu
+                }
+              </dd>
+            </div>
+            <div>
+              <dt>Acheté le</dt>
+              <dd>{{ m.dateAchat ? (m.dateAchat | date: 'dd/MM/yyyy') : '—' }}</dd>
+            </div>
+            @if (m.prixAchat !== null) {
+              <div>
+                <dt>Prix d’achat</dt>
+                <dd>{{ m.prixAchat | mtmMoney }}</dd>
+              </div>
+            }
+            @if (m.fournisseur) {
+              <div>
+                <dt>Fournisseur</dt>
+                <dd>{{ m.fournisseur }}</dd>
+              </div>
+            }
+            <div>
+              <dt>Garantie</dt>
+              <dd>
+                @if (m.garantieJusqua) {
+                  jusqu’au {{ m.garantieJusqua | date: 'dd/MM/yyyy'
+                  }}{{ m.garantieActive ? '' : ' (terminée)' }}
+                } @else {
+                  —
+                }
+              </dd>
+            </div>
+          </dl>
+          @if (m.notes) {
+            <p class="detail-section__text">{{ m.notes }}</p>
+          }
+        </section>
+
+        <section class="page-card detail-section" aria-label="Photos et pièces">
+          <h2>Photos et pièces</h2>
+          @if (!m.fichiers.length) {
+            <p class="vide">
+              Aucune photo. Une photo de l’objet avec son autocollant permet de le reconnaître à
+              l’inventaire.
+            </p>
+          } @else {
+            <ul class="liste">
+              @for (f of m.fichiers; track f.id) {
+                <li>
+                  <a class="liste__titre" [href]="f.url" target="_blank" rel="noopener noreferrer">
+                    <svg lucideExternalLink aria-hidden="true"></svg
+                    >{{ f.titre || libelleRole(f.role) }}
+                  </a>
+                  <small>{{ libelleRole(f.role) }} · {{ f.ajouteLe | date: 'dd/MM/yyyy' }}</small>
+                </li>
+              }
+            </ul>
+          }
+          @if (peutModifier && m.statut !== 'sorti') {
+            <div class="depots">
+              <label class="depot">
+                <svg lucideUpload aria-hidden="true"></svg>Photo de l’objet
+                <input
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.webp"
+                  (change)="deposer($event, 'photo')"
+                  [disabled]="envoi()"
+                />
+              </label>
+              <label class="depot">
+                <svg lucideUpload aria-hidden="true"></svg>Photo de l’autocollant
+                <input
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.webp"
+                  (change)="deposer($event, 'etiquette')"
+                  [disabled]="envoi()"
+                />
+              </label>
+              <label class="depot">
+                <svg lucideUpload aria-hidden="true"></svg>Facture ou notice
+                <input
+                  type="file"
+                  accept=".pdf,.docx,.jpg,.jpeg,.png"
+                  (change)="deposer($event, 'facture')"
+                  [disabled]="envoi()"
+                />
+              </label>
+            </div>
+          }
+        </section>
+      </div>
+
+      <!-- Colonne de droite : ce qui lui arrive -->
+      <div class="colonne">
+        <section class="page-card detail-section" aria-label="Entretiens">
+          <div class="detail-section__head">
+            <h2>Entretiens</h2>
+            @if (peutModifier && m.statut !== 'sorti' && action() !== 'entretien') {
+              <button mat-stroked-button type="button" (click)="ouvrir('entretien')">
+                <svg class="btn-icon" lucidePlus aria-hidden="true"></svg>Ajouter
+              </button>
+            }
+          </div>
+          @if (action() === 'entretien') {
+            <form
+              [formGroup]="formEntretien"
+              class="formulaire formulaire-encart"
+              (ngSubmit)="ajouterEntretien()"
+            >
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Nature</mat-label>
+                <mat-select formControlName="type">
+                  @for (t of options()?.typesEntretien ?? []; track t) {
+                    <mat-option [value]="t">{{ libelleEntretien(t) }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>{{
+                  formEntretien.controls.fait.value ? 'Réalisé le' : 'Prévu le'
+                }}</mat-label>
+                <input matInput type="date" formControlName="date" />
+              </mat-form-field>
+              <mat-form-field
+                appearance="outline"
+                subscriptSizing="dynamic"
+                class="formulaire__large"
+              >
+                <mat-label>Description</mat-label>
+                <input
+                  matInput
+                  formControlName="description"
+                  maxlength="500"
+                  placeholder="Ex. Vidange, nettoyage des filtres…"
+                />
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Prestataire (facultatif)</mat-label>
+                <input matInput formControlName="prestataire" maxlength="200" />
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Coût en FCFA (facultatif)</mat-label>
+                <input matInput type="number" min="0" formControlName="cout" />
+              </mat-form-field>
+              <label class="case formulaire__large">
+                <input type="checkbox" formControlName="fait" /> Déjà réalisé (enregistré tout de
+                suite, sans date à venir)
+              </label>
+              @if (!formEntretien.controls.fait.value && m.statut !== 'affecte') {
+                <label class="case formulaire__large">
+                  <input type="checkbox" formControlName="immobilise" /> L’objet est immobilisé
+                  pendant l’intervention
+                </label>
+              }
+              <div class="formulaire__actions formulaire__large">
+                <button mat-button type="button" (click)="ouvrir(null)">Annuler</button>
+                <button
+                  mat-flat-button
+                  color="primary"
+                  type="submit"
+                  [disabled]="envoi() || formEntretien.invalid"
+                >
+                  Enregistrer
+                </button>
+              </div>
+            </form>
+          }
+          @if (!m.entretiens.length) {
+            <p class="vide">Aucun entretien enregistré.</p>
+          } @else {
+            <ul class="liste">
+              @for (e of m.entretiens; track e.id) {
+                <li>
+                  <span class="liste__titre">
+                    {{ libelleEntretien(e.type) }} — {{ e.description }}
+                    <small>
+                      {{ e.statut === 'prevu' ? 'Prévu le' : 'Fait le' }}
+                      {{ e.date | date: 'dd/MM/yyyy' }}
+                      @if (e.prestataire) {
+                        · {{ e.prestataire }}
+                      }
+                      @if (e.cout !== null) {
+                        · {{ e.cout | mtmMoney }}
+                      }
+                    </small>
+                  </span>
+                  @if (e.statut === 'prevu') {
+                    <span
+                      class="status-pill"
+                      [class]="
+                        'status-pill ' +
+                        (e.enRetard ? 'status-pill--danger' : 'status-pill--warning')
+                      "
+                    >
+                      {{ e.enRetard ? 'En retard' : 'Prévu' }}
+                    </span>
+                    @if (peutModifier && m.statut !== 'sorti') {
+                      <button
+                        mat-button
+                        type="button"
+                        (click)="terminerEntretien(e.id)"
+                        [disabled]="envoi()"
+                      >
+                        Marquer fait
+                      </button>
+                    }
+                  } @else {
+                    <span class="status-pill status-pill--success">Fait</span>
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </section>
+
+        <section class="page-card detail-section" aria-label="Historique">
+          <h2>Historique</h2>
+          <ol class="historique">
+            @for (h of m.historique; track h.id) {
+              <li>
+                <span class="historique__quand">{{ h.le | date: 'dd/MM/yyyy HH:mm' }}</span>
+                <span>
+                  {{ h.resume }}
+                  @if (h.note) {
+                    <small>« {{ h.note }} »</small>
+                  }
+                  @if (h.par) {
+                    <small>par {{ h.par }}</small>
+                  }
+                </span>
+              </li>
+            }
+          </ol>
+        </section>
+      </div>
+    </div>
+  </div>
+}
