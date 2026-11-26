@@ -11,17 +11,23 @@ name: Sauvegarde de la production
 #
 # Secrets à créer dans GitHub (Settings → Secrets and variables → Actions),
 # sur l'organisation MTM — jamais sur un compte personnel :
-#   PROD_DATABASE_URL              URL de la base de production (lecture suffit)
+#   PROD_DATABASE_URL              URL de la base de production (lecture suffit). Neon :
+#                                  la connexion DIRECTE (hôte sans « -pooler »), avec
+#                                  sslmode=require ; pg_dump ne passe pas par le pooler
 #   BACKUP_PASSPHRASE              phrase de passe de chiffrement (la conserver
 #                                  ailleurs : sans elle, les sauvegardes sont
 #                                  illisibles)
-#   BACKUP_S3_ENDPOINT             ex. https://<compte>.r2.cloudflarestorage.com
+#   BACKUP_S3_ENDPOINT             Backblaze B2 : https://s3.<région>.backblazeb2.com
+#                                  (la région en est déduite pour signer les requêtes ;
+#                                  R2 : https://<compte>.r2.cloudflarestorage.com)
 #   BACKUP_S3_BUCKET               nom du bucket
 #   BACKUP_S3_ACCESS_KEY_ID
 #   BACKUP_S3_SECRET_ACCESS_KEY
 #
-# Durée de conservation : à régler par une règle de cycle de vie du bucket
-# (30 jours conseillés pour les sauvegardes quotidiennes) ; voir docs/BACKUP.md.
+# Rétention : le workflow ne supprime JAMAIS rien (sa clé n'a pas besoin de ce droit).
+# Chaque sauvegarde est rangée sous mtm/production/daily/ ; celle du dimanche l'est aussi
+# sous weekly/, celle du 1er du mois sous monthly/. Ce sont trois règles de cycle de vie
+# du bucket (7 jours, 28 jours, 90 jours) qui purgent chaque dossier ; voir docs/BACKUP.md.
 
 on:
   schedule:
@@ -43,6 +49,10 @@ concurrency:
 
 env:
   PG_VERSION: '17'
+  # Les versions récentes du client AWS ajoutent des sommes de contrôle que certains stockages
+  # compatibles S3 (dont Backblaze B2) refusent : on ne les envoie que si l'API l'exige.
+  AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+  AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
 
 jobs:
   sauvegarde:
@@ -71,6 +81,18 @@ jobs:
             echo "::error::Sauvegarde NON configurée, secrets manquants :$manquants. Aucune sauvegarde de production n'est faite tant que ce n'est pas corrigé."
             exit 1
           fi
+          # Sans afficher aucune valeur : on ne teste que la forme de l'adresse.
+          case "$PROD_DATABASE_URL" in
+            *-pooler*) echo "::error::PROD_DATABASE_URL pointe vers le pooler Neon (hôte « -pooler »). pg_dump exige la connexion directe : prenez l'adresse « Direct connection » dans Neon."; exit 1 ;;
+          esac
+          case "$PROD_DATABASE_URL" in
+            *sslmode=*) ;;
+            *) echo "::warning::PROD_DATABASE_URL n'indique pas sslmode : ajoutez ?sslmode=require (Neon n'accepte que les connexions chiffrées)." ;;
+          esac
+          case "$BACKUP_S3_ENDPOINT" in
+            https://*) ;;
+            *) echo "::error::BACKUP_S3_ENDPOINT doit commencer par https:// (ex. https://s3.<région>.backblazeb2.com)."; exit 1 ;;
+          esac
 
       - name: Installer le client PostgreSQL ${{ env.PG_VERSION }}
         run: |
@@ -93,7 +115,8 @@ jobs:
           # Le dump doit être lisible avant d'être envoyé : un fichier corrompu
           # qu'on découvre le jour du sinistre ne sert à rien.
           pg_restore --list "$fichier" > /dev/null
-          gpg --batch --yes --pinentry-mode loopback --passphrase "$BACKUP_PASSPHRASE" \
+          # La phrase de passe entre par l'entrée standard : elle n'apparaît pas dans la liste des processus.
+          printf '%s' "$BACKUP_PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 \
             --symmetric --cipher-algo AES256 --output "$fichier.gpg" "$fichier"
           rm -f "$fichier"
           (cd "$RUNNER_TEMP/dump" && sha256sum "$(basename "$fichier").gpg" > "$(basename "$fichier").gpg.sha256")
@@ -104,20 +127,28 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BACKUP_S3_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_S3_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: auto
           ENDPOINT: ${{ secrets.BACKUP_S3_ENDPOINT }}
           BUCKET: ${{ secrets.BACKUP_S3_BUCKET }}
           NOM: ${{ steps.dump.outputs.nom }}
         run: |
           set -euo pipefail
-          cible="s3://${BUCKET}/mtm/production/$(date -u +%Y/%m)"
-          aws s3 cp "$RUNNER_TEMP/dump/$NOM" "$cible/$NOM" --endpoint-url "$ENDPOINT" --only-show-errors
-          aws s3 cp "$RUNNER_TEMP/dump/$NOM.sha256" "$cible/$NOM.sha256" --endpoint-url "$ENDPOINT" --only-show-errors
-          # Relecture : l'objet envoyé existe et a la taille attendue.
+          # Backblaze signe avec sa vraie région, lue dans l'endpoint (« auto » ne vaut que pour Cloudflare R2).
+          region="$(echo "$ENDPOINT" | sed -nE 's#^https://s3\.([^.]+)\.backblazeb2\.com.*#\1#p')"
+          export AWS_DEFAULT_REGION="${region:-auto}"
+          # Quotidienne toujours ; hebdomadaire le dimanche ; mensuelle le 1er du mois. Chaque dossier a sa règle de purge.
+          niveaux="daily"
+          [ "$(date -u +%u)" = "7" ] && niveaux="$niveaux weekly"
+          [ "$(date -u +%d)" = "01" ] && niveaux="$niveaux monthly"
           taille_locale="$(stat -c %s "$RUNNER_TEMP/dump/$NOM")"
-          taille_distante="$(aws s3api head-object --bucket "$BUCKET" --key "mtm/production/$(date -u +%Y/%m)/$NOM" --endpoint-url "$ENDPOINT" --query ContentLength --output text)"
-          [ "$taille_locale" = "$taille_distante" ] || { echo "::error::Taille distante ($taille_distante) différente de la taille locale ($taille_locale)"; exit 1; }
-          echo "Sauvegarde envoyée : $cible/$NOM ($taille_locale octets)"
+          for niveau in $niveaux; do
+            cle="mtm/production/$niveau/$NOM"
+            aws s3 cp "$RUNNER_TEMP/dump/$NOM" "s3://$BUCKET/$cle" --endpoint-url "$ENDPOINT" --only-show-errors
+            aws s3 cp "$RUNNER_TEMP/dump/$NOM.sha256" "s3://$BUCKET/$cle.sha256" --endpoint-url "$ENDPOINT" --only-show-errors
+            # Relecture : l'objet envoyé existe et a la taille attendue.
+            taille_distante="$(aws s3api head-object --bucket "$BUCKET" --key "$cle" --endpoint-url "$ENDPOINT" --query ContentLength --output text)"
+            [ "$taille_locale" = "$taille_distante" ] || { echo "::error::$niveau : taille distante ($taille_distante) différente de la taille locale ($taille_locale)"; exit 1; }
+            echo "Sauvegarde envoyée ($niveau) : $cle ($taille_locale octets)"
+          done
 
   restauration-de-controle:
     name: Restauration de contrôle dans une base jetable
@@ -160,12 +191,13 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.BACKUP_S3_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_S3_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: auto
           ENDPOINT: ${{ secrets.BACKUP_S3_ENDPOINT }}
           BUCKET: ${{ secrets.BACKUP_S3_BUCKET }}
         run: |
           set -euo pipefail
-          cle="$(aws s3api list-objects-v2 --bucket "$BUCKET" --prefix mtm/production/ --endpoint-url "$ENDPOINT" \
+          region="$(echo "$ENDPOINT" | sed -nE 's#^https://s3\.([^.]+)\.backblazeb2\.com.*#\1#p')"
+          export AWS_DEFAULT_REGION="${region:-auto}"
+          cle="$(aws s3api list-objects-v2 --bucket "$BUCKET" --prefix mtm/production/daily/ --endpoint-url "$ENDPOINT" \
             --query "sort_by(Contents[?ends_with(Key, '.gpg')], &LastModified)[-1].Key" --output text)"
           [ -n "$cle" ] && [ "$cle" != "None" ] || { echo "::error::Aucune sauvegarde trouvée dans le stockage externe"; exit 1; }
           mkdir -p "$RUNNER_TEMP/restore"
@@ -184,8 +216,13 @@ jobs:
           attendu="$(cut -d' ' -f1 dump.gpg.sha256)"
           obtenu="$(sha256sum dump.gpg | cut -d' ' -f1)"
           [ "$attendu" = "$obtenu" ] || { echo "::error::Empreinte SHA-256 différente : sauvegarde altérée ou incomplète"; exit 1; }
-          gpg --batch --yes --pinentry-mode loopback --passphrase "$BACKUP_PASSPHRASE" --output dump.dump --decrypt dump.gpg
+          printf '%s' "$BACKUP_PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --output dump.dump --decrypt dump.gpg
           export DATABASE_URL="postgresql://restore:restore@localhost:5432/restore_test"
+          # Garde-fou : une restauration écrase sa cible. Elle ne doit JAMAIS viser autre chose que cette base jetable.
+          case "$DATABASE_URL" in
+            *@localhost:5432/restore_test) ;;
+            *) echo "::error::La restauration de contrôle ne vise pas la base jetable : arrêt."; exit 1 ;;
+          esac
           bash "$GITHUB_WORKSPACE/apps/api/scripts/restore.sh" --force "$RUNNER_TEMP/restore/dump.dump"
 
       - name: Contrôles de cohérence
