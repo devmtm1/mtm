@@ -109,23 +109,29 @@ par le workflow GitHub `.github/workflows/backup-production.yml` :
   sauvegarde qui ne se restaure pas est découvert le dimanche, pas le jour du
   sinistre.
 
+**Où vont les fichiers et combien de temps ils restent**
+
+Le workflow range chaque sauvegarde chiffrée sous `mtm/production/` :
+
+| Dossier | Quand | À conserver | Règle de cycle de vie du bucket |
+| --- | --- | --- | --- |
+| `daily/` | chaque jour | 7 | masquer après 7 jours, supprimer 1 jour plus tard |
+| `weekly/` | le dimanche (en plus de `daily/`) | 4 | masquer après 28 jours, supprimer 1 jour plus tard |
+| `monthly/` | le 1er du mois (en plus de `daily/`) | 3 | masquer après 90 jours, supprimer 1 jour plus tard |
+
+Le workflow **ne supprime jamais rien** : sa clé n'a besoin que de lire, écrire et lister. La purge est faite par Backblaze, avec trois règles de cycle de vie (une par dossier). Dans un bucket « Keep all versions », « masquer » puis « supprimer » est ce qui retire réellement les anciennes versions ; sans ces règles, le bucket ne se vide jamais.
+
 **Mise en service (à faire une fois, par MTM)**
 
-1. Créer un bucket dans un compte de stockage **appartenant à MTM**, et y régler
-   une règle de cycle de vie (30 jours conseillés) : c'est elle qui assure la
-   rétention.
-2. Dans GitHub, sur l'organisation MTM : *Settings → Secrets and variables →
-   Actions*, créer `PROD_DATABASE_URL`, `BACKUP_PASSPHRASE`,
-   `BACKUP_S3_ENDPOINT`, `BACKUP_S3_BUCKET`, `BACKUP_S3_ACCESS_KEY_ID`,
-   `BACKUP_S3_SECRET_ACCESS_KEY`. **Conserver la phrase de passe dans un
-   second endroit sûr** (coffre de mots de passe de la direction) : sans elle,
-   aucune sauvegarde ne peut être relue.
-3. Lancer le workflow à la main (*Actions → Sauvegarde de la production → Run
-   workflow*, case « restauration de contrôle » cochée) et vérifier que les
-   deux jobs passent.
-4. Tant que les secrets manquent, le workflow **échoue volontairement** avec la
-   liste de ce qui manque : une sauvegarde non configurée ne doit pas passer
-   pour une sauvegarde qui fonctionne.
+1. Bucket **privé** et chiffré dans un compte Backblaze B2 appartenant à MTM, avec une **clé d'application limitée à ce bucket** (lecture, écriture, liste ; pas de suppression), jamais la clé principale du compte. Régler les trois règles de cycle de vie du tableau ci-dessus (Bucket → Lifecycle Settings → Use custom rules).
+2. Dans GitHub : *Settings → Secrets and variables → Actions*, créer `PROD_DATABASE_URL`, `BACKUP_PASSPHRASE`, `BACKUP_S3_ENDPOINT`, `BACKUP_S3_BUCKET`, `BACKUP_S3_ACCESS_KEY_ID`, `BACKUP_S3_SECRET_ACCESS_KEY`.
+   - `PROD_DATABASE_URL` : la connexion **directe** de Neon (l'hôte ne contient pas `-pooler`), avec `?sslmode=require`. Le workflow refuse l'adresse du pooler. Idéalement, celle d'un rôle Neon en lecture seule dédié à la sauvegarde.
+   - `BACKUP_S3_ENDPOINT` : `https://s3.<région>.backblazeb2.com` ; la région (par exemple `us-west-004`) en est déduite pour signer les requêtes.
+   - `BACKUP_PASSPHRASE` : une phrase longue, générée par un gestionnaire de mots de passe, **conservée dans un second endroit sûr**. Sans elle, aucune sauvegarde ne peut être relue.
+3. Lancer le workflow à la main (*Actions → Sauvegarde de la production → Run workflow*, case « restauration de contrôle » cochée) et vérifier que les deux jobs passent ; puis contrôler dans Backblaze que le fichier `.gpg` et son `.sha256` sont sous `daily/`.
+4. Tant que les secrets manquent, le workflow **échoue volontairement** avec la liste de ce qui manque : une sauvegarde non configurée ne doit pas passer pour une sauvegarde qui fonctionne.
+
+**Garde-fous du workflow** : refus de l'adresse du pooler Neon ; la phrase de passe passe par l'entrée standard (pas sur la ligne de commande) ; la restauration de contrôle refuse de s'exécuter si sa cible n'est pas la base jetable du runner ; envoi de chaque copie relu (taille) ; empreinte SHA-256 vérifiée à la restauration.
 
 **Limite** : le script de contrôle et le workflow n'ont pas pu être exécutés
 de bout en bout hors de GitHub (pas de client PostgreSQL local) ; leur syntaxe
